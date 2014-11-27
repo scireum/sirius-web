@@ -1,0 +1,23 @@
+@args List messages
+@import org.apache.log4j.Level
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>@product - System Log</title>
+        <link rel="stylesheet" media="screen" href="@prefix/assets/system/css/bootstrap.css">
+    </head>
+    <body>
+        <div class="container">
+            <h1>System Log</h1>
+            <table class="table table-bordered table-striped">
+                @for(sirius.kernel.health.LogMessage msg : messages) {
+                    <tr class="@if (msg.getLogLevel() == Level.FATAL || msg.getLogLevel() == Level.ERROR) { error } else if (msg.getLogLevel() == Level.WARN) { warning }">
+                        <td>@msg.getReceiver().getName()<br />@msg.getTimestampAsString()</td>
+                        <td>@msg.getLogLevel()<br />@msg.getThread()</td>
+                        <td style="word-wrap: break-word; word-break: break-all">@msg.getMessage()</td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,35 @@
+@args String name, AutoDoc doc
+@import sirius.web.services.*
+@extends(help/help.html, name)
+
+<h2>@name</h2>
+<p>@doc.title()</p>
+<p><a href="@prefix/service/json/@name">JSON</a> | <a href="@prefix/service/xml/@name">XML</a></p>
+<p>@doc.description()</p>
+<h3>Parameters</h3>
+<ul>
+    @for(DocParam param : doc.params()) {
+        <li>
+            <b>@param.name()</b>: @param.description() @if(param.required()) { <i>(required)</i> }
+        </li>
+    }
+</ul>
+<h3>Returns</h3>
+<ul>
+    @for(DocNode node : doc.result()) {
+        <li>
+            <b>@node.title()</b>:<br/>
+            <ul>
+                @for(DocProperty prop : node.properties()) {
+                    <li>
+                        <b>@prop.title()</b>: @prop.type()
+                        @if (Strings.isFilled(prop.description())) { <br />@prop.description() }
+                    </li>
+                }
+            </ul>
+        </li>
+    }
+</ul>
+<p>
+    <a href="@prefix/service">API Documentation</a>
+</p>

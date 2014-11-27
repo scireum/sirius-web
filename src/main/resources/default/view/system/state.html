@@ -1,0 +1,100 @@
+@args sirius.web.health.Cluster cluster, sirius.web.health.Metrics metrics, boolean all
+@extends(view.system.page.html, title: ("["+cluster.getClusterState()+"/+"+cluster.getNodeState()+"] "+product+" - Status"))
+@section(head) {
+        <style>
+            .GRAY {
+                color: #555555;
+            }
+            .GREEN {
+                color: #168d12;
+            }
+            .RED {
+                color: #9f3d33;
+            }
+            .YELLOW {
+                color: rgb(209, 170, 0);
+            }
+            .big {
+                font-size: 24pt;
+                line-height: 30pt;
+                font-weight: bold;
+            }
+        </style>
+}
+<div class="pull-right">
+    @if (all) {
+        <a href="@prefix/system/state">Show Less</a> |
+        <a href="@prefix/system/state?all=true">Refresh</a>
+    } else {
+        <a href="@prefix/system/state?all=true">Show More</a> |
+        <a href="@prefix/system/state">Refresh</a>
+    }
+</div>
+<h1>System State <small>@ctx.getNodeName()</small></h1>
+<div class="well">
+    <div class="row">
+        <div class="span3 big">Node State</div>
+        <div class="span2 @cluster.getNodeState() big">@cluster.getNodeState()</div>
+        <div class="span3 big">Cluster State</div>
+        <div class="span2 @cluster.getClusterState() big">@cluster.getClusterState()</div>
+    </div>
+    <div class="row">
+        <div class="span11">
+            <div style="text-align: center">
+                Uptime: @NLS.convertDuration(sirius.kernel.Sirius.getUptimeInMilliseconds(), true, false)
+            </div>
+            <table class="table">
+                @for(sirius.web.health.Metric m : metrics.getMetrics()) {
+                @if (all || m.getState() != sirius.web.health.MetricState.GRAY) {
+                <tr class="@m.getState()">
+                    <td style="overflow: hidden">
+                        @m.getName()
+                    </td>
+                    <td style="text-align: right; overflow: hidden">
+                        @m.getValueAsString()
+                    </td>
+                </tr>
+                }
+                }
+            </table>
+        </div>
+    </div>
+</div>
+@if (!cluster.getNodeInfos().isEmpty()) {
+    <h1>Cluster</h1>
+    @for(sirius.web.health.NodeInfo info : cluster.getNodeInfos()) {
+        <div>
+            <div class="well">
+                <h2>
+                    <span class="@info.getNodeState()">@info.getName()</span> <small>@info.getEndpoint()</small>
+                </h2>
+                <div style="text-align: center">
+                    Last Ping: @NLS.toUserString(info.getLastPing())<br />
+                    Uptime: @info.getUptime()<br />
+                </div>
+                @if (info.getPingFailures() > 0) {
+                    <div style="text-align: center; font-weight: bold">
+                        Ping Failures: @info.getPingFailures()
+                    </div>
+                }
+                <br />
+                @if (!info.getMetrics().isEmpty()) {
+                    <table class="table">
+                        @for(sirius.web.health.Metric m : info.getMetrics()) {
+                            @if (all || m.getState() != sirius.web.health.MetricState.GRAY) {
+                                <tr class="@m.getState()">
+                                    <td style="overflow: hidden">
+                                        @m.getName()
+                                    </td>
+                                    <td style="text-align: right; overflow: hidden">
+                                        @m.getValueAsString()
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </table>
+                }
+            </div>
+        </div>
+    }
+}

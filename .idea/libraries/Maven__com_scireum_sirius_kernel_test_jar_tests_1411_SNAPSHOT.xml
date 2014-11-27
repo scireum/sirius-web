@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: com.scireum:sirius-kernel:test-jar:tests:1411-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/scireum/sirius-kernel/1411-SNAPSHOT/sirius-kernel-1411-SNAPSHOT-tests.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/com/scireum/sirius-kernel/1411-SNAPSHOT/sirius-kernel-1411-SNAPSHOT-test-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/scireum/sirius-kernel/1411-SNAPSHOT/sirius-kernel-1411-SNAPSHOT-test-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

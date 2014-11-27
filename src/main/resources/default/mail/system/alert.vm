@@ -1,0 +1,26 @@
+$app on $node is reporting:
+------------------------------------------------------------------------------
+Node-State:    $nodeState
+Cluster-State: $clusterState
+------------------------------------------------------------------------------
+
+LOCAL NODE
+==============================================================================
+#foreach($m in $metrics.metrics)
+$strings.apply("%-8s %-50s %18s", $m.getState(), $m.getName(), $m.getValueAsString())
+#end
+------------------------------------------------------------------------------
+#if ($nodes.size() > 0)
+
+CLUSTER
+==============================================================================
+#foreach($n in $nodes)
+
+$!n.name() - $n.getNodeState() [Last Ping: $nls.toUserString($n.lastPing, true) / Failures: $n.pingFailures()]
+------------------------------------------------------------------------------
+#foreach($m in $n.metrics)
+$strings.apply("%-8s %-50s %18s", $m.getState(), $m.getName(), $m.getValueAsString())
+#end
+------------------------------------------------------------------------------
+#end
+#end

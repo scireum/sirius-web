@@ -1,0 +1,12 @@
+## Translates the given key into the users language.
+#macro(nls $key)${nls.get($key)}#end
+
+## Converts the given value to a string representation matching the users locale settings.
+#macro(string $key)${nls.toUserString($key)}#end
+
+## Converts new lines to <br> tags
+#macro(nl2br $content)${helper.nl2br($content)}#end
+
+## Includes all registered extensions for the given key
+## see Content.getExtensions
+#macro(includeExtensions $key)#foreach($ext in $sirius.web.templates.Content.getExtensions($key))#parse($ext)#end#end

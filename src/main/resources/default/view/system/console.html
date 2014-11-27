@@ -1,0 +1,30 @@
+@extends(view.system.page.html, title: product+" - Console"))
+@section(head) {
+    <script language="javascript" type="text/javascript" src="@prefix/assets/system/js/jquery.terminal.js"></script>
+    <link href="@prefix/assets/system/css/jquery.terminal.css" rel="stylesheet" />
+    <script>
+        $(document).ready(function ($) {
+            $('#term').terminal('@prefix/service/json/system/console', {
+                greetings: '@product / @version - Type "help" for a list of available commands.'
+            });
+        });
+    </script>
+    <style>
+        body {
+            background: url('@prefix/assets/system/images/low_contrast_linen.png');
+        }
+
+        .terminal, .terminal .terminal-output, .terminal .terminal-output div, .terminal .terminal-output div div,
+        .cmd, .terminal .cmd span, .terminal .cmd div
+        {
+            background-color: inherit;
+            color: #CCCCCC;
+            font-family: "Consolas", "Courier New", monospace;
+            font-size: 16px;
+        }
+    </style>
+}
+
+@section(maindiv) {
+}
+<div id="term"></div>

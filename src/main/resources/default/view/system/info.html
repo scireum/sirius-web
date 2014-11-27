@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>@product - Info</title>
+        <link rel="stylesheet" media="screen" href="@prefix/assets/system/css/bootstrap.css">
+    </head>
+    <body>
+        <div class="container">
+            <h1>Base</h1>
+            <div class="">
+                <table class="table table-bordered">
+                    <tr>
+                        <td>Node Name</td>
+                        <td style="text-align: right">
+                            @ctx.getNodeName()
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Remote IP</td>
+                        <td style="text-align: right">
+                            @call.getRemoteIP()
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Trused IP</td>
+                        <td style="text-align: right">
+                            @call.isTrusted()
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <h1>Headers</h1>
+            <div class="">
+                <table class="table table-bordered">
+                    @for(String name : call.getRequest().headers().names()) {
+                    <tr>
+                        <td>@name</td>
+                        <td style="text-align: right">
+                            @for(String value : call.getRequest().headers().getAll(name)) {
+                                <div style="word-wrap: break-word; word-break: break-all">@value</div>
+                            }
+                        </td>
+                    </tr>
+                    }
+                </table>
+            </div>
+
+            @if (!call.getCookies().isEmpty()) {
+                <h1>Cookies</h1>
+                <div class="">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Name</th>
+                            <th style="text-align: right">
+                                Value
+                            </th>
+                            <th>Secure</th>
+                            <th>HTTP only</th>
+                        </tr>
+                        @for(io.netty.handler.codec.http.Cookie cookie : call.getCookies()) {
+                        <tr>
+                            <td>@cookie.getName()</td>
+                            <td style="text-align: right; word-wrap: break-word; word-break: break-all">
+                                @cookie.getValue()
+                            </td>
+                            <td>@cookie.isSecure()</td>
+                            <td>@cookie.isHttpOnly()</td>
+                        </tr>
+                        }
+                    </table>
+                </div>
+            }
+
+            @if (!call.getSessionKeys().isEmpty()) {
+                <h1>Client Session</h1>
+                <div class="">
+                    <table class="table table-bordered">
+                        @for(String name : call.getSessionKeys()) {
+                        <tr>
+                            <td>@name</td>
+                            <td style="text-align: right">
+                                @call.getSessionValue(name)
+                            </td>
+                        </tr>
+                        }
+                    </table>
+                </div>
+            }
+
+            <h1>Server Session</h1>
+            <div class="">
+                <table class="table table-bordered">
+                    <tr>
+                        <td>Session-ID</td>
+                        <td style="text-align: right">
+                            @if (call.getServerSession(false).isPresent()) {
+                                @call.getServerSession().getId()
+                            } else {
+                                -
+                            }
+                        </td>
+                    </tr>
+                    @if (call.getServerSession(false).isPresent()) {
+                        <tr>
+                            <td>Created At</td>
+                            <td style="text-align: right">
+                                @NLS.toUserString(new java.util.Date(call.getServerSession().getCreationTime()))
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Max Inactivity</td>
+                            <td style="text-align: right">
+                                @NLS.convertDuration(call.getServerSession().getMaxInactiveInterval() * 1000)
+                            </td>
+                        </tr>
+                        @for(String name : call.getServerSession().getKeys()) {
+                        <tr>
+                            <td>@name</td>
+                            <td style="text-align: right">
+                                @call.getServerSession().getValue(name)
+                            </td>
+                        </tr>
+                        }
+                    }
+                </table>
+            </div>
+            <div class="row">
+                <div class="pull-right">
+                    <a href="javascript:window.print();">Print</a>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

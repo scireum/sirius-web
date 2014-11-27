@@ -1,0 +1,36 @@
+@args List errors
+@import org.apache.log4j.Level
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>@product - System Errors</title>
+        <link rel="stylesheet" media="screen" href="@prefix/assets/system/css/bootstrap.css">
+    </head>
+    <body>
+        <div class="container">
+            <h1>System Errors</h1>
+            <table class="table table-bordered">
+                @for(sirius.kernel.health.Incident error : errors) {
+                    <tr>
+                        <td>@error.getTimestampAsString()</td>
+                        <td>@error.getCategory()</td>
+                        <td>@error.getLocation()</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">
+                            <pre>
+                                @NLS.toMachineString(error.getException())
+                            </pre>
+                            <h4>Context:</h4>
+                            <ul>
+                                @for(sirius.kernel.commons.Tuple entry : error.getMDC()) {
+                                    <li><b>@entry.getFirst()</b>: @entry.getSecond()</li>
+                                }
+                            </ul>
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </body>
+</html>
