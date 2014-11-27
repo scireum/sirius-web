@@ -43,6 +43,7 @@ Ende
         def result = handler.getContentAsStrings()
         then:
         result == expected
+        b.release()
         where:
         input << [emptyInput, shortInput, longInput]
         expected << [emptyResult, shortResult, longResult]
