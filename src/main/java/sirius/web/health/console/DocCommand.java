@@ -11,8 +11,8 @@ package sirius.web.health.console;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.Injector;
 import sirius.kernel.di.std.Register;
-import sirius.kernel.nls.NLS;
 
+import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
 
 /**
@@ -25,7 +25,7 @@ import java.lang.reflect.Method;
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01
  */
-@Register(name = "doc")
+@Register
 public class DocCommand implements Command {
 
     @Override
@@ -35,17 +35,21 @@ public class DocCommand implements Command {
             output.line("No class name given. Try: doc <classname>");
             return;
         }
-        Injector.getAllLoadedClasses().stream().filter(c -> c.getName().toLowerCase().contains(name.asString().toLowerCase())).forEach(c -> {
-            output.line(c.getName());
-            output.separator();
-            for(Method m : c.getMethods()) {
-                output.line(m.toString());
-            }
-            output.blankLine();
-        });
+        Injector.getAllLoadedClasses()
+                .stream()
+                .filter(c -> c.getName().toLowerCase().contains(name.asString().toLowerCase()))
+                .forEach(c -> {
+                    output.line(c.getName());
+                    output.separator();
+                    for (Method m : c.getMethods()) {
+                        output.line(m.toString());
+                    }
+                    output.blankLine();
+                });
     }
 
     @Override
+    @Nonnull
     public String getName() {
         return "doc";
     }

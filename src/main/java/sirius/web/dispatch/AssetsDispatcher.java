@@ -23,9 +23,9 @@ import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
+import sirius.kernel.info.Product;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
-import sirius.web.http.WebServer;
 import sirius.web.security.UserContext;
 import sirius.web.templates.Content;
 import sirius.web.templates.Resolver;
@@ -198,7 +198,10 @@ public class AssetsDispatcher implements WebDispatcher {
      */
     private File getCacheDirFile() {
         if (cacheDirFile == null) {
-            File tmpDir = new File(System.getProperty("java.io.tmpdir"), Sirius.getProductName() + "_" + CallContext.getCurrent().getNodeName() + "_" + cacheDir);
+            File tmpDir = new File(System.getProperty("java.io.tmpdir"),
+                                   Product.getProduct()
+                                          .getName()
+                                          .replaceAll("[a-zA-Z0-9\\-]", "_") + "_" + CallContext.getNodeName() + "_" + cacheDir);
             tmpDir.mkdirs();
             cacheDirFile = tmpDir;
         }

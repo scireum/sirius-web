@@ -11,6 +11,8 @@ package sirius.web.health.console;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.nls.NLS;
 
+import javax.annotation.Nonnull;
+
 /**
  * Console command to invoke the garbage collector.
  * <p>
@@ -20,7 +22,7 @@ import sirius.kernel.nls.NLS;
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01
  */
-@Register(name = "gc")
+@Register
 public class GCCommand implements Command {
 
     @Override
@@ -39,6 +41,7 @@ public class GCCommand implements Command {
     }
 
     @Override
+    @Nonnull
     public String getName() {
         return "gc";
     }

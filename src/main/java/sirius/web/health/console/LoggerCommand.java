@@ -12,13 +12,15 @@ import org.apache.log4j.Level;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Log;
 
+import javax.annotation.Nonnull;
+
 /**
  * Permits to change the level of a logger at runtime.
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/06
  */
-@Register(name = "logger")
+@Register
 public class LoggerCommand implements Command {
 
     @Override
@@ -40,6 +42,7 @@ public class LoggerCommand implements Command {
     }
 
     @Override
+    @Nonnull
     public String getName() {
         return "logger";
     }

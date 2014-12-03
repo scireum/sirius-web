@@ -14,13 +14,15 @@ import sirius.kernel.nls.NLS;
 import sirius.web.http.ActiveHTTPConnection;
 import sirius.web.http.WebServer;
 
+import javax.annotation.Nonnull;
+
 /**
  * Console command which reports statistics for the web server
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01
  */
-@Register(name = "http")
+@Register
 public class HTTPCommand implements Command {
 
 
@@ -82,6 +84,7 @@ public class HTTPCommand implements Command {
     }
 
     @Override
+    @Nonnull
     public String getName() {
         return "http";
     }

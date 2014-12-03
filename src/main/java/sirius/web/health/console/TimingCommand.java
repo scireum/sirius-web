@@ -14,6 +14,8 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Average;
 import sirius.kernel.health.Microtiming;
 
+import javax.annotation.Nonnull;
+
 /**
  * Console command which enables/disables the all mighty Micro-Timing framework.
  * <p>
@@ -23,7 +25,7 @@ import sirius.kernel.health.Microtiming;
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01
  */
-@Register(name = "timing")
+@Register
 public class TimingCommand implements Command {
 
     @Override
@@ -64,7 +66,7 @@ public class TimingCommand implements Command {
         long delta = System.currentTimeMillis() - Microtiming.getLastReset();
         Microtiming.getTimings()
                    .stream()
-                   .collect(MultiMap.groupingBy(MultiMap::create, t -> t.getCategory()))
+                   .collect(MultiMap.groupingBy(MultiMap::create, Microtiming.Timing::getCategory))
                    .stream()
                    .forEach(c -> {
                        output.line(c.getKey());
@@ -88,6 +90,7 @@ public class TimingCommand implements Command {
     }
 
     @Override
+    @Nonnull
     public String getName() {
         return "timing";
     }

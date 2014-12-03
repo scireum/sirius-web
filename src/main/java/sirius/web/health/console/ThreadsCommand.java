@@ -11,6 +11,7 @@ package sirius.web.health.console;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.di.std.Register;
 
+import javax.annotation.Nonnull;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
@@ -22,7 +23,7 @@ import java.util.Map;
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01
  */
-@Register(name = "threads")
+@Register
 public class ThreadsCommand implements Command {
 
     private ThreadMXBean t = ManagementFactory.getThreadMXBean();
@@ -66,6 +67,7 @@ public class ThreadsCommand implements Command {
     }
 
     @Override
+    @Nonnull
     public String getName() {
         return "threads";
     }

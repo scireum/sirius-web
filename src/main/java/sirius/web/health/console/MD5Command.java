@@ -11,13 +11,15 @@ package sirius.web.health.console;
 import com.google.common.hash.Hashing;
 import sirius.kernel.di.std.Register;
 
+import javax.annotation.Nonnull;
+
 /**
  * Console command which computes an MD5 hash of a given input.
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01
  */
-@Register(name = "md5")
+@Register
 public class MD5Command implements Command {
 
     @Override
@@ -32,6 +34,7 @@ public class MD5Command implements Command {
     }
 
     @Override
+    @Nonnull
     public String getName() {
         return "md5";
     }

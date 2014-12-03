@@ -13,13 +13,15 @@ import sirius.kernel.cache.CacheManager;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Register;
 
+import javax.annotation.Nonnull;
+
 /**
  * Console command which reports statistics for all caches.
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01
  */
-@Register(name = "cache")
+@Register
 public class CacheCommand implements Command {
 
     @Override
@@ -44,6 +46,7 @@ public class CacheCommand implements Command {
     }
 
     @Override
+    @Nonnull
     public String getName() {
         return "cache";
     }

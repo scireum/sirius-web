@@ -12,13 +12,15 @@ import sirius.kernel.async.Async;
 import sirius.kernel.async.AsyncExecutor;
 import sirius.kernel.di.std.Register;
 
+import javax.annotation.Nonnull;
+
 /**
  * Console command which reports statistics for all known executors.
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
  */
-@Register(name = "async")
+@Register
 public class AsyncInfoCommand implements Command {
 
     @Override
@@ -38,6 +40,7 @@ public class AsyncInfoCommand implements Command {
     }
 
     @Override
+    @Nonnull
     public String getName() {
         return "async";
     }

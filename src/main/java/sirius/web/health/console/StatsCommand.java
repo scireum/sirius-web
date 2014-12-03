@@ -13,13 +13,15 @@ import sirius.kernel.di.std.Register;
 import sirius.web.health.Metric;
 import sirius.web.health.Metrics;
 
+import javax.annotation.Nonnull;
+
 /**
  * Console command which reports all available system metrics.
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01
  */
-@Register(name = "stats")
+@Register
 public class StatsCommand implements Command {
 
     @Part
@@ -36,6 +38,7 @@ public class StatsCommand implements Command {
     }
 
     @Override
+    @Nonnull
     public String getName() {
         return "stats";
     }

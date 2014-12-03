@@ -24,6 +24,7 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
+import sirius.kernel.info.Product;
 import sirius.kernel.timer.EveryMinute;
 import sirius.web.mails.MailService;
 
@@ -309,7 +310,7 @@ public class Cluster implements EveryMinute {
 
     private void alertClusterFailure(boolean firstAlert) {
         Context ctx = Context.create()
-                             .set("app", Sirius.getProductName())
+                             .set("app", Product.getProduct().toString())
                              .set("node", CallContext.getNodeName())
                              .set("nodeState", nodeState.name())
                              .set("clusterState", clusterState.name())

@@ -8,6 +8,8 @@
 
 package sirius.web.health.console;
 
+import sirius.kernel.di.std.Named;
+
 import java.io.PrintWriter;
 
 /**
@@ -16,7 +18,7 @@ import java.io.PrintWriter;
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01
  */
-public interface Command {
+public interface Command extends Named {
 
     /**
      * Encapsulates the output functionality used by commands to render their output.
@@ -75,13 +77,6 @@ public interface Command {
      * @param params provides the parameters entered in the console
      */
     void execute(Output output, String... params) throws Exception;
-
-    /**
-     * Returns the name of the command.
-     *
-     * @return the name of the command
-     */
-    String getName();
 
     /**
      * Returns a short description of the command.

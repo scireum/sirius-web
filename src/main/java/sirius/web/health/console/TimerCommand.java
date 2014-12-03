@@ -12,6 +12,8 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.timer.TimerService;
 
+import javax.annotation.Nonnull;
+
 /**
  * Console command which reports the last execution of the timer tasks.
  * <p>It also permits to call an timer out of schedule</p>
@@ -19,7 +21,7 @@ import sirius.kernel.timer.TimerService;
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01
  */
-@Register(name = "timer")
+@Register
 public class TimerCommand implements Command {
 
     @Part
@@ -57,6 +59,7 @@ public class TimerCommand implements Command {
     }
 
     @Override
+    @Nonnull
     public String getName() {
         return "timer";
     }

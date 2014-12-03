@@ -8,45 +8,39 @@
 
 package sirius.web.health.console;
 
-import sirius.kernel.di.GlobalContext;
-import sirius.kernel.di.std.Context;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.info.Product;
 
 import javax.annotation.Nonnull;
 
 /**
- * Console command which generates a help screen listing all commands.
+ * Console command which reports all known modules ({@link sirius.kernel.info.Module}).
  *
  * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
+ * @since 2014/12
  */
 @Register
-public class HelpCommand implements Command {
-    @Context
-    private GlobalContext ctx;
+public class ModulesCommand implements Command {
 
     @Override
     public void execute(Output output, String... params) throws Exception {
         output.blankLine();
-        output.apply("C O N S O L E  -  %s", Product.getProduct());
+        output.line(Product.getProduct().toString());
         output.blankLine();
-        output.apply("%-20s %s", "CMD", "DESCRIPTION");
+        output.line("MODULES");
         output.separator();
-        for (Command cmd : ctx.getParts(Command.class)) {
-            output.apply("%-20s %s", cmd.getName(), cmd.getDescription());
-        }
+        Product.getModules().stream().forEach(m -> output.line(m.toString()));
         output.separator();
     }
 
     @Override
     @Nonnull
     public String getName() {
-        return "help";
+        return "modules";
     }
 
     @Override
     public String getDescription() {
-        return "Generates this help screen.";
+        return "Reports version of the product and all installed modules.";
     }
 }

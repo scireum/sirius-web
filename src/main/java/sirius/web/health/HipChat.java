@@ -8,16 +8,16 @@
 
 package sirius.web.health;
 
-import sirius.kernel.Sirius;
+import sirius.kernel.Lifecycle;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.Lifecycle;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.ExceptionHandler;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Incident;
+import sirius.kernel.info.Product;
 import sirius.kernel.xml.Outcall;
 
 import java.net.URL;
@@ -58,15 +58,13 @@ public class HipChat implements ExceptionHandler, Lifecycle {
     @Override
     public void handle(Incident incident) throws Exception {
         sendMessage("incident",
-                    Strings.apply("%s [%s]",
-                                  incident.getException().getMessage(), incident.getLocation()),
+                    Strings.apply("%s [%s]", incident.getException().getMessage(), incident.getLocation()),
                     Color.RED,
-                    true
-        );
+                    true);
     }
 
     public static enum Color {
-        YELLOW, RED, GREEN, PURPLE, GRAY;
+        YELLOW, RED, GREEN, PURPLE, GRAY
     }
 
     @ConfigValue("health.hipchat.messageUrl")
@@ -130,12 +128,7 @@ public class HipChat implements ExceptionHandler, Lifecycle {
             ctx.put("message_format", "html");
             ctx.put("room_id", room);
             ctx.put("message",
-                    Strings.apply("%s (%s) on %s: %s",
-                                  Sirius.getProductName(),
-                                  Sirius.getProductVersion(),
-                                  CallContext.getNodeName(),
-                                  message)
-            );
+                    Strings.apply("%s on %s: %s", Product.getProduct().toString(), CallContext.getNodeName(), message));
             ctx.put("notify", notify ? 1 : 0);
             Outcall call = new Outcall(new URL(messageUrl), ctx);
             call.getData();

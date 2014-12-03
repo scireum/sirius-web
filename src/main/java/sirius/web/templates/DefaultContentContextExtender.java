@@ -5,8 +5,10 @@ import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
 
+import javax.annotation.Nonnull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -24,11 +26,11 @@ public class DefaultContentContextExtender implements ContentContextExtender {
     private GlobalContext ctx;
 
     @Override
-    public void extend(Context context) {
+    public void extend(@Nonnull Context context) {
         context.put("ctx", ctx);
         context.put("config", Sirius.getConfig());
-        context.put("product", Sirius.getProductName());
-        context.put("version", Sirius.getProductVersion());
+        context.put("product", Product.getProduct().getName());
+        context.put("version", Product.getProduct().getDetails());
         context.put("nls", NLS.class);
         context.put("strings", Strings.class);
         context.put("log", Content.LOG);

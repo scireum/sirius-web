@@ -27,6 +27,7 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Log;
+import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
 import sirius.web.http.WebContext;
 import sirius.web.security.UserContext;
@@ -91,12 +92,14 @@ public class RythmConfig implements Lifecycle {
         Map<String, Object> config = Maps.newTreeMap();
         // We always put Rythm in dev mode to support dynamic reloading of templates...
         config.put("rythm.engine.mode", "dev");
-        File tmpDir = new File(System.getProperty("java.io.tmpdir"), Sirius.getProductName() + "_" + CallContext.getCurrent().getNodeName() + "_rythm");
+        File tmpDir = new File(System.getProperty("java.io.tmpdir"),Product.getProduct().getName().replaceAll("[a-zA-Z0-9\\-]","_") + "_" + CallContext.getNodeName() + "_rythm");
         tmpDir.mkdirs();
         if (Sirius.isDev()) {
-            for (File file : tmpDir.listFiles()) {
-                if (file.getName().endsWith(".java") || file.getName().endsWith(".rythm")) {
-                    file.delete();
+            if (tmpDir.listFiles() != null) {
+                for (File file : tmpDir.listFiles()) {
+                    if (file.getName().endsWith(".java") || file.getName().endsWith(".rythm")) {
+                        file.delete();
+                    }
                 }
             }
         }
@@ -194,7 +197,6 @@ public class RythmConfig implements Lifecycle {
             map.put("user", UserContext.class);
             map.put("prefix", String.class);
             map.put("product", String.class);
-            map.put("version", String.class);
             map.put("year", int.class);
             map.put("detailedVersion", String.class);
             map.put("isDev", Boolean.class);
@@ -219,10 +221,9 @@ public class RythmConfig implements Lifecycle {
             template.__setRenderArg("ctx", ctx);
             template.__setRenderArg("user", ctx.get(UserContext.class));
             template.__setRenderArg("prefix", wc.getContextPrefix());
-            template.__setRenderArg("product", Sirius.getProductName());
-            template.__setRenderArg("version", Sirius.getProductVersion());
+            template.__setRenderArg("product", Product.getProduct().getName());
             template.__setRenderArg("year", LocalDate.now().getYear());
-            template.__setRenderArg("detailedVersion", Sirius.getProductVersionDetails());
+            template.__setRenderArg("detailedVersion", Product.getProduct().getDetails());
             template.__setRenderArg("isDev", Sirius.isDev());
             template.__setRenderArg("call", wc);
             template.__setRenderArg("template", url);
