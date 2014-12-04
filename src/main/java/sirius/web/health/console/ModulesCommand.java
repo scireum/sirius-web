@@ -28,7 +28,12 @@ public class ModulesCommand implements Command {
         output.blankLine();
         output.line("MODULES");
         output.separator();
-        Product.getModules().stream().forEach(m -> output.line(m.toString()));
+        output.blankLine();
+        Product.getModules().stream().forEach(m -> {
+            output.line(m.getName());
+            output.line(m.getDetails());
+            output.blankLine();
+        });
         output.separator();
     }
 
