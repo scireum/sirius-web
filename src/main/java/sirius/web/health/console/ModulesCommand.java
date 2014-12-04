@@ -24,7 +24,6 @@ public class ModulesCommand implements Command {
 
     @Override
     public void execute(Output output, String... params) throws Exception {
-        output.blankLine();
         output.line(Product.getProduct().toString());
         output.blankLine();
         output.line("MODULES");
