@@ -33,6 +33,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
+ * EXPERIMENTAL CLASS - NOT STABLE YET!
+ *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/11
  */

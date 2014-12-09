@@ -360,7 +360,7 @@ public class WebContext {
     }
 
     /**
-     * Returns a value or parameter supplied by the  request.
+     * Returns a value or parameter supplied by the request.
      * <p>
      * This method first checks if an attribute with the given key exists. If not, the query string is scanned. After
      * that, the posted content is looked through to find an appropriate value.
@@ -398,6 +398,25 @@ public class WebContext {
             }
         }
         return Value.of(null);
+    }
+
+    /**
+     * Returns the first non empty value for the given keys.
+     * <p>
+     * This is a boilerplate method for {@link #get(String)} in case the same value could be sent via different
+     * parameter names.
+     *
+     * @param keys the keys to check
+     * @return the first non empty value or an empty value if no data was found for all given keys.
+     */
+    public Value getFirstFilled(String... keys) {
+        for (String key : keys) {
+            Value result = get(key);
+            if (result.isFilled()) {
+                return result;
+            }
+        }
+        return Value.EMPTY;
     }
 
     /**
