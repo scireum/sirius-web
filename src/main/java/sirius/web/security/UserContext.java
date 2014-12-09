@@ -128,23 +128,12 @@ public class UserContext {
         } else {
             setCurrentScope(ScopeInfo.DEFAULT_SCOPE);
         }
-        if (ctx != null && ctx.isValid()) {
-            UserManager manager = getUserManager();
-            setCurrentUser(manager.bindToRequest(ctx));
-        } else {
-            setCurrentUser(UserInfo.NOBODY);
-        }
     }
 
     /*
      * Loads the current user from the given web context.
      */
     private void bindUserToRequest(WebContext ctx) {
-        if (ctx != null && ctx.isValid() && detector != null) {
-            setCurrentScope(detector.detectScope(ctx));
-        } else {
-            setCurrentScope(ScopeInfo.DEFAULT_SCOPE);
-        }
         if (ctx != null && ctx.isValid()) {
             UserManager manager = getUserManager();
             setCurrentUser(manager.bindToRequest(ctx));
