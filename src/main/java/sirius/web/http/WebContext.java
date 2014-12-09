@@ -727,7 +727,7 @@ public class WebContext {
      * @return <tt>true</tt> if this is an HTTPS request, <tt>false</tt> otherwise
      */
     public boolean isSSL() {
-        return getHeaderValue("X-Forwarded-Proto").asBoolean(false);
+        return getHeaderValue("X-Forwarded-Proto").equalsIgnoreCase("https");
     }
 
     /**
