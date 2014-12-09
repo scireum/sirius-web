@@ -120,9 +120,26 @@ public class UserContext {
     }
 
     /*
-     * Loads the current user and scope from the given web context.
+     * Loads the current scope from the given web context.
      */
-    private void bindToRequest(WebContext ctx) {
+    private void bindScopeToRequest(WebContext ctx) {
+        if (ctx != null && ctx.isValid() && detector != null) {
+            setCurrentScope(detector.detectScope(ctx));
+        } else {
+            setCurrentScope(ScopeInfo.DEFAULT_SCOPE);
+        }
+        if (ctx != null && ctx.isValid()) {
+            UserManager manager = getUserManager();
+            setCurrentUser(manager.bindToRequest(ctx));
+        } else {
+            setCurrentUser(UserInfo.NOBODY);
+        }
+    }
+
+    /*
+     * Loads the current user from the given web context.
+     */
+    private void bindUserToRequest(WebContext ctx) {
         if (ctx != null && ctx.isValid() && detector != null) {
             setCurrentScope(detector.detectScope(ctx));
         } else {
@@ -251,7 +268,7 @@ public class UserContext {
 
     public UserInfo getUser() {
         if (currentUser == null) {
-            bindToRequest(CallContext.getCurrent().get(WebContext.class));
+            bindUserToRequest(CallContext.getCurrent().get(WebContext.class));
         }
         return currentUser;
     }
@@ -288,7 +305,7 @@ public class UserContext {
 
     public ScopeInfo getScope() {
         if (currentScope == null) {
-            bindToRequest(CallContext.getCurrent().get(WebContext.class));
+            bindScopeToRequest(CallContext.getCurrent().get(WebContext.class));
         }
         return currentScope;
     }
