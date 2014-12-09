@@ -94,7 +94,7 @@ public class OTPVerifier {
         // We check several codes to compensate for clock drift.
         int window = numberOfGraceIntervals;
         for (int i = -window; i <= window; ++i) {
-            String hash = String.valueOf(extractOTPCode(decodedKey, t + i, 6));
+            String hash = String.valueOf(extractOTPCode(decodedKey, t + i));
             if (Strings.areEqual(hash, code)) {
                 return true;
             }
@@ -104,10 +104,27 @@ public class OTPVerifier {
         return false;
     }
 
+    /**
+     * Computes an OTP code for the given secret and current interval.
+     *
+     * @param secret the shared secret of the user to compute a code for.
+     * @return a valid OTP code for the current time interval
+     */
+    public String computeCode(String secret) {
+        byte[] decodedKey = BaseEncoding.base32().decode(secret);
+        long t = System.currentTimeMillis() / timeInterval.toMillis();
+        return extractOTPCode(decodedKey, t);
+    }
+
+    /*
+     * An OTP code always has 6 digits...
+     */
+    private static final int CODE_LENGTH = 6;
+
     /*
      * Extracts the given code the given code by applying a HmacSHA1 on the time interval and the given secret key
      */
-    private String extractOTPCode(byte[] key, long t, int nrOfDigits) {
+    private String extractOTPCode(byte[] key, long t) {
         try {
             byte[] data = new byte[8];
             long value = t;
@@ -132,10 +149,10 @@ public class OTPVerifier {
             }
 
             truncatedHash &= 0x7FFFFFFF;
-            truncatedHash %= (int) Math.pow(10, nrOfDigits);
+            truncatedHash %= (int) Math.pow(10, CODE_LENGTH);
             String result = String.valueOf(truncatedHash);
 
-            while (result.length() < nrOfDigits) {
+            while (result.length() < CODE_LENGTH) {
                 result = "0" + result;
             }
 
