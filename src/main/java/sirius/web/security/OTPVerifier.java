@@ -14,6 +14,7 @@ import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 
+import javax.annotation.Nonnull;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.InvalidKeyException;
@@ -60,6 +61,7 @@ public class OTPVerifier {
      *
      * @return a secret key to be used as input for <tt>checkCode</tt> and <tt>getAsAuthURL</tt>
      */
+    @Nonnull
     public String generateSharedSecret() {
         byte[] buffer = new byte[10];
         new SecureRandom().nextBytes(buffer);
@@ -73,6 +75,7 @@ public class OTPVerifier {
      * @return a special URL used by popular apps like Google Authenticator for "automatic" configuration of the
      * account
      */
+    @Nonnull
     public String getAsAuthURL(String account, String secret) {
         return "otpauth://totp/" + account.replace(" ", "_") + "?secret=" + Strings.urlEncode(secret);
     }
@@ -85,6 +88,12 @@ public class OTPVerifier {
      * @return <tt>true</tt> if the given OTP is currently valid, <tt>false</tt> otherwise
      */
     public boolean checkCode(String secret, String code) {
+        if (Strings.isEmpty(secret)) {
+            return false;
+        }
+        if (Strings.isEmpty(code)) {
+            return false;
+        }
         byte[] decodedKey = BaseEncoding.base32().decode(secret);
 
         // Try timebased code...
@@ -110,7 +119,8 @@ public class OTPVerifier {
      * @param secret the shared secret of the user to compute a code for.
      * @return a valid OTP code for the current time interval
      */
-    public String computeCode(String secret) {
+    @Nonnull
+    public String computeCode(@Nonnull String secret) {
         byte[] decodedKey = BaseEncoding.base32().decode(secret);
         long t = System.currentTimeMillis() / timeInterval.toMillis();
         return extractOTPCode(decodedKey, t);
