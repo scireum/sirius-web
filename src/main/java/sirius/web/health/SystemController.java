@@ -13,6 +13,7 @@ import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Context;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.MemoryBasedHealthMonitor;
 import sirius.kernel.nls.NLS;
@@ -21,6 +22,7 @@ import sirius.web.controller.Controller;
 import sirius.web.controller.Page;
 import sirius.web.controller.Routed;
 import sirius.web.http.WebContext;
+import sirius.web.http.session.ServerSession;
 import sirius.web.security.Permission;
 
 import java.util.List;
@@ -98,21 +100,27 @@ public class SystemController implements Controller {
 
     @Routed("/system/ok")
     public void ok(WebContext ctx) {
-        ctx.respondWith().status(HttpResponseStatus.OK);
+        ctx.respondWith().direct(HttpResponseStatus.OK, "OK");
     }
 
     /**
-     * Can be used to forcefully create an error. (A NullPointerException in this case.)
+     * Can be used to forcefully create an error. (A HandledException in this case.)
      */
     @Routed("/system/fail")
     public void fail(WebContext ctx) {
-        Object n = null;
-        n.toString();
+        throw Exceptions.createHandled().withSystemErrorMessage("Forced Exception").handle();
     }
 
     @Routed("/system/info")
     public void info(WebContext ctx) {
         ctx.respondWith().template("/view/system/info.html");
+    }
+
+    @Routed("/system/reset")
+    public void reset(WebContext ctx) {
+        ctx.clearSession();
+        ctx.getServerSession(false).ifPresent(ServerSession::invalidate);
+        ctx.respondWith().direct(HttpResponseStatus.OK, "Session has been cleared...");
     }
 
     @Routed("/system/state")
