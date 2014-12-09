@@ -9,7 +9,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
   <packaging>jar</packaging>
 
   <name>SIRIUS web</name>
-  <description>Todo</description>
+  <description>Provides a modern and scalable web server as SIRIUS module</description>
 
   <url>http://www.sirius-lib.net</url>
   <licenses>
