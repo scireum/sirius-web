@@ -136,7 +136,7 @@ public class IPRange {
     public static RangeSet paraseRangeSet(String commaSeparatedListOfRanges) {
         RangeSet result = new RangeSet();
         if (Strings.isFilled(commaSeparatedListOfRanges)) {
-            result.ranges = new ArrayList<IPRange>();
+            result.ranges = Lists.newArrayList();
             for (String range : commaSeparatedListOfRanges.replace(" ", "").split("[,;]")) {
                 if (Strings.isFilled(range)) {
                     result.ranges.add(IPRange.parseRange(range.trim()));
