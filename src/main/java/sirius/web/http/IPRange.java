@@ -44,6 +44,11 @@ public class IPRange {
      */
     private BigInteger mask = COMPLETE_MASK;
 
+    /*
+     * Contains a string representation of this range
+     */
+    private String stringRepresentation = "*";
+
     /**
      * Parses a CIDR expression and returns an <tt>IPRange</tt>
      *
@@ -55,6 +60,7 @@ public class IPRange {
         IPRange result = new IPRange();
         try {
             if (Strings.isFilled(cidr)) {
+                result.stringRepresentation = cidr;
                 String[] input = cidr.split("/");
                 boolean IPv6 = cidr.contains(":");
                 result.baseIP = ipToInt(InetAddress.getByName(input[0]));
@@ -154,6 +160,11 @@ public class IPRange {
         return result;
     }
 
+    @Override
+    public String toString() {
+        return stringRepresentation;
+    }
+
     /**
      * Represents a set of IP ranges.
      * <p>
@@ -205,6 +216,11 @@ public class IPRange {
          */
         public boolean isEmpty() {
             return ranges == null;
+        }
+
+        @Override
+        public String toString() {
+            return Strings.join(ranges, ", ");
         }
     }
 
