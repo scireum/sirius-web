@@ -12,11 +12,10 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.xml.AbstractStructuredOutput;
 import sirius.kernel.xml.Attribute;
+import sirius.kernel.xml.StructuredOutput;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
-import java.util.Collection;
 
 /**
  * Encoder to generate JSON via the {@link sirius.kernel.xml.StructuredOutput} interface.
@@ -165,7 +164,7 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
     }
 
     @Override
-    public void beginResult() {
+    public StructuredOutput beginResult() {
         try {
             if (Strings.isFilled(callback)) {
                 writer.write(callback);
@@ -175,11 +174,13 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
         } catch (IOException e) {
             throw Exceptions.handle(e);
         }
+
+        return this;
     }
 
     @Override
-    public void beginResult(String name) {
-        beginResult();
+    public StructuredOutput beginResult(String name) {
+        return beginResult();
     }
 
     @Override
