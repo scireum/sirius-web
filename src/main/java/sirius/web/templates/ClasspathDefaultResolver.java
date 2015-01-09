@@ -17,7 +17,6 @@ import java.net.URL;
  * <p>
  * This is used by SIRIUS to deliver default or fallback template which then can be overridden by product specific
  * templates. Therefore this resolver has the lowest priority (999).
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/07

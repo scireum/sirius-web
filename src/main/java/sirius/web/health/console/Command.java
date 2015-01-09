@@ -60,7 +60,6 @@ public interface Command extends Named {
          * Formats the given string by replacing all parameters with the given columns.
          * <p>
          * This is a shortcut for <code>line(String.format(format, columns))</code>.
-         * </p>
          *
          * @param format  the format used to output the data.
          * @param columns the parameters supplied to the formatter
@@ -75,6 +74,9 @@ public interface Command extends Named {
      *
      * @param output provides access to the output interface used to generate output
      * @param params provides the parameters entered in the console
+     * @throws java.lang.Exception in case of an error. Throw a {@link sirius.kernel.health.HandledException} to
+     *                             signal, that all logging and handling has already been performed.
+     *                             Any other exception will be logged and reported as system error.
      */
     void execute(Output output, String... params) throws Exception;
 

@@ -100,7 +100,6 @@ public abstract class ServiceCall {
      * Returns the value provided for the given key(s).
      * <p>
      * The fist non empty value is used. If all values are empty, an empty value is returned.
-     * </p>
      *
      * @param keys the keys to check for a value
      * @return the first non empty value found for one of the given keys
@@ -117,7 +116,8 @@ public abstract class ServiceCall {
 
     /**
      * Returns the value provided for the given key(s) or reports an error if no non empty value was found.
-     * <p>The first non empty value is used. If all values are empty, an exception is thrown.</p>
+     * <p>
+     * The first non empty value is used. If all values are empty, an exception is thrown.
      *
      * @param keys the keys to check for a value
      * @return the first non empty value found for one of the given keys

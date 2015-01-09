@@ -18,12 +18,10 @@ import java.lang.annotation.Target;
  * <p>
  * Can be placed on annotation aware elements like implementations of {@link sirius.web.services.StructuredService}
  * or controller methods (implementations of {@link sirius.web.controller.Controller}).
- * </p>
  * <p>
  * Uses {@link UserContext#getCurrentUser()} to obtain the current user and calls
  * {@link sirius.web.security.UserInfo#hasPermission(String)} with the given value prepended with an exclamation mark
  * to check if the current user is authorized.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @see sirius.web.security.UserInfo#hasPermission(String)

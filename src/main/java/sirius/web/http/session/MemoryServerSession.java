@@ -27,10 +27,8 @@ import java.util.UUID;
  * <tt>http.serverMiniSessionLifetime</tt>. After the second use of the session, it will be set to 30 min (or the
  * value defined in <tt>http.serverSessionLifetime</tt>. This permits to get rid of useless "one-calL" sessions created
  * by bots like Google etc.
- * </p>
  * <p>
  * Normally the WebContext takes care of finding or creating sessions based on cookies.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @see sirius.web.http.WebContext#getServerSession()

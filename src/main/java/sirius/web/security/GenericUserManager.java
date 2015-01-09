@@ -30,7 +30,6 @@ import java.util.*;
  * Base class for various implementations of {@link sirius.web.security.UserManager}.
  * <p>
  * Provides session handling and roles expansion using profiles (security.profiles).
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/06
@@ -199,7 +198,6 @@ public abstract class GenericUserManager implements UserManager {
      * Used to write a debug log.
      * <p>
      * Automatically contains the name of the user manager and the current scope.
-     * </p>
      *
      * @param pattern the pattern used for logging
      * @param params  the parameters applied to the pattern
@@ -268,7 +266,6 @@ public abstract class GenericUserManager implements UserManager {
      * Tries to compute the roles for the given user and request.
      * <p>
      * If a server session is available, we try to load the roles from there.
-     * </p>
      *
      * @param ctx    the current request
      * @param userId the id of the user to fetch roles for
@@ -289,7 +286,6 @@ public abstract class GenericUserManager implements UserManager {
      * Attaches the given user to the current session.
      * <p>
      * This will make the login persistent across requests (if session management is enabled).
-     * </p>
      *
      * @param user the user to attach to the session
      * @param ctx  the current request to attach the user to
@@ -321,7 +317,6 @@ public abstract class GenericUserManager implements UserManager {
      * This is part of {@link #attachToSession(UserInfo, sirius.web.http.WebContext)}. As each user manager
      * decide by them self if they want to store the roles in the session or somewhere else (a cache), this
      * is extracted into its own method.
-     * </p>
      *
      * @param user the user which roles should be stored
      * @param ctx  the current request to store the roles in
@@ -369,7 +364,6 @@ public abstract class GenericUserManager implements UserManager {
      * <p>
      * This is part of {@link #detachFromSession(UserInfo, sirius.web.http.WebContext)} and the inverse
      * {@link #storeRolesForUser(UserInfo, sirius.web.http.WebContext)}.
-     * </p>
      *
      * @param user the user to remove its roles from the session
      * @param ctx  the request to remove role data from

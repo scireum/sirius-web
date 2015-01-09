@@ -20,7 +20,6 @@ import java.lang.annotation.Target;
  * <p>
  * For conflicting URIs like <code>/foo/:1</code> should handle everything but <code>/foo/special</code>, use a
  * priority below {@link PriorityCollector#DEFAULT_PRIORITY} for <code>/foo/special</code>
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/11
@@ -32,7 +31,6 @@ public @interface Routed {
      * Sets the priority used for this route.
      * <p>
      * For non-conflicting URIs, this can be skipped. For everything else, the lower the better ;-)
-     * </p>
      *
      * @return the priority used to sort the order of invocation of all rules.
      * The default is  {@link PriorityCollector#DEFAULT_PRIORITY}.
@@ -56,7 +54,6 @@ public @interface Routed {
      * A pre-dispatchable method takes care of the requests payload itself. Therefore the method must declare an
      * additional parameter of type {@link sirius.web.http.InputStreamHandler} which will be used to consume
      * the data sent via POST or PUT.
-     * </p>
      *
      * @return <tt>true</tt> if the method is pre-dispatchable, <tt>false</tt> otherwise
      */

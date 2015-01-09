@@ -13,7 +13,6 @@ package sirius.web.templates;
  * <p>
  * The instance of this class is made available as <b>helper</b>
  * via {@link sirius.web.templates.DefaultContentContextExtender}.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/09

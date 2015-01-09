@@ -22,11 +22,9 @@ import java.util.*;
  * <p>
  * Can be used to parse all present {@link sirius.web.security.Permission} and
  * {@link sirius.web.security.NotPermission} annotations for a given element.
- * </p>
  * <p>
  * Can also be used to expand a permission profile defined in <tt>security.profiles</tt> into an effective
  * list of permissions.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/06

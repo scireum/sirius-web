@@ -35,7 +35,6 @@ import java.util.List;
  * <p>
  * Provides additional information like {@link #getStatus()} or {@link #getType()} to verify what kind of
  * response was created.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/09

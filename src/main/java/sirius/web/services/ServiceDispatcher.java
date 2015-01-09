@@ -29,7 +29,6 @@ import java.util.List;
  * Processes calls to <tt>/service/[format]/service-name</tt>, by dispatching them to the appropriate
  * {@link StructuredService} and selecting the matching {@link sirius.kernel.xml.StructuredOutput} based on the given
  * <tt>format</tt> (either json or xml).
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/11

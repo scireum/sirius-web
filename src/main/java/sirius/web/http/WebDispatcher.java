@@ -14,7 +14,6 @@ package sirius.web.http;
  * Once a HTTP request is fully read by the server it is dispatched calling all available <tt>WebDispatcher</tt>
  * instances available. To provide a WebDispatch, a subclass therefore needs to wear an
  * {@link sirius.kernel.di.std.Register} annotation.
- * </p>
  * <p>
  * As the first request arrives, all dispatchers are asked for their priority (via {@link #getPriority()} and
  * then sorted according to that in an ascending manner. As default priority
@@ -22,22 +21,18 @@ package sirius.web.http;
  * once, therefore <tt>getPriority()</tt> must only return a constant value as it is never re-evaluated. By default,
  * a not found handler ({@link sirius.web.dispatch.DefaultDispatcher} is registered with 999 as priority, so higher
  * priorities will never be executed.
- * </p>
  * <p>
  * For each incoming request, the list of dispatchers is iterated and {@link #dispatch(WebContext)} is invoked
  * until one of those returns <tt>true</tt>, to signal that the request was handled.
- * </p>
  * <p>
  * If a dispatcher performs serious work or any blocking IO operation. The dispatcher must complete the request
  * in another thread (using {@link sirius.kernel.async.Async#executor(String)}
- * </p>
  * <p>
  * If a dispatcher is willing to handle all incoming data (payload of a PUT or POST request) by itself - instead of
  * just accumulating this data in memory or on disk, the {@link #preDispatch(WebContext)} method must return
  * <tt>true</tt> for a given request. This needs to install a {@link ContentHandler}. Note that no further
  * {@link #dispatch(WebContext)} will be called for a request which received a <tt>true</tt> for its call
  * to {@link #preDispatch(WebContext)}.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @see WebServerHandler
@@ -51,7 +46,6 @@ public interface WebDispatcher {
      * Dispatchers are sorted ascending (lower is better). The default priority is
      * {@link sirius.kernel.commons.PriorityCollector#DEFAULT_PRIORITY}, the max. value is 998 as everything above
      * will be handled by the {@link sirius.web.dispatch.DefaultDispatcher}.
-     * </p>
      *
      * @return the priority of the dispatcher
      */
@@ -64,11 +58,9 @@ public interface WebDispatcher {
      * This permits the handler to install an {@link ContentHandler} using {@link WebContext#setContentHandler(ContentHandler)}
      * in order to directly process the uploaded data. A request for which <tt>true</tt> was replied will <b>not</b>
      * be dispatched again once it is complete.
-     * </p>
      * <p>
      * Note that it is required to handle and consume the request in another thread as further contents are not
      * processed until this method returns.
-     * </p>
      *
      * @param ctx the request to handle
      * @return <tt>true</tt> if the request was handled by this dispatcher, <tt>false</tt> otherwise.
@@ -82,14 +74,12 @@ public interface WebDispatcher {
      * <p>
      * If the dispatcher doesn't feel responsible for handling the request, it simply returns <tt>false</tt>. Otherwise
      * if the request is being handled, <tt>true</tt> must be returned
-     * </p>
      * <p>
      * Note that no blocking operation must be performed in this method. For any complex interaction, a new thread
      * should be forked using {@link sirius.kernel.async.Async#executor(String)}. Note that even
      * {@link Response#outputStream(io.netty.handler.codec.http.HttpResponseStatus, String)} might
      * block sooner or later to limit heap memory usage - to fork a thread for any serious work besides checking
      * responsibilities for handling requests.
-     * </p>
      *
      * @param ctx the request to handle
      * @return <tt>true</tt> if the request was handled by this dispatcher, <tt>false</tt> otherwise.

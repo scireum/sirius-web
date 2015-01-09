@@ -10,14 +10,12 @@ import java.io.IOException;
  * By default the {@link WebServerHandler} consumes the complete payload of a request and offers it via
  * {@link sirius.web.http.WebContext#getContent()}. Multipart forms are directly accessible via
  * {@link WebContext#get(String)}.
- * </p>
  * <p>
  * If however, the content needs to be processed manually, a <tt>pre-dispatchable</tt> dispatcher
  * ({@link WebDispatcher#preDispatch(WebContext)}) can handle the request before the content is processed
  * completely. While being pre-dispatched {@link WebContext#setContentHandler(ContentHandler)} can be used to
  * install a content handler which takes care of the request payload. Note that
  * {@link WebDispatcher#dispatch(WebContext)} will <b>not</b> be called for requests which were pre-dispatched.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01

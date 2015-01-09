@@ -2,12 +2,10 @@ package sirius.web.templates;
 
 import com.google.common.base.Charsets;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.xml.XMLStructuredOutput;
 
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
@@ -18,7 +16,6 @@ import java.io.Reader;
  * This handler expects JavaScript as template language and passes a special variable "xml" of type
  * {@link XMLStructuredOutput} in. The name of this handler is <b>xml-js</b> the expected file extension is
  * <b>.xml.js</b>
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/02

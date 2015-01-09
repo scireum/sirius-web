@@ -15,7 +15,6 @@ import sirius.web.controller.Message;
  * <p>
  * This can be used to verify that no error messages where generated when using a template. This is probably used
  * in combination with {@link sirius.web.http.TestRequest}.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/09
@@ -62,6 +61,7 @@ public class UserContextHelper {
     /**
      * Expects that at least one error message was created which contains the given text part
      *
+     * @param textPart the expected text part to be contained in the error message
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
     public static boolean expectErrorMessageContaining(String textPart) {
@@ -90,6 +90,7 @@ public class UserContextHelper {
     /**
      * Expects that at least one success (info) message was created which contains the given text part
      *
+     * @param textPart the expected text part to be contained in the success message
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
     public static boolean expectSuccessMessageContaining(String textPart) {

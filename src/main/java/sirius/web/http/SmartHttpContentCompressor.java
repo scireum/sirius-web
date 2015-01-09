@@ -22,7 +22,6 @@ import java.util.List;
  * response.
  * <p>
  * Also it disables itself if the given content is not compressable (jpg, png) or too small (less than 1 kB).
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01

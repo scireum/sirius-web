@@ -7,7 +7,6 @@ import sirius.kernel.di.std.Priorized;
  * using {@link sirius.kernel.di.std.Register}.
  * <p>
  * This is used by the {@link Content#resolve(String)} to lookup resources.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01

@@ -16,7 +16,8 @@ import javax.annotation.Nonnull;
 
 /**
  * Console command which reports the last execution of the timer tasks.
- * <p>It also permits to call an timer out of schedule</p>
+ * <p>
+ * It also permits to call an timer out of schedule
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01

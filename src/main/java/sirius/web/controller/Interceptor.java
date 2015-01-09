@@ -26,9 +26,15 @@ public interface Interceptor {
      * @param controller the controller which is active
      * @param method     the method which will be called
      * @return <tt>true</tt> if the call is handled by the interceptor, <tt>false</tt> if the method should be
-     *         invoked
+     * invoked
+     * @throws java.lang.Exception in case of an error. Throw a {@link sirius.kernel.health.HandledException} to
+     *                             signal, that all logging and handling has already been performed.
+     *                             Any other exception will be logged and reported as system error.
      */
     boolean before(WebContext ctx, Controller controller, Method method) throws Exception;
 
-    boolean beforePermissionError(String permission,WebContext ctx, Controller controller, Method method) throws Exception;
+    boolean beforePermissionError(String permission,
+                                  WebContext ctx,
+                                  Controller controller,
+                                  Method method) throws Exception;
 }

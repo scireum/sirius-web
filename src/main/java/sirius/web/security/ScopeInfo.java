@@ -15,11 +15,9 @@ import java.util.function.Function;
  * <p>
  * The scope is determined using the installed {@link sirius.web.security.ScopeDetector} (Any class
  * implementing the interface and wearing a {@link sirius.kernel.di.std.Register} annotation will do.)
- * </p>
  * <p>
  * The current scope is used to determine which {@link sirius.web.security.UserManager} is used. Therefore
  * a system consisting of a backend and frontend can use distinct scopes and a different user manager for each.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/06
@@ -68,7 +66,6 @@ public class ScopeInfo {
      * <p>
      * This is used to determine the associated {@link sirius.web.security.UserManager} from the system config
      * using the key <tt>security.scopes.[type].manager</tt>.
-     * </p>
      *
      * @return the type of the scope
      */
@@ -89,9 +86,9 @@ public class ScopeInfo {
      * Returns the associated scope object.
      * <p>
      * Can be used to fetch the data object or database entity which represents this scope.
-     * </p>
      *
      * @param clazz the expected type of the scope object
+     * @param <T>   determines the type of the expected scope object
      * @return the associated scope object or <tt>null</tt> if no scope object can be determined or if the expected
      * class did not match
      */

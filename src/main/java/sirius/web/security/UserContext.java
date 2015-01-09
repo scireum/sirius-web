@@ -31,10 +31,8 @@ import java.util.Map;
  * <p>
  * An instance of this class is present in the {@link sirius.kernel.async.CallContext} and takes care of
  * picking the right user manager to authenticate users or store / load them from a session.
- * </p>
  * <p>
  * This class also manages messages shown to the user.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/11
@@ -146,7 +144,6 @@ public class UserContext {
      * Installs the given scope as current scope.
      * <p>
      * For generic web requests, this is not necessary, as the scope is auto-detected.
-     * </p>
      *
      * @param scope the scope to set
      */
@@ -159,7 +156,6 @@ public class UserContext {
      * Installs the given user as current user.
      * <p>
      * For generic web requests, this is not necessary, as the user is auto-detected.
-     * </p>
      *
      * @param user the user to set
      */

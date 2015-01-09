@@ -21,7 +21,8 @@ import java.net.URLConnection;
 
 /**
  * Adapter to make Velocity use our {@link Resolver} framework.
- * <p>This class needs to be public so it can be instantiated by Velocity.</p>
+ * <p>
+ * This class needs to be public so it can be instantiated by Velocity.
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/02

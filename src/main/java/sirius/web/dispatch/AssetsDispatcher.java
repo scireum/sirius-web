@@ -41,10 +41,8 @@ import java.util.Optional;
  * <p>
  * All assets are fetched from the classpath and should be located in the <tt>resources</tt> source root (below the
  * <tt>assets</tt> directory).
- * </p>
  * <p>
  * This dispatcher tries to support caching as well as zero-copy delivery of static files if possible.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/11

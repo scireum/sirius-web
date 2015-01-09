@@ -19,7 +19,6 @@ import io.netty.handler.stream.ChunkedInput;
  * Wrapper class which translates from <code>ChunkedInput&lt;ByteBuf&gt;</code> to <code>ChunkedInput&lt;HttpContent&gt;</code>
  * <p>
  * This is required to make the {@link io.netty.handler.codec.http.HttpContentCompressor} happy as it cannot deal with <code>ByteBuf</code>.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01

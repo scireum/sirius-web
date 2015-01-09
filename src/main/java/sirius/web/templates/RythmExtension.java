@@ -24,7 +24,6 @@ public interface RythmExtension {
      * Enumerates all variables paired with their according type.
      * <p>
      * This method is used at compile-time, to perform type checks.
-     * </p>
      *
      * @param names a collector which can be used to supply variables along with their type.
      */
@@ -34,7 +33,6 @@ public interface RythmExtension {
      * Enumerates all variables paired with their according value.
      * <p>
      * This method is used at runtime, to supply the appropriate values.
-     * </p>
      *
      * @param values a collector which can be used to supply variables along with their value.
      */

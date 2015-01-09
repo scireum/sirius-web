@@ -72,6 +72,8 @@ public class OTPVerifier {
      * Generates an OTPAUTH-URL which can be used to generate a QR code for a
      * mobile device.
      *
+     * @param account name of the account associated with this code
+     * @param secret  the secret used to generate the OTP codes
      * @return a special URL used by popular apps like Google Authenticator for "automatic" configuration of the
      * account
      */

@@ -91,7 +91,8 @@ public class Message {
     /**
      * Adds an action as URL to the message
      *
-     * @param link the URL to invoke if the user clicks on the message
+     * @param link  the URL to invoke if the user clicks on the message
+     * @param label the label to use for the given action
      * @return the message itself for further use
      */
     public Message withAction(String link, String label) {
@@ -104,6 +105,7 @@ public class Message {
      * Adds an action as URL to the message
      *
      * @param codeFragment the URL to invoke if the user clicks on the message
+     * @param label        the label to use for the given action
      * @return the message itself for further use
      */
     public Message withJavascriptAction(String codeFragment, String label) {

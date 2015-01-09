@@ -9,7 +9,6 @@
 /**
  * System health monitoring
  * <p>
- *     Provides tools to collect metrics and to monitor a cluster of machines.
- * </p>
+ * Provides tools to collect metrics and to monitor a cluster of machines.
  */
 package sirius.web.health;

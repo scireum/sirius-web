@@ -15,7 +15,6 @@ import java.io.StringWriter;
  * This handler expects velocity as template language which must generate a valid XHTML output.
  * This is post processed by flying saucer to generate a PDF file. The name of this handler is <b>pdf-vm</b>
  * the expected file extension is <b>.pdf.vm</b>.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/02

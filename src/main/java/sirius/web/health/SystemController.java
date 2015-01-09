@@ -105,6 +105,8 @@ public class SystemController implements Controller {
 
     /**
      * Can be used to forcefully create an error. (A HandledException in this case.)
+     *
+     * @param ctx the current request
      */
     @Routed("/system/fail")
     public void fail(WebContext ctx) {

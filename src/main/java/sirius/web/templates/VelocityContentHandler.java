@@ -14,7 +14,6 @@ import java.io.OutputStreamWriter;
  * This handler expects velocity as template language. The name of this handler is <b>vm</b> the expected file extension is
  * <b>.vm</b>. It has a priority of 999 so that it does not collide with other handlers like
  * {@link VelocityPDFContentHandler} which expects <b>.pdf.vm</b>
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/02

@@ -26,7 +26,6 @@ import java.util.Set;
  * Uses the system configuration to authenticate users.
  * <p>
  * Users can be defined in <tt>security.users</tt>.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/06

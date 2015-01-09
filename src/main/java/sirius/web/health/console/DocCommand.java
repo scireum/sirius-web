@@ -20,7 +20,6 @@ import java.lang.reflect.Method;
  * <p>
  * This command will try to find a class matching the given name and output all methods accessible methods along
  * with their signature.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01

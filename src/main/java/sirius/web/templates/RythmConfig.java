@@ -45,7 +45,6 @@ import java.util.concurrent.ThreadPoolExecutor;
  * <p>
  * Configures Rythm, so that {@literal @}i18n uses {@link NLS#get(String)}. Also the template lookup is changed
  * to scan resources/view/... or resources/help/...
- * </p>
  * <p>
  * Each template will have two auto-import: {@link NLS} and {@link sirius.kernel.commons.Strings}. Additionally,
  * the following variables are declared:
@@ -59,7 +58,6 @@ import java.util.concurrent.ThreadPoolExecutor;
  * <li><b>isDev</b>: <tt>true</tt> if the system is started in development mode, <tt>false</tt> otherwise</li>
  * <li><b>call</b>:the current {@link WebContext}</li>
  * </ul>
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/11
@@ -92,7 +90,10 @@ public class RythmConfig implements Lifecycle {
         Map<String, Object> config = Maps.newTreeMap();
         // We always put Rythm in dev mode to support dynamic reloading of templates...
         config.put("rythm.engine.mode", "dev");
-        File tmpDir = new File(System.getProperty("java.io.tmpdir"),Product.getProduct().getName().replaceAll("[a-zA-Z0-9\\-]","_") + "_" + CallContext.getNodeName() + "_rythm");
+        File tmpDir = new File(System.getProperty("java.io.tmpdir"),
+                               Product.getProduct()
+                                      .getName()
+                                      .replaceAll("[a-zA-Z0-9\\-]", "_") + "_" + CallContext.getNodeName() + "_rythm");
         tmpDir.mkdirs();
         if (Sirius.isDev()) {
             if (tmpDir.listFiles() != null) {

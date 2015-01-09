@@ -21,7 +21,6 @@ import java.net.SocketAddress;
  * Handler for low-level events in the HTTP pipeline.
  * <p>
  * Performs statistical tasks and performs basic filtering based on firewall rules.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/09

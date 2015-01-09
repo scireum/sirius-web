@@ -48,7 +48,6 @@ public interface SMTPConfiguration {
      * <p>
      * Also if {@link #isUseSenderAndEnvelopeFrom()} is <tt>true</tt>, this is used as "Sender" as well as
      * the "Envelope-Sender"
-     * </p>
      *
      * @return the sender address used if no other address is supplied
      */

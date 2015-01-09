@@ -580,7 +580,6 @@ public class WebServer implements Lifecycle, MetricProvider {
      * Changes the microtiming mode.
      * <p>
      * Note that the microtiming framework still has to be enabled to generate any output.
-     * </p>
      *
      * @param microtimingMode the new microtiming mode to use.
      */

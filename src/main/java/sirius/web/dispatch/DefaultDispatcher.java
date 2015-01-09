@@ -21,10 +21,8 @@ import sirius.web.http.WebDispatcher;
  * Sends a 404 (not found) for all unhandled URIs.
  * <p>
  * Also handles some special static URIs if enabled, like /crossdomain.xml or /robots.txt.
- * </p>
  * <p>
  * If no other dispatcher jumps in, this will take care of handing the request by sending a HTTP/404.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/11

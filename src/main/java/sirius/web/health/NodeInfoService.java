@@ -21,7 +21,6 @@ import sirius.web.services.StructuredService;
  * Provides statistics for this node.
  * <p>
  * This service will be called by the {@link Cluster} manager running on the other members.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01

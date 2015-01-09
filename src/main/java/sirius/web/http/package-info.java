@@ -9,7 +9,6 @@
 /**
  * Built-in HTTP server based on netty.
  * <p>
- *     To participate in request handling, provide an implementation for {@link sirius.web.http.WebDispatcher}.
- * </p>
+ * To participate in request handling, provide an implementation for {@link sirius.web.http.WebDispatcher}.
  */
 package sirius.web.http;

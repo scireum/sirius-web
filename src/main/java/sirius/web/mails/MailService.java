@@ -323,8 +323,8 @@ public class MailService {
          * <p>
          * The template is used to fill the subject like as well as the text and HTML part. The <b>mailExtension</b>
          * named here has to be defined in the system config in the mails/template section:
-         * <code>
          * <pre>
+         * <code>
          * mail {
          *  templates {
          *      my-template {
@@ -345,13 +345,11 @@ public class MailService {
          *      }
          *  }
          * }
-         * </pre>
          * </code>
-         * </p>
+         * </pre>
          * <p>
          * The given subject line is evaluates by velocity and my therefore either reference variables or use
          * macros like #nls('nls-key'). The given <b>context</b> can be used to pass variables to the templates.
-         * </p>
          *
          * @param mailExtension the name of the mail extension to use
          * @param context       the context used to pass in variables used by the templates
@@ -436,8 +434,9 @@ public class MailService {
 
         /**
          * Sets a bounce token.
-         * <p>This bounce toke is hopefully included in a bounce email (generated if a mail cannot be delivered).
-         * This permits better bounce handling.</p>
+         * <p>
+         * This bounce toke is hopefully included in a bounce email (generated if a mail cannot be delivered).
+         * This permits better bounce handling.
          *
          * @param token the token to identify the mail by a bounde handler.
          * @return the builder itself
@@ -453,7 +452,6 @@ public class MailService {
          * Once all settings are validated, the mail is send in a separate thread so this method will
          * return rather quickly. Note that a {@link sirius.kernel.health.HandledException} is thrown in case
          * of invalid settings (bad mail address etc.).
-         * </p>
          */
         public void send() {
             SMTPConfiguration config = new DefaultSMTPConfig();

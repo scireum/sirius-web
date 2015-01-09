@@ -25,7 +25,6 @@ import java.util.concurrent.TimeUnit;
  * This can be used to store and apply customer specific changes. The base directory is determined via the
  * system configuration (<tt>content.localResourcePath</tt>). If this value is an empty string, the resolver
  * will be disabled.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/07

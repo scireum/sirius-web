@@ -21,7 +21,6 @@ import java.util.List;
  * <p>
  * Valid inputs are x.x.x.x/bits or z:z:z:z:z:z:z:z/bits. If /bits is missing, /32 vor IPv4 or /128 for IPv6 is
  * assumed.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/11
@@ -169,7 +168,6 @@ public class IPRange {
      * Represents a set of IP ranges.
      * <p>
      * Ranges can be specified as a list of CIDR sub nets, separated by a ",".
-     * </p>
      *
      * @author Andreas Haufler (aha@scireum.de)
      * @since 2013/11

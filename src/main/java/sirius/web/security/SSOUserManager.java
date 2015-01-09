@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
  * Such a token has to contain the current timestamp along with a computed hash value using:
  * <code>MD5(ssoSecret + timestamp + username + roles)</code>. Note that MD5 can be replaced by SHA1 by changing
  * the config value "hashFunction".
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/06

@@ -57,7 +57,6 @@ import java.util.regex.Pattern;
  * Represents a response which is used to reply to a HTTP request.
  * <p>
  * Responses are created by calling {@link sirius.web.http.WebContext#respondWith()}.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @see WebContext
@@ -260,10 +259,10 @@ public class Response {
                 ((FullHttpResponse) response).release();
             }
             throw Exceptions.handle()
-                    .to(WebServer.LOG)
-                    .error(new IllegalStateException())
-                    .withSystemErrorMessage("Response for %s was already committed!", wc.getRequestedURI())
-                    .handle();
+                            .to(WebServer.LOG)
+                            .error(new IllegalStateException())
+                            .withSystemErrorMessage("Response for %s was already committed!", wc.getRequestedURI())
+                            .handle();
         }
         if (WebServer.LOG.isFINE()) {
             WebServer.LOG.FINE("COMMITTING: " + wc.getRequestedURI());
@@ -365,8 +364,8 @@ public class Response {
         if (ifModifiedSinceDateSeconds > 0 && lastModifiedInMillis > 0) {
             if (ifModifiedSinceDateSeconds >= lastModifiedInMillis / 1000) {
                 setDateAndCacheHeaders(lastModifiedInMillis,
-                        cacheSeconds == null ? HTTP_CACHE : cacheSeconds,
-                        isPrivate);
+                                       cacheSeconds == null ? HTTP_CACHE : cacheSeconds,
+                                       isPrivate);
                 status(HttpResponseStatus.NOT_MODIFIED);
                 return false;
             }
@@ -461,7 +460,6 @@ public class Response {
      * Marks this response as infinitely cachable.
      * <p>
      * This suggests that it will never change.
-     * </p>
      *
      * @return <tt>this</tt> to fluently create the response
      */
@@ -491,7 +489,6 @@ public class Response {
      * <p>
      * In contrast to {@link #setHeader(String, Object)} this method can be called multiple times for the same
      * header and its values will be concatenated as specified in the HTTP protocol.
-     * </p>
      *
      * @param name  name of the header
      * @param value value of the header
@@ -566,8 +563,8 @@ public class Response {
         } else {
             // Prefer the HTTP/1.1 code 307 as temporary redirect
             HttpResponse response = createFullResponse(HttpResponseStatus.TEMPORARY_REDIRECT,
-                    true,
-                    Unpooled.EMPTY_BUFFER);
+                                                       true,
+                                                       Unpooled.EMPTY_BUFFER);
             response.headers().set(HttpHeaders.Names.LOCATION, url);
             complete(commit(response));
         }
@@ -590,11 +587,9 @@ public class Response {
      * Sends the given file as response.
      * <p>
      * Based on the file, full HTTP caching is supported, taking care of If-Modified-Since headers etc.
-     * </p>
      * <p>
      * If the request does not use HTTPS, the server tries to support a zero-copy approach leading to maximal
      * throughput as no copying between user space and kernel space buffers is required.
-     * </p>
      *
      * @param file the file to send
      */
@@ -642,7 +637,7 @@ public class Response {
             } else {
                 setHeader(HttpHeaders.Names.CONTENT_LENGTH, range.getSecond() - range.getFirst() + 1);
                 setHeader(HttpHeaders.Names.CONTENT_RANGE,
-                        "bytes " + range.getFirst() + "-" + range.getSecond() + "/" + fileLength);
+                          "bytes " + range.getFirst() + "-" + range.getSecond() + "/" + fileLength);
             }
             setDateAndCacheHeaders(file.lastModified(), cacheSeconds == null ? HTTP_CACHE : cacheSeconds, isPrivate);
             if (name != null) {
@@ -650,7 +645,7 @@ public class Response {
             }
             HttpResponseStatus responseStatus = range != null ? HttpResponseStatus.PARTIAL_CONTENT : HttpResponseStatus.OK;
             HttpResponse response = !isSSL() && shouldBeCompressed(contentType) ? createChunkedResponse(responseStatus,
-                    true) : createResponse(
+                                                                                                        true) : createResponse(
                     responseStatus,
                     true);
             commit(response, false);
@@ -659,22 +654,22 @@ public class Response {
                 // Forcefully disable the content compressor as it cannot compress a binary chunks....
                 response.headers().set(HttpHeaders.Names.CONTENT_ENCODING, HttpHeaders.Values.IDENTITY);
                 ctx.write(new ChunkedFile(raf,
-                        range != null ? range.getFirst() : 0,
-                        range != null ? range.getSecond() - range.getFirst() + 1 : fileLength,
-                        8192));
+                                          range != null ? range.getFirst() : 0,
+                                          range != null ? range.getSecond() - range.getFirst() + 1 : fileLength,
+                                          8192));
             } else if (responseChunked) {
                 // Send chunks of data which can be compressed
                 ctx.write(new ChunkedInputAdapter(new ChunkedFile(raf,
-                        range != null ? range.getFirst() : 0,
-                        range != null ? range.getSecond() - range.getFirst() + 1 : fileLength,
-                        8192)));
+                                                                  range != null ? range.getFirst() : 0,
+                                                                  range != null ? range.getSecond() - range.getFirst() + 1 : fileLength,
+                                                                  8192)));
             } else {
                 // Forcefully disable the content compressor as it cannot compress a DefaultFileRegion
                 response.headers().set(HttpHeaders.Names.CONTENT_ENCODING, HttpHeaders.Values.IDENTITY);
                 // Send file using zero copy approach!
                 ctx.write(new DefaultFileRegion(raf.getChannel(),
-                        range != null ? range.getFirst() : 0,
-                        range != null ? range.getSecond() - range.getFirst() + 1 : fileLength));
+                                                range != null ? range.getFirst() : 0,
+                                                range != null ? range.getSecond() - range.getFirst() + 1 : fileLength));
             }
             ChannelFuture writeFuture = ctx.writeAndFlush(DefaultLastHttpContent.EMPTY_LAST_CONTENT);
 
@@ -784,7 +779,7 @@ public class Response {
         }
         if (lastModifiedMillis > 0 && (keySet == null || !keySet.contains(HttpHeaders.Names.LAST_MODIFIED))) {
             addHeaderIfNotExists(HttpHeaders.Names.
-                    LAST_MODIFIED, dateFormatter.format(new Date(lastModifiedMillis)));
+                                         LAST_MODIFIED, dateFormatter.format(new Date(lastModifiedMillis)));
         }
     }
 
@@ -804,9 +799,9 @@ public class Response {
      */
     private void setContentDisposition(String name, boolean download) {
         addHeaderIfNotExists("Content-Disposition",
-                (download ? "attachment;" : "inline;") + "filename=\"" + name.replaceAll(
-                        "[^A-Za-z0-9\\-_\\.]",
-                        "_") + "\"");
+                             (download ? "attachment;" : "inline;") + "filename=\"" + name.replaceAll(
+                                     "[^A-Za-z0-9\\-_\\.]",
+                                     "_") + "\"");
     }
 
     /*
@@ -821,7 +816,6 @@ public class Response {
      * the {@link sirius.web.templates.Content} lookup framework.
      * <p>
      * Sends the resource found or a 404 NOT_FOUND otherwise.
-     * </p>
      *
      * @param name the path of the resource to lookup
      */
@@ -846,7 +840,6 @@ public class Response {
      * Sends the given resource (potentially from classpath) as result.
      * <p>
      * This will support HTTP caching if enabled (default).
-     * </p>
      *
      * @param urlConnection the connection to get the data from.
      */
@@ -856,8 +849,8 @@ public class Response {
             addHeaderIfNotExists(HttpHeaders.Names.CONTENT_LENGTH, fileLength);
             setContentTypeHeader(name != null ? name : urlConnection.getURL().getFile());
             setDateAndCacheHeaders(urlConnection.getLastModified(),
-                    cacheSeconds == null ? HTTP_CACHE : cacheSeconds,
-                    isPrivate);
+                                   cacheSeconds == null ? HTTP_CACHE : cacheSeconds,
+                                   isPrivate);
             if (name != null) {
                 setContentDisposition(name, download);
             }
@@ -867,8 +860,7 @@ public class Response {
             // Write the initial line and the header.
             commit(response);
             // Write the content.
-            ctx.write(new ChunkedInputAdapter(new ChunkedStream(urlConnection.getInputStream(),
-                    8192)));
+            ctx.write(new ChunkedInputAdapter(new ChunkedStream(urlConnection.getInputStream(), 8192)));
             // Write last chunk to signal the end of content
             ChannelFuture writeFuture = ctx.writeAndFlush(DefaultLastHttpContent.EMPTY_LAST_CONTENT);
             complete(writeFuture);
@@ -881,7 +873,6 @@ public class Response {
      * Sends an 401 UNAUTHORIZED response with a WWW-Authenticate header for the given realm.
      * <p>
      * This will generally force the client to perform a HTTP Basic authentication.
-     * </p>
      *
      * @param realm the realm to report to the client. This will be used to select an appropriate username
      *              and password
@@ -896,7 +887,6 @@ public class Response {
      * <p>
      * If possible a specific template /view/errors/ERRORCODE.html. If not available, /view/errors/default.html
      * will be rendered.
-     * </p>
      *
      * @param status the HTTP status to send.
      */
@@ -909,7 +899,6 @@ public class Response {
      * <p>
      * If possible a specific template /view/errors/ERRORCODE.html. If not available, /view/errors/default.html
      * will be rendered.
-     * </p>
      *
      * @param status the HTTP status to send
      * @param t      the exception to display. Use {@link sirius.kernel.health.Exceptions} to create a
@@ -924,7 +913,6 @@ public class Response {
      * <p>
      * If possible a specific template /view/errors/ERRORCODE.html. If not available, /view/errors/default.html
      * will be rendered.
-     * </p>
      *
      * @param status  the HTTP status to send
      * @param message A message or description of what went wrong
@@ -984,7 +972,6 @@ public class Response {
      * <p>
      * This should only be used when really required (meaning when you really know what you're doing.
      * The encoding used will be UTF-8).
-     * </p>
      *
      * @param status  the HTTP status to send
      * @param content the string contents to send.
@@ -992,8 +979,8 @@ public class Response {
     public void direct(HttpResponseStatus status, String content) {
         try {
             setDateAndCacheHeaders(System.currentTimeMillis(),
-                    cacheSeconds == null || Sirius.isDev() ? 0 : cacheSeconds,
-                    isPrivate);
+                                   cacheSeconds == null || Sirius.isDev() ? 0 : cacheSeconds,
+                                   isPrivate);
             ByteBuf channelBuffer = wrapUTF8String(content);
             HttpResponse response = createFullResponse(status, true, channelBuffer);
             complete(commit(response));
@@ -1007,7 +994,6 @@ public class Response {
      * <p>
      * By default caching will be disabled. If the file ends with .html, <tt>text/html; charset=UTF-8</tt> will be set
      * as content type. Otherwise the content type will be guessed from the filename.
-     * </p>
      *
      * @param name   the name of the template to render. It's recommended to use files in /view/... and to place them
      *               in the resources directory.
@@ -1023,10 +1009,10 @@ public class Response {
             content = Rythm.render(name, params);
         } catch (Throwable e) {
             throw Exceptions.handle()
-                    .to(RythmConfig.LOG)
-                    .error(e)
-                    .withSystemErrorMessage("Failed to render the template '%s': %s (%s)", name)
-                    .handle();
+                            .to(RythmConfig.LOG)
+                            .error(e)
+                            .withSystemErrorMessage("Failed to render the template '%s': %s (%s)", name)
+                            .handle();
         }
         sendTemplateContent(name, content);
     }
@@ -1039,8 +1025,8 @@ public class Response {
                 setContentTypeHeader(name);
             }
             setDateAndCacheHeaders(System.currentTimeMillis(),
-                    cacheSeconds == null || Sirius.isDev() ? 0 : cacheSeconds,
-                    isPrivate);
+                                   cacheSeconds == null || Sirius.isDev() ? 0 : cacheSeconds,
+                                   isPrivate);
             ByteBuf channelBuffer = wrapUTF8String(content);
             HttpResponse response = createFullResponse(HttpResponseStatus.OK, true, channelBuffer);
             complete(commit(response));
@@ -1054,11 +1040,9 @@ public class Response {
      * <p>
      * Based on the given name, <tt>name_LANG.html</tt> or as fallback <tt>name.html</tt> will be loaded. As
      * language, the two-letter language code of {@link sirius.kernel.async.CallContext#getLang()} will be used.
-     * </p>
      * <p>
      * By default caching will be disabled. If the file ends with .html, <tt>text/html; charset=UTF-8</tt> will be set
      * as content type. Otherwise the content type will be guessed from the filename.
-     * </p>
      *
      * @param name   the name of the template to render. It's recommended to use files in /view/... and to place them
      *               in the resources directory.
@@ -1080,10 +1064,10 @@ public class Response {
             }
         } catch (Throwable e) {
             throw Exceptions.handle()
-                    .to(RythmConfig.LOG)
-                    .error(e)
-                    .withSystemErrorMessage("Failed to render the template '%s': %s (%s)", name)
-                    .handle();
+                            .to(RythmConfig.LOG)
+                            .error(e)
+                            .withSystemErrorMessage("Failed to render the template '%s': %s (%s)", name)
+                            .handle();
         }
         sendTemplateContent(name + ".html", content);
     }
@@ -1092,18 +1076,18 @@ public class Response {
             true).setRequestTimeoutInMs(-1).build());
 
     private static final Set<String> NON_TUNNELLED_HEADERS = Sets.newHashSet(HttpHeaders.Names.TRANSFER_ENCODING,
-            HttpHeaders.Names.SERVER,
-            HttpHeaders.Names.CONTENT_ENCODING,
-            HttpHeaders.Names.EXPIRES,
-            HttpHeaders.Names.CACHE_CONTROL);
+                                                                             HttpHeaders.Names.SERVER,
+                                                                             HttpHeaders.Names.CONTENT_ENCODING,
+                                                                             HttpHeaders.Names.EXPIRES,
+                                                                             HttpHeaders.Names.CACHE_CONTROL);
 
     /**
      * Tunnels the contents retrieved from the given URL as result of this response.
      * <p>
      * Caching and range headers will be forwarded and adhered.
-     * </p>
-     * <p>Uses non-blocking APIs in order to maximize throughput. Therefore this can be called in an unforked
-     * dispatcher.</p>
+     * <p>
+     * Uses non-blocking APIs in order to maximize throughput. Therefore this can be called in an unforked
+     * dispatcher.
      *
      * @param url the url to tunnel through.
      */
@@ -1189,9 +1173,9 @@ public class Response {
                     try {
                         if (WebServer.LOG.isFINE()) {
                             WebServer.LOG.FINE("Tunnel - CHUNK: %s for %s (Last: %s)",
-                                    bodyPart,
-                                    wc.getRequestedURI(),
-                                    bodyPart.isLast());
+                                               bodyPart,
+                                               wc.getRequestedURI(),
+                                               bodyPart.isLast());
                         }
                         if (!ctx.channel().isOpen()) {
                             return STATE.ABORT;
@@ -1201,7 +1185,7 @@ public class Response {
                             if (bodyPart.isLast()) {
                                 if (responseChunked) {
                                     ctx.channel()
-                                            .write(new DefaultHttpContent(Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer())));
+                                       .write(new DefaultHttpContent(Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer())));
                                     ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
                                     complete(writeFuture);
                                 } else {
@@ -1212,14 +1196,14 @@ public class Response {
                             } else {
                                 if (responseChunked) {
                                     ChannelFuture writeFuture = ctx.channel()
-                                            .writeAndFlush(new DefaultHttpContent(Unpooled.wrappedBuffer(
-                                                    bodyPart.getBodyByteBuffer())));
+                                                                   .writeAndFlush(new DefaultHttpContent(Unpooled.wrappedBuffer(
+                                                                           bodyPart.getBodyByteBuffer())));
                                     while (!ctx.channel().isWritable() && ctx.channel().isOpen()) {
                                         writeFuture.await(5, TimeUnit.SECONDS);
                                     }
                                 } else {
                                     ChannelFuture writeFuture = ctx.channel()
-                                            .writeAndFlush(Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer()));
+                                                                   .writeAndFlush(Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer()));
                                     while (!ctx.channel().isWritable() && ctx.channel().isOpen()) {
                                         writeFuture.await(5, TimeUnit.SECONDS);
                                     }
@@ -1228,20 +1212,20 @@ public class Response {
                         } else {
                             if (bodyPart.isLast()) {
                                 HttpResponse response = createFullResponse(HttpResponseStatus.valueOf(responseCode),
-                                        true,
-                                        Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer()));
+                                                                           true,
+                                                                           Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer()));
                                 HttpHeaders.setContentLength(response, bodyPart.getBodyByteBuffer().remaining());
                                 complete(commit(response));
                             } else {
                                 HttpResponse response = contentLengthKnown ? createResponse(HttpResponseStatus.valueOf(
-                                                responseCode),
-                                        true) : createChunkedResponse(
+                                                                                                    responseCode),
+                                                                                            true) : createChunkedResponse(
                                         HttpResponseStatus.valueOf(responseCode),
                                         true);
                                 commit(response, false);
                                 if (responseChunked) {
                                     ctx.channel()
-                                            .write(new DefaultHttpContent(Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer())));
+                                       .write(new DefaultHttpContent(Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer())));
                                 } else {
                                     ctx.channel().write(Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer()));
                                 }
@@ -1261,8 +1245,8 @@ public class Response {
                 public STATE onStatusReceived(com.ning.http.client.HttpResponseStatus httpResponseStatus) throws Exception {
                     if (WebServer.LOG.isFINE()) {
                         WebServer.LOG.FINE("Tunnel - STATUS %s for %s",
-                                httpResponseStatus.getStatusCode(),
-                                wc.getRequestedURI());
+                                           httpResponseStatus.getStatusCode(),
+                                           wc.getRequestedURI());
                     }
                     if (httpResponseStatus.getStatusCode() >= 200 && httpResponseStatus.getStatusCode() < 300) {
                         responseCode = httpResponseStatus.getStatusCode();
@@ -1283,8 +1267,8 @@ public class Response {
                     }
                     if (!wc.responseCommitted) {
                         HttpResponse response = createFullResponse(HttpResponseStatus.valueOf(responseCode),
-                                true,
-                                Unpooled.EMPTY_BUFFER);
+                                                                   true,
+                                                                   Unpooled.EMPTY_BUFFER);
                         HttpHeaders.setContentLength(response, 0);
                         complete(commit(response));
                     } else if (!wc.responseCompleted) {
@@ -1303,8 +1287,8 @@ public class Response {
                 public void onThrowable(Throwable t) {
                     if (WebServer.LOG.isFINE()) {
                         WebServer.LOG.FINE("Tunnel - ERROR %s for %s",
-                                t.getMessage() + " (" + t.getMessage() + ")",
-                                wc.getRequestedURI());
+                                           t.getMessage() + " (" + t.getMessage() + ")",
+                                           wc.getRequestedURI());
                     }
                     if (!(t instanceof ClosedChannelException)) {
                         error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
@@ -1326,15 +1310,16 @@ public class Response {
      * <p>
      * By default, caching will be disabled. If the generated JSON is small enough, it will be transmitted in
      * one go. Otherwise a chunked response will be sent.
-     * </p>
+     *
+     * @return a structured output which will be sent as JSON response
      */
     public JSONStructuredOutput json() {
         String callback = wc.get("callback").getString();
         String encoding = wc.get("encoding")
-                .asString(Strings.isEmpty(callback) ? Charsets.UTF_8.name() : Charsets.ISO_8859_1.name());
+                            .asString(Strings.isEmpty(callback) ? Charsets.UTF_8.name() : Charsets.ISO_8859_1.name());
         return new JSONStructuredOutput(outputStream(HttpResponseStatus.OK, "application/json;charset=" + encoding),
-                callback,
-                encoding);
+                                        callback,
+                                        encoding);
     }
 
     /**
@@ -1342,7 +1327,8 @@ public class Response {
      * <p>
      * By default, caching will be disabled. If the generated XML is small enough, it will be transmitted in
      * one go. Otherwise a chunked response will be sent.
-     * </p>
+     *
+     * @return a structured output which will be sent as XML response
      */
     public XMLStructuredOutput xml() {
         return new XMLStructuredOutput(outputStream(HttpResponseStatus.OK, MimeHelper.TEXT_XML));
@@ -1353,19 +1339,18 @@ public class Response {
      * <p>
      * If the contents are small enough, everything will be sent in one response. Otherwise a chunked response
      * will be sent. The size of the underlying buffer will be determined by {@link #BUFFER_SIZE}.
-     * </p>
-     * <p><b>WARNING:</b> Do not used this kind of response directly from a {@link WebDispatcher}! You need to fork a
+     * <p>
+     * <b>WARNING:</b> Do not used this kind of response directly from a {@link WebDispatcher}! You need to fork a
      * new thread using {@link sirius.kernel.async.Async} as the internal workings might block in
      * <code>OutputStream.write</code> until the message is fully written to the channel. This might lead to a deadlock
      * if the kernel buffer needs to be flushed as well (as this needs the worker thread to handle the write which is
      * blocked internally due to waiting for the chunk to be written).
-     * </p>
      * <p>
      * By default, caching will be supported.
-     * </p>
      *
      * @param status      the HTTP status to send
      * @param contentType the content type to use. If <tt>null</tt>, we rely on a previously set header.
+     * @return an output stream which will be sent as response
      */
     public OutputStream outputStream(final HttpResponseStatus status, @Nullable final String contentType) {
         wc.enableTiming(null);
@@ -1431,8 +1416,8 @@ public class Response {
                         addHeaderIfNotExists(HttpHeaders.Names.CONTENT_TYPE, contentType);
                     }
                     setDateAndCacheHeaders(System.currentTimeMillis(),
-                            cacheSeconds == null || Sirius.isDev() ? 0 : cacheSeconds,
-                            isPrivate);
+                                           cacheSeconds == null || Sirius.isDev() ? 0 : cacheSeconds,
+                                           isPrivate);
                     if (name != null) {
                         setContentDisposition(name, download);
                     }

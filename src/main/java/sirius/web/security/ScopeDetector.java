@@ -16,7 +16,6 @@ import javax.annotation.Nonnull;
  * Detects the current {@link sirius.web.security.ScopeInfo} for a given request.
  * <p>
  * Used by {@link sirius.web.security.UserContext} to determine the scope, this request belongs to.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @see sirius.web.security.ScopeInfo

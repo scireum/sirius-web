@@ -37,7 +37,6 @@ import java.awt.*;
  * <p>
  * A barcode can be added by placing an img tag with an type attribute: &lt;img type="code128" src="0815" /&gt;.
  * As type <b>code128</b>, <b>ean</b> and <b>qr</b> are supported.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/02

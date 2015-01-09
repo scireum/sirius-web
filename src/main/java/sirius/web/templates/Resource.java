@@ -24,8 +24,9 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Wraps an resolved URL as resource.
- * <p>Used as result of a {@link sirius.web.templates.Resolver}. Next to the resolved URL it also stores the original
- * scope and path which was used to resolve the url.</p>
+ * <p>
+ * Used as result of a {@link sirius.web.templates.Resolver}. Next to the resolved URL it also stores the original
+ * scope and path which was used to resolve the url.
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @see sirius.web.templates.Resolver
@@ -47,7 +48,6 @@ public class Resource {
      * <p>
      * A dynamic resource might change over time (like a customer specific file on disk). Therefore we
      * frequently check for changes.
-     * </p>
      *
      * @param scopeId the scope which was used to resolve the resource
      * @param path    the local path pointing to the resource
@@ -63,7 +63,6 @@ public class Resource {
      * <p>
      * A constant resource will not change over time. An example might be a file in the classpath. Note that in
      * debug mode ({@link sirius.kernel.Sirius#isDev()}) all resources are considered dynamic.
-     * </p>
      *
      * @param scopeId the scope which was used to resolve the resource
      * @param path    the local path pointing to the resource
@@ -155,12 +154,10 @@ public class Resource {
      * <p>
      * This value will be cached if the resource is considered constant. However, in development systems
      * the resource will sill be checked in a regular interval.
-     * </p>
      * <p>
      * Also note that the last modified timestamp is
      * at least the timestamp when the resource was resolved. This is required to manage dynamic resources which
      * suddenly are created or vanish.
-     * </p>
      *
      * @return the last modified value of the underlying resource.
      */

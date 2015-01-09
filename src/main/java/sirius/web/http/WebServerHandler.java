@@ -33,7 +33,6 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * Takes care of gluing together chunks, handling file uploads etc. In order to participate in handling HTTP requests,
  * one has to provide a {@link WebDispatcher} rather than modifying this class.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
@@ -165,7 +164,6 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
      * <p>
      * Internally we used a countdown, to limit the max number of keepalives for a connection. Calling this method
      * decrements the internal counter, therefore this must not be called several times per request.
-     * </p>
      *
      * @return <tt>true</tt> if keepalive is still supported, <tt>false</tt> otherwise.
      */

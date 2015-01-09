@@ -49,10 +49,8 @@ import java.util.*;
  * Provides access to a request received by the WebServer.
  * <p>
  * This can be used to obtain all infos received for a HTTP request and also to create an appropriate response.
- * </p>
  * <p>
  * This context can either be passed along as variable or be accessed using {@link CallContext#get(Class)}
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
@@ -261,8 +259,10 @@ public class WebContext {
 
     /**
      * Enables microtiming for this request.
-     * <p>If <tt>null</tt> is passed in as key, the request uri is used.</p>
-     * <p>If the microtiming was already enabled, it will remain enabled, with the original key</p>
+     * <p>
+     * If <tt>null</tt> is passed in as key, the request uri is used.
+     * <p>
+     * If the microtiming was already enabled, it will remain enabled, with the original key
      *
      * @param key the key used to pass to the microtiming framework.
      * @return <tt>this</tt> to fluently work with this context
@@ -292,7 +292,6 @@ public class WebContext {
      * Used to provide a handle which is invoked once the call is completely handled.
      * <p>
      * Note that calling this method, removes the last completion handler.
-     * </p>
      *
      * @param onComplete the handler to be invoked once the request is completely handled
      */
@@ -331,7 +330,6 @@ public class WebContext {
      * Determines if this request was marked as long call.
      * <p>
      * This will effectively disable the idle timeout for this request.
-     * </p>
      *
      * @return <tt>true</tt> if the request was marked as long call, <tt>false</tt> otherwise
      */
@@ -343,7 +341,6 @@ public class WebContext {
      * Marks the request as long call.
      * <p>
      * This will disable all idle timeout checks for this request.
-     * </p>
      */
     public void markAsLongCall() {
         this.longCall = true;
@@ -364,7 +361,6 @@ public class WebContext {
      * <p>
      * This method first checks if an attribute with the given key exists. If not, the query string is scanned. After
      * that, the posted content is looked through to find an appropriate value.
-     * </p>
      *
      * @param key the key used to look for the value
      * @return a Value representing the provided data.
@@ -497,7 +493,6 @@ public class WebContext {
      * <p>
      * Attributes are neither stored nor transmitted to the client. Therefore they are only visible during the
      * processing of this request.
-     * </p>
      *
      * @param key   name of the attribute
      * @param value value of the attribute
@@ -536,7 +531,6 @@ public class WebContext {
      * <p>
      * As this session is transmitted to the client, the given value should not be large and needs a parseable
      * string representation
-     * </p>
      *
      * @param key   the name of th value to set
      * @param value the value to set
@@ -589,7 +583,6 @@ public class WebContext {
      * <p>
      * If no session was found, a new one is created if create is <tt>true</tt>. Otherwise <tt>null</tt> is
      * returned.
-     * </p>
      *
      * @param create determines if a new session should be created if no active session was found
      * @return the session associated with the client (based on session id parameter or cookie) or <tt>null</tt> if
@@ -635,10 +628,8 @@ public class WebContext {
      * Returns the server sided session based on the session parameter or cookie.
      * <p>
      * This method will create a new session if no active session was found.
-     * </p>
      * <p>
      * This is a shortcut for <code>getServerSession(true)</code>
-     * </p>
      *
      * @return the currently active session for this client. Will create a new session if no active session was found
      */
@@ -662,7 +653,6 @@ public class WebContext {
      * Returns the source from which the server session id was obtained.
      * <p>
      * If a session id is submitted via cookie and via parameter, the parameter always has precedence.
-     * </p>
      *
      * @return the source from which the session id for the current server session was obtained.
      */
@@ -741,7 +731,6 @@ public class WebContext {
      * Determines if this is an HTTPS (SSL protected) call.
      * <p>
      * Currently we rely on SSL termination by a proxy. Therefore we check for the header "X-Forwarded-Proto".
-     * </p>
      *
      * @return <tt>true</tt> if this is an HTTPS request, <tt>false</tt> otherwise
      */
@@ -751,7 +740,8 @@ public class WebContext {
 
     /**
      * Determines if the current request is secured by SSL.
-     * <p>This is boilerplate for: <code>CallContext.getCurrent().get(WebContext.class).isSSL()</code></p>
+     * <p>
+     * This is boilerplate for: <code>CallContext.getCurrent().get(WebContext.class).isSSL()</code>
      *
      * @return <tt>true</tt> if this is an HTTPS request, <tt>false</tt> otherwise
      */
@@ -763,7 +753,6 @@ public class WebContext {
      * Returns the query string or POST parameter with the given name.
      * <p>
      * If a POST request with query string is present, parameters in the query string have precedence.
-     * </p>
      *
      * @param key the name of the parameter to fetch
      * @return the first value or <tt>null</tt> if the parameter was not set or empty
@@ -777,7 +766,6 @@ public class WebContext {
      * <p>
      * If a POST request with query string is present, parameters in the query string have precedence. If values
      * in the query string are found, the POST parameters are discarded and not added to the resulting list.
-     * </p>
      *
      * @param key the name of the parameter to fetch
      * @return all values in the query string
@@ -890,7 +878,8 @@ public class WebContext {
 
     /**
      * Sets a cookie value to be sent back to the client
-     * <p>The generated cookie will be a session cookie and varnish once the user agent is closed</p>
+     * <p>
+     * The generated cookie will be a session cookie and varnish once the user agent is closed
      *
      * @param name  the cookie to create
      * @param value the contents of the cookie
@@ -901,8 +890,9 @@ public class WebContext {
 
     /**
      * Sets a http only cookie value to be sent back to the client.
-     * <p>The generated cookie will be a session cookie and varnish once the user agent is closed. Also this cookie
-     * will not be accessible by JavaScript and therefore slightly more secure.</p>
+     * <p>
+     * The generated cookie will be a session cookie and varnish once the user agent is closed. Also this cookie
+     * will not be accessible by JavaScript and therefore slightly more secure.
      *
      * @param name  the cookie to create
      * @param value the contents of the cookie
@@ -918,8 +908,9 @@ public class WebContext {
     /**
      * Sets a http only cookie value to be sent back to the client.
      *
-     * @param name  the cookie to create
-     * @param value the contents of the cookie
+     * @param name          the cookie to create
+     * @param value         the contents of the cookie
+     * @param maxAgeSeconds contains the max age of this cookie in seconds
      */
     public void setCookie(String name, String value, long maxAgeSeconds) {
         DefaultCookie cookie = new DefaultCookie(name, value);
@@ -1069,11 +1060,9 @@ public class WebContext {
      * <p>
      * If no such header is found or if the contents are malformed, an 401 UNAUTHORIZED response will be generated
      * ({@link Response#unauthorized(String)}) and <tt>null</tt> will be returned.
-     * </p>
      * <p>
      * In case the username and password returned by this method are invalid, use
      * {@link Response#unauthorized(String)} to notify the client.
-     * </p>
      *
      * @param realm the realm to report to the client in case of missing or malformed credentials
      * @return a tuple containing username and password or <tt>null</tt> to indicate that a 401 UNAUTHORIZED response
@@ -1098,7 +1087,6 @@ public class WebContext {
      * Returns a collection of all parameters names.
      * <p>
      * This will combine both, the query string and POST parameters.
-     * </p>
      *
      * @return a collection of all parameters sent by the client
      */
@@ -1123,7 +1111,7 @@ public class WebContext {
     /**
      * Returns the original query string sent by the client
      *
-     * @return the query string (?x=y&z=a...)
+     * @return the query string (?x=y&amp;z=a...)
      */
     public String getQueryString() {
         return request.getUri().substring(getRequestedURI().length());
@@ -1133,7 +1121,6 @@ public class WebContext {
      * Returns the context prefix (constant path prefix).
      * <p>
      * Can be used to let the app behave like it would be hosted in a sub directory.
-     * </p>
      *
      * @return the content prefix or "" if no prefix is set
      */
@@ -1154,7 +1141,6 @@ public class WebContext {
      * Determines if the current request is a POST request.
      * <p>
      * A POST request signal the server to alter its state, knowing that side effects will occur.
-     * </p>
      *
      * @return <tt>true</tt> if the method of the current request is POST, false otherwise
      */
@@ -1173,6 +1159,7 @@ public class WebContext {
      * Provides the body of the request as stream.
      *
      * @return an input stream reading from the body of the request.
+     * @throws java.io.IOException in case of an io error
      */
     public InputStream getContent() throws IOException {
         if (content == null) {
@@ -1244,7 +1231,6 @@ public class WebContext {
      * Returns the content of the HTTP request as file on disk.
      * <p>
      * Note that the file will be deleted once the request is completely handled.
-     * </p>
      *
      * @return the file pointing to the content sent by the client
      * @throws IOException in case of an IO error
@@ -1259,7 +1245,6 @@ public class WebContext {
      * Returns the content of the HTTP request as file on disk.
      * <p>
      * Note that the file will be deleted once the request is completely handled.
-     * </p>
      *
      * @return the file pointing to the content sent by the client
      * @throws IOException in case of an IO error
@@ -1289,7 +1274,6 @@ public class WebContext {
      * <p>
      * All files in this list will be deleted once the request is completely handled. This can be used to wipe
      * any intermediate files created while handling this request.
-     * </p>
      *
      * @param file the file to be deleted once the request is completed.
      */
@@ -1305,7 +1289,6 @@ public class WebContext {
      * <p>
      * Note that all data is loaded into the heap. Therefore certain limits apply. If the data is too large, an
      * exception will be thrown.
-     * </p>
      *
      * @return the body of the HTTP request as XML input
      */
@@ -1346,7 +1329,6 @@ public class WebContext {
      * <p>
      * Note that all data is loaded into the heap. Therefore certain limits apply. If the data is too large, an
      * exception will be thrown.
-     * </p>
      *
      * @return the body of the HTTP request as JSON input
      */
@@ -1396,7 +1378,6 @@ public class WebContext {
      * Determines if the content body might contain XML (rather than JSON).
      * <p>
      * The detection is kind of crude as we only check if the first non whitespace character is a &lt;
-     * </p>
      *
      * @return <tt>true</tt> if the content is believed to be XML, <tt>false</tt> otherwise
      */

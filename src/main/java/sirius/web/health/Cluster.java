@@ -41,17 +41,14 @@ import java.util.List;
  * <p>
  * Permits to couple a number of machines to a cluster where each member monitors the others. In case or a failure
  * an alert will be triggered. Additionally the cluster state can be visualized using the web interface (/system/state).
- * </p>
  * <p>
  * Even in a single machine installation, this class will take care of monitoring all metrics and triggering an
  * alert (if possible).
- * </p>
  * <p>
  * Cluster members are defined via the configuration by listing all HTTP-Endpoints under
  * <tt>health.cluster.nodes</tt> in the form of <tt>http://hostname:port</tt>. Each node always defines a priority
  * (<tt>health.cluster.priority</tt>). The node with the lowest number (which is still functional) is in charge
  * of triggering an alert in case of faulting or unreachable members.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01

@@ -20,7 +20,6 @@ import java.util.TreeMap;
  * Guesses mime types based on file extensions.
  * <p>
  * Contains an internal table of the most common file extensions along with their mime type.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
@@ -353,7 +352,6 @@ public class MimeHelper {
      * <p>
      * It isn't very useful to compress JPEG or PNG files, as they are already compressed. This method is very
      * pessimistic: Only a set of known content types is accepted as compressable.
-     * </p>
      *
      * @param contentType the mime type to check
      * @return <tt>true</tt> if the mime type is recognized as compressable, <tt>false</tt> otherwise

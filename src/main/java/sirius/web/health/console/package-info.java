@@ -9,7 +9,6 @@
 /**
  * Commands for the built-in console
  * <p>
- *     Contains commands for the web-based console (/system/console).
- * </p>
+ * Contains commands for the web-based console (/system/console).
  */
 package sirius.web.health.console;

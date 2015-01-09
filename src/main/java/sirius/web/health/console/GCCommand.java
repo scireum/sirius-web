@@ -17,7 +17,6 @@ import javax.annotation.Nonnull;
  * Console command to invoke the garbage collector.
  * <p>
  * This command will also report the heap consumption before and after the call.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01

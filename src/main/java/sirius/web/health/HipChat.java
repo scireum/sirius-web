@@ -92,9 +92,11 @@ public class HipChat implements ExceptionHandler, Lifecycle {
     /**
      * Sends the given message to hipchat (if configured property).
      *
-     * @param message the message to send (might contain HTML formatting).
-     * @param color   the color to use
-     * @param notify  should used by notified or not?
+     * @param messageType determines the type of message to be sent. Only messages with a type listed in the
+     *                    config value <b>health.hipchat.types</b> will be sent, others will be discarded.
+     * @param message     the message to send (might contain HTML formatting).
+     * @param color       the color to use
+     * @param notify      should used by notified or not?
      */
     public static void sendMessage(String messageType, String message, Color color, boolean notify) {
         try {

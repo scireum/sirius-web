@@ -21,10 +21,8 @@ import java.util.List;
  * <tt>http.serverMiniSessionLifetime</tt>. After the second use of the session, it will be set to 30 min (or the
  * value defined in <tt>http.serverSessionLifetime</tt>. This permits to get rid of useless "one-call" sessions created
  * by bots like Google etc.
- * </p>
  * <p>
  * Normally the WebContext takes care of finding or creating sessions based on cookies.
- * </p>
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @see sirius.web.http.WebContext#getServerSession()
@@ -79,7 +77,6 @@ public interface ServerSession {
      * <p>
      * If the session was not accessed since its creation, this time span is rather short, to get quickly rid of
      * "one call" sessions created by bots. After the second call, the timeout is expanded.
-     * </p>
      *
      * @return the max number of seconds since the last access before the session is eligible for invalidation
      */
@@ -133,7 +130,6 @@ public interface ServerSession {
      * Determines if the session is new.
      * <p>
      * A new session was created by the current request and not fetched from the session map using its ID.
-     * </p>
      *
      * @return <tt>true</tt> if the session was created by this request, <tt>false</tt> otherwise.
      */
