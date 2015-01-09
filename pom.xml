@@ -185,6 +185,7 @@
                 <configuration>
                     <links>
                         <link>http://sirius-lib.net/apidocs/sirius-kernel</link>
+                        <link>http://netty.io/4.0/api/</link>
                     </links>
                     <failOnError>false</failOnError>
                 </configuration>
@@ -213,7 +214,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.0.21.Final</version>
+            <version>4.0.25.Final</version>
         </dependency>
 
         <!-- Used to compile SCSS (SASS) files into CSS file -->
