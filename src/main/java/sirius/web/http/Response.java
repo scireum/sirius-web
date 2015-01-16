@@ -1315,8 +1315,7 @@ public class Response {
      */
     public JSONStructuredOutput json() {
         String callback = wc.get("callback").getString();
-        String encoding = wc.get("encoding")
-                            .asString(Strings.isEmpty(callback) ? Charsets.UTF_8.name() : Charsets.ISO_8859_1.name());
+        String encoding = wc.get("encoding").asString(Charsets.UTF_8.name());
         return new JSONStructuredOutput(outputStream(HttpResponseStatus.OK, "application/json;charset=" + encoding),
                                         callback,
                                         encoding);
