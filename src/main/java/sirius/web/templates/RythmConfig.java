@@ -56,7 +56,11 @@ import java.util.concurrent.ThreadPoolExecutor;
  * <li><b>version</b>: the version of the product</li>
  * <li><b>detailedVersion</b>: the detailed version of the product</li>
  * <li><b>isDev</b>: <tt>true</tt> if the system is started in development mode, <tt>false</tt> otherwise</li>
- * <li><b>call</b>:the current {@link WebContext}</li>
+ * <li><b>call</b>: the current {@link WebContext}</li>
+ * <li><b>template</b>: the name of the template currently being rendered</li>
+ * <li><b>lang</b>: the current language</li>
+ * <li><b>dateFormat</b>: the date format for the current language</li>
+ * <li><b>timeFormat</b>: the time format for the current language</li>
  * </ul>
  *
  * @author Andreas Haufler (aha@scireum.de)
@@ -203,6 +207,9 @@ public class RythmConfig implements Lifecycle {
             map.put("isDev", Boolean.class);
             map.put("call", WebContext.class);
             map.put("template", String.class);
+            map.put("lang", String.class);
+            map.put("dateFormat", String.class);
+            map.put("timeFormat", String.class);
             for (RythmExtension ext : extensions) {
                 ext.collectExtensionNames(entity -> map.put(entity.getFirst(), entity.getSecond()));
             }
@@ -228,6 +235,9 @@ public class RythmConfig implements Lifecycle {
             template.__setRenderArg("isDev", Sirius.isDev());
             template.__setRenderArg("call", wc);
             template.__setRenderArg("template", url);
+            template.__setRenderArg("lang", NLS.getCurrentLang());
+            template.__setRenderArg("dateFormat", NLS.get("RythmConfig.jsDateFormat"));
+            template.__setRenderArg("timeFormat", NLS.get("RythmConfig.jsTimeFormat"));
             for (RythmExtension ext : extensions) {
                 ext.collectExtensionValues(entity -> template.__setRenderArg(entity.getFirst(), entity.getSecond()));
             }
