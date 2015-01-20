@@ -244,7 +244,6 @@ public class WebContext {
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
-
     public WebContext() {
     }
 
