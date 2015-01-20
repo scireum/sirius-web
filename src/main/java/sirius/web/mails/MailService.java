@@ -34,6 +34,7 @@ import sirius.web.templates.VelocityContentHandler;
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
@@ -107,6 +108,48 @@ public class MailService {
      */
     public MailSender createEmail() {
         return new MailSender();
+    }
+
+    /**
+     * Determines if the given address is a valid eMail address.
+     * <p>
+     * The <tt>name</tt> is optional and can be left empty. If <tt>address</tt> is null or empty, <tt>false</tt>
+     * will be returned.
+     *
+     * @param address the email address to check
+     * @param name    the optional name to also check
+     * @return <tt>true</tt> if the given address is valid, <tt>false</tt> otherwise
+     */
+    public boolean isValidMailAddress(@Nullable String address, @Nullable String name) {
+        if (Strings.isEmpty(address)) {
+            return false;
+        }
+        try {
+            if (Strings.isFilled(name)) {
+                new InternetAddress(address, name).validate();
+            } else {
+                new InternetAddress(address).validate();
+            }
+            return true;
+        } catch (Throwable e) {
+            return false;
+        }
+    }
+
+    /**
+     * Determines if the given email address and the optional <tt>name</tt> is valid. Throws a
+     * <tt>HandledException</tt> otherwise.
+     *
+     * @param address the email address to validate
+     * @param name    the optional name to validate - can be left empty or <tt>null</tt>
+     */
+    public void failForInvalidEmail(@Nullable String address, @Nullable String name) {
+        if (!isValidMailAddress(address, name)) {
+            throw Exceptions.createHandled()
+                            .withNLSKey("MailService.invalidAddress")
+                            .set("address", Strings.isFilled(name) ? address + " (" + name + ")" : address)
+                            .handle();
+        }
     }
 
     protected class DefaultSMTPConfig implements SMTPConfiguration {
@@ -497,9 +540,9 @@ public class MailService {
                 throw Exceptions.handle()
                                 .to(MAIL)
                                 .error(e)
-                                .withNLSKey("MailServiceBean.invalidReceiver")
-                                .set("address", receiverEmail)
-                                .set("name", receiverName)
+                                .withNLSKey("MailService.invalidReceiver")
+                                .set("address",
+                                     Strings.isFilled(receiverName) ? receiverEmail + " (" + receiverName + ")" : receiverEmail)
                                 .handle();
             }
 
@@ -515,9 +558,9 @@ public class MailService {
                 throw Exceptions.handle()
                                 .to(MAIL)
                                 .error(e)
-                                .withNLSKey("MailServiceBean.invalidSender")
-                                .set("address", senderEmail)
-                                .set("name", senderName)
+                                .withNLSKey("MailService.invalidSender")
+                                .set("address",
+                                     Strings.isFilled(senderName) ? senderEmail + " (" + senderName + ")" : senderEmail)
                                 .handle();
             }
         }
