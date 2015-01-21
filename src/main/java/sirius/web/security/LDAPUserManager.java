@@ -100,7 +100,7 @@ public class LDAPUserManager extends GenericUserManager {
                 while (answer.hasMoreElements()) {
                     SearchResult sr = answer.next();
                     log("Found user: %s", sr.getName());
-                    Set<String> permissions = computePermissions(roles, sr);
+                    Set<String> permissions = computePermissions(roles, sr, wc);
                     if (!permissions.containsAll(requiredRoles)) {
                         return null;
                     }
@@ -133,13 +133,13 @@ public class LDAPUserManager extends GenericUserManager {
         return new InitialDirContext(env);
     }
 
-    private Set<String> computePermissions(Set<String> roles, SearchResult sr) {
+    private Set<String> computePermissions(Set<String> roles, SearchResult sr, WebContext ctx) {
         Attributes attrs = sr.getAttributes();
         if (attrs != null) {
             extractRoles(roles, attrs);
         }
 
-        Set<String> permissions = transformRoles(roles);
+        Set<String> permissions = transformRoles(roles, ctx.isTrusted());
         permissions.add(UserInfo.PERMISSION_LOGGED_IN);
         return permissions;
     }

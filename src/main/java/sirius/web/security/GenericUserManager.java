@@ -58,6 +58,7 @@ public abstract class GenericUserManager implements UserManager {
     protected boolean ssoEnabled;
     protected String ssoSecret;
     protected List<String> defaultRoles;
+    protected List<String> trustedRoles;
     protected UserInfo defaultUser;
 
 
@@ -70,6 +71,7 @@ public abstract class GenericUserManager implements UserManager {
         this.hashFunction = config.get("hashFunction").asString("md5");
         this.ssoEnabled = Strings.isFilled(ssoSecret) && config.get("ssoEnabled").asBoolean(false);
         this.defaultRoles = config.get("defaultRoles").get(List.class, Collections.emptyList());
+        this.trustedRoles = config.get("trustedRoles").get(List.class, Collections.emptyList());
         this.defaultUser = new UserInfo(null,
                                         null,
                                         "(nobody)",
@@ -184,12 +186,17 @@ public abstract class GenericUserManager implements UserManager {
     /**
      * Applies profile transformations and adds default roles to the set of given roles.
      *
-     * @param roles the roles granted to a user
+     * @param roles   the roles granted to a user
+     * @param trusted determines if the user is considered a trusted user
+     *                (Usually determined via {@link sirius.web.http.WebContext#isTrusted()}).
      * @return a set of permissions which contain the given roles as well as the default roles and profile transformations
      */
-    protected Set<String> transformRoles(Collection<String> roles) {
+    protected Set<String> transformRoles(Collection<String> roles, boolean trusted) {
         Set<String> allRoles = Sets.newTreeSet(roles);
         allRoles.addAll(defaultRoles);
+        if (trusted) {
+            allRoles.addAll(trustedRoles);
+        }
 
         return Permissions.applyProfilesAndPublicRoles(allRoles);
     }
@@ -338,7 +345,7 @@ public abstract class GenericUserManager implements UserManager {
      */
     @Override
     public void detachFromSession(@Nonnull UserInfo user, @Nonnull WebContext ctx) {
-        if (sessionStorage == "server") {
+        if (sessionStorage == SESSION_STORAGE_TYPE_SERVER) {
             Optional<ServerSession> s = ctx.getServerSession(false);
             if (s.isPresent()) {
                 ServerSession sess = s.get();
@@ -349,7 +356,7 @@ public abstract class GenericUserManager implements UserManager {
                 sess.putValue(scope.getScopeId() + "-user-email", null);
                 sess.putValue(scope.getScopeId() + "-user-roles", null);
             }
-        } else if (sessionStorage == "client") {
+        } else if (sessionStorage == SESSION_STORAGE_TYPE_CLIENT) {
             ctx.setSessionValue(scope.getScopeId() + "-tenant-id", null);
             ctx.setSessionValue(scope.getScopeId() + "-tenant-name", null);
             ctx.setSessionValue(scope.getScopeId() + "-user-id", null);
@@ -369,7 +376,7 @@ public abstract class GenericUserManager implements UserManager {
      * @param ctx  the request to remove role data from
      */
     protected void clearRolesForUser(UserInfo user, WebContext ctx) {
-        if (sessionStorage == "server") {
+        if (sessionStorage == SESSION_STORAGE_TYPE_SERVER) {
             Optional<ServerSession> sess = ctx.getServerSession(false);
             if (sess.isPresent()) {
                 sess.get().putValue(scope.getScopeId() + "-user-roles", null);

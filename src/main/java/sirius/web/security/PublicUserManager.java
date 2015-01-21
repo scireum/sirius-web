@@ -18,12 +18,15 @@ import java.util.Collections;
 /**
  * A simple user manager which always returns the same user with a defined set of roles.
  * <p>
- * Essentially this user manager make all functionality public accessible by always returning a user which has a
+ * Essentially this user manager makes all functionality public accessible by always returning a user which has a
  * defined set of roles (therefore one can of course disable some functions entirely).
  * <p>
- * This roles granted can be controlled by two config entries. On is <tt>security.publicRoles</tt> which
+ * This roles granted can be controlled by two config entries. One is <tt>security.publicRoles</tt> which
  * also affects all other user managers. The other is <tt>defaultRoles</tt> which has to be defined within
  * the scope.
+ * <p>
+ * Note that also <tt>trustedRoles</tt> can be defined to control roles which are only added to a trusted user
+ * (i.e. from the local network).
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/06
@@ -31,6 +34,7 @@ import java.util.Collections;
 public class PublicUserManager extends GenericUserManager {
 
     private final UserInfo user;
+    private final UserInfo trustedUser;
 
     @Register(name = "public")
     public static class Factory implements UserManagerFactory {
@@ -45,13 +49,30 @@ public class PublicUserManager extends GenericUserManager {
 
     protected PublicUserManager(ScopeInfo scope, Extension config) {
         super(scope, config);
-        this.user = new UserInfo(null, null, "(public)", "(public)", "", transformRoles(Collections.emptySet()), null);
+        this.user = new UserInfo(null,
+                                 null,
+                                 "(public)",
+                                 "(public)",
+                                 "",
+                                 transformRoles(Collections.emptyList(), false),
+                                 null);
+        this.trustedUser = new UserInfo(null,
+                                        null,
+                                        "(public)",
+                                        "(public)",
+                                        "",
+                                        transformRoles(Collections.emptyList(), true),
+                                        null);
     }
 
     @Nonnull
     @Override
     public UserInfo bindToRequest(@Nonnull WebContext ctx) {
-        return user;
+        if (ctx.isTrusted()) {
+            return trustedUser;
+        } else {
+            return user;
+        }
     }
 
     @Override
