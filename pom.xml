@@ -231,7 +231,7 @@
             <version>1.0</version>
         </dependency>
 
-        <!-- Used to compile SCSS (SASS) files into CSS file -->
+        <!-- Used to read and write JSON -->
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>

@@ -87,10 +87,11 @@ public class ServiceDispatcher implements WebDispatcher {
     }
 
     private void performServiceCall(WebContext ctx, String subpath) {
-        ServiceCall call = null;
         Tuple<String, String> callPath = Strings.split(subpath, "/");
         String type = callPath.getFirst();
         String service = callPath.getSecond();
+
+        ServiceCall call = null;
         if ("xml".equals(type)) {
             call = new XMLServiceCall(ctx);
         } else if ("json".equals(type)) {
@@ -104,15 +105,6 @@ public class ServiceDispatcher implements WebDispatcher {
             call = new RawServiceCall(ctx);
         }
 
-        if (call == null) {
-            ctx.respondWith()
-               .error(HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE,
-                      Exceptions.createHandled()
-                                .withSystemErrorMessage("Unknown or unsupported type: %s. Use 'xml' or 'json'", type)
-                                .handle());
-            return;
-        }
-
         StructuredService serv = gc.getPart(service, StructuredService.class);
         if (serv == null) {
             call.handle(null,
@@ -121,20 +113,26 @@ public class ServiceDispatcher implements WebDispatcher {
                                           "Unknown service: %s. Try /services for a complete list of available services.",
                                           service)
                                   .handle());
-        } else {
-            // Install language
-            CallContext.getCurrent().setLang(NLS.makeLang(ctx.getLang()));
-
-            // Install user and check permissions
-            UserInfo user = UserContext.getCurrentUser();
-            for (String p : Permissions.computePermissionsFromAnnotations(serv.getClass())) {
-                if (!user.hasPermission(p)) {
-                    ctx.respondWith().error(HttpResponseStatus.UNAUTHORIZED, "Missing permission: " + p);
-                    return;
-                }
-            }
-            call.invoke(serv);
+            return;
         }
+
+        invokeService(ctx, call, serv);
+    }
+
+    private void invokeService(WebContext ctx, ServiceCall call, StructuredService serv) {
+        // Install language
+        CallContext.getCurrent().setLang(NLS.makeLang(ctx.getLang()));
+
+        // Install user and check permissions
+        UserInfo user = UserContext.getCurrentUser();
+        for (String p : Permissions.computePermissionsFromAnnotations(serv.getClass())) {
+            if (!user.hasPermission(p)) {
+                ctx.respondWith().error(HttpResponseStatus.UNAUTHORIZED, "Missing permission: " + p);
+                return;
+            }
+        }
+
+        call.invoke(serv);
     }
 
     private List<ComparableTuple<String, Collection<StructuredService>>> collectServiceInfo() {

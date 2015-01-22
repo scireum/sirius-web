@@ -56,7 +56,8 @@ class LowLevelHandler extends ChannelDuplexHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof ByteBuf) {
-            WebServer.bytesIn += ((ByteBuf) msg).readableBytes();
+            int messageSize = ((ByteBuf) msg).readableBytes();
+            WebServer.bytesIn += messageSize;
             if (WebServer.bytesIn < 0) {
                 WebServer.bytesIn = 0;
             }
@@ -64,7 +65,7 @@ class LowLevelHandler extends ChannelDuplexHandler {
             if (WebServer.messagesIn < 0) {
                 WebServer.messagesIn = 0;
             }
-            ctx.pipeline().get(WebServerHandler.class).inbound(((ByteBuf) msg).readableBytes());
+            ctx.pipeline().get(WebServerHandler.class).inbound(messageSize);
         }
         super.channelRead(ctx, msg);
     }
@@ -72,7 +73,8 @@ class LowLevelHandler extends ChannelDuplexHandler {
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         if (msg instanceof ByteBuf) {
-            WebServer.bytesOut += ((ByteBuf) msg).writableBytes();
+            int messageSize = ((ByteBuf) msg).writableBytes();
+            WebServer.bytesOut += messageSize;
             if (WebServer.bytesOut < 0) {
                 WebServer.bytesOut = 0;
             }
@@ -80,7 +82,7 @@ class LowLevelHandler extends ChannelDuplexHandler {
             if (WebServer.messagesOut < 0) {
                 WebServer.messagesOut = 0;
             }
-            ctx.pipeline().get(WebServerHandler.class).outbound(((ByteBuf) msg).readableBytes());
+            ctx.pipeline().get(WebServerHandler.class).outbound(messageSize);
         }
         super.write(ctx, msg, promise);
     }
