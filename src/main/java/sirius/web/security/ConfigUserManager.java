@@ -14,6 +14,7 @@ import com.google.common.hash.Hashing;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.extensions.Extension;
 import sirius.kernel.extensions.Extensions;
+import sirius.kernel.nls.NLS;
 import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
@@ -99,6 +100,7 @@ public class ConfigUserManager extends GenericUserManager {
                             userId,
                             e.get("name").asString(),
                             e.get("email").asString(),
+                            e.get("lang").asString(null),
                             computeRoles(null, userId),
                             u -> e);
     }
@@ -130,4 +132,6 @@ public class ConfigUserManager extends GenericUserManager {
     protected void clearRolesForUser(UserInfo user, WebContext ctx) {
         // Roles are constant - no need to store them in a session...
     }
+
+
 }

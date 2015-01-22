@@ -12,6 +12,7 @@ import com.google.common.collect.Sets;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.extensions.Extension;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.nls.NLS;
 import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
@@ -105,7 +106,14 @@ public class LDAPUserManager extends GenericUserManager {
                         return null;
                     }
 
-                    return new UserInfo(null, null, user, user, null, permissions, null);
+                    return new UserInfo(null,
+                                        null,
+                                        user,
+                                        user,
+                                        null,
+                                        null,
+                                        permissions,
+                                        null);
                 }
             } finally {
                 ctx.close();
@@ -175,5 +183,7 @@ public class LDAPUserManager extends GenericUserManager {
     protected Object getUserObject(UserInfo u) {
         return null;
     }
+
+
 
 }

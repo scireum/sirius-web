@@ -77,6 +77,7 @@ public abstract class GenericUserManager implements UserManager {
                                         "(nobody)",
                                         "(nobody)",
                                         null,
+                                        null,
                                         Permissions.applyProfilesAndPublicRoles(Collections.emptySet()),
                                         null);
 
@@ -249,6 +250,7 @@ public abstract class GenericUserManager implements UserManager {
                                         ctx.getServerSession().getValue(scope.getScopeId() + "-tenant-name").asString(),
                                         ctx.getServerSession().getValue(scope.getScopeId() + "-user-name").asString(),
                                         ctx.getServerSession().getValue(scope.getScopeId() + "-user-email").asString(),
+                                        ctx.getServerSession().getValue(scope.getScopeId() + "-user-lang").asString(),
                                         computeRoles(ctx, userId.asString()),
                                         u -> getUserObject(u));
                 }
@@ -261,6 +263,7 @@ public abstract class GenericUserManager implements UserManager {
                                     ctx.getSessionValue(scope.getScopeId() + "-tenant-name").asString(),
                                     ctx.getSessionValue(scope.getScopeId() + "-user-name").asString(),
                                     ctx.getSessionValue(scope.getScopeId() + "-user-email").asString(),
+                                    ctx.getSessionValue(scope.getScopeId() + "-user-lang").asString(),
                                     computeRoles(ctx, userId.asString()),
                                     u -> getUserObject(u));
 
@@ -306,6 +309,7 @@ public abstract class GenericUserManager implements UserManager {
             sess.putValue(scope.getScopeId() + "-user-id", user.getUserId());
             sess.putValue(scope.getScopeId() + "-user-name", user.getUserName());
             sess.putValue(scope.getScopeId() + "-user-email", user.getEmail());
+            sess.putValue(scope.getScopeId() + "-user-lang", user.getLang());
             sess.putValue(ServerSession.USER, user.getUserName() + "(" + user.getEmail() + ")");
             sess.markAsUserSession();
         } else if (sessionStorage == SESSION_STORAGE_TYPE_CLIENT) {
@@ -314,6 +318,7 @@ public abstract class GenericUserManager implements UserManager {
             ctx.setSessionValue(scope.getScopeId() + "-user-id", user.getUserId());
             ctx.setSessionValue(scope.getScopeId() + "-user-name", user.getUserName());
             ctx.setSessionValue(scope.getScopeId() + "-user-email", user.getEmail());
+            ctx.setSessionValue(scope.getScopeId() + "-user-lang", user.getLang());
         }
         storeRolesForUser(user, ctx);
     }
@@ -355,6 +360,7 @@ public abstract class GenericUserManager implements UserManager {
                 sess.putValue(scope.getScopeId() + "-user-name", null);
                 sess.putValue(scope.getScopeId() + "-user-email", null);
                 sess.putValue(scope.getScopeId() + "-user-roles", null);
+                sess.putValue(scope.getScopeId() + "-user-lang", null);
             }
         } else if (sessionStorage == SESSION_STORAGE_TYPE_CLIENT) {
             ctx.setSessionValue(scope.getScopeId() + "-tenant-id", null);
@@ -362,6 +368,7 @@ public abstract class GenericUserManager implements UserManager {
             ctx.setSessionValue(scope.getScopeId() + "-user-id", null);
             ctx.setSessionValue(scope.getScopeId() + "-user-name", null);
             ctx.setSessionValue(scope.getScopeId() + "-user-email", null);
+            ctx.setSessionValue(scope.getScopeId() + "-user-lang", null);
         }
         clearRolesForUser(user, ctx);
     }
@@ -382,5 +389,10 @@ public abstract class GenericUserManager implements UserManager {
                 sess.get().putValue(scope.getScopeId() + "-user-roles", null);
             }
         }
+    }
+
+    @Override
+    public boolean isLoginSupported() {
+        return true;
     }
 }

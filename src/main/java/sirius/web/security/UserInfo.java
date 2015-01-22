@@ -9,7 +9,9 @@
 package sirius.web.security;
 
 import sirius.kernel.commons.Strings;
+import sirius.kernel.di.morphium.Adaptable;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Set;
 import java.util.function.Function;
@@ -17,16 +19,17 @@ import java.util.function.Function;
 /**
  * Created by aha on 20.06.14.
  */
-public class UserInfo {
+public class UserInfo implements Adaptable {
 
     public static final String PERMISSION_LOGGED_IN = "flag-logged-in";
 
-    public static final UserInfo NOBODY = new UserInfo(null, null, "ANONYMOUS", "(no user)", "", null, null);
+    public static final UserInfo NOBODY = new UserInfo(null, null, "ANONYMOUS", "(no user)", "", null, null, null);
     public static final UserInfo GOD_LIKE = new UserInfo(null,
                                                          null,
                                                          "ADMIN",
                                                          "(admin)",
                                                          "",
+                                                         null,
                                                          Collections.singleton("*"),
                                                          null);
 
@@ -35,6 +38,7 @@ public class UserInfo {
     private String userId;
     private String username;
     private String eMail;
+    private String lang;
     private Set<String> permissions = null;
     private boolean allPermissions = false;
     private Function<UserInfo, Object> userSupplier;
@@ -44,6 +48,7 @@ public class UserInfo {
                     String userId,
                     String username,
                     String eMail,
+                    @Nullable String lang,
                     Set<String> permissions,
                     Function<UserInfo, Object> userSupplier) {
         this.tenantId = tenantId;
@@ -51,6 +56,7 @@ public class UserInfo {
         this.userId = userId;
         this.username = username;
         this.eMail = eMail;
+        this.lang = lang;
         this.permissions = permissions;
         this.allPermissions = permissions != null && permissions.contains("*");
         this.userSupplier = userSupplier;
@@ -74,6 +80,10 @@ public class UserInfo {
 
     public String getEmail() {
         return eMail;
+    }
+
+    public String getLang() {
+        return lang;
     }
 
     public boolean hasPermission(String permission) {

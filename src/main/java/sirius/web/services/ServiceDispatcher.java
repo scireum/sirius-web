@@ -10,15 +10,18 @@ package sirius.web.services;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.async.Async;
+import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.*;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Context;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.nls.NLS;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 import sirius.web.security.Permissions;
 import sirius.web.security.UserContext;
+import sirius.web.security.UserInfo;
 
 import java.util.Collection;
 import java.util.List;
@@ -119,8 +122,13 @@ public class ServiceDispatcher implements WebDispatcher {
                                           service)
                                   .handle());
         } else {
+            // Install language
+            CallContext.getCurrent().setLang(NLS.makeLang(ctx.getLang()));
+
+            // Install user and check permissions
+            UserInfo user = UserContext.getCurrentUser();
             for (String p : Permissions.computePermissionsFromAnnotations(serv.getClass())) {
-                if (!UserContext.getCurrentUser().hasPermission(p)) {
+                if (!user.hasPermission(p)) {
                     ctx.respondWith().error(HttpResponseStatus.UNAUTHORIZED, "Missing permission: " + p);
                     return;
                 }

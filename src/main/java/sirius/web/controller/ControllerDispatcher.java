@@ -18,6 +18,7 @@ import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
+import sirius.kernel.nls.NLS;
 import sirius.web.http.InputStreamHandler;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
@@ -88,6 +89,7 @@ public class ControllerDispatcher implements WebDispatcher {
                     Async.executor("web-mvc")
                          .fork(() -> {
                              try {
+                                 CallContext.getCurrent().setLang(NLS.makeLang(ctx.getLang()));
                                  TaskContext.get().setSubSystem(route.getController().getClass().getSimpleName());
                                  params.add(0, ctx);
                                  // Check if we're allowed to call this route...
@@ -104,7 +106,7 @@ public class ControllerDispatcher implements WebDispatcher {
                                      }
 
                                      // No Interceptor is in charge...use default templates...
-                                     if (UserContext.getCurrentUser().isLoggedIn()) {
+                                     if (UserContext.getCurrentUser().isLoggedIn() || !UserContext.get().getUserManager().isLoginSupported()) {
                                          ctx.respondWith().template("permission-error.html");
                                      } else {
                                          ctx.respondWith().template("login.html");

@@ -8,6 +8,9 @@
 
 package sirius.web.security;
 
+import sirius.kernel.di.morphium.Adaptable;
+
+import javax.annotation.Nullable;
 import java.util.function.Function;
 
 /**
@@ -22,17 +25,18 @@ import java.util.function.Function;
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/06
  */
-public class ScopeInfo {
+public class ScopeInfo implements Adaptable {
 
     /**
      * If no distinct scope is recognized by the current <tt>ScopeDetector</tt> or if no detector is installed,
      * this scope is used.
      */
-    public static final ScopeInfo DEFAULT_SCOPE = new ScopeInfo("default", "default", "default", null);
+    public static final ScopeInfo DEFAULT_SCOPE = new ScopeInfo("default", "default", "default", null, null);
 
     private String scopeId;
     private String scopeType;
     private String scopeName;
+    private String lang;
     private Function<ScopeInfo, Object> scopeSupplier;
 
     /**
@@ -42,13 +46,19 @@ public class ScopeInfo {
      * @param scopeType     the type of the scope (like "backend" or "frontend"). This is used to retrieve the
      *                      associated {@link UserManager} from the system config.
      * @param scopeName     the representative name of the scope
+     * @param lang          the language used by the scope or <tt>null</tt>  for the default language
      * @param scopeSupplier used to fetch the associated scope object. This can be a database entity or the like
      *                      associated with the scope
      */
-    public ScopeInfo(String scopeId, String scopeType, String scopeName, Function<ScopeInfo, Object> scopeSupplier) {
+    public ScopeInfo(String scopeId,
+                     String scopeType,
+                     String scopeName,
+                     @Nullable String lang,
+                     Function<ScopeInfo, Object> scopeSupplier) {
         this.scopeId = scopeId;
         this.scopeType = scopeType;
         this.scopeName = scopeName;
+        this.lang = lang;
         this.scopeSupplier = scopeSupplier;
     }
 
@@ -80,6 +90,10 @@ public class ScopeInfo {
      */
     public String getScopeName() {
         return scopeName;
+    }
+
+    public String getLang() {
+        return lang;
     }
 
     /**

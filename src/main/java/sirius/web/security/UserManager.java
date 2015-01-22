@@ -24,4 +24,5 @@ public interface UserManager {
 
     void detachFromSession(@Nonnull UserInfo user, @Nonnull WebContext ctx);
 
+    boolean isLoginSupported();
 }

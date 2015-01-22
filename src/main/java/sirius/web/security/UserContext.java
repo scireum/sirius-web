@@ -122,7 +122,9 @@ public class UserContext {
      */
     private void bindScopeToRequest(WebContext ctx) {
         if (ctx != null && ctx.isValid() && detector != null) {
-            setCurrentScope(detector.detectScope(ctx));
+            ScopeInfo scope = detector.detectScope(ctx);
+            setCurrentScope(scope);
+            CallContext.getCurrent().setLang(scope.getLang());
         } else {
             setCurrentScope(ScopeInfo.DEFAULT_SCOPE);
         }
@@ -134,7 +136,9 @@ public class UserContext {
     private void bindUserToRequest(WebContext ctx) {
         if (ctx != null && ctx.isValid()) {
             UserManager manager = getUserManager();
-            setCurrentUser(manager.bindToRequest(ctx));
+            UserInfo user = manager.bindToRequest(ctx);
+            setCurrentUser(user);
+            CallContext.getCurrent().setLang(user.getLang());
         } else {
             setCurrentUser(UserInfo.NOBODY);
         }
@@ -270,7 +274,7 @@ public class UserContext {
         manager.attachToSession(getUser(), ctx);
     }
 
-    private UserManager getUserManager() {
+    public UserManager getUserManager() {
         UserManager manager = managers.get(getScope().getScopeId());
         if (manager == null) {
             manager = getManager(currentScope);

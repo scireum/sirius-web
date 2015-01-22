@@ -10,6 +10,7 @@ package sirius.web.security;
 
 import sirius.kernel.di.std.Register;
 import sirius.kernel.extensions.Extension;
+import sirius.kernel.nls.NLS;
 import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
@@ -54,6 +55,7 @@ public class PublicUserManager extends GenericUserManager {
                                  "(public)",
                                  "(public)",
                                  "",
+                                 null,
                                  transformRoles(Collections.emptyList(), false),
                                  null);
         this.trustedUser = new UserInfo(null,
@@ -61,6 +63,7 @@ public class PublicUserManager extends GenericUserManager {
                                         "(public)",
                                         "(public)",
                                         "",
+                                        null,
                                         transformRoles(Collections.emptyList(), true),
                                         null);
     }
@@ -99,4 +102,11 @@ public class PublicUserManager extends GenericUserManager {
     public void detachFromSession(@Nonnull UserInfo user, @Nonnull WebContext ctx) {
 
     }
+
+
+    @Override
+    public boolean isLoginSupported() {
+        return false;
+    }
+
 }

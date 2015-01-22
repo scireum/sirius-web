@@ -13,6 +13,7 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.extensions.Extension;
+import sirius.kernel.nls.NLS;
 import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
@@ -73,7 +74,7 @@ public class SSOUserManager extends GenericUserManager {
             roles = Sets.newTreeSet();
         }
         roles.add(UserInfo.PERMISSION_LOGGED_IN);
-        return new UserInfo(null, null, user, user, null, transformRoles(roles, ctx.isTrusted()), null);
+        return new UserInfo(null, null, user, user, null, null, transformRoles(roles, ctx.isTrusted()), null);
     }
 
     private Set<String> parseRolesString(String rolesString) {
@@ -92,6 +93,12 @@ public class SSOUserManager extends GenericUserManager {
     @Override
     protected Object getUserObject(UserInfo u) {
         return null;
+    }
+
+
+    @Override
+    public boolean isLoginSupported() {
+        return false;
     }
 
 }
