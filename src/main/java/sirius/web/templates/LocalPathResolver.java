@@ -32,8 +32,11 @@ import java.util.concurrent.TimeUnit;
 @Register
 public class LocalPathResolver implements Resolver {
 
+    private static final String DEFAULT_BASE_DIR = "data/resources";
+
     @ConfigValue("content.localResourcePath")
     private String localResourcePath;
+
     private File baseDir;
     private Boolean baseDirFound;
     private RateLimit checkLimit = RateLimit.timeInterval(1, TimeUnit.MINUTES);
@@ -54,8 +57,7 @@ public class LocalPathResolver implements Resolver {
         String scope = UserContext.getCurrentScope().getScopeId();
         File file = new File(baseDir,
                              (scope + "/" + (resource.startsWith("/") ? resource : "/" + resource)).replace("/",
-                                                                                                            File.separator)
-        );
+                                                                                                            File.separator));
         if (file.exists()) {
             try {
                 return Resource.dynamicResource(scopeId, resource, file.toURI().toURL());
@@ -81,13 +83,24 @@ public class LocalPathResolver implements Resolver {
                 baseDirFound = false;
             } else {
                 getBaseDir();
-                baseDirFound = baseDir.exists();
-                if (!baseDirFound) {
-                    Content.LOG.WARN(
-                            "Base directory: '%s' (%s) for local templates does not exist! Will check every minute...",
-                            localResourcePath,
-                            baseDir.getAbsolutePath());
+                if (!baseDir.exists()) {
+                    if (DEFAULT_BASE_DIR.equals(localResourcePath)) {
+                        // If we're using the default lookup path, only report once, that it does not exist
+                        // as it is not necessary at all.
+                        if (baseDirFound == null) {
+                            Content.LOG.INFO(
+                                    "Base directory: '%s' (%s) for local templates was not created yet. Will check every minute...",
+                                    localResourcePath,
+                                    baseDir.getAbsolutePath());
+                        }
+                    } else {
+                        Content.LOG.WARN(
+                                "Base directory: '%s' (%s) for local templates does not exist! Will check every minute...",
+                                localResourcePath,
+                                baseDir.getAbsolutePath());
+                    }
                 }
+                baseDirFound = baseDir.exists();
             }
         }
         return baseDirFound;
