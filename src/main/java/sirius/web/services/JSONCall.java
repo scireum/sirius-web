@@ -8,13 +8,14 @@
 
 package sirius.web.services;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Charsets;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.google.common.io.ByteStreams;
 import sirius.kernel.xml.Outcall;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Map;
 
 /**
  * Simple call to send JSON to a server (URL) and receive JSON back.
@@ -34,7 +35,7 @@ public class JSONCall {
      * @throws java.io.IOException in case of an IO error
      */
     public static JSONCall to(URL url) throws IOException {
-        return to(url, "application/json");
+        return to(url, "application/json; charset=" + Charsets.UTF_8.name());
     }
 
     /**
@@ -73,9 +74,6 @@ public class JSONCall {
         return new JSONStructuredOutput(outcall.getOutput(), null, Charsets.UTF_8.name());
     }
 
-    private static final ObjectMapper mapper = new ObjectMapper();
-
-
     /**
      * Provides access to the JSON answer of the call.
      *
@@ -83,7 +81,7 @@ public class JSONCall {
      * @throws IOException in case of an IO error while receiving the result
      */
     @SuppressWarnings("unchecked")
-    public Map<String, Object> getInput() throws IOException {
-        return mapper.readValue(outcall.getInput(), Map.class);
+    public JSONObject getInput() throws IOException {
+        return JSON.parseObject(new String(ByteStreams.toByteArray(outcall.getInput()), outcall.getContentEncoding()));
     }
 }

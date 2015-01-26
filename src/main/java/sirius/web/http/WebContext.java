@@ -8,6 +8,8 @@
 
 package sirius.web.http;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -18,7 +20,6 @@ import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.multipart.*;
-import org.codehaus.jackson.map.ObjectMapper;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Strings;
@@ -41,6 +42,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -241,8 +243,6 @@ public class WebContext {
 
     @Part
     private static SessionManager sessionManager;
-
-    private static final ObjectMapper mapper = new ObjectMapper();
 
     public WebContext() {
     }
@@ -1331,8 +1331,7 @@ public class WebContext {
      *
      * @return the body of the HTTP request as JSON input
      */
-    @SuppressWarnings("unchecked")
-    public Map<String, Object> getJSONContent() {
+    public JSONObject getJSONContent() {
         try {
             if (content == null) {
                 throw Exceptions.handle()
@@ -1341,7 +1340,7 @@ public class WebContext {
                                 .handle();
             }
             if (content.isInMemory()) {
-                return mapper.readValue(new ByteArrayInputStream(content.get()), Map.class);
+                return JSON.parseObject(content.getString(getRequestEncoding()));
             } else {
                 if (content.getFile().length() > maxStructuredInputSize && maxStructuredInputSize > 0) {
                     throw Exceptions.handle()
@@ -1351,7 +1350,7 @@ public class WebContext {
                                             maxStructuredInputSize)
                                     .handle();
                 }
-                return mapper.readValue(content.getFile(), Map.class);
+                return JSON.parseObject(content.getString(getRequestEncoding()));
             }
         } catch (HandledException e) {
             throw e;
@@ -1362,6 +1361,31 @@ public class WebContext {
                             .withSystemErrorMessage("Expected a valid JSON map as body of this request: %s (%s).")
                             .handle();
         }
+    }
+
+    /**
+     * Tries to determine the charset used for the INCOMING request.
+     * <p>
+     * This is not to be confused with the desired charset of the outgoing data (specified via
+     * <tt>Accept-Charset</tt>).
+     *
+     * @return the charset specified via <tt>Content-Type</tt> or <tt>UTF-8</tt> if no value is given.
+     */
+    public Charset getRequestEncoding() {
+        try {
+            Value contentType = getHeaderValue(HttpHeaders.Names.CONTENT_TYPE);
+            if (contentType.isFilled()) {
+                for (String property : contentType.asString().split(";")) {
+                    Tuple<String, String> nameValue = Strings.split(property.trim(), "=");
+                    if ("charset".equals(nameValue.getFirst())) {
+                        return Charset.forName(nameValue.getSecond());
+                    }
+                }
+            }
+        } catch (UnsupportedCharsetException e) {
+            Exceptions.ignore(e);
+        }
+        return Charsets.UTF_8;
     }
 
     /**
