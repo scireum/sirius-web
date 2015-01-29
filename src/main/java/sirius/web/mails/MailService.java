@@ -371,10 +371,23 @@ public class MailService {
          * mail {
          *  templates {
          *      my-template {
+         *          # optional - set "subject" parameter in the given context instead"
          *          subject = "Velocity expression to describe the subject"
+         *
+         *          # optional - Language dependent subjects
+         *          subject_de = "..."
+         *          subject_en = "..."
+         *
          *          text = "mail/path-to-the-text-template.vm"
          *          # optional
          *          html = "mail/path-to-the-html-template.vm"
+         *
+         *          # optional: Language dependent templates:
+         *          text_de = "..."
+         *          html_de = "..."
+         *          text_en = "..."
+         *          html_en = "..."
+         *
          *          # optional
          *          attachments {
          *              test-pdf {
@@ -600,18 +613,21 @@ public class MailService {
             context.put("template", mailExtension);
             try {
                 subject(content.generator()
-                               .direct(ex.get("subject").asString("$subject"), VelocityContentHandler.VM)
+                               .direct(ex.get("subject_" + NLS.getCurrentLang())
+                                         .asString(ex.get("subject").asString("$subject")), VelocityContentHandler.VM)
                                .applyContext(context)
                                .generate());
                 textContent(content.generator()
-                                   .useTemplate(ex.get("text").asString())
+                                   .useTemplate(ex.get("text_" + NLS.getCurrentLang())
+                                                  .asString(ex.get("text").asString()))
                                    .applyContext(context)
                                    .generate());
                 htmlContent(null);
                 if (ex.get("html").isFilled()) {
                     try {
                         htmlContent(content.generator()
-                                           .useTemplate(ex.get("html").asString())
+                                           .useTemplate(ex.get("html_" + NLS.getCurrentLang())
+                                                          .asString(ex.get("html").asString()))
                                            .applyContext(context)
                                            .generate());
                     } catch (Throwable e) {
@@ -621,7 +637,7 @@ public class MailService {
                                   .withSystemErrorMessage(
                                           "Cannot generate HTML content using template %s (%s) when sending a mail from '%s' to '%s': %s (%s)",
                                           mailExtension,
-                                          ex.get("html").asString(),
+                                          ex.get("html_" + NLS.getCurrentLang()).asString(ex.get("html").asString()),
                                           senderEmail,
                                           receiverEmail)
                                   .handle();

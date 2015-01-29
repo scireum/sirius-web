@@ -20,6 +20,7 @@ import sirius.kernel.health.Incident;
 import sirius.kernel.info.Product;
 import sirius.kernel.xml.Outcall;
 
+import javax.annotation.Nullable;
 import java.net.URL;
 import java.util.List;
 import java.util.Set;
@@ -94,11 +95,12 @@ public class HipChat implements ExceptionHandler, Lifecycle {
      *
      * @param messageType determines the type of message to be sent. Only messages with a type listed in the
      *                    config value <b>health.hipchat.types</b> will be sent, others will be discarded.
+     *                    If <tt>null</tt> is passed in, no filtering is performed and the message is always sent.
      * @param message     the message to send (might contain HTML formatting).
      * @param color       the color to use
-     * @param notify      should used by notified or not?
+     * @param notify      should users be notified or not?
      */
-    public static void sendMessage(String messageType, String message, Color color, boolean notify) {
+    public static void sendMessage(@Nullable String messageType, String message, Color color, boolean notify) {
         try {
             // Limit to 5 msg every 15 sec to prevent flooding....
             long now = System.currentTimeMillis();
@@ -119,7 +121,7 @@ public class HipChat implements ExceptionHandler, Lifecycle {
             if (messageFilter == null) {
                 messageFilter = messageTypes.stream().map(String::toLowerCase).collect(Collectors.toSet());
             }
-            if (!messageFilter.contains(messageType)) {
+            if (messageType != null && !messageFilter.contains(messageType)) {
                 return;
             }
 

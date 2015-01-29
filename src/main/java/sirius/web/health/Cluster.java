@@ -84,6 +84,9 @@ public class Cluster implements EveryMinute {
     @ConfigValue("health.cluster.priority")
     private int priority;
 
+    @ConfigValue("health.cluster.logState")
+    private boolean logState;
+
     @ConfigValue("health.cluster.alerts.mail")
     private List<String> alertReceivers;
 
@@ -317,7 +320,9 @@ public class Cluster implements EveryMinute {
             ms.createEmail().useMailTemplate("system-alert", ctx).toEmail(receiver).send();
         }
         HipChat.sendMessage("cluster", "Cluster is RED", HipChat.Color.RED, firstAlert);
-        LOG.WARN("NodeState: %s, ClusterState: %s", nodeState, clusterState);
+        if (logState) {
+            LOG.WARN("NodeState: %s, ClusterState: %s", nodeState, clusterState);
+        }
     }
 
     /**
