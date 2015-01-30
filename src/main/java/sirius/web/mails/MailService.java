@@ -11,6 +11,7 @@ package sirius.web.mails;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.sun.mail.smtp.SMTPMessage;
 import com.typesafe.config.Config;
 import sirius.kernel.async.Async;
@@ -232,6 +233,18 @@ public class MailService {
     private MimeMultipart createContent(String textPart,
                                         String htmlPart,
                                         List<DataSource> attachments) throws Exception {
+        MimeMultipart content = createMainContent(textPart, htmlPart);
+        List<DataSource> mixedAttachments = filterAndAppendAlternativeParts(attachments, content);
+        if (mixedAttachments.isEmpty()) {
+            return content;
+        }
+        return createMixedContent(content, mixedAttachments);
+    }
+
+    /*
+     * Adds the text and html body parts as ALTERNATIVE
+     */
+    private MimeMultipart createMainContent(String textPart, String htmlPart) throws MessagingException {
         MimeMultipart content = new MimeMultipart(ALTERNATIVE);
         MimeBodyPart text = new MimeBodyPart();
         MimeBodyPart html = new MimeBodyPart();
@@ -246,27 +259,72 @@ public class MailService {
             html.setHeader(CONTENT_TYPE, TEXT_HTML_CHARSET_UTF_8);
             content.addBodyPart(html);
         }
-        if (!attachments.isEmpty()) {
-            for (DataSource attachment : attachments) {
-                // Generate a new root-multipart which contains the mail-content
-                // as alternative-content as well as the attachments.
-                MimeMultipart mixed = new MimeMultipart(MIXED);
-                MimeBodyPart contentPart = new MimeBodyPart();
-                contentPart.setContent(content);
-                mixed.addBodyPart(contentPart);
-                content = mixed;
-                // Filter null values since var-args are tricky...
-                if (attachment != null) {
-                    MimeBodyPart part = new MimeBodyPart();
-                    part.setDisposition(javax.mail.Part.ATTACHMENT);
-                    part.setDataHandler(new DataHandler(attachment));
-                    part.setFileName(attachment.getName());
+        return content;
+    }
+
+    /*
+     * Filters all ALTERNATIVE attachments and adds them to the content.
+     * returns all "real" attachments which have to be added as mixed body parts
+     */
+    private List<DataSource> filterAndAppendAlternativeParts(List<DataSource> attachments,
+                                                             MimeMultipart content) throws MessagingException {
+        // by default an "attachment" would be added as mixed body part
+        // however, some attachments like an iCalendar invitation must be added
+        // as alternative body part for the given html and text part
+        // Therefore we split the attachments into these two categories and then generate
+        // the appropriate parts...
+        List<DataSource> mixedAttachments = Lists.newArrayList();
+        for (DataSource attachment : attachments) {
+            // Filter null values since var-args are tricky...
+            if (attachment != null) {
+                if (attachment instanceof Attachment && ((Attachment) attachment).isAlternative()) {
+                    MimeBodyPart part = createBodyPart(attachment);
                     content.addBodyPart(part);
+                } else {
+                    mixedAttachments.add(attachment);
                 }
             }
         }
-        return content;
+        return mixedAttachments;
     }
+
+    /*
+     * Appends all "real" attachments as mixed body parts
+     */
+    private MimeMultipart createMixedContent(MimeMultipart content,
+                                             List<DataSource> mixedAttachments) throws MessagingException {
+        // Generate a new root-multipart which contains the mail-content
+        // as alternative-content as well as the attachments.
+        MimeMultipart mixed = new MimeMultipart(MIXED);
+        MimeBodyPart contentPart = new MimeBodyPart();
+        contentPart.setContent(content);
+        mixed.addBodyPart(contentPart);
+        for (DataSource attachment : mixedAttachments) {
+            MimeBodyPart part = createBodyPart(attachment);
+            mixed.addBodyPart(part);
+        }
+        return mixed;
+    }
+
+    /*
+     * Creates a body part for the given attachment
+     */
+    private MimeBodyPart createBodyPart(DataSource attachment) throws MessagingException {
+        MimeBodyPart part = new MimeBodyPart();
+        part.setFileName(attachment.getName());
+        part.setDataHandler(new DataHandler(attachment));
+        if (attachment instanceof Attachment) {
+            for (Map.Entry<String, String> h : ((Attachment) attachment).getHeaders()) {
+                if (Strings.isEmpty(h.getValue())) {
+                    part.removeHeader(h.getKey());
+                } else {
+                    part.setHeader(h.getKey(), h.getValue());
+                }
+            }
+        }
+        return part;
+    }
+
 
     /**
      * Implements the builder pattern to specify the mail to send.
@@ -286,6 +344,7 @@ public class MailService {
         private List<DataSource> attachments = Lists.newArrayList();
         private String bounceToken;
         private String lang;
+        private Map<String, String> headers = Maps.newTreeMap();
 
         /**
          * Sets the language used to perform {@link sirius.kernel.nls.NLS} lookups when rendering templates.
@@ -361,6 +420,11 @@ public class MailService {
             return this;
         }
 
+        public MailSender addHeader(String name, String value) {
+            headers.put(name, value);
+            return this;
+        }
+
         /**
          * Specifies the mail template to use.
          * <p>
@@ -388,6 +452,11 @@ public class MailService {
          *          text_en = "..."
          *          html_en = "..."
          *
+         *           # optional (Add headers to the mail)
+         *          headers {
+         *            name = value
+         *          }
+         *
          *          # optional
          *          attachments {
          *              test-pdf {
@@ -396,6 +465,17 @@ public class MailService {
          *                  fileName = "test.pdf"
          *                  # optional
          *                  encoding = "UTF-8"
+         *                  # optional
+         *                  contentType = "text/plain"
+         *                  # optional (treat this attachment as alternative to the body part rather than as
+         *                  # "real" attachment)
+         *                  alternative = true
+         *
+         *                  # optional (Add headers to the body part)
+         *                  headers {
+         *                      name = value
+         *                  }
+         *
          *              }
          *          }
          *      }
@@ -643,6 +723,11 @@ public class MailService {
                                   .handle();
                     }
                 }
+                if (ex.getConfig("headers") != null) {
+                    for (Map.Entry<String, com.typesafe.config.ConfigValue> e : ex.getConfig("headers").entrySet()) {
+                        headers.put(e.getKey(), NLS.toMachineString(e.getValue().unwrapped()));
+                    }
+                }
 
                 for (Config attachmentConfig : ex.getConfigs("attachments")) {
                     String template = attachmentConfig.getString("template");
@@ -670,7 +755,21 @@ public class MailService {
                         }
 
                         String mimeType = MimeHelper.guessMimeType(fileName);
-                        addAttachment(new Attachment(fileName, mimeType, out.toByteArray()));
+                        if (attachmentConfig.hasPath("contentType")) {
+                            mimeType = attachmentConfig.getString("contentType");
+                        }
+                        boolean asAlternative = false;
+                        if (attachmentConfig.hasPath("alternative")) {
+                            asAlternative = attachmentConfig.getBoolean("alternative");
+                        }
+                        Attachment att = new Attachment(fileName, mimeType, out.toByteArray(), asAlternative);
+                        if (attachmentConfig.hasPath("headers")) {
+                            for (Map.Entry<String, com.typesafe.config.ConfigValue> e : attachmentConfig.getConfig(
+                                    "headers").entrySet()) {
+                                att.addHeader(e.getKey(), NLS.toMachineString(e.getValue().unwrapped()));
+                            }
+                        }
+                        addAttachment(att);
                     } catch (Throwable t) {
                         Exceptions.handle()
                                   .to(MAIL)
@@ -772,6 +871,13 @@ public class MailService {
                                 msg.setHeader(X_BOUNCETOKEN, mail.bounceToken);
                             }
                             msg.setHeader(X_MAILER, mailer);
+                            for (Map.Entry<String, String> e : mail.headers.entrySet()) {
+                                if (Strings.isEmpty(e.getValue())) {
+                                    msg.removeHeader(e.getKey());
+                                } else {
+                                    msg.setHeader(e.getKey(), e.getValue());
+                                }
+                            }
                             msg.setSentDate(new Date());
                             transport.sendMessage(msg, msg.getAllRecipients());
                             messageId = msg.getMessageID();
@@ -836,6 +942,7 @@ public class MailService {
                 }
             }
         }
+
     }
 
     protected Transport getSMTPTransport(Session session, SMTPConfiguration config) {
