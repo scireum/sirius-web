@@ -39,6 +39,7 @@ import java.util.List;
 public class ControllerDispatcher implements WebDispatcher {
 
     protected static final Log LOG = Log.get("controller");
+    private static final String SYSTEM_MVC = "MVC";
 
     private List<Route> routes;
 
@@ -90,7 +91,10 @@ public class ControllerDispatcher implements WebDispatcher {
                          .fork(() -> {
                              try {
                                  CallContext.getCurrent().setLang(NLS.makeLang(ctx.getLang()));
-                                 TaskContext.get().setSubSystem(route.getController().getClass().getSimpleName());
+                                 TaskContext.get()
+                                            .setSystem(SYSTEM_MVC)
+                                            .setSubSystem(route.getController().getClass().getSimpleName())
+                                            .setJob(ctx.getRequestedURI());
                                  params.add(0, ctx);
                                  // Check if we're allowed to call this route...
                                  String missingPermission = route.checkAuth();
@@ -106,7 +110,9 @@ public class ControllerDispatcher implements WebDispatcher {
                                      }
 
                                      // No Interceptor is in charge...use default templates...
-                                     if (UserContext.getCurrentUser().isLoggedIn() || !UserContext.get().getUserManager().isLoginSupported()) {
+                                     if (UserContext.getCurrentUser().isLoggedIn() || !UserContext.get()
+                                                                                                  .getUserManager()
+                                                                                                  .isLoginSupported()) {
                                          ctx.respondWith().template("permission-error.html");
                                      } else {
                                          ctx.respondWith().template("login.html");
@@ -137,8 +143,7 @@ public class ControllerDispatcher implements WebDispatcher {
                          })
                          .dropOnOverload(() -> ctx.respondWith()
                                                   .error(HttpResponseStatus.INTERNAL_SERVER_ERROR,
-                                                         "Request dropped - System overload!")
-                         )
+                                                         "Request dropped - System overload!"))
                          .execute();
                     return true;
                 }

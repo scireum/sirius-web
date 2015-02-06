@@ -11,6 +11,7 @@ package sirius.web.services;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.async.Async;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.async.TaskContext;
 import sirius.kernel.commons.*;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Context;
@@ -38,6 +39,8 @@ import java.util.List;
  */
 @Register
 public class ServiceDispatcher implements WebDispatcher {
+
+    private static final String SYSTEM_SERVICE = "SERVICE";
 
     @Override
     public int getPriority() {
@@ -104,6 +107,8 @@ public class ServiceDispatcher implements WebDispatcher {
             }
             call = new RawServiceCall(ctx);
         }
+
+        TaskContext.get().setSystem(SYSTEM_SERVICE).setSubSystem(service).setJob(subpath);
 
         StructuredService serv = gc.getPart(service, StructuredService.class);
         if (serv == null) {
