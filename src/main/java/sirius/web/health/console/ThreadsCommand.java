@@ -9,6 +9,8 @@
 package sirius.web.health.console;
 
 import sirius.kernel.async.CallContext;
+import sirius.kernel.commons.Tuple;
+import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Register;
 
 import javax.annotation.Nonnull;
@@ -16,6 +18,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Console command which reports all running threads.
@@ -30,40 +33,55 @@ public class ThreadsCommand implements Command {
 
     @Override
     public void execute(Output output, String... params) throws Exception {
-        if (params.length == 1) {
+        boolean withTraces = Value.indexOf(0, params).isFilled();
+        boolean includeWaiting = "Y".equals(Value.indexOf(1, params).asString());
+        if (withTraces) {
             for (Map.Entry<Thread, StackTraceElement[]> thread : Thread.getAllStackTraces().entrySet()) {
+                ThreadInfo info = t.getThreadInfo(thread.getKey().getId());
                 if ("all".equalsIgnoreCase(params[0]) || thread.getKey()
                                                                .getName()
                                                                .toLowerCase()
                                                                .contains(params[0].toLowerCase())) {
-                    output.blankLine();
-                    output.line(thread.getKey().getName());
-                    output.separator();
-                    for (StackTraceElement e : thread.getValue()) {
-                        output.apply("%-60s %19s",
-                                     e.getClassName() + "." + e.getMethodName(),
-                                     e.getFileName() + ":" + e.getLineNumber());
-                    }
-                    output.separator();
-                    Map<String, String> mdc = CallContext.getMDC(thread.getKey().getId());
-                    if (!mdc.isEmpty()) {
-                        output.line("Mapped Diagnostic Context");
+                    if (includeWaiting || !isWaitingOrNative(thread.getKey(), info)) {
+                        output.blankLine();
+                        output.line(thread.getKey().getName());
                         output.separator();
-                        for (Map.Entry<String, String> e : mdc.entrySet()) {
-                            output.apply("%-20s %59s", e.getKey(), e.getValue());
+                        for (StackTraceElement e : thread.getValue()) {
+                            output.apply("%-60s %19s",
+                                         e.getClassName() + "." + e.getMethodName(),
+                                         e.getFileName() + ":" + e.getLineNumber());
                         }
+                        output.separator();
+                        Optional<CallContext> cc = CallContext.getContext(thread.getKey().getId());
+                        if (cc.isPresent()) {
+                            output.line("Mapped Diagnostic Context");
+                            output.separator();
+                            for (Tuple<String, String> e : cc.get().getMDC()) {
+                                output.apply("%-20s %59s", e.getFirst(), e.getSecond());
+                            }
+                            output.apply("Flow duration: %s", cc.get().getWatch().duration());
+                        }
+                        output.blankLine();
                     }
-                    output.blankLine();
                 }
             }
         } else {
+            output.line("Usage: threads [<filter> (or 'all')] [Y=include WAITING/NATIVE]");
+            output.separator();
             output.apply("%-15s %10s %53s", "STATE", "ID", "NAME");
             output.separator();
             for (ThreadInfo info : t.dumpAllThreads(false, false)) {
-                output.apply("%-15s %10s %53s", info.getThreadState().name(), info.getThreadId(), info.getThreadName());
+                output.apply("%-15s %10s %53s",
+                             info.isInNative() ? "NATIVE" : info.getThreadState().name(),
+                             info.getThreadId(),
+                             info.getThreadName());
             }
             output.separator();
         }
+    }
+
+    private boolean isWaitingOrNative(Thread thread, ThreadInfo info) {
+        return (info != null && info.isInNative()) || thread.getState() == Thread.State.WAITING || thread.getState() == Thread.State.TIMED_WAITING;
     }
 
     @Override
