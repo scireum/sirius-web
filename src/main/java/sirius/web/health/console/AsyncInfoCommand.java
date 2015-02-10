@@ -25,14 +25,15 @@ public class AsyncInfoCommand implements Command {
 
     @Override
     public void execute(Output output, String... params) throws Exception {
-        output.apply("%-20s %8s %8s %16s %8s %8s", "POOL", "ACTIVE", "QUEUED", "TOTAL", "BLOCKED", "DROPPED");
+        output.apply("%-20s %8s %8s %8s %12s %8s %8s", "POOL", "ACTIVE", "QUEUED", "TOTAL", "DURATION", "BLOCKED", "DROPPED");
         output.separator();
         for (AsyncExecutor exec : Async.getExecutors()) {
-            output.apply("%-20s %8d %8d %16d %8d %8d",
+            output.apply("%-20s %8d %8d %8d %12.1f %8d %8d",
                          exec.getCategory(),
                          exec.getActiveCount(),
                          exec.getQueue().size(),
-                         exec.getCompletedTaskCount(),
+                         exec.getExecuted(),
+                         exec.getAverageDuration(),
                          exec.getBlocked(),
                          exec.getDropped());
         }
