@@ -150,10 +150,6 @@ public class IPRange {
             if (result.ranges.isEmpty()) {
                 // No rules were parsed -> accept everything with a fast ==
                 result.ranges = null;
-            } else {
-                // We always accept "localhost"
-                result.ranges.add(IPV4_LOCALHOST);
-                result.ranges.add(IPV6_LOCALHOST);
             }
         }
         return result;
