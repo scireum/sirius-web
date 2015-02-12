@@ -1018,7 +1018,11 @@ public class WebContext {
      * @param header name of the header to fetch.
      * @return the value of the given header or <tt>null</tt> if no such header is present
      */
+    @Nullable
     public String getHeader(String header) {
+        if (request == null) {
+            return null;
+        }
         return request.headers().get(header);
     }
 
@@ -1028,6 +1032,7 @@ public class WebContext {
      * @param header name of the header to fetch.
      * @return the contents of the named header wrapped as <tt>Value</tt>
      */
+    @Nonnull
     public Value getHeaderValue(String header) {
         if (request == null) {
             return Value.EMPTY;
