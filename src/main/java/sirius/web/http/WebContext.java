@@ -720,7 +720,7 @@ public class WebContext {
                 return true;
             }
             trusted = WebServer.getTrustedRanges()
-                               .accepts(((InetSocketAddress) ctx.channel().remoteAddress()).getAddress());
+                               .accepts(getRemoteIP());
         }
 
         return trusted;

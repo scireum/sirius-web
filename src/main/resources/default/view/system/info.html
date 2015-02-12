@@ -18,13 +18,19 @@
                     <tr>
                         <td>Remote IP</td>
                         <td style="text-align: right">
-                            @call.getRemoteIP()
+                            @call.getRemoteIP().getHostAddress()
                         </td>
                     </tr>
                     <tr>
-                        <td>Trused IP</td>
+                        <td>Trusted IP</td>
                         <td style="text-align: right">
                             @call.isTrusted()
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Language</td>
+                        <td style="text-align: right">
+                            @call.getLang()
                         </td>
                     </tr>
                 </table>
