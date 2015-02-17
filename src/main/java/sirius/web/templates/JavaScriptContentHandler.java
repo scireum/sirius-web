@@ -8,15 +8,19 @@
 
 package sirius.web.templates;
 
+import com.google.common.base.Charsets;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import java.io.InputStreamReader;
+import java.io.Reader;
 
 /**
  * Base class for {@link sirius.web.templates.ContentHandler} implementations which rely on JavaScript.
  *
- * @author Andreas Haufler (aha@‚cireum.de)
+ * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/11
  */
 public abstract class JavaScriptContentHandler implements ContentHandler {
@@ -38,6 +42,27 @@ public abstract class JavaScriptContentHandler implements ContentHandler {
      */
     protected ScriptEngine getEngine() {
         return manager.getEngineByName(scriptEngine);
+    }
+
+
+    /**
+     * Executes the template as JavaScript code
+     */
+    protected void execute(Content.Generator generator) throws Exception {
+        ScriptEngine engine = getEngine();
+        ScriptingContext ctx = new ScriptingContext();
+        generator.getContext().applyTo(ctx);
+        if (Strings.isFilled(generator.getTemplateCode())) {
+            engine.eval(generator.getTemplateCode(), ctx);
+        } else {
+            engine.put(ScriptEngine.FILENAME, generator.getTemplateName());
+            Reader reader = new InputStreamReader(generator.getTemplate(), Charsets.UTF_8);
+            try {
+                engine.eval(reader, ctx);
+            } finally {
+                reader.close();
+            }
+        }
     }
 
 }
