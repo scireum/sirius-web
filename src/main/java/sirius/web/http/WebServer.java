@@ -352,7 +352,7 @@ public class WebServer implements Lifecycle, MetricProvider {
         bossGroup.shutdownGracefully();
         workerGroup.shutdownGracefully();
 
-        Response.ASYNC_CLIENT.close();
+        Response.closeAsyncClient();
     }
 
     @Override

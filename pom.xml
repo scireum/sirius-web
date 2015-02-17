@@ -290,6 +290,13 @@
             <version>3.9</version>
         </dependency>
 
+        <!-- Used to read and write CSV files -->
+        <dependency>
+            <groupId>net.sf.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>2.3</version>
+        </dependency>
+
         <!-- Include JUnit for testing -->
         <dependency>
             <groupId>junit</groupId>

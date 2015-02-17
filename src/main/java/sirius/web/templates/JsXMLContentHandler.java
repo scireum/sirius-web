@@ -1,14 +1,9 @@
 package sirius.web.templates;
 
-import com.google.common.base.Charsets;
-import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.xml.XMLStructuredOutput;
 
-import javax.script.ScriptEngine;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.Reader;
 
 /**
  * Generates XML output by evaluating a given JavaScript.
@@ -41,26 +36,6 @@ public class JsXMLContentHandler extends JavaScriptContentHandler {
         xmlOut.endResult();
 
         return true;
-    }
-
-    /*
-     * Evaluates the given template or script as JavaScript
-     */
-    private void execute(Content.Generator generator) throws Exception {
-        ScriptEngine engine = getEngine();
-        ScriptingContext ctx = new ScriptingContext();
-        generator.getContext().applyTo(ctx);
-        if (Strings.isFilled(generator.getTemplateCode())) {
-            engine.eval(generator.getTemplateCode(), ctx);
-        } else {
-            engine.put(ScriptEngine.FILENAME, generator.getTemplateName());
-            Reader reader = new InputStreamReader(generator.getTemplate(), Charsets.UTF_8);
-            try {
-                engine.eval(reader, ctx);
-            } finally {
-                reader.close();
-            }
-        }
     }
 
     @Override

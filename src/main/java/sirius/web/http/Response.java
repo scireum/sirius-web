@@ -1072,8 +1072,29 @@ public class Response {
         sendTemplateContent(name + ".html", content);
     }
 
-    protected static final AsyncHttpClient ASYNC_CLIENT = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setAllowPoolingConnection(
-            true).setRequestTimeoutInMs(-1).build());
+    protected static AsyncHttpClient asyncClient;
+
+    /*
+     * Generates and returns a pooling fully asynchronous HTTP client
+     */
+    protected static AsyncHttpClient getAsyncClient() {
+        if (asyncClient == null) {
+            asyncClient = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setAllowPoolingConnection(true)
+                                                                                 .setRequestTimeoutInMs(-1)
+                                                                                 .build());
+        }
+        return asyncClient;
+    }
+
+    /*
+     * Closes the async client used to tunnel data (if one was created).
+     */
+    protected static void closeAsyncClient() {
+        if (asyncClient != null) {
+            asyncClient.close();
+        }
+    }
+
 
     private static final Set<String> NON_TUNNELLED_HEADERS = Sets.newHashSet(HttpHeaders.Names.TRANSFER_ENCODING,
                                                                              HttpHeaders.Names.SERVER,
@@ -1093,7 +1114,7 @@ public class Response {
      */
     public void tunnel(final String url) {
         try {
-            AsyncHttpClient.BoundRequestBuilder brb = ASYNC_CLIENT.prepareGet(url);
+            AsyncHttpClient.BoundRequestBuilder brb = getAsyncClient().prepareGet(url);
             // Support caching...
             long ifModifiedSince = wc.getDateHeader(HttpHeaders.Names.IF_MODIFIED_SINCE);
             if (ifModifiedSince > 0) {
@@ -1506,4 +1527,5 @@ public class Response {
     public String toString() {
         return "Response for: " + wc.toString();
     }
+
 }

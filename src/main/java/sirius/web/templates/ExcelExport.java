@@ -156,6 +156,15 @@ public class ExcelExport {
                               .download(name)
                               .notCached()
                               .outputStream(HttpResponseStatus.OK, MIME_TYPE_EXCEL);
+        writeToStream(out);
+    }
+
+    /**
+     * Writes the generated excel file to the given stream.
+     *
+     * @param out the target stream to write the excel workbook to
+     */
+    public void writeToStream(OutputStream out) {
         try {
             try {
                 // Make it pretty...
