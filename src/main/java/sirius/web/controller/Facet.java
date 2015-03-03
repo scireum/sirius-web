@@ -103,21 +103,33 @@ public class Facet {
      */
     public Facet addItem(String key, String title, long count) {
         if (!"".equals(key)) {
-            items.add(new FacetItem(key,
-                                    translator == null ? title : translator.compute(key),
-                                    count,
-                                    Strings.areEqual(value, key)));
+            String effectiveTitle = translator == null ? title : translator.compute(key);
+            if (effectiveTitle != null) {
+                items.add(new FacetItem(key, effectiveTitle, count, Strings.areEqual(value, key)));
+            }
         }
         return this;
     }
 
+    /**
+     * Adds the given collections of items.
+     *
+     * @param items the items to add
+     * @return the facet itself for fluent method calls
+     */
     public Facet addItems(Iterable<String> items) {
-        for(String item : items) {
+        for (String item : items) {
             addItem(item, null, -1);
         }
         return this;
     }
 
+    /**
+     * Adds the enum constants of the given enum to the facet.
+     *
+     * @param enumClass the enum class which constants are to be added
+     * @return the facet itself for fluent method calls
+     */
     public <E extends Enum<E>> Facet addEnumItem(Class<E> enumClass) {
         for (E item : enumClass.getEnumConstants()) {
             addItem(item.name(), item.toString(), -1);
