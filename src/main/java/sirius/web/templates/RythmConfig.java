@@ -97,7 +97,7 @@ public class RythmConfig implements Lifecycle {
         File tmpDir = new File(System.getProperty("java.io.tmpdir"),
                                Product.getProduct()
                                       .getName()
-                                      .replaceAll("[a-zA-Z0-9\\-]", "_") + "_" + CallContext.getNodeName() + "_rythm");
+                                      .replaceAll("[^a-zA-Z0-9\\-]", "_") + "_" + CallContext.getNodeName() + "_rythm");
         tmpDir.mkdirs();
         if (Sirius.isDev()) {
             if (tmpDir.listFiles() != null) {
