@@ -178,11 +178,16 @@ public class Cluster implements EveryMinute {
                 newNodeState = m.getState();
             }
             if (m.getState().ordinal() > MetricState.GREEN.ordinal()) {
+                String message = Strings.apply("%s is %s (%s)", m.getName(), m.getValueAsString(), m.getState());
                 HipChat.sendMessage("metric",
-                                    Strings.apply("%s is %s (%s)", m.getName(), m.getValueAsString(), m.getState()),
-                                    m.getState() == MetricState.YELLOW ? HipChat.Color.YELLOW : HipChat.Color.RED,
-                                    false);
-                LOG.WARN("NodeState: Metric %s is %s (%s)", m.getName(), m.getValueAsString(), m.getState());
+                        message,
+                        m.getState() == MetricState.YELLOW ? HipChat.Color.YELLOW : HipChat.Color.RED,
+                        false);
+                Slack.sendMessage("metric",
+                        message,
+                        m.getState() == MetricState.YELLOW ? Slack.Color.WARNING : Slack.Color.DANGER);
+
+                LOG.WARN("NodeState: Metric %s", message);
             }
         }
         this.nodeState = newNodeState;
@@ -263,9 +268,10 @@ public class Cluster implements EveryMinute {
             if (inCharge(newClusterState)) {
                 LOG.FINE("Cluster recovered");
                 HipChat.sendMessage("cluster",
-                                    "Cluster is now in state: " + newClusterState,
-                                    HipChat.Color.GREEN,
-                                    true);
+                        "Cluster is now in state: " + newClusterState,
+                        HipChat.Color.GREEN,
+                        true);
+                Slack.sendMessage("cluster", "Cluster is now in state: " + newClusterState, Slack.Color.GOOD);
             }
             currentlyNotifying = false;
         }
@@ -320,6 +326,7 @@ public class Cluster implements EveryMinute {
             ms.createEmail().useMailTemplate("system-alert", ctx).toEmail(receiver).send();
         }
         HipChat.sendMessage("cluster", "Cluster is RED", HipChat.Color.RED, firstAlert);
+        Slack.sendMessage("cluster", "Cluster is RED", Slack.Color.DANGER);
         if (logState) {
             LOG.WARN("NodeState: %s, ClusterState: %s", nodeState, clusterState);
         }
