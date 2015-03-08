@@ -5,7 +5,6 @@
  * Copyright by scireum GmbH
  * http://www.scireum.de - info@scireum.de
  */
-
 package sirius.web.health;
 
 import sirius.kernel.async.CallContext;
@@ -27,39 +26,41 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * Helper class to notify an hip chat room about certain events.
+ * Helper class to notify an Slack room about certain events.
  *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/04
+ * @author Jan Scheithauer (jsc@scireum.de)
+ * @since 2015/03
  */
 @Register
-public class HipChat implements ExceptionHandler {
+public class Slack implements ExceptionHandler {
 
     @Override
     public void handle(Incident incident) throws Exception {
         sendMessage("incident",
-                    Strings.apply("%s [%s]", incident.getException().getMessage(), incident.getLocation()),
-                    Color.RED,
-                    true);
+                Strings.apply("%s [%s]", incident.getException().getMessage(), incident.getLocation()),
+                Color.DANGER);
     }
 
     public static enum Color {
-        YELLOW, RED, GREEN, PURPLE, GRAY
+        GOOD, WARNING, DANGER
     }
 
-    @ConfigValue("health.hipchat.messageUrl")
+    @ConfigValue("health.slack.messageUrl")
     protected static String messageUrl;
 
-    @ConfigValue("health.hipchat.authToken")
+    @ConfigValue("health.slack.authToken")
     protected static String authToken;
 
-    @ConfigValue("health.hipchat.room")
-    protected static String room;
+    @ConfigValue("health.slack.channel")
+    protected static String channel;
 
-    @ConfigValue("health.hipchat.sender")
+    @ConfigValue("health.slack.sender")
     protected static String sender;
 
-    @ConfigValue("health.hipchat.types")
+    @ConfigValue("health.slack.icon_url")
+    protected static String iconUrl;
+
+    @ConfigValue("health.slack.types")
     protected static List<String> messageTypes;
     protected static Set<String> messageFilter;
 
@@ -70,16 +71,15 @@ public class HipChat implements ExceptionHandler {
     private static final long MAX_FLOOD_MESSAGES = 5;
 
     /**
-     * Sends the given message to hipchat (if configured property).
+     * Sends the given message to Slack (if configured property).
      *
      * @param messageType determines the type of message to be sent. Only messages with a type listed in the
-     *                    config value <b>health.hipchat.types</b> will be sent, others will be discarded.
+     *                    config value <b>health.slack.types</b> will be sent, others will be discarded.
      *                    If <tt>null</tt> is passed in, no filtering is performed and the message is always sent.
-     * @param message     the message to send (might contain HTML formatting).
+     * @param message     the message to send.
      * @param color       the color to use
-     * @param notify      should users be notified or not?
      */
-    public static void sendMessage(@Nullable String messageType, String message, Color color, boolean notify) {
+    public static void sendMessage(@Nullable String messageType, String message, Color color) {
         try {
             // Limit to 5 msg every 15 sec to prevent flooding....
             long now = System.currentTimeMillis();
@@ -93,7 +93,7 @@ public class HipChat implements ExceptionHandler {
             }
             lastMessage = now;
 
-            if (Strings.isEmpty(messageUrl) || Strings.isEmpty(authToken) || Strings.isEmpty(room) || Strings.isEmpty(
+            if (Strings.isEmpty(messageUrl) || Strings.isEmpty(authToken) || Strings.isEmpty(channel) || Strings.isEmpty(
                     message)) {
                 return;
             }
@@ -105,14 +105,11 @@ public class HipChat implements ExceptionHandler {
             }
 
             Context ctx = Context.create();
-            ctx.put("from", Strings.isEmpty(sender) ? CallContext.getNodeName() : sender);
-            ctx.put("color", color.name().toLowerCase());
-            ctx.put("auth_token", authToken);
-            ctx.put("message_format", "html");
-            ctx.put("room_id", room);
-            ctx.put("message",
-                    Strings.apply("%s on %s: %s", Product.getProduct().toString(), CallContext.getNodeName(), message));
-            ctx.put("notify", notify ? 1 : 0);
+            ctx.put("username", Strings.isEmpty(sender) ? CallContext.getNodeName() : sender);
+            ctx.put("token", authToken);
+            ctx.put("channel", channel);
+            ctx.put("attachments", "[{\"text\":\"" + Strings.apply("%s on %s: %s", Product.getProduct().toString(), CallContext.getNodeName(), message) + "\",\"color\": \"" + color.name().toLowerCase() + "\"}]");
+            ctx.put("icon_url", Strings.isEmpty(iconUrl) ? "" : iconUrl);
             Outcall call = new Outcall(new URL(messageUrl), ctx);
             call.getData();
         } catch (Exception e) {
