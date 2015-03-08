@@ -7,7 +7,6 @@
  */
 package sirius.web.health;
 
-import sirius.kernel.Lifecycle;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Strings;
@@ -33,26 +32,7 @@ import java.util.stream.Collectors;
  * @since 2015/03
  */
 @Register
-public class Slack implements ExceptionHandler, Lifecycle {
-    @Override
-    public void started() {
-        Slack.sendMessage("start", "Node is starting up...", Slack.Color.GOOD);
-    }
-
-    @Override
-    public void stopped() {
-        Slack.sendMessage("stop", "Node is shutting down...", Slack.Color.WARNING);
-    }
-
-    @Override
-    public void awaitTermination() {
-
-    }
-
-    @Override
-    public String getName() {
-        return "Health System";
-    }
+public class Slack implements ExceptionHandler {
 
     @Override
     public void handle(Incident incident) throws Exception {
@@ -76,6 +56,9 @@ public class Slack implements ExceptionHandler, Lifecycle {
 
     @ConfigValue("health.slack.sender")
     protected static String sender;
+
+    @ConfigValue("health.slack.icon_url")
+    protected static String iconUrl;
 
     @ConfigValue("health.slack.types")
     protected static List<String> messageTypes;
@@ -126,6 +109,7 @@ public class Slack implements ExceptionHandler, Lifecycle {
             ctx.put("token", authToken);
             ctx.put("channel", channel);
             ctx.put("attachments", "[{\"text\":\"" + Strings.apply("%s on %s: %s", Product.getProduct().toString(), CallContext.getNodeName(), message) + "\",\"color\": \"" + color.name().toLowerCase() + "\"}]");
+            ctx.put("icon_url", Strings.isEmpty(iconUrl) ? "" : iconUrl);
             Outcall call = new Outcall(new URL(messageUrl), ctx);
             call.getData();
         } catch (Exception e) {

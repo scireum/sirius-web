@@ -15,6 +15,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.io.CharStreams;
+import sirius.kernel.Lifecycle;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Context;
@@ -53,8 +54,8 @@ import java.util.List;
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01
  */
-@Register(classes = {Cluster.class, EveryMinute.class})
-public class Cluster implements EveryMinute {
+@Register(classes = {Cluster.class, EveryMinute.class, Lifecycle.class})
+public class Cluster implements EveryMinute, Lifecycle {
 
     /*
      * Logger used by the cluster system
@@ -339,5 +340,27 @@ public class Cluster implements EveryMinute {
      */
     public int getNodePriority() {
         return priority;
+    }
+
+    @Override
+    public void started() {
+        HipChat.sendMessage("start", "Node is starting up...", HipChat.Color.GREEN, false);
+        Slack.sendMessage("start", "Node is starting up...", Slack.Color.GOOD);
+    }
+
+    @Override
+    public void stopped() {
+        HipChat.sendMessage("start", "Node is starting up...", HipChat.Color.GRAY, true);
+        Slack.sendMessage("stop", "Node is shutting down...", Slack.Color.WARNING);
+    }
+
+    @Override
+    public void awaitTermination() {
+
+    }
+
+    @Override
+    public String getName() {
+        return "Cluster";
     }
 }

@@ -8,7 +8,6 @@
 
 package sirius.web.health;
 
-import sirius.kernel.Lifecycle;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Strings;
@@ -34,27 +33,7 @@ import java.util.stream.Collectors;
  * @since 2014/04
  */
 @Register
-public class HipChat implements ExceptionHandler, Lifecycle {
-
-    @Override
-    public void started() {
-        HipChat.sendMessage("start", "Node is starting up...", HipChat.Color.GREEN, false);
-    }
-
-    @Override
-    public void stopped() {
-        HipChat.sendMessage("stop", "Node is shutting down...", HipChat.Color.GRAY, true);
-    }
-
-    @Override
-    public void awaitTermination() {
-
-    }
-
-    @Override
-    public String getName() {
-        return "Health System";
-    }
+public class HipChat implements ExceptionHandler {
 
     @Override
     public void handle(Incident incident) throws Exception {
