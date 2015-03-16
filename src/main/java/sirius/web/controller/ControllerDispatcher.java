@@ -88,59 +88,7 @@ public class ControllerDispatcher implements WebDispatcher {
                         ctx.setContentHandler(ish);
                     }
                     Async.executor("web-mvc")
-                         .fork(() -> {
-                             try {
-                                 CallContext.getCurrent().setLang(NLS.makeLang(ctx.getLang()));
-                                 TaskContext.get()
-                                            .setSystem(SYSTEM_MVC)
-                                            .setSubSystem(route.getController().getClass().getSimpleName())
-                                            .setJob(ctx.getRequestedURI());
-                                 params.add(0, ctx);
-                                 // Check if we're allowed to call this route...
-                                 String missingPermission = route.checkAuth();
-                                 if (missingPermission != null) {
-                                     // No...handle permission error
-                                     for (Interceptor interceptor : interceptors) {
-                                         if (interceptor.beforePermissionError(missingPermission,
-                                                                               ctx,
-                                                                               route.getController(),
-                                                                               route.getSuccessCallback())) {
-                                             return;
-                                         }
-                                     }
-
-                                     // No Interceptor is in charge...use default templates...
-                                     if (UserContext.getCurrentUser().isLoggedIn() || !UserContext.get()
-                                                                                                  .getUserManager()
-                                                                                                  .isLoginSupported()) {
-                                         ctx.respondWith().template("permission-error.html");
-                                     } else {
-                                         ctx.respondWith().template("login.html");
-                                     }
-                                 } else {
-                                     // Intercept call...
-                                     for (Interceptor interceptor : interceptors) {
-                                         if (interceptor.before(ctx,
-                                                                route.getController(),
-                                                                route.getSuccessCallback())) {
-                                             return;
-                                         }
-                                     }
-                                     // If a user authenticated during this call...bind to session!
-                                     if (UserContext.getCurrentUser().isLoggedIn()) {
-                                         CallContext.getCurrent().get(UserContext.class).attachUserToSession();
-                                     }
-
-                                     // Execute routing
-                                     route.getSuccessCallback().invoke(route.getController(), params.toArray());
-                                 }
-                             } catch (InvocationTargetException ex) {
-                                 handleFailure(ctx, route, ex.getTargetException());
-                             } catch (Throwable ex) {
-                                 handleFailure(ctx, route, ex);
-                             }
-                             ctx.enableTiming(route.toString());
-                         })
+                         .fork(performRouteInOwnThread(ctx, route, params))
                          .dropOnOverload(() -> ctx.respondWith()
                                                   .error(HttpResponseStatus.INTERNAL_SERVER_ERROR,
                                                          "Request dropped - System overload!"))
@@ -153,6 +101,62 @@ public class ControllerDispatcher implements WebDispatcher {
             }
         }
         return false;
+    }
+
+    private Runnable performRouteInOwnThread(WebContext ctx, Route route, List<Object> params) {
+        return () -> {
+            try {
+                CallContext.getCurrent().setLang(NLS.makeLang(ctx.getLang()));
+                TaskContext.get()
+                           .setSystem(SYSTEM_MVC)
+                           .setSubSystem(route.getController().getClass().getSimpleName())
+                           .setJob(ctx.getRequestedURI());
+                params.add(0, ctx);
+                // Check if we're allowed to call this route...
+                String missingPermission = route.checkAuth();
+                if (missingPermission != null) {
+                    // No...handle permission error
+                    for (Interceptor interceptor : interceptors) {
+                        if (interceptor.beforePermissionError(missingPermission,
+                                                              ctx,
+                                                              route.getController(),
+                                                              route.getSuccessCallback())) {
+                            return;
+                        }
+                    }
+
+                    // No Interceptor is in charge...use default templates...
+                    if (UserContext.getCurrentUser().isLoggedIn() || !UserContext.get()
+                                                                                 .getUserManager()
+                                                                                 .isLoginSupported()) {
+                        ctx.respondWith().template("permission-error.html");
+                    } else {
+                        ctx.respondWith().template("login.html");
+                    }
+                } else {
+                    // Intercept call...
+                    for (Interceptor interceptor : interceptors) {
+                        if (interceptor.before(ctx,
+                                               route.getController(),
+                                               route.getSuccessCallback())) {
+                            return;
+                        }
+                    }
+                    // If a user authenticated during this call...bind to session!
+                    if (UserContext.getCurrentUser().isLoggedIn()) {
+                        CallContext.getCurrent().get(UserContext.class).attachUserToSession();
+                    }
+
+                    // Execute routing
+                    route.getSuccessCallback().invoke(route.getController(), params.toArray());
+                }
+            } catch (InvocationTargetException ex) {
+                handleFailure(ctx, route, ex.getTargetException());
+            } catch (Throwable ex) {
+                handleFailure(ctx, route, ex);
+            }
+            ctx.enableTiming(route.toString());
+        };
     }
 
     private void handleFailure(WebContext ctx, Route route, Throwable ex) {
