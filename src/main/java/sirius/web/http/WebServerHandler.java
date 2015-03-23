@@ -60,11 +60,13 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     private Average inboundLatency = new Average();
     private Average processLatency = new Average();
     private Watch latencyWatch;
+    private boolean ssl;
 
     /**
      * Creates a new instance and initializes some statistics.
      */
-    WebServerHandler() {
+    WebServerHandler(boolean ssl) {
+        this.ssl = ssl;
         this.connected = System.currentTimeMillis();
     }
 
@@ -127,6 +129,9 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         currentCall = CallContext.initialize();
         currentCall.addToMDC("uri", req.getUri());
         WebContext wc = currentCall.get(WebContext.class);
+        if (ssl) {
+            wc.ssl = true;
+        }
         wc.setCtx(ctx);
         wc.setRequest(req);
         currentCall.get(TaskContext.class).setSystem("HTTP").setJob(req.getUri());

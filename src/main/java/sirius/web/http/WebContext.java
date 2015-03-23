@@ -179,6 +179,11 @@ public class WebContext {
     private Boolean trusted;
 
     /*
+     * Determines if the request is performed via a secured channel (SSL)
+    */
+    protected Boolean ssl;
+
+    /*
      * Contains the remote IP. If a proxyIP is specified (WebServer#proxyIPs), a X-Forwarded-For header is checked
      */
     private InetAddress remoteIp;
@@ -734,7 +739,11 @@ public class WebContext {
      * @return <tt>true</tt> if this is an HTTPS request, <tt>false</tt> otherwise
      */
     public boolean isSSL() {
-        return getHeaderValue("X-Forwarded-Proto").equalsIgnoreCase("https");
+        if (ssl == null) {
+            ssl = getHeaderValue("X-Forwarded-Proto").equalsIgnoreCase("https");
+        }
+
+        return ssl;
     }
 
     /**

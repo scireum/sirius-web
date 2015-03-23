@@ -121,6 +121,11 @@ class SSLWebServerInitializer extends WebServerInitializer {
     }
 
     @Override
+    protected boolean isSSL() {
+        return true;
+    }
+
+    @Override
     public void initChannel(SocketChannel ch) throws Exception {
         SSLEngine engine = context.createSSLEngine();
         engine.setUseClientMode(false);

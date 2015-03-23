@@ -61,7 +61,16 @@ class WebServerInitializer extends ChannelInitializer<SocketChannel> {
         if (WebServerHandler.sortedDispatchers == null) {
             WebServerHandler.sortedDispatchers = getSortedDispatchers();
         }
-        pipeline.addLast("handler", new WebServerHandler());
+        pipeline.addLast("handler", new WebServerHandler(isSSL()));
+    }
+
+    /**
+     * Determines if channels handled via this initializer are protected by TLS (SSL).
+     *
+     * @return <tt>true</tt> if SSL is present, <tt>false</tt> otherwise
+     */
+    protected boolean isSSL() {
+        return false;
     }
 
     /*
