@@ -18,6 +18,8 @@ import io.netty.handler.timeout.IdleStateEvent;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.TaskContext;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Watch;
+import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 
@@ -55,6 +57,9 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     private SocketAddress remoteAddress;
     private boolean preDispatched = false;
     private boolean dispatched = false;
+    private Average inboundLatency = new Average();
+    private Average processLatency = new Average();
+    private Watch latencyWatch;
 
     /**
      * Creates a new instance and initializes some statistics.
@@ -195,10 +200,17 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         try {
+            if (latencyWatch != null) {
+                inboundLatency.addValue(latencyWatch.elapsed(TimeUnit.MILLISECONDS, true));
+            } else {
+                latencyWatch = Watch.start();
+            }
             if (msg instanceof HttpRequest) {
                 // Reset stats
                 bytesIn = 0;
                 bytesOut = 0;
+                inboundLatency.getAndClearAverage();
+                processLatency.getAndClearAverage();
                 handleRequest(ctx, (HttpRequest) msg);
             } else if (msg instanceof LastHttpContent) {
                 try {
@@ -257,6 +269,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             }
             ctx.channel().close();
         }
+        processLatency.addValue(latencyWatch.elapsed(TimeUnit.MILLISECONDS, true));
     }
 
     /*
@@ -346,8 +359,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                     currentContext.respondWith()
                                   .error(HttpResponseStatus.BAD_REQUEST,
                                          Strings.apply("Cannot %s as method. Use GET, POST, PUT, HEAD, DELETE",
-                                                       req.getMethod().name())
-                                  );
+                                                       req.getMethod().name()));
                     currentRequest = null;
                 }
             } catch (Throwable t) {
@@ -432,8 +444,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                                            .withSystemErrorMessage(
                                                    "The web server is running out of temporary space to store the upload")
                                            .to(WebServer.LOG)
-                                           .handle()
-                          );
+                                           .handle());
             currentRequest = null;
         }
         if (file.length() > WebServer.getMaxUploadSize() && WebServer.getMaxUploadSize() > 0) {
@@ -447,8 +458,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                                                    "The uploaded file exceeds the maximal upload size of %d bytes",
                                                    WebServer.getMaxUploadSize())
                                            .to(WebServer.LOG)
-                                           .handle()
-                          );
+                                           .handle());
             currentRequest = null;
         }
     }
@@ -578,6 +588,11 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             return "-";
         }
         return NLS.formatSize(downlink) + "/s";
+    }
+
+    @Override
+    public String getLatency() {
+        return Strings.apply("%1.2f ms / %1.2f ms", inboundLatency.getAvg(), processLatency.getAvg());
     }
 
     @Override

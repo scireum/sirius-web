@@ -40,17 +40,17 @@ public class InputStreamHandler extends InputStream implements ContentHandler {
     /**
      * Defines the default depth (size) of the internal buffer.
      */
-    private static final int DEFAULT_BUFFER_DEPTH = 8;
+    private static final int DEFAULT_BUFFER_DEPTH = 32;
 
     /**
      * Defines the default read timeout in seconds.
      */
-    private static final int DEFAULT_READ_TIMEOUT = 5;
+    private static final int DEFAULT_READ_TIMEOUT = 30;
 
     /**
      * Defines the default write timeout in seconds.
      */
-    private static final int DEFAULT_WRITE_TIMEOUT = 15;
+    private static final int DEFAULT_WRITE_TIMEOUT = 30;
 
     /**
      * Defines the standard time unit used be the default timeout constants.
@@ -139,6 +139,9 @@ public class InputStreamHandler extends InputStream implements ContentHandler {
                 error = true;
                 release();
                 throw new IOException("Unexpected content after a last chunk as been sent already!");
+            }
+            if (error) {
+                throw new InterruptedIOException("Tried to write to a stream which had an error on either side");
             }
             if (content.readableBytes() > 0 && !error && open) {
                 content.retain();

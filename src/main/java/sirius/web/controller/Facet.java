@@ -128,6 +128,7 @@ public class Facet {
      * Adds the enum constants of the given enum to the facet.
      *
      * @param enumClass the enum class which constants are to be added
+     * @param <E>       the type of the enum
      * @return the facet itself for fluent method calls
      */
     public <E extends Enum<E>> Facet addEnumItem(Class<E> enumClass) {

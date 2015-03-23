@@ -38,24 +38,26 @@ public class HTTPCommand implements Command {
         output.separator();
         output.blankLine();
         if (Value.indexOf(0, params).equalsIgnoreCase("open")) {
-            output.apply("%-8s %-23s %10s %10s %10s %10s",
+            output.apply("%-8s %-20s %10s %10s %10s %10s",
                          "DURATION",
-                         "REMOTE",
+                         "LATENCY",
                          "BYTES IN",
                          "UPLINK",
                          "BYTES OUT",
                          "DOWNLINK");
+            output.line("REMOTE");
             output.line("URL");
             output.separator();
             output.blankLine();
             for (ActiveHTTPConnection con : WebServer.getOpenConnections()) {
-                output.apply("%-8s %-23s %10s %10s %10s %10s",
+                output.apply("%-8s %-20s %10s %10s %10s %10s",
                              con.getConnectedSince(),
-                             con.getRemoteAddress(),
+                             con.getLatency(),
                              con.getBytesIn(),
                              con.getUplink(),
                              con.getBytesOut(),
                              con.getDownlink());
+                output.line(con.getRemoteAddress());
                 output.line(con.getURL());
                 output.blankLine();
             }

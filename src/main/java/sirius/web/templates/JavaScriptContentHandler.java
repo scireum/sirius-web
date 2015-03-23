@@ -47,6 +47,9 @@ public abstract class JavaScriptContentHandler implements ContentHandler {
 
     /**
      * Executes the template as JavaScript code
+     *
+     * @param generator the generator used to obtain the parameters etc.
+     * @throws java.lang.Exception re-throws all exceptions
      */
     protected void execute(Content.Generator generator) throws Exception {
         ScriptEngine engine = getEngine();

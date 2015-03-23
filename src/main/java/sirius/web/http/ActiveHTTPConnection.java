@@ -63,4 +63,14 @@ public interface ActiveHTTPConnection {
      * @return the remote address which opened the connection
      */
     String getRemoteAddress();
+
+    /**
+     * Returns latency information as a pair of numbers like "8ms / 5ms".
+     * <p>
+     * The first of those number is how long the server has been waiting for a chunk to arrive at the server.
+     * The second one is the (blocking) time it takes to process this chunk.
+     *
+     * @return a latency string like "8ms / 5ms"
+     */
+    String getLatency();
 }
