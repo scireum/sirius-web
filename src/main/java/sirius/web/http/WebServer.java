@@ -20,10 +20,10 @@ import io.netty.handler.codec.http.multipart.DiskAttribute;
 import io.netty.handler.codec.http.multipart.DiskFileUpload;
 import io.netty.handler.codec.http.multipart.HttpDataFactory;
 import io.netty.util.ResourceLeakDetector;
+import sirius.kernel.Lifecycle;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.GlobalContext;
-import sirius.kernel.Lifecycle;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Context;
 import sirius.kernel.di.std.Part;
@@ -111,6 +111,13 @@ public class WebServer implements Lifecycle, MetricProvider {
     private static String ipFilter;
     private static IPRange.RangeSet filterRanges;
     private Channel channel;
+    private Channel sslChannel;
+
+    @ConfigValue("http.ssl.enabled")
+    private boolean ssl;
+
+    @ConfigValue("http.ssl.port")
+    private int sslPort;
 
     @Part
     private static SessionManager sessionManager;
@@ -210,7 +217,6 @@ public class WebServer implements Lifecycle, MetricProvider {
     private static HttpDataFactory httpDataFactory;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
-    private ServerBootstrap bootstrap;
 
     /**
      * Determines how the web server should participate in the microtiming framework.
@@ -301,6 +307,9 @@ public class WebServer implements Lifecycle, MetricProvider {
         if (Strings.isFilled(bindAddress)) {
             LOG.INFO("Binding netty to %s", bindAddress);
         }
+        if (ssl) {
+            LOG.INFO("Starting SSL on port %d", sslPort);
+        }
 
         if (Sirius.isDev() && !Sirius.getConfig().hasPath("http.noLeakDetection")) {
             ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID);
@@ -316,15 +325,15 @@ public class WebServer implements Lifecycle, MetricProvider {
 
         bossGroup = new NioEventLoopGroup();
         workerGroup = new NioEventLoopGroup();
-        bootstrap = new ServerBootstrap();
+        ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, workerGroup)
                  .channel(NioServerSocketChannel.class).childHandler(ctx.wire(new WebServerInitializer()))
                 // At mose have 128 connections waiting to be "connected" - drop everything else...
                 .option(ChannelOption.SO_BACKLOG, 128)
-                // Send a KEEPALIVE packet every 2h and expect and ACK on the TCP layer
+                        // Send a KEEPALIVE packet every 2h and expect and ACK on the TCP layer
                 .childOption(ChannelOption.SO_KEEPALIVE, true)
-                // Tell the kernel not to buffer our data - we're quite aware of what we're doing and
-                // will not create "mini writes" anyway
+                        // Tell the kernel not to buffer our data - we're quite aware of what we're doing and
+                        // will not create "mini writes" anyway
                 .childOption(ChannelOption.TCP_NODELAY, true);
 
         // Bind and start to accept incoming connections.
@@ -337,6 +346,29 @@ public class WebServer implements Lifecycle, MetricProvider {
         } catch (InterruptedException e) {
             Exceptions.handle(e);
         }
+        if (ssl) {
+            try {
+                bootstrap = new ServerBootstrap();
+                bootstrap.group(bossGroup, workerGroup)
+                         .channel(NioServerSocketChannel.class).childHandler(ctx.wire(new SSLWebServerInitializer()))
+                        // At mose have 128 connections waiting to be "connected" - drop everything else...
+                        .option(ChannelOption.SO_BACKLOG, 128)
+                                // Send a KEEPALIVE packet every 2h and expect and ACK on the TCP layer
+                        .childOption(ChannelOption.SO_KEEPALIVE, true)
+                                // Tell the kernel not to buffer our data - we're quite aware of what we're doing and
+                                // will not create "mini writes" anyway
+                        .childOption(ChannelOption.TCP_NODELAY, true);
+
+                // Bind and start to accept incoming connections.
+                if (Strings.isFilled(bindAddress)) {
+                    sslChannel = bootstrap.bind(new InetSocketAddress(bindAddress, sslPort)).sync().channel();
+                } else {
+                    sslChannel = bootstrap.bind(new InetSocketAddress(sslPort)).sync().channel();
+                }
+            } catch (Throwable t) {
+                Exceptions.handle().to(LOG).error(t).withSystemErrorMessage("Cannot setup SSL: %s (%s)").handle();
+            }
+        }
     }
 
     @Override
@@ -347,6 +379,14 @@ public class WebServer implements Lifecycle, MetricProvider {
             }
         } catch (InterruptedException e) {
             LOG.SEVERE("Interrupted while waiting for the channel to shut down");
+        }
+
+        try {
+            if (sslChannel != null) {
+                sslChannel.close().sync();
+            }
+        } catch (InterruptedException e) {
+            LOG.SEVERE("Interrupted while waiting for the sslChannel to shut down");
         }
 
         bossGroup.shutdownGracefully();
