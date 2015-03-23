@@ -14,6 +14,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.io.CharStreams;
 import sirius.kernel.Lifecycle;
 import sirius.kernel.Sirius;
@@ -25,6 +26,7 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
+import sirius.kernel.info.Module;
 import sirius.kernel.info.Product;
 import sirius.kernel.timer.EveryMinute;
 import sirius.web.mails.MailService;
@@ -35,6 +37,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
@@ -181,12 +184,12 @@ public class Cluster implements EveryMinute, Lifecycle {
             if (m.getState().ordinal() > MetricState.GREEN.ordinal()) {
                 String message = Strings.apply("%s is %s (%s)", m.getName(), m.getValueAsString(), m.getState());
                 HipChat.sendMessage("metric",
-                        message,
-                        m.getState() == MetricState.YELLOW ? HipChat.Color.YELLOW : HipChat.Color.RED,
-                        false);
+                                    message,
+                                    m.getState() == MetricState.YELLOW ? HipChat.Color.YELLOW : HipChat.Color.RED,
+                                    false);
                 Slack.sendMessage("metric",
-                        message,
-                        m.getState() == MetricState.YELLOW ? Slack.Color.WARNING : Slack.Color.DANGER);
+                                  message,
+                                  m.getState() == MetricState.YELLOW ? Slack.Color.WARNING : Slack.Color.DANGER);
 
                 LOG.WARN("NodeState: Metric %s", message);
             }
@@ -269,9 +272,9 @@ public class Cluster implements EveryMinute, Lifecycle {
             if (inCharge(newClusterState)) {
                 LOG.FINE("Cluster recovered");
                 HipChat.sendMessage("cluster",
-                        "Cluster is now in state: " + newClusterState,
-                        HipChat.Color.GREEN,
-                        true);
+                                    "Cluster is now in state: " + newClusterState,
+                                    HipChat.Color.GREEN,
+                                    true);
                 Slack.sendMessage("cluster", "Cluster is now in state: " + newClusterState, Slack.Color.GOOD);
             }
             currentlyNotifying = false;
@@ -345,7 +348,12 @@ public class Cluster implements EveryMinute, Lifecycle {
     @Override
     public void started() {
         HipChat.sendMessage("start", "Node is starting up...", HipChat.Color.GREEN, false);
-        Slack.sendMessage("start", "Node is starting up...", Slack.Color.GOOD);
+        LinkedHashMap<String, String> ctx = Maps.newLinkedHashMap();
+        ctx.put("Product", Product.getProduct().getDetails());
+        for (Module m : Product.getModules()) {
+            ctx.put(m.getName(), m.getDetails());
+        }
+        Slack.sendMessage("start", "Node is starting up...", Slack.Color.GOOD, ctx);
     }
 
     @Override

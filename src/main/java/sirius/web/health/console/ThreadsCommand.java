@@ -44,7 +44,7 @@ public class ThreadsCommand implements Command {
                                                                .contains(params[0].toLowerCase())) {
                     if (includeWaiting || !isWaitingOrNative(thread.getKey(), info)) {
                         output.blankLine();
-                        output.line(thread.getKey().getName());
+                        output.line(thread.getKey().getName() + " (" + thread.getKey().getState() + ")");
                         output.separator();
                         for (StackTraceElement e : thread.getValue()) {
                             output.apply("%-60s %19s",
