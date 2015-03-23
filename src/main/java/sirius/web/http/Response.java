@@ -218,9 +218,8 @@ public class Response {
             }
         }
 
-        // Add keepalive header is required
-        if (keepalive && isKeepalive()) {
-            responseKeepalive = true;
+        // Add keepalive header if required
+        if (responseKeepalive && keepalive && isKeepalive()) {
             response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
         } else {
             responseKeepalive = false;
