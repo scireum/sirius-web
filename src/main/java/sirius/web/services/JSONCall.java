@@ -27,6 +27,13 @@ public class JSONCall {
 
     private Outcall outcall;
 
+    /*
+     * Use .to(URL) to generate an instance.
+     */
+    private JSONCall() {
+
+    }
+
     /**
      * Creates a new JSONCall for the given url with Content-Type 'application/json'.
      *
@@ -83,5 +90,14 @@ public class JSONCall {
     @SuppressWarnings("unchecked")
     public JSONObject getInput() throws IOException {
         return JSON.parseObject(new String(ByteStreams.toByteArray(outcall.getInput()), outcall.getContentEncoding()));
+    }
+
+    /**
+     * Returns the response of the call as plain text.
+     *
+     * @throws IOException in case of an IO error while receiving the result
+     */
+    public void getPlainInput() throws IOException {
+        outcall.getData();
     }
 }
