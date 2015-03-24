@@ -131,13 +131,15 @@ public class Slack implements ExceptionHandler {
                     {
                         if (fields != null) {
                             for (Map.Entry<String, String> field : fields.entrySet()) {
-                                out.beginObject("field");
-                                {
-                                    out.property("title", field.getKey());
-                                    out.property("value", field.getValue());
-                                    out.property("short", field.getValue().length() <= 50);
+                                if (Strings.isFilled(field.getValue())) {
+                                    out.beginObject("field");
+                                    {
+                                        out.property("title", field.getKey());
+                                        out.property("value", field.getValue());
+                                        out.property("short", field.getValue().length() <= 50);
+                                    }
+                                    out.endObject();
                                 }
-                                out.endObject();
                             }
                         }
                     }
