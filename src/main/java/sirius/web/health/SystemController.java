@@ -16,6 +16,7 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.MemoryBasedHealthMonitor;
+import sirius.kernel.health.metrics.Metrics;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.nls.Translation;
 import sirius.web.controller.Controller;

@@ -12,6 +12,8 @@ import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.health.metrics.Metric;
+import sirius.kernel.health.metrics.Metrics;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.StructuredOutput;
 import sirius.web.services.ServiceCall;

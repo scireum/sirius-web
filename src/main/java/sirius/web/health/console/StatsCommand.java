@@ -10,8 +10,8 @@ package sirius.web.health.console;
 
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
-import sirius.web.health.Metric;
-import sirius.web.health.Metrics;
+import sirius.kernel.health.metrics.Metric;
+import sirius.kernel.health.metrics.Metrics;
 
 import javax.annotation.Nonnull;
 

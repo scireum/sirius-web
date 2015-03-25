@@ -9,6 +9,8 @@
 package sirius.web.health;
 
 import com.google.common.collect.Lists;
+import sirius.kernel.health.metrics.Metric;
+import sirius.kernel.health.metrics.MetricState;
 
 import java.time.LocalDateTime;
 import java.util.List;

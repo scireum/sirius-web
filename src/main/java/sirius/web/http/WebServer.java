@@ -31,9 +31,9 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
+import sirius.kernel.health.metrics.MetricProvider;
+import sirius.kernel.health.metrics.MetricsCollector;
 import sirius.kernel.timer.EveryTenSeconds;
-import sirius.web.health.MetricProvider;
-import sirius.web.health.MetricsCollector;
 import sirius.web.http.session.SessionManager;
 
 import java.net.InetSocketAddress;

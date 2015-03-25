@@ -15,6 +15,8 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.health.MemoryBasedHealthMonitor;
+import sirius.kernel.health.metrics.MetricProvider;
+import sirius.kernel.health.metrics.MetricsCollector;
 
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
