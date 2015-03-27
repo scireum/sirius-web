@@ -1,4 +1,4 @@
-@args sirius.web.health.Cluster cluster, sirius.web.health.Metrics metrics, boolean all
+@args sirius.web.health.Cluster cluster, sirius.kernel.health.metrics.Metrics metrics, boolean all
 @extends(view.system.page.html, title: ("["+cluster.getClusterState()+"/+"+cluster.getNodeState()+"] "+product+" - Status"))
 @section(head) {
         <style>
@@ -44,8 +44,8 @@
                 Uptime: @NLS.convertDuration(sirius.kernel.Sirius.getUptimeInMilliseconds(), true, false)
             </div>
             <table class="table">
-                @for(sirius.web.health.Metric m : metrics.getMetrics()) {
-                @if (all || m.getState() != sirius.web.health.MetricState.GRAY) {
+                @for(sirius.kernel.health.metrics.Metric m : metrics.getMetrics()) {
+                @if (all || m.getState() != sirius.kernel.health.metrics.MetricState.GRAY) {
                 <tr class="@m.getState()">
                     <td style="overflow: hidden">
                         @m.getName()
@@ -80,8 +80,8 @@
                 <br />
                 @if (!info.getMetrics().isEmpty()) {
                     <table class="table">
-                        @for(sirius.web.health.Metric m : info.getMetrics()) {
-                            @if (all || m.getState() != sirius.web.health.MetricState.GRAY) {
+                        @for(sirius.kernel.health.metrics.Metric m : info.getMetrics()) {
+                            @if (all || m.getState() != sirius.kernel.health.metrics.MetricState.GRAY) {
                                 <tr class="@m.getState()">
                                     <td style="overflow: hidden">
                                         @m.getName()
