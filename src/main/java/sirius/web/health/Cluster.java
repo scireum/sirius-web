@@ -147,7 +147,7 @@ public class Cluster implements EveryMinute, Lifecycle {
         for (NodeInfo info : nodes) {
             if ((info.getPriority() < priority || info.getPriority() == priority && info.getName()
                                                                                         .compareTo(CallContext.getNodeName()) < 0) && info
-                    .getNodeState() == MetricState.GREEN) {
+                    .getNodeState() != MetricState.RED) {
                 return false;
             }
         }
@@ -296,7 +296,7 @@ public class Cluster implements EveryMinute, Lifecycle {
         for (NodeInfo info : getNodeInfos()) {
             if (isBetter(info) &&
                     info.getClusterState() == clusterStateToBroadcast &&
-                    info.getNodeState() == MetricState.GREEN) {
+                    info.getNodeState() != MetricState.RED) {
                 // Another node took care of it...
                 LOG.FINE("Node %s is in charge of sending an alert", info.getName());
                 return false;
