@@ -63,8 +63,8 @@ import java.util.*;
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/02
  */
-@Register(classes = {Content.class, Initializable.class})
-public class Content implements Initializable {
+@Register(classes = {Content.class})
+public class Content {
 
     /**
      * If a specific output encoding is required (other than the system encoding - most definitely UTF-8) a variable
@@ -434,32 +434,6 @@ public class Content implements Initializable {
             }
         }
         return Optional.empty();
-    }
-
-    @Override
-    public void initialize() throws Exception {
-        // We wait with starting and configuring Velocity up until now as we need the
-        // system config to be ready and populated...
-        try {
-            Velocity.setProperty("sirius.resource.loader.class", VelocityResourceLoader.class.getName());
-            Velocity.setProperty(RuntimeConstants.RESOURCE_MANAGER_CACHE_CLASS, VelocityResourceCache.class.getName());
-            Velocity.setProperty(Velocity.RESOURCE_LOADER, "sirius");
-            StringBuilder libraryPath = new StringBuilder();
-            for (Map.Entry<String, ConfigValue> e : Sirius.getConfig()
-                                                          .getConfig("content.velocity-libraries")
-                                                          .entrySet()) {
-                libraryPath.append(e.getValue().unwrapped());
-                libraryPath.append(",");
-            }
-            Velocity.setProperty(Velocity.VM_LIBRARY, libraryPath.toString());
-            Velocity.setProperty(Velocity.SET_NULL_ALLOWED, Boolean.TRUE);
-            Velocity.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS,
-                                 "org.apache.velocity.runtime.log.Log4JLogChute");
-            Velocity.setProperty("runtime.log.logsystem.log4j.logger", "velocity");
-            Velocity.init();
-        } catch (Throwable e) {
-            Exceptions.handle(LOG, e);
-        }
     }
 
     /**

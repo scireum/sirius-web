@@ -1,7 +1,6 @@
 package sirius.web.templates;
 
 import com.google.common.base.Charsets;
-import org.apache.velocity.app.Velocity;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
@@ -38,9 +37,9 @@ public class VelocityPDFContentHandler implements ContentHandler {
 
         StringWriter writer = new StringWriter();
         if (Strings.isFilled(generator.getTemplateCode())) {
-            Velocity.evaluate(ctx, writer, "velocity", generator.getTemplateCode());
+            VelocityHelper.getEngine().evaluate(ctx, writer, "velocity", generator.getTemplateCode());
         } else {
-            Velocity.mergeTemplate(generator.getTemplateName(), Charsets.UTF_8.name(), ctx, writer);
+            VelocityHelper.getEngine().mergeTemplate(generator.getTemplateName(), Charsets.UTF_8.name(), ctx, writer);
         }
 
         ITextRenderer renderer = new ITextRenderer();

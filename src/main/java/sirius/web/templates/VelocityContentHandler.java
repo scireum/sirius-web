@@ -1,7 +1,6 @@
 package sirius.web.templates;
 
 import com.google.common.base.Charsets;
-import org.apache.velocity.app.Velocity;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
 
@@ -38,9 +37,9 @@ public class VelocityContentHandler implements ContentHandler {
 
         OutputStreamWriter writer = new OutputStreamWriter(out, generator.getEncoding());
         if (Strings.isFilled(generator.getTemplateCode())) {
-            Velocity.evaluate(ctx, writer, "velocity", generator.getTemplateCode());
+            VelocityHelper.getEngine().evaluate(ctx, writer, "velocity", generator.getTemplateCode());
         } else {
-            Velocity.mergeTemplate(generator.getTemplateName(), Charsets.UTF_8.name(), ctx, writer);
+            VelocityHelper.getEngine().mergeTemplate(generator.getTemplateName(), Charsets.UTF_8.name(), ctx, writer);
         }
         writer.close();
 
