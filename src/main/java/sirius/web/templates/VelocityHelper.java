@@ -18,7 +18,11 @@ import sirius.kernel.health.Exceptions;
 import java.util.Map;
 
 /**
- * Created by aha on 13.04.15.
+ * Used to start our own Velocity instance so that we don't have to touch the
+ * global static one.
+ *
+ * @author Andreas Haufler (aha@scireum.de)
+ * @since 2015/04
  */
 public class VelocityHelper {
 

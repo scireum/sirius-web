@@ -16,7 +16,6 @@ import sirius.kernel.commons.*;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Context;
 import sirius.kernel.di.std.Register;
-import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
@@ -78,10 +77,13 @@ public class ServiceDispatcher implements WebDispatcher {
             ctx.respondWith().cached().template("/help/service/info.html", allDocumentedServices);
             return true;
         }
-        // Cut /service/
-        final String subpath = uri.substring(9);
+        Tuple<ServiceCall, StructuredService> handler = parsePath(ctx, uri);
+        if (handler.getSecond() == null) {
+            return false;
+        }
+
         Async.executor("web-services")
-             .fork(() -> performServiceCall(ctx, subpath))
+             .fork(() -> invokeService(ctx, handler.getFirst(), handler.getSecond()))
              .dropOnOverload(() -> ctx.respondWith()
                                       .error(HttpResponseStatus.INTERNAL_SERVER_ERROR,
                                              "Request dropped - System overload!"))
@@ -89,11 +91,13 @@ public class ServiceDispatcher implements WebDispatcher {
         return true;
     }
 
-    private void performServiceCall(WebContext ctx, String subpath) {
+    private Tuple<ServiceCall, StructuredService> parsePath(WebContext ctx, String uri) {
+        // Cut /service/
+        final String subpath = uri.substring(9);
+
         Tuple<String, String> callPath = Strings.split(subpath, "/");
         String type = callPath.getFirst();
         String service = callPath.getSecond();
-
         ServiceCall call = null;
         if ("xml".equals(type)) {
             call = new XMLServiceCall(ctx);
@@ -107,24 +111,15 @@ public class ServiceDispatcher implements WebDispatcher {
             }
             call = new RawServiceCall(ctx);
         }
-
-        TaskContext.get().setSystem(SYSTEM_SERVICE).setSubSystem(service).setJob(subpath);
-
         StructuredService serv = gc.getPart(service, StructuredService.class);
-        if (serv == null) {
-            call.handle(null,
-                        Exceptions.createHandled()
-                                  .withSystemErrorMessage(
-                                          "Unknown service: %s. Try /services for a complete list of available services.",
-                                          service)
-                                  .handle());
-            return;
-        }
 
-        invokeService(ctx, call, serv);
+        return Tuple.create(call, serv);
     }
 
+
     private void invokeService(WebContext ctx, ServiceCall call, StructuredService serv) {
+        TaskContext.get().setSystem(SYSTEM_SERVICE).setSubSystem(serv.getClass().getSimpleName());
+
         // Install language
         CallContext.getCurrent().setLang(NLS.makeLang(ctx.getLang()));
 
