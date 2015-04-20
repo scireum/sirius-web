@@ -724,8 +724,7 @@ public class WebContext {
             if (ctx == null) {
                 return true;
             }
-            trusted = WebServer.getTrustedRanges()
-                               .accepts(getRemoteIP());
+            trusted = WebServer.getTrustedRanges().accepts(getRemoteIP());
         }
 
         return trusted;
@@ -1205,7 +1204,7 @@ public class WebContext {
      */
     public Charset getContentCharset() {
         if (content == null) {
-            return Charset.defaultCharset();
+            return Charsets.UTF_8;
         }
 
         return content.getCharset();
