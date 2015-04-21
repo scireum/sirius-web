@@ -47,14 +47,14 @@ public class HelpDispatcher implements WebDispatcher {
             return false;
         }
         String uri = ctx.getRequestedURI();
-        if ("/help".equals(uri)) {
+        if ("/help".equals(uri) || "/help/".equals(uri)) {
             uri = "/help/" + indexTemplate;
         }
         if (uri.contains(".") && !uri.endsWith("html")) {
             // Dispatch static content...
             URL url = getClass().getResource(uri);
             if (url == null) {
-                ctx.respondWith().error(HttpResponseStatus.NOT_FOUND);
+                return false;
             } else if ("file".equals(url.getProtocol())) {
                 ctx.respondWith().file(new File(url.toURI()));
             } else {
