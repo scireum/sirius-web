@@ -22,14 +22,10 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
-        <module name="sirius-db" />
-        <module name="sirius-kernel" />
         <module name="sirius-web" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="sirius-db" target="1.8" />
-      <module name="sirius-kernel" target="1.8" />
       <module name="sirius-web" target="1.8" />
     </bytecodeTargetLevel>
   </component>
