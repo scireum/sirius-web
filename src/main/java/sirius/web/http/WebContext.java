@@ -21,6 +21,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.multipart.*;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.async.SubContext;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
@@ -57,7 +58,8 @@ import java.util.*;
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/08
  */
-public class WebContext {
+public class WebContext implements SubContext {
+
 
     /**
      * Used to specify the source of a server session
@@ -1514,4 +1516,11 @@ public class WebContext {
     public String toString() {
         return "WebContext (Committed: " + responseCommitted + "): " + request.toString();
     }
+
+    @Override
+    public void detach() {
+        // Detaching the context from the current thread has no consequences as
+        // a request cann be passed on to another thread...
+    }
+
 }

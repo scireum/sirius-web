@@ -11,6 +11,7 @@ package sirius.web.security;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.async.SubContext;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Context;
 import sirius.kernel.di.std.Part;
@@ -37,7 +38,7 @@ import java.util.Map;
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2013/11
  */
-public class UserContext {
+public class UserContext implements SubContext {
 
     public static final String MDC_SCOPE = "scope";
     public static final String MDC_USER_ID = "userId";
@@ -299,4 +300,8 @@ public class UserContext {
         return currentScope;
     }
 
+    @Override
+    public void detach() {
+        // No action needed when this is detached from the current thread...
+    }
 }
