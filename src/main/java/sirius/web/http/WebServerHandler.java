@@ -195,6 +195,9 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
         cleanup();
         WebServer.removeOpenConnection(this);
+        // Detach the CallContext we created
+        currentCall.detachContext();
+        // Also removed from this thread if it is still bound
         CallContext.detach();
         super.channelUnregistered(ctx);
     }
