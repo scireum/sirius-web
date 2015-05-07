@@ -580,7 +580,7 @@ public class Response {
         complete(commit(response));
     }
 
-    private static final Pattern RANGE_HEADER = Pattern.compile("bytes=(\\d+)\\-(\\d+)?");
+    private static final Pattern RANGE_HEADER = Pattern.compile("bytes=(\\d+)?\\-(\\d+)?");
 
     /**
      * Sends the given file as response.
@@ -695,6 +695,13 @@ public class Response {
             throw new IllegalArgumentException(Strings.apply("Unsupported range: %s", header));
         }
         Tuple<Long, Long> result = Tuple.create();
+        if (Strings.isFilled(m.group(1))) {
+            result.setFirst(Long.parseLong(m.group(1)));
+        } else {
+            result.setFirst(availableLength - Long.parseLong(m.group(2)));
+            result.setSecond(availableLength - 1);
+            return result;
+        }
         result.setFirst(Long.parseLong(m.group(1)));
         if (Strings.isFilled(m.group(2))) {
             result.setSecond(Long.parseLong(m.group(2)));
