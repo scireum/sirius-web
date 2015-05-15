@@ -125,20 +125,12 @@ public class ControllerDispatcher implements WebDispatcher {
                         }
                     }
 
-                    // No Interceptor is in charge...use default templates...
-                    if (UserContext.getCurrentUser().isLoggedIn() || !UserContext.get()
-                                                                                 .getUserManager()
-                                                                                 .isLoginSupported()) {
-                        ctx.respondWith().template("permission-error.html");
-                    } else {
-                        ctx.respondWith().template("login.html");
-                    }
+                    // No Interceptor is in charge...report error...
+                    ctx.respondWith().error(HttpResponseStatus.UNAUTHORIZED);
                 } else {
                     // Intercept call...
                     for (Interceptor interceptor : interceptors) {
-                        if (interceptor.before(ctx,
-                                               route.getController(),
-                                               route.getSuccessCallback())) {
+                        if (interceptor.before(ctx, route.getController(), route.getSuccessCallback())) {
                             return;
                         }
                     }
