@@ -24,11 +24,15 @@ public class ClasspathResolver implements Resolver {
 
     @Override
     public Resource resolve(String scopeId, String resource) {
-        URL url = getClass().getResource(resource.startsWith("/") ? resource : "/" + resource);
-        if (url == null) {
-            return null;
+        URL url = getClass().getResource(resource);
+        if (url != null) {
+            return Resource.constantResource(scopeId, resource, url);
         }
-        return Resource.constantResource(scopeId, resource, url);
+        url = getClass().getResource("/default" + resource);
+        if (url != null) {
+            return Resource.constantResource(scopeId, resource, url);
+        }
+        return null;
     }
 
     @Override

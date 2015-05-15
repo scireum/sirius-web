@@ -94,12 +94,14 @@ public abstract class GenericUserManager implements UserManager {
     public UserInfo bindToRequest(@Nonnull WebContext ctx) {
         UserInfo result = findUserInSession(ctx);
         if (result != null) {
+
             return result;
         }
 
         try {
             result = loginViaUsernameAndPassword(ctx);
             if (result != null) {
+                recordUserLogin(ctx, result);
                 return result;
             }
         } catch (HandledException e) {
@@ -110,10 +112,15 @@ public abstract class GenericUserManager implements UserManager {
 
         result = loginViaSSOToken(ctx);
         if (result != null) {
+            recordUserLogin(ctx, result);
             return result;
         }
 
         return defaultUser;
+    }
+
+    protected void recordUserLogin(WebContext ctx, UserInfo user) {
+
     }
 
     /*
@@ -124,6 +131,7 @@ public abstract class GenericUserManager implements UserManager {
             return null;
         }
         if (ctx.get("user").isFilled() && ctx.get("token").isFilled()) {
+            ctx.hidePost();
             String user = ctx.get("user").trim();
             String token = ctx.get("token").trim();
 
@@ -223,6 +231,7 @@ public abstract class GenericUserManager implements UserManager {
      */
     private UserInfo loginViaUsernameAndPassword(WebContext ctx) {
         if (ctx.get("user").isFilled() && ctx.get("password").isFilled()) {
+            ctx.hidePost();
             String user = ctx.get("user").trim();
             String password = ctx.get("password").trim();
 
@@ -245,9 +254,9 @@ public abstract class GenericUserManager implements UserManager {
             if (ctx.getServerSession(false).isPresent()) {
                 Value userId = ctx.getServerSession().getValue(scope.getScopeId() + "-user-id");
                 if (userId.isFilled()) {
-                    return new UserInfo(userId.asString(),
-                                        ctx.getServerSession().getValue(scope.getScopeId() + "-tenant-id").asString(),
+                    return new UserInfo(ctx.getServerSession().getValue(scope.getScopeId() + "-tenant-id").asString(),
                                         ctx.getServerSession().getValue(scope.getScopeId() + "-tenant-name").asString(),
+                                        userId.asString(),
                                         ctx.getServerSession().getValue(scope.getScopeId() + "-user-name").asString(),
                                         ctx.getServerSession().getValue(scope.getScopeId() + "-user-email").asString(),
                                         ctx.getServerSession().getValue(scope.getScopeId() + "-user-lang").asString(),
@@ -258,9 +267,9 @@ public abstract class GenericUserManager implements UserManager {
         } else if (sessionStorage == SESSION_STORAGE_TYPE_CLIENT) {
             Value userId = ctx.getSessionValue(scope.getScopeId() + "-user-id");
             if (userId.isFilled()) {
-                return new UserInfo(userId.asString(),
-                                    ctx.getSessionValue(scope.getScopeId() + "-tenant-id").asString(),
+                return new UserInfo(ctx.getSessionValue(scope.getScopeId() + "-tenant-id").asString(),
                                     ctx.getSessionValue(scope.getScopeId() + "-tenant-name").asString(),
+                                    userId.asString(),
                                     ctx.getSessionValue(scope.getScopeId() + "-user-name").asString(),
                                     ctx.getSessionValue(scope.getScopeId() + "-user-email").asString(),
                                     ctx.getSessionValue(scope.getScopeId() + "-user-lang").asString(),

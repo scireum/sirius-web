@@ -6,7 +6,7 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.web.templates;
+package sirius.web.templates.rythm;
 
 import sirius.kernel.commons.Tuple;
 

@@ -20,7 +20,7 @@ import javax.script.SimpleScriptContext;
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01
  */
-class ScriptingContext extends SimpleScriptContext implements Context {
+public class ScriptingContext extends SimpleScriptContext implements Context {
 
     @Override
     public Object put(String key, Object value) {

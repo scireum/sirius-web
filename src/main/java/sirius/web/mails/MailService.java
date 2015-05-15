@@ -16,6 +16,7 @@ import com.sun.mail.smtp.SMTPMessage;
 import com.typesafe.config.Config;
 import sirius.kernel.async.Async;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.async.Operation;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
@@ -24,13 +25,16 @@ import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.extensions.Extension;
 import sirius.kernel.extensions.Extensions;
+import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Log;
+import sirius.kernel.health.metrics.MetricProvider;
+import sirius.kernel.health.metrics.MetricsCollector;
 import sirius.kernel.nls.NLS;
 import sirius.web.http.MimeHelper;
 import sirius.web.templates.Content;
-import sirius.web.templates.VelocityContentHandler;
+import sirius.web.templates.velocity.VelocityContentHandler;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -41,6 +45,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 import java.io.ByteArrayOutputStream;
+import java.time.Duration;
 import java.util.*;
 
 /**
@@ -49,8 +54,8 @@ import java.util.*;
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/09
  */
-@Register(classes = {MailService.class})
-public class MailService {
+@Register(classes = {MailService.class, MetricProvider.class})
+public class MailService implements MetricProvider {
 
     public static final String X_BOUNCETOKEN = "X-Bouncetoken";
     protected static final Log MAIL = Log.get("mail");
@@ -101,6 +106,14 @@ public class MailService {
 
     @Parts(MailLog.class)
     private Collection<MailLog> logs;
+
+    private Average mailsOut = new Average();
+
+    @Override
+    public void gather(MetricsCollector collector) {
+        collector.differentialMetric("mails-out", "mails-out", "Mails Sent", mailsOut.getCount(), null);
+        collector.metric("mails-duration", "Send Mail Duration", mailsOut.getAvg(), "ms");
+    }
 
     /**
      * Creates a new builder which is used to specify the mail to send.
@@ -830,10 +843,12 @@ public class MailService {
                 technicalSender = DEFAULT_CONFIG.getMailSender();
                 technicalSenderName = DEFAULT_CONFIG.getMailSenderName();
             }
+            Operation op = Operation.create("mail",
+                                            () -> "Sending eMail: " + mail.subject + " to: " + mail.receiverEmail,
+                                            Duration.ofSeconds(30));
             try {
                 try {
                     MAIL.FINE("Sending eMail: " + mail.subject + " to: " + mail.receiverEmail);
-
                     Session session = getMailSession(config);
                     Transport transport = getSMTPTransport(session, config);
                     try {
@@ -911,6 +926,7 @@ public class MailService {
                             Strings.isFilled(config.getMailPassword())).to(MAIL).error(e).handle();
                 }
             } finally {
+                Operation.release(op);
                 if (logs.isEmpty()) {
                     if (!success) {
                         MAIL.WARN("FAILED to send mail from: '%s' to '%s' with subject: '%s'",

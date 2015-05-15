@@ -13,7 +13,6 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
-import sirius.web.security.UserContext;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -54,10 +53,9 @@ public class LocalPathResolver implements Resolver {
         if (!isReady()) {
             return null;
         }
-        String scope = UserContext.getCurrentScope().getScopeId();
         File file = new File(baseDir,
-                             (scope + "/" + (resource.startsWith("/") ? resource : "/" + resource)).replace("/",
-                                                                                                            File.separator));
+                             (scopeId  + resource).replace("/",
+                                                                                                     File.separator));
         if (file.exists()) {
             try {
                 return Resource.dynamicResource(scopeId, resource, file.toURI().toURL());

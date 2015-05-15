@@ -10,9 +10,6 @@ package sirius.web.templates;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
-import com.typesafe.config.ConfigValue;
-import org.apache.velocity.app.Velocity;
-import org.apache.velocity.runtime.RuntimeConstants;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.cache.Cache;
@@ -20,7 +17,6 @@ import sirius.kernel.cache.CacheManager;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.GlobalContext;
-import sirius.kernel.di.Initializable;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.di.std.Register;
@@ -37,7 +33,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Content generator which generates output based on templates.
@@ -167,7 +166,8 @@ public class Content {
          * {@link #useTemplate(String)} will be ignored.
          *
          * @param templateCode the template code to evaluate
-         * @param handlerType  String reference for the handler to be used (i.e. {@link VelocityContentHandler#VM})
+         * @param handlerType  String reference for the handler to be used
+         *                     (i.e. {@link sirius.web.templates.velocity.VelocityContentHandler#VM})
          * @return the generator itself for fluent API calls
          */
         public Generator direct(String templateCode, String handlerType) {
@@ -180,9 +180,9 @@ public class Content {
          * Specifies which {@link ContentHandler} is used to generate the content.
          * <p>
          * Most of the time, the content handler is auto-detected using the file name of the template. An example
-         * would be <b>.pdf.vm</b> which will force the {@link VelocityPDFContentHandler} to generate a PDF file
-         * using the template. However, by using <code>generator.handler("pdf-vm")</code> it can be ensured, that
-         * this handler is picked, without relying on the file name.
+         * would be <b>.pdf.vm</b> which will force the {@link sirius.web.templates.velocity.VelocityPDFContentHandler}
+         * to generate a PDF file using the template. However, by using <code>generator.handler("pdf-vm")</code>
+         * it can be ensured, that this handler is picked, without relying on the file name.
          *
          * @param handlerType the name of the handler type to use. Constants can be found by looking at the
          *                    {@link Register} annotations of the implementing classes of {@link ContentHandler}.
@@ -427,6 +427,9 @@ public class Content {
      * Calls all available resolvers to pick the right content for the given scope and uri (without using a cache)
      */
     private Optional<Resource> resolveURI(String scopeId, String uri) {
+        if (!uri.startsWith("/")) {
+            uri = "/" + uri;
+        }
         for (Resolver res : resolvers) {
             Resource r = res.resolve(scopeId, uri);
             if (r != null) {

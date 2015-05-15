@@ -6,7 +6,7 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.web.templates;
+package sirius.web.templates.velocity;
 
 import com.typesafe.config.ConfigValue;
 import org.apache.velocity.app.Velocity;
@@ -14,6 +14,7 @@ import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
 import sirius.kernel.Sirius;
 import sirius.kernel.health.Exceptions;
+import sirius.web.templates.Content;
 
 import java.util.Map;
 

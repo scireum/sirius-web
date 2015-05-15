@@ -46,6 +46,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.*;
 
 /**
@@ -108,6 +109,15 @@ public class WebContext implements SubContext {
      * Stores the decoder which was used to process a POST or PUT request
      */
     protected HttpPostRequestDecoder postDecoder;
+
+    /*
+     * Sometimes it is usefult to "hide" the fact that this is a POST request.
+     * One case are login-forms. There are submitted for any URL but must not
+     * interact with other POST handlers. Therefore a user manager can
+     * call hidePost() so that isPOST() will return false even if a post request
+     * is present.
+     */
+    protected boolean hidePost = false;
 
     /*
      * A list of files to deleted once this call is handled
@@ -211,6 +221,13 @@ public class WebContext implements SubContext {
      */
     @ConfigValue("http.sessionCookieName")
     private static String sessionCookieName;
+
+    /*
+     * The ttl of the client session cookie. If this is 0, it will be a "session cookie" and therefore
+     * be deleted when the browser is closed
+     */
+    @ConfigValue("http.sessionCookieTTL")
+    private static Duration sessionCookieTTL;
 
     /*
      * Shared secret used to protect the client session. If empty one will be created on startup.
@@ -944,7 +961,11 @@ public class WebContext implements SubContext {
             }
             String value = encoder.toString();
             String protection = Hashing.sha512().hashString(value + getSessionSecret()).toString();
-            setHTTPSessionCookie(sessionCookieName, protection + ":" + value);
+            if (sessionCookieTTL.isZero()) {
+                setHTTPSessionCookie(sessionCookieName, protection + ":" + value);
+            } else {
+                setCookie(sessionCookieName, protection + ":" + value, sessionCookieTTL.getSeconds());
+            }
         }
         return cookiesOut == null ? null : cookiesOut.values();
     }
@@ -1159,7 +1180,19 @@ public class WebContext implements SubContext {
      * @return <tt>true</tt> if the method of the current request is POST, false otherwise
      */
     public boolean isPOST() {
-        return request.getMethod() == HttpMethod.POST;
+        return request.getMethod() == HttpMethod.POST && !hidePost;
+    }
+
+    /**
+     * Hide the fact that this request is a POST request.
+     * <p>
+     * Sometimes it is useful to make {@link #isPOST()} return false even if the
+     * current request is a POST requests. Login forms woule be one example. As
+     * a login request is sent to any URL, we don't want a common POST handler to
+     * trigger on that post data.
+     */
+    public void hidePost() {
+        this.hidePost = true;
     }
 
     /*

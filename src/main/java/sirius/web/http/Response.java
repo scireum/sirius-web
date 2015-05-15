@@ -38,7 +38,7 @@ import sirius.kernel.xml.XMLStructuredOutput;
 import sirius.web.services.JSONStructuredOutput;
 import sirius.web.templates.Content;
 import sirius.web.templates.Resource;
-import sirius.web.templates.RythmConfig;
+import sirius.web.templates.rythm.RythmConfig;
 
 import javax.annotation.Nullable;
 import java.io.File;

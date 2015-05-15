@@ -6,13 +6,14 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.web.templates;
+package sirius.web.templates.rythm;
 
 import org.rythmengine.resource.ITemplateResource;
 import org.rythmengine.resource.TemplateResourceBase;
-import org.rythmengine.utils.IO;
 import sirius.kernel.commons.RateLimit;
 import sirius.kernel.di.std.Part;
+import sirius.web.templates.Content;
+import sirius.web.templates.Resource;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -26,6 +27,7 @@ import java.util.concurrent.TimeUnit;
  */
 class URLTemplateResource extends TemplateResourceBase implements ITemplateResource {
 
+    private long lastModified;
     private Resource resource;
     private RateLimit checkLimit = RateLimit.timeInterval(10, TimeUnit.SECONDS);
 
@@ -33,6 +35,7 @@ class URLTemplateResource extends TemplateResourceBase implements ITemplateResou
         super();
         this.resource = resource;
         this.isProdMode = false;
+        this.lastModified = System.currentTimeMillis();
     }
 
     @Part
@@ -45,7 +48,7 @@ class URLTemplateResource extends TemplateResourceBase implements ITemplateResou
 
     @Override
     public String reload() {
-        return IO.readContentAsString(resource.getUrl());
+        return resource.getContentAsString();
     }
 
     @Override
@@ -54,11 +57,12 @@ class URLTemplateResource extends TemplateResourceBase implements ITemplateResou
             content.resolve(resource.getScopeId(), resource.getPath()).ifPresent(r -> {
                 if (!Objects.equals(r.getUrl(), resource.getUrl())) {
                     resource = r;
+                    lastModified = System.currentTimeMillis();
                 }
             });
         }
 
-        return resource.getLastModified();
+        return lastModified;
     }
 
     @Override

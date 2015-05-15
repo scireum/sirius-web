@@ -6,23 +6,15 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.web.templates;
+package sirius.web.templates.rythm;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.rythmengine.Rythm;
 import org.rythmengine.RythmEngine;
 import org.rythmengine.conf.RythmConfigurationKey;
-import org.rythmengine.extension.II18nMessageResolver;
-import org.rythmengine.extension.ISourceCodeEnhancer;
-import org.rythmengine.resource.ITemplateResource;
-import org.rythmengine.resource.ResourceLoaderBase;
-import org.rythmengine.template.ITemplate;
-import org.rythmengine.template.JavaTagBase;
 import sirius.kernel.Lifecycle;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
-import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
@@ -31,12 +23,11 @@ import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
 import sirius.web.http.WebContext;
 import sirius.web.security.UserContext;
+import sirius.web.templates.Content;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.time.LocalDate;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -71,24 +62,6 @@ public class RythmConfig implements Lifecycle {
 
     public static final Log LOG = Log.get("rythm");
 
-    /*
-     * Adapter to make @i18n commands use NLS.get
-     */
-    public static class I18nResourceResolver implements II18nMessageResolver {
-
-        @Override
-        public String getMessage(ITemplate template, String key, Object... args) {
-            return NLS.apply(key, args);
-        }
-    }
-
-    @Parts(RythmExtension.class)
-    private Collection<RythmExtension> extensions;
-
-    @Part
-    private Content content;
-
-
     @Override
     public void started() {
         Map<String, Object> config = Maps.newTreeMap();
@@ -114,21 +87,7 @@ public class RythmConfig implements Lifecycle {
         config.put(RythmConfigurationKey.CODEGEN_SOURCE_CODE_ENHANCER.getKey(), new SiriusSourceCodeEnhancer());
         Rythm.init(config);
         Rythm.engine().registerFastTag(new IncludeExtensions());
-    }
-
-    private static class IncludeExtensions extends JavaTagBase {
-
-        @Override
-        public String __getName() {
-            return "includeExtensions";
-        }
-
-        @Override
-        protected void call(__ParameterList params, __Body body) {
-            for (String ext : sirius.web.templates.Content.getExtensions((String) params.get(0).value)) {
-                p(__engine.render("view/" + ext));
-            }
-        }
+        Rythm.engine().registerTransformer(EscapeStringTransformer.class);
     }
 
     @Override
@@ -165,82 +124,4 @@ public class RythmConfig implements Lifecycle {
         return "Rythm-Engine";
     }
 
-    private class SiriusResourceLoader extends ResourceLoaderBase {
-        @Override
-        public String getResourceLoaderRoot() {
-            return "";
-        }
-
-        @Override
-        public ITemplateResource load(String path) {
-            if (path.contains("://")) {
-                path = Strings.split(path, "://").getSecond();
-            }
-            return content.resolve(path).map(u -> new URLTemplateResource(u)).orElse(null);
-        }
-    }
-
-    private class SiriusSourceCodeEnhancer implements ISourceCodeEnhancer {
-        @Override
-        public List<String> imports() {
-            List<String> result = Lists.newArrayList();
-            result.add("sirius.kernel.commons.Strings");
-            result.add("sirius.kernel.nls.NLS");
-
-            return result;
-        }
-
-        @Override
-        public String sourceCode() {
-            return "";
-        }
-
-        @Override
-        public Map<String, ?> getRenderArgDescriptions() {
-            final Map<String, Object> map = Maps.newTreeMap();
-            map.put("ctx", CallContext.class);
-            map.put("user", UserContext.class);
-            map.put("prefix", String.class);
-            map.put("product", String.class);
-            map.put("year", int.class);
-            map.put("detailedVersion", String.class);
-            map.put("isDev", Boolean.class);
-            map.put("call", WebContext.class);
-            map.put("template", String.class);
-            map.put("lang", String.class);
-            map.put("dateFormat", String.class);
-            map.put("timeFormat", String.class);
-            for (RythmExtension ext : extensions) {
-                ext.collectExtensionNames(entity -> map.put(entity.getFirst(), entity.getSecond()));
-            }
-            return map;
-        }
-
-        @Override
-        public void setRenderArgs(final ITemplate template) {
-            CallContext ctx = CallContext.getCurrent();
-            String url = template.__getName();
-            if (template instanceof URLTemplateResource) {
-                url = ((URLTemplateResource) template.__getTemplateClass(true).templateResource).getUrl();
-            }
-            ctx.addToMDC("template", url);
-            WebContext wc = ctx.get(WebContext.class);
-
-            template.__setRenderArg("ctx", ctx);
-            template.__setRenderArg("user", ctx.get(UserContext.class));
-            template.__setRenderArg("prefix", wc.getContextPrefix());
-            template.__setRenderArg("product", Product.getProduct().getName());
-            template.__setRenderArg("year", LocalDate.now().getYear());
-            template.__setRenderArg("detailedVersion", Product.getProduct().getDetails());
-            template.__setRenderArg("isDev", Sirius.isDev());
-            template.__setRenderArg("call", wc);
-            template.__setRenderArg("template", url);
-            template.__setRenderArg("lang", NLS.getCurrentLang());
-            template.__setRenderArg("dateFormat", NLS.get("RythmConfig.jsDateFormat"));
-            template.__setRenderArg("timeFormat", NLS.get("RythmConfig.jsTimeFormat"));
-            for (RythmExtension ext : extensions) {
-                ext.collectExtensionValues(entity -> template.__setRenderArg(entity.getFirst(), entity.getSecond()));
-            }
-        }
-    }
 }

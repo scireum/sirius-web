@@ -1,9 +1,12 @@
-package sirius.web.templates;
+package sirius.web.templates.velocity;
 
 import com.google.common.base.Charsets;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
+import sirius.web.templates.Content;
+import sirius.web.templates.ContentHandler;
+import sirius.web.templates.ScriptingContext;
 
 import java.io.OutputStream;
 import java.io.StringWriter;

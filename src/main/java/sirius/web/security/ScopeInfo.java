@@ -10,6 +10,7 @@ package sirius.web.security;
 
 import sirius.kernel.di.morphium.Adaptable;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.function.Function;
 
@@ -50,9 +51,9 @@ public class ScopeInfo implements Adaptable {
      * @param scopeSupplier used to fetch the associated scope object. This can be a database entity or the like
      *                      associated with the scope
      */
-    public ScopeInfo(String scopeId,
-                     String scopeType,
-                     String scopeName,
+    public ScopeInfo(@Nonnull String scopeId,
+                     @Nonnull String scopeType,
+                     @Nonnull String scopeName,
                      @Nullable String lang,
                      Function<ScopeInfo, Object> scopeSupplier) {
         this.scopeId = scopeId;
@@ -67,6 +68,7 @@ public class ScopeInfo implements Adaptable {
      *
      * @return the unique ID identifying the scope
      */
+    @Nonnull
     public String getScopeId() {
         return scopeId;
     }
@@ -79,6 +81,7 @@ public class ScopeInfo implements Adaptable {
      *
      * @return the type of the scope
      */
+    @Nonnull
     public String getScopeType() {
         return scopeType;
     }
@@ -88,10 +91,18 @@ public class ScopeInfo implements Adaptable {
      *
      * @return the representative (non-technical) name of the scope
      */
+    @Nonnull
     public String getScopeName() {
         return scopeName;
     }
 
+    /**
+     * Returns the two letter language code of this scope as understood by
+     * {@link sirius.kernel.nls.NLS#setDefaultLanguage(String)}.
+     *
+     * @return the language code used by this scope or <tt>null</tt> if there is no specific language used
+     */
+    @Nullable
     public String getLang() {
         return lang;
     }
