@@ -474,7 +474,9 @@ public class Content {
     public static List<String> getExtensions(String key) {
         List<String> result = Lists.newArrayList();
         for (Extension e : Extensions.getExtensions("content.extensions." + key)) {
-            result.add(e.get("template").asString());
+            if (Sirius.isFrameworkEnabled(e.get("framework").asString())) {
+                result.add(e.get("template").asString());
+            }
         }
 
         return result;
