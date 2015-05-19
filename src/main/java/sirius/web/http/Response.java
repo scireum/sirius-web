@@ -627,7 +627,7 @@ public class Response {
             try {
                 range = parseRange(fileLength);
             } catch (IllegalArgumentException e) {
-                error(HttpResponseStatus.REQUESTED_RANGE_NOT_SATISFIABLE);
+                error(HttpResponseStatus.REQUESTED_RANGE_NOT_SATISFIABLE, e.getMessage());
                 return;
             }
 
@@ -692,7 +692,7 @@ public class Response {
         }
         Matcher m = RANGE_HEADER.matcher(header);
         if (!m.matches()) {
-            throw new IllegalArgumentException(Strings.apply("Unsupported range: %s", header));
+            throw new IllegalArgumentException(Strings.apply("Range does not match the expected format: %s", header));
         }
         Tuple<Long, Long> result = Tuple.create();
         if (Strings.isFilled(m.group(1))) {
@@ -712,7 +712,8 @@ public class Response {
             return null;
         }
         if (result.getSecond() >= availableLength) {
-            throw new IllegalArgumentException(Strings.apply("Unsupported range: %s", header));
+            throw new IllegalArgumentException(Strings.apply("End of range is beyond the end of available data: %s",
+                                                             header));
         }
 
         return result;
