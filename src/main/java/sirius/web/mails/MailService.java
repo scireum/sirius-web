@@ -112,7 +112,7 @@ public class MailService implements MetricProvider {
     @Override
     public void gather(MetricsCollector collector) {
         collector.differentialMetric("mails-out", "mails-out", "Mails Sent", mailsOut.getCount(), null);
-        collector.metric("mails-duration", "Send Mail Duration", mailsOut.getAvg(), "ms");
+        collector.metric("mails-duration", "Send Mail Duration", mailsOut.getAndClearAverage(), "ms");
     }
 
     /**
