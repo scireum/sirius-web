@@ -15,10 +15,7 @@ import com.ning.http.client.*;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.DefaultFileRegion;
+import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
@@ -656,30 +653,25 @@ public class Response {
                 ctx.write(new ChunkedFile(raf,
                                           range != null ? range.getFirst() : 0,
                                           range != null ? range.getSecond() - range.getFirst() + 1 : fileLength,
-                                          8192));
+                                          8192), ctx.channel().voidPromise());
             } else if (responseChunked) {
                 // Send chunks of data which can be compressed
                 ctx.write(new ChunkedInputAdapter(new ChunkedFile(raf,
                                                                   range != null ? range.getFirst() : 0,
                                                                   range != null ? range.getSecond() - range.getFirst() + 1 : fileLength,
-                                                                  8192)));
+                                                                  8192)), ctx.channel().voidPromise());
             } else {
                 // Forcefully disable the content compressor as it cannot compress a DefaultFileRegion
                 response.headers().set(HttpHeaders.Names.CONTENT_ENCODING, HttpHeaders.Values.IDENTITY);
                 // Send file using zero copy approach!
                 ctx.write(new DefaultFileRegion(raf.getChannel(),
                                                 range != null ? range.getFirst() : 0,
-                                                range != null ? range.getSecond() - range.getFirst() + 1 : fileLength));
+                                                range != null ? range.getSecond() - range.getFirst() + 1 : fileLength), ctx.channel().voidPromise());
             }
             ChannelFuture writeFuture = ctx.writeAndFlush(DefaultLastHttpContent.EMPTY_LAST_CONTENT);
 
             // Close file once completed
-            writeFuture.addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                    raf.close();
-                }
-            });
+            writeFuture.addListener(channelFuture -> raf.close());
             complete(writeFuture);
         } catch (Throwable e) {
             internalServerError(e);
@@ -868,7 +860,7 @@ public class Response {
             // Write the initial line and the header.
             commit(response);
             // Write the content.
-            ctx.write(new ChunkedInputAdapter(new ChunkedStream(urlConnection.getInputStream(), 8192)));
+            ctx.write(new ChunkedInputAdapter(new ChunkedStream(urlConnection.getInputStream(), 8192)), ctx.channel().voidPromise());
             // Write last chunk to signal the end of content
             ChannelFuture writeFuture = ctx.writeAndFlush(DefaultLastHttpContent.EMPTY_LAST_CONTENT);
             complete(writeFuture);
@@ -1414,12 +1406,12 @@ public class Response {
                     if (last) {
                         if (responseChunked) {
                             if (buffer != null) {
-                                ctx.write(new DefaultHttpContent(buffer));
+                                ctx.write(new DefaultHttpContent(buffer), ctx.channel().voidPromise());
                             }
                             complete(ctx.writeAndFlush(DefaultLastHttpContent.EMPTY_LAST_CONTENT));
                         } else {
                             if (buffer != null) {
-                                ctx.write(buffer);
+                                ctx.write(buffer, ctx.channel().voidPromise());
                             }
                             complete(ctx.writeAndFlush(DefaultLastHttpContent.EMPTY_LAST_CONTENT));
                         }
