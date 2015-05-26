@@ -9,13 +9,13 @@
 package sirius.web.http;
 
 import org.junit.Test;
-import sirius.kernel.Sirius;
 
 import java.net.InetAddress;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-public class IPRangeTest extends Sirius {
+public class IPRangeTest {
     @Test
     public void testSimpleRange() throws Exception {
         assertTrue(IPRange.parseRange("192.168.192.1").matches(InetAddress.getByName("192.168.192.1")));
