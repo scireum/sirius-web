@@ -21,6 +21,7 @@ import java.security.KeyStore;
 import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.util.List;
 
 class SSLWebServerInitializer extends WebServerInitializer {
 
@@ -34,6 +35,15 @@ class SSLWebServerInitializer extends WebServerInitializer {
 
     @ConfigValue("http.ssl.password")
     private static String password;
+
+    @ConfigValue("http.ssl.ephemeralDHKeySize")
+    private static int ephemeralDHKeySize;
+
+    @ConfigValue("http.ssl.protocols")
+    private static List<String> protocols;
+
+    @ConfigValue("http.ssl.ciphers")
+    private static List<String> ciphers;
 
     class SniKeyManager extends X509ExtendedKeyManager {
         private final X509ExtendedKeyManager keyManager;
@@ -115,6 +125,7 @@ class SSLWebServerInitializer extends WebServerInitializer {
         if (x509KeyManager == null) {
             throw new Exception("KeyManagerFactory did not create an X509ExtendedKeyManager");
         }
+        System.setProperty("jdk.tls.ephemeralDHKeySize", String.valueOf(ephemeralDHKeySize));
         SniKeyManager sniKeyManager = new SniKeyManager(x509KeyManager);
         context = SSLContext.getInstance("TLS");
         context.init(new KeyManager[]{sniKeyManager}, null, null);
@@ -129,6 +140,12 @@ class SSLWebServerInitializer extends WebServerInitializer {
     public void initChannel(SocketChannel ch) throws Exception {
         SSLEngine engine = context.createSSLEngine();
         engine.setUseClientMode(false);
+        if (!ciphers.isEmpty()) {
+            engine.setEnabledCipherSuites(ciphers.toArray(new String[ciphers.size()]));
+        }
+        if (!protocols.isEmpty()) {
+            engine.setEnabledProtocols(protocols.toArray(new String[protocols.size()]));
+        }
         ch.pipeline().addFirst(new SslHandler(engine));
         super.initChannel(ch);
     }
