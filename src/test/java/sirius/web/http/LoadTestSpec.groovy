@@ -8,55 +8,76 @@
 
 package sirius.web.http
 
-import com.google.common.base.Charsets
 import com.google.common.io.ByteStreams
 import sirius.kernel.BaseSpecification
-import sirius.kernel.commons.ValueHolder
 import sirius.kernel.commons.Watch
+import sirius.kernel.health.Average
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 /**
- * Created by aha on 26.05.15.
+ * Simulates a bunch of "real" (outside) requests through netty and sirius.
+ * <p>
+ * This ensures a basic performance profile and also makes sure no trivial race conditions or memory leaks
+ * are added.
+ *
+ * @author Andreas Haufler (aha@scireum.de)
+ * @since 2015/05
  */
 class LoadTestSpec extends BaseSpecification {
 
-    def "Invoke /system/ok 10000x"() {
+    def "Invoke /system/ok 20000x"() {
         when:
-        call("/system/ok", 10000, 16);
+        for (int i = 0; i < 10; i++) {
+            call("/system/ok", 1000, 16);
+
+        }
         Watch w = Watch.start();
-        def result = call("/system/ok", 10000, 16);
+        Average avg = new Average();
+        for (int i = 0; i < 20; i++) {
+            w.reset();
+            call("/system/ok", 1000, 16);
+            avg.addValue(w.elapsed(TimeUnit.MILLISECONDS, true));
+
+        }
+        WebServer.LOG.INFO("Executing %s resulted in %1.2f RPS", "/system/ok", 1000 / (avg.getAvg() / 1000d));
         then:
-        "OK" == result
-        w.elapsedMillis() < 10000
+        avg.getAvg() < 1000
     }
 
-    def "Invoke /system/info 10000x"() {
+    def "Invoke /system/info 20000x"() {
         when:
-        call("/system/info", 10000, 32);
+        for (int i = 0; i < 10; i++) {
+            call("/system/info", 1000, 32);
+        }
         Watch w = Watch.start();
-        call("/system/info", 10000, 32);
+        Average avg = new Average();
+        for (int i = 0; i < 10; i++) {
+            w.reset();
+            call("/system/info", 1000, 32);
+            avg.addValue(w.elapsed(TimeUnit.MILLISECONDS, true));
+
+        }
+        WebServer.LOG.INFO("Executing %s resulted in %1.2f RPS", "/system/info", 1000 / (avg.getAvg() / 1000d));
         then:
-        w.elapsedMillis() < 10000
+        avg.getAvg() < 1000
     }
 
     def call(String uri, int count, int parallelism) {
         Watch w = Watch.start();
-        ValueHolder<String> vh = ValueHolder.of(null);
         ExecutorService exec = Executors.newFixedThreadPool(parallelism);
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < count; i++) {
             exec.execute({
                 URLConnection c = new URL("http://localhost:9999" + uri).openConnection();
                 c.connect();
-                vh.set(new String(ByteStreams.toByteArray(c.getInputStream()), Charsets.UTF_8));
+                ByteStreams.toByteArray(c.getInputStream());
             });
         }
         exec.shutdown();
         exec.awaitTermination(1, TimeUnit.MINUTES);
-        WebServer.LOG.INFO("Calling %s %d time in %d threads took %s. This equals %1.2f RPS", uri, count, parallelism, w.duration(), (count / (w.elapsed(TimeUnit.MILLISECONDS, false) / 1000d)));
-        return vh.get();
+        return w.elapsedMillis();
     }
 
 }
