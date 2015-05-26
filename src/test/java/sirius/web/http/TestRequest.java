@@ -15,6 +15,9 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.cookie.ClientCookieEncoder;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
@@ -239,7 +242,7 @@ public class TestRequest extends WebContext implements HttpRequest {
     public TestRequest addCookie(String name, String value) {
         boolean updated = false;
         for (Cookie cookie : testCookies) {
-            if (Strings.areEqual(name, cookie.getName())) {
+            if (Strings.areEqual(name, cookie.name())) {
                 cookie.setValue(value);
                 updated = true;
             }
@@ -247,7 +250,7 @@ public class TestRequest extends WebContext implements HttpRequest {
         if (!updated) {
             testCookies.add(new DefaultCookie(name, value));
         }
-        testHeaders.set(HttpHeaders.Names.COOKIE, ClientCookieEncoder.encode(testCookies));
+        testHeaders.set(HttpHeaders.Names.COOKIE, ClientCookieEncoder.STRICT.encode(testCookies));
         return this;
     }
 

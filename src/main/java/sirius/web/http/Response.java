@@ -18,9 +18,9 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.DefaultFileRegion;
-import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedFile;
 import io.netty.handler.stream.ChunkedStream;
@@ -226,9 +226,9 @@ public class Response {
         }
 
         // Add cookies
-        Collection<Cookie> cookies = wc.getOutCookies();
+        Collection<io.netty.handler.codec.http.cookie.Cookie> cookies = wc.getOutCookies();
         if (cookies != null && !cookies.isEmpty()) {
-            response.headers().set(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.encode(cookies));
+            response.headers().set(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.LAX.encode(cookies));
         }
 
         // Add Server: nodeName as header

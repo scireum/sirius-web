@@ -19,6 +19,9 @@ import com.google.common.hash.Hashing;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.DefaultCookie;
+import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.handler.codec.http.multipart.*;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
@@ -867,8 +870,8 @@ public class WebContext implements SubContext {
             if (request != null) {
                 String cookieHeader = request.headers().get(HttpHeaders.Names.COOKIE);
                 if (Strings.isFilled(cookieHeader)) {
-                    for (Cookie cookie : CookieDecoder.decode(cookieHeader)) {
-                        this.cookiesIn.put(cookie.getName(), cookie);
+                    for (Cookie cookie : ServerCookieDecoder.LAX.decode(cookieHeader)) {
+                        this.cookiesIn.put(cookie.name(), cookie);
                     }
                 }
             }
@@ -887,7 +890,7 @@ public class WebContext implements SubContext {
         if (c == null) {
             return null;
         }
-        return c.getValue();
+        return c.value();
     }
 
     /**
@@ -899,7 +902,7 @@ public class WebContext implements SubContext {
         if (cookiesOut == null) {
             cookiesOut = Maps.newTreeMap();
         }
-        cookiesOut.put(cookie.getName(), cookie);
+        cookiesOut.put(cookie.name(), cookie);
     }
 
     /**
