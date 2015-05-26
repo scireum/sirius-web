@@ -13,6 +13,7 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.Sets;
 import com.ning.http.client.*;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -969,7 +970,9 @@ public class Response {
      * Converts a string into a ByteBuf
      */
     private ByteBuf wrapUTF8String(String content) {
-        return Unpooled.copiedBuffer(content.toCharArray(), Charsets.UTF_8);
+        ByteBuf buffer = ctx.alloc().buffer(content.length() * 3);
+        ByteBufUtil.writeUtf8(buffer, content);
+        return buffer;
     }
 
     /**

@@ -181,12 +181,6 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         return numKeepAlive-- > 0;
     }
 
-    @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-        ctx.flush();
-        super.channelReadComplete(ctx);
-    }
-
     /*
      * Called once a connection is closed. Note that due to keep-alive approaches specified by HTTP 1.1, several
      * independent requests can be handled via one connection

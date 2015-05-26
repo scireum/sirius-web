@@ -10,9 +10,12 @@ package sirius.web.http;
 
 import com.google.common.collect.Maps;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
@@ -118,6 +121,13 @@ public class WebServer implements Lifecycle, MetricProvider {
 
     @ConfigValue("http.ssl.port")
     private int sslPort;
+
+    /**
+     * Can be enabled when running under linux to use EPOLL instead of NIO
+     */
+    @ConfigValue("http.epoll")
+    private boolean epoll;
+
 
     @Part
     private static SessionManager sessionManager;
@@ -323,11 +333,15 @@ public class WebServer implements Lifecycle, MetricProvider {
         DiskAttribute.baseDirectory = null;
         httpDataFactory = new DefaultHttpDataFactory(uploadDiskThreshold);
 
-        bossGroup = new NioEventLoopGroup();
-        workerGroup = new NioEventLoopGroup();
+        bossGroup = epoll ? new EpollEventLoopGroup() : new NioEventLoopGroup();
+        workerGroup = epoll ? new EpollEventLoopGroup() : new NioEventLoopGroup();
         ServerBootstrap bootstrap = new ServerBootstrap();
+        bootstrap.childOption(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024);
+        bootstrap.childOption(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024);
+        bootstrap.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         bootstrap.group(bossGroup, workerGroup)
-                 .channel(NioServerSocketChannel.class).childHandler(ctx.wire(new WebServerInitializer()))
+                 .channel(epoll ? EpollServerSocketChannel.class : NioServerSocketChannel.class).childHandler(ctx.wire(
+                new WebServerInitializer()))
                 // At mose have 128 connections waiting to be "connected" - drop everything else...
                 .option(ChannelOption.SO_BACKLOG, 128)
                         // Send a KEEPALIVE packet every 2h and expect and ACK on the TCP layer
@@ -349,6 +363,9 @@ public class WebServer implements Lifecycle, MetricProvider {
         if (ssl) {
             try {
                 bootstrap = new ServerBootstrap();
+                bootstrap.childOption(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024);
+                bootstrap.childOption(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024);
+                bootstrap.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
                 bootstrap.group(bossGroup, workerGroup)
                          .channel(NioServerSocketChannel.class).childHandler(ctx.wire(new SSLWebServerInitializer()))
                         // At mose have 128 connections waiting to be "connected" - drop everything else...
