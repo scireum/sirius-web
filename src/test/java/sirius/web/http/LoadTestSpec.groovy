@@ -65,12 +65,6 @@ class LoadTestSpec extends BaseSpecification {
         avg.getAvg() < 1000
     }
 
-    def "Wait"() {
-        when:
-        while(true) Thread.sleep(1000);
-        then: true
-    }
-
     def call(String uri, int count, int parallelism) {
         ExecutorService exec = Executors.newFixedThreadPool(parallelism);
         Watch w = Watch.start();
