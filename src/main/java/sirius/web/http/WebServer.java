@@ -15,6 +15,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -125,12 +126,6 @@ public class WebServer implements Lifecycle, MetricProvider {
 
     @ConfigValue("http.ssl.port")
     private int sslPort;
-
-    /**
-     * Can be enabled when running under linux to use EPOLL instead of NIO
-     */
-    @ConfigValue("http.epoll")
-    private boolean epoll;
 
     @Part
     private static SessionManager sessionManager;
@@ -327,7 +322,7 @@ public class WebServer implements Lifecycle, MetricProvider {
 
     public void reportSettings() {
         LOG.INFO("Initializing netty at port %d", port);
-        if (epoll) {
+        if (Epoll.isAvailable()) {
             LOG.INFO("Using Linux syscall EPOLL for optimal performance!");
         }
         if (Strings.isFilled(bindAddress)) {
@@ -368,7 +363,7 @@ public class WebServer implements Lifecycle, MetricProvider {
     }
 
     private EventLoopGroup createEventLoop(int numThreads, String name) {
-        if (epoll) {
+        if (Epoll.isAvailable()) {
             return new EpollEventLoopGroup(numThreads, new PrefixThreadFactory(name));
         } else {
             return new NioEventLoopGroup(numThreads, new PrefixThreadFactory(name));
@@ -388,7 +383,7 @@ public class WebServer implements Lifecycle, MetricProvider {
         // will not create "mini writes" anyway
         bootstrap.childOption(ChannelOption.TCP_NODELAY, true);
         bootstrap.group(eventLoop);
-        bootstrap.channel(epoll ? EpollServerSocketChannel.class : NioServerSocketChannel.class);
+        bootstrap.channel(Epoll.isAvailable() ? EpollServerSocketChannel.class : NioServerSocketChannel.class);
         bootstrap.childHandler(ctx.wire(initializer));
         return bootstrap;
     }
