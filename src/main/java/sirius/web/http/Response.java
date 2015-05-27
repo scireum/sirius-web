@@ -15,9 +15,13 @@ import com.ning.http.client.*;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.*;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.DefaultFileRegion;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedFile;
@@ -224,7 +228,7 @@ public class Response {
         }
 
         // Add cookies
-        Collection<io.netty.handler.codec.http.cookie.Cookie> cookies = wc.getOutCookies();
+        Collection<Cookie> cookies = wc.getOutCookies();
         if (cookies != null && !cookies.isEmpty()) {
             response.headers().set(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.LAX.encode(cookies));
         }
@@ -629,10 +633,14 @@ public class Response {
                 return;
             }
 
+            long contentStart = 0;
+            long expectedContentLength = fileLength;
             if (range == null) {
                 addHeaderIfNotExists(HttpHeaders.Names.CONTENT_LENGTH, fileLength);
             } else {
-                setHeader(HttpHeaders.Names.CONTENT_LENGTH, range.getSecond() - range.getFirst() + 1);
+                contentStart = range.getFirst();
+                expectedContentLength = range.getSecond() - range.getFirst() + 1;
+                setHeader(HttpHeaders.Names.CONTENT_LENGTH, expectedContentLength);
                 setHeader(HttpHeaders.Names.CONTENT_RANGE,
                           "bytes " + range.getFirst() + "-" + range.getSecond() + "/" + fileLength);
             }
@@ -641,32 +649,26 @@ public class Response {
                 setContentDisposition(name, download);
             }
             HttpResponseStatus responseStatus = range != null ? HttpResponseStatus.PARTIAL_CONTENT : HttpResponseStatus.OK;
-            HttpResponse response = !isSSL() && shouldBeCompressed(contentType) ? createChunkedResponse(responseStatus,
-                                                                                                        true) : createResponse(
-                    responseStatus,
-                    true);
-            commit(response, false);
-
-            if (isSSL()) {
+            HttpResponse response;
+            if (canBeCompressed(contentType)) {
+                response = createChunkedResponse(responseStatus, true);
+            } else {
+                response = createResponse(responseStatus, true);
+            }
+            if (responseChunked) {
+                // Send chunks of data which can be compressed
+                ctx.write(new ChunkedInputAdapter(new ChunkedFile(raf, contentStart, expectedContentLength, 8192)),
+                          ctx.channel().voidPromise());
+            } else if (isSSL()) {
                 // Forcefully disable the content compressor as it cannot compress a binary chunks....
                 response.headers().set(HttpHeaders.Names.CONTENT_ENCODING, HttpHeaders.Values.IDENTITY);
-                ctx.write(new ChunkedFile(raf,
-                                          range != null ? range.getFirst() : 0,
-                                          range != null ? range.getSecond() - range.getFirst() + 1 : fileLength,
-                                          8192), ctx.channel().voidPromise());
-            } else if (responseChunked) {
-                // Send chunks of data which can be compressed
-                ctx.write(new ChunkedInputAdapter(new ChunkedFile(raf,
-                                                                  range != null ? range.getFirst() : 0,
-                                                                  range != null ? range.getSecond() - range.getFirst() + 1 : fileLength,
-                                                                  8192)), ctx.channel().voidPromise());
+                ctx.write(new ChunkedFile(raf, contentStart, expectedContentLength, 8192), ctx.channel().voidPromise());
             } else {
                 // Forcefully disable the content compressor as it cannot compress a DefaultFileRegion
                 response.headers().set(HttpHeaders.Names.CONTENT_ENCODING, HttpHeaders.Values.IDENTITY);
                 // Send file using zero copy approach!
-                ctx.write(new DefaultFileRegion(raf.getChannel(),
-                                                range != null ? range.getFirst() : 0,
-                                                range != null ? range.getSecond() - range.getFirst() + 1 : fileLength), ctx.channel().voidPromise());
+                ctx.write(new DefaultFileRegion(raf.getChannel(), contentStart, expectedContentLength),
+                          ctx.channel().voidPromise());
             }
             ChannelFuture writeFuture = ctx.writeAndFlush(DefaultLastHttpContent.EMPTY_LAST_CONTENT);
 
@@ -715,7 +717,7 @@ public class Response {
     /*
      * Determines if the current request should be compressed or not
      */
-    private boolean shouldBeCompressed(String contentType) {
+    private boolean canBeCompressed(String contentType) {
         String acceptEncoding = wc.getRequest().headers().get(HttpHeaders.Names.ACCEPT_ENCODING);
         if (acceptEncoding == null || (!acceptEncoding.contains(HttpHeaders.Values.GZIP) && !acceptEncoding.contains(
                 HttpHeaders.Values.DEFLATE))) {
@@ -860,7 +862,8 @@ public class Response {
             // Write the initial line and the header.
             commit(response);
             // Write the content.
-            ctx.write(new ChunkedInputAdapter(new ChunkedStream(urlConnection.getInputStream(), 8192)), ctx.channel().voidPromise());
+            ctx.write(new ChunkedInputAdapter(new ChunkedStream(urlConnection.getInputStream(), 8192)),
+                      ctx.channel().voidPromise());
             // Write last chunk to signal the end of content
             ChannelFuture writeFuture = ctx.writeAndFlush(DefaultLastHttpContent.EMPTY_LAST_CONTENT);
             complete(writeFuture);
@@ -962,9 +965,9 @@ public class Response {
      * Converts a string into a ByteBuf
      */
     private ByteBuf wrapUTF8String(String content) {
-//        ByteBuf buffer = ctx.alloc().buffer(content.length() * 3);
-//        ByteBufUtil.writeUtf8(buffer, content);
-        return Unpooled.copiedBuffer(content.toCharArray(), Charsets.UTF_8);
+        ByteBuf buffer = ctx.alloc().buffer(content.length() * 3);
+        ByteBufUtil.writeUtf8(buffer, content);
+        return buffer;
     }
 
     /**
@@ -1177,11 +1180,6 @@ public class Response {
                     if (Strings.isEmpty(Response.this.headers.get(HttpHeaders.Names.CONTENT_TYPE))) {
                         setContentTypeHeader(name != null ? name : url);
                     }
-                    String contentType = String.valueOf(Response.this.headers.get(HttpHeaders.Names.CONTENT_TYPE));
-                    if (!shouldBeCompressed(contentType)) {
-                        setHeader(HttpHeaders.Names.CONTENT_ENCODING, HttpHeaders.Values.IDENTITY);
-                    }
-
                     setDateAndCacheHeaders(lastModified, cacheSeconds == null ? HTTP_CACHE : cacheSeconds, isPrivate);
 
                     if (name != null) {
@@ -1204,54 +1202,40 @@ public class Response {
                             return STATE.ABORT;
                         }
 
-                        if (wc.responseCommitted) {
-                            if (bodyPart.isLast()) {
-                                if (responseChunked) {
-                                    ctx.channel()
-                                       .write(new DefaultHttpContent(Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer())));
-                                    ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
-                                    complete(writeFuture);
-                                } else {
-                                    ctx.channel().write(Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer()));
-                                    ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
-                                    complete(writeFuture);
-                                }
-                            } else {
-                                if (responseChunked) {
-                                    ChannelFuture writeFuture = ctx.channel()
-                                                                   .writeAndFlush(new DefaultHttpContent(Unpooled.wrappedBuffer(
-                                                                           bodyPart.getBodyByteBuffer())));
-                                    while (!ctx.channel().isWritable() && ctx.channel().isOpen()) {
-                                        writeFuture.await(5, TimeUnit.SECONDS);
-                                    }
-                                } else {
-                                    ChannelFuture writeFuture = ctx.channel()
-                                                                   .writeAndFlush(Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer()));
-                                    while (!ctx.channel().isWritable() && ctx.channel().isOpen()) {
-                                        writeFuture.await(5, TimeUnit.SECONDS);
-                                    }
-                                }
-                            }
-                        } else {
+                        ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
+
+                        if (!wc.responseCommitted) {
+                            //Send a response first
                             if (bodyPart.isLast()) {
                                 HttpResponse response = createFullResponse(HttpResponseStatus.valueOf(responseCode),
                                                                            true,
-                                                                           Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer()));
+                                                                           data);
                                 HttpHeaders.setContentLength(response, bodyPart.getBodyByteBuffer().remaining());
                                 complete(commit(response));
+                                return STATE.CONTINUE;
                             } else {
-                                HttpResponse response = contentLengthKnown ? createResponse(HttpResponseStatus.valueOf(
-                                                                                                    responseCode),
-                                                                                            true) : createChunkedResponse(
-                                        HttpResponseStatus.valueOf(responseCode),
-                                        true);
-                                commit(response, false);
-                                if (responseChunked) {
-                                    ctx.channel()
-                                       .write(new DefaultHttpContent(Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer())));
+                                if (contentLengthKnown) {
+                                    commit(createResponse(HttpResponseStatus.valueOf(responseCode), true));
                                 } else {
-                                    ctx.channel().write(Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer()));
+                                    commit(createChunkedResponse(HttpResponseStatus.valueOf(responseCode), true));
                                 }
+                            }
+                        }
+
+                        if (responseChunked) {
+                            ctx.write(new DefaultHttpContent(data), ctx.channel().voidPromise());
+                        } else {
+                            ctx.channel().write(data);
+                        }
+                        if (bodyPart.isLast()) {
+                            if (responseChunked) {
+                                ctx.write(new DefaultHttpContent(data), ctx.channel().voidPromise());
+                                ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+                                complete(writeFuture);
+                            } else {
+                                ctx.channel().write(data);
+                                ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+                                complete(writeFuture);
                             }
                         }
                         return STATE.CONTINUE;
@@ -1402,69 +1386,54 @@ public class Response {
                     open = false;
                     throw new IOException("channel closed by peer");
                 }
-                if (wc.responseCommitted) {
+                if (!wc.responseCommitted) {
+                    createResponse(last);
                     if (last) {
-                        if (responseChunked) {
-                            if (buffer != null) {
-                                ctx.write(new DefaultHttpContent(buffer), ctx.channel().voidPromise());
-                            }
-                            complete(ctx.writeAndFlush(DefaultLastHttpContent.EMPTY_LAST_CONTENT));
-                        } else {
-                            if (buffer != null) {
-                                ctx.write(buffer, ctx.channel().voidPromise());
-                            }
-                            complete(ctx.writeAndFlush(DefaultLastHttpContent.EMPTY_LAST_CONTENT));
-                        }
-                    } else {
-                        ChannelFuture future;
-                        if (responseChunked) {
-                            future = ctx.writeAndFlush(new DefaultHttpContent(buffer));
-                        } else {
-                            future = ctx.writeAndFlush(buffer);
-                        }
-                        while (!ctx.channel().isWritable() && open && ctx.channel().isOpen()) {
-                            try {
-                                future.await(5, TimeUnit.SECONDS);
-                            } catch (InterruptedException e) {
-                                open = false;
-                                ctx.channel().close();
-                                throw new IOException("Interrupted while waiting for a chunk to be written", e);
-                            }
-                        }
-                        buffer = null;
+                        return;
                     }
+                }
+
+                if (last) {
+                    if (buffer != null) {
+                        ctx.write(new DefaultHttpContent(buffer), ctx.channel().voidPromise());
+                    }
+                    complete(ctx.writeAndFlush(DefaultLastHttpContent.EMPTY_LAST_CONTENT));
                 } else {
-                    if (Strings.isFilled(contentType)) {
-                        addHeaderIfNotExists(HttpHeaders.Names.CONTENT_TYPE, contentType);
-                    }
-                    setDateAndCacheHeaders(System.currentTimeMillis(),
-                                           cacheSeconds == null || Sirius.isDev() ? 0 : cacheSeconds,
-                                           isPrivate);
-                    if (name != null) {
-                        setContentDisposition(name, download);
-                    }
-                    if (last) {
-                        if (buffer == null) {
-                            HttpResponse response = createFullResponse(status, true, Unpooled.EMPTY_BUFFER);
-                            HttpHeaders.setContentLength(response, 0);
-                            complete(commit(response));
-                        } else {
-                            HttpResponse response = createFullResponse(status, true, buffer);
-                            HttpHeaders.setContentLength(response, buffer.readableBytes());
-                            complete(commit(response));
+                    ChannelFuture future = ctx.write(new DefaultHttpContent(buffer));
+                    while (!ctx.channel().isWritable() && open && ctx.channel().isOpen()) {
+                        try {
+                            future.await(5, TimeUnit.SECONDS);
+                        } catch (InterruptedException e) {
+                            open = false;
+                            ctx.channel().close();
+                            throw new IOException("Interrupted while waiting for a chunk to be written", e);
                         }
-                    } else {
-                        HttpResponse response = createChunkedResponse(HttpResponseStatus.OK, true);
-                        commit(response, false);
-                        if (responseChunked) {
-                            ctx.channel().write(new DefaultHttpContent(buffer));
-                        } else {
-                            // Forcefully disable the content compressor as it cannot compress a binary chunks....
-                            response.headers().set(HttpHeaders.Names.CONTENT_ENCODING, HttpHeaders.Values.IDENTITY);
-                            ctx.channel().write(buffer);
-                        }
-                        buffer = ctx.alloc().buffer(BUFFER_SIZE);
                     }
+                }
+                buffer = null;
+            }
+
+            private void createResponse(boolean last) {
+                if (Strings.isFilled(contentType)) {
+                    addHeaderIfNotExists(HttpHeaders.Names.CONTENT_TYPE, contentType);
+                }
+                setDateAndCacheHeaders(System.currentTimeMillis(),
+                                       cacheSeconds == null || Sirius.isDev() ? 0 : cacheSeconds,
+                                       isPrivate);
+                if (name != null) {
+                    setContentDisposition(name, download);
+                }
+                if (last) {
+                    ByteBuf initialBuffer = buffer;
+                    if (initialBuffer == null) {
+                        initialBuffer = Unpooled.EMPTY_BUFFER;
+                    }
+                    HttpResponse response = createFullResponse(status, true, initialBuffer);
+                    HttpHeaders.setContentLength(response, initialBuffer.readableBytes());
+                    complete(commit(response));
+                } else {
+                    HttpResponse response = createChunkedResponse(HttpResponseStatus.OK, true);
+                    commit(response, false);
                 }
             }
 

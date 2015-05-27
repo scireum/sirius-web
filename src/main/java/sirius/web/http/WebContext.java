@@ -68,8 +68,8 @@ public class WebContext implements SubContext {
     /**
      * Used to specify the source of a server session
      */
-    public static enum ServerSessionSource {
-        UNKNOWN, PARAMETER, COOKIE;
+    public enum ServerSessionSource {
+        UNKNOWN, PARAMETER, COOKIE
     }
 
     /*

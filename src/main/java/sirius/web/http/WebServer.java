@@ -132,7 +132,6 @@ public class WebServer implements Lifecycle, MetricProvider {
     @ConfigValue("http.epoll")
     private boolean epoll;
 
-
     @Part
     private static SessionManager sessionManager;
 
@@ -231,8 +230,7 @@ public class WebServer implements Lifecycle, MetricProvider {
     private static HttpDataFactory httpDataFactory;
     // Indicates that netty itself will compute the optimal number of threads in the event loop
     private static final int AUTOSELECT_EVENT_LOOP_SIZE = 0;
-    private EventLoopGroup bossGroup;
-    private EventLoopGroup workerGroup;
+    private EventLoopGroup eventLoop;
 
     /**
      * Determines how the web server should participate in the microtiming framework.
@@ -352,9 +350,7 @@ public class WebServer implements Lifecycle, MetricProvider {
         DiskAttribute.baseDirectory = null;
         httpDataFactory = new DefaultHttpDataFactory(uploadDiskThreshold);
 
-        bossGroup = createEventLoop(AUTOSELECT_EVENT_LOOP_SIZE, "netty-boss-");
-        workerGroup = createEventLoop(AUTOSELECT_EVENT_LOOP_SIZE, "netty-wroker-");
-        workerGroup = epoll ? new EpollEventLoopGroup() : new NioEventLoopGroup();
+        eventLoop = createEventLoop(AUTOSELECT_EVENT_LOOP_SIZE, "netty-");
     }
 
     private class PrefixThreadFactory implements ThreadFactory {
@@ -391,7 +387,7 @@ public class WebServer implements Lifecycle, MetricProvider {
         // Tell the kernel not to buffer our data - we're quite aware of what we're doing and
         // will not create "mini writes" anyway
         bootstrap.childOption(ChannelOption.TCP_NODELAY, true);
-        bootstrap.group(bossGroup, workerGroup);
+        bootstrap.group(eventLoop);
         bootstrap.channel(epoll ? EpollServerSocketChannel.class : NioServerSocketChannel.class);
         bootstrap.childHandler(ctx.wire(initializer));
         return bootstrap;
@@ -430,8 +426,7 @@ public class WebServer implements Lifecycle, MetricProvider {
         stopHTTPChannel();
         stopHTTPSChannel();
 
-        bossGroup.shutdownGracefully();
-        workerGroup.shutdownGracefully();
+        eventLoop.shutdownGracefully();
 
         Response.closeAsyncClient();
     }
@@ -459,15 +454,7 @@ public class WebServer implements Lifecycle, MetricProvider {
     @Override
     public void awaitTermination() {
         try {
-            if (!bossGroup.terminationFuture().await(10, TimeUnit.SECONDS)) {
-                LOG.SEVERE("Boss Group did not shutdown within 10 seconds!");
-            }
-        } catch (InterruptedException e) {
-            LOG.SEVERE("Interrupted while waiting for the Boss Group to shut down");
-        }
-
-        try {
-            if (!workerGroup.terminationFuture().await(10, TimeUnit.SECONDS)) {
+            if (!eventLoop.terminationFuture().await(10, TimeUnit.SECONDS)) {
                 LOG.SEVERE("Worker Group did not shutdown within 10 seconds!");
             }
         } catch (InterruptedException e) {

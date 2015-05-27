@@ -42,7 +42,7 @@ import java.util.concurrent.TimeUnit;
 class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnection {
 
     protected static List<WebDispatcher> sortedDispatchers;
-    private int numKeepAlive = 5;
+    private int numKeepAlive = 15;
     private HttpRequest currentRequest;
     private WebContext currentContext;
     private CallContext currentCall;
@@ -391,7 +391,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             WebServer.LOG.FINE("100 - CONTINUE: " + currentContext.getRequestedURI());
         }
         HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE);
-        e.channel().write(response);
+        e.writeAndFlush(response);
     }
 
     /*

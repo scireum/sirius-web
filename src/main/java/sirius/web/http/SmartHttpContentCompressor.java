@@ -21,13 +21,14 @@ import java.util.List;
  * Better version of {@link HttpContentCompressor} which can be disabled by setting Content-Encoding: Identity for a
  * response.
  * <p>
- * Also it disables itself if the given content is not compressable (jpg, png) or too small (less than 1 kB).
+ * Also it disables itself if the given content is not compressable (jpg, png) or too small (less than 4 kB).
  *
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01
  */
 class SmartHttpContentCompressor extends HttpContentCompressor {
 
+    private static final int MIN_COMPRESSABLE_CONTENT_LENGTH = 4096;
     private boolean passThrough;
 
     @Override
@@ -50,7 +51,7 @@ class SmartHttpContentCompressor extends HttpContentCompressor {
                 } else {
                     // If the content length is less than 1 kB but known, we also skip compression
                     int contentLength = Value.of(res.headers().get(HttpHeaders.Names.CONTENT_LENGTH)).asInt(0);
-                    if (contentLength > 0 && contentLength < 1024) {
+                    if (contentLength > 0 && contentLength < MIN_COMPRESSABLE_CONTENT_LENGTH) {
                         passThrough = true;
                     }
                 }
