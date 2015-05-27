@@ -23,7 +23,7 @@ import io.netty.handler.stream.ChunkedInput;
  * @author Andreas Haufler (aha@scireum.de)
  * @since 2014/01
  */
-public class ChunkedInputAdapter implements ChunkedInput<HttpContent> {
+class ChunkedInputAdapter implements ChunkedInput<HttpContent> {
 
     private ChunkedInput<ByteBuf> input;
 
