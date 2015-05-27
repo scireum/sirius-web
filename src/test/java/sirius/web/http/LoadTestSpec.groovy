@@ -65,9 +65,15 @@ class LoadTestSpec extends BaseSpecification {
         avg.getAvg() < 1000
     }
 
+    def "Wait"() {
+        when:
+        while(true) Thread.sleep(1000);
+        then: true
+    }
+
     def call(String uri, int count, int parallelism) {
-        Watch w = Watch.start();
         ExecutorService exec = Executors.newFixedThreadPool(parallelism);
+        Watch w = Watch.start();
         for (int i = 0; i < count; i++) {
             exec.execute({
                 URLConnection c = new URL("http://localhost:9999" + uri).openConnection();

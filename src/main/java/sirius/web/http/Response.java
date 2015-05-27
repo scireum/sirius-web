@@ -962,9 +962,9 @@ public class Response {
      * Converts a string into a ByteBuf
      */
     private ByteBuf wrapUTF8String(String content) {
-        ByteBuf buffer = ctx.alloc().buffer(content.length() * 3);
-        ByteBufUtil.writeUtf8(buffer, content);
-        return buffer;
+//        ByteBuf buffer = ctx.alloc().buffer(content.length() * 3);
+//        ByteBufUtil.writeUtf8(buffer, content);
+        return Unpooled.copiedBuffer(content.toCharArray(), Charsets.UTF_8);
     }
 
     /**

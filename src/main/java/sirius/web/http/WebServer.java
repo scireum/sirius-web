@@ -12,11 +12,13 @@ import com.google.common.collect.Maps;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
 import io.netty.handler.codec.http.multipart.DiskAttribute;
@@ -42,7 +44,9 @@ import sirius.web.http.session.SessionManager;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Responsible for setting up and starting netty as HTTP server.
@@ -225,6 +229,8 @@ public class WebServer implements Lifecycle, MetricProvider {
     private GlobalContext ctx;
 
     private static HttpDataFactory httpDataFactory;
+    // Indicates that netty itself will compute the optimal number of threads in the event loop
+    private static final int AUTOSELECT_EVENT_LOOP_SIZE = 0;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
 
@@ -313,7 +319,19 @@ public class WebServer implements Lifecycle, MetricProvider {
             LOG.INFO("web server is disabled (http.port is <= 0)");
             return;
         }
+        reportSettings();
+        configureNetty();
+        createHTTPChannel();
+        if (ssl) {
+            createHTTPSChannel();
+        }
+    }
+
+    public void reportSettings() {
         LOG.INFO("Initializing netty at port %d", port);
+        if (epoll) {
+            LOG.INFO("Using Linux syscall EPOLL for optimal performance!");
+        }
         if (Strings.isFilled(bindAddress)) {
             LOG.INFO("Binding netty to %s", bindAddress);
         }
@@ -325,31 +343,62 @@ public class WebServer implements Lifecycle, MetricProvider {
             ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID);
             LOG.INFO("Enabling PARANOID resource leak detection...");
         }
+    }
 
-        // Setup disk handling.
+    private void configureNetty() {
         DiskFileUpload.deleteOnExitTemporaryFile = true;
         DiskFileUpload.baseDirectory = null;
         DiskAttribute.deleteOnExitTemporaryFile = true;
         DiskAttribute.baseDirectory = null;
         httpDataFactory = new DefaultHttpDataFactory(uploadDiskThreshold);
 
-        bossGroup = epoll ? new EpollEventLoopGroup() : new NioEventLoopGroup();
+        bossGroup = createEventLoop(AUTOSELECT_EVENT_LOOP_SIZE, "netty-boss-");
+        workerGroup = createEventLoop(AUTOSELECT_EVENT_LOOP_SIZE, "netty-wroker-");
         workerGroup = epoll ? new EpollEventLoopGroup() : new NioEventLoopGroup();
+    }
+
+    private class PrefixThreadFactory implements ThreadFactory {
+        private final String name;
+        private final AtomicInteger counter = new AtomicInteger(1);
+
+        public PrefixThreadFactory(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public Thread newThread(Runnable r) {
+            return new Thread(r, name + counter.getAndIncrement());
+        }
+    }
+
+    private EventLoopGroup createEventLoop(int numThreads, String name) {
+        if (epoll) {
+            return new EpollEventLoopGroup(numThreads, new PrefixThreadFactory(name));
+        } else {
+            return new NioEventLoopGroup(numThreads, new PrefixThreadFactory(name));
+        }
+    }
+
+    public ServerBootstrap createServerBootstrap(ChannelInitializer<SocketChannel> initializer) {
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.childOption(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024);
         bootstrap.childOption(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024);
         bootstrap.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
-        bootstrap.group(bossGroup, workerGroup)
-                 .channel(epoll ? EpollServerSocketChannel.class : NioServerSocketChannel.class).childHandler(ctx.wire(
-                new WebServerInitializer()))
-                // At mose have 128 connections waiting to be "connected" - drop everything else...
-                .option(ChannelOption.SO_BACKLOG, 128)
-                        // Send a KEEPALIVE packet every 2h and expect and ACK on the TCP layer
-                .childOption(ChannelOption.SO_KEEPALIVE, true)
-                        // Tell the kernel not to buffer our data - we're quite aware of what we're doing and
-                        // will not create "mini writes" anyway
-                .childOption(ChannelOption.TCP_NODELAY, true);
+        // At mose have 128 connections waiting to be "connected" - drop everything else...
+//        bootstrap.childOption(ChannelOption.SO_BACKLOG, 128);
+        // Send a KEEPALIVE packet every 2h and expect and ACK on the TCP layer
+        bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
+        // Tell the kernel not to buffer our data - we're quite aware of what we're doing and
+        // will not create "mini writes" anyway
+        bootstrap.childOption(ChannelOption.TCP_NODELAY, true);
+        bootstrap.group(bossGroup, workerGroup);
+        bootstrap.channel(epoll ? EpollServerSocketChannel.class : NioServerSocketChannel.class);
+        bootstrap.childHandler(ctx.wire(initializer));
+        return bootstrap;
+    }
 
+    public void createHTTPChannel() {
+        ServerBootstrap bootstrap = createServerBootstrap(new WebServerInitializer());
         // Bind and start to accept incoming connections.
         try {
             if (Strings.isFilled(bindAddress)) {
@@ -357,47 +406,37 @@ public class WebServer implements Lifecycle, MetricProvider {
             } else {
                 channel = bootstrap.bind(new InetSocketAddress(port)).sync().channel();
             }
-        } catch (InterruptedException e) {
-            Exceptions.handle(e);
+        } catch (Throwable t) {
+            Exceptions.handle().to(LOG).error(t).withSystemErrorMessage("Cannot setup HTTP: %s (%s)").handle();
         }
-        if (ssl) {
-            try {
-                bootstrap = new ServerBootstrap();
-                bootstrap.childOption(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024);
-                bootstrap.childOption(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024);
-                bootstrap.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
-                bootstrap.group(bossGroup, workerGroup)
-                         .channel(NioServerSocketChannel.class).childHandler(ctx.wire(new SSLWebServerInitializer()))
-                        // At mose have 128 connections waiting to be "connected" - drop everything else...
-                        .option(ChannelOption.SO_BACKLOG, 128)
-                                // Send a KEEPALIVE packet every 2h and expect and ACK on the TCP layer
-                        .childOption(ChannelOption.SO_KEEPALIVE, true)
-                                // Tell the kernel not to buffer our data - we're quite aware of what we're doing and
-                                // will not create "mini writes" anyway
-                        .childOption(ChannelOption.TCP_NODELAY, true);
+    }
 
-                // Bind and start to accept incoming connections.
-                if (Strings.isFilled(bindAddress)) {
-                    sslChannel = bootstrap.bind(new InetSocketAddress(bindAddress, sslPort)).sync().channel();
-                } else {
-                    sslChannel = bootstrap.bind(new InetSocketAddress(sslPort)).sync().channel();
-                }
-            } catch (Throwable t) {
-                Exceptions.handle().to(LOG).error(t).withSystemErrorMessage("Cannot setup SSL: %s (%s)").handle();
+    public void createHTTPSChannel() {
+        try {
+            ServerBootstrap bootstrap = createServerBootstrap(new SSLWebServerInitializer());
+            // Bind and start to accept incoming connections.
+            if (Strings.isFilled(bindAddress)) {
+                sslChannel = bootstrap.bind(new InetSocketAddress(bindAddress, sslPort)).sync().channel();
+            } else {
+                sslChannel = bootstrap.bind(new InetSocketAddress(sslPort)).sync().channel();
             }
+        } catch (Throwable t) {
+            Exceptions.handle().to(LOG).error(t).withSystemErrorMessage("Cannot setup HTTPS: %s (%s)").handle();
         }
     }
 
     @Override
     public void stopped() {
-        try {
-            if (channel != null) {
-                channel.close().sync();
-            }
-        } catch (InterruptedException e) {
-            LOG.SEVERE("Interrupted while waiting for the channel to shut down");
-        }
+        stopHTTPChannel();
+        stopHTTPSChannel();
 
+        bossGroup.shutdownGracefully();
+        workerGroup.shutdownGracefully();
+
+        Response.closeAsyncClient();
+    }
+
+    public void stopHTTPSChannel() {
         try {
             if (sslChannel != null) {
                 sslChannel.close().sync();
@@ -405,11 +444,16 @@ public class WebServer implements Lifecycle, MetricProvider {
         } catch (InterruptedException e) {
             LOG.SEVERE("Interrupted while waiting for the sslChannel to shut down");
         }
+    }
 
-        bossGroup.shutdownGracefully();
-        workerGroup.shutdownGracefully();
-
-        Response.closeAsyncClient();
+    public void stopHTTPChannel() {
+        try {
+            if (channel != null) {
+                channel.close().sync();
+            }
+        } catch (InterruptedException e) {
+            LOG.SEVERE("Interrupted while waiting for the channel to shut down");
+        }
     }
 
     @Override
