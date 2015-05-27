@@ -70,7 +70,7 @@ class WebServerSpec extends BaseSpecification {
     def call(String uri, int count, int parallelism) {
         ExecutorService exec = Executors.newFixedThreadPool(parallelism);
         Watch w = Watch.start();
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < count; i++) {
             exec.execute({
                 URLConnection c = new URL("http://localhost:9999" + uri).openConnection();
                 c.connect();
