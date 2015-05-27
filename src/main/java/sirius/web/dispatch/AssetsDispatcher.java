@@ -52,7 +52,7 @@ public class AssetsDispatcher implements WebDispatcher {
 
     @Override
     public int getPriority() {
-        return PriorityCollector.DEFAULT_PRIORITY;
+        return PriorityCollector.DEFAULT_PRIORITY - 10;
     }
 
     @Override

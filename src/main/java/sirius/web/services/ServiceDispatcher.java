@@ -43,7 +43,7 @@ public class ServiceDispatcher implements WebDispatcher {
 
     @Override
     public int getPriority() {
-        return PriorityCollector.DEFAULT_PRIORITY;
+        return PriorityCollector.DEFAULT_PRIORITY - 5;
     }
 
     @Context

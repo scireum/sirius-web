@@ -30,7 +30,7 @@ public class HelpDispatcher implements WebDispatcher {
 
     @Override
     public int getPriority() {
-        return PriorityCollector.DEFAULT_PRIORITY;
+        return PriorityCollector.DEFAULT_PRIORITY + 100;
     }
 
     @ConfigValue("help.indexTemplate")
