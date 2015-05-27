@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.net.URLConnection;
+import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -155,8 +156,8 @@ public class Response {
      */
     private DefaultFullHttpResponse createFullResponse(HttpResponseStatus status, boolean keepalive, ByteBuf buffer) {
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, buffer);
-        response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, buffer.readableBytes());
         setupResponse(status, keepalive, response);
+        response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, buffer.readableBytes());
         return response;
     }
 
@@ -623,6 +624,8 @@ public class Response {
         try {
             addHeaderIfNotExists(HttpHeaders.Names.ACCEPT_RANGES, HttpHeaders.Values.BYTES);
             long fileLength = raf.length();
+            long contentStart = 0;
+            long expectedContentLength = fileLength;
 
             // If there is a Range: header - try to parse it and send partial content
             Tuple<Long, Long> range;
@@ -633,8 +636,6 @@ public class Response {
                 return;
             }
 
-            long contentStart = 0;
-            long expectedContentLength = fileLength;
             if (range == null) {
                 addHeaderIfNotExists(HttpHeaders.Names.CONTENT_LENGTH, fileLength);
             } else {
@@ -650,6 +651,16 @@ public class Response {
             }
             HttpResponseStatus responseStatus = range != null ? HttpResponseStatus.PARTIAL_CONTENT : HttpResponseStatus.OK;
             HttpResponse response;
+            // Send small files in a full response. This reduces the number of writes from 3 to 1...
+            if (expectedContentLength <= BUFFER_SIZE) {
+                ByteBuf buffer = ctx.alloc().buffer((int) expectedContentLength);
+                raf.skipBytes((int) contentStart);
+                buffer.writeBytes(raf.getChannel(), (int) expectedContentLength);
+                ChannelFuture writeFuture = commit(createFullResponse(responseStatus, true, buffer));
+                writeFuture.addListener(channelFuture -> raf.close());
+                complete(writeFuture);
+                return;
+            }
             if (canBeCompressed(contentType)) {
                 response = createChunkedResponse(responseStatus, true);
             } else {
@@ -658,18 +669,16 @@ public class Response {
             commit(response, false);
             if (responseChunked) {
                 // Send chunks of data which can be compressed
-                ctx.write(new ChunkedInputAdapter(new ChunkedFile(raf, contentStart, expectedContentLength, 8192)),
-                          ctx.channel().voidPromise());
+                ctx.write(new ChunkedInputAdapter(new ChunkedFile(raf, contentStart, expectedContentLength, BUFFER_SIZE)));
             } else if (isSSL()) {
                 // Forcefully disable the content compressor as it cannot compress a binary chunks....
                 response.headers().set(HttpHeaders.Names.CONTENT_ENCODING, HttpHeaders.Values.IDENTITY);
-                ctx.write(new ChunkedFile(raf, contentStart, expectedContentLength, 8192), ctx.channel().voidPromise());
+                ctx.write(new ChunkedFile(raf, contentStart, expectedContentLength, BUFFER_SIZE));
             } else {
                 // Forcefully disable the content compressor as it cannot compress a DefaultFileRegion
                 response.headers().set(HttpHeaders.Names.CONTENT_ENCODING, HttpHeaders.Values.IDENTITY);
                 // Send file using zero copy approach!
-                ctx.write(new DefaultFileRegion(raf.getChannel(), contentStart, expectedContentLength),
-                          ctx.channel().voidPromise());
+                ctx.write(new DefaultFileRegion(raf.getChannel(), contentStart, expectedContentLength));
             }
             ChannelFuture writeFuture = ctx.writeAndFlush(DefaultLastHttpContent.EMPTY_LAST_CONTENT);
 
@@ -863,8 +872,7 @@ public class Response {
             // Write the initial line and the header.
             commit(response);
             // Write the content.
-            ctx.write(new ChunkedInputAdapter(new ChunkedStream(urlConnection.getInputStream(), 8192)),
-                      ctx.channel().voidPromise());
+            ctx.write(new ChunkedInputAdapter(new ChunkedStream(urlConnection.getInputStream(), BUFFER_SIZE)));
             // Write last chunk to signal the end of content
             ChannelFuture writeFuture = ctx.writeAndFlush(DefaultLastHttpContent.EMPTY_LAST_CONTENT);
             complete(writeFuture);
@@ -1224,13 +1232,13 @@ public class Response {
                         }
 
                         if (responseChunked) {
-                            ctx.write(new DefaultHttpContent(data), ctx.channel().voidPromise());
+                            ctx.write(new DefaultHttpContent(data));
                         } else {
                             ctx.channel().write(data);
                         }
                         if (bodyPart.isLast()) {
                             if (responseChunked) {
-                                ctx.write(new DefaultHttpContent(data), ctx.channel().voidPromise());
+                                ctx.write(new DefaultHttpContent(data));
                                 ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
                                 complete(writeFuture);
                             } else {
@@ -1396,7 +1404,7 @@ public class Response {
 
                 if (last) {
                     if (buffer != null) {
-                        ctx.write(new DefaultHttpContent(buffer), ctx.channel().voidPromise());
+                        ctx.write(new DefaultHttpContent(buffer));
                     }
                     complete(ctx.writeAndFlush(DefaultLastHttpContent.EMPTY_LAST_CONTENT));
                 } else {
