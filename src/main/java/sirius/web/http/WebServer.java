@@ -381,7 +381,7 @@ public class WebServer implements Lifecycle, MetricProvider {
         bootstrap.childOption(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024);
         bootstrap.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         // At mose have 128 connections waiting to be "connected" - drop everything else...
-//        bootstrap.childOption(ChannelOption.SO_BACKLOG, 128);
+        bootstrap.option(ChannelOption.SO_BACKLOG, 128);
         // Send a KEEPALIVE packet every 2h and expect and ACK on the TCP layer
         bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
         // Tell the kernel not to buffer our data - we're quite aware of what we're doing and
