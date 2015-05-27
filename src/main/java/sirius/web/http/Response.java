@@ -1166,7 +1166,7 @@ public class Response {
                         if ((Sirius.isDev() || !entry.getKey().startsWith("x-")) && !NON_TUNNELLED_HEADERS.contains(
                                 entry.getKey())) {
                             for (String value : entry.getValue()) {
-                                if (HttpHeaders.Names.CONTENT_TYPE.equals(entry.getKey())) {
+                                if (HttpHeaders.Names.LAST_MODIFIED.equals(entry.getKey())) {
                                     try {
                                         lastModified = getHTTPDateFormat().parse(value).getTime();
                                     } catch (Throwable e) {
