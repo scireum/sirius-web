@@ -655,6 +655,7 @@ public class Response {
             } else {
                 response = createResponse(responseStatus, true);
             }
+            commit(response, false);
             if (responseChunked) {
                 // Send chunks of data which can be compressed
                 ctx.write(new ChunkedInputAdapter(new ChunkedFile(raf, contentStart, expectedContentLength, 8192)),
