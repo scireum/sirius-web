@@ -268,6 +268,12 @@ public class WebContext implements SubContext {
     @ConfigValue("http.addP3PHeader")
     protected static boolean addP3PHeader;
 
+    /*
+     * Determines if a CORS (Access-Control-Allow-Origin) header should be set
+     */
+    @ConfigValue("http.corsHeader")
+    protected static String corsHeader;
+
     @Part
     private static SessionManager sessionManager;
 

@@ -243,6 +243,10 @@ public class Response {
         if (wc.addP3PHeader) {
             response.headers().set("P3P", "CP=\"This site does not have a p3p policy.\"");
         }
+        // Add CORS header...: http://enable-cors.org
+        if (Strings.isFilled(wc.corsHeader)) {
+            response.headers().set("Access-Control-Allow-Origin", wc.corsHeader);
+        }
     }
 
     /*
