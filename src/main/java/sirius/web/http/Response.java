@@ -13,7 +13,6 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.Sets;
 import com.ning.http.client.*;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -48,7 +47,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.net.URLConnection;
-import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -240,12 +238,13 @@ public class Response {
 
         // Add a P3P-Header. This is used to disable the 3rd-Party auth handling of InternetExplorer
         // which is pretty broken and not used (google and facebook does the same).
-        if (wc.addP3PHeader) {
+        if (WebContext.addP3PHeader) {
             response.headers().set("P3P", "CP=\"This site does not have a p3p policy.\"");
         }
         // Add CORS header...: http://enable-cors.org
-        if (Strings.isFilled(wc.corsHeader)) {
-            response.headers().set("Access-Control-Allow-Origin", wc.corsHeader);
+        if (Strings.isFilled(WebContext.corsHeader) && !response.headers()
+                                                                .contains(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_ORIGIN)) {
+            response.headers().set(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_ORIGIN, WebContext.corsHeader);
         }
     }
 
@@ -673,14 +672,10 @@ public class Response {
             commit(response, false);
             if (responseChunked) {
                 // Send chunks of data which can be compressed
-                ctx.write(new ChunkedInputAdapter(new ChunkedFile(raf, contentStart, expectedContentLength, BUFFER_SIZE)));
+                ctx.write(new HttpChunkedInput(new ChunkedFile(raf, contentStart, expectedContentLength, BUFFER_SIZE)));
             } else if (isSSL()) {
-                // Forcefully disable the content compressor as it cannot compress a binary chunks....
-                response.headers().set(HttpHeaders.Names.CONTENT_ENCODING, HttpHeaders.Values.IDENTITY);
                 ctx.write(new ChunkedFile(raf, contentStart, expectedContentLength, BUFFER_SIZE));
             } else {
-                // Forcefully disable the content compressor as it cannot compress a DefaultFileRegion
-                response.headers().set(HttpHeaders.Names.CONTENT_ENCODING, HttpHeaders.Values.IDENTITY);
                 // Send file using zero copy approach!
                 ctx.write(new DefaultFileRegion(raf.getChannel(), contentStart, expectedContentLength));
             }
@@ -876,7 +871,7 @@ public class Response {
             // Write the initial line and the header.
             commit(response);
             // Write the content.
-            ctx.write(new ChunkedInputAdapter(new ChunkedStream(urlConnection.getInputStream(), BUFFER_SIZE)));
+            ctx.write(new HttpChunkedInput(new ChunkedStream(urlConnection.getInputStream(), BUFFER_SIZE)));
             // Write last chunk to signal the end of content
             ChannelFuture writeFuture = ctx.writeAndFlush(DefaultLastHttpContent.EMPTY_LAST_CONTENT);
             complete(writeFuture);
@@ -978,9 +973,9 @@ public class Response {
      * Converts a string into a ByteBuf
      */
     private ByteBuf wrapUTF8String(String content) {
-        ByteBuf buffer = ctx.alloc().buffer(content.length() * 3);
-        ByteBufUtil.writeUtf8(buffer, content);
-        return buffer;
+        // Returns a heap buffer - but strings a almost always compressed (HTML templtes etc.) so this
+        // is probably faster
+        return Unpooled.copiedBuffer(content.toCharArray(), Charsets.UTF_8);
     }
 
     /**
@@ -1242,8 +1237,7 @@ public class Response {
                         }
                         if (bodyPart.isLast()) {
                             if (responseChunked) {
-                                ctx.write(new DefaultHttpContent(data));
-                                ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+                                ChannelFuture writeFuture = ctx.writeAndFlush(new DefaultLastHttpContent(data));
                                 complete(writeFuture);
                             } else {
                                 ctx.channel().write(data);
@@ -1408,9 +1402,10 @@ public class Response {
 
                 if (last) {
                     if (buffer != null) {
-                        ctx.write(new DefaultHttpContent(buffer));
+                        complete(ctx.writeAndFlush(new DefaultLastHttpContent(buffer)));
+                    } else {
+                        complete(ctx.writeAndFlush(DefaultLastHttpContent.EMPTY_LAST_CONTENT));
                     }
-                    complete(ctx.writeAndFlush(DefaultLastHttpContent.EMPTY_LAST_CONTENT));
                 } else {
                     ChannelFuture future = ctx.write(new DefaultHttpContent(buffer));
                     while (!ctx.channel().isWritable() && open && ctx.channel().isOpen()) {

@@ -8,14 +8,11 @@
 
 package sirius.web.http;
 
-import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpResponse;
 import sirius.kernel.commons.Value;
-
-import java.util.List;
 
 /**
  * Better version of {@link HttpContentCompressor} which can be disabled by setting Content-Encoding: Identity for a
@@ -28,44 +25,27 @@ import java.util.List;
  */
 class SmartHttpContentCompressor extends HttpContentCompressor {
 
-    private static final int MIN_COMPRESSABLE_CONTENT_LENGTH = 4096;
-    private boolean passThrough;
+    private static final int MIN_COMPRESSABLE_CONTENT_LENGTH = 1024;
 
     @Override
-    protected void encode(ChannelHandlerContext ctx, HttpObject msg, List<Object> out) throws Exception {
-        if (msg instanceof HttpResponse) {
-            // Check if this response should be compressed
-            HttpResponse res = (HttpResponse) msg;
-            // by default compression is on (passThrough bypasses compression)
-            passThrough = false;
-            // If an "Content-Encoding: Identity" header was set, we do not compress
-            if (res.headers().contains(HttpHeaders.Names.CONTENT_ENCODING, HttpHeaders.Values.IDENTITY, false)) {
-                passThrough = true;
-                // Remove header as one SHOULD NOT send Identity as content encoding.
-                res.headers().remove(HttpHeaders.Names.CONTENT_ENCODING);
-            } else {
-                // If the content type is not compressable (jpg, png ...), we skip compression
-                String contentType = res.headers().get(HttpHeaders.Names.CONTENT_TYPE);
-                if (!MimeHelper.isCompressable(contentType)) {
-                    passThrough = true;
-                } else {
-                    // If the content length is less than 1 kB but known, we also skip compression
-                    int contentLength = Value.of(res.headers().get(HttpHeaders.Names.CONTENT_LENGTH)).asInt(0);
-                    if (contentLength > 0 && contentLength < MIN_COMPRESSABLE_CONTENT_LENGTH) {
-                        passThrough = true;
-                    }
-                }
-            }
-        }
-        super.encode(ctx, msg, out);
-    }
-
-    @Override
-    protected Result beginEncode(HttpResponse headers, String acceptEncoding) throws Exception {
-        // If compression is skipped, we return null here which disables the compression effectively...
-        if (passThrough) {
+    protected Result beginEncode(HttpResponse res, String acceptEncoding) throws Exception {
+        if (!(res instanceof FullHttpResponse) && !HttpHeaders.Values.CHUNKED.equals(res.headers()
+                                                                                        .get(HttpHeaders.Names.TRANSFER_ENCODING))) {
             return null;
         }
-        return super.beginEncode(headers, acceptEncoding);
+
+        // If the content type is not compressable (jpg, png ...), we skip compression
+        String contentType = res.headers().get(HttpHeaders.Names.CONTENT_TYPE);
+        if (!MimeHelper.isCompressable(contentType)) {
+            return null;
+        } else {
+            // If the content length is less than 1 kB but known, we also skip compression
+            int contentLength = Value.of(res.headers().get(HttpHeaders.Names.CONTENT_LENGTH)).asInt(0);
+            if (contentLength > 0 && contentLength < MIN_COMPRESSABLE_CONTENT_LENGTH) {
+                return null;
+            }
+        }
+
+        return super.beginEncode(res, acceptEncoding);
     }
 }

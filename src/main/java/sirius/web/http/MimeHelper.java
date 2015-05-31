@@ -8,13 +8,13 @@
 
 package sirius.web.http;
 
-import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import sirius.kernel.commons.Strings;
 
+import javax.annotation.Nullable;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 /**
  * Guesses mime types based on file extensions.
@@ -116,11 +116,7 @@ public class MimeHelper {
      * The list is limited to the most common mime types known to be compressable. Compressing already compressed
      * content does not harm other than wasting some CPU cycles.
      */
-    private static final Set<String> COMPRESSABLE = Sets.newHashSet(TEXT_CSS,
-                                                                    TEXT_JAVASCRIPT,
-                                                                    TEXT_HTML,
-                                                                    TEXT_CSV,
-                                                                    TEXT_XML);
+    private static final Pattern COMPRESSABLE = Pattern.compile("(text/.*|application/json.*)");
 
     static {
         mimeTable.put("ai", "application/postscript");
@@ -356,14 +352,11 @@ public class MimeHelper {
      * @param contentType the mime type to check
      * @return <tt>true</tt> if the mime type is recognized as compressable, <tt>false</tt> otherwise
      */
-    public static boolean isCompressable(String contentType) {
+    public static boolean isCompressable(@Nullable String contentType) {
         if (contentType == null) {
             return false;
         }
-        int idx = contentType.indexOf(";");
-        if (idx >= 0) {
-            contentType = contentType.substring(0, idx);
-        }
-        return contentType != null && COMPRESSABLE.contains(contentType);
+
+        return COMPRESSABLE.matcher(contentType).matches();
     }
 }
