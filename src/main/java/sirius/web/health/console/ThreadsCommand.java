@@ -22,9 +22,6 @@ import java.util.Optional;
 
 /**
  * Console command which reports all running threads.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 @Register
 public class ThreadsCommand implements Command {
@@ -81,7 +78,9 @@ public class ThreadsCommand implements Command {
     }
 
     private boolean isWaitingOrNative(Thread thread, ThreadInfo info) {
-        return (info != null && info.isInNative()) || thread.getState() == Thread.State.WAITING || thread.getState() == Thread.State.TIMED_WAITING;
+        return (info != null && info.isInNative())
+               || thread.getState() == Thread.State.WAITING
+               || thread.getState() == Thread.State.TIMED_WAITING;
     }
 
     @Override

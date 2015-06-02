@@ -18,11 +18,19 @@ import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.QueryStringEncoder;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
-import io.netty.handler.codec.http.multipart.*;
+import io.netty.handler.codec.http.multipart.Attribute;
+import io.netty.handler.codec.http.multipart.FileUpload;
+import io.netty.handler.codec.http.multipart.HttpData;
+import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
+import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
 import sirius.kernel.commons.Callback;
@@ -41,7 +49,14 @@ import sirius.web.http.session.SessionManager;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -50,7 +65,16 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Provides access to a request received by the WebServer.
@@ -58,12 +82,8 @@ import java.util.*;
  * This can be used to obtain all infos received for a HTTP request and also to create an appropriate response.
  * <p>
  * This context can either be passed along as variable or be accessed using {@link CallContext#get(Class)}
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public class WebContext implements SubContext {
-
 
     /**
      * Used to specify the source of a server session
@@ -277,9 +297,6 @@ public class WebContext implements SubContext {
     @Part
     private static SessionManager sessionManager;
 
-    public WebContext() {
-    }
-
     /**
      * Provides access to the underlying ChannelHandlerContext
      *
@@ -409,7 +426,7 @@ public class WebContext implements SubContext {
             List<String> val = getParameters(key);
             if (val.size() == 1) {
                 return Value.of(val.get(0));
-            } else if (val.size() == 0) {
+            } else if (val.isEmpty()) {
                 return Value.of(null);
             } else {
                 return Value.of(val);
@@ -418,7 +435,7 @@ public class WebContext implements SubContext {
         if (postDecoder != null) {
             try {
                 InterfaceHttpData data = postDecoder.getBodyHttpData(key);
-                if (data != null && data instanceof Attribute) {
+                if (data instanceof Attribute) {
                     return Value.of(((Attribute) data).getValue());
                 }
             } catch (Throwable e) {
@@ -461,7 +478,7 @@ public class WebContext implements SubContext {
         if (postDecoder != null) {
             try {
                 InterfaceHttpData data = postDecoder.getBodyHttpData(key);
-                if (data != null && data instanceof Attribute) {
+                if (data instanceof Attribute) {
                     return true;
                 }
             } catch (Throwable e) {
@@ -471,11 +488,7 @@ public class WebContext implements SubContext {
         if (queryString == null) {
             decodeQueryString();
         }
-        if (queryString.containsKey(key)) {
-            return true;
-        }
-
-        return false;
+        return queryString.containsKey(key);
     }
 
     /**
@@ -490,7 +503,7 @@ public class WebContext implements SubContext {
         }
         try {
             InterfaceHttpData data = postDecoder.getBodyHttpData(key);
-            if (data != null && data instanceof HttpData) {
+            if (data instanceof HttpData) {
                 return (HttpData) data;
             }
         } catch (Throwable e) {
@@ -511,7 +524,7 @@ public class WebContext implements SubContext {
         }
         try {
             InterfaceHttpData data = postDecoder.getBodyHttpData(key);
-            if (data != null && data instanceof FileUpload) {
+            if (data instanceof FileUpload) {
                 return (FileUpload) data;
             }
         } catch (Throwable e) {
@@ -661,7 +674,7 @@ public class WebContext implements SubContext {
      * <p>
      * This method will create a new session if no active session was found.
      * <p>
-     * This is a shortcut for <code>getServerSession(true)</code>
+     * This is a shortcut for {@code getServerSession(true)}
      *
      * @return the currently active session for this client. Will create a new session if no active session was found
      */
@@ -731,6 +744,7 @@ public class WebContext implements SubContext {
                         try {
                             remoteIp = InetAddress.getByName(forwardedFor);
                         } catch (Throwable e) {
+                            Exceptions.ignore(e);
                             WebServer.LOG.WARN(Strings.apply("Cannot parse X-Forwarded-For address: %s - %s (%s)",
                                                              forwardedFor));
                         }
@@ -767,7 +781,7 @@ public class WebContext implements SubContext {
      */
     public boolean isSSL() {
         if (ssl == null) {
-            ssl = getHeaderValue("X-Forwarded-Proto").equalsIgnoreCase("https");
+            ssl = "https".equalsIgnoreCase(getHeaderValue("X-Forwarded-Proto").asString());
         }
 
         return ssl;
@@ -776,7 +790,7 @@ public class WebContext implements SubContext {
     /**
      * Determines if the current request is secured by SSL.
      * <p>
-     * This is boilerplate for: <code>CallContext.getCurrent().get(WebContext.class).isSSL()</code>
+     * This is boilerplate for: {@code CallContext.getCurrent().get(WebContext.class).isSSL()}
      *
      * @return <tt>true</tt> if this is an HTTPS request, <tt>false</tt> otherwise
      */
@@ -824,7 +838,7 @@ public class WebContext implements SubContext {
                 }
                 List<String> result = new ArrayList<String>();
                 for (InterfaceHttpData dataItem : data) {
-                    if (dataItem != null && dataItem instanceof Attribute) {
+                    if (dataItem instanceof Attribute) {
                         result.add(((Attribute) dataItem).getValue());
                     }
                 }
@@ -1095,6 +1109,7 @@ public class WebContext implements SubContext {
             SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT, Locale.US);
             return dateFormatter.parse(value).getTime();
         } catch (ParseException e) {
+            Exceptions.ignore(e);
             return 0;
         }
     }
@@ -1254,7 +1269,6 @@ public class WebContext implements SubContext {
         return content.getCharset();
     }
 
-
     /*
      * Caches the content size as the "readableBytes" value changes once a stream is on it.
      */
@@ -1294,7 +1308,7 @@ public class WebContext implements SubContext {
      */
     @Deprecated
     public File getFileContent() throws IOException {
-        return getFileContent();
+        return getContentAsFile();
     }
 
     /**
@@ -1536,7 +1550,6 @@ public class WebContext implements SubContext {
                 } catch (Exception e) {
                     Exceptions.handle(WebServer.LOG, e);
                 }
-
             }
             filesToCleanup = null;
         }
@@ -1564,5 +1577,4 @@ public class WebContext implements SubContext {
         // Detaching the context from the current thread has no consequences as
         // a request cann be passed on to another thread...
     }
-
 }

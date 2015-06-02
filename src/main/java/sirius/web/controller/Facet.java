@@ -17,12 +17,9 @@ import java.util.List;
 
 /**
  * Represents a filter facet used by search / query results.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/12
  */
 public class Facet {
-    protected Page parent;
+    protected Page<?> parent;
     private String name;
     private String title;
     private String value;
@@ -102,7 +99,7 @@ public class Facet {
      * @return the facet itself for fluent method calls
      */
     public Facet addItem(String key, String title, long count) {
-        if (!"".equals(key)) {
+        if (Strings.isFilled(key)) {
             String effectiveTitle = translator == null ? title : translator.compute(key);
             if (effectiveTitle != null) {
                 items.add(new FacetItem(key, effectiveTitle, count, Strings.areEqual(value, key)));

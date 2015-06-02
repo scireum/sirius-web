@@ -14,6 +14,7 @@ import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import sirius.kernel.BaseSpecification;
 
+@SuppressWarnings("UtilityClassWithoutPrivateConstructor")
 @RunWith(WildcardPatternSuite.class)
 @SuiteClasses({"**/*Test.class", "**/*Spec.class"})
 public class TestSuite {
@@ -23,10 +24,8 @@ public class TestSuite {
         BaseSpecification.setupSiriusTestEnvironment();
     }
 
-
     @AfterClass
     public static void tearDown() {
         BaseSpecification.cleanupSiriusTestEnvironment();
     }
-
 }

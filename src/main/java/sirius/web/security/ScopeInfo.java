@@ -22,9 +22,6 @@ import java.util.function.Function;
  * <p>
  * The current scope is used to determine which {@link sirius.web.security.UserManager} is used. Therefore
  * a system consisting of a backend and frontend can use distinct scopes and a different user manager for each.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/06
  */
 public class ScopeInfo implements Adaptable {
 
@@ -128,5 +125,4 @@ public class ScopeInfo implements Adaptable {
         }
         return null;
     }
-
 }

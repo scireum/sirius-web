@@ -18,13 +18,9 @@ import javax.annotation.Nonnull;
 
 /**
  * Console command which reports statistics for the web server
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 @Register
 public class HTTPCommand implements Command {
-
 
     @Override
     public void execute(Output output, String... params) throws Exception {
@@ -37,7 +33,7 @@ public class HTTPCommand implements Command {
                      WebServer.getMicrotimingMode());
         output.separator();
         output.blankLine();
-        if (Value.indexOf(0, params).equalsIgnoreCase("open")) {
+        if ("open".equalsIgnoreCase(Value.indexOf(0, params).asString())) {
             output.apply("%-8s %-20s %10s %10s %10s %10s",
                          "DURATION",
                          "LATENCY",

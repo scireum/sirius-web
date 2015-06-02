@@ -8,7 +8,6 @@
 
 package sirius.web.templates.rythm;
 
-import org.rythmengine.resource.ITemplateResource;
 import org.rythmengine.resource.TemplateResourceBase;
 import sirius.kernel.commons.RateLimit;
 import sirius.kernel.di.std.Part;
@@ -21,17 +20,15 @@ import java.util.concurrent.TimeUnit;
 /**
  * Used as {@link org.rythmengine.resource.ITemplateResource} implementation created by our
  * {@link sirius.web.templates.Resolver} framework.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/05
  */
-class URLTemplateResource extends TemplateResourceBase implements ITemplateResource {
+class URLTemplateResource extends TemplateResourceBase {
 
+    private static final long serialVersionUID = 2659303085576929150L;
     private long lastModified;
     private Resource resource;
     private RateLimit checkLimit = RateLimit.timeInterval(10, TimeUnit.SECONDS);
 
-    public URLTemplateResource(Resource resource) {
+    URLTemplateResource(Resource resource) {
         super();
         this.resource = resource;
         this.isProdMode = false;
@@ -83,6 +80,11 @@ class URLTemplateResource extends TemplateResourceBase implements ITemplateResou
             return that.resource.equals(this.resource);
         }
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.resource == null ? 0 : this.resource.hashCode();
     }
 
     @Override

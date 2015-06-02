@@ -11,9 +11,6 @@ import java.io.OutputStream;
  * This handler expects JavaScript as template language and passes a special variable "xml" of type
  * {@link XMLStructuredOutput} in. The name of this handler is <b>xml-js</b> the expected file extension is
  * <b>.xml.js</b>
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/02
  */
 @Register(name = JsXMLContentHandler.XML_JS, classes = ContentHandler.class)
 public class JsXMLContentHandler extends JavaScriptContentHandler {

@@ -18,11 +18,8 @@ import java.lang.annotation.Target;
 /**
  * Attaches a URI to a {@link Controller} method.
  * <p>
- * For conflicting URIs like <code>/foo/:1</code> should handle everything but <code>/foo/special</code>, use a
- * priority below {@link PriorityCollector#DEFAULT_PRIORITY} for <code>/foo/special</code>
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/11
+ * For conflicting URIs like {@code /foo/:1} should handle everything but {@code /foo/special}, use a
+ * priority below {@link PriorityCollector#DEFAULT_PRIORITY} for {@code /foo/special}
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
@@ -39,9 +36,9 @@ public @interface Routed {
 
     /**
      * Returns the URI pattern which describes which request should be handled. Parameters can be placed by
-     * using :1, :2 etc. Therefore <code>/foo/:1</code> matches <code>/foo/test, /foo/hello</code>. For handling
+     * using :1, :2 etc. Therefore {@code /foo/:1} matches {@code /foo/test, /foo/hello}. For handling
      * paths with varying parts you can use /foo/:1/** which will expect a method with a signature like:
-     * <code>public void foo(WebContext ctx, String param1, List&lt;String&gt; subPath)</code>. Such a list can
+     * {@code public void foo(WebContext ctx, String param1, List&lt;String&gt; subPath)}. Such a list can
      * contain 0 to n entries.
      *
      * @return the URI pattern describing which requests to handle

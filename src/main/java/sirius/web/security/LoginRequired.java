@@ -6,12 +6,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Boilerplate annotation for <code>{@literal @}Permission(UserInfo.PERMISSION_LOGGED_IN)</code>.
+ * Boilerplate annotation for {@code {@literal @}Permission(UserInfo.PERMISSION_LOGGED_IN)}.
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see sirius.web.security.Permission
  * @see sirius.web.security.UserInfo#PERMISSION_LOGGED_IN
- * @since 2014/06
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

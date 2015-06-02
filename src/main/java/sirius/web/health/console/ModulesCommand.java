@@ -15,9 +15,6 @@ import javax.annotation.Nonnull;
 
 /**
  * Console command which reports all known modules ({@link sirius.kernel.info.Module}).
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/12
  */
 @Register
 public class ModulesCommand implements Command {

@@ -11,7 +11,16 @@ package sirius.web.http;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.timeout.IdleStateEvent;
@@ -35,9 +44,6 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * Takes care of gluing together chunks, handling file uploads etc. In order to participate in handling HTTP requests,
  * one has to provide a {@link WebDispatcher} rather than modifying this class.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnection {
 
@@ -105,9 +111,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         if (currentCall != null) {
             CallContext.setCurrent(currentCall);
         }
-        if (e instanceof ClosedChannelException) {
-            WebServer.LOG.FINE(e);
-        } else if (e instanceof IOException) {
+        if (e instanceof ClosedChannelException || e instanceof IOException) {
             WebServer.LOG.FINE(e);
         } else {
             Exceptions.handle(WebServer.LOG, e);
@@ -164,7 +168,6 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                     WebServer.idleTimeouts = 0;
                 }
                 ctx.channel().close();
-                return;
             }
         }
     }
@@ -239,7 +242,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                         WebServer.LOG.FINE("Ignoring CHUNK without request: " + msg);
                         return;
                     }
-                    if (!(currentRequest.getMethod() == HttpMethod.POST) && !(currentRequest.getMethod() == HttpMethod.PUT)) {
+                    if (currentRequest.getMethod() != HttpMethod.POST && currentRequest.getMethod() != HttpMethod.PUT) {
                         currentContext.respondWith()
                                       .error(HttpResponseStatus.BAD_REQUEST, "Only POST or PUT may sent chunked data");
                         currentRequest = null;
@@ -340,13 +343,13 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                         return;
                     }
                     String contentType = req.headers().get(HttpHeaders.Names.CONTENT_TYPE);
-                    if (Strings.isFilled(contentType) && (contentType.startsWith("multipart/form-data") || contentType.startsWith(
-                            "application/x-www-form-urlencoded"))) {
+                    if (Strings.isFilled(contentType) && (contentType.startsWith("multipart/form-data")
+                                                          || contentType.startsWith("application/x-www-form-urlencoded"))) {
                         if (WebServer.LOG.isFINE()) {
                             WebServer.LOG.FINE("POST/PUT-FORM: " + req.getUri());
                         }
-                        HttpPostRequestDecoder postDecoder = new HttpPostRequestDecoder(WebServer.getHttpDataFactory(),
-                                                                                        req);
+                        HttpPostRequestDecoder postDecoder =
+                                new HttpPostRequestDecoder(WebServer.getHttpDataFactory(), req);
                         currentContext.setPostDecoder(postDecoder);
                     } else {
                         if (WebServer.LOG.isFINE()) {
@@ -358,8 +361,9 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                         }
                         currentContext.content = body;
                     }
-                } else if (!(currentRequest.getMethod() == HttpMethod.GET) && !(currentRequest.getMethod() == HttpMethod.HEAD) && !(currentRequest
-                        .getMethod() == HttpMethod.DELETE)) {
+                } else if (currentRequest.getMethod() != HttpMethod.GET
+                           && currentRequest.getMethod() != HttpMethod.HEAD
+                           && currentRequest.getMethod() != HttpMethod.DELETE) {
                     currentContext.respondWith()
                                   .error(HttpResponseStatus.BAD_REQUEST,
                                          Strings.apply("Cannot %s as method. Use GET, POST, PUT, HEAD, DELETE",
@@ -411,14 +415,22 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         try {
             if (currentContext.getPostDecoder() != null) {
                 if (WebServer.LOG.isFINE()) {
-                    WebServer.LOG.FINE("POST-CHUNK: " + currentContext.getRequestedURI() + " - " + chunk.content()
-                                                                                                        .readableBytes() + " bytes");
+                    WebServer.LOG.FINE("POST-CHUNK: "
+                                       + currentContext.getRequestedURI()
+                                       + " - "
+                                       + chunk.content()
+                                              .readableBytes()
+                                       + " bytes");
                 }
                 currentContext.getPostDecoder().offer(chunk);
             } else if (currentContext.content != null) {
                 if (WebServer.LOG.isFINE()) {
-                    WebServer.LOG.FINE("DATA-CHUNK: " + currentContext.getRequestedURI() + " - " + chunk.content()
-                                                                                                        .readableBytes() + " bytes");
+                    WebServer.LOG.FINE("DATA-CHUNK: "
+                                       + currentContext.getRequestedURI()
+                                       + " - "
+                                       + chunk.content()
+                                              .readableBytes()
+                                       + " bytes");
                 }
                 currentContext.content.addContent(chunk.content().retain(), chunk instanceof LastHttpContent);
 

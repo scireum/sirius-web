@@ -32,13 +32,9 @@ import java.util.stream.Stream;
 
 /**
  * Contains the default admin GUI.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 @Register(classes = Controller.class)
 public class SystemController implements Controller {
-
 
     public static final String PERMISSION_SYSTEM_CONSOLE = "permission-system-console";
 
@@ -92,9 +88,8 @@ public class SystemController implements Controller {
         result.addFacet("mode", "Mode", null);
         result.bindToRequest(ctx);
         Stream<Translation> translationStream = NLS.getTranslationEngine().getTranslations(result.getQuery());
-        List<Translation> translationsPage = translationStream.skip(result.getStart() - 1)
-                                                              .limit(result.getPageSize())
-                                                              .collect(Collectors.toList());
+        List<Translation> translationsPage =
+                translationStream.skip(result.getStart() - 1).limit(result.getPageSize()).collect(Collectors.toList());
         result.withItems(translationsPage);
         ctx.respondWith().template("/view/system/nls.html", NLS.getSupportedLanguages(), "de", "en", translationsPage);
     }
@@ -131,5 +126,4 @@ public class SystemController implements Controller {
     public void state(WebContext ctx) {
         ctx.respondWith().template("/view/system/state.html", cluster, metrics, ctx.get("all").asBoolean(false));
     }
-
 }

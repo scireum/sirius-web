@@ -24,7 +24,11 @@ import sirius.kernel.xml.XMLStructuredInput;
 
 import javax.annotation.Nullable;
 import javax.xml.xpath.XPathExpressionException;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.List;
@@ -35,9 +39,6 @@ import java.util.List;
  * <p>
  * Provides additional information like {@link #getStatus()} or {@link #getType()} to verify what kind of
  * response was created.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/09
  */
 public class TestResponse extends Response {
 
@@ -49,8 +50,8 @@ public class TestResponse extends Response {
     /**
      * Represents the types of result which can be captured.
      */
-    public static enum ResponseType {
-        STATUS, TEMPORARY_REDIRECT, PERMANENT_REDIRECT, FILE, RESOURCE, ERROR, DIRECT, TEMPLATE, TUNNEL, STREAM;
+    public enum ResponseType {
+        STATUS, TEMPORARY_REDIRECT, PERMANENT_REDIRECT, FILE, RESOURCE, ERROR, DIRECT, TEMPLATE, TUNNEL, STREAM
     }
 
     private ResponseType type;
@@ -181,7 +182,6 @@ public class TestResponse extends Response {
             throw Exceptions.handle(e);
         }
     }
-
 
     @Override
     public void status(HttpResponseStatus status) {

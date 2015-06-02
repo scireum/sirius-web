@@ -58,11 +58,8 @@ import java.util.Optional;
  * name of the template, or by setting {@link Generator#handler(String)}. So if a file ends with <b>.pdf.vm</b> it is
  * first evaluated by velocity (expecting to generate XHTML) and then rendered to a PDF by flying saucer.
  * Alternatively the handler type <b>pdf-vm</b> can be set to ensure that this handler is picked.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/02
  */
-@Register(classes = {Content.class})
+@Register(classes = Content.class)
 public class Content {
 
     /**
@@ -76,7 +73,7 @@ public class Content {
     /*
      * Logger used by the content generator framework
      */
-    public static Log LOG = Log.get("content-generator");
+    public static final Log LOG = Log.get("content-generator");
 
     /*
      * Contains all implementations of ContentHandler sorted by getPriority ascending
@@ -181,7 +178,7 @@ public class Content {
          * <p>
          * Most of the time, the content handler is auto-detected using the file name of the template. An example
          * would be <b>.pdf.vm</b> which will force the {@link sirius.web.templates.velocity.VelocityPDFContentHandler}
-         * to generate a PDF file using the template. However, by using <code>generator.handler("pdf-vm")</code>
+         * to generate a PDF file using the template. However, by using {@code generator.handler("pdf-vm")}
          * it can be ensured, that this handler is picked, without relying on the file name.
          *
          * @param handlerType the name of the handler type to use. Constants can be found by looking at the
@@ -481,5 +478,4 @@ public class Content {
 
         return result;
     }
-
 }

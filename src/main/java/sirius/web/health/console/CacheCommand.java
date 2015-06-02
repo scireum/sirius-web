@@ -17,9 +17,6 @@ import javax.annotation.Nonnull;
 
 /**
  * Console command which reports statistics for all caches.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 @Register
 public class CacheCommand implements Command {
@@ -28,7 +25,7 @@ public class CacheCommand implements Command {
     public void execute(Output output, String... params) {
         if (params.length > 0) {
             for (Cache<?, ?> c : CacheManager.getCaches()) {
-                if (Value.indexOf(0, params).equals(c.getName())) {
+                if (Value.indexOf(0, params).asString().equals(c.getName())) {
                     output.apply("Flushing: %s", params[0]);
                     c.clear();
                 }
@@ -55,5 +52,4 @@ public class CacheCommand implements Command {
     public String getDescription() {
         return "Lists all available caches. Add a name of a cache as parameter to flush it.";
     }
-
 }

@@ -15,9 +15,6 @@ import java.lang.annotation.Target;
 
 /**
  * Provides a parameter documentation to be used in {@link AutoDoc}
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/11
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

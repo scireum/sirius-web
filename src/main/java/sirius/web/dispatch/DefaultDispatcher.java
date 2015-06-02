@@ -23,9 +23,6 @@ import sirius.web.http.WebDispatcher;
  * Also handles some special static URIs if enabled, like /crossdomain.xml or /robots.txt.
  * <p>
  * If no other dispatcher jumps in, this will take care of handing the request by sending a HTTP/404.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/11
  */
 @Register
 public class DefaultDispatcher implements WebDispatcher {
@@ -55,13 +52,19 @@ public class DefaultDispatcher implements WebDispatcher {
             ctx.respondWith()
                .infinitelyCached()
                .setHeader(HttpHeaders.Names.CONTENT_TYPE, MimeHelper.TEXT_XML)
-               .direct(HttpResponseStatus.OK, "<?xml version=\"1.0\"?>\n" +
-                       "<!DOCTYPE cross-domain-policy SYSTEM \"http://www.adobe.com/xml/dtds/cross-domain-policy.dtd\">\n" +
-                       "<cross-domain-policy>\n" +
-                       "    <site-control permitted-cross-domain-policies=\"all\" />\n" +
-                       "    <allow-access-from domain=\"*\" secure=\"false\" />\n" +
-                       "    <allow-http-request-headers-from domain=\"*\" headers=\"*\"/>\n" +
-                       "</cross-domain-policy>");
+               .direct(HttpResponseStatus.OK, "<?xml version=\"1.0\"?>\n"
+                                              +
+                                              "<!DOCTYPE cross-domain-policy SYSTEM \"http://www.adobe.com/xml/dtds/cross-domain-policy.dtd\">\n"
+                                              +
+                                              "<cross-domain-policy>\n"
+                                              +
+                                              "    <site-control permitted-cross-domain-policies=\"all\" />\n"
+                                              +
+                                              "    <allow-access-from domain=\"*\" secure=\"false\" />\n"
+                                              +
+                                              "    <allow-http-request-headers-from domain=\"*\" headers=\"*\"/>\n"
+                                              +
+                                              "</cross-domain-policy>");
         } else if ("/robots.txt".equals(ctx.getRequestedURI()) && serveRobots) {
             if (robotsDisallowAll) {
                 ctx.respondWith()
@@ -77,7 +80,7 @@ public class DefaultDispatcher implements WebDispatcher {
         } else if ("/reset".equals(ctx.getRequestedURI())) {
             ctx.getServerSession().invalidate();
             ctx.clearSession();
-            ctx.respondWith().redirectTemporarily(ctx.get("path").asString(ctx.getContextPrefix() + "/"));
+            ctx.respondWith().redirectTemporarily(ctx.get("path").asString(WebContext.getContextPrefix() + "/"));
         } else {
             ctx.respondWith()
                .error(HttpResponseStatus.NOT_FOUND,

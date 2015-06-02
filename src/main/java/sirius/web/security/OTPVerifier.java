@@ -32,9 +32,6 @@ import java.time.Duration;
  * This app or security token generates time based codes (sometime referred to as "one time password" OTP). This
  * helper class can be used to generate a configuration QR code (which is essentially a configuration URL used by
  * popular apps (like Google Authenticator). It also permits to verify OTP submitted by the user.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/12
  */
 @Register(classes = OTPVerifier.class)
 public class OTPVerifier {
@@ -140,7 +137,8 @@ public class OTPVerifier {
         try {
             byte[] data = new byte[8];
             long value = t;
-            for (int i = 8; i-- > 0; value >>>= 8) {
+            for (int i = 8; i > 0; i--) {
+                value >>>= 8;
                 data[i] = (byte) value;
             }
 
@@ -157,7 +155,7 @@ public class OTPVerifier {
                 truncatedHash <<= 8;
                 // We are dealing with signed bytes:
                 // we just keep the first byte.
-                truncatedHash |= (hash[offset + i] & 0xFF);
+                truncatedHash |= hash[offset + i] & 0xFF;
             }
 
             truncatedHash &= 0x7FFFFFFF;

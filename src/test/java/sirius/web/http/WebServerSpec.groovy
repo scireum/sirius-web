@@ -84,12 +84,12 @@ class WebServerSpec extends BaseSpecification {
 
     def callAndRead(String uri, Map outHeaders, Map expectedHeaders) {
         URLConnection c = new URL("http://localhost:9999" + uri).openConnection();
-        outHeaders.each {k,v -> c.addRequestProperty(k, v); }
+        outHeaders.each { k, v -> c.addRequestProperty(k, v); }
         c.connect();
         def result = new String(ByteStreams.toByteArray(c.getInputStream()), Charsets.UTF_8);
-        expectedHeaders.each { k,v ->
+        expectedHeaders.each { k, v ->
             if (!Strings.areEqual(c.getHeaderField(k), v)) {
-                throw new IllegalStateException("Header: "+k+" was "+c.getHeaderField(k)+" instead of "+v);
+                throw new IllegalStateException("Header: " + k + " was " + c.getHeaderField(k) + " instead of " + v);
             }
         }
 
@@ -99,9 +99,9 @@ class WebServerSpec extends BaseSpecification {
     def "Invoke /assets/test.css to test"() {
         given:
         def uri = "/assets/test.css";
-        def headers = ['accept-encoding' : 'gzip'];
+        def headers = ['accept-encoding': 'gzip'];
         // File is too small to be compressed!
-        def expectedHeaders = ['content-encoding' : null]
+        def expectedHeaders = ['content-encoding': null]
         when:
         def data = callAndRead(uri, headers, expectedHeaders);
         then:
@@ -111,7 +111,7 @@ class WebServerSpec extends BaseSpecification {
     def "Invoke /assets/test_large.css"() {
         given:
         def uri = "/assets/test_large.css";
-        def expectedHeaders = ['content-encoding' : null]
+        def expectedHeaders = ['content-encoding': null]
         when:
         def data = callAndRead(uri, null, expectedHeaders);
         then:
@@ -121,8 +121,8 @@ class WebServerSpec extends BaseSpecification {
     def "Invoke /assets/test_large.css with GZIP"() {
         given:
         def uri = "/assets/test_large.css";
-        def headers = ['accept-encoding' : 'gzip'];
-        def expectedHeaders = ['content-encoding' : 'gzip']
+        def headers = ['accept-encoding': 'gzip'];
+        def expectedHeaders = ['content-encoding': 'gzip']
         when:
         def data = callAndRead(uri, headers, expectedHeaders);
         then:
@@ -136,7 +136,7 @@ class WebServerSpec extends BaseSpecification {
     def "Invoke /service/json/test"() {
         given:
         def uri = "/service/json/test";
-        def expectedHeaders = ['content-type' : 'application/json;charset=UTF-8']
+        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
         when:
         def data = callAndRead(uri, null, expectedHeaders);
         then:
@@ -149,7 +149,7 @@ class WebServerSpec extends BaseSpecification {
     def "Invoke /service/json/test_large"() {
         given:
         def uri = "/service/json/test_large";
-        def expectedHeaders = ['content-type' : 'application/json;charset=UTF-8']
+        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
         when:
         def data = callAndRead(uri, null, expectedHeaders);
         then:
@@ -163,7 +163,7 @@ class WebServerSpec extends BaseSpecification {
     def "Invoke /tunnel/test"() {
         given:
         def uri = "/tunnel/test";
-        def expectedHeaders = ['content-type' : 'application/json;charset=UTF-8']
+        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
         when:
         def data = callAndRead(uri, null, expectedHeaders);
         then:
@@ -176,7 +176,7 @@ class WebServerSpec extends BaseSpecification {
     def "Invoke /tunnel/test_large"() {
         given:
         def uri = "/tunnel/test_large";
-        def expectedHeaders = ['content-type' : 'application/json;charset=UTF-8']
+        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
         when:
         def data = callAndRead(uri, null, expectedHeaders);
         then:

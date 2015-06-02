@@ -10,7 +10,6 @@ package sirius.web.security;
 
 import sirius.kernel.di.std.Register;
 import sirius.kernel.extensions.Extension;
-import sirius.kernel.nls.NLS;
 import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
@@ -28,9 +27,6 @@ import java.util.Collections;
  * <p>
  * Note that also <tt>trustedRoles</tt> can be defined to control roles which are only added to a trusted user
  * (i.e. from the local network).
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/06
  */
 public class PublicUserManager extends GenericUserManager {
 
@@ -45,7 +41,6 @@ public class PublicUserManager extends GenericUserManager {
         public UserManager createManager(@Nonnull ScopeInfo scope, @Nonnull Extension config) {
             return new PublicUserManager(scope, config);
         }
-
     }
 
     protected PublicUserManager(ScopeInfo scope, Extension config) {
@@ -103,10 +98,8 @@ public class PublicUserManager extends GenericUserManager {
 
     }
 
-
     @Override
     public boolean isLoginSupported() {
         return false;
     }
-
 }

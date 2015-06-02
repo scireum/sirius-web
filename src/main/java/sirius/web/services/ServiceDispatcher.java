@@ -12,7 +12,11 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.async.Async;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.TaskContext;
-import sirius.kernel.commons.*;
+import sirius.kernel.commons.ComparableTuple;
+import sirius.kernel.commons.MultiMap;
+import sirius.kernel.commons.PriorityCollector;
+import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Context;
 import sirius.kernel.di.std.Register;
@@ -32,9 +36,6 @@ import java.util.List;
  * Processes calls to <tt>/service/[format]/service-name</tt>, by dispatching them to the appropriate
  * {@link StructuredService} and selecting the matching {@link sirius.kernel.xml.StructuredOutput} based on the given
  * <tt>format</tt> (either json or xml).
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/11
  */
 @Register
 public class ServiceDispatcher implements WebDispatcher {
@@ -116,7 +117,6 @@ public class ServiceDispatcher implements WebDispatcher {
         return Tuple.create(call, serv);
     }
 
-
     private void invokeService(WebContext ctx, ServiceCall call, StructuredService serv) {
         TaskContext.get().setSystem(SYSTEM_SERVICE).setSubSystem(serv.getClass().getSimpleName());
 
@@ -145,5 +145,4 @@ public class ServiceDispatcher implements WebDispatcher {
         }
         return ComparableTuple.fromComparableMap(result.getUnderlyingMap());
     }
-
 }

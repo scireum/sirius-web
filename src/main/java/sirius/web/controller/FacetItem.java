@@ -10,9 +10,6 @@ package sirius.web.controller;
 
 /**
  * Represents a single item of a {@link Facet}.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 public class FacetItem {
     private String key;
@@ -106,7 +103,6 @@ public class FacetItem {
     public void setActive(boolean active) {
         this.active = active;
     }
-
 
     @Override
     public String toString() {

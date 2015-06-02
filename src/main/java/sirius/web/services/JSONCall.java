@@ -19,9 +19,6 @@ import java.net.URL;
 
 /**
  * Simple call to send JSON to a server (URL) and receive JSON back.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2015/01
  */
 public class JSONCall {
 
@@ -70,7 +67,6 @@ public class JSONCall {
         outcall.setRequestProperty(name, value);
     }
 
-
     /**
      * Can be used to generate the JSON request.
      *
@@ -87,7 +83,6 @@ public class JSONCall {
      * @return the JSON result of the call
      * @throws IOException in case of an IO error while receiving the result
      */
-    @SuppressWarnings("unchecked")
     public JSONObject getInput() throws IOException {
         return JSON.parseObject(new String(ByteStreams.toByteArray(outcall.getInput()), outcall.getContentEncoding()));
     }

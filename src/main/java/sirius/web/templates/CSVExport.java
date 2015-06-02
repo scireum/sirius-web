@@ -16,9 +16,6 @@ import java.util.List;
 
 /**
  * Generates a CSV file as export.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2015/02
  */
 public class CSVExport {
 
@@ -61,5 +58,4 @@ public class CSVExport {
         }
         return this;
     }
-
 }

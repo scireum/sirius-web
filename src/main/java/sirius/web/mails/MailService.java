@@ -8,7 +8,6 @@
 
 package sirius.web.mails;
 
-
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -40,19 +39,26 @@ import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.mail.*;
+import javax.mail.Authenticator;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 import java.io.ByteArrayOutputStream;
 import java.time.Duration;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Used to send mails using predefined templates.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/09
  */
 @Register(classes = {MailService.class, MetricProvider.class})
 public class MailService implements MetricProvider {
@@ -96,7 +102,7 @@ public class MailService implements MetricProvider {
     @ConfigValue("mail.smtp.senderName")
     private String smtpSenderName;
 
-    private final SMTPConfiguration DEFAULT_CONFIG = new DefaultSMTPConfig();
+    private final SMTPConfiguration defaultConfig = new DefaultSMTPConfig();
 
     @ConfigValue("mail.mailer")
     private String mailer;
@@ -146,6 +152,7 @@ public class MailService implements MetricProvider {
             }
             return true;
         } catch (Throwable e) {
+            Exceptions.ignore(e);
             return false;
         }
     }
@@ -204,12 +211,11 @@ public class MailService implements MetricProvider {
         }
     }
 
-
-    private class MailAuthenticator extends Authenticator {
+    private static class MailAuthenticator extends Authenticator {
 
         private SMTPConfiguration config;
 
-        public MailAuthenticator(SMTPConfiguration config) {
+        private MailAuthenticator(SMTPConfiguration config) {
             this.config = config;
         }
 
@@ -218,126 +224,6 @@ public class MailService implements MetricProvider {
             return new PasswordAuthentication(config.getMailUser(), config.getMailPassword());
         }
     }
-
-    private Session getMailSession(SMTPConfiguration config) {
-        Properties props = new Properties();
-        props.put(MAIL_SMTP_PORT, Strings.isEmpty(config.getMailPort()) ? "25" : config.getMailPort());
-        props.put(MAIL_SMTP_HOST, config.getMailHost());
-        if (Strings.isFilled(config.getMailSender())) {
-            props.put(MAIL_FROM, config.getMailSender());
-        }
-        // Set a fixed timeout of 60s for all operations - the default timeout is "infinite"
-        props.put(MAIL_SMTP_CONNECTIONTIMEOUT, MAIL_SOCKET_TIMEOUT);
-        props.put(MAIL_SMTP_TIMEOUT, MAIL_SOCKET_TIMEOUT);
-        props.put(MAIL_SMTP_WRITETIMEOUT, MAIL_SOCKET_TIMEOUT);
-
-        props.put(MAIL_TRANSPORT_PROTOCOL, SMTP);
-        Authenticator auth = new MailAuthenticator(config);
-        if (Strings.isEmpty(config.getMailPassword())) {
-            props.put(MAIL_SMTP_AUTH, Boolean.FALSE.toString());
-            return Session.getInstance(props);
-        } else {
-            props.put(MAIL_USER, config.getMailUser());
-            props.put(MAIL_SMTP_AUTH, Boolean.TRUE.toString());
-            return Session.getInstance(props, auth);
-        }
-    }
-
-    private MimeMultipart createContent(String textPart,
-                                        String htmlPart,
-                                        List<DataSource> attachments) throws Exception {
-        MimeMultipart content = createMainContent(textPart, htmlPart);
-        List<DataSource> mixedAttachments = filterAndAppendAlternativeParts(attachments, content);
-        if (mixedAttachments.isEmpty()) {
-            return content;
-        }
-        return createMixedContent(content, mixedAttachments);
-    }
-
-    /*
-     * Adds the text and html body parts as ALTERNATIVE
-     */
-    private MimeMultipart createMainContent(String textPart, String htmlPart) throws MessagingException {
-        MimeMultipart content = new MimeMultipart(ALTERNATIVE);
-        MimeBodyPart text = new MimeBodyPart();
-        MimeBodyPart html = new MimeBodyPart();
-        text.setText(textPart, Charsets.UTF_8.name());
-        text.setHeader(MIME_VERSION, MIME_VERSION_1_0);
-        text.setHeader(CONTENT_TYPE, TEXT_PLAIN_CHARSET_UTF_8);
-        content.addBodyPart(text);
-        if (htmlPart != null) {
-            htmlPart = Strings.replaceUmlautsToHtml(htmlPart);
-            html.setText(htmlPart, Charsets.UTF_8.name());
-            html.setHeader(MIME_VERSION, MIME_VERSION_1_0);
-            html.setHeader(CONTENT_TYPE, TEXT_HTML_CHARSET_UTF_8);
-            content.addBodyPart(html);
-        }
-        return content;
-    }
-
-    /*
-     * Filters all ALTERNATIVE attachments and adds them to the content.
-     * returns all "real" attachments which have to be added as mixed body parts
-     */
-    private List<DataSource> filterAndAppendAlternativeParts(List<DataSource> attachments,
-                                                             MimeMultipart content) throws MessagingException {
-        // by default an "attachment" would be added as mixed body part
-        // however, some attachments like an iCalendar invitation must be added
-        // as alternative body part for the given html and text part
-        // Therefore we split the attachments into these two categories and then generate
-        // the appropriate parts...
-        List<DataSource> mixedAttachments = Lists.newArrayList();
-        for (DataSource attachment : attachments) {
-            // Filter null values since var-args are tricky...
-            if (attachment != null) {
-                if (attachment instanceof Attachment && ((Attachment) attachment).isAlternative()) {
-                    MimeBodyPart part = createBodyPart(attachment);
-                    content.addBodyPart(part);
-                } else {
-                    mixedAttachments.add(attachment);
-                }
-            }
-        }
-        return mixedAttachments;
-    }
-
-    /*
-     * Appends all "real" attachments as mixed body parts
-     */
-    private MimeMultipart createMixedContent(MimeMultipart content,
-                                             List<DataSource> mixedAttachments) throws MessagingException {
-        // Generate a new root-multipart which contains the mail-content
-        // as alternative-content as well as the attachments.
-        MimeMultipart mixed = new MimeMultipart(MIXED);
-        MimeBodyPart contentPart = new MimeBodyPart();
-        contentPart.setContent(content);
-        mixed.addBodyPart(contentPart);
-        for (DataSource attachment : mixedAttachments) {
-            MimeBodyPart part = createBodyPart(attachment);
-            mixed.addBodyPart(part);
-        }
-        return mixed;
-    }
-
-    /*
-     * Creates a body part for the given attachment
-     */
-    private MimeBodyPart createBodyPart(DataSource attachment) throws MessagingException {
-        MimeBodyPart part = new MimeBodyPart();
-        part.setFileName(attachment.getName());
-        part.setDataHandler(new DataHandler(attachment));
-        if (attachment instanceof Attachment) {
-            for (Map.Entry<String, String> h : ((Attachment) attachment).getHeaders()) {
-                if (Strings.isEmpty(h.getValue())) {
-                    part.removeHeader(h.getKey());
-                } else {
-                    part.setHeader(h.getKey(), h.getValue());
-                }
-            }
-        }
-        return part;
-    }
-
 
     /**
      * Implements the builder pattern to specify the mail to send.
@@ -444,7 +330,7 @@ public class MailService implements MetricProvider {
          * The template is used to fill the subject like as well as the text and HTML part. The <b>mailExtension</b>
          * named here has to be defined in the system config in the mails/template section:
          * <pre>
-         * <code>
+         * {@code
          * mail {
          *  templates {
          *      my-template {
@@ -494,7 +380,7 @@ public class MailService implements MetricProvider {
          *      }
          *  }
          * }
-         * </code>
+         * }
          * </pre>
          * <p>
          * The given subject line is evaluates by velocity and my therefore either reference variables or use
@@ -648,7 +534,9 @@ public class MailService implements MetricProvider {
                                 .error(e)
                                 .withNLSKey("MailService.invalidReceiver")
                                 .set("address",
-                                     Strings.isFilled(receiverName) ? receiverEmail + " (" + receiverName + ")" : receiverEmail)
+                                     Strings.isFilled(receiverName) ?
+                                     receiverEmail + " (" + receiverName + ")" :
+                                     receiverEmail)
                                 .handle();
             }
 
@@ -820,7 +708,6 @@ public class MailService implements MetricProvider {
         public MailSender to(String receiverEmail, String receiverName) {
             return toEmail(receiverEmail).toName(receiverName);
         }
-
     }
 
     private class SendMailTask implements Runnable {
@@ -828,7 +715,7 @@ public class MailService implements MetricProvider {
         private MailSender mail;
         private SMTPConfiguration config;
 
-        public SendMailTask(MailSender mail, SMTPConfiguration config) {
+        private SendMailTask(MailSender mail, SMTPConfiguration config) {
             this.mail = mail;
             this.config = config;
         }
@@ -840,8 +727,8 @@ public class MailService implements MetricProvider {
             String technicalSender = config.getMailSender();
             String technicalSenderName = config.getMailSenderName();
             if (Strings.isEmpty(technicalSender)) {
-                technicalSender = DEFAULT_CONFIG.getMailSender();
-                technicalSenderName = DEFAULT_CONFIG.getMailSenderName();
+                technicalSender = defaultConfig.getMailSender();
+                technicalSenderName = defaultConfig.getMailSenderName();
             }
             Operation op = Operation.create("mail",
                                             () -> "Sending eMail: " + mail.subject + " to: " + mail.receiverEmail,
@@ -878,8 +765,9 @@ public class MailService implements MetricProvider {
                                 }
                             }
                             if (config.isUseSenderAndEnvelopeFrom()) {
-                                msg.setEnvelopeFrom(Strings.isFilled(config.getMailSender()) ? config.getMailSender() : DEFAULT_CONFIG
-                                        .getMailSender());
+                                msg.setEnvelopeFrom(Strings.isFilled(config.getMailSender()) ?
+                                                    config.getMailSender() :
+                                                    defaultConfig.getMailSender());
                             }
                             msg.setHeader(MIME_VERSION, MIME_VERSION_1_0);
                             if (Strings.isFilled(mail.bounceToken)) {
@@ -915,8 +803,8 @@ public class MailService implements MetricProvider {
                     throw e;
                 } catch (Throwable e) {
                     // If we have no host to use as sender - don't complain too much...
-                    Exceptions.ErrorHandler handler = Strings.isFilled(config.getMailHost()) ? Exceptions.handle() : Exceptions
-                            .createHandled();
+                    Exceptions.ErrorHandler handler =
+                            Strings.isFilled(config.getMailHost()) ? Exceptions.handle() : Exceptions.createHandled();
                     throw handler.withSystemErrorMessage(
                             "Invalid mail configuration: %s (Host: %s, Port: %s, User: %s, Password used: %s)",
                             e.getMessage(),
@@ -959,6 +847,123 @@ public class MailService implements MetricProvider {
             }
         }
 
+        private Session getMailSession(SMTPConfiguration config) {
+            Properties props = new Properties();
+            props.setProperty(MAIL_SMTP_PORT, Strings.isEmpty(config.getMailPort()) ? "25" : config.getMailPort());
+            props.setProperty(MAIL_SMTP_HOST, config.getMailHost());
+            if (Strings.isFilled(config.getMailSender())) {
+                props.setProperty(MAIL_FROM, config.getMailSender());
+            }
+            // Set a fixed timeout of 60s for all operations - the default timeout is "infinite"
+            props.setProperty(MAIL_SMTP_CONNECTIONTIMEOUT, MAIL_SOCKET_TIMEOUT);
+            props.setProperty(MAIL_SMTP_TIMEOUT, MAIL_SOCKET_TIMEOUT);
+            props.setProperty(MAIL_SMTP_WRITETIMEOUT, MAIL_SOCKET_TIMEOUT);
+
+            props.setProperty(MAIL_TRANSPORT_PROTOCOL, SMTP);
+            Authenticator auth = new MailAuthenticator(config);
+            if (Strings.isEmpty(config.getMailPassword())) {
+                props.setProperty(MAIL_SMTP_AUTH, Boolean.FALSE.toString());
+                return Session.getInstance(props);
+            } else {
+                props.setProperty(MAIL_USER, config.getMailUser());
+                props.setProperty(MAIL_SMTP_AUTH, Boolean.TRUE.toString());
+                return Session.getInstance(props, auth);
+            }
+        }
+
+        private MimeMultipart createContent(String textPart, String htmlPart, List<DataSource> attachments)
+                throws Exception {
+            MimeMultipart content = createMainContent(textPart, htmlPart);
+            List<DataSource> mixedAttachments = filterAndAppendAlternativeParts(attachments, content);
+            if (mixedAttachments.isEmpty()) {
+                return content;
+            }
+            return createMixedContent(content, mixedAttachments);
+        }
+
+        /*
+         * Adds the text and html body parts as ALTERNATIVE
+         */
+        private MimeMultipart createMainContent(String textPart, String htmlPart) throws MessagingException {
+            MimeMultipart content = new MimeMultipart(ALTERNATIVE);
+            MimeBodyPart text = new MimeBodyPart();
+            MimeBodyPart html = new MimeBodyPart();
+            text.setText(textPart, Charsets.UTF_8.name());
+            text.setHeader(MIME_VERSION, MIME_VERSION_1_0);
+            text.setHeader(CONTENT_TYPE, TEXT_PLAIN_CHARSET_UTF_8);
+            content.addBodyPart(text);
+            if (htmlPart != null) {
+                htmlPart = Strings.replaceUmlautsToHtml(htmlPart);
+                html.setText(htmlPart, Charsets.UTF_8.name());
+                html.setHeader(MIME_VERSION, MIME_VERSION_1_0);
+                html.setHeader(CONTENT_TYPE, TEXT_HTML_CHARSET_UTF_8);
+                content.addBodyPart(html);
+            }
+            return content;
+        }
+
+        /*
+         * Filters all ALTERNATIVE attachments and adds them to the content.
+         * returns all "real" attachments which have to be added as mixed body parts
+         */
+        private List<DataSource> filterAndAppendAlternativeParts(List<DataSource> attachments, MimeMultipart content)
+                throws MessagingException {
+            // by default an "attachment" would be added as mixed body part
+            // however, some attachments like an iCalendar invitation must be added
+            // as alternative body part for the given html and text part
+            // Therefore we split the attachments into these two categories and then generate
+            // the appropriate parts...
+            List<DataSource> mixedAttachments = Lists.newArrayList();
+            for (DataSource attachment : attachments) {
+                // Filter null values since var-args are tricky...
+                if (attachment != null) {
+                    if (attachment instanceof Attachment && ((Attachment) attachment).isAlternative()) {
+                        MimeBodyPart part = createBodyPart(attachment);
+                        content.addBodyPart(part);
+                    } else {
+                        mixedAttachments.add(attachment);
+                    }
+                }
+            }
+            return mixedAttachments;
+        }
+
+        /*
+         * Appends all "real" attachments as mixed body parts
+         */
+        private MimeMultipart createMixedContent(MimeMultipart content, List<DataSource> mixedAttachments)
+                throws MessagingException {
+            // Generate a new root-multipart which contains the mail-content
+            // as alternative-content as well as the attachments.
+            MimeMultipart mixed = new MimeMultipart(MIXED);
+            MimeBodyPart contentPart = new MimeBodyPart();
+            contentPart.setContent(content);
+            mixed.addBodyPart(contentPart);
+            for (DataSource attachment : mixedAttachments) {
+                MimeBodyPart part = createBodyPart(attachment);
+                mixed.addBodyPart(part);
+            }
+            return mixed;
+        }
+
+        /*
+         * Creates a body part for the given attachment
+         */
+        private MimeBodyPart createBodyPart(DataSource attachment) throws MessagingException {
+            MimeBodyPart part = new MimeBodyPart();
+            part.setFileName(attachment.getName());
+            part.setDataHandler(new DataHandler(attachment));
+            if (attachment instanceof Attachment) {
+                for (Map.Entry<String, String> h : ((Attachment) attachment).getHeaders()) {
+                    if (Strings.isEmpty(h.getValue())) {
+                        part.removeHeader(h.getKey());
+                    } else {
+                        part.setHeader(h.getKey(), h.getValue());
+                    }
+                }
+            }
+            return part;
+        }
     }
 
     protected Transport getSMTPTransport(Session session, SMTPConfiguration config) {
@@ -980,5 +985,4 @@ public class MailService implements MetricProvider {
                             .handle();
         }
     }
-
 }

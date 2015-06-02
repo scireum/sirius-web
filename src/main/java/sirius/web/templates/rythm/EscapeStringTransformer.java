@@ -14,13 +14,14 @@ import sirius.kernel.commons.Strings;
 /**
  * Escapes JS strings by only replacing single quotes not double quotes (this would otherwise result in invalid
  * JavaScript (which is produced by escape("JS")).
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2015/05
  */
 @Transformer("")
 public class EscapeStringTransformer {
-    /*
+
+    private EscapeStringTransformer() {
+    }
+
+    /**
      * In contrast to escape JS / JavaScript, this only escapes a single
      * quote, but not a double quote.
      */
@@ -31,5 +32,4 @@ public class EscapeStringTransformer {
 
         return value.replace("'", "\\'");
     }
-
 }

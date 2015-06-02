@@ -13,12 +13,10 @@ import java.io.OutputStreamWriter;
 /**
  * Generates text output by evaluating a given velocity template.
  * <p>
- * This handler expects velocity as template language. The name of this handler is <b>vm</b> the expected file extension is
+ * This handler expects velocity as template language. The name of this handler is <b>vm</b> the expected file extension
+ * is
  * <b>.vm</b>. It has a priority of 999 so that it does not collide with other handlers like
  * {@link VelocityPDFContentHandler} which expects <b>.pdf.vm</b>
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/02
  */
 @Register(name = VelocityContentHandler.VM)
 public class VelocityContentHandler implements ContentHandler {
@@ -30,8 +28,9 @@ public class VelocityContentHandler implements ContentHandler {
 
     @Override
     public boolean generate(Content.Generator generator, OutputStream out) throws Exception {
-        if (!VM.equals(generator.getHandlerType()) && !Strings.isFilled(generator.getTemplateCode()) && !generator.isTemplateEndsWith(
-                ".vm")) {
+        if (!VM.equals(generator.getHandlerType())
+            && !Strings.isFilled(generator.getTemplateCode())
+            && !generator.isTemplateEndsWith(".vm")) {
             return false;
         }
 

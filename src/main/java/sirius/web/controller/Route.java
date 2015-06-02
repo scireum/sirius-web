@@ -25,15 +25,16 @@ import sirius.web.security.UserContext;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.URLDecoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Represents a compiled routed as a result of parsing a {@link Controller} and its methods.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/11
  */
 class Route {
 
@@ -63,7 +64,6 @@ class Route {
         result.format = routed.value();
         result.permissions = Permissions.computePermissionsFromAnnotations(method);
 
-
         String[] elements = routed.value().split("/");
         StringBuilder finalPattern = new StringBuilder();
         int params = 0;
@@ -75,7 +75,7 @@ class Route {
                 if (m.matches()) {
                     String key = m.group(1).intern();
                     if (key == ":") {
-                        result.expressions.add(Tuple.create(key, Integer.parseInt(m.group(2))));
+                        result.expressions.add(Tuple.create(":", Integer.parseInt(m.group(2))));
                         params++;
                     } else {
                         result.expressions.add(Tuple.create(key, m.group(2)));
@@ -85,7 +85,7 @@ class Route {
                     finalPattern.append("/[^/]+");
                 } else if ("**".equals(element)) {
                     finalPattern.append("/?(.*)");
-                    result.expressions.add(Tuple.create("**".intern(), params++));
+                    result.expressions.add(Tuple.create("**", params++));
                 } else {
                     finalPattern.append("/");
                     finalPattern.append(Pattern.quote(element));
@@ -116,14 +116,15 @@ class Route {
         return result;
     }
 
-
     /**
      * Determines if this route matches the current request.
      *
      * @param ctx          defines the current request
      * @param requestedURI contains the request uri as string
-     * @param preDispatch
-     * @return <tt>null</tt> if the route does not match or a list of extracted object from the URI as defined by the template
+     * @param preDispatch  determines if we're doing a pre-dispatch (looking for a controller which handles
+     *                     incomplete requests like file uploads)
+     * @return <tt>null</tt> if the route does not match or a list of extracted object from the URI as defined by the
+     * template
      */
     protected List<Object> matches(WebContext ctx, String requestedURI, boolean preDispatch) {
         try {
@@ -156,7 +157,8 @@ class Route {
                         result.add(Arrays.asList(value.split("/")));
                     }
                 }
-                if (parameterTypes.length - 1 > result.size() && parameterTypes[parameterTypes.length - 1] == List.class) {
+                if (parameterTypes.length - 1 > result.size()
+                    && parameterTypes[parameterTypes.length - 1] == List.class) {
                     result.add(Collections.emptyList());
                 }
                 CallContext.getCurrent().addToMDC("route", format);
@@ -171,7 +173,8 @@ class Route {
     /**
      * Determines if the current user is authorized to access this routing.
      *
-     * @return <tt>null</tt> if the user is authorized or otherwise the name of the permission which the user is missing.
+     * @return <tt>null</tt> if the user is authorized or otherwise the name of the permission which the user is
+     * missing.
      */
     protected String checkAuth() {
         if (permissions == null) {
@@ -232,7 +235,7 @@ class Route {
      * Sets the pre dispatchable flag of this route. This will be defined by the {@link Routed} annotation and
      * determines if this route can dispatch requests which payload was not processed yet.
      *
-     * @param preDispatchable
+     * @param preDispatchable the new value for the pre-dispatchable flag
      */
     protected void setPreDispatchable(boolean preDispatchable) {
         this.preDispatchable = preDispatchable;

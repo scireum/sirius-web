@@ -9,7 +9,6 @@
 package sirius.web.dispatch;
 
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
@@ -21,9 +20,6 @@ import java.net.URL;
 
 /**
  * Takes care of all /help URIs and sub-uris.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/11
  */
 @Register
 public class HelpDispatcher implements WebDispatcher {
@@ -66,5 +62,4 @@ public class HelpDispatcher implements WebDispatcher {
         }
         return true;
     }
-
 }

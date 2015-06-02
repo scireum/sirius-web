@@ -13,7 +13,6 @@ import sirius.kernel.commons.Strings;
 
 import java.math.BigInteger;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,9 +20,6 @@ import java.util.List;
  * <p>
  * Valid inputs are x.x.x.x/bits or z:z:z:z:z:z:z:z/bits. If /bits is missing, /32 vor IPv4 or /128 for IPv6 is
  * assumed.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/11
  */
 public class IPRange {
 
@@ -36,7 +32,7 @@ public class IPRange {
     /*
      * Represents the full mask, meaning that all bits of the given baseIP need to be applied
      */
-    private static BigInteger COMPLETE_MASK = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16);
+    private static final BigInteger COMPLETE_MASK = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16);
 
     /*
      * Contains the effective mask. This determines which bits of baseIP are used to check against an incoming IP.
@@ -54,8 +50,9 @@ public class IPRange {
      * @param cidr the CIDR expression to parse. This can be either an IP address like 192.168.1.4 or a subnet like
      *             192.168.192.0/24 or empty which implies 0.0.0.0/0
      * @return an IPRange representing the given cidr expression.
+     * @throws IllegalArgumentException in case of an invalid expression
      */
-    public static IPRange parseRange(String cidr) throws IllegalArgumentException {
+    public static IPRange parseRange(String cidr) {
         IPRange result = new IPRange();
         try {
             if (Strings.isFilled(cidr)) {
@@ -136,7 +133,7 @@ public class IPRange {
      * @param commaSeparatedListOfRanges a string defining a list of ip ranges separated by a ",". Each ip range
      *                                   can be an address or a sub net in CIDR notation.
      * @return a RangeSet representing the given input. If the input was empty, a "no filter" set is returned, which
-     *         accepts all IPs.
+     * accepts all IPs.
      */
     public static RangeSet paraseRangeSet(String commaSeparatedListOfRanges) {
         RangeSet result = new RangeSet();
@@ -164,9 +161,6 @@ public class IPRange {
      * Represents a set of IP ranges.
      * <p>
      * Ranges can be specified as a list of CIDR sub nets, separated by a ",".
-     *
-     * @author Andreas Haufler (aha@scireum.de)
-     * @since 2013/11
      */
     public static class RangeSet {
 
@@ -206,7 +200,7 @@ public class IPRange {
          * Determines if a filter range is given or not
          *
          * @return <tt>true</tt> if no filter range is given. This implies "no filtering" and will accept all IPs. If
-         *         at least one range is given, <tt>false</tt> will be returned
+         * at least one range is given, <tt>false</tt> will be returned
          */
         public boolean isEmpty() {
             return ranges == null;
@@ -217,5 +211,4 @@ public class IPRange {
             return Strings.join(ranges, ", ");
         }
     }
-
 }

@@ -17,9 +17,6 @@ import javax.annotation.Nonnull;
 
 /**
  * Console command which generates a help screen listing all commands.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 @Register
 public class HelpCommand implements Command {

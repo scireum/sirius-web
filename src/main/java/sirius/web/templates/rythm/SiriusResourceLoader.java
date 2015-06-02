@@ -16,9 +16,6 @@ import sirius.web.templates.Content;
 
 /**
  * Adapter to use {@link Content} as resource loader.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2015/05
  */
 class SiriusResourceLoader extends ResourceLoaderBase {
 

@@ -15,9 +15,6 @@ import java.net.URL;
 
 /**
  * Simple resolver which tries to find the given resource in the classpath of the enabled customizations.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/08
  */
 @Register
 public class ClasspathCustomizationResolver implements Resolver {

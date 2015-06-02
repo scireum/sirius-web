@@ -14,10 +14,8 @@ import java.io.OutputStream;
  * Each handler should check if either the handler type  matches its own, or if the defined template has an
  * appropriate file extension.
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see sirius.web.templates.Content.Generator#getHandlerType()
  * @see sirius.web.templates.Content.Generator#isTemplateEndsWith(String)
- * @since 2014/02
  */
 public interface ContentHandler extends Priorized {
 
@@ -30,5 +28,4 @@ public interface ContentHandler extends Priorized {
      * @throws Exception if an error occurs while generating content
      */
     boolean generate(Content.Generator generator, OutputStream out) throws Exception;
-
 }

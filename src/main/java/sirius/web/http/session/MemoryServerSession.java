@@ -30,9 +30,7 @@ import java.util.UUID;
  * <p>
  * Normally the WebContext takes care of finding or creating sessions based on cookies.
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see sirius.web.http.WebContext#getServerSession()
- * @since 2013/08
  */
 class MemoryServerSession implements ServerSession {
 
@@ -41,7 +39,7 @@ class MemoryServerSession implements ServerSession {
      *
      * @param sessionStorage the storage which keeps a map of all known session IDs
      */
-    public MemoryServerSession(SessionManager.MemorySessionStorage sessionStorage) {
+    MemoryServerSession(SessionManager.MemorySessionStorage sessionStorage) {
         this.sessionStorage = sessionStorage;
     }
 

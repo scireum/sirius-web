@@ -34,9 +34,7 @@ package sirius.web.http;
  * {@link #dispatch(WebContext)} will be called for a request which received a <tt>true</tt> for its call
  * to {@link #preDispatch(WebContext)}.
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see WebServerHandler
- * @since 2013/08
  */
 public interface WebDispatcher {
 
@@ -86,5 +84,4 @@ public interface WebDispatcher {
      * @throws Exception in case of an error when parsing or dispatching the request
      */
     boolean dispatch(WebContext ctx) throws Exception;
-
 }

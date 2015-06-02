@@ -18,6 +18,5 @@
  * Lifecycle management with a two step timeout is provided by the framework. Therefore short lived sessions,
  * like those created by a search engine crawling the site are reclaimed pretty quickly to maintain server
  * stability. (Read more here: {@link sirius.web.http.session.ServerSession})
- *
  */
 package sirius.web.http.session;

@@ -20,9 +20,6 @@ import java.lang.reflect.Method;
  * <p>
  * This command will try to find a class matching the given name and output all methods accessible methods along
  * with their signature.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 @Register
 public class DocCommand implements Command {
@@ -57,5 +54,4 @@ public class DocCommand implements Command {
     public String getDescription() {
         return "API-Doc utility. Provides a list of methods for a given class name.";
     }
-
 }

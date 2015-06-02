@@ -20,9 +20,6 @@ import java.util.regex.Pattern;
  * Guesses mime types based on file extensions.
  * <p>
  * Contains an internal table of the most common file extensions along with their mime type.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public class MimeHelper {
     /**
@@ -43,7 +40,7 @@ public class MimeHelper {
     /**
      * Mime type of PDF files
      */
-    public static final String APPLICATION_PDF = "application/pdf".intern();
+    public static final String APPLICATION_PDF = "application/pdf";
 
     /**
      * Mime type of plain text files
@@ -53,27 +50,27 @@ public class MimeHelper {
     /**
      * Mime type of CSS files
      */
-    public static final String TEXT_CSS = "text/css".intern();
+    public static final String TEXT_CSS = "text/css";
 
     /**
      * Mime type of HTML files
      */
-    public static final String TEXT_HTML = "text/html".intern();
+    public static final String TEXT_HTML = "text/html";
 
     /**
      * Mime type of XML files
      */
-    public static final String TEXT_XML = "text/xml".intern();
+    public static final String TEXT_XML = "text/xml";
 
     /**
      * Mime type of csv files
      */
-    public static final String TEXT_CSV = "text/comma-separated-values".intern();
+    public static final String TEXT_CSV = "text/comma-separated-values";
 
     /**
      * Mime type of javascript (JS) files
      */
-    public static final String TEXT_JAVASCRIPT = "text/javascript".intern();
+    public static final String TEXT_JAVASCRIPT = "text/javascript";
 
     /**
      * Mime type of mpeg sound files (MP3)
@@ -295,7 +292,9 @@ public class MimeHelper {
         mimeTable.put("xwd", "image/x-xwindowdump");
         mimeTable.put("xyz", "chemical/x-xyz");
         mimeTable.put("zip", APPLICATION_ZIP);
+    }
 
+    private MimeHelper() {
     }
 
     /**

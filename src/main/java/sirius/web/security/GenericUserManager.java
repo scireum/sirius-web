@@ -24,15 +24,16 @@ import sirius.web.http.WebContext;
 import sirius.web.http.session.ServerSession;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Base class for various implementations of {@link sirius.web.security.UserManager}.
  * <p>
  * Provides session handling and roles expansion using profiles (security.profiles).
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/06
  */
 public abstract class GenericUserManager implements UserManager {
 
@@ -61,7 +62,6 @@ public abstract class GenericUserManager implements UserManager {
     protected List<String> trustedRoles;
     protected UserInfo defaultUser;
 
-
     @SuppressWarnings("unchecked")
     protected GenericUserManager(ScopeInfo scope, Extension config) {
         this.scope = scope;
@@ -80,7 +80,6 @@ public abstract class GenericUserManager implements UserManager {
                                         null,
                                         Permissions.applyProfilesAndPublicRoles(Collections.emptySet()),
                                         null);
-
     }
 
     protected abstract UserInfo findUserByName(WebContext ctx, String user);
@@ -140,8 +139,8 @@ public abstract class GenericUserManager implements UserManager {
                 // An SSO token is TIMESTAMP:MD5
                 Tuple<String, String> challengeResponse = Strings.split(token, ":");
                 // Verify age...
-                if (Value.of(challengeResponse.getFirst())
-                         .asLong(0) > (System.currentTimeMillis() / 1000) - SSO_GRACE_PERIOD_IN_SECONDS) {
+                if (Value.of(challengeResponse.getFirst()).asLong(0)
+                    > (System.currentTimeMillis() / 1000) - SSO_GRACE_PERIOD_IN_SECONDS) {
                     // Verify timestamp...
                     if (getSSOHashFunction().hashBytes(computeSSOHashInput(ctx, user, challengeResponse).getBytes(
                             Charsets.UTF_8)).toString().equals(challengeResponse.getSecond())) {
@@ -167,7 +166,6 @@ public abstract class GenericUserManager implements UserManager {
     protected HashFunction getSSOHashFunction() {
         if ("md5".equalsIgnoreCase(hashFunction)) {
             return Hashing.md5();
-
         } else if ("sha1".equalsIgnoreCase(hashFunction)) {
             return Hashing.sha1();
         } else {
@@ -198,7 +196,8 @@ public abstract class GenericUserManager implements UserManager {
      * @param roles   the roles granted to a user
      * @param trusted determines if the user is considered a trusted user
      *                (Usually determined via {@link sirius.web.http.WebContext#isTrusted()}).
-     * @return a set of permissions which contain the given roles as well as the default roles and profile transformations
+     * @return a set of permissions which contain the given roles as well as the default roles and profile
+     * transformations
      */
     protected Set<String> transformRoles(Collection<String> roles, boolean trusted) {
         Set<String> allRoles = Sets.newTreeSet(roles);
@@ -275,7 +274,6 @@ public abstract class GenericUserManager implements UserManager {
                                     ctx.getSessionValue(scope.getScopeId() + "-user-lang").asString(),
                                     computeRoles(ctx, userId.asString()),
                                     u -> getUserObject(u));
-
             }
         }
         return null;

@@ -10,9 +10,6 @@ package sirius.web.http.session;
 
 /**
  * Listeners can be registered to be notified when a session was created or invalidated.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/05
  */
 public interface SessionListener {
 

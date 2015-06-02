@@ -14,9 +14,6 @@ import sirius.web.security.UserContext;
 
 /**
  * Used by the {@link sirius.web.security.UserContext} to collect error or success messages.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public class Message {
 

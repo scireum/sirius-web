@@ -28,9 +28,6 @@ import java.util.stream.Collectors;
 
 /**
  * Helper class to notify an hip chat room about certain events.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/04
  */
 @Register
 public class HipChat implements ExceptionHandler {
@@ -43,7 +40,7 @@ public class HipChat implements ExceptionHandler {
                     true);
     }
 
-    public static enum Color {
+    public enum Color {
         YELLOW, RED, GREEN, PURPLE, GRAY
     }
 

@@ -8,18 +8,31 @@
 
 package sirius.web.http;
 
-
 import com.google.common.base.Charsets;
 import com.google.common.collect.Sets;
-import com.ning.http.client.*;
+import com.ning.http.client.AsyncHandler;
+import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.AsyncHttpClientConfig;
+import com.ning.http.client.FluentCaseInsensitiveStringsMap;
+import com.ning.http.client.HttpResponseBodyPart;
+import com.ning.http.client.HttpResponseHeaders;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.DefaultFileRegion;
-import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.DefaultHttpContent;
+import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.DefaultLastHttpContent;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpChunkedInput;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.handler.ssl.SslHandler;
@@ -49,7 +62,16 @@ import java.io.RandomAccessFile;
 import java.net.URLConnection;
 import java.nio.channels.ClosedChannelException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -59,9 +81,7 @@ import java.util.regex.Pattern;
  * <p>
  * Responses are created by calling {@link sirius.web.http.WebContext#respondWith()}.
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see WebContext
- * @since 2013/08
  */
 public class Response {
     /**
@@ -549,7 +569,6 @@ public class Response {
         complete(commit(response));
     }
 
-
     /**
      * Sends a 307 or 301 (found / temporary redirect) to the given url as result, depending on the given HTTP
      * protocol in the request.
@@ -567,9 +586,8 @@ public class Response {
             complete(commit(response));
         } else {
             // Prefer the HTTP/1.1 code 307 as temporary redirect
-            HttpResponse response = createFullResponse(HttpResponseStatus.TEMPORARY_REDIRECT,
-                                                       true,
-                                                       Unpooled.EMPTY_BUFFER);
+            HttpResponse response =
+                    createFullResponse(HttpResponseStatus.TEMPORARY_REDIRECT, true, Unpooled.EMPTY_BUFFER);
             response.headers().set(HttpHeaders.Names.LOCATION, url);
             complete(commit(response));
         }
@@ -652,7 +670,8 @@ public class Response {
             if (name != null) {
                 setContentDisposition(name, download);
             }
-            HttpResponseStatus responseStatus = range != null ? HttpResponseStatus.PARTIAL_CONTENT : HttpResponseStatus.OK;
+            HttpResponseStatus responseStatus =
+                    range != null ? HttpResponseStatus.PARTIAL_CONTENT : HttpResponseStatus.OK;
             HttpResponse response;
             // Send small files in a full response. This reduces the number of writes from 3 to 1...
             if (expectedContentLength <= BUFFER_SIZE) {
@@ -679,7 +698,7 @@ public class Response {
                 // Send file using zero copy approach!
                 ctx.write(new DefaultFileRegion(raf.getChannel(), contentStart, expectedContentLength));
             }
-            ChannelFuture writeFuture = ctx.writeAndFlush(DefaultLastHttpContent.EMPTY_LAST_CONTENT);
+            ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
 
             // Close file once completed
             writeFuture.addListener(channelFuture -> raf.close());
@@ -873,7 +892,7 @@ public class Response {
             // Write the content.
             ctx.write(new HttpChunkedInput(new ChunkedStream(urlConnection.getInputStream(), BUFFER_SIZE)));
             // Write last chunk to signal the end of content
-            ChannelFuture writeFuture = ctx.writeAndFlush(DefaultLastHttpContent.EMPTY_LAST_CONTENT);
+            ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
             complete(writeFuture);
         } catch (Throwable t) {
             error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
@@ -1108,7 +1127,6 @@ public class Response {
         }
     }
 
-
     private static final Set<String> NON_TUNNELLED_HEADERS = Sets.newHashSet(HttpHeaders.Names.TRANSFER_ENCODING,
                                                                              HttpHeaders.Names.SERVER,
                                                                              HttpHeaders.Names.CONTENT_ENCODING,
@@ -1157,7 +1175,6 @@ public class Response {
                         WebServer.LOG.FINE("Tunnel - HEADERS for %s", wc.getRequestedURI());
                     }
                     FluentCaseInsensitiveStringsMap headers = h.getHeaders();
-
 
                     long lastModified = 0;
 
@@ -1215,9 +1232,8 @@ public class Response {
                         if (!wc.responseCommitted) {
                             //Send a response first
                             if (bodyPart.isLast()) {
-                                HttpResponse response = createFullResponse(HttpResponseStatus.valueOf(responseCode),
-                                                                           true,
-                                                                           data);
+                                HttpResponse response =
+                                        createFullResponse(HttpResponseStatus.valueOf(responseCode), true, data);
                                 HttpHeaders.setContentLength(response, bodyPart.getBodyByteBuffer().remaining());
                                 complete(commit(response));
                                 return STATE.CONTINUE;
@@ -1256,7 +1272,8 @@ public class Response {
                 }
 
                 @Override
-                public STATE onStatusReceived(com.ning.http.client.HttpResponseStatus httpResponseStatus) throws Exception {
+                public STATE onStatusReceived(com.ning.http.client.HttpResponseStatus httpResponseStatus)
+                        throws Exception {
                     if (WebServer.LOG.isFINE()) {
                         WebServer.LOG.FINE("Tunnel - STATUS %s for %s",
                                            httpResponseStatus.getStatusCode(),
@@ -1286,13 +1303,8 @@ public class Response {
                         HttpHeaders.setContentLength(response, 0);
                         complete(commit(response));
                     } else if (!wc.responseCompleted) {
-                        if (responseChunked) {
-                            ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
-                            complete(writeFuture);
-                        } else {
-                            ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
-                            complete(writeFuture);
-                        }
+                        ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+                        complete(writeFuture);
                     }
                     return "";
                 }
@@ -1309,14 +1321,11 @@ public class Response {
                     }
                 }
             });
-        } catch (Throwable t)
-
-        {
+        } catch (Throwable t) {
             if (!(t instanceof ClosedChannelException)) {
                 error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
             }
         }
-
     }
 
     /**
@@ -1355,7 +1364,7 @@ public class Response {
      * <p>
      * <b>WARNING:</b> Do not used this kind of response directly from a {@link WebDispatcher}! You need to fork a
      * new thread using {@link sirius.kernel.async.Async} as the internal workings might block in
-     * <code>OutputStream.write</code> until the message is fully written to the channel. This might lead to a deadlock
+     * {@code OutputStream.write} until the message is fully written to the channel. This might lead to a deadlock
      * if the kernel buffer needs to be flushed as well (as this needs the worker thread to handle the write which is
      * blocked internally due to waiting for the chunk to be written).
      * <p>
@@ -1404,7 +1413,7 @@ public class Response {
                     if (buffer != null) {
                         complete(ctx.writeAndFlush(new DefaultLastHttpContent(buffer)));
                     } else {
-                        complete(ctx.writeAndFlush(DefaultLastHttpContent.EMPTY_LAST_CONTENT));
+                        complete(ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT));
                     }
                 } else {
                     ChannelFuture future = ctx.write(new DefaultHttpContent(buffer));
@@ -1506,5 +1515,4 @@ public class Response {
     public String toString() {
         return "Response for: " + wc.toString();
     }
-
 }

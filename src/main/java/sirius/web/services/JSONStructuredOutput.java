@@ -15,13 +15,14 @@ import sirius.kernel.xml.Attribute;
 import sirius.kernel.xml.StructuredOutput;
 
 import javax.annotation.Nullable;
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 
 /**
  * Encoder to generate JSON via the {@link sirius.kernel.xml.StructuredOutput} interface.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 public class JSONStructuredOutput extends AbstractStructuredOutput {
 
@@ -193,9 +194,7 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
             }
             if (data == null) {
                 writer.write("null");
-            } else if (data instanceof Boolean) {
-                writer.write(data.toString());
-            } else if (data instanceof Number) {
+            } else if (data instanceof Boolean || data instanceof Number) {
                 writer.write(data.toString());
             } else {
                 writer.write(string(data.toString()));
@@ -213,7 +212,6 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
                 throw Exceptions.handle(e);
             }
         }
-
     }
 
     @Override
@@ -229,5 +227,4 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
             throw Exceptions.handle(e);
         }
     }
-
 }

@@ -13,16 +13,12 @@ import sirius.web.http.WebContext;
 
 /**
  * JSON encoder for calls to a {@link StructuredService}.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/11
  */
 class JSONServiceCall extends ServiceCall {
 
     JSONServiceCall(WebContext ctx) {
         super(ctx);
     }
-
 
     @Override
     protected StructuredOutput createOutput() {

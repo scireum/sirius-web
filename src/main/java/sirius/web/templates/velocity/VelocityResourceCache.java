@@ -20,9 +20,6 @@ import java.util.Iterator;
  * name or url.
  * <p>
  * This class needs to be public so it can be instantiated by Velocity.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/02
  */
 public class VelocityResourceCache implements ResourceCache {
 
@@ -51,5 +48,4 @@ public class VelocityResourceCache implements ResourceCache {
     public Iterator<Object> enumerateKeys() {
         return Collections.emptyList().iterator();
     }
-
 }

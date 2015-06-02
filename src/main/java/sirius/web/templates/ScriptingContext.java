@@ -8,7 +8,6 @@
 
 package sirius.web.templates;
 
-
 import org.apache.velocity.context.Context;
 
 import javax.script.ScriptContext;
@@ -16,9 +15,6 @@ import javax.script.SimpleScriptContext;
 
 /**
  * Simple adapter for {@link ScriptContext} (javax.scripting) and {@link Context} (Velocity).
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 public class ScriptingContext extends SimpleScriptContext implements Context {
 
@@ -48,5 +44,4 @@ public class ScriptingContext extends SimpleScriptContext implements Context {
     public Object remove(Object key) {
         return getBindings(ENGINE_SCOPE).remove(key);
     }
-
 }

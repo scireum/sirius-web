@@ -14,9 +14,6 @@ import java.util.function.Consumer;
 
 /**
  * Defines an extension which provides auto-declared variables to Rythm templates.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/11
  */
 public interface RythmExtension {
 
@@ -37,5 +34,4 @@ public interface RythmExtension {
      * @param values a collector which can be used to supply variables along with their value.
      */
     void collectExtensionValues(Consumer<Tuple<String, Object>> values);
-
 }

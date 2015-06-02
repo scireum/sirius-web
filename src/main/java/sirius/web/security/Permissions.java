@@ -15,7 +15,11 @@ import sirius.kernel.Sirius;
 import sirius.kernel.di.std.ConfigValue;
 
 import java.lang.reflect.AnnotatedElement;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Helper class to parse permission based annotations and the expand permission profiles.
@@ -25,9 +29,6 @@ import java.util.*;
  * <p>
  * Can also be used to expand a permission profile defined in <tt>security.profiles</tt> into an effective
  * list of permissions.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/06
  */
 public class Permissions {
 
@@ -35,6 +36,9 @@ public class Permissions {
 
     @ConfigValue("security.publicRoles")
     protected static List<String> publicRoles;
+
+    private Permissions() {
+    }
 
     private static Set<String> getProfile(String role) {
         if (profilesCache == null) {
@@ -71,7 +75,6 @@ public class Permissions {
             expand(role, result);
         }
         return result;
-
     }
 
     /**
@@ -97,8 +100,9 @@ public class Permissions {
      * @return a set of permissions required to execute the annotated element
      */
     public static Set<String> computePermissionsFromAnnotations(AnnotatedElement object) {
-        if (object.isAnnotationPresent(Permission.class) || object.isAnnotationPresent(NotPermission.class) || object.isAnnotationPresent(
-                LoginRequired.class)) {
+        if (object.isAnnotationPresent(Permission.class)
+            || object.isAnnotationPresent(NotPermission.class)
+            || object.isAnnotationPresent(LoginRequired.class)) {
             Set<String> result = Sets.newTreeSet();
             for (Permission p : object.getAnnotationsByType(Permission.class)) {
                 result.add(p.value());

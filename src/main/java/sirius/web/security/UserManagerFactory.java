@@ -19,5 +19,4 @@ public interface UserManagerFactory {
 
     @Nonnull
     UserManager createManager(@Nonnull ScopeInfo scope, @Nonnull Extension config);
-
 }

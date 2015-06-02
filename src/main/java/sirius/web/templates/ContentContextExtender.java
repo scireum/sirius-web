@@ -16,5 +16,4 @@ public interface ContentContextExtender {
      * @param context the context to enhance
      */
     void extend(@Nonnull Context context);
-
 }

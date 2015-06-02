@@ -17,9 +17,6 @@ import java.lang.annotation.Target;
  * Used to provides runtime-retrievable information for structured services.
  * <p>
  * The documentation can be shown by calling <tt>/service</tt> via the HTTP interface.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/11
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

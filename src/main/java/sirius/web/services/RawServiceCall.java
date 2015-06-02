@@ -15,9 +15,6 @@ import sirius.web.http.WebContext;
 
 /**
  * RAW encoder for calls to a {@link sirius.web.services.StructuredService}.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 class RawServiceCall extends ServiceCall {
 

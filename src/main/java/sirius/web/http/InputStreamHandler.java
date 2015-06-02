@@ -31,9 +31,6 @@ import java.util.concurrent.TimeUnit;
  * For stability reasons all blocking methods timeout after a given interval of time leading the handle to be in
  * an <tt>error</tt> state. Therefore all incoming data will be discarded and all read requests will fail as
  * some data might have already been lost anyway.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 public class InputStreamHandler extends InputStream implements ContentHandler {
 

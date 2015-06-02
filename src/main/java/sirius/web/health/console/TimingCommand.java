@@ -20,9 +20,6 @@ import javax.annotation.Nonnull;
  * Console command which enables/disables the all mighty Micro-Timing framework.
  * <p>
  * It also reports timings recorded for the last period of time.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 @Register
 public class TimingCommand implements Command {
@@ -98,5 +95,4 @@ public class TimingCommand implements Command {
     public String getDescription() {
         return "Reports statistics recorded by the micro timer";
     }
-
 }

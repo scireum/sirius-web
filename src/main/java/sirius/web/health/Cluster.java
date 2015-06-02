@@ -8,7 +8,6 @@
 
 package sirius.web.health;
 
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -47,7 +46,8 @@ import java.util.List;
  * Manages and monitors the state of a cluster of machines.
  * <p>
  * Permits to couple a number of machines to a cluster where each member monitors the others. In case or a failure
- * an alert will be triggered. Additionally the cluster state can be visualized using the web interface (/system/state).
+ * an alert will be triggered. Additionally the cluster state can be visualized using the web interface
+ * (/system/state).
  * <p>
  * Even in a single machine installation, this class will take care of monitoring all metrics and triggering an
  * alert (if possible).
@@ -56,9 +56,6 @@ import java.util.List;
  * <tt>health.cluster.nodes</tt> in the form of <tt>http://hostname:port</tt>. Each node always defines a priority
  * (<tt>health.cluster.priority</tt>). The node with the lowest number (which is still functional) is in charge
  * of triggering an alert in case of faulting or unreachable members.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 @Register(classes = {Cluster.class, EveryMinute.class, Lifecycle.class})
 public class Cluster implements EveryMinute, Lifecycle {
@@ -145,9 +142,9 @@ public class Cluster implements EveryMinute, Lifecycle {
      */
     public boolean isBestAvailableNode() {
         for (NodeInfo info : nodes) {
-            if ((info.getPriority() < priority || info.getPriority() == priority && info.getName()
-                                                                                        .compareTo(CallContext.getNodeName()) < 0) && info
-                    .getNodeState() != MetricState.RED) {
+            if ((info.getPriority() < priority
+                 || info.getPriority() == priority && info.getName().compareTo(CallContext.getNodeName()) < 0)
+                && info.getNodeState() != MetricState.RED) {
                 return false;
             }
         }
@@ -203,56 +200,7 @@ public class Cluster implements EveryMinute, Lifecycle {
         MetricState newClusterState = newNodeState;
         LOG.FINE("Scanning cluster...");
         for (NodeInfo info : getNodeInfos()) {
-            try {
-                LOG.FINE("Testing node: %s", info.getEndpoint());
-                URLConnection c = new URL(info.getEndpoint() + "/service/json/system/node-info").openConnection();
-                c.setConnectTimeout(10000);
-                c.setReadTimeout(10000);
-                c.setDoInput(true);
-                c.setDoOutput(false);
-                try (InputStream in = c.getInputStream()) {
-                    JSONObject response = JSON.parseObject(CharStreams.toString(new InputStreamReader(in,
-                                                                                                      Charsets.UTF_8)));
-                    info.setName(response.getString("name"));
-                    info.setNodeState(MetricState.valueOf(response.getString("nodeState")));
-                    if (info.getNodeState().ordinal() > newClusterState.ordinal()) {
-                        newClusterState = info.getNodeState();
-                    }
-                    info.setClusterState(MetricState.valueOf(response.getString("clusterState")));
-                    info.setPriority(response.getInteger("priority"));
-                    info.setUptime(response.getString("uptime"));
-                    info.getMetrics().clear();
-                    JSONArray metrics = response.getJSONArray("metrics");
-                    for (int i = 0; i < metrics.size(); i++) {
-                        try {
-                            JSONObject metric = (JSONObject) metrics.get(i);
-                            Metric m = new Metric(metric.getString("name"),
-                                                  metric.getDoubleValue("value"),
-                                                  MetricState.valueOf(metric.getString("state")),
-                                                  metric.getString("unit"));
-                            info.getMetrics().add(m);
-                        } catch (Throwable e) {
-                            // Ignore non-well-formed metrics...
-                            LOG.FINE(e);
-                        }
-                    }
-                    info.pingSucceeded();
-                    LOG.FINE("Node: %s is %s (%s)", info.getName(), info.getNodeState(), info.getClusterState());
-                }
-            } catch (Throwable t) {
-                if (t instanceof IOException) {
-                    LOG.WARN("Cannot reach node %s: %s (%s)",
-                             info.getEndpoint(),
-                             t.getMessage(),
-                             t.getClass().getSimpleName());
-                } else {
-                    Exceptions.handle(LOG, t);
-                }
-                info.setNodeState(MetricState.RED);
-                info.setClusterState(MetricState.RED);
-                newClusterState = MetricState.RED;
-                info.incPingFailures();
-            }
+            newClusterState = updateNodeStarte(newClusterState, info);
         }
 
         // Since the cluster.nodes array might contain all nodes of the cluster, we filter out or own (by name)
@@ -286,6 +234,60 @@ public class Cluster implements EveryMinute, Lifecycle {
         clusterState = newClusterState;
     }
 
+    public MetricState updateNodeStarte(MetricState newClusterState, NodeInfo info) {
+        try {
+            LOG.FINE("Testing node: %s", info.getEndpoint());
+            URLConnection c = new URL(info.getEndpoint() + "/service/json/system/node-info").openConnection();
+            c.setConnectTimeout(10000);
+            c.setReadTimeout(10000);
+            c.setDoInput(true);
+            c.setDoOutput(false);
+            try (InputStream in = c.getInputStream()) {
+                JSONObject response =
+                        JSON.parseObject(CharStreams.toString(new InputStreamReader(in, Charsets.UTF_8)));
+                info.setName(response.getString("name"));
+                info.setNodeState(MetricState.valueOf(response.getString("nodeState")));
+                if (info.getNodeState().ordinal() > newClusterState.ordinal()) {
+                    newClusterState = info.getNodeState();
+                }
+                info.setClusterState(MetricState.valueOf(response.getString("clusterState")));
+                info.setPriority(response.getInteger("priority"));
+                info.setUptime(response.getString("uptime"));
+                info.getMetrics().clear();
+                JSONArray metrics = response.getJSONArray("metrics");
+                for (int i = 0; i < metrics.size(); i++) {
+                    try {
+                        JSONObject metric = (JSONObject) metrics.get(i);
+                        Metric m = new Metric(metric.getString("name"),
+                                              metric.getDoubleValue("value"),
+                                              MetricState.valueOf(metric.getString("state")),
+                                              metric.getString("unit"));
+                        info.getMetrics().add(m);
+                    } catch (Throwable e) {
+                        // Ignore non-well-formed metrics...
+                        LOG.FINE(e);
+                    }
+                }
+                info.pingSucceeded();
+                LOG.FINE("Node: %s is %s (%s)", info.getName(), info.getNodeState(), info.getClusterState());
+            }
+        } catch (Throwable t) {
+            if (t instanceof IOException) {
+                LOG.WARN("Cannot reach node %s: %s (%s)",
+                         info.getEndpoint(),
+                         t.getMessage(),
+                         t.getClass().getSimpleName());
+            } else {
+                Exceptions.handle(LOG, t);
+            }
+            info.setNodeState(MetricState.RED);
+            info.setClusterState(MetricState.RED);
+            newClusterState = MetricState.RED;
+            info.incPingFailures();
+        }
+        return newClusterState;
+    }
+
     /*
      * Determines if this node is in charge of sending alerts
      */
@@ -295,8 +297,8 @@ public class Cluster implements EveryMinute, Lifecycle {
         }
         for (NodeInfo info : getNodeInfos()) {
             if (isBetter(info) &&
-                    info.getClusterState() == clusterStateToBroadcast &&
-                    info.getNodeState() != MetricState.RED) {
+                info.getClusterState() == clusterStateToBroadcast &&
+                info.getNodeState() != MetricState.RED) {
                 // Another node took care of it...
                 LOG.FINE("Node %s is in charge of sending an alert", info.getName());
                 return false;

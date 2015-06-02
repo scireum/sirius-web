@@ -23,9 +23,7 @@ import java.lang.annotation.Target;
  * {@link sirius.web.security.UserInfo#hasPermission(String)} with the given value prepended with an exclamation mark
  * to check if the current user is authorized.
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see sirius.web.security.UserInfo#hasPermission(String)
- * @since 2014/06
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})

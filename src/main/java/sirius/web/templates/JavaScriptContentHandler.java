@@ -19,9 +19,6 @@ import java.io.Reader;
 
 /**
  * Base class for {@link sirius.web.templates.ContentHandler} implementations which rely on JavaScript.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/11
  */
 public abstract class JavaScriptContentHandler implements ContentHandler {
 
@@ -43,7 +40,6 @@ public abstract class JavaScriptContentHandler implements ContentHandler {
     protected ScriptEngine getEngine() {
         return manager.getEngineByName(scriptEngine);
     }
-
 
     /**
      * Executes the template as JavaScript code
@@ -67,5 +63,4 @@ public abstract class JavaScriptContentHandler implements ContentHandler {
             }
         }
     }
-
 }

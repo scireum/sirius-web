@@ -15,9 +15,6 @@ import java.time.LocalTime;
 
 /**
  * Supplies the contexts of the {@link Content.Generator} with default variables.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/02
  */
 @Register
 public class DefaultContentContextExtender implements ContentContextExtender {

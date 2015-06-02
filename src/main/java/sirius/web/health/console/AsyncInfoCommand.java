@@ -18,9 +18,6 @@ import java.util.List;
 
 /**
  * Console command which reports statistics for all known executors.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 @Register
 public class AsyncInfoCommand implements Command {

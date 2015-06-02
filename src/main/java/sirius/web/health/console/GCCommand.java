@@ -17,9 +17,6 @@ import javax.annotation.Nonnull;
  * Console command to invoke the garbage collector.
  * <p>
  * This command will also report the heap consumption before and after the call.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 @Register
 public class GCCommand implements Command {
@@ -49,5 +46,4 @@ public class GCCommand implements Command {
     public String getDescription() {
         return "Invokes the garbage collector of the JVM";
     }
-
 }

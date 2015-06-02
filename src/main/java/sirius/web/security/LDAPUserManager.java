@@ -12,7 +12,6 @@ import com.google.common.collect.Sets;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.extensions.Extension;
 import sirius.kernel.health.Exceptions;
-import sirius.kernel.nls.NLS;
 import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
@@ -20,7 +19,12 @@ import javax.naming.AuthenticationException;
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.*;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapName;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -29,9 +33,6 @@ import java.util.Set;
 
 /**
  * Uses an LDAP directory to authenticate users.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/06
  */
 public class LDAPUserManager extends GenericUserManager {
 
@@ -43,7 +44,6 @@ public class LDAPUserManager extends GenericUserManager {
         public UserManager createManager(@Nonnull ScopeInfo scope, @Nonnull Extension config) {
             return new LDAPUserManager(scope, config);
         }
-
     }
 
     @SuppressWarnings("unchecked")
@@ -57,8 +57,8 @@ public class LDAPUserManager extends GenericUserManager {
         this.useSSL = config.get("ssl").asBoolean(false);
         this.objectClass = config.get("objectClass").asString("user");
         this.nameAttribute = config.get("nameAttribute").asString("userPrincipalName");
-        List<String> attrs = (List<String>) config.get("returnedAtts")
-                                                  .get(List.class, Collections.singletonList("memberOf"));
+        List<String> attrs =
+                (List<String>) config.get("returnedAtts").get(List.class, Collections.singletonList("memberOf"));
         this.returnedAtts = attrs.toArray(new String[attrs.size()]);
         this.searchBase = config.get("searchBase").asString();
         this.requiredRoles = (List<String>) config.get("requiredRoles").get(List.class, Collections.emptyList());
@@ -98,7 +98,7 @@ public class LDAPUserManager extends GenericUserManager {
             try {
                 NamingEnumeration<SearchResult> answer = searchInDirectory(searchUser, ctx);
                 Set<String> roles = Sets.newTreeSet();
-                while (answer.hasMoreElements()) {
+                if (answer.hasMoreElements()) {
                     SearchResult sr = answer.next();
                     log("Found user: %s", sr.getName());
                     Set<String> permissions = computePermissions(roles, sr, wc);
@@ -106,14 +106,7 @@ public class LDAPUserManager extends GenericUserManager {
                         return null;
                     }
 
-                    return new UserInfo(null,
-                                        null,
-                                        user,
-                                        user,
-                                        null,
-                                        null,
-                                        permissions,
-                                        null);
+                    return new UserInfo(null, null, user, user, null, null, permissions, null);
                 }
             } finally {
                 ctx.close();
@@ -170,8 +163,8 @@ public class LDAPUserManager extends GenericUserManager {
         }
     }
 
-    private NamingEnumeration<SearchResult> searchInDirectory(String searchUser,
-                                                              DirContext ctx) throws NamingException {
+    private NamingEnumeration<SearchResult> searchInDirectory(String searchUser, DirContext ctx)
+            throws NamingException {
         SearchControls searchCtls = new SearchControls();
         searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
         String searchFilter = "(&(objectClass=" + objectClass + ")(" + nameAttribute + "=" + searchUser + "))";
@@ -183,7 +176,4 @@ public class LDAPUserManager extends GenericUserManager {
     protected Object getUserObject(UserInfo u) {
         return null;
     }
-
-
-
 }

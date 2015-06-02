@@ -2,9 +2,6 @@ package sirius.web.http;
 
 /**
  * Used by {@link WebServer#getOpenConnections()} to provide detailed information about an open HTTP connection.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/05
  */
 public interface ActiveHTTPConnection {
 

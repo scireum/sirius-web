@@ -20,9 +20,6 @@ import java.util.Set;
 
 /**
  * Encapsulates all information required to add an attachment to a mail being sent.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/02
  */
 public class Attachment implements DataSource {
 
@@ -36,7 +33,8 @@ public class Attachment implements DataSource {
      * Generates a new attachment with the given name, mime type and contents.
      *
      * @param name          the name of the attached file
-     * @param mimeType      the mime type of the file. Use {@link sirius.web.http.MimeHelper} to determine it at runtime if
+     * @param mimeType      the mime type of the file. Use {@link sirius.web.http.MimeHelper} to determine it at runtime
+     *                      if
      *                      it is not know in advance
      * @param byteArray     the contents of the template
      * @param asAlternative determines if this attachment is an alternative to the text content of the mail

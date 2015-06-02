@@ -17,9 +17,6 @@ import java.util.Map;
 
 /**
  * Reports all known environment variables.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2015/04
  */
 @Register
 public class EnvCommand implements Command {
@@ -31,9 +28,10 @@ public class EnvCommand implements Command {
         output.separator();
         for (Map.Entry<Object, Object> prop : System.getProperties().entrySet()) {
             if (Strings.isEmpty(filter) || prop.getKey().toString().toLowerCase().contains(filter) || prop.getValue()
-                                                                                                 .toString()
-                                                                                                 .toLowerCase()
-                                                                                                 .contains(filter)) {
+                                                                                                          .toString()
+                                                                                                          .toLowerCase()
+                                                                                                          .contains(
+                                                                                                                  filter)) {
                 output.apply("%-39s %40s", prop.getKey(), prop.getValue());
             }
         }

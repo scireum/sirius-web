@@ -10,9 +10,6 @@ package sirius.web.mails;
 
 /**
  * Represents a configuration for using a SMTP server.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/02
  */
 public interface SMTPConfiguration {
     /**

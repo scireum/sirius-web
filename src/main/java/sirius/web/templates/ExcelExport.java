@@ -9,7 +9,15 @@
 package sirius.web.templates;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFPrintSetup;
+import org.apache.poi.hssf.usermodel.HSSFRichTextString;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.PrintSetup;
 import org.apache.poi.ss.util.CellRangeAddress;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
@@ -27,9 +35,6 @@ import java.util.List;
 
 /**
  * Generates an Excel file which can be sent as a response for a {@link sirius.web.http.WebContext}
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2015/01
  */
 public class ExcelExport {
 
@@ -44,7 +49,6 @@ public class ExcelExport {
     private HSSFCellStyle borderStyle;
     private HSSFCellStyle normalStyle;
 
-
     /**
      * Generates a new Export
      */
@@ -58,12 +62,12 @@ public class ExcelExport {
         numeric.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
 
         borderStyle = workbook.createCellStyle();
-        borderStyle.setBorderBottom(HSSFCellStyle.BORDER_THICK);
+        borderStyle.setBorderBottom(CellStyle.BORDER_THICK);
         normalStyle = workbook.createCellStyle();
         // Setup layout
         sheet.createFreezePane(0, 1, 0, 1);
         HSSFPrintSetup ps = sheet.getPrintSetup();
-        ps.setPaperSize(HSSFPrintSetup.A4_PAPERSIZE);
+        ps.setPaperSize(PrintSetup.A4_PAPERSIZE);
         ps.setLandscape(false);
         ps.setFitWidth((short) 1);
         ps.setFitHeight((short) 0);
@@ -152,10 +156,8 @@ public class ExcelExport {
      * @param ctx  the target context to create a response for
      */
     public void writeResponseTo(String name, WebContext ctx) {
-        OutputStream out = ctx.respondWith()
-                              .download(name)
-                              .notCached()
-                              .outputStream(HttpResponseStatus.OK, MIME_TYPE_EXCEL);
+        OutputStream out =
+                ctx.respondWith().download(name).notCached().outputStream(HttpResponseStatus.OK, MIME_TYPE_EXCEL);
         writeToStream(out);
     }
 
@@ -184,9 +186,9 @@ public class ExcelExport {
 
     private HSSFCellStyle getCellStyleForObject(Object data) {
         HSSFCellStyle style = normalStyle;
-        if (data != null && (data instanceof LocalDate || data instanceof LocalDateTime)) {
+        if ((data instanceof LocalDate || data instanceof LocalDateTime)) {
             style = dateStyle;
-        } else if (data != null && (data instanceof Integer || data instanceof Double || data instanceof Long)) {
+        } else if ((data instanceof Integer || data instanceof Double || data instanceof Long)) {
             style = numeric;
         }
         return style;

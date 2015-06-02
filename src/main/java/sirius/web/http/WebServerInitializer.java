@@ -27,12 +27,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Creates a new pipeline for processing incoming requests of the HTTP web server.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 class WebServerInitializer extends ChannelInitializer<SocketChannel> {
-
 
     @Parts(WebDispatcher.class)
     private static PartCollection<WebDispatcher> dispatchers;
@@ -86,5 +82,4 @@ class WebServerInitializer extends ChannelInitializer<SocketChannel> {
         }
         return sortedDispatchers;
     }
-
 }

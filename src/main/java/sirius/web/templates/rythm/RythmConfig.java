@@ -15,19 +15,15 @@ import org.rythmengine.conf.RythmConfigurationKey;
 import sirius.kernel.Lifecycle;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
-import sirius.kernel.di.std.Part;
-import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Log;
 import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
 import sirius.web.http.WebContext;
 import sirius.web.security.UserContext;
-import sirius.web.templates.Content;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -53,9 +49,6 @@ import java.util.concurrent.ThreadPoolExecutor;
  * <li><b>dateFormat</b>: the date format for the current language</li>
  * <li><b>timeFormat</b>: the time format for the current language</li>
  * </ul>
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/11
  */
 @Register
 public class RythmConfig implements Lifecycle {
@@ -68,9 +61,10 @@ public class RythmConfig implements Lifecycle {
         // We always put Rythm in dev mode to support dynamic reloading of templates...
         config.put("rythm.engine.mode", "dev");
         File tmpDir = new File(System.getProperty("java.io.tmpdir"),
-                               Product.getProduct()
-                                      .getName()
-                                      .replaceAll("[^a-zA-Z0-9\\-]", "_") + "_" + CallContext.getNodeName() + "_rythm");
+                               Product.getProduct().getName().replaceAll("[^a-zA-Z0-9\\-]", "_")
+                               + "_"
+                               + CallContext.getNodeName()
+                               + "_rythm");
         tmpDir.mkdirs();
         if (Sirius.isDev()) {
             if (tmpDir.listFiles() != null) {
@@ -123,5 +117,4 @@ public class RythmConfig implements Lifecycle {
     public String getName() {
         return "Rythm-Engine";
     }
-
 }

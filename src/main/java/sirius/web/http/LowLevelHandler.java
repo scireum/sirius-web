@@ -21,13 +21,10 @@ import java.net.SocketAddress;
  * Handler for low-level events in the HTTP pipeline.
  * <p>
  * Performs statistical tasks and performs basic filtering based on firewall rules.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/09
  */
 @ChannelHandler.Sharable
 class LowLevelHandler extends ChannelDuplexHandler {
-    static LowLevelHandler INSTANCE = new LowLevelHandler();
+    static final LowLevelHandler INSTANCE = new LowLevelHandler();
 
     @Override
     public void connect(ChannelHandlerContext ctx,
@@ -86,6 +83,4 @@ class LowLevelHandler extends ChannelDuplexHandler {
         }
         super.write(ctx, msg, promise);
     }
-
-
 }

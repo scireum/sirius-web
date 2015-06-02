@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
  * Helper class to notify an Slack room about certain events.
  *
  * @author Jan Scheithauer (jsc@scireum.de)
- * @since 2015/03
  */
 @Register
 public class Slack implements ExceptionHandler {
@@ -50,7 +49,7 @@ public class Slack implements ExceptionHandler {
         sendMessage("incident", incident.getException().getMessage(), Color.DANGER, fields);
     }
 
-    public static enum Color {
+    public enum Color {
         GOOD, WARNING, DANGER
     }
 
@@ -157,7 +156,7 @@ public class Slack implements ExceptionHandler {
     }
 
     /**
-     * Same as {@link #sendMessage(String, String, sirius.web.health.Slack.Color, java.util.Map)} but builds
+     * Same as {@link #sendMessage(String, String, Color, java.util.Map)} but builds
      * the field map from a given list of strings. (Name, Value, Name, Value...)
      *
      * @param messageType determines the type of message to be sent. Only messages with a type listed in the

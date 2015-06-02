@@ -15,9 +15,6 @@ import javax.annotation.Nonnull;
 
 /**
  * Console command which computes an MD5 hash of a given input.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 @Register
 public class MD5Command implements Command {
@@ -43,5 +40,4 @@ public class MD5Command implements Command {
     public String getDescription() {
         return "Computes the md5 hash of the given input";
     }
-
 }

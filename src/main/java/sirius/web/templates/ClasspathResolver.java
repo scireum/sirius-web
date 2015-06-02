@@ -15,9 +15,6 @@ import java.net.URL;
 
 /**
  * Simple resolver which tries to find the given resource in the classpath.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/07
  */
 @Register
 public class ClasspathResolver implements Resolver {

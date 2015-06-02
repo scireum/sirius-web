@@ -14,17 +14,11 @@ import java.io.PrintWriter;
 
 /**
  * Describes a command which is callable via the system console (http://localhost:9000/system/console).
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 public interface Command extends Named {
 
     /**
      * Encapsulates the output functionality used by commands to render their output.
-     *
-     * @author Andreas Haufler (aha@scireum.de)
-     * @since 2014/01
      */
     interface Output {
         /**
@@ -59,7 +53,7 @@ public interface Command extends Named {
         /**
          * Formats the given string by replacing all parameters with the given columns.
          * <p>
-         * This is a shortcut for <code>line(String.format(format, columns))</code>.
+         * This is a shortcut for {@code line(String.format(format, columns))}.
          *
          * @param format  the format used to output the data.
          * @param columns the parameters supplied to the formatter

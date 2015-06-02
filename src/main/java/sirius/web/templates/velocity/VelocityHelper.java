@@ -9,7 +9,6 @@
 package sirius.web.templates.velocity;
 
 import com.typesafe.config.ConfigValue;
-import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
 import sirius.kernel.Sirius;
@@ -21,13 +20,13 @@ import java.util.Map;
 /**
  * Used to start our own Velocity instance so that we don't have to touch the
  * global static one.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2015/04
  */
 public class VelocityHelper {
 
     private static VelocityEngine engine;
+
+    private VelocityHelper() {
+    }
 
     public static VelocityEngine getEngine() {
         if (engine == null) {
@@ -42,7 +41,7 @@ public class VelocityHelper {
         try {
             eng.setProperty("sirius.resource.loader.class", VelocityResourceLoader.class.getName());
             eng.setProperty(RuntimeConstants.RESOURCE_MANAGER_CACHE_CLASS, VelocityResourceCache.class.getName());
-            eng.setProperty(Velocity.RESOURCE_LOADER, "sirius");
+            eng.setProperty(RuntimeConstants.RESOURCE_LOADER, "sirius");
             StringBuilder libraryPath = new StringBuilder();
             for (Map.Entry<String, ConfigValue> e : Sirius.getConfig()
                                                           .getConfig("content.velocity-libraries")
@@ -50,8 +49,8 @@ public class VelocityHelper {
                 libraryPath.append(e.getValue().unwrapped());
                 libraryPath.append(",");
             }
-            eng.setProperty(Velocity.VM_LIBRARY, libraryPath.toString());
-            eng.setProperty(Velocity.SET_NULL_ALLOWED, Boolean.TRUE);
+            eng.setProperty(RuntimeConstants.VM_LIBRARY, libraryPath.toString());
+            eng.setProperty(RuntimeConstants.SET_NULL_ALLOWED, Boolean.TRUE);
             eng.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS,
                             "org.apache.velocity.runtime.log.Log4JLogChute");
             eng.setProperty("runtime.log.logsystem.log4j.logger", "velocity");
@@ -62,5 +61,4 @@ public class VelocityHelper {
             throw Exceptions.handle(Content.LOG, e);
         }
     }
-
 }

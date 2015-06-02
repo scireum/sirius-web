@@ -10,9 +10,6 @@ package sirius.web.templates.rythm;
 
 import org.rythmengine.template.JavaTagBase;
 
-/**
- * Created by aha on 12.05.15.
- */
 class IncludeExtensions extends JavaTagBase {
 
     @Override

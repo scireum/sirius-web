@@ -16,9 +16,6 @@ import java.io.IOException;
  * completely. While being pre-dispatched {@link WebContext#setContentHandler(ContentHandler)} can be used to
  * install a content handler which takes care of the request payload. Note that
  * {@link WebDispatcher#dispatch(WebContext)} will <b>not</b> be called for requests which were pre-dispatched.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 public interface ContentHandler {
 

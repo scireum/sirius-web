@@ -21,13 +21,10 @@ import java.util.Arrays;
 
 /**
  * Provides access to the underlying request of a call to a {@link StructuredService}
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/11
  */
 public abstract class ServiceCall {
 
-    protected static Log LOG = Log.get("services");
+    protected static final Log LOG = Log.get("services");
 
     protected WebContext ctx;
 

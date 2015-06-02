@@ -12,7 +12,15 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.ssl.SslHandler;
 import sirius.kernel.di.std.ConfigValue;
 
-import javax.net.ssl.*;
+import javax.net.ssl.ExtendedSSLSession;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SNIHostName;
+import javax.net.ssl.SNIServerName;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.StandardConstants;
+import javax.net.ssl.X509ExtendedKeyManager;
 import java.io.InputStream;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -45,10 +53,10 @@ class SSLWebServerInitializer extends WebServerInitializer {
     @ConfigValue("http.ssl.ciphers")
     private static List<String> ciphers;
 
-    class SniKeyManager extends X509ExtendedKeyManager {
+    static class SniKeyManager extends X509ExtendedKeyManager {
         private final X509ExtendedKeyManager keyManager;
 
-        public SniKeyManager(X509ExtendedKeyManager keyManager) {
+        SniKeyManager(X509ExtendedKeyManager keyManager) {
             this.keyManager = keyManager;
         }
 
@@ -108,7 +116,7 @@ class SSLWebServerInitializer extends WebServerInitializer {
         }
     }
 
-    public SSLWebServerInitializer() throws Exception {
+    SSLWebServerInitializer() throws Exception {
         KeyStore store = KeyStore.getInstance("JKS");
         try (InputStream is = Files.newInputStream(Paths.get(keystore))) {
             store.load(is, password.toCharArray());

@@ -14,9 +14,6 @@ import sirius.kernel.nls.NLS;
 
 /**
  * Adapter to make @i18n commands use NLS.get
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2015/05
  */
 public class I18nResourceResolver implements II18nMessageResolver {
 

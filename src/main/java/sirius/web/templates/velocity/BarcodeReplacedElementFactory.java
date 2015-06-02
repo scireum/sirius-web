@@ -19,7 +19,6 @@ import com.lowagie.text.pdf.BarcodeEAN;
 import org.w3c.dom.Element;
 import org.xhtmlrenderer.extend.FSImage;
 import org.xhtmlrenderer.extend.ReplacedElement;
-import org.xhtmlrenderer.extend.ReplacedElementFactory;
 import org.xhtmlrenderer.extend.UserAgentCallback;
 import org.xhtmlrenderer.layout.LayoutContext;
 import org.xhtmlrenderer.pdf.ITextFSImage;
@@ -29,6 +28,7 @@ import org.xhtmlrenderer.pdf.ITextReplacedElementFactory;
 import org.xhtmlrenderer.render.BlockBox;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
+import sirius.kernel.health.Exceptions;
 
 import java.awt.*;
 
@@ -37,11 +37,8 @@ import java.awt.*;
  * <p>
  * A barcode can be added by placing an img tag with an type attribute: &lt;img type="code128" src="0815" /&gt;.
  * As type <b>code128</b>, <b>ean</b> and <b>qr</b> are supported.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/02
  */
-class BarcodeReplacedElementFactory extends ITextReplacedElementFactory implements ReplacedElementFactory {
+class BarcodeReplacedElementFactory extends ITextReplacedElementFactory {
 
     /**
      * Generates a new element factory for the given output
@@ -65,7 +62,7 @@ class BarcodeReplacedElementFactory extends ITextReplacedElementFactory implemen
         }
 
         String nodeName = e.getNodeName();
-        if (nodeName.equals("img")) {
+        if ("img".equals(nodeName)) {
             if (Strings.isFilled(e.getAttribute("type"))) {
                 try {
                     if ("qr".equalsIgnoreCase(e.getAttribute("type"))) {
@@ -74,8 +71,9 @@ class BarcodeReplacedElementFactory extends ITextReplacedElementFactory implemen
                                                          com.google.zxing.BarcodeFormat.QR_CODE,
                                                          cssWidth != -1 ? cssWidth : 600,
                                                          cssHeight != -1 ? cssHeight : 600);
-                        FSImage fsImage = new ITextFSImage(Image.getInstance(MatrixToImageWriter.toBufferedImage(matrix),
-                                                                             Color.WHITE));
+                        FSImage fsImage =
+                                new ITextFSImage(Image.getInstance(MatrixToImageWriter.toBufferedImage(matrix),
+                                                                   Color.WHITE));
                         if (cssWidth != -1 || cssHeight != -1) {
                             fsImage.scale(cssWidth, cssHeight);
                         }
@@ -88,15 +86,16 @@ class BarcodeReplacedElementFactory extends ITextReplacedElementFactory implemen
                             code = new BarcodeEAN();
                         }
                         code.setCode(e.getAttribute("src"));
-                        FSImage fsImage = new ITextFSImage(Image.getInstance(code.createAwtImage(Color.BLACK,
-                                                                                                 Color.WHITE),
-                                                                             Color.WHITE));
+                        FSImage fsImage =
+                                new ITextFSImage(Image.getInstance(code.createAwtImage(Color.BLACK, Color.WHITE),
+                                                                   Color.WHITE));
                         if (cssWidth != -1 || cssHeight != -1) {
                             fsImage.scale(cssWidth, cssHeight);
                         }
                         return new ITextImageElement(fsImage);
                     }
-                } catch (Throwable e1) {
+                } catch (Throwable ex) {
+                    Exceptions.ignore(ex);
                     return null;
                 }
             } else {

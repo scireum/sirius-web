@@ -34,9 +34,6 @@ import java.util.Map;
  * picking the right user manager to authenticate users or store / load them from a session.
  * <p>
  * This class also manages messages shown to the user.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/11
  */
 public class UserContext implements SubContext {
 
@@ -54,7 +51,6 @@ public class UserContext implements SubContext {
     private ScopeInfo currentScope = null;
     private List<Message> msgList = Lists.newArrayList();
     private Map<String, String> fieldErrors = Maps.newHashMap();
-
 
     @Context
     private static GlobalContext context;
@@ -79,7 +75,6 @@ public class UserContext implements SubContext {
     public static UserInfo getCurrentUser() {
         return get().getUser();
     }
-
 
     public static ScopeInfo getCurrentScope() {
         return get().getScope();

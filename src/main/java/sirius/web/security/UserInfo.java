@@ -24,14 +24,8 @@ public class UserInfo implements Adaptable {
     public static final String PERMISSION_LOGGED_IN = "flag-logged-in";
 
     public static final UserInfo NOBODY = new UserInfo(null, null, "ANONYMOUS", "(no user)", "", null, null, null);
-    public static final UserInfo GOD_LIKE = new UserInfo(null,
-                                                         null,
-                                                         "ADMIN",
-                                                         "(admin)",
-                                                         "",
-                                                         null,
-                                                         Collections.singleton("*"),
-                                                         null);
+    public static final UserInfo GOD_LIKE =
+            new UserInfo(null, null, "ADMIN", "(admin)", "", null, Collections.singleton("*"), null);
 
     private String tenantId;
     private String tenantName;

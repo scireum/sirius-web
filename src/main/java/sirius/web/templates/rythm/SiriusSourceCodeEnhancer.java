@@ -27,9 +27,6 @@ import java.util.Map;
 
 /**
  * Applies {@link RythmExtension} instances found as <tt>parts</tt> to the rythm engine.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2015/05
  */
 class SiriusSourceCodeEnhancer implements ISourceCodeEnhancer {
 

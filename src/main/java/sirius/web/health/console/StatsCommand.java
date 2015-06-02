@@ -17,9 +17,6 @@ import javax.annotation.Nonnull;
 
 /**
  * Console command which reports all available system metrics.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 @Register
 public class StatsCommand implements Command {

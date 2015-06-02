@@ -14,7 +14,12 @@ import com.google.common.collect.Lists;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderResult;
-import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.DefaultLastHttpContent;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.cookie.ClientCookieEncoder;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
@@ -45,9 +50,6 @@ import java.util.stream.Collectors;
  * Can be used to simulate a request sent to the web server. Additionally the {@link sirius.web.http.TestResponse}
  * returned by {@link #executeAndBlock()} or {@link #execute()} can be used to inspect what kind of response
  * was generated or which parameters were passed along.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/09
  */
 public class TestRequest extends WebContext implements HttpRequest {
 
@@ -131,7 +133,6 @@ public class TestRequest extends WebContext implements HttpRequest {
             throw Exceptions.handle(e);
         }
     }
-
 
     /**
      * Creates a mock request simulating a PUT on the given uri while sending the given data.
@@ -371,7 +372,7 @@ public class TestRequest extends WebContext implements HttpRequest {
     }
 
     private static class MutableHttpPostRequestDecoder extends HttpPostRequestDecoder {
-        public MutableHttpPostRequestDecoder(TestRequest result) throws ErrorDataDecoderException, IncompatibleDataDecoderException {
+        private MutableHttpPostRequestDecoder(TestRequest result) {
             super(result.getRequest());
         }
 

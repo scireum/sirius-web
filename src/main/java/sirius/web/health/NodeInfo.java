@@ -19,9 +19,6 @@ import java.util.List;
  * Contains the state of a cluster member.
  * <p>
  * Will be obtained through {@link Cluster} by calling the members {@link NodeInfoService}.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 public class NodeInfo {
 

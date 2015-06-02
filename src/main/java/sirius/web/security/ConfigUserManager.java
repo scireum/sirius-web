@@ -14,7 +14,6 @@ import com.google.common.hash.Hashing;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.extensions.Extension;
 import sirius.kernel.extensions.Extensions;
-import sirius.kernel.nls.NLS;
 import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
@@ -27,9 +26,6 @@ import java.util.Set;
  * Uses the system configuration to authenticate users.
  * <p>
  * Users can be defined in <tt>security.users</tt>.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/06
  */
 public class ConfigUserManager extends GenericUserManager {
 
@@ -44,7 +40,6 @@ public class ConfigUserManager extends GenericUserManager {
         public UserManager createManager(@Nonnull ScopeInfo scope, @Nonnull Extension config) {
             return new ConfigUserManager(scope, config);
         }
-
     }
 
     protected ConfigUserManager(ScopeInfo scope, Extension config) {
@@ -61,12 +56,10 @@ public class ConfigUserManager extends GenericUserManager {
         Extension e = Extensions.getExtension("security.users", user);
         if (e != null) {
             return getUserInfo(user, e);
-        } else {
-            log("Unknown user: %s", user);
         }
+        log("Unknown user: %s", user);
         return null;
     }
-
 
     @Override
     protected UserInfo findUserByCredentials(WebContext ctx, String user, String password) {
@@ -75,7 +68,7 @@ public class ConfigUserManager extends GenericUserManager {
             if (Hashing.md5()
                        .hashBytes((e.get("salt").asString() + password).getBytes(Charsets.UTF_8))
                        .toString()
-                       .equals(e.get("passwordSalt"))) {
+                       .equals(e.get("passwordSalt").asString())) {
                 return getUserInfo(user, e);
             }
         } else {
@@ -87,7 +80,6 @@ public class ConfigUserManager extends GenericUserManager {
         }
         return null;
     }
-
 
     @Override
     protected Object getUserObject(UserInfo u) {
@@ -132,6 +124,4 @@ public class ConfigUserManager extends GenericUserManager {
     protected void clearRolesForUser(UserInfo user, WebContext ctx) {
         // Roles are constant - no need to store them in a session...
     }
-
-
 }

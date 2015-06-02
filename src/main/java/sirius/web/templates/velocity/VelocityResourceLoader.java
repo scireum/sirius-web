@@ -25,9 +25,6 @@ import java.net.URLConnection;
  * Adapter to make Velocity use our {@link Resolver} framework.
  * <p>
  * This class needs to be public so it can be instantiated by Velocity.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/02
  */
 public class VelocityResourceLoader extends ResourceLoader {
 
@@ -59,7 +56,7 @@ public class VelocityResourceLoader extends ResourceLoader {
      *
      * @param name name of the resource to check
      * @return the last modification time in milliseconds. If the resource does not exist,
-     * <code>System.currentTimeMillis()</code> will be returned
+     * {@code System.currentTimeMillis()} will be returned
      */
     public long getLastModified(String name) {
         try {
@@ -93,12 +90,13 @@ public class VelocityResourceLoader extends ResourceLoader {
         try {
             return resolve(source) != null;
         } catch (Exception e) {
+            Exceptions.ignore(e);
             return false;
         }
     }
 
     @Override
-    public InputStream getResourceStream(String source) throws ResourceNotFoundException {
+    public InputStream getResourceStream(String source) {
         try {
             return resolve(source).openStream();
         } catch (Throwable e) {
@@ -119,5 +117,4 @@ public class VelocityResourceLoader extends ResourceLoader {
         // Don't support any caching
         return true;
     }
-
 }

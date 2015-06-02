@@ -17,9 +17,6 @@ import java.util.stream.Stream;
  * By default al session data is stored as {@link sirius.web.http.session.MemoryServerSession} which is essentially
  * a Java <tt>Map</tt>. Registering a class implementing this interface, this can be changed i.e. to support
  * clustering.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/05
  */
 public interface SessionStorage {
 

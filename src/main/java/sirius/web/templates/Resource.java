@@ -28,10 +28,8 @@ import java.util.concurrent.TimeUnit;
  * Used as result of a {@link sirius.web.templates.Resolver}. Next to the resolved URL it also stores the original
  * scope and path which was used to resolve the url.
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see sirius.web.templates.Resolver
  * @see sirius.web.security.UserContext#getCurrentScope()
- * @since 2014/07
  */
 public class Resource {
     private String scopeId;

@@ -13,7 +13,6 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.extensions.Extension;
-import sirius.kernel.nls.NLS;
 import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
@@ -25,11 +24,8 @@ import java.util.stream.Collectors;
  * Provides a user manager which only authenticates users by validating a single sign-on token.
  * <p>
  * Such a token has to contain the current timestamp along with a computed hash value using:
- * <code>MD5(ssoSecret + timestamp + username + roles)</code>. Note that MD5 can be replaced by SHA1 by changing
+ * {@code MD5(ssoSecret + timestamp + username + roles)}. Note that MD5 can be replaced by SHA1 by changing
  * the config value "hashFunction".
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/06
  */
 public class SSOUserManager extends GenericUserManager {
 
@@ -41,7 +37,6 @@ public class SSOUserManager extends GenericUserManager {
         public UserManager createManager(@Nonnull ScopeInfo scope, @Nonnull Extension config) {
             return new SSOUserManager(scope, config);
         }
-
     }
 
     private final boolean parseRoles;
@@ -95,10 +90,8 @@ public class SSOUserManager extends GenericUserManager {
         return null;
     }
 
-
     @Override
     public boolean isLoginSupported() {
         return false;
     }
-
 }

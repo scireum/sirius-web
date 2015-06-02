@@ -9,9 +9,6 @@ import javax.annotation.Nonnull;
  * using {@link sirius.kernel.di.std.Register}.
  * <p>
  * This is used by the {@link Content#resolve(String)} to lookup resources.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 public interface Resolver extends Priorized {
 
@@ -20,8 +17,8 @@ public interface Resolver extends Priorized {
      *
      * @param scopeId  the id of the currently active scope
      * @param resource the resource to resolve. This will always start with a "/"
-     * @return a {@link sirius.web.templates.Resource} pointing to the data to use or <tt>null</tt> if this resolver cannot resolve the given resource
+     * @return a {@link sirius.web.templates.Resource} pointing to the data to use or <tt>null</tt> if this resolver
+     * cannot resolve the given resource
      */
     Resource resolve(@Nonnull String scopeId, @Nonnull String resource);
-
 }

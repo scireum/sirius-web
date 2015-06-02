@@ -28,9 +28,6 @@ import java.util.Map;
 
 /**
  * Provides the glue logic between the system console UI and the {@link Command}s.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/01
  */
 @Register(name = "system/console")
 @Permission(SystemController.PERMISSION_SYSTEM_CONSOLE)
@@ -101,5 +98,4 @@ public class ConsoleService implements StructuredService {
             out.endResult();
         }
     }
-
 }

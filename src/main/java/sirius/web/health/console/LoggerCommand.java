@@ -16,9 +16,6 @@ import javax.annotation.Nonnull;
 
 /**
  * Permits to change the level of a logger at runtime.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/06
  */
 @Register
 public class LoggerCommand implements Command {
@@ -51,5 +48,4 @@ public class LoggerCommand implements Command {
     public String getDescription() {
         return "Changes the level of a logger at runtime.";
     }
-
 }

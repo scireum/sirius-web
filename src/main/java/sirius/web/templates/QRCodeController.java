@@ -25,9 +25,6 @@ import java.io.OutputStream;
 
 /**
  * Used to generate QR codes by responding to /qr
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/12
  */
 @Register
 public class QRCodeController implements Controller {

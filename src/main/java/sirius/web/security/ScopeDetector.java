@@ -17,9 +17,7 @@ import javax.annotation.Nonnull;
  * <p>
  * Used by {@link sirius.web.security.UserContext} to determine the scope, this request belongs to.
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see sirius.web.security.ScopeInfo
- * @since 2014/06
  */
 public interface ScopeDetector {
 
@@ -32,5 +30,4 @@ public interface ScopeDetector {
      */
     @Nonnull
     ScopeInfo detectScope(@Nonnull WebContext request);
-
 }

@@ -15,11 +15,11 @@ import sirius.web.controller.Message;
  * <p>
  * This can be used to verify that no error messages where generated when using a template. This is probably used
  * in combination with {@link sirius.web.http.TestRequest}.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2014/09
  */
 public class UserContextHelper {
+
+    private UserContextHelper() {
+    }
 
     /**
      * Expects that no messages where created at all
@@ -101,5 +101,4 @@ public class UserContextHelper {
         }
         return false;
     }
-
 }

@@ -31,9 +31,6 @@ import java.util.List;
 
 /**
  * Dispatches incoming requests to the appropriate {@link Controller}.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/11
  */
 @Register
 public class ControllerDispatcher implements WebDispatcher {
@@ -47,7 +44,7 @@ public class ControllerDispatcher implements WebDispatcher {
     private Collection<Interceptor> interceptors;
 
     /**
-     * The priority of this controller is <code>PriorityCollector.DEFAULT_PRIORITY + 10</code> as it is quite complex
+     * The priority of this controller is {@code PriorityCollector.DEFAULT_PRIORITY + 10} as it is quite complex
      * to check each request against each route.
      *
      * @return the priority of this dispatcher

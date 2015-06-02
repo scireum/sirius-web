@@ -31,21 +31,22 @@ import sirius.web.templates.Content;
 import sirius.web.templates.Resolver;
 import sirius.web.templates.Resource;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Dispatches all URLs below <code>/assets</code>.
+ * Dispatches all URLs below {@code /assets}.
  * <p>
  * All assets are fetched from the classpath and should be located in the <tt>resources</tt> source root (below the
  * <tt>assets</tt> directory).
  * <p>
  * This dispatcher tries to support caching as well as zero-copy delivery of static files if possible.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/11
  */
 @Register
 public class AssetsDispatcher implements WebDispatcher {
@@ -123,7 +124,6 @@ public class AssetsDispatcher implements WebDispatcher {
             SASS_LOG.WARN(message);
         }
 
-
         @Override
         protected InputStream resolveIntoStream(String sheet) throws IOException {
             Optional<Resource> res = content.resolve(sheet);
@@ -132,7 +132,6 @@ public class AssetsDispatcher implements WebDispatcher {
             }
             return null;
         }
-
     }
 
     @Part
@@ -141,7 +140,7 @@ public class AssetsDispatcher implements WebDispatcher {
     /*
      * Uses Velocity (via the content generator) to generate the desired file
      */
-    private void handleVM(WebContext ctx, String uri, String scopeId) throws IOException {
+    private void handleVM(WebContext ctx, String uri, String scopeId) {
         String cacheKey = scopeId + "-" + uri.substring(1).replaceAll("[^a-zA-Z0-9_\\.]", "_");
         File file = new File(getCacheDirFile(), cacheKey);
 
@@ -165,7 +164,7 @@ public class AssetsDispatcher implements WebDispatcher {
     /*
      * Uses server-sass to compile a SASS file (.scss) into a .css file
      */
-    private void handleSASS(WebContext ctx, String cssUri, String scssUri, String scopeId) throws IOException {
+    private void handleSASS(WebContext ctx, String cssUri, String scssUri, String scopeId) {
         String cacheKey = scopeId + "-" + cssUri.substring(1).replaceAll("[^a-zA-Z0-9_\\.]", "_");
         File file = new File(getCacheDirFile(), cacheKey);
 
@@ -197,9 +196,11 @@ public class AssetsDispatcher implements WebDispatcher {
     private File getCacheDirFile() {
         if (cacheDirFile == null) {
             File tmpDir = new File(System.getProperty("java.io.tmpdir"),
-                                   Product.getProduct()
-                                          .getName()
-                                          .replaceAll("[a-zA-Z0-9\\-]", "_") + "_" + CallContext.getNodeName() + "_" + cacheDir);
+                                   Product.getProduct().getName().replaceAll("[a-zA-Z0-9\\-]", "_")
+                                   + "_"
+                                   + CallContext.getNodeName()
+                                   + "_"
+                                   + cacheDir);
             tmpDir.mkdirs();
             cacheDirFile = tmpDir;
         }

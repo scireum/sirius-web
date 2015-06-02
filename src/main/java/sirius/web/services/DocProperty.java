@@ -10,36 +10,34 @@ package sirius.web.services;
 
 /**
  * Provides a property documentation to be used in {@link DocNode}
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/11
  */
 public @interface DocProperty {
 
     /**
      * Represents a string property with textual content
      */
-    static final String TYPE_STRING = "string";
+    String TYPE_STRING = "string";
 
     /**
      * Represents a numeric property containing integer numbers
      */
-    static final String TYPE_INT = "int";
+    String TYPE_INT = "int";
 
     /**
      * Represents a boolean property being either true or false
      */
-    static final String TYPE_BOOL = "boolean";
+    String TYPE_BOOL = "boolean";
 
     /**
-     * Represents an array containing one or more entities of the named node (defined by an appropriate {@link DocNode}.
+     * Represents an array containing one or more entities of the named node (defined by an appropriate {@link
+     * DocNode}.
      */
-    static final String TYPE_ARRAY = "array of ";
+    String TYPE_ARRAY = "array of ";
 
     /**
      * Represents a single entity of the named node (defined by an appropriate {@link DocNode}.
      */
-    static final String TYPE_NODE = "node: ";
+    String TYPE_NODE = "node: ";
 
     /**
      * Returns the name of the property.
@@ -61,5 +59,4 @@ public @interface DocProperty {
      * @return the description for this property
      */
     String description() default "";
-
 }

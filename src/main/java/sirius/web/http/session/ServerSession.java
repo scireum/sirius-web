@@ -24,31 +24,29 @@ import java.util.List;
  * <p>
  * Normally the WebContext takes care of finding or creating sessions based on cookies.
  *
- * @author Andreas Haufler (aha@scireum.de)
  * @see sirius.web.http.WebContext#getServerSession()
- * @since 2014/05
  */
 public interface ServerSession {
 
     /**
      * Fixed field used to store the initial URI used to create this session
      */
-    public static final String INITIAL_URI = "_INITIAL_URI";
+    String INITIAL_URI = "_INITIAL_URI";
 
     /**
      * Fixed field containing the user agent used to request the initial url
      */
-    public static final String USER_AGENT = "_USER_AGENT";
+    String USER_AGENT = "_USER_AGENT";
 
     /**
      * Fixed field storing the name of the current user owning this session
      */
-    public static final String USER = "_USER";
+    String USER = "_USER";
 
     /**
      * Fixed field storing the IP which was used to create the session
      */
-    public static final String REMOTE_IP = "_REMOTE_IP";
+    String REMOTE_IP = "_REMOTE_IP";
 
     /**
      * Returns the timestamp of the sessions creation
@@ -140,5 +138,4 @@ public interface ServerSession {
      * session live time over a session without an attached user.
      */
     void markAsUserSession();
-
 }

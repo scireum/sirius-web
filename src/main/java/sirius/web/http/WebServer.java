@@ -51,9 +51,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Responsible for setting up and starting netty as HTTP server.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/08
  */
 @Register(framework = "web.http")
 public class WebServer implements Lifecycle, MetricProvider {
@@ -230,7 +227,7 @@ public class WebServer implements Lifecycle, MetricProvider {
     /**
      * Determines how the web server should participate in the microtiming framework.
      */
-    public static enum MicrotimingMode {
+    public enum MicrotimingMode {
         /**
          * Use the remote ip as key - this can be used to group requests by remote ip
          */
@@ -348,11 +345,11 @@ public class WebServer implements Lifecycle, MetricProvider {
         eventLoop = createEventLoop(AUTOSELECT_EVENT_LOOP_SIZE, "netty-");
     }
 
-    private class PrefixThreadFactory implements ThreadFactory {
+    private static class PrefixThreadFactory implements ThreadFactory {
         private final String name;
         private final AtomicInteger counter = new AtomicInteger(1);
 
-        public PrefixThreadFactory(String name) {
+        private PrefixThreadFactory(String name) {
             this.name = name;
         }
 
@@ -432,6 +429,7 @@ public class WebServer implements Lifecycle, MetricProvider {
                 sslChannel.close().sync();
             }
         } catch (InterruptedException e) {
+            Exceptions.ignore(e);
             LOG.SEVERE("Interrupted while waiting for the sslChannel to shut down");
         }
     }
@@ -442,6 +440,7 @@ public class WebServer implements Lifecycle, MetricProvider {
                 channel.close().sync();
             }
         } catch (InterruptedException e) {
+            Exceptions.ignore(e);
             LOG.SEVERE("Interrupted while waiting for the channel to shut down");
         }
     }
@@ -453,6 +452,7 @@ public class WebServer implements Lifecycle, MetricProvider {
                 LOG.SEVERE("Worker Group did not shutdown within 10 seconds!");
             }
         } catch (InterruptedException e) {
+            Exceptions.ignore(e);
             LOG.SEVERE("Interrupted while waiting for the Worker Group to shut down");
         }
     }
@@ -650,7 +650,7 @@ public class WebServer implements Lifecycle, MetricProvider {
     }
 
     /**
-     * Returns the {@link sirius.web.http.WebServer.MicrotimingMode} used by the web server
+     * Returns the {@link MicrotimingMode} used by the web server
      *
      * @return the current mode of interaction with the microtiming framework
      * @see sirius.kernel.health.Microtiming
@@ -669,5 +669,4 @@ public class WebServer implements Lifecycle, MetricProvider {
     public static void setMicrotimingMode(MicrotimingMode microtimingMode) {
         WebServer.microtimingMode = microtimingMode == null ? MicrotimingMode.URI : microtimingMode;
     }
-
 }

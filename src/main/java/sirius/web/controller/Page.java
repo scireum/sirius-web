@@ -21,9 +21,6 @@ import java.util.function.Supplier;
 
 /**
  * Represents a slice of a result set which is being "paged through" and can provide filter facets.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2013/12
  */
 public class Page<E> {
 
@@ -117,7 +114,8 @@ public class Page<E> {
     }
 
     /**
-     * Specifies the supplier used to compute the facets available to further filter the page (or underlying data source).
+     * Specifies the supplier used to compute the facets available to further filter the page (or underlying data
+     * source).
      *
      * @param facetsSupplier the facets supplier computing the facets available for further filtering
      * @return the page itself for fluent method calls
@@ -344,12 +342,13 @@ public class Page<E> {
      * Creates an incomplete query string to be completed by appending the start index.
      * The Query String will contain all filters and the search query except 'start', for which the value must be
      * appended.
-     *
+     * <p>
      * ex.:
      * <pre>
      * var startIndex = "33";
      * $('a.config-start').attr("href", "@prefix/@baseURL?@page.createQueryStringForConfigurableStart()" + startIndex);
      * </pre>
+     *
      * @return a query string missing the start value
      */
     public String createQueryStringForConfigurableStart() {
