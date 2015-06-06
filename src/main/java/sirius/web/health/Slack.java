@@ -5,6 +5,7 @@
  * Copyright by scireum GmbH
  * http://www.scireum.de - info@scireum.de
  */
+
 package sirius.web.health;
 
 import com.google.common.collect.Maps;
@@ -21,6 +22,7 @@ import sirius.web.services.JSONCall;
 import sirius.web.services.JSONStructuredOutput;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
 import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -31,8 +33,6 @@ import java.util.stream.Collectors;
 
 /**
  * Helper class to notify an Slack room about certain events.
- *
- * @author Jan Scheithauer (jsc@scireum.de)
  */
 @Register
 public class Slack implements ExceptionHandler {
@@ -112,47 +112,52 @@ public class Slack implements ExceptionHandler {
                 return;
             }
 
-            JSONCall call = JSONCall.to(new URL(messageUrl));
-            JSONStructuredOutput out = call.getOutput();
-            out.beginResult();
-            out.property("username", Strings.isEmpty(sender) ? CallContext.getNodeName() : sender);
-            if (Strings.isFilled(channel)) {
-                out.property("channel", channel);
-            }
-            out.property("text", message);
-
-            out.beginArray("attachments");
-            {
-                out.beginObject("attachment");
-                {
-                    out.property("color", color.name().toLowerCase());
-                    out.beginArray("fields");
-                    {
-                        if (fields != null) {
-                            for (Map.Entry<String, String> field : fields.entrySet()) {
-                                if (Strings.isFilled(field.getValue())) {
-                                    out.beginObject("field");
-                                    {
-                                        out.property("title", field.getKey());
-                                        out.property("value", field.getValue());
-                                        out.property("short", field.getValue().length() <= 50);
-                                    }
-                                    out.endObject();
-                                }
-                            }
-                        }
-                    }
-                    out.endArray();
-                }
-                out.endObject();
-            }
-            out.endArray();
-
-            out.endResult();
-            call.getPlainInput();
+            sendJSONMessage(message, color, fields);
         } catch (Exception e) {
             Exceptions.handle(e);
         }
+    }
+
+    private static void sendJSONMessage(String message, Color color, @Nullable Map<String, String> fields)
+            throws IOException {
+        JSONCall call = JSONCall.to(new URL(messageUrl));
+        JSONStructuredOutput out = call.getOutput();
+        out.beginResult();
+        out.property("username", Strings.isEmpty(sender) ? CallContext.getNodeName() : sender);
+        if (Strings.isFilled(channel)) {
+            out.property("channel", channel);
+        }
+        out.property("text", message);
+
+        out.beginArray("attachments");
+        {
+            out.beginObject("attachment");
+            {
+                out.property("color", color.name().toLowerCase());
+                out.beginArray("fields");
+                {
+                    if (fields != null) {
+                        for (Map.Entry<String, String> field : fields.entrySet()) {
+                            if (Strings.isFilled(field.getValue())) {
+                                out.beginObject("field");
+                                {
+                                    out.property("title", field.getKey());
+                                    out.property("value", field.getValue());
+                                    out.property("short", field.getValue().length() <= 50);
+                                }
+                                out.endObject();
+                            }
+                        }
+                    }
+                }
+                out.endArray();
+            }
+            out.endObject();
+        }
+        out.endArray();
+
+        out.endResult();
+        call.getPlainInput();
     }
 
     /**

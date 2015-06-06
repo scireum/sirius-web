@@ -30,7 +30,7 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.health.Exceptions;
 
-import java.awt.*;
+import java.awt.Color;
 
 /**
  * Used by the XHTMLRenderer (creating PDFs) to generate barcodes and to support ratio aware scaling or images.

@@ -10,6 +10,11 @@ package sirius.web.templates.rythm;
 
 import org.rythmengine.template.JavaTagBase;
 
+/**
+ * Implementation of {@literal @}includeExtensions tag.
+ * <p>
+ * Can be used to include all files returned by {@link sirius.web.templates.Content#getExtensions(String)}.
+ */
 class IncludeExtensions extends JavaTagBase {
 
     @Override

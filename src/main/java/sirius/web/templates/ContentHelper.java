@@ -16,6 +16,9 @@ package sirius.web.templates;
  */
 public class ContentHelper {
 
+    /**
+     * Contains the instance which is passed into the velocity context as "helper".
+     */
     public static final ContentHelper INSTANCE = new ContentHelper();
 
     private ContentHelper() {

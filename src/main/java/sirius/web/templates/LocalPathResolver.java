@@ -29,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 public class LocalPathResolver implements Resolver {
 
     private static final String DEFAULT_BASE_DIR = "data/resources";
+    private static final String CHECK_MSG =
+            "Base directory: '%s' (%s) for local templates does not exist. Will check every minute...";
 
     @ConfigValue("content.localResourcePath")
     private String localResourcePath;
@@ -82,16 +84,10 @@ public class LocalPathResolver implements Resolver {
                             // If we're using the default lookup path, only report once, that it does not exist
                             // as it is not necessary at all.
                             if (baseDirFound == null) {
-                                Content.LOG.INFO(
-                                        "Base directory: '%s' (%s) for local templates was not created yet. Will check every minute...",
-                                        localResourcePath,
-                                        baseDir.getAbsolutePath());
+                                Content.LOG.INFO(CHECK_MSG, localResourcePath, baseDir.getAbsolutePath());
                             }
                         } else {
-                            Content.LOG.WARN(
-                                    "Base directory: '%s' (%s) for local templates does not exist! Will check every minute...",
-                                    localResourcePath,
-                                    baseDir.getAbsolutePath());
+                            Content.LOG.WARN(CHECK_MSG, localResourcePath, baseDir.getAbsolutePath());
                         }
                     }
                     baseDirFound = baseDir.exists();

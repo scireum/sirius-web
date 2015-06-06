@@ -49,6 +49,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
@@ -581,109 +582,21 @@ public class MailService implements MetricProvider {
             if (Strings.isEmpty(mailExtension)) {
                 return;
             }
-            Extension ex = Extensions.getExtension("mail.templates", mailExtension);
-            if (ex == null) {
-                throw Exceptions.handle()
-                                .withSystemErrorMessage(
-                                        "Unknown mail extension: %s. Cannot send mail from: '%s' to '%s'",
-                                        mailExtension,
-                                        senderEmail,
-                                        receiverEmail)
-                                .handle();
-            }
+            Extension ex = findMailExtension();
             context.put("template", mailExtension);
             try {
-                subject(content.generator()
-                               .direct(ex.get("subject_" + NLS.getCurrentLang())
-                                         .asString(ex.get("subject").asString("$subject")), VelocityContentHandler.VM)
-                               .applyContext(context)
-                               .generate());
-                textContent(content.generator()
-                                   .useTemplate(ex.get("text_" + NLS.getCurrentLang())
-                                                  .asString(ex.get("text").asString()))
-                                   .applyContext(context)
-                                   .generate());
+                fillSubject(ex);
+                fillTextContent(ex);
                 htmlContent(null);
                 if (ex.get("html").isFilled()) {
-                    try {
-                        htmlContent(content.generator()
-                                           .useTemplate(ex.get("html_" + NLS.getCurrentLang())
-                                                          .asString(ex.get("html").asString()))
-                                           .applyContext(context)
-                                           .generate());
-                    } catch (Throwable e) {
-                        Exceptions.handle()
-                                  .to(MAIL)
-                                  .error(e)
-                                  .withSystemErrorMessage(
-                                          "Cannot generate HTML content using template %s (%s) when sending a mail from '%s' to '%s': %s (%s)",
-                                          mailExtension,
-                                          ex.get("html_" + NLS.getCurrentLang()).asString(ex.get("html").asString()),
-                                          senderEmail,
-                                          receiverEmail)
-                                  .handle();
-                    }
+                    fillHtmlContent(ex);
                 }
                 if (ex.getConfig("headers") != null) {
                     for (Map.Entry<String, com.typesafe.config.ConfigValue> e : ex.getConfig("headers").entrySet()) {
                         headers.put(e.getKey(), NLS.toMachineString(e.getValue().unwrapped()));
                     }
                 }
-
-                for (Config attachmentConfig : ex.getConfigs("attachments")) {
-                    String template = attachmentConfig.getString("template");
-                    try {
-                        Content.Generator attachment = content.generator();
-                        if (attachmentConfig.hasPath("encoding")) {
-                            attachment.encoding(attachmentConfig.getString("encoding"));
-                        }
-                        attachment.useTemplate(template);
-                        attachment.applyContext(context);
-                        ByteArrayOutputStream out = new ByteArrayOutputStream();
-                        attachment.generateTo(out);
-                        out.flush();
-                        String fileName = attachmentConfig.getString("id");
-                        if (attachmentConfig.hasPath("fileName")) {
-                            fileName = content.generator()
-                                              .direct(attachmentConfig.getString("fileName"), VelocityContentHandler.VM)
-                                              .applyContext(context)
-                                              .generate();
-                        } else {
-                            int idx = fileName.lastIndexOf("-");
-                            if (idx >= 0) {
-                                fileName = fileName.substring(0, idx) + "." + fileName.substring(idx + 1);
-                            }
-                        }
-
-                        String mimeType = MimeHelper.guessMimeType(fileName);
-                        if (attachmentConfig.hasPath("contentType")) {
-                            mimeType = attachmentConfig.getString("contentType");
-                        }
-                        boolean asAlternative = false;
-                        if (attachmentConfig.hasPath("alternative")) {
-                            asAlternative = attachmentConfig.getBoolean("alternative");
-                        }
-                        Attachment att = new Attachment(fileName, mimeType, out.toByteArray(), asAlternative);
-                        if (attachmentConfig.hasPath("headers")) {
-                            for (Map.Entry<String, com.typesafe.config.ConfigValue> e : attachmentConfig.getConfig(
-                                    "headers").entrySet()) {
-                                att.addHeader(e.getKey(), NLS.toMachineString(e.getValue().unwrapped()));
-                            }
-                        }
-                        addAttachment(att);
-                    } catch (Throwable t) {
-                        Exceptions.handle()
-                                  .to(MAIL)
-                                  .error(t)
-                                  .withSystemErrorMessage(
-                                          "Cannot generate attachment using template %s (%s) when sending a mail from '%s' to '%s': %s (%s)",
-                                          mailExtension,
-                                          template,
-                                          senderEmail,
-                                          receiverEmail)
-                                  .handle();
-                    }
-                }
+                generateAttachments(ex);
             } catch (HandledException e) {
                 throw e;
             } catch (Throwable e) {
@@ -701,6 +614,114 @@ public class MailService implements MetricProvider {
             }
         }
 
+        private void generateAttachments(Extension ex) {
+            for (Config attachmentConfig : ex.getConfigs("attachments")) {
+                String template = attachmentConfig.getString("template");
+                try {
+                    Content.Generator attachment = content.generator();
+                    if (attachmentConfig.hasPath("encoding")) {
+                        attachment.encoding(attachmentConfig.getString("encoding"));
+                    }
+                    attachment.useTemplate(template);
+                    attachment.applyContext(context);
+                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+                    attachment.generateTo(out);
+                    out.flush();
+                    String fileName = attachmentConfig.getString("id");
+                    if (attachmentConfig.hasPath("fileName")) {
+                        fileName = content.generator()
+                                          .direct(attachmentConfig.getString("fileName"), VelocityContentHandler.VM)
+                                          .applyContext(context)
+                                          .generate();
+                    } else {
+                        int idx = fileName.lastIndexOf("-");
+                        if (idx >= 0) {
+                            fileName = fileName.substring(0, idx) + "." + fileName.substring(idx + 1);
+                        }
+                    }
+
+                    String mimeType = MimeHelper.guessMimeType(fileName);
+                    if (attachmentConfig.hasPath("contentType")) {
+                        mimeType = attachmentConfig.getString("contentType");
+                    }
+                    boolean asAlternative = false;
+                    if (attachmentConfig.hasPath("alternative")) {
+                        asAlternative = attachmentConfig.getBoolean("alternative");
+                    }
+                    Attachment att = new Attachment(fileName, mimeType, out.toByteArray(), asAlternative);
+                    if (attachmentConfig.hasPath("headers")) {
+                        for (Map.Entry<String, com.typesafe.config.ConfigValue> e : attachmentConfig.getConfig(
+                                "headers").entrySet()) {
+                            att.addHeader(e.getKey(), NLS.toMachineString(e.getValue().unwrapped()));
+                        }
+                    }
+                    addAttachment(att);
+                } catch (Throwable t) {
+                    Exceptions.handle()
+                              .to(MAIL)
+                              .error(t)
+                              .withSystemErrorMessage("Cannot generate attachment using template %s (%s) "
+                                                      + "when sending a mail from '%s' to '%s': %s (%s)",
+                                                      mailExtension,
+                                                      template,
+                                                      senderEmail,
+                                                      receiverEmail)
+                              .handle();
+                }
+            }
+        }
+
+        private void fillTextContent(Extension ex) {
+            textContent(content.generator()
+                               .useTemplate(ex.get("text_" + NLS.getCurrentLang()).asString(ex.get("text").asString()))
+                               .applyContext(context)
+                               .generate());
+        }
+
+        private void fillSubject(Extension ex) {
+            subject(content.generator()
+                           .direct(ex.get("subject_" + NLS.getCurrentLang())
+                                     .asString(ex.get("subject").asString("$subject")), VelocityContentHandler.VM)
+                           .applyContext(context)
+                           .generate());
+        }
+
+        private void fillHtmlContent(Extension ex) {
+            try {
+                htmlContent(content.generator()
+                                   .useTemplate(ex.get("html_" + NLS.getCurrentLang())
+                                                  .asString(ex.get("html").asString()))
+                                   .applyContext(context)
+                                   .generate());
+            } catch (Throwable e) {
+                Exceptions.handle()
+                          .to(MAIL)
+                          .error(e)
+                          .withSystemErrorMessage("Cannot generate HTML content using template %s (%s) "
+                                                  + "when sending a mail from '%s' to '%s': %s (%s)",
+                                                  mailExtension,
+                                                  ex.get("html_" + NLS.getCurrentLang())
+                                                    .asString(ex.get("html").asString()),
+                                                  senderEmail,
+                                                  receiverEmail)
+                          .handle();
+            }
+        }
+
+        private Extension findMailExtension() {
+            Extension ex = Extensions.getExtension("mail.templates", mailExtension);
+            if (ex == null) {
+                throw Exceptions.handle()
+                                .withSystemErrorMessage(
+                                        "Unknown mail extension: %s. Cannot send mail from: '%s' to '%s'",
+                                        mailExtension,
+                                        senderEmail,
+                                        receiverEmail)
+                                .handle();
+            }
+            return ex;
+        }
+
         public MailSender from(String senderEmail, String senderName) {
             return fromEmail(senderEmail).fromName(senderName);
         }
@@ -714,6 +735,10 @@ public class MailService implements MetricProvider {
 
         private MailSender mail;
         private SMTPConfiguration config;
+        private boolean success = false;
+        private String messageId = null;
+        private String technicalSender;
+        private String technicalSenderName;
 
         private SendMailTask(MailSender mail, SMTPConfiguration config) {
             this.mail = mail;
@@ -722,97 +747,12 @@ public class MailService implements MetricProvider {
 
         @Override
         public void run() {
-            boolean success = false;
-            String messageId = null;
-            String technicalSender = config.getMailSender();
-            String technicalSenderName = config.getMailSenderName();
-            if (Strings.isEmpty(technicalSender)) {
-                technicalSender = defaultConfig.getMailSender();
-                technicalSenderName = defaultConfig.getMailSenderName();
-            }
+            determineTechnicalSender();
             Operation op = Operation.create("mail",
                                             () -> "Sending eMail: " + mail.subject + " to: " + mail.receiverEmail,
                                             Duration.ofSeconds(30));
             try {
-                try {
-                    MAIL.FINE("Sending eMail: " + mail.subject + " to: " + mail.receiverEmail);
-                    Session session = getMailSession(config);
-                    Transport transport = getSMTPTransport(session, config);
-                    try {
-                        try {
-                            SMTPMessage msg = new SMTPMessage(session);
-                            msg.setSubject(mail.subject);
-                            msg.setRecipients(Message.RecipientType.TO,
-                                              new InternetAddress[]{new InternetAddress(mail.receiverEmail,
-                                                                                        mail.receiverName)});
-                            if (Strings.isFilled(mail.senderEmail)) {
-                                if (config.isUseSenderAndEnvelopeFrom()) {
-                                    msg.setSender(new InternetAddress(technicalSender, technicalSenderName));
-                                }
-                                msg.setFrom(new InternetAddress(mail.senderEmail, mail.senderName));
-                            } else {
-                                msg.setFrom(new InternetAddress(technicalSender, technicalSenderName));
-                            }
-                            if (Strings.isFilled(mail.html) || !mail.attachments.isEmpty()) {
-                                MimeMultipart content = createContent(mail.text, mail.html, mail.attachments);
-                                msg.setContent(content);
-                                msg.setHeader(CONTENT_TYPE, content.getContentType());
-                            } else {
-                                if (mail.text != null) {
-                                    msg.setText(mail.text);
-                                } else {
-                                    msg.setText("");
-                                }
-                            }
-                            if (config.isUseSenderAndEnvelopeFrom()) {
-                                msg.setEnvelopeFrom(Strings.isFilled(config.getMailSender()) ?
-                                                    config.getMailSender() :
-                                                    defaultConfig.getMailSender());
-                            }
-                            msg.setHeader(MIME_VERSION, MIME_VERSION_1_0);
-                            if (Strings.isFilled(mail.bounceToken)) {
-                                msg.setHeader(X_BOUNCETOKEN, mail.bounceToken);
-                            }
-                            msg.setHeader(X_MAILER, mailer);
-                            for (Map.Entry<String, String> e : mail.headers.entrySet()) {
-                                if (Strings.isEmpty(e.getValue())) {
-                                    msg.removeHeader(e.getKey());
-                                } else {
-                                    msg.setHeader(e.getKey(), e.getValue());
-                                }
-                            }
-                            msg.setSentDate(new Date());
-                            transport.sendMessage(msg, msg.getAllRecipients());
-                            messageId = msg.getMessageID();
-                            success = true;
-                        } catch (Throwable e) {
-                            throw Exceptions.handle()
-                                            .withSystemErrorMessage(
-                                                    "Cannot send mail to %s from %s with subject '%s': %s (%s)",
-                                                    mail.receiverEmail,
-                                                    mail.senderEmail,
-                                                    mail.subject)
-                                            .to(MAIL)
-                                            .error(e)
-                                            .handle();
-                        }
-                    } finally {
-                        transport.close();
-                    }
-                } catch (HandledException e) {
-                    throw e;
-                } catch (Throwable e) {
-                    // If we have no host to use as sender - don't complain too much...
-                    Exceptions.ErrorHandler handler =
-                            Strings.isFilled(config.getMailHost()) ? Exceptions.handle() : Exceptions.createHandled();
-                    throw handler.withSystemErrorMessage(
-                            "Invalid mail configuration: %s (Host: %s, Port: %s, User: %s, Password used: %s)",
-                            e.getMessage(),
-                            config.getMailHost(),
-                            config.getMailPort(),
-                            config.getMailUser(),
-                            Strings.isFilled(config.getMailPassword())).to(MAIL).error(e).handle();
-                }
+                sendMail();
             } finally {
                 Operation.release(op);
                 if (logs.isEmpty()) {
@@ -844,6 +784,106 @@ public class MailService implements MetricProvider {
                         }
                     }
                 }
+            }
+        }
+
+        private void sendMail() {
+            try {
+                MAIL.FINE("Sending eMail: " + mail.subject + " to: " + mail.receiverEmail);
+                Session session = getMailSession(config);
+                Transport transport = getSMTPTransport(session, config);
+                try {
+                    try {
+                        SMTPMessage msg = createMessage(session);
+                        transport.sendMessage(msg, msg.getAllRecipients());
+                        messageId = msg.getMessageID();
+                        success = true;
+                    } catch (Throwable e) {
+                        throw Exceptions.handle()
+                                        .withSystemErrorMessage(
+                                                "Cannot send mail to %s from %s with subject '%s': %s (%s)",
+                                                mail.receiverEmail,
+                                                mail.senderEmail,
+                                                mail.subject)
+                                        .to(MAIL)
+                                        .error(e)
+                                        .handle();
+                    }
+                } finally {
+                    transport.close();
+                }
+            } catch (HandledException e) {
+                throw e;
+            } catch (Throwable e) {
+                // If we have no host to use as sender - don't complain too much...
+                Exceptions.ErrorHandler handler =
+                        Strings.isFilled(config.getMailHost()) ? Exceptions.handle() : Exceptions.createHandled();
+                throw handler.withSystemErrorMessage(
+                        "Invalid mail configuration: %s (Host: %s, Port: %s, User: %s, Password used: %s)",
+                        e.getMessage(),
+                        config.getMailHost(),
+                        config.getMailPort(),
+                        config.getMailUser(),
+                        Strings.isFilled(config.getMailPassword())).to(MAIL).error(e).handle();
+            }
+        }
+
+        private SMTPMessage createMessage(Session session) throws Exception {
+            SMTPMessage msg = new SMTPMessage(session);
+            msg.setSubject(mail.subject);
+            msg.setRecipients(Message.RecipientType.TO,
+                              new InternetAddress[]{new InternetAddress(mail.receiverEmail,
+                                                                        mail.receiverName)});
+            setupSender(msg);
+            if (Strings.isFilled(mail.html) || !mail.attachments.isEmpty()) {
+                MimeMultipart content = createContent(mail.text, mail.html, mail.attachments);
+                msg.setContent(content);
+                msg.setHeader(CONTENT_TYPE, content.getContentType());
+            } else {
+                if (mail.text != null) {
+                    msg.setText(mail.text);
+                } else {
+                    msg.setText("");
+                }
+            }
+            msg.setHeader(MIME_VERSION, MIME_VERSION_1_0);
+            if (Strings.isFilled(mail.bounceToken)) {
+                msg.setHeader(X_BOUNCETOKEN, mail.bounceToken);
+            }
+            msg.setHeader(X_MAILER, mailer);
+            for (Map.Entry<String, String> e : mail.headers.entrySet()) {
+                if (Strings.isEmpty(e.getValue())) {
+                    msg.removeHeader(e.getKey());
+                } else {
+                    msg.setHeader(e.getKey(), e.getValue());
+                }
+            }
+            msg.setSentDate(new Date());
+            return msg;
+        }
+
+        private void setupSender(SMTPMessage msg) throws MessagingException, UnsupportedEncodingException {
+            if (Strings.isFilled(mail.senderEmail)) {
+                if (config.isUseSenderAndEnvelopeFrom()) {
+                    msg.setSender(new InternetAddress(technicalSender, technicalSenderName));
+                }
+                msg.setFrom(new InternetAddress(mail.senderEmail, mail.senderName));
+            } else {
+                msg.setFrom(new InternetAddress(technicalSender, technicalSenderName));
+            }
+            if (config.isUseSenderAndEnvelopeFrom()) {
+                msg.setEnvelopeFrom(Strings.isFilled(config.getMailSender()) ?
+                                    config.getMailSender() :
+                                    defaultConfig.getMailSender());
+            }
+        }
+
+        private void determineTechnicalSender() {
+            technicalSender = config.getMailSender();
+            technicalSenderName = config.getMailSenderName();
+            if (Strings.isEmpty(technicalSender)) {
+                technicalSender = defaultConfig.getMailSender();
+                technicalSenderName = defaultConfig.getMailSenderName();
             }
         }
 

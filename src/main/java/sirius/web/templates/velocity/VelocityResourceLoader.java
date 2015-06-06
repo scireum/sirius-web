@@ -31,8 +31,6 @@ public class VelocityResourceLoader extends ResourceLoader {
     @Part
     private static Content content;
 
-    public static final VelocityResourceLoader INSTANCE = new VelocityResourceLoader();
-
     @Override
     public long getLastModified(Resource resource) {
         return getLastModified(resource.getName());

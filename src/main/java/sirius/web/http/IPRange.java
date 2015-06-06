@@ -173,7 +173,6 @@ public class IPRange {
          * Use compile to create a set of ranges.
          */
         private RangeSet() {
-
         }
 
         /**

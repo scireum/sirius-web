@@ -56,34 +56,7 @@ public class ConsoleService implements StructuredService {
             if (cmd == null) {
                 pw.println(Strings.apply("Unknown command: %s", command));
             } else {
-                cmd.execute(new Command.Output() {
-                    @Override
-                    public PrintWriter getWriter() {
-                        return pw;
-                    }
-
-                    @Override
-                    public Command.Output blankLine() {
-                        pw.println();
-                        return this;
-                    }
-
-                    @Override
-                    public Command.Output line(String contents) {
-                        pw.println(contents);
-                        return this;
-                    }
-
-                    @Override
-                    public Command.Output separator() {
-                        return line("--------------------------------------------------------------------------------");
-                    }
-
-                    @Override
-                    public Command.Output apply(String format, Object... columns) {
-                        return line(Strings.apply(format, columns));
-                    }
-                }, strParams);
+                cmd.execute(new CommandOutput(pw), strParams);
                 pw.println(w.duration());
             }
             pw.println();
@@ -96,6 +69,41 @@ public class ConsoleService implements StructuredService {
             out.endObject();
         } finally {
             out.endResult();
+        }
+    }
+
+    private static class CommandOutput implements Command.Output {
+        private final PrintWriter pw;
+
+        private CommandOutput(PrintWriter pw) {
+            this.pw = pw;
+        }
+
+        @Override
+        public PrintWriter getWriter() {
+            return pw;
+        }
+
+        @Override
+        public Command.Output blankLine() {
+            pw.println();
+            return this;
+        }
+
+        @Override
+        public Command.Output line(String contents) {
+            pw.println(contents);
+            return this;
+        }
+
+        @Override
+        public Command.Output separator() {
+            return line("--------------------------------------------------------------------------------");
+        }
+
+        @Override
+        public Command.Output apply(String format, Object... columns) {
+            return line(Strings.apply(format, columns));
         }
     }
 }

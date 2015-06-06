@@ -213,61 +213,18 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                 latencyWatch = Watch.start();
             }
             if (msg instanceof HttpRequest) {
-                // Reset stats
-                bytesIn = 0;
-                bytesOut = 0;
-                inboundLatency.getAndClearAverage();
-                processLatency.getAndClearAverage();
-                handleRequest(ctx, (HttpRequest) msg);
+                channelReadRequest(ctx, (HttpRequest) msg);
             } else if (msg instanceof LastHttpContent) {
-                try {
-                    if (currentRequest == null) {
-                        WebServer.LOG.FINE("Ignoring CHUNK without request: " + msg);
-                        return;
-                    }
-                    if (currentContext.contentHandler != null) {
-                        currentContext.contentHandler.handle(((HttpContent) msg).content(), true);
-                    } else {
-                        processContent(ctx, (HttpContent) msg);
-                    }
-                } finally {
-                    ((HttpContent) msg).release();
-                }
-                if (!preDispatched) {
-                    dispatch();
-                }
+                channelReadLastHttpContent(ctx, msg);
             } else if (msg instanceof HttpContent) {
-                try {
-                    if (currentRequest == null) {
-                        WebServer.LOG.FINE("Ignoring CHUNK without request: " + msg);
-                        return;
-                    }
-                    if (currentRequest.getMethod() != HttpMethod.POST && currentRequest.getMethod() != HttpMethod.PUT) {
-                        currentContext.respondWith()
-                                      .error(HttpResponseStatus.BAD_REQUEST, "Only POST or PUT may sent chunked data");
-                        currentRequest = null;
-                        return;
-                    }
-                    WebServer.chunks++;
-                    if (WebServer.chunks < 0) {
-                        WebServer.chunks = 0;
-                    }
-                    if (currentContext.contentHandler != null) {
-                        currentContext.contentHandler.handle(((HttpContent) msg).content(), false);
-                    } else {
-                        processContent(ctx, (HttpContent) msg);
-                    }
-                } finally {
-                    ((HttpContent) msg).release();
-                }
+                channelReadHttpContent(ctx, msg);
             }
         } catch (Throwable t) {
+            String errorMessage = Exceptions.handle(WebServer.LOG, t).getMessage();
             if (currentRequest != null && currentContext != null) {
                 try {
                     if (!currentContext.responseCompleted) {
-                        currentContext.respondWith()
-                                      .error(HttpResponseStatus.BAD_REQUEST,
-                                             Exceptions.handle(WebServer.LOG, t).getMessage());
+                        currentContext.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, errorMessage);
                     }
                 } catch (Exception e) {
                     Exceptions.ignore(e);
@@ -277,6 +234,83 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             ctx.channel().close();
         }
         processLatency.addValue(latencyWatch.elapsed(TimeUnit.MILLISECONDS, true));
+    }
+
+    private void channelReadHttpContent(ChannelHandlerContext ctx, Object msg) throws IOException {
+        try {
+            if (currentRequest == null) {
+                WebServer.LOG.FINE("Ignoring CHUNK without request: " + msg);
+                return;
+            }
+            WebServer.chunks++;
+            if (WebServer.chunks < 0) {
+                WebServer.chunks = 0;
+            }
+            if (currentContext.contentHandler != null) {
+                currentContext.contentHandler.handle(((HttpContent) msg).content(), false);
+            } else {
+                processContent(ctx, (HttpContent) msg);
+            }
+        } finally {
+            ((HttpContent) msg).release();
+        }
+    }
+
+    private void channelReadLastHttpContent(ChannelHandlerContext ctx, Object msg) throws Exception {
+        if (msg != LastHttpContent.EMPTY_LAST_CONTENT) {
+            channelReadHttpContent(ctx, msg);
+        }
+        if (!preDispatched) {
+            if (WebContext.corsAllowAll && isPreflightRequest()) {
+                handlePreflightRequest();
+            } else {
+                dispatch();
+            }
+        }
+    }
+
+    private void handlePreflightRequest() {
+        currentContext.respondWith()
+                      .setHeader(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_METHODS, "GET,PUT,POST,DELETE")
+                      .setHeader(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_HEADERS,
+                                 currentRequest.headers().get(HttpHeaders.Names.ACCESS_CONTROL_REQUEST_HEADERS))
+                      .status(HttpResponseStatus.OK);
+    }
+
+    private boolean isPreflightRequest() {
+        if (currentRequest != null && HttpMethod.OPTIONS != currentRequest.getMethod()) {
+            return false;
+        }
+
+        HttpHeaders headers = currentRequest.headers();
+        if (!headers.contains(HttpHeaders.Names.ORIGIN)) {
+            return false;
+        }
+
+        if (!headers.contains(HttpHeaders.Names.ACCESS_CONTROL_REQUEST_METHOD)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private void channelReadRequest(ChannelHandlerContext ctx, HttpRequest msg) {
+        // Reset stats
+        bytesIn = 0;
+        bytesOut = 0;
+        inboundLatency.getAndClearAverage();
+        processLatency.getAndClearAverage();
+        WebServer.requests++;
+        if (WebServer.requests < 0) {
+            WebServer.requests = 0;
+        }
+
+        // Do some housekeeping...
+        cleanup();
+        preDispatched = false;
+        dispatched = false;
+
+        handleRequest(ctx, msg);
     }
 
     /*
@@ -297,11 +331,6 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
      */
     private void handleRequest(ChannelHandlerContext ctx, HttpRequest req) {
         try {
-            WebServer.requests++;
-            if (WebServer.requests < 0) {
-                WebServer.requests = 0;
-            }
-            cleanup();
             if (WebServer.LOG.isFINE()) {
                 WebServer.LOG.FINE("OPEN: " + req.getUri());
             }
@@ -311,65 +340,16 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                 return;
             }
             currentRequest = req;
-            preDispatched = false;
-            dispatched = false;
             currentContext = setupContext(ctx, req);
 
             try {
-                if (!WebServer.getIPFilter().isEmpty()) {
-                    if (!WebServer.getIPFilter().accepts(currentContext.getRemoteIP())) {
-                        WebServer.blocks++;
-                        if (WebServer.blocks < 0) {
-                            WebServer.blocks = 0;
-                        }
-                        if (WebServer.LOG.isFINE()) {
-                            WebServer.LOG.FINE("BLOCK: " + req.getUri());
-                        }
-                        ctx.channel().close();
-                        return;
-                    }
+                if (checkIPFilter(ctx, req)) {
+                    return;
                 }
 
-                if (HttpHeaders.is100ContinueExpected(req)) {
-                    if (WebServer.LOG.isFINE()) {
-                        WebServer.LOG.FINE("CONTINUE: " + req.getUri());
-                    }
-                    send100Continue(ctx);
-                }
+                handle100Continue(ctx, req);
 
-                if (req.getMethod() == HttpMethod.POST || req.getMethod() == HttpMethod.PUT) {
-                    preDispatched = preDispatch();
-                    if (preDispatched) {
-                        return;
-                    }
-                    String contentType = req.headers().get(HttpHeaders.Names.CONTENT_TYPE);
-                    if (Strings.isFilled(contentType) && (contentType.startsWith("multipart/form-data")
-                                                          || contentType.startsWith("application/x-www-form-urlencoded"))) {
-                        if (WebServer.LOG.isFINE()) {
-                            WebServer.LOG.FINE("POST/PUT-FORM: " + req.getUri());
-                        }
-                        HttpPostRequestDecoder postDecoder =
-                                new HttpPostRequestDecoder(WebServer.getHttpDataFactory(), req);
-                        currentContext.setPostDecoder(postDecoder);
-                    } else {
-                        if (WebServer.LOG.isFINE()) {
-                            WebServer.LOG.FINE("POST/PUT-DATA: " + req.getUri());
-                        }
-                        Attribute body = WebServer.getHttpDataFactory().createAttribute(req, "body");
-                        if (req instanceof FullHttpRequest) {
-                            body.setContent(((FullHttpRequest) req).content().retain());
-                        }
-                        currentContext.content = body;
-                    }
-                } else if (currentRequest.getMethod() != HttpMethod.GET
-                           && currentRequest.getMethod() != HttpMethod.HEAD
-                           && currentRequest.getMethod() != HttpMethod.DELETE) {
-                    currentContext.respondWith()
-                                  .error(HttpResponseStatus.BAD_REQUEST,
-                                         Strings.apply("Cannot %s as method. Use GET, POST, PUT, HEAD, DELETE",
-                                                       req.getMethod().name()));
-                    currentRequest = null;
-                }
+                processRequestMethod(req);
             } catch (Throwable t) {
                 currentContext.respondWith()
                               .error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
@@ -385,6 +365,73 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             cleanup();
             currentRequest = null;
         }
+    }
+
+    private void processRequestMethod(HttpRequest req) throws Exception {
+        if (req.getMethod() == HttpMethod.POST || req.getMethod() == HttpMethod.PUT) {
+            preDispatched = preDispatch();
+            if (!preDispatched) {
+                setupContentReceiver(req);
+            }
+        } else if (currentRequest.getMethod() != HttpMethod.GET
+                   && currentRequest.getMethod() != HttpMethod.HEAD
+                   && currentRequest.getMethod() != HttpMethod.DELETE
+                   && currentRequest.getMethod() != HttpMethod.OPTIONS) {
+            currentContext.respondWith()
+                          .error(HttpResponseStatus.BAD_REQUEST,
+                                 Strings.apply("Cannot %s as method. Use GET, POST, PUT, HEAD, DELETE, OPTIONS",
+                                               req.getMethod().name()));
+            currentRequest = null;
+        }
+    }
+
+    private void setupContentReceiver(HttpRequest req) throws IOException {
+        String contentType = req.headers().get(HttpHeaders.Names.CONTENT_TYPE);
+        if (isDecodeableContent(contentType)) {
+            if (WebServer.LOG.isFINE()) {
+                WebServer.LOG.FINE("POST/PUT-FORM: " + req.getUri());
+            }
+            HttpPostRequestDecoder postDecoder = new HttpPostRequestDecoder(WebServer.getHttpDataFactory(), req);
+            currentContext.setPostDecoder(postDecoder);
+        } else {
+            if (WebServer.LOG.isFINE()) {
+                WebServer.LOG.FINE("POST/PUT-DATA: " + req.getUri());
+            }
+            Attribute body = WebServer.getHttpDataFactory().createAttribute(req, "body");
+            if (req instanceof FullHttpRequest) {
+                body.setContent(((FullHttpRequest) req).content().retain());
+            }
+            currentContext.content = body;
+        }
+    }
+
+    private boolean isDecodeableContent(String contentType) {
+        return Strings.isFilled(contentType) && (contentType.startsWith("multipart/form-data")
+                                                 || contentType.startsWith("application/x-www-form-urlencoded"));
+    }
+
+    private void handle100Continue(ChannelHandlerContext ctx, HttpRequest req) {
+        if (HttpHeaders.is100ContinueExpected(req)) {
+            if (WebServer.LOG.isFINE()) {
+                WebServer.LOG.FINE("CONTINUE: " + req.getUri());
+            }
+            send100Continue(ctx);
+        }
+    }
+
+    private boolean checkIPFilter(ChannelHandlerContext ctx, HttpRequest req) {
+        if (!WebServer.getIPFilter().accepts(currentContext.getRemoteIP())) {
+            WebServer.blocks++;
+            if (WebServer.blocks < 0) {
+                WebServer.blocks = 0;
+            }
+            if (WebServer.LOG.isFINE()) {
+                WebServer.LOG.FINE("BLOCK: " + req.getUri());
+            }
+            ctx.channel().close();
+            return true;
+        }
+        return false;
     }
 
     /*
@@ -437,6 +484,12 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                 if (!currentContext.content.isInMemory()) {
                     File file = currentContext.content.getFile();
                     checkUploadFileLimits(file);
+                }
+            } else {
+                if (currentRequest.getMethod() != HttpMethod.POST && currentRequest.getMethod() != HttpMethod.PUT) {
+                    currentContext.respondWith()
+                                  .error(HttpResponseStatus.BAD_REQUEST, "Only POST or PUT may sent chunked data");
+                    currentRequest = null;
                 }
             }
         } catch (Throwable ex) {

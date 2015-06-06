@@ -24,32 +24,7 @@
  * Date: Sun, 04 Mar 2012 18:11:28 +0000
  */
 
-/*
 
- TODO:
- add destroy method to terminal (cmd alrady have it)
-
- add support for - $(...).each(function() { ... });
-
- $.fn.pluginname = function(options) {
- var settings = $.extend({}, $.fn.pluginname.defaultOptions, options);
-
- return this.each(function() {
- var $this = $(this);
- });
- $.fn.pluginname.defaultOptions = {
- };
- };
-
- distinguish between paused and disabled
- paused should block keydown in terminal it should disable command line
- disable
-
- if (CTRL+D && ajax-call) {
- xhr.abort();
- }
-
- */
 // return true if value is in array
 Array.prototype.has = function (val) {
     for (var i = this.length; i--;) {
@@ -1707,8 +1682,6 @@ function get_stack(caller) {
             var div, i, len;
             if (string.length > num_chars) {
                 // string can have line break
-                //var array = string.split('\n');
-                // TODO: the way it should work
                 var array = get_formatted_lines(string, num_chars);
 
                 div = $('<div></div>');

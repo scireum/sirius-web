@@ -137,9 +137,10 @@ public class OTPVerifier {
         try {
             byte[] data = new byte[8];
             long value = t;
-            for (int i = 8; i > 0; i--) {
-                value >>>= 8;
+
+            for (int i = 7; i >= 0; i--) {
                 data[i] = (byte) value;
+                value >>>= 8;
             }
 
             SecretKeySpec signKey = new SecretKeySpec(key, "HmacSHA1");

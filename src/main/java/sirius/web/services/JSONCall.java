@@ -28,7 +28,6 @@ public class JSONCall {
      * Use .to(URL) to generate an instance.
      */
     private JSONCall() {
-
     }
 
     /**

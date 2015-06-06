@@ -369,7 +369,6 @@ public class Cluster implements EveryMinute, Lifecycle {
 
     @Override
     public void awaitTermination() {
-
     }
 
     @Override

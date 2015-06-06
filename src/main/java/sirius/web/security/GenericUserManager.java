@@ -119,7 +119,6 @@ public abstract class GenericUserManager implements UserManager {
     }
 
     protected void recordUserLogin(WebContext ctx, UserInfo user) {
-
     }
 
     /*

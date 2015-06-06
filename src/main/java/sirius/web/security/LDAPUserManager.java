@@ -148,9 +148,11 @@ public class LDAPUserManager extends GenericUserManager {
     @SuppressWarnings("unchecked")
     private void extractRoles(Set<String> roles, Attributes attrs) {
         try {
-            for (NamingEnumeration<Attribute> ae = (NamingEnumeration<Attribute>) attrs.getAll(); ae.hasMore(); ) {
+            NamingEnumeration<Attribute> ae = (NamingEnumeration<Attribute>) attrs.getAll();
+            while (ae.hasMore()) {
                 Attribute attr = ae.next();
-                for (NamingEnumeration<Object> e = (NamingEnumeration<Object>) attr.getAll(); e.hasMore(); ) {
+                NamingEnumeration<Object> e = (NamingEnumeration<Object>) attr.getAll();
+                while (e.hasMore()) {
                     String value = String.valueOf(e.next());
                     LdapName name = new LdapName(value);
                     String rdn = String.valueOf(name.getRdn(name.size() - 1).getValue());

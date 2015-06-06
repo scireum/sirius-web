@@ -90,12 +90,10 @@ public class PublicUserManager extends GenericUserManager {
 
     @Override
     public void attachToSession(@Nonnull UserInfo user, @Nonnull WebContext ctx) {
-
     }
 
     @Override
     public void detachFromSession(@Nonnull UserInfo user, @Nonnull WebContext ctx) {
-
     }
 
     @Override

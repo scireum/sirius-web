@@ -317,7 +317,7 @@ public class WebServer implements Lifecycle, MetricProvider {
         }
     }
 
-    public void reportSettings() {
+    private void reportSettings() {
         LOG.INFO("Initializing netty at port %d", port);
         if (Epoll.isAvailable()) {
             LOG.INFO("Using Linux syscall EPOLL for optimal performance!");
@@ -367,7 +367,7 @@ public class WebServer implements Lifecycle, MetricProvider {
         }
     }
 
-    public ServerBootstrap createServerBootstrap(ChannelInitializer<SocketChannel> initializer) {
+    private ServerBootstrap createServerBootstrap(ChannelInitializer<SocketChannel> initializer) {
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.childOption(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024);
         bootstrap.childOption(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024);
@@ -385,7 +385,7 @@ public class WebServer implements Lifecycle, MetricProvider {
         return bootstrap;
     }
 
-    public void createHTTPChannel() {
+    private void createHTTPChannel() {
         ServerBootstrap bootstrap = createServerBootstrap(new WebServerInitializer());
         // Bind and start to accept incoming connections.
         try {
@@ -399,7 +399,7 @@ public class WebServer implements Lifecycle, MetricProvider {
         }
     }
 
-    public void createHTTPSChannel() {
+    private void createHTTPSChannel() {
         try {
             ServerBootstrap bootstrap = createServerBootstrap(new SSLWebServerInitializer());
             // Bind and start to accept incoming connections.
@@ -423,7 +423,7 @@ public class WebServer implements Lifecycle, MetricProvider {
         Response.closeAsyncClient();
     }
 
-    public void stopHTTPSChannel() {
+    private void stopHTTPSChannel() {
         try {
             if (sslChannel != null) {
                 sslChannel.close().sync();
@@ -434,7 +434,7 @@ public class WebServer implements Lifecycle, MetricProvider {
         }
     }
 
-    public void stopHTTPChannel() {
+    private void stopHTTPChannel() {
         try {
             if (channel != null) {
                 channel.close().sync();
@@ -615,6 +615,9 @@ public class WebServer implements Lifecycle, MetricProvider {
         collector.metric("http-sessions", "HTTP Sessions", sessionManager.getNumberOfSessions(), null);
     }
 
+    /**
+     * Updates the measured bandwidth of all open http(s) connections.
+     */
     @Register
     public static class BandwidthUpdater implements EveryTenSeconds {
 

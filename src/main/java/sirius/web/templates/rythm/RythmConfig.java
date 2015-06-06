@@ -53,6 +53,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Register
 public class RythmConfig implements Lifecycle {
 
+    /**
+     * Contains the logger for all rythm related output
+     */
     public static final Log LOG = Log.get("rythm");
 
     @Override

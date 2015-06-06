@@ -186,9 +186,9 @@ public class ExcelExport {
 
     private HSSFCellStyle getCellStyleForObject(Object data) {
         HSSFCellStyle style = normalStyle;
-        if ((data instanceof LocalDate || data instanceof LocalDateTime)) {
+        if (data instanceof LocalDate || data instanceof LocalDateTime) {
             style = dateStyle;
-        } else if ((data instanceof Integer || data instanceof Double || data instanceof Long)) {
+        } else if (data instanceof Integer || data instanceof Double || data instanceof Long) {
             style = numeric;
         }
         return style;
