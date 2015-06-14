@@ -260,7 +260,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         if (msg != LastHttpContent.EMPTY_LAST_CONTENT) {
             channelReadHttpContent(ctx, msg);
         }
-        if (!preDispatched) {
+        if (currentRequest != null && !preDispatched) {
             if (WebContext.corsAllowAll && isPreflightRequest()) {
                 handlePreflightRequest();
             } else {
@@ -278,7 +278,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     }
 
     private boolean isPreflightRequest() {
-        if (currentRequest != null && HttpMethod.OPTIONS != currentRequest.getMethod()) {
+        if (currentRequest == null || HttpMethod.OPTIONS != currentRequest.getMethod()) {
             return false;
         }
 
