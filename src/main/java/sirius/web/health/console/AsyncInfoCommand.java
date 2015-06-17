@@ -8,9 +8,13 @@
 
 package sirius.web.health.console;
 
-import sirius.kernel.async.Async;
 import sirius.kernel.async.AsyncExecutor;
+import sirius.kernel.async.BackgroundLoop;
 import sirius.kernel.async.Operation;
+import sirius.kernel.async.Tasks;
+import sirius.kernel.di.PartCollection;
+import sirius.kernel.di.std.Part;
+import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
 
 import javax.annotation.Nonnull;
@@ -21,6 +25,12 @@ import java.util.List;
  */
 @Register
 public class AsyncInfoCommand implements Command {
+
+    @Part
+    private Tasks tasks;
+
+    @Parts(BackgroundLoop.class)
+    private PartCollection<BackgroundLoop> loops;
 
     @Override
     public void execute(Output output, String... params) throws Exception {
@@ -33,7 +43,7 @@ public class AsyncInfoCommand implements Command {
                      "BLOCKED",
                      "DROPPED");
         output.separator();
-        for (AsyncExecutor exec : Async.getExecutors()) {
+        for (AsyncExecutor exec : tasks.getExecutors()) {
             output.apply("%-20s %8d %8d %8d %12.1f %8d %8d",
                          exec.getCategory(),
                          exec.getActiveCount(),
@@ -45,10 +55,10 @@ public class AsyncInfoCommand implements Command {
         }
         output.separator();
         output.blankLine();
-        output.apply("Background Queues");
+        output.apply("Background Loops");
         output.separator();
-        for (String worker : Async.getBackgroundWorkers()) {
-            output.line(worker);
+        for (BackgroundLoop loop : loops) {
+            output.apply("%-40s %s", loop.getName(), loop.getExecutionInfo());
         }
         output.separator();
         List<Operation> ops = Operation.getActiveOperations();

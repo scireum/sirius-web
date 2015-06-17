@@ -9,11 +9,12 @@
 package sirius.web.controller;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import sirius.kernel.async.Async;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.TaskContext;
+import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.di.Injector;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
@@ -42,6 +43,9 @@ public class ControllerDispatcher implements WebDispatcher {
 
     @Parts(Interceptor.class)
     private Collection<Interceptor> interceptors;
+
+    @Part
+    private Tasks tasks;
 
     /**
      * The priority of this controller is {@code PriorityCollector.DEFAULT_PRIORITY + 10} as it is quite complex
@@ -84,16 +88,19 @@ public class ControllerDispatcher implements WebDispatcher {
                         params.add(ish);
                         ctx.setContentHandler(ish);
                     }
-                    Async.executor("web-mvc")
-                         .fork(performRouteInOwnThread(ctx, route, params))
+                    tasks.executor("web-mvc")
                          .dropOnOverload(() -> ctx.respondWith()
                                                   .error(HttpResponseStatus.INTERNAL_SERVER_ERROR,
                                                          "Request dropped - System overload!"))
-                         .execute();
+                         .fork(performRouteInOwnThread(ctx, route, params));
                     return true;
                 }
             } catch (final Throwable e) {
-                Async.executor("web-mvc").fork(() -> handleFailure(ctx, route, e)).execute();
+                tasks.executor("web-mvc")
+                     .dropOnOverload(() -> ctx.respondWith()
+                                              .error(HttpResponseStatus.INTERNAL_SERVER_ERROR,
+                                                     "Request dropped - System overload!"))
+                     .fork(() -> handleFailure(ctx, route, e));
                 return true;
             }
         }

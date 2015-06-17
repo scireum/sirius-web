@@ -18,6 +18,7 @@ import com.google.common.io.CharStreams;
 import sirius.kernel.Lifecycle;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
@@ -31,7 +32,7 @@ import sirius.kernel.health.metrics.Metrics;
 import sirius.kernel.info.Module;
 import sirius.kernel.info.Product;
 import sirius.kernel.timer.EveryMinute;
-import sirius.web.mails.MailService;
+import sirius.web.mails.Mails;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -170,12 +171,64 @@ public class Cluster implements EveryMinute, Lifecycle {
         return clusterState;
     }
 
+    @Part
+    private Tasks tasks;
+
     /*
      * Re-computes the node and cluster state...
      */
     @Override
     public void runTimer() throws Exception {
-        // Compute local state
+        tasks.defaultExecutor().fork(this::updateClusterState);
+    }
+
+    private void updateClusterState() {
+        MetricState newNodeState = computeNodeState();
+        MetricState newClusterState = computeClusterState(newNodeState);
+        cleanNodeInfos();
+        checkClusterState(newClusterState);
+        clusterState = newClusterState;
+    }
+
+    private void checkClusterState(MetricState newClusterState) {
+        if (clusterState == MetricState.RED && newClusterState == MetricState.RED) {
+            LOG.FINE("Cluster was RED and remained RED - ensuring alert...");
+            if (inCharge(MetricState.RED)) {
+                LOG.FINE("This node is in charge of action at the bell....fire alert!");
+                alertClusterFailure(!currentlyNotifying);
+            }
+            currentlyNotifying = true;
+        } else if (clusterState == MetricState.RED && newClusterState != MetricState.RED) {
+            if (inCharge(newClusterState)) {
+                LOG.FINE("Cluster recovered");
+                HipChat.sendMessage("cluster", "Cluster is now in state: " + newClusterState, HipChat.Color.GREEN, true);
+                Slack.sendMessage("cluster", "Cluster is now in state: " + newClusterState, Slack.Color.GOOD);
+            }
+            currentlyNotifying = false;
+        }
+        LOG.FINE("Cluster check complete. Status was %s and is now %s", clusterState, newClusterState);
+    }
+
+    private void cleanNodeInfos() {
+        // Since the cluster.nodes array might contain all nodes of the cluster, we filter out or own (by name)
+        Iterator<NodeInfo> iter = getNodeInfos().iterator();
+        while (iter.hasNext()) {
+            if (Strings.areEqual(CallContext.getNodeName(), iter.next().getName())) {
+                iter.remove();
+            }
+        }
+    }
+
+    private MetricState computeClusterState(MetricState newNodeState) {
+        MetricState newClusterState = newNodeState;
+        LOG.FINE("Scanning cluster...");
+        for (NodeInfo info : getNodeInfos()) {
+            newClusterState = updateNodeStarte(newClusterState, info);
+        }
+        return newClusterState;
+    }
+
+    private MetricState computeNodeState() {
         MetricState newNodeState = MetricState.GREEN;
         for (Metric m : metrics.getMetrics()) {
             if (m.getState().ordinal() > newNodeState.ordinal()) {
@@ -195,43 +248,7 @@ public class Cluster implements EveryMinute, Lifecycle {
             }
         }
         this.nodeState = newNodeState;
-
-        // Compute cluster state
-        MetricState newClusterState = newNodeState;
-        LOG.FINE("Scanning cluster...");
-        for (NodeInfo info : getNodeInfos()) {
-            newClusterState = updateNodeStarte(newClusterState, info);
-        }
-
-        // Since the cluster.nodes array might contain all nodes of the cluster, we filter out or own (by name)
-        Iterator<NodeInfo> iter = getNodeInfos().iterator();
-        while (iter.hasNext()) {
-            if (Strings.areEqual(CallContext.getNodeName(), iter.next().getName())) {
-                iter.remove();
-            }
-        }
-
-        // Check cluster state
-        if (clusterState == MetricState.RED && newClusterState == MetricState.RED) {
-            LOG.FINE("Cluster was RED and remained RED - ensuring alert...");
-            if (inCharge(MetricState.RED)) {
-                LOG.FINE("This node is in charge of action at the bell....fire alert!");
-                alertClusterFailure(!currentlyNotifying);
-            }
-            currentlyNotifying = true;
-        } else if (clusterState == MetricState.RED && newClusterState != MetricState.RED) {
-            if (inCharge(newClusterState)) {
-                LOG.FINE("Cluster recovered");
-                HipChat.sendMessage("cluster",
-                                    "Cluster is now in state: " + newClusterState,
-                                    HipChat.Color.GREEN,
-                                    true);
-                Slack.sendMessage("cluster", "Cluster is now in state: " + newClusterState, Slack.Color.GOOD);
-            }
-            currentlyNotifying = false;
-        }
-        LOG.FINE("Cluster check complete. Status was %s and is now %s", clusterState, newClusterState);
-        clusterState = newClusterState;
+        return newNodeState;
     }
 
     public MetricState updateNodeStarte(MetricState newClusterState, NodeInfo info) {
@@ -321,7 +338,7 @@ public class Cluster implements EveryMinute, Lifecycle {
     }
 
     @Part
-    private MailService ms;
+    private Mails ms;
 
     private void alertClusterFailure(boolean firstAlert) {
         Context ctx = Context.create()

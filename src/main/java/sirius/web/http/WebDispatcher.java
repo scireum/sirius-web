@@ -26,7 +26,7 @@ package sirius.web.http;
  * until one of those returns <tt>true</tt>, to signal that the request was handled.
  * <p>
  * If a dispatcher performs serious work or any blocking IO operation. The dispatcher must complete the request
- * in another thread (using {@link sirius.kernel.async.Async#executor(String)}
+ * in another thread (using {@link sirius.kernel.async.Tasks#executor(String)}
  * <p>
  * If a dispatcher is willing to handle all incoming data (payload of a PUT or POST request) by itself - instead of
  * just accumulating this data in memory or on disk, the {@link #preDispatch(WebContext)} method must return
@@ -74,9 +74,9 @@ public interface WebDispatcher {
      * if the request is being handled, <tt>true</tt> must be returned
      * <p>
      * Note that no blocking operation must be performed in this method. For any complex interaction, a new thread
-     * should be forked using {@link sirius.kernel.async.Async#executor(String)}. Note that even
+     * should be forked using {@link sirius.kernel.async.Tasks#executor(String)}. Note that even
      * {@link Response#outputStream(io.netty.handler.codec.http.HttpResponseStatus, String)} might
-     * block sooner or later to limit heap memory usage - to fork a thread for any serious work besides checking
+     * block sooner or later to limit heap memory usage - so fork a thread for any serious work besides checking
      * responsibilities for handling requests.
      *
      * @param ctx the request to handle
