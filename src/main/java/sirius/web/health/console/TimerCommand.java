@@ -10,7 +10,7 @@ package sirius.web.health.console;
 
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
-import sirius.kernel.timer.TimerService;
+import sirius.kernel.timer.Timers;
 
 import javax.annotation.Nonnull;
 
@@ -23,7 +23,7 @@ import javax.annotation.Nonnull;
 public class TimerCommand implements Command {
 
     @Part
-    private TimerService ts;
+    private Timers ts;
 
     @Override
     public void execute(Output output, String... params) throws Exception {
