@@ -12,15 +12,15 @@ import org.rythmengine.resource.ITemplateResource;
 import org.rythmengine.resource.ResourceLoaderBase;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
-import sirius.web.templates.Content;
+import sirius.web.templates.Resources;
 
 /**
- * Adapter to use {@link Content} as resource loader.
+ * Adapter to use {@link Resources} as resource loader.
  */
 class SiriusResourceLoader extends ResourceLoaderBase {
 
     @Part
-    private static Content content;
+    private static Resources resources;
 
     @Override
     public String getResourceLoaderRoot() {
@@ -32,6 +32,6 @@ class SiriusResourceLoader extends ResourceLoaderBase {
         if (path.contains("://")) {
             path = Strings.split(path, "://").getSecond();
         }
-        return content.resolve(path).map(URLTemplateResource::new).orElse(null);
+        return resources.resolve(path).map(URLTemplateResource::new).orElse(null);
     }
 }

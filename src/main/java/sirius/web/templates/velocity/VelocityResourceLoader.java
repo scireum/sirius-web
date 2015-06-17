@@ -14,7 +14,7 @@ import org.apache.velocity.runtime.resource.Resource;
 import org.apache.velocity.runtime.resource.loader.ResourceLoader;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
-import sirius.web.templates.Content;
+import sirius.web.templates.Resources;
 import sirius.web.templates.Resolver;
 
 import java.io.InputStream;
@@ -29,7 +29,7 @@ import java.net.URLConnection;
 public class VelocityResourceLoader extends ResourceLoader {
 
     @Part
-    private static Content content;
+    private static Resources resources;
 
     @Override
     public long getLastModified(Resource resource) {
@@ -46,7 +46,7 @@ public class VelocityResourceLoader extends ResourceLoader {
         if (name == null) {
             return null;
         }
-        return content.resolve(name).map(r -> r.getUrl()).orElse(null);
+        return resources.resolve(name).map(r -> r.getUrl()).orElse(null);
     }
 
     /**
@@ -69,11 +69,11 @@ public class VelocityResourceLoader extends ResourceLoader {
                 // connect.
                 c.getInputStream().close();
             } catch (Throwable e) {
-                Content.LOG.WARN(e);
+                Resources.LOG.WARN(e);
             }
             return c.getLastModified();
         } catch (Throwable e) {
-            Exceptions.handle(Content.LOG, e);
+            Exceptions.handle(Resources.LOG, e);
             return System.currentTimeMillis();
         }
     }

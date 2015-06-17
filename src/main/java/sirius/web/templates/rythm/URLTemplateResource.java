@@ -11,7 +11,7 @@ package sirius.web.templates.rythm;
 import org.rythmengine.resource.TemplateResourceBase;
 import sirius.kernel.commons.RateLimit;
 import sirius.kernel.di.std.Part;
-import sirius.web.templates.Content;
+import sirius.web.templates.Resources;
 import sirius.web.templates.Resource;
 
 import java.util.Objects;
@@ -36,7 +36,7 @@ class URLTemplateResource extends TemplateResourceBase {
     }
 
     @Part
-    private static Content content;
+    private static Resources resources;
 
     @Override
     public String getKey() {
@@ -51,7 +51,7 @@ class URLTemplateResource extends TemplateResourceBase {
     @Override
     protected long lastModified() {
         if (checkLimit.check()) {
-            content.resolve(resource.getScopeId(), resource.getPath()).ifPresent(r -> {
+            resources.resolve(resource.getScopeId(), resource.getPath()).ifPresent(r -> {
                 if (!Objects.equals(r.getUrl(), resource.getUrl())) {
                     resource = r;
                     lastModified = System.currentTimeMillis();

@@ -13,7 +13,7 @@ import sirius.kernel.di.std.Priorized;
 import java.io.OutputStream;
 
 /**
- * Used to effectively generate the output as described by a given {@link Content.Generator}.
+ * Used to effectively generate the output as described by a given {@link Templates.Generator}.
  * <p>
  * Handlers can be registered in the component model an will be called one after another until one feels
  * responsible to generate the effective output. The order of the handlers is defined by their
@@ -22,8 +22,8 @@ import java.io.OutputStream;
  * Each handler should check if either the handler type  matches its own, or if the defined template has an
  * appropriate file extension.
  *
- * @see sirius.web.templates.Content.Generator#getHandlerType()
- * @see sirius.web.templates.Content.Generator#isTemplateEndsWith(String)
+ * @see sirius.web.templates.Templates.Generator#getHandlerType()
+ * @see sirius.web.templates.Templates.Generator#isTemplateEndsWith(String)
  */
 public interface ContentHandler extends Priorized {
 
@@ -35,5 +35,5 @@ public interface ContentHandler extends Priorized {
      * @return <tt>true</tt> if output was generated, <tt>false</tt> if the settings didn't match
      * @throws Exception if an error occurs while generating content
      */
-    boolean generate(Content.Generator generator, OutputStream out) throws Exception;
+    boolean generate(Templates.Generator generator, OutputStream out) throws Exception;
 }

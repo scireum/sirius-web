@@ -44,14 +44,15 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Microtiming;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.XMLStructuredOutput;
 import sirius.web.services.JSONStructuredOutput;
-import sirius.web.templates.Content;
 import sirius.web.templates.Resource;
+import sirius.web.templates.Resources;
 import sirius.web.templates.rythm.RythmConfig;
 
 import javax.annotation.Nullable;
@@ -155,8 +156,8 @@ public class Response {
      */
     private boolean responseChunked = false;
 
-    @sirius.kernel.di.std.Part
-    private static Content content;
+    @Part
+    private static Resources resources;
 
     /**
      * Creates a new response for the given request.
@@ -849,14 +850,14 @@ public class Response {
 
     /**
      * Tries to resolve the given name into a {@link sirius.web.templates.Resource} using
-     * the {@link sirius.web.templates.Content} lookup framework.
+     * the {@link sirius.web.templates.Resources} lookup framework.
      * <p>
      * Sends the resource found or a 404 NOT_FOUND otherwise.
      *
      * @param name the path of the resource to lookup
      */
     public void sendContent(String name) {
-        Optional<Resource> res = content.resolve(name);
+        Optional<Resource> res = resources.resolve(name);
         if (res.isPresent()) {
             try {
                 if ("file".equals(res.get().getUrl().getProtocol())) {
@@ -1374,7 +1375,7 @@ public class Response {
      * will be sent. The size of the underlying buffer will be determined by {@link #BUFFER_SIZE}.
      * <p>
      * <b>WARNING:</b> Do not used this kind of response directly from a {@link WebDispatcher}! You need to fork a
-     * new thread using {@link sirius.kernel.async.Async} as the internal workings might block in
+     * new thread using {@link sirius.kernel.async.Tasks} as the internal workings might block in
      * {@code OutputStream.write} until the message is fully written to the channel. This might lead to a deadlock
      * if the kernel buffer needs to be flushed as well (as this needs the worker thread to handle the write which is
      * blocked internally due to waiting for the chunk to be written).

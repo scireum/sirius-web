@@ -12,9 +12,9 @@ import com.google.common.base.Charsets;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
-import sirius.web.templates.Content;
 import sirius.web.templates.ContentHandler;
 import sirius.web.templates.ScriptingContext;
+import sirius.web.templates.Templates;
 
 import java.io.OutputStream;
 import java.io.StringWriter;
@@ -35,7 +35,7 @@ public class VelocityPDFContentHandler implements ContentHandler {
     public static final String PDF_VM = "pdf-vm";
 
     @Override
-    public boolean generate(Content.Generator generator, OutputStream out) throws Exception {
+    public boolean generate(Templates.Generator generator, OutputStream out) throws Exception {
         if (!PDF_VM.equals(generator.getHandlerType()) && !generator.isTemplateEndsWith(".pdf.vm")) {
             return false;
         }

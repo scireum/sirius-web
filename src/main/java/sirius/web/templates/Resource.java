@@ -169,7 +169,7 @@ public class Resource {
                     // connect.
                     c.getInputStream().close();
                 } catch (Throwable e) {
-                    Content.LOG.WARN(e);
+                    Resources.LOG.WARN(e);
                 }
                 lastModified = c.getLastModified();
             } catch (IOException e) {

@@ -12,11 +12,10 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
-import sirius.kernel.cache.Cache;
-import sirius.kernel.cache.CacheManager;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.GlobalContext;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.di.std.Register;
@@ -25,9 +24,7 @@ import sirius.kernel.extensions.Extensions;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Log;
-import sirius.web.security.UserContext;
 
-import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,8 +32,6 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Content generator which generates output based on templates.
@@ -47,7 +42,7 @@ import java.util.Optional;
  * most commonly used language for templates can be found here:
  * http://velocity.apache.org/engine/devel/vtl-reference-guide.html
  * <p>
- * The template sources are loaded via {@link #resolve(String)}. If no resolver is available or none of the
+ * The template sources are loaded via {@link Resources#resolve(String)}. If no resolver is available or none of the
  * available ones can load the template, it is tried to load the template from the classpath.
  * <p>
  * To extend the built in velocity engine, macro libraries can be enumerated in the system config under
@@ -59,8 +54,8 @@ import java.util.Optional;
  * first evaluated by velocity (expecting to generate XHTML) and then rendered to a PDF by flying saucer.
  * Alternatively the handler type <b>pdf-vm</b> can be set to ensure that this handler is picked.
  */
-@Register(classes = Content.class)
-public class Content {
+@Register(classes = Templates.class)
+public class Templates {
 
     /**
      * If a specific output encoding is required (other than the system encoding - most definitely UTF-8) a variable
@@ -73,7 +68,7 @@ public class Content {
     /*
      * Logger used by the content generator framework
      */
-    public static final Log LOG = Log.get("content-generator");
+    public static final Log LOG = Log.get("templates");
 
     /*
      * Contains all implementations of ContentHandler sorted by getPriority ascending
@@ -90,11 +85,14 @@ public class Content {
     @sirius.kernel.di.std.Context
     private GlobalContext ctx;
 
+    @Part
+    private Resources resources;
+
     /**
      * Used to generate content by either evaluating a template or directly supplied template code.
      * <p>
      * This uses a builder like pattern (a.k.a. fluent API) and requires to either call {@link #generate()} or
-     * {@link #generateTo(java.io.OutputStream)} to finally generate the content.
+     * {@link #generateTo(OutputStream)} to finally generate the content.
      */
     public class Generator {
 
@@ -146,7 +144,7 @@ public class Content {
         /**
          * Determines which template file should be used.
          * <p>
-         * The content is resolved by calling {@link #resolve(String)}.
+         * The content is resolved by calling {@link Resources#resolve(String)}.
          *
          * @param templateName the name of the template to use
          * @return the generator itself for fluent API calls
@@ -341,7 +339,7 @@ public class Content {
                                     .withSystemErrorMessage("No template was given to evaluate.")
                                     .handle();
                 }
-                URL url = resolve(templateName).map(r -> r.getUrl()).orElse(null);
+                URL url = resources.resolve(templateName).map(r -> r.getUrl()).orElse(null);
                 if (url == null) {
                     throw Exceptions.handle()
                                     .to(LOG)
@@ -369,73 +367,6 @@ public class Content {
         return result;
     }
 
-    @PriorityParts(Resolver.class)
-    private Collection<Resolver> resolvers;
-
-    /**
-     * Cache used to map a scope name and local uri to an URL pointing to a resolved content.
-     */
-    private Cache<String, Optional<Resource>> resolverCache = CacheManager.createCache("resolver-cache");
-
-    /**
-     * Tries to resolve a template or content-file into a {@link sirius.web.templates.Resource}
-     *
-     * @param uri the local name of the uri to load
-     * @return a {@link sirius.web.templates.Resource} (wrapped as resource) pointing to the requested content
-     * or an empty optional if no resource was found
-     */
-    @Nonnull
-    public Optional<Resource> resolve(@Nonnull String uri) {
-        return resolve(UserContext.getCurrentScope().getScopeId(), uri);
-    }
-
-    /**
-     * Tries to resolve a template or content-file into a {@link sirius.web.templates.Resource}
-     *
-     * @param scopeId the scope to use. Use {@link #resolve(String)} to pick the currently active scope
-     * @param uri     the local name of the uri to load
-     * @return a {@link sirius.web.templates.Resource} (wrapped as resource) pointing to the requested content
-     * or an empty optional if no resource was found
-     */
-    @Nonnull
-    public Optional<Resource> resolve(@Nonnull String scopeId, @Nonnull String uri) {
-        String lookupKey = scopeId + "://" + uri;
-        Optional<Resource> result = resolverCache.get(lookupKey);
-        if (result != null) {
-            if (Sirius.isDev()) {
-                // In dev environments, we always perform a lookup in case something changed
-                Optional<Resource> currentResult = resolveURI(scopeId, uri);
-                if (!result.isPresent()) {
-                    return currentResult;
-                }
-                if (!currentResult.isPresent() || !Objects.equals(result.get().getUrl(),
-                                                                  currentResult.get().getUrl())) {
-                    return currentResult;
-                }
-            }
-            return result;
-        }
-        result = resolveURI(scopeId, uri);
-        resolverCache.put(lookupKey, result);
-        return result;
-    }
-
-    /*
-     * Calls all available resolvers to pick the right content for the given scope and uri (without using a cache)
-     */
-    private Optional<Resource> resolveURI(String scopeId, String uri) {
-        if (!uri.startsWith("/")) {
-            uri = "/" + uri;
-        }
-        for (Resolver res : resolvers) {
-            Resource r = res.resolve(scopeId, uri);
-            if (r != null) {
-                return Optional.of(r);
-            }
-        }
-        return Optional.empty();
-    }
-
     /**
      * Returns a list of all extensions provided for the given key.
      * <p>
@@ -443,7 +374,7 @@ public class Content {
      * components. Think of a generic template containing a menu. Items can be added to this menu
      * using this mechanism.
      * <p>
-     * Internally the {@link sirius.kernel.extensions.Extensions} framework is used. Therefore all extensions
+     * Internally the {@link Extensions} framework is used. Therefore all extensions
      * for the key X have to be defined in <tt>content.extensions.X</tt> like this:
      * <pre>
      *   content.extensions {
@@ -466,9 +397,9 @@ public class Content {
      * @param key the name of the list of content extensions to retrieve
      * @return a list of templates registered for the given extension using the system config and the Extensions
      * framework
-     * @see sirius.kernel.extensions.Extensions
+     * @see Extensions
      */
-    public static List<String> getExtensions(String key) {
+    public List<String> getExtensions(String key) {
         List<String> result = Lists.newArrayList();
         for (Extension e : Extensions.getExtensions("content.extensions." + key)) {
             if (Sirius.isFrameworkEnabled(e.get("framework").asString())) {

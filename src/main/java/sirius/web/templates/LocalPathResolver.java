@@ -84,10 +84,10 @@ public class LocalPathResolver implements Resolver {
                             // If we're using the default lookup path, only report once, that it does not exist
                             // as it is not necessary at all.
                             if (baseDirFound == null) {
-                                Content.LOG.INFO(CHECK_MSG, localResourcePath, baseDir.getAbsolutePath());
+                                Resources.LOG.INFO(CHECK_MSG, localResourcePath, baseDir.getAbsolutePath());
                             }
                         } else {
-                            Content.LOG.WARN(CHECK_MSG, localResourcePath, baseDir.getAbsolutePath());
+                            Resources.LOG.WARN(CHECK_MSG, localResourcePath, baseDir.getAbsolutePath());
                         }
                     }
                     baseDirFound = baseDir.exists();

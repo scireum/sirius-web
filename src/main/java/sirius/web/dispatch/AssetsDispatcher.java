@@ -27,9 +27,10 @@ import sirius.kernel.info.Product;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 import sirius.web.security.UserContext;
-import sirius.web.templates.Content;
+import sirius.web.templates.Resources;
 import sirius.web.templates.Resolver;
 import sirius.web.templates.Resource;
+import sirius.web.templates.Templates;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -79,7 +80,7 @@ public class AssetsDispatcher implements WebDispatcher {
             Tuple<String, String> pair = Strings.split(uri, "/");
             uri = "/assets/" + pair.getSecond();
         }
-        Optional<Resource> res = content.resolve(uri);
+        Optional<Resource> res = resources.resolve(uri);
         if (res.isPresent()) {
             URL url = res.get().getUrl();
             if ("file".equals(url.getProtocol())) {
@@ -95,13 +96,13 @@ public class AssetsDispatcher implements WebDispatcher {
         // If the file is not found not is a .css file, check if we need to generate it via a .scss file
         if (uri.endsWith(".css")) {
             String scssUri = uri.substring(0, uri.length() - 4) + ".scss";
-            if (content.resolve(scssUri).isPresent()) {
+            if (resources.resolve(scssUri).isPresent()) {
                 handleSASS(ctx, uri, scssUri, scopeId);
                 return true;
             }
         }
         // If the file is non existent, check if we can generate it by using a velocity template
-        if (content.resolve(uri + ".vm").isPresent()) {
+        if (resources.resolve(uri + ".vm").isPresent()) {
             handleVM(ctx, uri, scopeId);
             return true;
         }
@@ -126,7 +127,7 @@ public class AssetsDispatcher implements WebDispatcher {
 
         @Override
         protected InputStream resolveIntoStream(String sheet) throws IOException {
-            Optional<Resource> res = content.resolve(sheet);
+            Optional<Resource> res = resources.resolve(sheet);
             if (res.isPresent()) {
                 return res.get().getUrl().openStream();
             }
@@ -135,7 +136,9 @@ public class AssetsDispatcher implements WebDispatcher {
     }
 
     @Part
-    private Content content;
+    private Resources resources;
+    @Part
+    private Templates templates;
 
     /*
      * Uses Velocity (via the content generator) to generate the desired file
@@ -144,17 +147,17 @@ public class AssetsDispatcher implements WebDispatcher {
         String cacheKey = scopeId + "-" + uri.substring(1).replaceAll("[^a-zA-Z0-9_\\.]", "_");
         File file = new File(getCacheDirFile(), cacheKey);
 
-        if (!file.exists() || file.lastModified() < content.resolve(uri + ".vm").get().getLastModified()) {
+        if (!file.exists() || file.lastModified() < resources.resolve(uri + ".vm").get().getLastModified()) {
             try {
                 if (Sirius.isDev()) {
-                    Content.LOG.INFO("Compiling: " + uri + ".vm");
+                    Resources.LOG.INFO("Compiling: " + uri + ".vm");
                 }
                 FileOutputStream out = new FileOutputStream(file, false);
-                content.generator().useTemplate(uri + ".vm").generateTo(out);
+                templates.generator().useTemplate(uri + ".vm").generateTo(out);
                 out.close();
             } catch (Throwable t) {
                 file.delete();
-                ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(Content.LOG, t));
+                ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(templates.LOG, t));
             }
         }
 
@@ -168,7 +171,7 @@ public class AssetsDispatcher implements WebDispatcher {
         String cacheKey = scopeId + "-" + cssUri.substring(1).replaceAll("[^a-zA-Z0-9_\\.]", "_");
         File file = new File(getCacheDirFile(), cacheKey);
 
-        if (!file.exists() || content.resolve(scssUri).get().getLastModified() - file.lastModified() > 5000) {
+        if (!file.exists() || resources.resolve(scssUri).get().getLastModified() - file.lastModified() > 5000) {
             if (Sirius.isDev()) {
                 SASS_LOG.INFO("Compiling: " + scssUri);
             }

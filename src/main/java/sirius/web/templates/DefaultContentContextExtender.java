@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 /**
- * Supplies the contexts of the {@link Content.Generator} with default variables.
+ * Supplies the contexts of the {@link Templates.Generator} with default variables.
  */
 @Register
 public class DefaultContentContextExtender implements ContentContextExtender {
@@ -38,7 +38,7 @@ public class DefaultContentContextExtender implements ContentContextExtender {
         context.put("version", Product.getProduct().getDetails());
         context.put("nls", NLS.class);
         context.put("strings", Strings.class);
-        context.put("log", Content.LOG);
+        context.put("log", Templates.LOG);
         context.put("helper", ContentHelper.INSTANCE);
 
         context.put("now", LocalDateTime.now());

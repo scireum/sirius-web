@@ -13,7 +13,7 @@ import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
 import sirius.kernel.Sirius;
 import sirius.kernel.health.Exceptions;
-import sirius.web.templates.Content;
+import sirius.web.templates.Templates;
 
 import java.util.Map;
 
@@ -58,7 +58,7 @@ public class VelocityHelper {
 
             return eng;
         } catch (Throwable e) {
-            throw Exceptions.handle(Content.LOG, e);
+            throw Exceptions.handle(Templates.LOG, e);
         }
     }
 }

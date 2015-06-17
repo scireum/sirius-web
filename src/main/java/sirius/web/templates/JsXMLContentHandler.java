@@ -29,7 +29,7 @@ public class JsXMLContentHandler extends JavaScriptContentHandler {
     public static final String XML_JS = "xml-js";
 
     @Override
-    public boolean generate(Content.Generator generator, OutputStream out) throws Exception {
+    public boolean generate(Templates.Generator generator, OutputStream out) throws Exception {
         if (!XML_JS.equals(generator.getHandlerType()) && !generator.isTemplateEndsWith(".xml.js")) {
             return false;
         }
