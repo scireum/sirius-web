@@ -287,11 +287,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             return false;
         }
 
-        if (!headers.contains(HttpHeaders.Names.ACCESS_CONTROL_REQUEST_METHOD)) {
-            return false;
-        }
-
-        return true;
+        return headers.contains(HttpHeaders.Names.ACCESS_CONTROL_REQUEST_METHOD);
     }
 
     private void channelReadRequest(ChannelHandlerContext ctx, HttpRequest msg) {

@@ -1329,11 +1329,8 @@ public class WebContext implements SubContext {
         if (contentAsFile == null) {
             contentAsFile = File.createTempFile("http", "");
             addFileToCleanup(contentAsFile);
-            FileOutputStream outputStream = new FileOutputStream(contentAsFile);
-            try {
+            try (FileOutputStream outputStream = new FileOutputStream(contentAsFile)) {
                 outputStream.write(content.get());
-            } finally {
-                outputStream.close();
             }
         }
         return contentAsFile;
@@ -1480,8 +1477,7 @@ public class WebContext implements SubContext {
             return false;
         }
         try {
-            Reader r = new InputStreamReader(getContent());
-            try {
+            try (Reader r = new InputStreamReader(getContent())) {
                 // Trim whitespace and detect if the first readable character is a <
                 int c;
                 while ((c = r.read()) != -1) {
@@ -1490,8 +1486,6 @@ public class WebContext implements SubContext {
                     }
                 }
                 return false;
-            } finally {
-                r.close();
             }
         } catch (HandledException e) {
             throw e;

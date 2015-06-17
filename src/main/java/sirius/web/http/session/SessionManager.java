@@ -9,6 +9,7 @@
 package sirius.web.http.session;
 
 import com.google.common.collect.Maps;
+import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Lambdas;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.PartCollection;
@@ -113,9 +114,15 @@ public class SessionManager implements EveryTenMinutes {
         return storage.getNumberOfSessions();
     }
 
+    @Part
+    private Tasks tasks;
+
     @Override
     public void runTimer() throws Exception {
-        // Remove all outdated sessions
+        tasks.defaultExecutor().fork(this::removeOutdatedSessions);
+    }
+
+    private void removeOutdatedSessions() {
         getSessions().map(k -> getSession(k).get())
                      .filter(s -> s != null)
                      .filter(s -> System.currentTimeMillis() - s.getLastAccessedTime()

@@ -55,11 +55,8 @@ public abstract class JavaScriptContentHandler implements ContentHandler {
             engine.eval(generator.getTemplateCode(), ctx);
         } else {
             engine.put(ScriptEngine.FILENAME, generator.getTemplateName());
-            Reader reader = new InputStreamReader(generator.getTemplate(), Charsets.UTF_8);
-            try {
+            try (Reader reader = new InputStreamReader(generator.getTemplate(), Charsets.UTF_8)) {
                 engine.eval(reader, ctx);
-            } finally {
-                reader.close();
             }
         }
     }
