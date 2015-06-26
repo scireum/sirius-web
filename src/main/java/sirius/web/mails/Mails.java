@@ -64,8 +64,9 @@ import java.util.Properties;
 @Register(classes = {Mails.class, MetricProvider.class})
 public class Mails implements MetricProvider {
 
+    public static final Log LOG = Log.get("mail");
+
     public static final String X_BOUNCETOKEN = "X-Bouncetoken";
-    protected static final Log MAIL = Log.get("mail");
     private static final String X_MAILER = "X-Mailer";
     private static final String MIXED = "mixed";
     private static final String TEXT_HTML_CHARSET_UTF_8 = "text/html; charset=\"UTF-8\"";
@@ -234,20 +235,20 @@ public class Mails implements MetricProvider {
      */
     public class MailSender {
 
-        private String senderEmail;
-        private String senderName;
-        private String receiverEmail;
-        private String receiverName;
-        private String subject;
-        private String mailExtension;
-        private Context context;
-        private boolean includeHTMLPart = true;
-        private String text;
-        private String html;
-        private List<DataSource> attachments = Lists.newArrayList();
-        private String bounceToken;
-        private String lang;
-        private Map<String, String> headers = Maps.newTreeMap();
+        protected String senderEmail;
+        protected String senderName;
+        protected String receiverEmail;
+        protected String receiverName;
+        protected String subject;
+        protected String mailExtension;
+        protected Context context;
+        protected boolean includeHTMLPart = true;
+        protected String text;
+        protected String html;
+        protected List<DataSource> attachments = Lists.newArrayList();
+        protected String bounceToken;
+        protected String lang;
+        protected Map<String, String> headers = Maps.newTreeMap();
 
         /**
          * Sets the language used to perform {@link sirius.kernel.nls.NLS} lookups when rendering templates.
@@ -510,8 +511,7 @@ public class Mails implements MetricProvider {
                     fill();
                     sanitize();
                     check();
-                    SendMailTask task = new SendMailTask(this, config);
-                    tasks.executor("email").fork(task);
+                    sendMailAsync(config);
                 } finally {
                     CallContext.getCurrent().setLang(tmpLang);
                 }
@@ -526,9 +526,20 @@ public class Mails implements MetricProvider {
                                         senderEmail,
                                         senderName,
                                         subject)
-                                .to(MAIL)
+                                .to(LOG)
                                 .error(e)
                                 .handle();
+            }
+        }
+
+        protected void sendMailAsync(SMTPConfiguration config) {
+            if (Strings.isEmpty(config.getMailHost())) {
+                LOG.WARN("Not going to send an email to '%s' with subject '%s' as no mail server is configured...",
+                         receiverEmail,
+                         subject);
+            } else {
+                SendMailTask task = new SendMailTask(this, config);
+                tasks.executor("email").fork(task);
             }
         }
 
@@ -541,7 +552,7 @@ public class Mails implements MetricProvider {
                 }
             } catch (Throwable e) {
                 throw Exceptions.handle()
-                                .to(MAIL)
+                                .to(LOG)
                                 .error(e)
                                 .withNLSKey("MailService.invalidReceiver")
                                 .set("address",
@@ -561,7 +572,7 @@ public class Mails implements MetricProvider {
                 }
             } catch (Throwable e) {
                 throw Exceptions.handle()
-                                .to(MAIL)
+                                .to(LOG)
                                 .error(e)
                                 .withNLSKey("MailService.invalidSender")
                                 .set("address",
@@ -618,7 +629,7 @@ public class Mails implements MetricProvider {
                                         senderEmail,
                                         senderName,
                                         subject)
-                                .to(MAIL)
+                                .to(LOG)
                                 .error(e)
                                 .handle();
             }
@@ -668,7 +679,7 @@ public class Mails implements MetricProvider {
                     addAttachment(att);
                 } catch (Throwable t) {
                     Exceptions.handle()
-                              .to(MAIL)
+                              .to(LOG)
                               .error(t)
                               .withSystemErrorMessage("Cannot generate attachment using template %s (%s) "
                                                       + "when sending a mail from '%s' to '%s': %s (%s)",
@@ -706,7 +717,7 @@ public class Mails implements MetricProvider {
                                      .generate());
             } catch (Throwable e) {
                 Exceptions.handle()
-                          .to(MAIL)
+                          .to(LOG)
                           .error(e)
                           .withSystemErrorMessage("Cannot generate HTML content using template %s (%s) "
                                                   + "when sending a mail from '%s' to '%s': %s (%s)",
@@ -768,15 +779,15 @@ public class Mails implements MetricProvider {
                 Operation.release(op);
                 if (logs.isEmpty()) {
                     if (!success) {
-                        MAIL.WARN("FAILED to send mail from: '%s' to '%s' with subject: '%s'",
-                                  Strings.isEmpty(mail.senderEmail) ? technicalSender : mail.senderEmail,
-                                  mail.receiverEmail,
-                                  mail.subject);
+                        LOG.WARN("FAILED to send mail from: '%s' to '%s' with subject: '%s'",
+                                 Strings.isEmpty(mail.senderEmail) ? technicalSender : mail.senderEmail,
+                                 mail.receiverEmail,
+                                 mail.subject);
                     } else {
-                        MAIL.FINE("Sent mail from: '%s' to '%s' with subject: '%s'",
-                                  Strings.isEmpty(mail.senderEmail) ? technicalSender : mail.senderEmail,
-                                  mail.receiverEmail,
-                                  mail.subject);
+                        LOG.FINE("Sent mail from: '%s' to '%s' with subject: '%s'",
+                                 Strings.isEmpty(mail.senderEmail) ? technicalSender : mail.senderEmail,
+                                 mail.receiverEmail,
+                                 mail.subject);
                     }
                 } else {
                     for (MailLog log : logs) {
@@ -791,7 +802,7 @@ public class Mails implements MetricProvider {
                                             mail.text,
                                             mail.html);
                         } catch (Exception e) {
-                            Exceptions.handle(MAIL, e);
+                            Exceptions.handle(LOG, e);
                         }
                     }
                 }
@@ -800,7 +811,7 @@ public class Mails implements MetricProvider {
 
         private void sendMail() {
             try {
-                MAIL.FINE("Sending eMail: " + mail.subject + " to: " + mail.receiverEmail);
+                LOG.FINE("Sending eMail: " + mail.subject + " to: " + mail.receiverEmail);
                 Session session = getMailSession(config);
                 Transport transport = getSMTPTransport(session, config);
                 try {
@@ -816,7 +827,7 @@ public class Mails implements MetricProvider {
                                                 mail.receiverEmail,
                                                 mail.senderEmail,
                                                 mail.subject)
-                                        .to(MAIL)
+                                        .to(LOG)
                                         .error(e)
                                         .handle();
                     }
@@ -826,16 +837,17 @@ public class Mails implements MetricProvider {
             } catch (HandledException e) {
                 throw e;
             } catch (Throwable e) {
-                // If we have no host to use as sender - don't complain too much...
-                Exceptions.ErrorHandler handler =
-                        Strings.isFilled(config.getMailHost()) ? Exceptions.handle() : Exceptions.createHandled();
-                throw handler.withSystemErrorMessage(
-                        "Invalid mail configuration: %s (Host: %s, Port: %s, User: %s, Password used: %s)",
-                        e.getMessage(),
-                        config.getMailHost(),
-                        config.getMailPort(),
-                        config.getMailUser(),
-                        Strings.isFilled(config.getMailPassword())).to(MAIL).error(e).handle();
+                throw Exceptions.handle()
+                                .withSystemErrorMessage(
+                                        "Invalid mail configuration: %s (Host: %s, Port: %s, User: %s, Password used: %s)",
+                                        e.getMessage(),
+                                        config.getMailHost(),
+                                        config.getMailPort(),
+                                        config.getMailUser(),
+                                        Strings.isFilled(config.getMailPassword()))
+                                .to(LOG)
+                                .error(e)
+                                .handle();
             }
         }
 
@@ -1030,7 +1042,7 @@ public class Mails implements MetricProvider {
                                     config.getMailPort(),
                                     config.getMailUser(),
                                     Strings.isFilled(config.getMailPassword()))
-                            .to(MAIL)
+                            .to(LOG)
                             .error(e)
                             .handle();
         }
