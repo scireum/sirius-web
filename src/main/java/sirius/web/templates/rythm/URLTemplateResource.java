@@ -11,8 +11,8 @@ package sirius.web.templates.rythm;
 import org.rythmengine.resource.TemplateResourceBase;
 import sirius.kernel.commons.RateLimit;
 import sirius.kernel.di.std.Part;
-import sirius.web.templates.Resources;
 import sirius.web.templates.Resource;
+import sirius.web.templates.Resources;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -56,6 +56,7 @@ class URLTemplateResource extends TemplateResourceBase {
                     resource = r;
                     lastModified = System.currentTimeMillis();
                 }
+                lastModified = Math.max(lastModified, resource.getLastModified());
             });
         }
 
