@@ -15,7 +15,7 @@
  * {@link sirius.web.http.Response#template(String, Object...)}
  * <p>
  * Provides a content generation framework using velocity (http://velocity.apache.org) or JavaScript to generate
- * various types of outputs. This can be done by calling {@link sirius.web.templates.Content#generator()} and
+ * various types of outputs. This can be done by calling {@link sirius.web.templates.Templates#generator()} and
  * using the fluent API to control the generated output.
  */
 package sirius.web.templates;

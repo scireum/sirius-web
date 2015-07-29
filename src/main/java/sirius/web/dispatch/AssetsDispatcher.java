@@ -157,7 +157,7 @@ public class AssetsDispatcher implements WebDispatcher {
                 out.close();
             } catch (Throwable t) {
                 file.delete();
-                ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(templates.LOG, t));
+                ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(Templates.LOG, t));
             }
         }
 

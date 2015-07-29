@@ -14,7 +14,7 @@ import javax.annotation.Nonnull;
 
 /**
  * Can be supplied to the content model (using the {@link sirius.kernel.di.std.Register} annotation) in order to
- * extend (initialize) the contexts used by the {@link Content.Generator}.
+ * extend (initialize) the contexts used by the {@link Templates.Generator}.
  */
 public interface ContentContextExtender {
 
