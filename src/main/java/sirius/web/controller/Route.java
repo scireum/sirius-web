@@ -25,7 +25,6 @@ import sirius.web.security.UserContext;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.URLDecoder;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -128,11 +127,11 @@ class Route {
      */
     protected List<Object> matches(WebContext ctx, String requestedURI, boolean preDispatch) {
         try {
-            if (preDispatch && !this.preDispatchable) {
+            if (preDispatch != this.preDispatchable) {
                 return null;
             }
             Matcher m = pattern.matcher(requestedURI);
-            List<Object> result = new ArrayList<Object>(parameterTypes.length);
+            List<Object> result = Lists.newArrayListWithCapacity(parameterTypes.length);
             if (m.matches()) {
                 for (int i = 1; i <= m.groupCount(); i++) {
                     Tuple<String, Object> expr = expressions.get(i - 1);
