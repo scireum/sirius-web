@@ -329,7 +329,7 @@ public class Mails implements MetricProvider {
          *
          * @param name  the name of the header to add
          * @param value the value of the header to add
-         * @return
+         * @return the builder itself
          */
         public MailSender addHeader(String name, String value) {
             headers.put(name, value);

@@ -16,7 +16,7 @@ import javax.annotation.Nonnull;
  * Resolves a given resource name to an URL. Implementations can be registered in the component model
  * using {@link sirius.kernel.di.std.Register}.
  * <p>
- * This is used by the {@link Content#resolve(String)} to lookup resources.
+ * This is used by the {@link Resources#resolve(String)} to lookup resources.
  */
 public interface Resolver extends Priorized {
 
