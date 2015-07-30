@@ -77,9 +77,13 @@ public class ControllerDispatcher implements WebDispatcher {
     }
 
     private boolean route(final WebContext ctx, boolean preDispatch) {
+        String uri = ctx.getRequestedURI();
+        if (uri.endsWith("/") && !"/".equals(uri)) {
+            uri = uri.substring(0, uri.length() - 1);
+        }
         for (final Route route : routes) {
             try {
-                final List<Object> params = route.matches(ctx, ctx.getRequestedURI(), preDispatch);
+                final List<Object> params = route.matches(ctx, uri, preDispatch);
                 if (params != null) {
                     // If a route is pre-dispatchable we inject an InputStream as last parameter of the
                     // call. This is also checked by the route-compiler
