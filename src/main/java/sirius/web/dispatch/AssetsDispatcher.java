@@ -27,9 +27,9 @@ import sirius.kernel.info.Product;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 import sirius.web.security.UserContext;
-import sirius.web.templates.Resources;
 import sirius.web.templates.Resolver;
 import sirius.web.templates.Resource;
+import sirius.web.templates.Resources;
 import sirius.web.templates.Templates;
 
 import java.io.File;
@@ -37,6 +37,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
@@ -74,6 +75,14 @@ public class AssetsDispatcher implements WebDispatcher {
         if (!ctx.getRequest().getUri().startsWith("/assets") || HttpMethod.GET != ctx.getRequest().getMethod()) {
             return false;
         }
+        // The real dispatching is put into its own method to support inlining of this check by the JIT
+        return doDispatch(ctx);
+    }
+
+    /*
+     * Actually tries to dispatch the incoming request which starts with /assets....
+     */
+    private boolean doDispatch(WebContext ctx) throws URISyntaxException, IOException {
         String uri = ctx.getRequestedURI();
         if (uri.startsWith("/assets/dynamic")) {
             uri = uri.substring(16);

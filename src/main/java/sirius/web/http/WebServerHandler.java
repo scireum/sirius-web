@@ -48,7 +48,7 @@ import java.util.concurrent.TimeUnit;
  */
 class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnection {
 
-    protected static List<WebDispatcher> sortedDispatchers;
+    protected static WebDispatcher[] sortedDispatchers;
     private int numKeepAlive = 15;
     private HttpRequest currentRequest;
     private WebContext currentContext;

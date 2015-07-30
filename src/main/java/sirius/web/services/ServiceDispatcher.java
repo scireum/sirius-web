@@ -61,10 +61,17 @@ public class ServiceDispatcher implements WebDispatcher {
 
     @Override
     public boolean dispatch(final WebContext ctx) throws Exception {
-        // We use the translated URI because legacy /services might have been routed elsewhere.
         if (!ctx.getRequestedURI().startsWith("/service")) {
             return false;
         }
+        // The real dispatching is put into its own method to support inlining of this check by the JIT
+        return doDispatch(ctx);
+    }
+
+    /*
+     * Actually tries to dispatch the incoming request which starts with /service....
+     */
+    private boolean doDispatch(WebContext ctx) {
         String uri = ctx.getRequestedURI();
         if ("/service".equals(uri)) {
             if (ctx.get("service").isFilled()) {

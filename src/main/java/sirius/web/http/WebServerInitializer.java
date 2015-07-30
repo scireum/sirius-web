@@ -36,7 +36,7 @@ class WebServerInitializer extends ChannelInitializer<SocketChannel> {
     @ConfigValue("http.idleTimeout")
     private Duration idleTimeout;
 
-    private static List<WebDispatcher> sortedDispatchers;
+    private static WebDispatcher[] sortedDispatchers;
 
     protected WebServerInitializer() {
     }
@@ -72,13 +72,13 @@ class WebServerInitializer extends ChannelInitializer<SocketChannel> {
     /*
      * Sorts all available dispatchers by their priority ascending
      */
-    protected static List<WebDispatcher> getSortedDispatchers() {
+    protected static WebDispatcher[] getSortedDispatchers() {
         if (sortedDispatchers == null) {
             PriorityCollector<WebDispatcher> collector = PriorityCollector.create();
             for (WebDispatcher wd : dispatchers.getParts()) {
                 collector.add(wd.getPriority(), wd);
             }
-            sortedDispatchers = collector.getData();
+            sortedDispatchers = collector.getData().toArray(new WebDispatcher[collector.getData().size()]);
         }
         return sortedDispatchers;
     }
