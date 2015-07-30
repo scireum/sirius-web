@@ -8,6 +8,7 @@
 
 package sirius.web.http;
 
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -47,7 +48,7 @@ import java.util.concurrent.TimeUnit;
  */
 class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnection {
 
-    protected static List<WebDispatcher> sortedDispatchers;
+    protected static WebDispatcher[] sortedDispatchers;
     private int numKeepAlive = 15;
     private HttpRequest currentRequest;
     private WebContext currentContext;
@@ -260,11 +261,16 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         if (msg != LastHttpContent.EMPTY_LAST_CONTENT) {
             channelReadHttpContent(ctx, msg);
         }
-        if (currentRequest != null && !preDispatched) {
-            if (WebContext.corsAllowAll && isPreflightRequest()) {
-                handlePreflightRequest();
-            } else {
-                dispatch();
+        if (currentRequest != null) {
+            if (currentContext.contentHandler != null) {
+                currentContext.contentHandler.handle(Unpooled.EMPTY_BUFFER, true);
+            }
+            if (!preDispatched) {
+                if (WebContext.corsAllowAll && isPreflightRequest()) {
+                    handlePreflightRequest();
+                } else {
+                    dispatch();
+                }
             }
         }
     }

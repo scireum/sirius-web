@@ -184,4 +184,38 @@ class WebServerSpec extends BaseSpecification {
         60543 == data.length()
     }
 
+    /**
+     * Call a controller which uses predispatching
+     */
+    def "Invoke /test/presidpatch with POST"() {
+        given:
+        def HttpURLConnection u = new URL("http://localhost:9999/test/predispatch").openConnection();
+        and:
+        def testByteArray = "Hello Service".getBytes()
+        when:
+        u.setRequestMethod("POST");
+        u.setDoInput(true);
+        u.setDoOutput(true);
+        def out = u.getOutputStream();
+        for(int i = 0; i < 1024; i++) {
+            out.write(testByteArray);
+        }
+        out.close();
+        def result = new String(ByteStreams.toByteArray(u.getInputStream()), Charsets.UTF_8);
+        then:
+        String.valueOf(testByteArray.length * 1024) == result;
+    }
+
+    /**
+     * Ensure that predispatching does not trigger on GET requests
+     */
+    def "Invoke /test/presidpatch with GET"() {
+        given:
+        def HttpURLConnection u = new URL("http://localhost:9999/test/predispatch").openConnection();
+        when:
+        u.setRequestMethod("GET");
+        then:
+        u.getResponseCode() == 404;
+    }
+
 }
