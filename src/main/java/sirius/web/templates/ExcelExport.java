@@ -30,6 +30,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -127,17 +128,17 @@ public class ExcelExport {
      * @return the export itself for fluent method calls
      */
     public ExcelExport addRow(Object... row) {
-        addRow(Arrays.asList(row));
+        addRowAsList(Arrays.asList(row));
         return this;
     }
 
     /**
-     * Adds the given list of objects as a row.
+     * Adds the given collection of objects as a row.
      *
      * @param row the objects to add to the table
      * @return the export itself for fluent method calls
      */
-    public ExcelExport addRow(List<?> row) {
+    public ExcelExport addRowAsList(Collection<?> row) {
         if (row != null) {
             maxCols = Math.max(maxCols, row.size());
             int idx = 0;
