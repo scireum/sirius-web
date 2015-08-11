@@ -164,6 +164,16 @@ public class WebContext implements SubContext {
     private Map<String, String> session;
 
     /*
+     * Internal key used to keep track of the TTL of the client session cookie
+     */
+    private static final String TTL_SESSION_KEY = "_TTL";
+
+    /*
+     * Stores the effective session cookie TTL. If null "defaultSessionCookieTTL" is used.
+     */
+    private Long sessionCookieTTL;
+
+    /*
      * Determines if the client session was modified and should be re-set via a cookie
      */
     private volatile boolean sessionModified;
@@ -250,7 +260,7 @@ public class WebContext implements SubContext {
      * be deleted when the browser is closed
      */
     @ConfigValue("http.sessionCookieTTL")
-    private static Duration sessionCookieTTL;
+    private static Duration defaultSessionCookieTTL;
 
     /*
      * Shared secret used to protect the client session. If empty one will be created on startup.
@@ -557,18 +567,35 @@ public class WebContext implements SubContext {
         String encodedSession = getCookieValue(sessionCookieName);
         if (Strings.isFilled(encodedSession)) {
             Tuple<String, String> sessionInfo = Strings.split(encodedSession, ":");
-            if (Strings.areEqual(sessionInfo.getFirst(),
-                                 Hashing.sha512()
-                                        .hashString(sessionInfo.getSecond() + getSessionSecret())
-                                        .toString())) {
+            if (checkSessionDataIntegrity(sessionInfo)) {
                 QueryStringDecoder qsd = new QueryStringDecoder(encodedSession);
                 for (Map.Entry<String, List<String>> entry : qsd.parameters().entrySet()) {
-                    session.put(entry.getKey(), Iterables.getFirst(entry.getValue(), null));
+                    if (TTL_SESSION_KEY.equals(entry.getKey())) {
+                        sessionCookieTTL = Value.of(Iterables.getFirst(entry.getValue(), null)).getLong();
+                    } else {
+                        session.put(entry.getKey(), Iterables.getFirst(entry.getValue(), null));
+                    }
                 }
             } else {
                 WebServer.LOG.FINE("Resetting client session due to security breach: %s", encodedSession);
             }
         }
+    }
+
+    private boolean checkSessionDataIntegrity(Tuple<String, String> sessionInfo) {
+        return Strings.areEqual(sessionInfo.getFirst(),
+                                Hashing.sha512().hashString(sessionInfo.getSecond() + getSessionSecret()).toString());
+    }
+
+    /**
+     * Sets an explicit session cookie TTL (time to live).
+     * <p>
+     * If a non null value is given, this will overwrite {@link #defaultSessionCookieTTL} for this request/response.
+     *
+     * @param customSessionCookieTTL the new TTL for the client session cookie.
+     */
+    public void setCustomSessionCookieTTL(@Nullable Duration customSessionCookieTTL) {
+        this.sessionCookieTTL = customSessionCookieTTL == null ? null : customSessionCookieTTL.getSeconds();
     }
 
     /**
@@ -978,19 +1005,34 @@ public class WebContext implements SubContext {
             setHTTPSessionCookie(serverSessionCookieName, serverSession.getId());
         }
         if (sessionModified) {
-            QueryStringEncoder encoder = new QueryStringEncoder("");
-            for (Map.Entry<String, String> e : session.entrySet()) {
-                encoder.addParam(e.getKey(), e.getValue());
-            }
-            String value = encoder.toString();
-            String protection = Hashing.sha512().hashString(value + getSessionSecret()).toString();
-            if (sessionCookieTTL.isZero()) {
-                setHTTPSessionCookie(sessionCookieName, protection + ":" + value);
+            if (session.isEmpty()) {
+                setCookie(sessionCookieName, "", -1);
             } else {
-                setCookie(sessionCookieName, protection + ":" + value, sessionCookieTTL.getSeconds());
+                QueryStringEncoder encoder = new QueryStringEncoder("");
+                for (Map.Entry<String, String> e : session.entrySet()) {
+                    encoder.addParam(e.getKey(), e.getValue());
+                }
+                if (sessionCookieTTL != null) {
+                    encoder.addParam(TTL_SESSION_KEY, String.valueOf(sessionCookieTTL));
+                }
+                String value = encoder.toString();
+                String protection = Hashing.sha512().hashString(value + getSessionSecret()).toString();
+                long ttl = determineSessionCookieTTL();
+                if (ttl == 0) {
+                    setHTTPSessionCookie(sessionCookieName, protection + ":" + value);
+                } else {
+                    setCookie(sessionCookieName, protection + ":" + value, ttl);
+                }
             }
         }
         return cookiesOut == null ? null : cookiesOut.values();
+    }
+
+    private long determineSessionCookieTTL() {
+        if (sessionCookieTTL != null) {
+            return sessionCookieTTL;
+        }
+        return defaultSessionCookieTTL.getSeconds();
     }
 
     /**
