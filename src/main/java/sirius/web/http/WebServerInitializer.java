@@ -22,7 +22,6 @@ import sirius.kernel.di.std.Parts;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
