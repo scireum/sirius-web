@@ -1222,7 +1222,8 @@ public class Response {
                 return STATE.ABORT;
             }
 
-            if (Strings.isEmpty(Response.this.headers.get(HttpHeaders.Names.CONTENT_TYPE))) {
+            Collection<Object> contentTypes = Response.this.headers.get(HttpHeaders.Names.CONTENT_TYPE);
+            if (contentTypes == null || contentTypes.isEmpty()) {
                 setContentTypeHeader(name != null ? name : url);
             }
             setDateAndCacheHeaders(lastModified, cacheSeconds == null ? HTTP_CACHE : cacheSeconds, isPrivate);
