@@ -163,7 +163,7 @@ class WebServerSpec extends BaseSpecification {
     def "Invoke /tunnel/test"() {
         given:
         def uri = "/tunnel/test";
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
+        def expectedHeaders = ['content-type': 'text/test']
         when:
         def data = callAndRead(uri, null, expectedHeaders);
         then:

@@ -8,6 +8,7 @@
 
 package sirius.web.controller;
 
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.HandledException;
@@ -23,7 +24,7 @@ public class TestController implements Controller {
 
     @Routed("/tunnel/test")
     public void tunnelTest(WebContext ctx) {
-        ctx.respondWith().tunnel("http://localhost:9999/service/json/test");
+        ctx.respondWith().setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/test").tunnel("http://localhost:9999/service/json/test");
     }
 
     @Routed("/tunnel/test_large")
