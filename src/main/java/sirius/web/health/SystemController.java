@@ -9,6 +9,7 @@
 package sirius.web.health;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Context;
 import sirius.kernel.di.std.Part;
@@ -16,6 +17,8 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.MemoryBasedHealthMonitor;
+import sirius.kernel.health.metrics.Metric;
+import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.health.metrics.Metrics;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.nls.Translation;
@@ -97,6 +100,42 @@ public class SystemController implements Controller {
     @Routed("/system/ok")
     public void ok(WebContext ctx) {
         ctx.respondWith().direct(HttpResponseStatus.OK, "OK");
+    }
+
+    @Routed("/system/monitor")
+    public void monitorNode(WebContext ctx) {
+        ctx.respondWith().direct(HttpResponseStatus.OK, cluster.getNodeState().name());
+    }
+
+    @Routed("/system/monitor/details")
+    public void monitorNodeDetails(WebContext ctx) {
+        if (cluster.getNodeState() != MetricState.GREEN) {
+            for (Metric m : metrics.getMetrics()) {
+                if (m.getState() != MetricState.GREEN && m.getState() != MetricState.GRAY) {
+                    ctx.respondWith().direct(HttpResponseStatus.OK, m.getName() + ": " + m.getValueAsString());
+                    return;
+                }
+            }
+        }
+        ctx.respondWith().direct(HttpResponseStatus.OK, cluster.getNodeState().name());
+    }
+
+    @Routed("/system/metric/:1")
+    public void metric(WebContext ctx, String key) {
+        if (cluster.getNodeState() != MetricState.GREEN) {
+            for (Metric m : metrics.getMetrics()) {
+                if (Strings.areEqual(key, m.getName())) {
+                    ctx.respondWith().direct(HttpResponseStatus.OK, NLS.toMachineString(m.getValue()));
+                    return;
+                }
+            }
+        }
+        ctx.respondWith().direct(HttpResponseStatus.OK, NLS.toMachineString(0d));
+    }
+
+    @Routed("/system/monitor/cluster")
+    public void monitorCluster(WebContext ctx) {
+        ctx.respondWith().direct(HttpResponseStatus.OK, cluster.getClusterState().name());
     }
 
     /**

@@ -201,7 +201,10 @@ public class Cluster implements EveryMinute, Lifecycle {
         } else if (clusterState == MetricState.RED && newClusterState != MetricState.RED) {
             if (inCharge(newClusterState)) {
                 LOG.FINE("Cluster recovered");
-                HipChat.sendMessage("cluster", "Cluster is now in state: " + newClusterState, HipChat.Color.GREEN, true);
+                HipChat.sendMessage("cluster",
+                                    "Cluster is now in state: " + newClusterState,
+                                    HipChat.Color.GREEN,
+                                    true);
                 Slack.sendMessage("cluster", "Cluster is now in state: " + newClusterState, Slack.Color.GOOD);
             }
             currentlyNotifying = false;
@@ -223,7 +226,7 @@ public class Cluster implements EveryMinute, Lifecycle {
         MetricState newClusterState = newNodeState;
         LOG.FINE("Scanning cluster...");
         for (NodeInfo info : getNodeInfos()) {
-            newClusterState = updateNodeStarte(newClusterState, info);
+            newClusterState = updateNodeState(newClusterState, info);
         }
         return newClusterState;
     }
@@ -244,14 +247,16 @@ public class Cluster implements EveryMinute, Lifecycle {
                                   message,
                                   m.getState() == MetricState.YELLOW ? Slack.Color.WARNING : Slack.Color.DANGER);
 
-                LOG.WARN("NodeState: Metric %s", message);
+                if (logState) {
+                    LOG.WARN("NodeState: Metric %s", message);
+                }
             }
         }
         this.nodeState = newNodeState;
         return newNodeState;
     }
 
-    public MetricState updateNodeStarte(MetricState newClusterState, NodeInfo info) {
+    public MetricState updateNodeState(MetricState newClusterState, NodeInfo info) {
         try {
             LOG.FINE("Testing node: %s", info.getEndpoint());
             URLConnection c = new URL(info.getEndpoint() + "/service/json/system/node-info").openConnection();
@@ -260,8 +265,7 @@ public class Cluster implements EveryMinute, Lifecycle {
             c.setDoInput(true);
             c.setDoOutput(false);
             try (InputStream in = c.getInputStream()) {
-                JSONObject response =
-                        JSON.parseObject(CharStreams.toString(new InputStreamReader(in, Charsets.UTF_8)));
+                JSONObject response = JSON.parseObject(CharStreams.toString(new InputStreamReader(in, Charsets.UTF_8)));
                 info.setName(response.getString("name"));
                 info.setNodeState(MetricState.valueOf(response.getString("nodeState")));
                 if (info.getNodeState().ordinal() > newClusterState.ordinal()) {
@@ -290,10 +294,12 @@ public class Cluster implements EveryMinute, Lifecycle {
             }
         } catch (Throwable t) {
             if (t instanceof IOException) {
-                LOG.WARN("Cannot reach node %s: %s (%s)",
-                         info.getEndpoint(),
-                         t.getMessage(),
-                         t.getClass().getSimpleName());
+                if (logState) {
+                    LOG.WARN("Cannot reach node %s: %s (%s)",
+                             info.getEndpoint(),
+                             t.getMessage(),
+                             t.getClass().getSimpleName());
+                }
             } else {
                 Exceptions.handle(LOG, t);
             }
