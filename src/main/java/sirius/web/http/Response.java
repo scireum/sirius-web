@@ -538,7 +538,7 @@ public class Response {
      */
     public Response addHeaderIfNotExists(String name, Object value) {
         if (!headers().contains(name)) {
-            headers.set(name, value);
+            headers().set(name, value);
         }
         return this;
     }
