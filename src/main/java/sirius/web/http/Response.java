@@ -24,6 +24,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.DefaultFileRegion;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpContent;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.FullHttpResponse;
@@ -118,7 +119,7 @@ public class Response {
     /*
      * Stores the outgoing headers to be sent
      */
-    private MultiMap<String, Object> headers;
+    private HttpHeaders headers;
 
     /*
      * Stores the max expiration of this response. A null value indicates to use the defaults suggested
@@ -186,7 +187,7 @@ public class Response {
      */
     private DefaultHttpResponse createResponse(HttpResponseStatus status, boolean keepalive) {
         DefaultHttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status);
-        if (!headers.getUnderlyingMap().containsKey(HttpHeaders.Names.CONTENT_LENGTH)) {
+        if (headers == null || !headers.contains(HttpHeaders.Names.CONTENT_LENGTH)) {
             // We cannot keepalive if the response length is unknown...
             keepalive = false;
         }
@@ -233,11 +234,7 @@ public class Response {
 
         //Apply headers
         if (headers != null) {
-            for (Map.Entry<String, Collection<Object>> e : headers.getUnderlyingMap().entrySet()) {
-                for (Object value : e.getValue()) {
-                    response.headers().add(e.getKey(), value);
-                }
-            }
+            response.headers().add(headers);
         }
 
         // Add keepalive header if required
@@ -505,11 +502,16 @@ public class Response {
      * @return <tt>this</tt> to fluently create the response
      */
     public Response setHeader(String name, Object value) {
-        if (headers == null) {
-            headers = MultiMap.create();
-        }
-        headers.set(name, value);
+        headers().set(name, value);
         return this;
+    }
+
+    private HttpHeaders headers() {
+        if (headers == null) {
+            headers = new DefaultHttpHeaders();
+        }
+
+        return headers;
     }
 
     /**
@@ -523,10 +525,7 @@ public class Response {
      * @return <tt>this</tt> to fluently create the response
      */
     public Response addHeader(String name, Object value) {
-        if (headers == null) {
-            headers = MultiMap.create();
-        }
-        headers.put(name, value);
+        headers().add(name, value);
         return this;
     }
 
@@ -538,11 +537,8 @@ public class Response {
      * @return <tt>this</tt> to fluently create the response
      */
     public Response addHeaderIfNotExists(String name, Object value) {
-        if (headers == null) {
-            headers = MultiMap.create();
-        }
-        if (!headers.keySet().contains(name)) {
-            headers.put(name, value);
+        if (!headers().contains(name)) {
+            headers().set(name, value);
         }
         return this;
     }
@@ -789,12 +785,8 @@ public class Response {
      * Sets the Date and Cache headers for the HTTP Response
      */
     private void setDateAndCacheHeaders(long lastModifiedMillis, int cacheSeconds, boolean isPrivate) {
-        Set<String> keySet = null;
-        if (headers != null) {
-            keySet = headers.keySet();
-            if (keySet.contains(HttpHeaders.Names.EXPIRES) || keySet.contains(HttpHeaders.Names.CACHE_CONTROL)) {
-                return;
-            }
+        if (headers().contains(HttpHeaders.Names.EXPIRES) || headers().contains(HttpHeaders.Names.CACHE_CONTROL)) {
+            return;
         }
         SimpleDateFormat dateFormatter = getHTTPDateFormat();
 
@@ -814,7 +806,7 @@ public class Response {
         } else {
             addHeaderIfNotExists(HttpHeaders.Names.CACHE_CONTROL, HttpHeaders.Values.NO_CACHE + ", max-age=0");
         }
-        if (lastModifiedMillis > 0 && (keySet == null || !keySet.contains(HttpHeaders.Names.LAST_MODIFIED))) {
+        if (lastModifiedMillis > 0 && !headers().contains(HttpHeaders.Names.LAST_MODIFIED)) {
             addHeaderIfNotExists(HttpHeaders.Names.
                                          LAST_MODIFIED, dateFormatter.format(new Date(lastModifiedMillis)));
         }
@@ -1222,8 +1214,7 @@ public class Response {
                 return STATE.ABORT;
             }
 
-            Collection<Object> contentTypes = Response.this.headers.get(HttpHeaders.Names.CONTENT_TYPE);
-            if (contentTypes == null || contentTypes.isEmpty()) {
+            if (!headers().contains(HttpHeaders.Names.CONTENT_TYPE)) {
                 setContentTypeHeader(name != null ? name : url);
             }
             setDateAndCacheHeaders(lastModified, cacheSeconds == null ? HTTP_CACHE : cacheSeconds, isPrivate);
