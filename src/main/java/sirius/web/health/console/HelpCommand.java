@@ -14,6 +14,10 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.info.Product;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Console command which generates a help screen listing all commands.
@@ -30,7 +34,9 @@ public class HelpCommand implements Command {
         output.blankLine();
         output.apply("%-20s %s", "CMD", "DESCRIPTION");
         output.separator();
-        for (Command cmd : ctx.getParts(Command.class)) {
+        List<Command> parts = new ArrayList<>(ctx.getParts(Command.class));
+        Collections.sort(parts, Comparator.comparing(Command::getName));
+        for (Command cmd : parts) {
             output.apply("%-20s %s", cmd.getName(), cmd.getDescription());
         }
         output.separator();
