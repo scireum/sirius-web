@@ -153,7 +153,7 @@ public class AssetsDispatcher implements WebDispatcher {
      * Uses Velocity (via the content generator) to generate the desired file
      */
     private void handleVM(WebContext ctx, String uri, String scopeId) {
-        String cacheKey = scopeId + "-" + uri.substring(1).replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
+        String cacheKey = computeCacheKey(uri, scopeId);
         File file = new File(getCacheDirFile(), cacheKey);
 
         if (!file.exists() || file.lastModified() < resources.resolve(uri + ".vm").get().getLastModified()) {
@@ -176,8 +176,8 @@ public class AssetsDispatcher implements WebDispatcher {
     /*
      * Uses server-sass to compile a SASS file (.scss) into a .css file
      */
-    private void handleSASS(WebContext ctx, String cssUri, String scssUri, String scopeId) {
-        String cacheKey = scopeId + "-" + cssUri.substring(1).replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
+    private void handleSASS(WebContext ctx, String uri, String scssUri, String scopeId) {
+        String cacheKey = computeCacheKey(uri, scopeId);
         File file = new File(getCacheDirFile(), cacheKey);
 
         if (!file.exists() || resources.resolve(scssUri).get().getLastModified() - file.lastModified() > 5000) {
@@ -199,7 +199,11 @@ public class AssetsDispatcher implements WebDispatcher {
             }
         }
 
-        ctx.respondWith().named(cssUri.substring(cssUri.lastIndexOf("/") + 1)).file(file);
+        ctx.respondWith().named(uri.substring(uri.lastIndexOf("/") + 1)).file(file);
+    }
+
+    private String computeCacheKey(String uri, String scopeId) {
+        return scopeId + "-" + Strings.toSaneFileName(uri.substring(1));
     }
 
     /*
@@ -208,7 +212,7 @@ public class AssetsDispatcher implements WebDispatcher {
     private File getCacheDirFile() {
         if (cacheDirFile == null) {
             File tmpDir = new File(System.getProperty("java.io.tmpdir"),
-                                   Product.getProduct().getName().replaceAll("[^a-zA-Z0-9\\.\\-]", "_")
+                                   Strings.toSaneFileName(Product.getProduct().getName())
                                    + "_"
                                    + CallContext.getNodeName()
                                    + "_"
