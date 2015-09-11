@@ -153,7 +153,7 @@ public class AssetsDispatcher implements WebDispatcher {
      * Uses Velocity (via the content generator) to generate the desired file
      */
     private void handleVM(WebContext ctx, String uri, String scopeId) {
-        String cacheKey = scopeId + "-" + uri.substring(1).replaceAll("[^a-zA-Z0-9_\\.]", "_");
+        String cacheKey = scopeId + "-" + uri.substring(1).replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
         File file = new File(getCacheDirFile(), cacheKey);
 
         if (!file.exists() || file.lastModified() < resources.resolve(uri + ".vm").get().getLastModified()) {
@@ -177,7 +177,7 @@ public class AssetsDispatcher implements WebDispatcher {
      * Uses server-sass to compile a SASS file (.scss) into a .css file
      */
     private void handleSASS(WebContext ctx, String cssUri, String scssUri, String scopeId) {
-        String cacheKey = scopeId + "-" + cssUri.substring(1).replaceAll("[^a-zA-Z0-9_\\.]", "_");
+        String cacheKey = scopeId + "-" + cssUri.substring(1).replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
         File file = new File(getCacheDirFile(), cacheKey);
 
         if (!file.exists() || resources.resolve(scssUri).get().getLastModified() - file.lastModified() > 5000) {
@@ -208,7 +208,7 @@ public class AssetsDispatcher implements WebDispatcher {
     private File getCacheDirFile() {
         if (cacheDirFile == null) {
             File tmpDir = new File(System.getProperty("java.io.tmpdir"),
-                                   Product.getProduct().getName().replaceAll("[a-zA-Z0-9\\-]", "_")
+                                   Product.getProduct().getName().replaceAll("[^a-zA-Z0-9\\.\\-]", "_")
                                    + "_"
                                    + CallContext.getNodeName()
                                    + "_"
