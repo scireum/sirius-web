@@ -773,7 +773,9 @@ public class WebContext implements SubContext {
                         } catch (Throwable e) {
                             Exceptions.ignore(e);
                             WebServer.LOG.WARN(Strings.apply("Cannot parse X-Forwarded-For address: %s - %s (%s)",
-                                                             forwardedFor));
+                                                             forwardedFor,
+                                                             e.getMessage(),
+                                                             e.getClass().getName()));
                         }
                     }
                 }
