@@ -203,7 +203,7 @@ public class AssetsDispatcher implements WebDispatcher {
     }
 
     private String computeCacheKey(String uri, String scopeId) {
-        return scopeId + "-" + Strings.toSaneFileName(uri.substring(1));
+        return scopeId + "-" + Strings.toSaneFileName(uri.substring(1)).orElse("");
     }
 
     /*
@@ -212,7 +212,7 @@ public class AssetsDispatcher implements WebDispatcher {
     private File getCacheDirFile() {
         if (cacheDirFile == null) {
             File tmpDir = new File(System.getProperty("java.io.tmpdir"),
-                                   Strings.toSaneFileName(Product.getProduct().getName())
+                                   Strings.toSaneFileName(Product.getProduct().getName()).orElse("")
                                    + "_"
                                    + CallContext.getNodeName()
                                    + "_"
