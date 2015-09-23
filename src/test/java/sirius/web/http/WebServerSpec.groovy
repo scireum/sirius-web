@@ -197,13 +197,61 @@ class WebServerSpec extends BaseSpecification {
         u.setDoInput(true);
         u.setDoOutput(true);
         def out = u.getOutputStream();
-        for(int i = 0; i < 1024; i++) {
+        for (int i = 0; i < 1024; i++) {
             out.write(testByteArray);
         }
         out.close();
         def result = new String(ByteStreams.toByteArray(u.getInputStream()), Charsets.UTF_8);
         then:
         String.valueOf(testByteArray.length * 1024) == result;
+    }
+
+    /**
+     * Call a controller which uses POST
+     */
+    def "Invoke /test/post with POST"() {
+        given:
+        def HttpURLConnection u = new URL("http://localhost:9999/test/post").openConnection();
+        and:
+        def testString = "value=Hello";
+        when:
+        u.setRequestMethod("POST");
+        u.setRequestProperty("Content-Type",
+                "application/x-www-form-urlencoded");
+
+        u.setRequestProperty("Content-Length", Integer.toString(testString.getBytes().length));
+        u.setDoInput(true);
+        u.setDoOutput(true);
+        def out = u.getOutputStream();
+        out.write(testString.getBytes(Charsets.UTF_8));
+        out.close();
+        def result = new String(ByteStreams.toByteArray(u.getInputStream()), Charsets.UTF_8);
+        then:
+        "Hello" == result;
+    }
+
+    /**
+     * Test an empty POST
+     */
+    def "Invoke /test/post with empty POST"() {
+        given:
+        def HttpURLConnection u = new URL("http://localhost:9999/test/post").openConnection();
+        and:
+        def testString = "";
+        when:
+        u.setRequestMethod("POST");
+        u.setRequestProperty("Content-Type",
+                "application/x-www-form-urlencoded");
+
+        u.setRequestProperty("Content-Length", Integer.toString(testString.getBytes().length));
+        u.setDoInput(true);
+        u.setDoOutput(true);
+        def out = u.getOutputStream();
+            out.write(testString.getBytes(Charsets.UTF_8));
+        out.close();
+        def result = new String(ByteStreams.toByteArray(u.getInputStream()), Charsets.UTF_8);
+        then:
+        "" == result;
     }
 
     /**

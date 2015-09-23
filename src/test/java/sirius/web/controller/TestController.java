@@ -22,9 +22,18 @@ public class TestController implements Controller {
         ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error.getMessage());
     }
 
+    @Routed("/test/post")
+    public void postTest(WebContext ctx) {
+        ctx.respondWith()
+           .setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/plain")
+           .direct(HttpResponseStatus.OK, ctx.get("value").asString());
+    }
+
     @Routed("/tunnel/test")
     public void tunnelTest(WebContext ctx) {
-        ctx.respondWith().setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/test").tunnel("http://localhost:9999/service/json/test");
+        ctx.respondWith()
+           .setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/test")
+           .tunnel("http://localhost:9999/service/json/test");
     }
 
     @Routed("/tunnel/test_large")
