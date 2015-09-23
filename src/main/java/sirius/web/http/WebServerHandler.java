@@ -242,7 +242,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                 WebServer.LOG.FINE("Ignoring CHUNK without request: " + msg);
                 return;
             }
-            boolean last = msg == LastHttpContent.EMPTY_LAST_CONTENT;
+            boolean last = msg instanceof LastHttpContent;
             if (!last) {
                 WebServer.chunks++;
                 if (WebServer.chunks < 0) {
