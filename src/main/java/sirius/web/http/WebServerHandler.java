@@ -242,12 +242,15 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                 WebServer.LOG.FINE("Ignoring CHUNK without request: " + msg);
                 return;
             }
-            WebServer.chunks++;
-            if (WebServer.chunks < 0) {
-                WebServer.chunks = 0;
+            boolean last = msg == LastHttpContent.EMPTY_LAST_CONTENT;
+            if (!last) {
+                WebServer.chunks++;
+                if (WebServer.chunks < 0) {
+                    WebServer.chunks = 0;
+                }
             }
             if (currentContext.contentHandler != null) {
-                currentContext.contentHandler.handle(((HttpContent) msg).content(), false);
+                currentContext.contentHandler.handle(((HttpContent) msg).content(), last);
             } else {
                 processContent(ctx, (HttpContent) msg);
             }
@@ -486,7 +489,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                     File file = currentContext.content.getFile();
                     checkUploadFileLimits(file);
                 }
-            } else {
+            } else if (!(chunk instanceof LastHttpContent)) {
                 if (currentRequest.getMethod() != HttpMethod.POST && currentRequest.getMethod() != HttpMethod.PUT) {
                     currentContext.respondWith()
                                   .error(HttpResponseStatus.BAD_REQUEST, "Only POST or PUT may sent chunked data");
