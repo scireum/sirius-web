@@ -260,13 +260,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     }
 
     private void channelReadLastHttpContent(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (msg != LastHttpContent.EMPTY_LAST_CONTENT) {
-            channelReadHttpContent(ctx, msg);
-        }
+        channelReadHttpContent(ctx, msg);
         if (currentRequest != null) {
-            if (currentContext.contentHandler != null) {
-                currentContext.contentHandler.handle(Unpooled.EMPTY_BUFFER, true);
-            }
             if (!preDispatched) {
                 if (WebContext.corsAllowAll && isPreflightRequest()) {
                     handlePreflightRequest();
