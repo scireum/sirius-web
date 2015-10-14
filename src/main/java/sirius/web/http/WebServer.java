@@ -28,6 +28,7 @@ import io.netty.handler.codec.http.multipart.HttpDataFactory;
 import io.netty.util.ResourceLeakDetector;
 import sirius.kernel.Lifecycle;
 import sirius.kernel.Sirius;
+import sirius.kernel.async.Operation;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.ConfigValue;
@@ -43,6 +44,7 @@ import sirius.kernel.timer.EveryTenSeconds;
 import sirius.web.http.session.SessionManager;
 
 import java.net.InetSocketAddress;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ThreadFactory;
@@ -311,17 +313,23 @@ public class WebServer implements Lifecycle, MetricProvider {
         }
         reportSettings();
         configureNetty();
-        createHTTPChannel();
+        Operation.cover("web", () -> "WebServer.createHTTPChannel", Duration.ofSeconds(15), this::createHTTPChannel);
         if (ssl) {
-            createHTTPSChannel();
+            Operation.cover("web",
+                            () -> "WebServer.createHTTPSChannel",
+                            Duration.ofSeconds(15),
+                            this::createHTTPSChannel);
         }
     }
 
     private void reportSettings() {
         LOG.INFO("Initializing netty at port %d", port);
-        if (Epoll.isAvailable()) {
-            LOG.INFO("Using Linux syscall EPOLL for optimal performance!");
-        }
+        Operation.cover("web", () -> "Epoll.isAvailable", Duration.ofSeconds(15), () -> {
+            if (Epoll.isAvailable()) {
+                LOG.INFO("Using Linux syscall EPOLL for optimal performance!");
+            }
+        });
+
         if (Strings.isFilled(bindAddress)) {
             LOG.INFO("Binding netty to %s", bindAddress);
         }
@@ -341,8 +349,9 @@ public class WebServer implements Lifecycle, MetricProvider {
         DiskAttribute.deleteOnExitTemporaryFile = true;
         DiskAttribute.baseDirectory = null;
         httpDataFactory = new DefaultHttpDataFactory(uploadDiskThreshold);
-
-        eventLoop = createEventLoop(AUTOSELECT_EVENT_LOOP_SIZE, "netty-");
+        Operation.cover("web", () -> "WebServer.createEventLoop", Duration.ofSeconds(15), () -> {
+            eventLoop = createEventLoop(AUTOSELECT_EVENT_LOOP_SIZE, "netty-");
+        });
     }
 
     private static class PrefixThreadFactory implements ThreadFactory {
@@ -386,9 +395,9 @@ public class WebServer implements Lifecycle, MetricProvider {
     }
 
     private void createHTTPChannel() {
-        ServerBootstrap bootstrap = createServerBootstrap(new WebServerInitializer());
-        // Bind and start to accept incoming connections.
         try {
+            ServerBootstrap bootstrap = createServerBootstrap(new WebServerInitializer());
+            // Bind and start to accept incoming connections.
             if (Strings.isFilled(bindAddress)) {
                 channel = bootstrap.bind(new InetSocketAddress(bindAddress, port)).sync().channel();
             } else {
@@ -415,15 +424,17 @@ public class WebServer implements Lifecycle, MetricProvider {
 
     @Override
     public void stopped() {
-        stopHTTPChannel();
-        stopHTTPSChannel();
-
-        eventLoop.shutdownGracefully();
-
-        Response.closeAsyncClient();
+        Operation.cover("web", () -> "WebServer.stopHTTPChannel", Duration.ofSeconds(15), this::stopHTTPChannel);
+        Operation.cover("web", () -> "WebServer.stopHTTPSChannel", Duration.ofSeconds(15), this::stopHTTPSChannel);
+        Operation.cover("web",
+                        () -> "eventLoop.shutdownGracefully",
+                        Duration.ofSeconds(15),
+                        eventLoop::shutdownGracefully);
+        Operation.cover("web", () -> "Response.closeAsyncClient", Duration.ofSeconds(15), Response::closeAsyncClient);
     }
 
     private void stopHTTPSChannel() {
+        Operation op = Operation.create("web", () -> "stopHTTPSChannel", Duration.ofSeconds(15));
         try {
             if (sslChannel != null) {
                 sslChannel.close().sync();
@@ -431,10 +442,13 @@ public class WebServer implements Lifecycle, MetricProvider {
         } catch (InterruptedException e) {
             Exceptions.ignore(e);
             LOG.SEVERE("Interrupted while waiting for the sslChannel to shut down");
+        } finally {
+            Operation.release(op);
         }
     }
 
     private void stopHTTPChannel() {
+        Operation op = Operation.create("web", () -> "stopHTTPChannel", Duration.ofSeconds(15));
         try {
             if (channel != null) {
                 channel.close().sync();
@@ -442,6 +456,8 @@ public class WebServer implements Lifecycle, MetricProvider {
         } catch (InterruptedException e) {
             Exceptions.ignore(e);
             LOG.SEVERE("Interrupted while waiting for the channel to shut down");
+        } finally {
+            Operation.release(op);
         }
     }
 
