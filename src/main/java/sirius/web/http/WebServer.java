@@ -16,7 +16,6 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
-import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -324,11 +323,6 @@ public class WebServer implements Lifecycle, MetricProvider {
 
     private void reportSettings() {
         LOG.INFO("Initializing netty at port %d", port);
-        Operation.cover("web", () -> "Epoll.isAvailable", Duration.ofSeconds(15), () -> {
-            if (Epoll.isAvailable()) {
-                LOG.INFO("Using Linux syscall EPOLL for optimal performance!");
-            }
-        });
 
         if (Strings.isFilled(bindAddress)) {
             LOG.INFO("Binding netty to %s", bindAddress);
@@ -369,11 +363,7 @@ public class WebServer implements Lifecycle, MetricProvider {
     }
 
     private EventLoopGroup createEventLoop(int numThreads, String name) {
-        if (Epoll.isAvailable()) {
-            return new EpollEventLoopGroup(numThreads, new PrefixThreadFactory(name));
-        } else {
-            return new NioEventLoopGroup(numThreads, new PrefixThreadFactory(name));
-        }
+        return new NioEventLoopGroup(numThreads, new PrefixThreadFactory(name));
     }
 
     private ServerBootstrap createServerBootstrap(ChannelInitializer<SocketChannel> initializer) {
