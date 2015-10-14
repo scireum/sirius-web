@@ -80,6 +80,16 @@ public class UserInfo implements Adaptable {
         return lang;
     }
 
+    public boolean hasPermissions(String... permissions) {
+        for (String permission : permissions) {
+            if (!hasPermission(permission)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public boolean hasPermission(String permission) {
         if (Strings.isEmpty(permission)) {
             return true;
