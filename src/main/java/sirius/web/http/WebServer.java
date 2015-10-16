@@ -15,8 +15,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.epoll.Epoll;
-import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -379,7 +377,7 @@ public class WebServer implements Lifecycle, MetricProvider {
         // will not create "mini writes" anyway
         bootstrap.childOption(ChannelOption.TCP_NODELAY, true);
         bootstrap.group(eventLoop);
-        bootstrap.channel(Epoll.isAvailable() ? EpollServerSocketChannel.class : NioServerSocketChannel.class);
+        bootstrap.channel(NioServerSocketChannel.class);
         bootstrap.childHandler(ctx.wire(initializer));
         return bootstrap;
     }
