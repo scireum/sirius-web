@@ -742,7 +742,7 @@ public class WebContext implements SubContext {
      * @return the uri of the underlying request
      */
     public String getRequestedURI() {
-        if (requestedURI == null) {
+        if (requestedURI == null && request != null) {
             decodeQueryString();
         }
         return requestedURI;
