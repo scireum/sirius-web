@@ -1451,7 +1451,7 @@ public class Response {
             }
             if (!ctx.channel().isOpen()) {
                 open = false;
-                throw new IOException("channel closed by peer");
+                throw Exceptions.createHandled().withSystemErrorMessage("Channel closed by peer").handle();
             }
             if (!wc.responseCommitted) {
                 createResponse(last);
@@ -1474,7 +1474,9 @@ public class Response {
                     } catch (InterruptedException e) {
                         open = false;
                         ctx.channel().close();
-                        throw new IOException("Interrupted while waiting for a chunk to be written", e);
+                        throw Exceptions.createHandled()
+                                        .withSystemErrorMessage("Interrupted while waiting for a chunk to be written")
+                                        .handle();
                     }
                 }
             }
