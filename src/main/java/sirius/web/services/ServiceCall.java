@@ -43,7 +43,7 @@ public abstract class ServiceCall {
                                         .to(LOG)
                                         .error(error)
                                         .withSystemErrorMessage("Service call to '%s' failed: %s (%s)",
-                                                                ctx.getRequest().getUri())
+                                                                ctx.getRequest() == null ? "? " : ctx.getRequest().getUri())
                                         .handle();
         StructuredOutput out = createOutput();
         out.beginResult();
