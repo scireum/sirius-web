@@ -998,7 +998,7 @@ public class WebContext implements SubContext {
     }
 
     /**
-     * Removed the given cookie from the cookies sent back to the client.
+     * Removes the given cookie from the cookies sent back to the client.
      *
      * @param name the cookie to delete
      */
