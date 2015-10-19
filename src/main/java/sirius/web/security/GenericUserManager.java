@@ -24,6 +24,7 @@ import sirius.web.http.WebContext;
 import sirius.web.http.session.ServerSession;
 
 import javax.annotation.Nonnull;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -41,6 +42,16 @@ public abstract class GenericUserManager implements UserManager {
      * A SSO token might be one hour off and will still be accepted. This is defined by this constant.
      */
     protected static final long SSO_GRACE_PERIOD_IN_SECONDS = 60 * 60;
+
+    /**
+     * Defines the name used to store the user detail for cookie login storage
+     */
+    private static final String USER_COOKIE_SUFFIX = "-sirius-user";
+
+    /**
+     * Defines the name used to store the token detail for cookie login storage
+     */
+    private static final String TOKEN_COOKIE_SUFFIX = "-sirius-token";
 
     /*
      * Defines the name used to signal that the user should be stored in the server session
@@ -60,6 +71,7 @@ public abstract class GenericUserManager implements UserManager {
     protected String ssoSecret;
     protected List<String> defaultRoles;
     protected List<String> trustedRoles;
+    protected Duration loginCookieTTL;
     protected UserInfo defaultUser;
 
     @SuppressWarnings("unchecked")
@@ -72,6 +84,7 @@ public abstract class GenericUserManager implements UserManager {
         this.ssoEnabled = Strings.isFilled(ssoSecret) && config.get("ssoEnabled").asBoolean(false);
         this.defaultRoles = config.get("defaultRoles").get(List.class, Collections.emptyList());
         this.trustedRoles = config.get("trustedRoles").get(List.class, Collections.emptyList());
+        this.loginCookieTTL = config.get("loginCookieTTL").get(Duration.class, Duration.ofDays(90));
         this.defaultUser = new UserInfo(null,
                                         null,
                                         "(nobody)",
@@ -93,10 +106,13 @@ public abstract class GenericUserManager implements UserManager {
     public UserInfo bindToRequest(@Nonnull WebContext ctx) {
         UserInfo result = findUserInSession(ctx);
         if (result != null) {
-
             return result;
         }
 
+        result = loginViaCookie(ctx);
+        if (result != null) {
+            return result;
+        }
         try {
             result = loginViaUsernameAndPassword(ctx);
             if (result != null) {
@@ -119,6 +135,19 @@ public abstract class GenericUserManager implements UserManager {
     }
 
     protected void recordUserLogin(WebContext ctx, UserInfo user) {
+        if (ctx.get("recordUserLogin").asBoolean(false)) {
+            ctx.setCookie(scope.getScopeId() + USER_COOKIE_SUFFIX,
+                          user.getUserName().trim(),
+                          loginCookieTTL.getSeconds());
+
+            String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
+            String input = computeSSOHashInput(ctx, user.getUserName().trim(), new Tuple<>(timestamp, null));
+            String challenge = getSSOHashFunction().hashBytes(input.getBytes(Charsets.UTF_8)).toString();
+
+            ctx.setCookie(scope.getScopeId() + TOKEN_COOKIE_SUFFIX,
+                          timestamp + ":" + challenge,
+                          loginCookieTTL.getSeconds());
+        }
     }
 
     /*
@@ -128,21 +157,19 @@ public abstract class GenericUserManager implements UserManager {
         if (!ssoEnabled) {
             return null;
         }
-        if (ctx.get("user").isFilled() && ctx.get("token").isFilled()) {
+        String user = ctx.get("user").trim();
+        String token = ctx.get("token").trim();
+        if (Strings.isFilled(user) && Strings.isFilled(token)) {
             ctx.hidePost();
-            String user = ctx.get("user").trim();
-            String token = ctx.get("token").trim();
 
             UserInfo result = findUserByName(ctx, user);
             if (result != null) {
                 // An SSO token is TIMESTAMP:MD5
                 Tuple<String, String> challengeResponse = Strings.split(token, ":");
                 // Verify age...
-                if (Value.of(challengeResponse.getFirst()).asLong(0)
-                    > (System.currentTimeMillis() / 1000) - SSO_GRACE_PERIOD_IN_SECONDS) {
-                    // Verify timestamp...
-                    if (getSSOHashFunction().hashBytes(computeSSOHashInput(ctx, user, challengeResponse).getBytes(
-                            Charsets.UTF_8)).toString().equals(challengeResponse.getSecond())) {
+                if (checkTokenTTL(Value.of(challengeResponse.getFirst()).asLong(0), SSO_GRACE_PERIOD_IN_SECONDS)) {
+                    // Verify hash...
+                    if (checkTokenValidity(ctx, user, challengeResponse)) {
                         log("SSO-Login of %s succeeded with token: %s", user, token);
                         return result;
                     } else {
@@ -155,6 +182,46 @@ public abstract class GenericUserManager implements UserManager {
             UserContext.message(Message.error(NLS.get("GenericUserManager.invalidSSO")));
         }
         return null;
+    }
+
+    private UserInfo loginViaCookie(WebContext ctx) {
+        String user = ctx.getCookieValue(scope.getScopeId() + USER_COOKIE_SUFFIX);
+        String token = ctx.getCookieValue(scope.getScopeId() + TOKEN_COOKIE_SUFFIX);
+
+        if (Strings.isFilled(user) && Strings.isFilled(token)) {
+            ctx.hidePost();
+
+            UserInfo result = findUserByName(ctx, user);
+            if (result != null) {
+                // The cookie token is TIMESTAMP:MD5
+                Tuple<String, String> challengeResponse = Strings.split(token, ":");
+                // Verify age...
+                if (checkTokenTTL(Value.of(challengeResponse.getFirst()).asLong(0), loginCookieTTL.getSeconds())) {
+                    // Verify hash...
+                    if (checkTokenValidity(ctx, user, challengeResponse)) {
+                        log("Cookie-Login of %s succeeded with token: %s", user, token);
+                        return result;
+                    } else {
+                        log("Cookie-Login of %s failed due to invalid hash in token: %s", user, token);
+                    }
+                } else {
+                    log("Cookie-Login of %s failed due to outdated timestamp in token: %s", user, token);
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean checkTokenTTL(long timestamp, long maxTtl) {
+        return timestamp > (System.currentTimeMillis() / 1000) - maxTtl;
+    }
+
+    private boolean checkTokenValidity(WebContext ctx, String user, Tuple<String, String> challengeResponse) {
+        return getSSOHashFunction().hashBytes(computeSSOHashInput(ctx,
+                                                                  user,
+                                                                  challengeResponse).getBytes(Charsets.UTF_8))
+                                   .toString()
+                                   .equals(challengeResponse.getSecond());
     }
 
     /**

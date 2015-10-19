@@ -55,7 +55,7 @@ public class ConfigUserManager extends GenericUserManager {
     protected UserInfo findUserByName(WebContext ctx, String user) {
         Extension e = Extensions.getExtension("security.users", user);
         if (e != null) {
-            return getUserInfo(user, e);
+            return getUserInfo(ctx, user, e);
         }
         log("Unknown user: %s", user);
         return null;
@@ -64,12 +64,11 @@ public class ConfigUserManager extends GenericUserManager {
     @Override
     protected UserInfo findUserByCredentials(WebContext ctx, String user, String password) {
         Extension e = Extensions.getExtension("security.users", user);
-        if (e != null && e.get("passwordSalt").isFilled()) {
+        if (e != null && e.get("passwordHash").isFilled()) {
             if (Hashing.md5()
                        .hashBytes((e.get("salt").asString() + password).getBytes(Charsets.UTF_8))
-                       .toString()
-                       .equals(e.get("passwordSalt").asString())) {
-                return getUserInfo(user, e);
+                       .toString().equals(e.get("passwordHash").asString())) {
+                return getUserInfo(ctx, user, e);
             }
         } else {
             if (e == null) {
@@ -86,14 +85,13 @@ public class ConfigUserManager extends GenericUserManager {
         return Extensions.getExtension("security.users", u.getUserId());
     }
 
-    private UserInfo getUserInfo(String userId, Extension e) {
+    private UserInfo getUserInfo(WebContext ctx, String userId, Extension e) {
         return new UserInfo(null,
                             null,
                             userId,
                             e.get("name").asString(),
                             e.get("email").asString(),
-                            e.get("lang").asString(null),
-                            computeRoles(null, userId),
+                            e.get("lang").asString(null), computeRoles(ctx, userId),
                             u -> e);
     }
 
