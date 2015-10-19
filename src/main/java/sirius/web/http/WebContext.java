@@ -1003,9 +1003,7 @@ public class WebContext implements SubContext {
      * @param name the cookie to delete
      */
     public void deleteCookie(@Nonnull String name) {
-        if (cookiesOut != null) {
-            cookiesOut.remove(name);
-        }
+        setCookie(name, "", -1);
     }
 
     /**
