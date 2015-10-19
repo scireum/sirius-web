@@ -64,11 +64,11 @@
                             <th>Secure</th>
                             <th>HTTP only</th>
                         </tr>
-                        @for(io.netty.handler.codec.http.Cookie cookie : call.getCookies()) {
+                        @for(io.netty.handler.codec.http.cookie.Cookie cookie : call.getCookies()) {
                         <tr>
-                            <td>@cookie.getName()</td>
+                            <td>@cookie.name()</td>
                             <td style="text-align: right; word-wrap: break-word; word-break: break-all">
-                                @cookie.getValue()
+                                @cookie.value()
                             </td>
                             <td>@cookie.isSecure()</td>
                             <td>@cookie.isHttpOnly()</td>
