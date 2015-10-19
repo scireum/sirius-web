@@ -998,6 +998,17 @@ public class WebContext implements SubContext {
     }
 
     /**
+     * Removed the given cookie from the cookies sent back to the client.
+     *
+     * @param name the cookie to delete
+     */
+    public void deleteCookie(@Nonnull String name) {
+        if (cookiesOut != null) {
+            cookiesOut.remove(name);
+        }
+    }
+
+    /**
      * Returns all cookies to be sent to the client. Used by {@link Response} to construct an appropriate header.
      *
      * @return a list of all cookies to be sent to the client.
@@ -1008,7 +1019,7 @@ public class WebContext implements SubContext {
         }
         if (sessionModified) {
             if (session.isEmpty()) {
-                setCookie(sessionCookieName, "", -1);
+                deleteCookie(sessionCookieName);
             } else {
                 QueryStringEncoder encoder = new QueryStringEncoder("");
                 for (Map.Entry<String, String> e : session.entrySet()) {

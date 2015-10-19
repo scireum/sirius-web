@@ -157,8 +157,8 @@ public class SystemController implements Controller {
     public void reset(WebContext ctx) {
         ctx.clearSession();
         ctx.getServerSession(false).ifPresent(ServerSession::invalidate);
-        ctx.setCookie("user", "", 0);
-        ctx.setCookie("token", "", 0);
+        ctx.deleteCookie("user");
+        ctx.deleteCookie("token");
         ctx.respondWith().direct(HttpResponseStatus.OK, "Session has been cleared...");
     }
 
