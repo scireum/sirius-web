@@ -39,7 +39,12 @@ public abstract class ServiceCall {
      * @param error     the exception to report
      */
     public void handle(String errorCode, Throwable error) {
-        HandledException he = Exceptions.handle(LOG, error);
+        HandledException he = Exceptions.handle()
+                                        .to(LOG)
+                                        .error(error)
+                                        .withSystemErrorMessage("Service call to '%s' failed: %s (%s)",
+                                                                ctx.getRequest().getUri())
+                                        .handle();
         StructuredOutput out = createOutput();
         out.beginResult();
         markCallFailed(out, he.getMessage());
