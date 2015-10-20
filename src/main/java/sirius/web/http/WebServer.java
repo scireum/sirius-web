@@ -302,6 +302,17 @@ public class WebServer implements Lifecycle, MetricProvider {
         return httpDataFactory;
     }
 
+    /**
+     * Determines the priority of the start of the web server. This is exposed as public so that other life cycles
+     * can determine their own priority on this.
+     */
+    public static int LIFECYCLE_PRIORITY = 500;
+
+    @Override
+    public int getPriority() {
+        return LIFECYCLE_PRIORITY;
+    }
+
     @Override
     public void started() {
         if (port <= 0) {
