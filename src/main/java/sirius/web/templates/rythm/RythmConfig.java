@@ -20,6 +20,7 @@ import sirius.kernel.health.Log;
 import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
 import sirius.web.http.WebContext;
+import sirius.web.http.WebServer;
 import sirius.web.security.UserContext;
 
 import java.io.File;
@@ -57,6 +58,11 @@ public class RythmConfig implements Lifecycle {
      * Contains the logger for all rythm related output
      */
     public static final Log LOG = Log.get("rythm");
+
+    @Override
+    public int getPriority() {
+        return WebServer.LIFECYCLE_PRIORITY - 100;
+    }
 
     @Override
     public void started() {

@@ -32,6 +32,7 @@ import sirius.kernel.health.metrics.Metrics;
 import sirius.kernel.info.Module;
 import sirius.kernel.info.Product;
 import sirius.kernel.timer.EveryMinute;
+import sirius.web.http.WebServer;
 import sirius.web.mails.Mails;
 
 import java.io.IOException;
@@ -371,6 +372,11 @@ public class Cluster implements EveryMinute, Lifecycle {
      */
     public int getNodePriority() {
         return priority;
+    }
+
+    @Override
+    public int getPriority() {
+        return WebServer.LIFECYCLE_PRIORITY + 100;
     }
 
     @Override
