@@ -235,6 +235,7 @@ public class Mails implements MetricProvider {
      */
     public class MailSender {
 
+        protected boolean simulate;
         protected String senderEmail;
         protected String senderName;
         protected String receiverEmail;
@@ -490,6 +491,20 @@ public class Mails implements MetricProvider {
          */
         public MailSender setBounceToken(String token) {
             this.bounceToken = token;
+            return this;
+        }
+
+        /**
+         * Sets the simulation flag.
+         * <p>
+         * A mail which is simulated (<tt>simulateOnly</tt> is <tt>true</tt>) will occur
+         * in the mail logs etc. but won't actually be sent.
+         *
+         * @param simulateOnly <tt>true</tt> if the mail should just be simulated but not actually be sent.
+         * @return the builder itself
+         */
+        public MailSender simulate(boolean simulateOnly) {
+            this.simulate = simulateOnly;
             return this;
         }
 
@@ -774,7 +789,11 @@ public class Mails implements MetricProvider {
                                             () -> "Sending eMail: " + mail.subject + " to: " + mail.receiverEmail,
                                             Duration.ofSeconds(30));
             try {
-                sendMail();
+                if (!mail.simulate) {
+                    sendMail();
+                } else {
+                    messageId = "SIMULATED";
+                }
             } finally {
                 Operation.release(op);
                 if (logs.isEmpty()) {
@@ -800,7 +819,8 @@ public class Mails implements MetricProvider {
                                             mail.receiverName,
                                             mail.subject,
                                             mail.text,
-                                            mail.html);
+                                            mail.html,
+                                            mail.mailExtension);
                         } catch (Exception e) {
                             Exceptions.handle(LOG, e);
                         }
