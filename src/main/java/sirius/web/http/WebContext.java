@@ -770,8 +770,11 @@ public class WebContext implements SubContext {
                     if (forwardedFor.isFilled()) {
                         try {
                             // A X-Forwarded-For might contain many IPs like 1.2.3.4, 5.6.7.8... We're only interested
-                            // in the last IP -> cut apropriately
-                            String forwardedForIp = Strings.splitAtLast(forwardedFor.asString(), ",").getFirst().trim();
+                            // in the last IP -> cut appropriately
+                            Tuple<String, String> splitIPs = Strings.splitAtLast(forwardedFor.asString(), ",");
+                            String forwardedForIp = Strings.isFilled(splitIPs.getSecond()) ?
+                                                    splitIPs.getSecond().trim() :
+                                                    splitIPs.getFirst().trim();
                             remoteIp = InetAddress.getByName(forwardedForIp);
                         } catch (Throwable e) {
                             Exceptions.ignore(e);
