@@ -756,7 +756,7 @@ public class WebContext implements SubContext {
      */
     public InetAddress getRemoteIP() {
         if (remoteIp == null) {
-            if (ctx == null) {
+            if (ctx == null || request == null) {
                 try {
                     return InetAddress.getByName("127.0.0.1");
                 } catch (UnknownHostException e) {
@@ -766,16 +766,22 @@ public class WebContext implements SubContext {
             remoteIp = ((InetSocketAddress) ctx.channel().remoteAddress()).getAddress();
             if (!WebServer.getProxyIPs().isEmpty()) {
                 if (WebServer.getProxyIPs().accepts(remoteIp)) {
-                    String forwardedFor = request.headers().get("X-Forwarded-For");
-                    if (Strings.isFilled(forwardedFor)) {
+                    Value forwardedFor = Value.of(request.headers().get("X-Forwarded-For"));
+                    if (forwardedFor.isFilled()) {
                         try {
-                            remoteIp = InetAddress.getByName(forwardedFor);
+                            // A X-Forwarded-For might contain many IPs like 1.2.3.4, 5.6.7.8... We're only interested
+                            String forwardedForIp = Strings.splitAtLast(forwardedFor.asString(), ",").getFirst().trim();
+                            remoteIp = InetAddress.getByName(forwardedForIp);
                         } catch (Throwable e) {
                             Exceptions.ignore(e);
-                            WebServer.LOG.WARN(Strings.apply("Cannot parse X-Forwarded-For address: %s - %s (%s)",
-                                                             forwardedFor,
-                                                             e.getMessage(),
-                                                             e.getClass().getName()));
+                            WebServer.LOG.WARN(Strings.apply(
+                                    "Cannot parse X-Forwarded-For address: %s, Remote-IP: %s, Request: %s, SSL: %s - %s (%s)",
+                                    forwardedFor,
+                                    remoteIp,
+                                    request.getUri(),
+                                    NLS.toMachineString(isSSL()),
+                                    e.getMessage(),
+                                    e.getClass().getName()));
                         }
                     }
                 }
@@ -803,13 +809,14 @@ public class WebContext implements SubContext {
 
     /**
      * Determines if this is an HTTPS (SSL protected) call.
-     * <p>
-     * Currently we rely on SSL termination by a proxy. Therefore we check for the header "X-Forwarded-Proto".
      *
      * @return <tt>true</tt> if this is an HTTPS request, <tt>false</tt> otherwise
      */
     public boolean isSSL() {
+        // If the request is coming from a SSL channel locally, <tt>ssl</tt> is already set true.
         if (ssl == null) {
+            // Otherwise, we might sit behind a SSL offloading proxy, therefore we check
+            // for the header "X-Forwarded-Proto".
             ssl = "https".equalsIgnoreCase(getHeaderValue("X-Forwarded-Proto").asString());
         }
 
