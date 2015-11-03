@@ -25,6 +25,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Log;
 
+import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -290,12 +291,13 @@ public class Templates {
          * Can be used by a {@link ContentHandler} to determine the file ending of the selected template. This is
          * used to select which content handler is actually used to generate the output.
          *
-         * @param extension the expected file extension
-         * @return <tt>true</tt> if the given template ends with the given extensions, <tt>false</tt> otherwise.
+         * @param extension the expected file extension, without a "." at the beginning
+         * @return <tt>true</tt> if the given template ends with the given extension, <tt>false</tt> otherwise. This
+         * first dot is considered the start of the file extension so "foobar.test.js" has "test.js" as extension.
          * If the templateName is <tt>null</tt>, this method always returns <tt>false</tt>.
          */
-        public boolean isTemplateEndsWith(String extension) {
-            return Strings.isFilled(templateName) && templateName.endsWith(extension);
+        public boolean isTemplateFileExtension(@Nonnull String extension) {
+            return Strings.isFilled(templateName) && extension.equals(Strings.split(templateName, ".").getSecond());
         }
 
         /**

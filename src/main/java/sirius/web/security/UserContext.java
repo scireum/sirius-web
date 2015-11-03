@@ -263,7 +263,7 @@ public class UserContext implements SubContext {
         if (ctx == null || !ctx.isValid()) {
             return;
         }
-        if (!getCurrentUser().isLoggedIn()) {
+        if (!getUser().isLoggedIn()) {
             return;
         }
         UserManager manager = getUserManager();

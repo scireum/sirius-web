@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>@product - System Log</title>
+        <link rel="stylesheet" media="screen" href="@prefix/assets/system/css/bootstrap.css">
+        <script language="javascript" type="text/javascript" src="@prefix/assets/system/js/jquery-1.5.min.js"></script>
+    </head>
+    <body>
+        <div class="container">
+            <textarea id="script" row="10" cols="80"></textarea>
+            <input type="button" id="execute" value="Execute" />
+            <div id="taskId"></div>
+            <div id="output">
+
+            </div>
+        </div>
+        <script type="text/javascript">
+            var taskId = null;
+
+            function updateState() {
+                $.getJSON('@prefix/system/task/'+taskId+'/api/info',
+                          {},
+                          function(data) {
+                                if (!data.found) {
+                                    $('#taskId').text('');
+                                } else {
+                                    $('#output').html('');
+                                    for(i = 0; i < data.logs.length; i++) {
+                                        $('#output').append($('<div></div>').text(data.logs[i].message));
+                                    }
+                                    setTimeout(updateState, 1000);
+                                }
+                          }
+                );
+            }
+
+            $('#execute').click(function() {
+                $.ajax({
+                    url: '@prefix/system/scripting/api/execute',
+                    type: 'post',
+                    data: $('#script').val(),
+                    contentType: 'text/plain',
+                    dataType: 'json',
+                    success: function(data) {
+                        taskId = data.task;
+                        $('#taskId').text(data.task);
+                        setTimeout(updateState, 500);
+                    }
+                })
+            });
+
+        </script>
+    </body>
+</html>
