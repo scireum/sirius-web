@@ -9,6 +9,7 @@
 package sirius.web.services;
 
 import sirius.kernel.xml.StructuredOutput;
+import sirius.web.controller.Routed;
 
 /**
  * Provides a service which can be called via the HTTP interface and generate a structured output encoded as JSON or
@@ -20,6 +21,9 @@ import sirius.kernel.xml.StructuredOutput;
  * The generated output can be either JSON or XML, which is completely handled by the framework.
  * <p>
  * Consider providing an {@link AutoDoc} annotation in order to provide a public API documentation for all services
+ * <p>
+ * Note: Simple AJAX calls using JSON can also be realized using the controller framework. See {@link
+ * Routed#jsonCall()} for further information.
  */
 public interface StructuredService {
 
