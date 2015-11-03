@@ -207,7 +207,7 @@ public class UserContext implements SubContext {
      * Returns "error" if an error was added for the given field.
      *
      * @param field the field to check
-     * @return "error" if an error was added for the given field, <tt>false</tt> otherwise
+     * @return "error" if an error was added for the given field, an empty string otherwise
      */
     public String signalFieldError(String field) {
         return hasError(field) ? "error" : "";
