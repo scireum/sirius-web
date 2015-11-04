@@ -35,6 +35,17 @@ public class TestController implements Controller {
         out.property("test", ctx.getParameter("test"));
     }
 
+    @Routed(value = "/test/json-param/:1", jsonCall = true)
+    public void testJSONParam(WebContext ctx, JSONStructuredOutput out, String param) {
+        out.property("test", param);
+    }
+
+    @Routed(value = "/test/params/:2/:1", jsonCall = true)
+    public void testJSONParams(WebContext ctx, JSONStructuredOutput out, String param1, String param2) {
+        out.property("param1", param1);
+        out.property("param2", param2);
+    }
+
     @Routed("/tunnel/test")
     public void tunnelTest(WebContext ctx) {
         ctx.respondWith()
