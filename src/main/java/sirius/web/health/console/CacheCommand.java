@@ -50,6 +50,6 @@ public class CacheCommand implements Command {
 
     @Override
     public String getDescription() {
-        return "Lists all available caches. Add a name of a cache as parameter to flush it.";
+        return "Lists all available caches.";
     }
 }
