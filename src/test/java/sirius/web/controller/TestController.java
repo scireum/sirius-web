@@ -14,6 +14,7 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.HandledException;
 import sirius.web.http.InputStreamHandler;
 import sirius.web.http.WebContext;
+import sirius.web.services.JSONStructuredOutput;
 
 @Register
 public class TestController implements Controller {
@@ -27,6 +28,22 @@ public class TestController implements Controller {
         ctx.respondWith()
            .setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/plain")
            .direct(HttpResponseStatus.OK, ctx.get("value").asString());
+    }
+
+    @Routed(value = "/test/json", jsonCall = true)
+    public void testJSON(WebContext ctx, JSONStructuredOutput out) {
+        out.property("test", ctx.getParameter("test"));
+    }
+
+    @Routed(value = "/test/json-param/:1", jsonCall = true)
+    public void testJSONParam(WebContext ctx, JSONStructuredOutput out, String param) {
+        out.property("test", param);
+    }
+
+    @Routed(value = "/test/params/:2/:1", jsonCall = true)
+    public void testJSONParams(WebContext ctx, JSONStructuredOutput out, String param1, String param2) {
+        out.property("param1", param1);
+        out.property("param2", param2);
     }
 
     @Routed("/tunnel/test")

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+@*
+ *  Made with all the love in the world
+ *  by scireum in Remshalden, Germany
+ *
+ *  Copyright by scireum GmbH
+ *  http://www.scireum.de - info@scireum.de
+ *@
+@args String title
+<!--
+  ~ Made with all the love in the world
+  ~ by scireum in Remshalden, Germany
+  ~
+  ~ Copyright by scireum GmbH
+  ~ http://www.scireum.de - info@@scireum.de
+  -->
+
+<html lang="@NLS.getCurrentLang()">
+    <head>
+        <title>@title - @product</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <link rel="stylesheet" media="screen" href="@prefix/assets/wondergem/bootstrap/css/bootstrap.min.css">
+        <link rel="stylesheet" media="screen" href="@prefix/assets/wondergem/fileupload/fileuploader.css">
+        <link rel="stylesheet" media="screen" href="@prefix/assets/wondergem/select2/select2.min.css">
+        <link rel="stylesheet" media="screen" href="@prefix/assets/wondergem/datepicker/css/datepicker.css">
+        <link rel="stylesheet" media="screen" href="@prefix/assets/wondergem/stylesheets/application.css">
+        <link rel="shortcut icon" type="image/vnd.microsoft.icon" href="@prefix/assets/images/favicon.ico">
+        <script src="@prefix/assets/wondergem/jquery/jquery-1.10.2.js" type="text/javascript"></script>
+        <script src="@prefix/assets/wondergem/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+        <script src="@prefix/assets/wondergem/fileupload/fileuploader.js" type="text/javascript"></script>
+        <script src="@prefix/assets/wondergem/mustache/mustache.min.js" type="text/javascript"></script>
+        <script src="@prefix/assets/wondergem/select2/select2.js" type="text/javascript"></script>
+        <script src="@prefix/assets/wondergem/datepicker/js/bootstrap-datepicker.js" type="text/javascript"></script>
+        <script src="@prefix/assets/wondergem/datepicker/js/locales/bootstrap-datepicker.@lang@.js" type="text/javascript"></script>
+
+        @includeExtensions("view-template-head")
+
+        @invoke("view/wondergem/template-script.html")
+
+        @render(head) {
+        }
+    </head>
+    <body>
+        @render(menu) {
+            @view.wondergem.menu.html()
+        }
+        <div class="wrap">
+
+            @render(header) {
+            }
+
+            <div id="mainContainer" class="container">
+                @render(aboveMessages) {
+                }
+
+                <ol class="breadcrumb">
+                    <li><a href="/"><span class="glyphicon glyphicon-home"></span></a></li>
+                    @render(breadcrumbs) {
+
+                    }
+                </ol>
+
+                @render(messages) {
+                    <div class="row">
+                        <div class="span12" id="messageBox">
+                            @for(sirius.web.controller.Message msg : user.getMessages()) {
+                                <div class="alert @msg.getType()">
+                                    @msg.getMessage()
+                                    @if (msg.getAction() != null) {
+                                        @if (msg.isActionJavascript()) {
+                                            <a href="#" onclick="@msg.getAction()" class="link link-info">@msg.getActionLabel()</a>
+                                        } else {
+                                            <a href="@prefix/@msg.getAction()" class="link link-info">@msg.getActionLabel()</a>
+                                        }
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @render()
+            </div>
+        </div>
+        @render(footer) {
+            @invoke("view/wondergem/template-footer.html")
+        }
+
+        @render(dialogs) {
+        }
+
+        @invoke("view/wondergem/template-dialogs.html")
+        @includeExtensions("view-template-head")
+    </body>
+</html>

@@ -24,6 +24,7 @@ import sirius.web.http.InputStreamHandler;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 import sirius.web.security.UserContext;
+import sirius.web.services.JSONStructuredOutput;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -85,6 +86,9 @@ public class ControllerDispatcher implements WebDispatcher {
             try {
                 final List<Object> params = route.matches(ctx, uri, preDispatch);
                 if (params != null) {
+                    // Inject WebContext as first parameter...
+                    params.add(0, ctx);
+
                     // If a route is pre-dispatchable we inject an InputStream as last parameter of the
                     // call. This is also checked by the route-compiler
                     if (preDispatch) {
@@ -96,7 +100,7 @@ public class ControllerDispatcher implements WebDispatcher {
                          .dropOnOverload(() -> ctx.respondWith()
                                                   .error(HttpResponseStatus.INTERNAL_SERVER_ERROR,
                                                          "Request dropped - System overload!"))
-                         .fork(performRouteInOwnThread(ctx, route, params));
+                         .fork(() -> performRouteInOwnThread(ctx, route, params));
                     return true;
                 }
             } catch (final Throwable e) {
@@ -111,52 +115,75 @@ public class ControllerDispatcher implements WebDispatcher {
         return false;
     }
 
-    private Runnable performRouteInOwnThread(WebContext ctx, Route route, List<Object> params) {
-        return () -> {
-            try {
-                CallContext.getCurrent().setLang(NLS.makeLang(ctx.getLang()));
-                TaskContext.get()
-                           .setSystem(SYSTEM_MVC)
-                           .setSubSystem(route.getController().getClass().getSimpleName())
-                           .setJob(ctx.getRequestedURI());
-                params.add(0, ctx);
-                // Check if we're allowed to call this route...
-                String missingPermission = route.checkAuth();
-                if (missingPermission != null) {
-                    // No...handle permission error
-                    for (Interceptor interceptor : interceptors) {
-                        if (interceptor.beforePermissionError(missingPermission,
-                                                              ctx,
-                                                              route.getController(),
-                                                              route.getSuccessCallback())) {
-                            return;
-                        }
-                    }
+    private void performRouteInOwnThread(WebContext ctx, Route route, List<Object> params) {
+        try {
+            setupContext(ctx, route);
 
-                    // No Interceptor is in charge...report error...
-                    ctx.respondWith().error(HttpResponseStatus.UNAUTHORIZED);
-                } else {
-                    // Intercept call...
-                    for (Interceptor interceptor : interceptors) {
-                        if (interceptor.before(ctx, route.getController(), route.getSuccessCallback())) {
-                            return;
-                        }
-                    }
-                    // If a user authenticated during this call...bind to session!
-                    if (UserContext.getCurrentUser().isLoggedIn()) {
-                        CallContext.getCurrent().get(UserContext.class).attachUserToSession();
-                    }
-
-                    // Execute routing
-                    route.getSuccessCallback().invoke(route.getController(), params.toArray());
-                }
-            } catch (InvocationTargetException ex) {
-                handleFailure(ctx, route, ex.getTargetException());
-            } catch (Throwable ex) {
-                handleFailure(ctx, route, ex);
+            String missingPermission = route.checkAuth();
+            if (missingPermission != null) {
+                handlePermissionError(ctx, route, missingPermission);
+            } else {
+                executeRoute(ctx, route, params);
             }
-            ctx.enableTiming(route.toString());
-        };
+        } catch (InvocationTargetException ex) {
+            handleFailure(ctx, route, ex.getTargetException());
+        } catch (Throwable ex) {
+            handleFailure(ctx, route, ex);
+        }
+        ctx.enableTiming(route.toString());
+    }
+
+    private void executeRoute(WebContext ctx, Route route, List<Object> params) throws Exception {
+        // Intercept call...
+        for (Interceptor interceptor : interceptors) {
+            if (interceptor.before(ctx, route.getController(), route.getSuccessCallback())) {
+                return;
+            }
+        }
+
+        // If a user authenticated during this call...bind to session!
+        UserContext userCtx = UserContext.get();
+        if (userCtx.getUser().isLoggedIn()) {
+            userCtx.attachUserToSession();
+        }
+
+        if (route.isJSONCall()) {
+            executeJSONCall(ctx, route, params);
+        } else {
+            route.getSuccessCallback().invoke(route.getController(), params.toArray());
+        }
+    }
+
+    private void executeJSONCall(WebContext ctx, Route route, List<Object> params) throws Exception {
+        JSONStructuredOutput out = ctx.respondWith().json();
+        params.add(1, out);
+        out.beginResult();
+        out.property("success", true);
+        out.property("error", false);
+        route.getSuccessCallback().invoke(route.getController(), params.toArray());
+        out.endResult();
+    }
+
+    private void handlePermissionError(WebContext ctx, Route route, String missingPermission) throws Exception {
+        for (Interceptor interceptor : interceptors) {
+            if (interceptor.beforePermissionError(missingPermission,
+                                                  ctx,
+                                                  route.getController(),
+                                                  route.getSuccessCallback())) {
+                return;
+            }
+        }
+
+        // No Interceptor is in charge...report error...
+        ctx.respondWith().error(HttpResponseStatus.UNAUTHORIZED);
+    }
+
+    private void setupContext(WebContext ctx, Route route) {
+        CallContext.getCurrent().setLang(NLS.makeLang(ctx.getLang()));
+        TaskContext.get()
+                   .setSystem(SYSTEM_MVC)
+                   .setSubSystem(route.getController().getClass().getSimpleName())
+                   .setJob(ctx.getRequestedURI());
     }
 
     private void handleFailure(WebContext ctx, Route route, Throwable ex) {
@@ -165,7 +192,16 @@ public class ControllerDispatcher implements WebDispatcher {
                        .addToMDC("controller",
                                  route.getController().getClass().getName() + "." + route.getSuccessCallback()
                                                                                          .getName());
-            route.getController().onError(ctx, Exceptions.handle(ControllerDispatcher.LOG, ex));
+            if (route.isJSONCall()) {
+                JSONStructuredOutput out = ctx.respondWith().json();
+                out.beginResult();
+                out.property("success", false);
+                out.property("error", true);
+                out.property("message", Exceptions.handle(ControllerDispatcher.LOG, ex).getMessage());
+                out.endResult();
+            } else {
+                route.getController().onError(ctx, Exceptions.handle(ControllerDispatcher.LOG, ex));
+            }
         } catch (Throwable t) {
             ctx.respondWith()
                .error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(ControllerDispatcher.LOG, t));
@@ -198,7 +234,6 @@ public class ControllerDispatcher implements WebDispatcher {
     private Route compileMethod(Routed routed, final Controller controller, final Method m) {
         try {
             final Route route = Route.compile(m, routed);
-            route.setPreDispatchable(routed.preDispatchable());
             route.setController(controller);
             route.setSuccessCallback(m);
             return route;

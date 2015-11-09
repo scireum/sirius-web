@@ -1,0 +1,35 @@
+@*
+*  Made with all the love in the world
+*  by scireum in Remshalden, Germany
+*
+*  Copyright by scireum GmbH
+*  http://www.scireum.de - info@scireum.de
+*@
+@args Page page, String baseURL
+
+<div class="pagination pagination-centered">
+    <ul>
+        @if (page.hasLess()) {
+            <li><a href="@prefix/@baseURL?@page.createPrevPageQueryString()">&#8592;</a></li>
+        } else {
+            <li class="disabled"><span>&#8592;</span></li>
+        }
+            <li>
+                <input type="text" class="jump-to" placeholder="@page.getRange()">
+                <script type="text/javascript">
+                    $("input:text.jump-to").keyup(function (e) {
+                        var startIndex = $(this).val();
+                        var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
+                        if (key == 13 && /^\d+$/.test(startIndex)) {
+                            window.location.replace("@prefix/@baseURL?@page.createQueryStringForConfigurableStart()" + startIndex);
+                        }
+                    });
+                </script>
+            </li>
+        @if (page.hasMore()) {
+            <li><a href="@prefix/@baseURL?@page.createNextPageQueryString()">&#8594;</a></li>
+        } else {
+            <li class="disabled"><span>&#8594;</span></li>
+        }
+    </ul>
+</div>

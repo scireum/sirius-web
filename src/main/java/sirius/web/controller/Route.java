@@ -21,6 +21,7 @@ import sirius.web.http.WebContext;
 import sirius.web.http.WebServer;
 import sirius.web.security.Permissions;
 import sirius.web.security.UserContext;
+import sirius.web.services.JSONStructuredOutput;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
@@ -47,6 +48,7 @@ class Route {
     private Class<?>[] parameterTypes;
     private Controller controller;
     private boolean preDispatchable;
+    private boolean jsonCall;
     private Set<String> permissions = null;
 
     /**
@@ -59,9 +61,11 @@ class Route {
     protected static Route compile(Method method, Routed routed) {
         Route result = new Route();
         result.uri = routed.value();
-        result.parameterTypes = method.getParameterTypes();
+        result.jsonCall = routed.jsonCall();
+        result.preDispatchable = routed.preDispatchable();
         result.format = routed.value();
         result.permissions = Permissions.computePermissionsFromAnnotations(method);
+        List<Class<?>> parameterTypes = Lists.newArrayList(Arrays.asList(method.getParameterTypes()));
 
         String[] elements = routed.value().split("/");
         StringBuilder finalPattern = new StringBuilder();
@@ -91,26 +95,37 @@ class Route {
                 }
             }
         }
-        if (routed.preDispatchable()) {
-            params++;
-            if (!InputStreamHandler.class.equals(result.parameterTypes[result.parameterTypes.length - 1])) {
+        if (parameterTypes.isEmpty() || !WebContext.class.equals(parameterTypes.get(0))) {
+            throw new IllegalArgumentException(Strings.apply("Method needs '%s' as first parameter",
+                                                             WebContext.class.getName()));
+        }
+        parameterTypes.remove(0);
+
+        if (result.preDispatchable) {
+            if (parameterTypes.isEmpty() || !InputStreamHandler.class.equals(parameterTypes.get(parameterTypes.size()
+                                                                                                - 1))) {
                 throw new IllegalArgumentException(Strings.apply("Pre-Dispatchable method needs '%s' as last parameter",
                                                                  InputStreamHandler.class.getName()));
             }
+            parameterTypes.remove(parameterTypes.size() - 1);
         }
-        if (result.parameterTypes.length - 1 != params) {
+        if (result.jsonCall) {
+            if (parameterTypes.isEmpty() || !JSONStructuredOutput.class.equals(parameterTypes.get(0))) {
+                throw new IllegalArgumentException(Strings.apply("JSON method needs '%s' as second parameter",
+                                                                 JSONStructuredOutput.class.getName()));
+            }
+            parameterTypes.remove(0);
+        }
+        if (parameterTypes.size() != params) {
             throw new IllegalArgumentException(Strings.apply("Method has %d parameters, route '%s' has %d",
-                                                             result.parameterTypes.length,
+                                                             parameterTypes.size(),
                                                              routed.value(),
                                                              params));
-        }
-        if (!WebContext.class.equals(result.parameterTypes[0])) {
-            throw new IllegalArgumentException(Strings.apply("Method needs '%s' as first parameter",
-                                                             WebContext.class.getName()));
         }
         if (Strings.isEmpty(finalPattern.toString())) {
             finalPattern = new StringBuilder("/");
         }
+        result.parameterTypes = parameterTypes.toArray(new Class[parameterTypes.size()]);
         result.pattern = Pattern.compile(finalPattern.toString());
         return result;
     }
@@ -144,14 +159,8 @@ class Route {
                         ctx.setAttribute((String) expr.getSecond(), value);
                     } else if (expr.getFirst() == ":") {
                         int idx = (Integer) expr.getSecond();
-                        if (idx == result.size() + 1) {
-                            result.add(Value.of(value).coerce(parameterTypes[idx], null));
-                        } else {
-                            while (result.size() < idx) {
-                                result.add(null);
-                            }
-                            result.set(idx - 1, Value.of(value).coerce(parameterTypes[idx - 1], null));
-                        }
+                        Object effectiveValue = Value.of(value).coerce(parameterTypes[idx - 1], null);
+                        setAtPosition(result, idx, effectiveValue);
                     } else if (expr.getFirst() == "**") {
                         result.add(Arrays.asList(value.split("/")));
                     }
@@ -166,6 +175,21 @@ class Route {
             return null;
         } catch (UnsupportedEncodingException e) {
             throw Exceptions.handle(WebServer.LOG, e);
+        }
+    }
+
+    /*
+     * Sets the value at the given position in the list. Not that position is one-based not zero-based. If
+     * the given list is too short it is padded with null values.
+     */
+    private void setAtPosition(List<Object> list, int position, Object value) {
+        if (position == list.size() + 1) {
+            list.add(value);
+        } else {
+            while (list.size() < position) {
+                list.add(null);
+            }
+            list.set(position - 1, value);
         }
     }
 
@@ -231,16 +255,6 @@ class Route {
     }
 
     /**
-     * Sets the pre dispatchable flag of this route. This will be defined by the {@link Routed} annotation and
-     * determines if this route can dispatch requests which payload was not processed yet.
-     *
-     * @param preDispatchable the new value for the pre-dispatchable flag
-     */
-    protected void setPreDispatchable(boolean preDispatchable) {
-        this.preDispatchable = preDispatchable;
-    }
-
-    /**
      * Determines if the route is pre dispatchable. In order to process requests, the last parameter of the method
      * must be of type {@link InputStreamHandler} which will be used to process the payload of the request.
      *
@@ -248,5 +262,14 @@ class Route {
      */
     protected boolean isPreDispatchable() {
         return preDispatchable;
+    }
+
+    /**
+     * Determines if the route will result in a JSON response.
+     *
+     * @return the value of {@link Route#isJSONCall()} of the annotation which created this route
+     */
+    protected boolean isJSONCall() {
+        return jsonCall;
     }
 }

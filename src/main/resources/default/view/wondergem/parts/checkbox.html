@@ -1,0 +1,10 @@
+@args String span, String name, boolean value, String labelKey, String helpKey
+<div class="span@span control-group">
+    <label class="checkbox label-normal">
+        <input type="checkbox" name="@name" value="true" @if (value) { checked="checked" } />
+        @i18n(labelKey)
+        @if (helpKey != null) {
+            <span class="help-block checkbox-help">@i18n(helpKey)</span>
+        }
+    </label>
+</div>

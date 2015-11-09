@@ -1,5 +1,5 @@
 @args sirius.web.health.Cluster cluster, sirius.kernel.health.metrics.Metrics metrics, boolean all
-@extends(view.system.page.html, title: ("["+cluster.getClusterState()+"/+"+cluster.getNodeState()+"] "+product+" - Status"))
+@extends(view.wondergem.template.html, title: ("["+cluster.getClusterState()+"/+"+cluster.getNodeState()+"] " + product + " - Status"))
 @section(head) {
         <style>
             .GRAY {
@@ -21,6 +21,11 @@
             }
         </style>
 }
+
+@section(breadcrumbs) {
+    <li><a href="/system/state">System State</a></li>
+}
+
 <div class="pull-right">
     @if (all) {
         <a href="@prefix/system/state">Show Less</a> |
@@ -45,16 +50,16 @@
             </div>
             <table class="table">
                 @for(sirius.kernel.health.metrics.Metric m : metrics.getMetrics()) {
-                @if (all || m.getState() != sirius.kernel.health.metrics.MetricState.GRAY) {
-                <tr class="@m.getState()">
-                    <td style="overflow: hidden">
-                        @m.getName()
-                    </td>
-                    <td style="text-align: right; overflow: hidden">
-                        @m.getValueAsString()
-                    </td>
-                </tr>
-                }
+                    @if (all || m.getState() != sirius.kernel.health.metrics.MetricState.GRAY) {
+                        <tr class="@m.getState()">
+                            <td style="overflow: hidden">
+                                @m.getName()
+                            </td>
+                            <td style="text-align: right; overflow: hidden">
+                                @m.getValueAsString()
+                            </td>
+                        </tr>
+                    }
                 }
             </table>
         </div>

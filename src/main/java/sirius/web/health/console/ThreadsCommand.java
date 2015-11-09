@@ -91,6 +91,6 @@ public class ThreadsCommand implements Command {
 
     @Override
     public String getDescription() {
-        return "Reports a list of all threads or creates a stack trace of a given tread or all threads (using 'all' as param)";
+        return "Reports a list of all threads.";
     }
 }

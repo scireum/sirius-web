@@ -41,13 +41,7 @@ public class SystemController implements Controller {
 
     public static final String PERMISSION_SYSTEM_CONSOLE = "permission-system-console";
 
-    public static final String PERMISSION_SYSTEM_LOGS = "permission-system-logs";
-
-    public static final String PERMISSION_SYSTEM_ERRORS = "permission-system-errors";
-
     public static final String PERMISSION_SYSTEM_STATE = "permission-system-state";
-
-    public static final String PERMISSION_SYSTEM_NLS = "permission-system-nls";
 
     @Routed("/system/console")
     @Permission(PERMISSION_SYSTEM_CONSOLE)
@@ -61,9 +55,6 @@ public class SystemController implements Controller {
     }
 
     @Part
-    private MemoryBasedHealthMonitor monitor;
-
-    @Part
     private Cluster cluster;
 
     @Part
@@ -71,31 +62,6 @@ public class SystemController implements Controller {
 
     @Context
     private GlobalContext context;
-
-    @Routed("/system/logs")
-    @Permission(PERMISSION_SYSTEM_LOGS)
-    public void logs(WebContext ctx) {
-        ctx.respondWith().template("/view/system/logs.html", monitor.getMessages());
-    }
-
-    @Routed("/system/errors")
-    @Permission(PERMISSION_SYSTEM_ERRORS)
-    public void errors(WebContext ctx) {
-        ctx.respondWith().template("/view/system/errors.html", monitor.getIncidents());
-    }
-
-    @Routed("/system/nls")
-    @Permission(PERMISSION_SYSTEM_NLS)
-    public void nls(WebContext ctx) {
-        Page<Translation> result = new Page<>();
-        result.addFacet("mode", "Mode", null);
-        result.bindToRequest(ctx);
-        Stream<Translation> translationStream = NLS.getTranslationEngine().getTranslations(result.getQuery());
-        List<Translation> translationsPage =
-                translationStream.skip(result.getStart() - 1).limit(result.getPageSize()).collect(Collectors.toList());
-        result.withItems(translationsPage);
-        ctx.respondWith().template("/view/system/nls.html", NLS.getSupportedLanguages(), "de", "en", translationsPage);
-    }
 
     @Routed("/system/ok")
     public void ok(WebContext ctx) {

@@ -8,6 +8,7 @@
 
 package sirius.web.http
 
+import com.alibaba.fastjson.JSON
 import com.google.common.base.Charsets
 import com.google.common.io.ByteStreams
 import sirius.kernel.BaseSpecification
@@ -182,6 +183,41 @@ class WebServerSpec extends BaseSpecification {
         then:
         // Size should be contents of large test file plus json overhead and escaping....
         60543 == data.length()
+    }
+
+    /**
+     * Call a controller which uses JSON Calls
+     */
+    def "Invoke /test/json testing built in JSON handling"() {
+        given:
+        def uri = "/test/json?test=Hello_World";
+        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
+        when:
+        def data = callAndRead(uri, null, expectedHeaders);
+        then:
+        JSON.parseObject(data).get("test") == 'Hello_World'
+    }
+
+    def "Invoke /test/json-param testing built in JSON handling"() {
+        given:
+        def uri = "/test/json-param/Hello";
+        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
+        when:
+        def data = callAndRead(uri, null, expectedHeaders);
+        then:
+        JSON.parseObject(data).get("test") == 'Hello'
+    }
+
+    def "Invoke /test/params/2/1 testing mixed parameter order"() {
+        given:
+        def uri = "/test/params/2/1";
+        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
+        when:
+        def data = callAndRead(uri, null, expectedHeaders);
+        then:
+        JSON.parseObject(data).get("param1") == '1'
+        and:
+        JSON.parseObject(data).get("param2") == '2'
     }
 
     /**

@@ -42,6 +42,6 @@ public class ModulesCommand implements Command {
 
     @Override
     public String getDescription() {
-        return "Reports version of the product and all installed modules.";
+        return "Reports the version of the product and all installed modules.";
     }
 }

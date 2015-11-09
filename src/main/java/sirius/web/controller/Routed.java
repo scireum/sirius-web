@@ -9,6 +9,7 @@
 package sirius.web.controller;
 
 import sirius.kernel.commons.PriorityCollector;
+import sirius.web.services.JSONStructuredOutput;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -55,4 +56,24 @@ public @interface Routed {
      * @return <tt>true</tt> if the method is pre-dispatchable, <tt>false</tt> otherwise
      */
     boolean preDispatchable() default false;
+
+    /**
+     * Determines if the annotated method is used to generate a JSON response.
+     * <p>
+     * This can be used to handle AJAX requests directly within a controller. In such simple cases if is often
+     * feasible to keep the logic in one place (controller) instead for creating a {@link
+     * sirius.web.services.StructuredService}.
+     * <p>
+     * A method having <tt>jsonCall</tt> set to <tt>true</tt> has to accept
+     * {@link sirius.web.services.JSONStructuredOutput} as 2nd parameter. This parameter is filled with a
+     * pre-initialized output writer, which has {@link JSONStructuredOutput#beginResult()} and {@link
+     * JSONStructuredOutput#endResult()} automatically called.
+     * <p>
+     * Also the properties <tt>success</tt> and <tt>error</tt> are automatically filled. In case on an exception
+     * within the controller method, a result with <tt>success</tt>, <tt>errro</tt> and <tt>message</tt> is
+     * automatically created.
+     *
+     * @return <tt>true</tt> if the method is used to create a JSON response for an AJAX call, <tt>false</tt> otherwise
+     */
+    boolean jsonCall() default false;
 }
