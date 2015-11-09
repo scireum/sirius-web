@@ -569,7 +569,7 @@ public class Response {
     }
 
     /**
-     * Sends a 307 or 301 (found / temporary redirect) to the given url as result, depending on the given HTTP
+     * Sends a 307 (temporary redirect) or 302 (found) to the given url as result, depending on the given HTTP
      * protocol in the request.
      *
      * @param url the URL to redirect to
