@@ -10,6 +10,7 @@ package sirius.web.security;
 
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.morphium.Adaptable;
+import sirius.kernel.health.Exceptions;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -98,6 +99,15 @@ public class UserInfo implements Adaptable {
             return permissions == null || !permissions.contains(permission.substring(1));
         } else {
             return allPermissions || (permissions != null && permissions.contains(permission));
+        }
+    }
+
+    public void assertPermission(String permission) {
+        if (!hasPermission(permission)) {
+            throw Exceptions.createHandled()
+                            .withNLSKey("UserInfo.missingPermission")
+                            .set("permission", permission)
+                            .handle();
         }
     }
 

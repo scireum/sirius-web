@@ -10,6 +10,7 @@ package sirius.web.jobs;
 
 import com.google.common.collect.Lists;
 import sirius.kernel.async.TaskContext;
+import sirius.kernel.health.Exceptions;
 
 import java.time.Instant;
 import java.util.List;
@@ -38,14 +39,18 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
     public void run() {
         TaskContext.get().setAdapter(this);
         if (!canceled) {
-            setup.task.accept(this);
+            try {
+                setup.task.accept(this);
+            } catch (Throwable e) {
+                handle(e);
+            }
         }
     }
 
     @Override
     public void log(String message) {
         synchronized (logs) {
-            logs.add(new TaskLogEntry(message, TaskLogEntry.LogType.NORMAL));
+            logs.add(new TaskLogEntry(message, TaskLogEntry.LogType.ERROR));
             while(logs.size() > 512) {
                 logs.remove(0);
             }
@@ -100,6 +105,6 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
     }
 
     public void handle(Throwable throwable) {
-        // TODO
+        log(Exceptions.handle(Jobs.LOG, throwable).getMessage());
     }
 }

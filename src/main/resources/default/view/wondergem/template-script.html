@@ -112,9 +112,7 @@
                 handleResize();
             } else {
                 var newHeight = $(window).height() - $('.footer').outerHeight() - $('#mainContainer').position().top;
-                if (newHeight > $('#mainContainer').height()) {
-                    $('#mainContainer').css('height', newHeight + 'px');
-                }
+                $('#mainContainer').css('min-height', newHeight + 'px');
             }
         } catch(e) {
             console.log(e);

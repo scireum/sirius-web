@@ -69,7 +69,7 @@ public class Jobs {
         Instant limit = Instant.now().minusSeconds(60);
         for (String taskId : Lists.newArrayList(activeTasks.keySet())) {
             ManagedTaskExecution exec = activeTasks.get(taskId);
-            if (exec != null && exec.terminated.isBefore(limit)) {
+            if (exec != null && exec.terminated != null && exec.terminated.isBefore(limit)) {
                 activeTasks.remove(taskId);
             }
         }
