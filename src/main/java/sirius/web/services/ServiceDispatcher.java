@@ -74,19 +74,7 @@ public class ServiceDispatcher implements WebDispatcher {
     private boolean doDispatch(WebContext ctx) {
         String uri = ctx.getRequestedURI();
         if ("/service".equals(uri)) {
-            if (ctx.get("service").isFilled()) {
-                StructuredService service = gc.getPart(ctx.get("service").asString(), StructuredService.class);
-                if (service != null && service.getClass().isAnnotationPresent(AutoDoc.class)) {
-                    ctx.respondWith()
-                       .cached()
-                       .template("/help/service/service.html",
-                                 ctx.get("service").asString(),
-                                 service.getClass().getAnnotation(AutoDoc.class));
-                    return true;
-                }
-            }
-            List<ComparableTuple<String, Collection<StructuredService>>> allDocumentedServices = collectServiceInfo();
-            ctx.respondWith().cached().template("/help/service/info.html", allDocumentedServices);
+            handleHelpCall(ctx);
             return true;
         }
         Tuple<ServiceCall, StructuredService> handler = parsePath(ctx, uri);
@@ -100,6 +88,22 @@ public class ServiceDispatcher implements WebDispatcher {
                                              "Request dropped - System overload!"))
              .fork(() -> invokeService(ctx, handler.getFirst(), handler.getSecond()));
         return true;
+    }
+
+    private void handleHelpCall(WebContext ctx) {
+        if (ctx.get("service").isFilled()) {
+            StructuredService service = gc.getPart(ctx.get("service").asString(), StructuredService.class);
+            if (service != null && service.getClass().isAnnotationPresent(AutoDoc.class)) {
+                ctx.respondWith()
+                   .cached()
+                   .template("/help/service/service.html",
+                             ctx.get("service").asString(),
+                             service.getClass().getAnnotation(AutoDoc.class));
+                return;
+            }
+        }
+        List<ComparableTuple<String, Collection<StructuredService>>> allDocumentedServices = collectServiceInfo();
+        ctx.respondWith().cached().template("/help/service/info.html", allDocumentedServices);
     }
 
     private Tuple<ServiceCall, StructuredService> parsePath(WebContext ctx, String uri) {
@@ -141,6 +145,8 @@ public class ServiceDispatcher implements WebDispatcher {
                 return;
             }
         }
+
+        ctx.enableTiming(null);
 
         call.invoke(serv);
     }

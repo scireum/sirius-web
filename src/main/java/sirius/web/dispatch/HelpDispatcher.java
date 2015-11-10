@@ -60,6 +60,7 @@ public class HelpDispatcher implements WebDispatcher {
             // Render help template...
             ctx.respondWith().cached().nlsTemplate(uri);
         }
+        ctx.enableTiming("/help/");
         return true;
     }
 }

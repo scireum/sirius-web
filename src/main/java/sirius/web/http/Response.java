@@ -1413,7 +1413,6 @@ public class Response {
      * @return an output stream which will be sent as response
      */
     public OutputStream outputStream(final HttpResponseStatus status, @Nullable final String contentType) {
-        wc.enableTiming(null);
         return new ChunkedOutputStream(contentType, status);
     }
 

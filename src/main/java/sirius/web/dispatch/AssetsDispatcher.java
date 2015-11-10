@@ -91,6 +91,7 @@ public class AssetsDispatcher implements WebDispatcher {
         }
         Optional<Resource> res = resources.resolve(uri);
         if (res.isPresent()) {
+            ctx.enableTiming("/assets/");
             URL url = res.get().getUrl();
             if ("file".equals(url.getProtocol())) {
                 ctx.respondWith().file(new File(url.toURI()));
@@ -104,6 +105,7 @@ public class AssetsDispatcher implements WebDispatcher {
 
         // If the file is not found not is a .css file, check if we need to generate it via a .scss file
         if (uri.endsWith(".css")) {
+            ctx.enableTiming("/assets/*.css");
             String scssUri = uri.substring(0, uri.length() - 4) + ".scss";
             if (resources.resolve(scssUri).isPresent()) {
                 handleSASS(ctx, uri, scssUri, scopeId);
@@ -112,6 +114,7 @@ public class AssetsDispatcher implements WebDispatcher {
         }
         // If the file is non existent, check if we can generate it by using a velocity template
         if (resources.resolve(uri + ".vm").isPresent()) {
+            ctx.enableTiming("/assets/*.vm");
             handleVM(ctx, uri, scopeId);
             return true;
         }
