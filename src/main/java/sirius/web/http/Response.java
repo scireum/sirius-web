@@ -30,6 +30,7 @@ import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpChunkedInput;
 import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
@@ -976,6 +977,10 @@ public class Response {
                 return;
             }
             if (!ctx.channel().isWritable()) {
+                return;
+            }
+            if (wc.getRequest().getMethod() == HttpMethod.HEAD) {
+                status(status);
                 return;
             }
             String content = Rythm.renderIfTemplateExists("view/errors/" + status.code() + ".html", status, message);

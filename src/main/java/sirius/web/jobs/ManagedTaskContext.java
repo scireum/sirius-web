@@ -14,4 +14,7 @@ import sirius.kernel.async.TaskContextAdapter;
  * Created by aha on 30.10.15.
  */
 public interface ManagedTaskContext extends TaskContextAdapter {
+
+    void
+
 }

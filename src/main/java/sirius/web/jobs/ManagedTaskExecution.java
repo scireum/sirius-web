@@ -11,6 +11,7 @@ package sirius.web.jobs;
 import com.google.common.collect.Lists;
 import sirius.kernel.async.TaskContext;
 import sirius.kernel.health.Exceptions;
+import sirius.web.security.UserContext;
 
 import java.time.Instant;
 import java.util.List;
@@ -22,9 +23,12 @@ import java.util.UUID;
 class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask {
 
     protected final String taskId;
+    protected final String userId;
+    protected final String userName;
     protected final ManagedTaskSetup setup;
     protected volatile boolean canceled;
     protected volatile boolean erroneous;
+    protected State state = State.SCHEDULED;
     protected List<TaskLogEntry> logs = Lists.newArrayList();
     protected Instant scheduled;
     protected Instant started;
@@ -33,10 +37,13 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
     protected ManagedTaskExecution(ManagedTaskSetup setup) {
         this.setup = setup;
         this.taskId = UUID.randomUUID().toString();
+        this.userId = UserContext.getCurrentUser().getUserId();
+        this.userName = UserContext.getCurrentUser().getUserName();
     }
 
     @Override
     public void run() {
+        state = State.RUNNING;
         TaskContext.get().setAdapter(this);
         if (!canceled) {
             try {
@@ -51,7 +58,7 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
     public void log(String message) {
         synchronized (logs) {
             logs.add(new TaskLogEntry(message, TaskLogEntry.LogType.ERROR));
-            while(logs.size() > 512) {
+            while (logs.size() > 512) {
                 logs.remove(0);
             }
         }
@@ -74,12 +81,15 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
 
     @Override
     public void cancel() {
-
+        if (!canceled) {
+            log("Execution has been canceled by " + UserContext.getCurrentUser().getUserName());
+        }
+        canceled = true;
     }
 
     @Override
     public boolean isActive() {
-        return false;
+        return !canceled;
     }
 
     @Override
@@ -93,8 +103,8 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
     }
 
     @Override
-    public String getState() {
-        return null;
+    public State getState() {
+        return state == State.RUNNING && erroneous ? State.WARNINGS : state;
     }
 
     @Override
@@ -106,5 +116,29 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
 
     public void handle(Throwable throwable) {
         log(Exceptions.handle(Jobs.LOG, throwable).getMessage());
+    }
+
+    public String getTaskId() {
+        return taskId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public String getUsername() {
+        return userName;
+    }
+
+    public Instant getScheduled() {
+        return scheduled;
+    }
+
+    public Instant getStarted() {
+        return started;
+    }
+
+    public Instant getTerminated() {
+        return terminated;
     }
 }

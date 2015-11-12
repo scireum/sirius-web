@@ -32,6 +32,9 @@ class SiriusResourceLoader extends ResourceLoaderBase {
         if (path.contains("://")) {
             path = Strings.split(path, "://").getSecond();
         }
+        if (!path.startsWith("/view") && !path.startsWith("view/") && !path.startsWith("view.")) {
+            path = "/view/parts" + path;
+        }
         return resources.resolve(path).map(URLTemplateResource::new).orElse(null);
     }
 }

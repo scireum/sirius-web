@@ -29,24 +29,24 @@
 <li><a href="/system/state">System State</a></li>
 }
 
+@pageHeader() {
+    Hello
+}
+
 <div id="editor">Hello Kitty</div>
 <div class="form-actions">
     <a href="#" id="execute" class="btn btn-success btn-lg">Run</a>
 </div>
-<div id="outputblbl" class="well" style="background-color: #fff">
-    <div>
+<div class="section"><span class="h2">Output</span> <span class="label label-primary">Primary</span></div>
+<table class="table table-striped" id="outputTable">
+    <tr>
+        <th class="col-md-3">Timestamp</th>
+        <th class="col-md-9">Message</th>
+    </tr>
+    <tbody id="output">
 
-        <span>Output</span>
-        <span class="label label-primary">Primary</span>
-        <div id="taskId" class="small text-muted"></div>
-        <div class="pull-right">
-            <a class="btn btn-danger">Kill</a>
-        </div>
-    </div>
-    <div id="output" style="clear: both">
-
-    </div>
-</div>
+    </tbody>
+</table>
 <script type="text/javascript">
 
     var editor = ace.edit("editor");
@@ -64,7 +64,9 @@
                         $('#taskId').text('');
                     } else {
                         for(i = 0; i < data.logs.length; i++) {
-                            $('#output').append($('<div></div>').text(data.logs[i].date+' '+data.logs[i].message).addClass(data.logs[i].type));
+                            var row = $('#output').append($('<tr></tr>'));
+                            row.append($('<td></td>').text(data.logs[i].date));
+                            row.append($('<td></td>').text(data.logs[i].message).addClass("message").addClass(data.logs[i].type));
                         }
                         lastLog = data.lastLog;
                         clearTimeout(timer);
@@ -77,6 +79,7 @@
     $('#execute').click(function() {
         clearMessages();
         clearTimeout(timer);
+        $('#output').html('');
 
         $.ajax({
             url: '@prefix/system/scripting/api/execute',
@@ -88,9 +91,8 @@
                 if (data.error) {
                     addError(data.message);
                 } else {
+                    $('#outputTable').show();
                     taskId = data.task;
-                    $('#taskId').text(data.task);
-                    $('#output').html('');
                     lastLog = 0;
                     clearTimeout(timer);
                     timer = setTimeout(updateState, 500);

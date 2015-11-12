@@ -14,13 +14,18 @@ import sirius.kernel.async.CompletionHandler;
 import sirius.kernel.async.Future;
 import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.RateLimit;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Log;
+import sirius.web.security.UserContext;
+import sirius.web.security.UserInfo;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -43,21 +48,23 @@ public class Jobs {
     }
 
     protected void execute(ManagedTaskExecution exec) {
-        exec.scheduled = Instant.now();
         cleanupTasks();
+        exec.scheduled = Instant.now();
+        exec.state = ManagedTask.State.SCHEDULED;
         activeTasks.put(exec.getId(), exec);
         Future future = tasks.executor(exec.setup.category).fork(exec);
         future.onComplete(new CompletionHandler<Object>() {
             @Override
             public void onSuccess(@Nullable Object value) throws Exception {
+                exec.state = ManagedTask.State.TERMINATED;
                 exec.terminated = Instant.now();
             }
 
             @Override
             public void onFailure(Throwable throwable) throws Exception {
                 exec.handle(throwable);
-                exec.erroneous = true;
                 exec.terminated = Instant.now();
+                exec.state = ManagedTask.State.TERMINATED;
             }
         });
     }
@@ -77,7 +84,34 @@ public class Jobs {
 
     @Nullable
     public ManagedTask findTask(String taskId) {
+        UserInfo user = UserContext.getCurrentUser();
+        if (!user.isLoggedIn()) {
+            return null;
+        }
         cleanupTasks();
-        return activeTasks.get(taskId);
+        ManagedTaskExecution task = activeTasks.get(taskId);
+        if (task != null) {
+            if (user.hasPermission(PERMISSION_ALL_TASKS) || Strings.areEqual(user.getUserId(), task.getUserId())) {
+                return task;
+            }
+        }
+
+        return null;
+    }
+
+    public List<ManagedTask> getActiveTasks() {
+        List<ManagedTask> result = Lists.newArrayList();
+        UserInfo user = UserContext.getCurrentUser();
+        if (!user.isLoggedIn()) {
+            return result;
+        }
+        cleanupTasks();
+        for(ManagedTaskExecution task : activeTasks.values()) {
+            if (user.hasPermission(PERMISSION_ALL_TASKS) || Strings.areEqual(user.getUserId(), task.getUserId())) {
+                result.add(task);
+            }
+        }
+
+        Collections.sort(result, Comparator.comparing(ManagedTaskExecution::getScheduled));
     }
 }

@@ -8,6 +8,7 @@
 
 package sirius.web.jobs;
 
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -15,11 +16,25 @@ import java.util.List;
  */
 public interface ManagedTask {
 
+    enum State {
+        SCHEDULED, RUNNING, WARNINGS, TERMINATED
+    }
+
     String getId();
+
+    String getUserId();
+
+    String getUsername();
+
+    Instant getScheduled();
+
+    Instant getStarted();
+
+    Instant getTerminated();
 
     String getName();
 
-    String getState();
+    State getState();
 
     List<TaskLogEntry> getLastLogs();
 
