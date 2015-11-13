@@ -837,7 +837,7 @@ public class Response {
         addHeaderIfNotExists("Content-Disposition",
                              (download ? "attachment;" : "inline;") + "filename=\"" + name.replaceAll(
                                      "[^A-Za-z0-9\\-_\\.]",
-                                     "_") + ";" + "filename*=UTF-8''" + Strings.urlEncode(name));
+                                     "_") + "\";filename*=UTF-8''" + Strings.urlEncode(name.replace(" ", "_")));
     }
 
     /*
