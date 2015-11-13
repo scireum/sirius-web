@@ -835,14 +835,9 @@ public class Response {
      */
     private void setContentDisposition(String name, boolean download) {
         addHeaderIfNotExists("Content-Disposition",
-                             (download ? "attachment;" : "inline;")
-                             + "filename=\""
-                             + name.replaceAll("[^A-Za-z0-9\\-_\\.]",
-                                               "_")
-                             + "\""
-                             + "filename*=UTF-8''\""
-                             + Strings.urlEncode(name.replace(" ", "_"))
-                             + "\"");
+                             (download ? "attachment;" : "inline;") + "filename=\"" + name.replaceAll(
+                                     "[^A-Za-z0-9\\-_\\.]",
+                                     "_") + ";" + "filename*=UTF-8''" + Strings.urlEncode(name));
     }
 
     /*
