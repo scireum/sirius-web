@@ -9,13 +9,17 @@
 package sirius.web.jobs;
 
 import com.google.common.collect.Lists;
+import sirius.kernel.async.Barrier;
 import sirius.kernel.async.TaskContext;
+import sirius.kernel.async.Tasks;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.web.security.UserContext;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by aha on 30.10.15.
@@ -29,10 +33,11 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
     protected volatile boolean canceled;
     protected volatile boolean erroneous;
     protected State state = State.SCHEDULED;
-    protected List<TaskLogEntry> logs = Lists.newArrayList();
+    protected final List<TaskLogEntry> logs = Lists.newArrayList();
     protected Instant scheduled;
     protected Instant started;
     protected Instant terminated;
+    protected Barrier barrier = new Barrier();
 
     protected ManagedTaskExecution(ManagedTaskSetup setup) {
         this.setup = setup;
@@ -50,6 +55,15 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
                 setup.task.accept(this);
             } catch (Throwable e) {
                 handle(e);
+            }
+            waitForForkedTasks();
+        }
+    }
+
+    private void waitForForkedTasks() {
+        while(!canceled) {
+            if (barrier.await(5, TimeUnit.SECONDS)) {
+                return;
             }
         }
     }
@@ -76,7 +90,7 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
 
     @Override
     public void markErroneous() {
-
+        erroneous = true;
     }
 
     @Override
@@ -140,5 +154,13 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
 
     public Instant getTerminated() {
         return terminated;
+    }
+
+    @Part
+    private static Tasks tasks;
+
+    @Override
+    public void fork(String category, Runnable runnable) {
+        barrier.add(tasks.executor(category).fork(runnable));
     }
 }

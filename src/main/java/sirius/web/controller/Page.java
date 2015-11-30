@@ -352,24 +352,12 @@ public class Page<E> {
      * @return a query string missing the start value
      */
     public String createQueryStringForConfigurableStart() {
-        StringBuilder sb = new StringBuilder();
-        Monoflop mf = Monoflop.create();
-        for (Facet f : getFacets()) {
-            if (Strings.isFilled(f.getValue())) {
-                sb.append(mf.firstCall() ? "" : "&");
-                sb.append(f.getName());
-                sb.append("=");
-                sb.append(Strings.urlEncode(f.getValue()));
-            }
+        String result = createQueryString(null, null, true);
+        if (result.contains("&")) {
+            return result + "&start=";
+        } else {
+            return result + "start=";
         }
-        if (Strings.isFilled(query)) {
-            sb.append(mf.firstCall() ? "" : "&");
-            sb.append("query=");
-            sb.append(Strings.urlEncode(query));
-        }
-        sb.append(mf.firstCall() ? "" : "&");
-        sb.append("start=");
-        return sb.toString();
     }
 
     /**

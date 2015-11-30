@@ -10,6 +10,7 @@ package sirius.web.health;
 
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Context;
+import sirius.kernel.commons.RateLimit;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
@@ -29,7 +30,7 @@ import java.util.stream.Collectors;
 /**
  * Helper class to notify an hip chat room about certain events.
  */
-@Register
+@Register(classes = {HipChat.class, ExceptionHandler.class})
 public class HipChat implements ExceptionHandler {
 
     @Override
@@ -45,26 +46,22 @@ public class HipChat implements ExceptionHandler {
     }
 
     @ConfigValue("health.hipchat.messageUrl")
-    protected static String messageUrl;
+    protected String messageUrl;
 
     @ConfigValue("health.hipchat.authToken")
-    protected static String authToken;
+    protected String authToken;
 
     @ConfigValue("health.hipchat.room")
-    protected static String room;
+    protected String room;
 
     @ConfigValue("health.hipchat.sender")
-    protected static String sender;
+    protected String sender;
 
     @ConfigValue("health.hipchat.types")
-    protected static List<String> messageTypes;
-    protected static Set<String> messageFilter;
+    protected List<String> messageTypes;
+    protected Set<String> messageFilter;
 
-    // Limit to max. 5 messages every 15 seconds
-    protected static long lastMessage;
-    private static final long MIN_SEND_INTERVAL = TimeUnit.MILLISECONDS.convert(15, TimeUnit.SECONDS);
-    protected static long messagesFlooded = 0;
-    private static final long MAX_FLOOD_MESSAGES = 5;
+    private RateLimit checkInterval = RateLimit.nTimesPerInterval(15, TimeUnit.SECONDS, 5);
 
     /**
      * Sends the given message to hipchat (if configured property).
@@ -76,20 +73,11 @@ public class HipChat implements ExceptionHandler {
      * @param color       the color to use
      * @param notify      should users be notified or not?
      */
-    public static void sendMessage(@Nullable String messageType, String message, Color color, boolean notify) {
+    public void sendMessage(@Nullable String messageType, String message, Color color, boolean notify) {
         try {
-            // Limit to 5 msg every 15 sec to prevent flooding....
-            long now = System.currentTimeMillis();
-            if (now - lastMessage < MIN_SEND_INTERVAL) {
-                if (messagesFlooded > MAX_FLOOD_MESSAGES) {
-                    return;
-                }
-                messagesFlooded++;
-            } else {
-                messagesFlooded = 0;
+            if (!checkInterval.check()) {
+                return;
             }
-            lastMessage = now;
-
             if (Strings.isEmpty(messageUrl) || Strings.isEmpty(authToken) || Strings.isEmpty(room) || Strings.isEmpty(
                     message)) {
                 return;

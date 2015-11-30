@@ -306,7 +306,7 @@ public class WebServer implements Lifecycle, MetricProvider {
      * Determines the priority of the start of the web server. This is exposed as public so that other life cycles
      * can determine their own priority on this.
      */
-    public static int LIFECYCLE_PRIORITY = 500;
+    public static final int LIFECYCLE_PRIORITY = 500;
 
     @Override
     public int getPriority() {
@@ -423,8 +423,8 @@ public class WebServer implements Lifecycle, MetricProvider {
 
     @Override
     public void stopped() {
-        Operation.cover("web", () -> "WebServer.stopHTTPChannel", Duration.ofSeconds(15), this::stopHTTPChannel);
-        Operation.cover("web", () -> "WebServer.stopHTTPSChannel", Duration.ofSeconds(15), this::stopHTTPSChannel);
+        stopChannel(channel, "http");
+        stopChannel(sslChannel, "https");
         Operation.cover("web",
                         () -> "eventLoop.shutdownGracefully",
                         Duration.ofSeconds(15),
@@ -432,29 +432,15 @@ public class WebServer implements Lifecycle, MetricProvider {
         Operation.cover("web", () -> "Response.closeAsyncClient", Duration.ofSeconds(15), Response::closeAsyncClient);
     }
 
-    private void stopHTTPSChannel() {
-        Operation op = Operation.create("web", () -> "stopHTTPSChannel", Duration.ofSeconds(15));
-        try {
-            if (sslChannel != null) {
-                sslChannel.close().sync();
-            }
-        } catch (InterruptedException e) {
-            Exceptions.ignore(e);
-            LOG.SEVERE("Interrupted while waiting for the sslChannel to shut down");
-        } finally {
-            Operation.release(op);
-        }
-    }
-
-    private void stopHTTPChannel() {
-        Operation op = Operation.create("web", () -> "stopHTTPChannel", Duration.ofSeconds(15));
+    private void stopChannel(Channel channel, String name) {
+        Operation op = Operation.create("web", () -> "stopChannel(" + name + ")", Duration.ofSeconds(15));
         try {
             if (channel != null) {
                 channel.close().sync();
             }
         } catch (InterruptedException e) {
             Exceptions.ignore(e);
-            LOG.SEVERE("Interrupted while waiting for the channel to shut down");
+            LOG.SEVERE(Strings.apply("Interrupted while waiting for the %s channel to shut down", name));
         } finally {
             Operation.release(op);
         }

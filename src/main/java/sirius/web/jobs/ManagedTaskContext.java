@@ -15,6 +15,6 @@ import sirius.kernel.async.TaskContextAdapter;
  */
 public interface ManagedTaskContext extends TaskContextAdapter {
 
-    void
+    void fork(String category, Runnable runnable);
 
 }

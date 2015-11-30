@@ -12,18 +12,17 @@ import sirius.kernel.BaseSpecification
 
 import java.util.concurrent.locks.ReentrantLock
 
-/**
- * Created by aha on 01.11.15.
- */
 class TestServerSpec extends BaseSpecification {
 
-    def "keep server running"() {
+    def "keep server running if -Dkeep-running=true"() {
         when:
         def lock = new ReentrantLock()
         def condition = lock.newCondition()
         then:
-        lock.lock();
-        condition.await();
+        if (Boolean.parseBoolean(System.getenv().get("keep-running"))) {
+            lock.lock();
+            condition.await();
+        }
     }
 
 }

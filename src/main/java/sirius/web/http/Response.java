@@ -1436,7 +1436,7 @@ public class Response {
             buffer = null;
         }
 
-        private void ensureCapacity(int length) throws IOException {
+        private void ensureCapacity(int length) {
             if (buffer != null && buffer.writableBytes() < length) {
                 flushBuffer(false);
             }
@@ -1445,7 +1445,7 @@ public class Response {
             }
         }
 
-        private void flushBuffer(boolean last) throws IOException {
+        private void flushBuffer(boolean last) {
             if ((buffer == null || buffer.readableBytes() == 0) && !last) {
                 if (buffer != null) {
                     buffer.release();
@@ -1478,6 +1478,7 @@ public class Response {
                     } catch (InterruptedException e) {
                         open = false;
                         ctx.channel().close();
+                        Exceptions.ignore(e);
                         throw Exceptions.createHandled()
                                         .withSystemErrorMessage("Interrupted while waiting for a chunk to be written")
                                         .handle();

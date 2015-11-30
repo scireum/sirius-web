@@ -36,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 public class Jobs {
 
     public static final Log LOG = Log.get("jobs");
+    private static final String PERMISSION_ALL_TASKS = "permission-tasks";
 
     private Map<String, ManagedTaskExecution> activeTasks = Collections.synchronizedMap(Maps.newLinkedHashMap());
     private RateLimit taskCleanupLimit = RateLimit.timeInterval(10, TimeUnit.SECONDS);
@@ -106,12 +107,14 @@ public class Jobs {
             return result;
         }
         cleanupTasks();
-        for(ManagedTaskExecution task : activeTasks.values()) {
+        for (ManagedTaskExecution task : activeTasks.values()) {
             if (user.hasPermission(PERMISSION_ALL_TASKS) || Strings.areEqual(user.getUserId(), task.getUserId())) {
                 result.add(task);
             }
         }
 
-        Collections.sort(result, Comparator.comparing(ManagedTaskExecution::getScheduled));
+        Collections.sort(result, Comparator.comparing(ManagedTask::getScheduled));
+
+        return result;
     }
 }

@@ -23,9 +23,7 @@ class PageSpec extends Specification {
     }
 
 
-    def """createQueryStringForConfigurableStart() returns a query which
-             - contains all specified parameters and
-             - ends with 'start='"""() {
+    def "createQueryStringForConfigurableStart() returns a valid query string ending with start="() {
         given:
         page.withQuery("QUERY").
                 withFactes([
