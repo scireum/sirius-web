@@ -1189,6 +1189,9 @@ public class Response {
             if (Strings.isFilled(range)) {
                 brb.addHeader(HttpHeaders.Names.RANGE, range);
             }
+            if (WebServer.LOG.isFINE()) {
+                WebServer.LOG.FINE("Tunnel START: %s", url);
+            }
             // Tunnel it through...
             brb.execute(new TunnelHandler(url));
         } catch (Throwable t) {
@@ -1209,15 +1212,19 @@ public class Response {
     private class TunnelHandler implements AsyncHandler<String> {
 
         private final String url;
+        private final CallContext cc;
         private int responseCode = HttpResponseStatus.OK.code();
         private boolean contentLengthKnown;
 
         private TunnelHandler(String url) {
             this.url = url;
+            this.cc = CallContext.getCurrent();
         }
 
         @Override
         public STATE onHeadersReceived(HttpResponseHeaders h) throws Exception {
+            CallContext.setCurrent(cc);
+
             if (wc.responseCommitted) {
                 if (WebServer.LOG.isFINE()) {
                     WebServer.LOG.FINE("Tunnel - BLOCKED HEADERS (already sent) for %s", wc.getRequestedURI());
@@ -1270,6 +1277,8 @@ public class Response {
         @Override
         public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
             try {
+                CallContext.setCurrent(cc);
+
                 if (WebServer.LOG.isFINE()) {
                     WebServer.LOG.FINE("Tunnel - CHUNK: %s for %s (Last: %s)",
                                        bodyPart,
@@ -1326,6 +1335,8 @@ public class Response {
 
         @Override
         public STATE onStatusReceived(com.ning.http.client.HttpResponseStatus httpResponseStatus) throws Exception {
+            CallContext.setCurrent(cc);
+
             if (WebServer.LOG.isFINE()) {
                 WebServer.LOG.FINE("Tunnel - STATUS %s for %s",
                                    httpResponseStatus.getStatusCode(),
@@ -1345,6 +1356,8 @@ public class Response {
 
         @Override
         public String onCompleted() throws Exception {
+            CallContext.setCurrent(cc);
+
             if (WebServer.LOG.isFINE()) {
                 WebServer.LOG.FINE("Tunnel - COMPLETE for %s", wc.getRequestedURI());
             }
@@ -1362,6 +1375,8 @@ public class Response {
 
         @Override
         public void onThrowable(Throwable t) {
+            CallContext.setCurrent(cc);
+
             WebServer.LOG.WARN("Tunnel - ERROR %s for %s",
                                t.getMessage() + " (" + t.getMessage() + ")",
                                wc.getRequestedURI());
