@@ -108,7 +108,6 @@ public abstract class LineBasedProcessor {
                 }
                 rowProcessor.handleRow(current, Values.of(values));
                 tc.setState(NLS.get("LineBasedProcessor.linesProcessed"), current);
-                tc.inc("lines", w.elapsedMillis());
             }
         }
     }
@@ -135,7 +134,6 @@ public abstract class LineBasedProcessor {
                 current++;
                 tc.setState(NLS.get("LineBasedProcessor.linesProcessed"), current);
                 rowProcessor.handleRow(current, Values.of(nextLine));
-                tc.inc("lines", w.elapsedMillis());
             }
         }
     }
