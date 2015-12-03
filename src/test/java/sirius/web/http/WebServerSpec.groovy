@@ -11,10 +11,12 @@ package sirius.web.http
 import com.alibaba.fastjson.JSON
 import com.google.common.base.Charsets
 import com.google.common.io.ByteStreams
+import org.apache.log4j.Level
 import sirius.kernel.BaseSpecification
 import sirius.kernel.commons.Strings
 import sirius.kernel.commons.Watch
 import sirius.kernel.health.Average
+import sirius.kernel.health.LogHelper
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -159,6 +161,25 @@ class WebServerSpec extends BaseSpecification {
     }
 
     /**
+     * Call a service which generates a small result and then fails.
+     * <p>
+     * We expect an appropriate error in this case.
+     */
+    def "Invoke /service/xml/test_large_failure and expect a proper error"() {
+        given:
+        def uri = "/service/xml/test_large_failure";
+        def expectedHeaders = ['content-type': 'text/xml;charset=UTF-8']
+        when:
+        LogHelper.clearMessages();
+        and:
+        def data = callAndRead(uri, null, expectedHeaders);
+        then: "We expect a warning as the server was unable to send an error"
+        LogHelper.hasMessage(Level.WARN, "services", "Cannot send service error for.*");
+        and: "We expect the output to only contain the partial success response but no error block"
+        data.lastIndexOf("<?xml") == 0
+    }
+
+    /**
      * Call a controller which tunnels a small file
      */
     def "Invoke /tunnel/test"() {
@@ -283,7 +304,7 @@ class WebServerSpec extends BaseSpecification {
         u.setDoInput(true);
         u.setDoOutput(true);
         def out = u.getOutputStream();
-            out.write(testString.getBytes(Charsets.UTF_8));
+        out.write(testString.getBytes(Charsets.UTF_8));
         out.close();
         def result = new String(ByteStreams.toByteArray(u.getInputStream()), Charsets.UTF_8);
         then:
