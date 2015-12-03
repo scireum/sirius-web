@@ -1122,7 +1122,27 @@ public class WebContext implements SubContext {
      * @return a new response used to send data to the client.
      */
     public Response respondWith() {
+        if (responseCommitted) {
+            throw Exceptions.handle()
+                            .to(WebServer.LOG)
+                            .error(new IllegalStateException())
+                            .withSystemErrorMessage("Response for %s was already committed!", getRequestedURI())
+                            .handle();
+        }
         return new Response(this);
+    }
+
+    /**
+     * Determines if a response was already committed.
+     * <p>
+     * If a response is committed a HTTP state and some headers have already been sent. Therefore a new / other
+     * response
+     * cannot be created to this request.
+     *
+     * @return <tt>true</tt> if the response has been committed, <tt>false</tt> otherwise.
+     */
+    public boolean isResponseCommitted() {
+        return responseCommitted;
     }
 
     /**
