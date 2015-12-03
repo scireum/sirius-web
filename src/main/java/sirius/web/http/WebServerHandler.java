@@ -8,7 +8,6 @@
 
 package sirius.web.http;
 
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -273,10 +272,11 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     }
 
     private void handlePreflightRequest() {
+        String requestHeaders = currentRequest.headers().get(HttpHeaders.Names.ACCESS_CONTROL_REQUEST_HEADERS);
         currentContext.respondWith()
                       .setHeader(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_METHODS, "GET,PUT,POST,DELETE")
                       .setHeader(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_HEADERS,
-                                 currentRequest.headers().get(HttpHeaders.Names.ACCESS_CONTROL_REQUEST_HEADERS))
+                                 requestHeaders == null ? "" : requestHeaders)
                       .status(HttpResponseStatus.OK);
     }
 
