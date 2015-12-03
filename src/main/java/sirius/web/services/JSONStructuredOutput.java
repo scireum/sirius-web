@@ -227,15 +227,4 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
             throw Exceptions.handle(e);
         }
     }
-
-    /**
-     * Closes the underlying writer.
-     * <p>
-     * By default this method needs not be called, as {@link #endResult()} will close the writer.
-     *
-     * @throws IOException in case of an IO error
-     */
-    public void close() throws IOException {
-        writer.close();
-    }
 }

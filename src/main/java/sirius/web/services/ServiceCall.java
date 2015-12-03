@@ -8,6 +8,7 @@
 
 package sirius.web.services;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
@@ -51,6 +52,9 @@ public abstract class ServiceCall {
             LOG.WARN(
                     "Cannot send service error for: %s. As a partially successful response has already been created and committed!",
                     ctx.getRequest().getUri());
+
+            // Force underlying request / response to be closed...
+            ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, he);
             return;
         }
 
@@ -158,28 +162,11 @@ public abstract class ServiceCall {
     protected void invoke(StructuredService serv) {
         try {
             StructuredOutput output = createOutput();
-            try {
-                serv.call(this, output);
-            } finally {
-                if (ctx.isResponseCommitted()) {
-                    cleanup(output);
-                }
-            }
+            serv.call(this, output);
         } catch (Throwable t) {
             handle(null, t);
         }
     }
-
-    /**
-     * Is called after the service created an appropriate output to permit cleanup operations.
-     * <p>
-     * One special case being handled is if a partially successful service created enough output for the response
-     * to be committed and then fails. This leaves the output stream in an inconsistent state which must be cleaned
-     * up by forcefully closing the connection.
-     *
-     * @param output the output originally createhd by {@link #createOutput()}
-     */
-    protected abstract void cleanup(StructuredOutput output);
 
     /**
      * Creates the output used to render the result of the service call.

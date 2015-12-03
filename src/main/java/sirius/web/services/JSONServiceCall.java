@@ -24,15 +24,6 @@ class JSONServiceCall extends ServiceCall {
     }
 
     @Override
-    protected void cleanup(StructuredOutput output) {
-        try {
-            ((JSONStructuredOutput) output).close();
-        } catch (IOException e) {
-            Exceptions.handle(ServiceCall.LOG, e);
-        }
-    }
-
-    @Override
     protected StructuredOutput createOutput() {
         return ctx.respondWith().json();
     }
