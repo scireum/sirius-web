@@ -28,6 +28,11 @@ class RawServiceCall extends ServiceCall {
     }
 
     @Override
+    protected void cleanup(StructuredOutput output) {
+
+    }
+
+    @Override
     protected StructuredOutput createOutput() {
         return null;
     }

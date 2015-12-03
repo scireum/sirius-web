@@ -43,26 +43,38 @@ public abstract class ServiceCall {
                                         .to(LOG)
                                         .error(error)
                                         .withSystemErrorMessage("Service call to '%s' failed: %s (%s)",
-                                                                ctx.getRequest() == null ? "? " : ctx.getRequest().getUri())
+                                                                ctx.getRequest() == null ?
+                                                                "? " :
+                                                                ctx.getRequest().getUri())
                                         .handle();
+        if (ctx.isResponseCommitted()) {
+            LOG.WARN(
+                    "Cannot send service error for: %s. As a partially successful response has already been created and committed!",
+                    ctx.getRequest().getUri());
+            return;
+        }
+
         StructuredOutput out = createOutput();
         out.beginResult();
-        markCallFailed(out, he.getMessage());
-        Throwable cause = error.getCause();
-        while (cause != null && cause.getCause() != null && !cause.getCause().equals(cause)) {
-            cause = cause.getCause();
+        try {
+            markCallFailed(out, he.getMessage());
+            Throwable cause = error.getCause();
+            while (cause != null && cause.getCause() != null && !cause.getCause().equals(cause)) {
+                cause = cause.getCause();
+            }
+            if (cause == null) {
+                cause = error;
+            }
+            out.property("type", cause.getClass().getName());
+            if (Strings.isFilled(errorCode)) {
+                out.property("code", errorCode);
+            } else {
+                out.property("code", "ERROR");
+            }
+            out.property("flow", CallContext.getCurrent().getMDCValue(CallContext.MDC_FLOW));
+        } finally {
+            out.endResult();
         }
-        if (cause == null) {
-            cause = error;
-        }
-        out.property("type", cause.getClass().getName());
-        if (Strings.isFilled(errorCode)) {
-            out.property("code", errorCode);
-        } else {
-            out.property("code", "ERROR");
-        }
-        out.property("flow", CallContext.getCurrent().getMDCValue(CallContext.MDC_FLOW));
-        out.endResult();
     }
 
     /**
@@ -145,11 +157,29 @@ public abstract class ServiceCall {
      */
     protected void invoke(StructuredService serv) {
         try {
-            serv.call(this, createOutput());
+            StructuredOutput output = createOutput();
+            try {
+                serv.call(this, output);
+            } finally {
+                if (ctx.isResponseCommitted()) {
+                    cleanup(output);
+                }
+            }
         } catch (Throwable t) {
             handle(null, t);
         }
     }
+
+    /**
+     * Is called after the service created an appropriate output to permit cleanup operations.
+     * <p>
+     * One special case being handled is if a partially successful service created enough output for the response
+     * to be committed and then fails. This leaves the output stream in an inconsistent state which must be cleaned
+     * up by forcefully closing the connection.
+     *
+     * @param output the output originally createhd by {@link #createOutput()}
+     */
+    protected abstract void cleanup(StructuredOutput output);
 
     /**
      * Creates the output used to render the result of the service call.
