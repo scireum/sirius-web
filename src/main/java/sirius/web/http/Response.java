@@ -569,7 +569,7 @@ public class Response {
     }
 
     /**
-     * Sends a 307 or 301 (found / temporary redirect) to the given url as result, depending on the given HTTP
+     * Sends a 307 (temporary redirect) or 302 (found) to the given url as result, depending on the given HTTP
      * protocol in the request.
      *
      * @param url the URL to redirect to
@@ -837,7 +837,7 @@ public class Response {
         addHeaderIfNotExists("Content-Disposition",
                              (download ? "attachment;" : "inline;") + "filename=\"" + name.replaceAll(
                                      "[^A-Za-z0-9\\-_\\.]",
-                                     "_") + "\"");
+                                     "_") + "\";filename*=UTF-8''" + Strings.urlEncode(name.replace(" ", "_")));
     }
 
     /*
