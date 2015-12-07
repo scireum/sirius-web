@@ -1433,6 +1433,14 @@ public class Response {
      * @return an output stream which will be sent as response
      */
     public OutputStream outputStream(final HttpResponseStatus status, @Nullable final String contentType) {
+        if (wc.responseCommitted) {
+            throw Exceptions.handle()
+                            .to(WebServer.LOG)
+                            .error(new IllegalStateException())
+                            .withSystemErrorMessage("Response for %s was already committed!", wc.getRequestedURI())
+                            .handle();
+        }
+
         return new ChunkedOutputStream(contentType, status);
     }
 

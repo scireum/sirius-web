@@ -175,8 +175,8 @@ class WebServerSpec extends BaseSpecification {
         def data = callAndRead(uri, null, expectedHeaders);
         then: "We expect a warning as the server was unable to send an error"
         LogHelper.hasMessage(Level.WARN, "services", "Cannot send service error for.*");
-        and: "We expect the output to only contain the partial success response but no error block"
-        data.lastIndexOf("<?xml") == 0
+        and: "As the connection is closed due to an inconsistent state, an IO exception will occur on the client side"
+        thrown(IOException)
     }
 
     /**

@@ -1122,13 +1122,6 @@ public class WebContext implements SubContext {
      * @return a new response used to send data to the client.
      */
     public Response respondWith() {
-        if (responseCommitted) {
-            throw Exceptions.handle()
-                            .to(WebServer.LOG)
-                            .error(new IllegalStateException())
-                            .withSystemErrorMessage("Response for %s was already committed!", getRequestedURI())
-                            .handle();
-        }
         return new Response(this);
     }
 
