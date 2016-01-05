@@ -52,7 +52,7 @@ public class VelocityPDFContentHandler implements ContentHandler {
 
         ITextRenderer renderer = new ITextRenderer();
         renderer.getSharedContext()
-                .setReplacedElementFactory(new BarcodeReplacedElementFactory(renderer.getOutputDevice()));
+                .setReplacedElementFactory(new ImageReplacedElementFactory(renderer.getOutputDevice()));
         renderer.setDocumentFromString(writer.toString());
         renderer.layout();
         renderer.createPDF(out);

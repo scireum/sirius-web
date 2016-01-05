@@ -12,7 +12,10 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.typesafe.config.Config;
 import sirius.kernel.Sirius;
+import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.ConfigValue;
+import sirius.kernel.extensions.Extension;
+import sirius.kernel.extensions.Extensions;
 
 import java.lang.reflect.AnnotatedElement;
 import java.util.Collection;
@@ -43,11 +46,17 @@ public class Permissions {
     private static Set<String> getProfile(String role) {
         if (profilesCache == null) {
             Map<String, Set<String>> profiles = Maps.newHashMap();
-            Config profilesConfig = Sirius.getConfig().getConfig("security.profiles");
-            profilesConfig.entrySet()
-                          .stream()
-                          .map(e -> e.getKey())
-                          .forEach(key -> profiles.put(key, Sets.newTreeSet(profilesConfig.getStringList(key))));
+
+            for(Extension ext : Extensions.getExtensions("security.profiles")) {
+                Set<String> permissions = Sets.newTreeSet();
+                for(Map.Entry<String, Object> permission : ext.getContext().entrySet()) {
+                    if (Value.of(permission.getValue()).asBoolean()) {
+                        permissions.add(permission.getKey());
+                    }
+                }
+                profiles.put(ext.getId(), permissions);
+            }
+
             profilesCache = profiles;
         }
         return profilesCache.getOrDefault(role, Collections.emptySet());

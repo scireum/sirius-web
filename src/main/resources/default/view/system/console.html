@@ -5,6 +5,10 @@
     <script>
         $(document).ready(function ($) {
             $('#term').terminal('@prefix/service/json/system/console', {
+                prompt: function(output) {
+                    var now = new Date();
+                    output(now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds()+' - @ctx.getNodeName()> ');
+                },
                 greetings: '@product (@detailedVersion) - Type "help" for a list of available commands.'
             });
 
@@ -26,7 +30,7 @@
             padding: 0;
         }
 
-        .breadcrumbs {
+        .breadcrumb {
             display: none;
         }
 

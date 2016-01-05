@@ -96,14 +96,15 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
     @Override
     public void cancel() {
         if (!canceled) {
-            log("Execution has been canceled by " + UserContext.getCurrentUser().getUserName());
+            log("Execution has been aborted by " + UserContext.getCurrentUser().getUserName());
         }
         canceled = true;
     }
 
+
     @Override
     public boolean isActive() {
-        return !canceled;
+        return !canceled && tasks.isRunning();
     }
 
     @Override

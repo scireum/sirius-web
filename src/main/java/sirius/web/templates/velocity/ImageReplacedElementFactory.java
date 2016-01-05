@@ -28,26 +28,33 @@ import org.xhtmlrenderer.pdf.ITextReplacedElementFactory;
 import org.xhtmlrenderer.render.BlockBox;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
+import sirius.web.security.UserContext;
+import sirius.web.templates.Resolver;
+import sirius.web.templates.Resource;
 
 import java.awt.Color;
 
 /**
- * Used by the XHTMLRenderer (creating PDFs) to generate barcodes and to support ratio aware scaling or images.
+ * Used by the XHTMLRenderer (creating PDFs) to generate barcodes and to support ratio aware scaling of images.
  * <p>
  * A barcode can be added by placing an img tag with an type attribute: &lt;img type="code128" src="0815" /&gt;.
  * As type <b>code128</b>, <b>ean</b> and <b>qr</b> are supported.
  */
-class BarcodeReplacedElementFactory extends ITextReplacedElementFactory {
+class ImageReplacedElementFactory extends ITextReplacedElementFactory {
 
     /**
      * Generates a new element factory for the given output
      *
      * @param outputDevice the output device to operate on
      */
-    BarcodeReplacedElementFactory(ITextOutputDevice outputDevice) {
+    ImageReplacedElementFactory(ITextOutputDevice outputDevice) {
         super(outputDevice);
     }
+
+    @Part
+    private static Resolver resolver;
 
     @Override
     public ReplacedElement createReplacedElement(LayoutContext c,
@@ -62,57 +69,77 @@ class BarcodeReplacedElementFactory extends ITextReplacedElementFactory {
         }
 
         String nodeName = e.getNodeName();
-        if ("img".equals(nodeName)) {
-            if (Strings.isFilled(e.getAttribute("type"))) {
-                try {
-                    if ("qr".equalsIgnoreCase(e.getAttribute("type"))) {
-                        Writer writer = new QRCodeWriter();
-                        BitMatrix matrix = writer.encode(e.getAttribute("src"),
-                                                         com.google.zxing.BarcodeFormat.QR_CODE,
-                                                         cssWidth != -1 ? cssWidth : 600,
-                                                         cssHeight != -1 ? cssHeight : 600);
-                        FSImage fsImage =
-                                new ITextFSImage(Image.getInstance(MatrixToImageWriter.toBufferedImage(matrix),
-                                                                   Color.WHITE));
-                        if (cssWidth != -1 || cssHeight != -1) {
-                            fsImage.scale(cssWidth, cssHeight);
-                        }
-                        return new ITextImageElement(fsImage);
-                    } else {
-                        Barcode code = null;
-                        if ("code128".equalsIgnoreCase(e.getAttribute("type"))) {
-                            code = new Barcode128();
-                        } else if ("ean".equalsIgnoreCase(e.getAttribute("type"))) {
-                            code = new BarcodeEAN();
-                        }
-                        code.setCode(e.getAttribute("src"));
-                        FSImage fsImage =
-                                new ITextFSImage(Image.getInstance(code.createAwtImage(Color.BLACK, Color.WHITE),
-                                                                   Color.WHITE));
-                        if (cssWidth != -1 || cssHeight != -1) {
-                            fsImage.scale(cssWidth, cssHeight);
-                        }
-                        return new ITextImageElement(fsImage);
-                    }
-                } catch (Throwable ex) {
-                    Exceptions.ignore(ex);
-                    return null;
-                }
-            } else {
-                FSImage fsImage = uac.getImageResource(e.getAttribute("src")).getImage();
-                if (fsImage != null) {
-                    if (cssWidth != -1 || cssHeight != -1) {
-                        Tuple<Integer, Integer> newSize = computeResizeBox(cssWidth, cssHeight, fsImage);
-                        if (newSize != null) {
-                            fsImage.scale(newSize.getFirst(), newSize.getSecond());
-                        }
-                    }
-                    return new ITextImageElement(fsImage);
+        if (!"img".equals(nodeName)) {
+            return super.createReplacedElement(c, box, uac, cssWidth, cssHeight);
+        }
+        String src = e.getAttribute("src");
+        if (Strings.isEmpty(src)) {
+            return super.createReplacedElement(c, box, uac, cssWidth, cssHeight);
+        }
+        try {
+            String type = e.getAttribute("type");
+            if (Strings.isFilled(type)) {
+                return createImageForBarcode(type, src, cssWidth, cssHeight);
+            }
+
+            FSImage image = null;
+            if (!src.toLowerCase().startsWith("http")) {
+                Resource resource = resolver.resolve(UserContext.getCurrentScope().getScopeId(), src);
+                if (resource != null) {
+                    image = new ITextFSImage(Image.getInstance(resource.getUrl()));
                 }
             }
+
+            if (image == null) {
+                image = uac.getImageResource(src).getImage();
+            }
+
+            if (image != null) {
+                if (cssWidth != -1 || cssHeight != -1) {
+                    Tuple<Integer, Integer> newSize = computeResizeBox(cssWidth, cssHeight, image);
+                    if (newSize != null) {
+                        image.scale(newSize.getFirst(), newSize.getSecond());
+                    }
+                }
+                return new ITextImageElement(image);
+            }
+        } catch (Throwable ex) {
+            Exceptions.ignore(ex);
+            return null;
         }
 
         return super.createReplacedElement(c, box, uac, cssWidth, cssHeight);
+    }
+
+    private ReplacedElement createImageForBarcode(String type, String src, int cssWidth, int cssHeight)
+            throws Exception {
+        if ("qr".equalsIgnoreCase(type)) {
+            Writer writer = new QRCodeWriter();
+            BitMatrix matrix = writer.encode(src,
+                                             com.google.zxing.BarcodeFormat.QR_CODE,
+                                             cssWidth != -1 ? cssWidth : 600,
+                                             cssHeight != -1 ? cssHeight : 600);
+            FSImage fsImage =
+                    new ITextFSImage(Image.getInstance(MatrixToImageWriter.toBufferedImage(matrix), Color.WHITE));
+            if (cssWidth != -1 || cssHeight != -1) {
+                fsImage.scale(cssWidth, cssHeight);
+            }
+            return new ITextImageElement(fsImage);
+        }
+
+        Barcode code = null;
+        if ("code128".equalsIgnoreCase(type)) {
+            code = new Barcode128();
+        } else if ("ean".equalsIgnoreCase(type)) {
+            code = new BarcodeEAN();
+        }
+        code.setCode(src);
+        FSImage fsImage =
+                new ITextFSImage(Image.getInstance(code.createAwtImage(Color.BLACK, Color.WHITE), Color.WHITE));
+        if (cssWidth != -1 || cssHeight != -1) {
+            fsImage.scale(cssWidth, cssHeight);
+        }
+        return new ITextImageElement(fsImage);
     }
 
     /**
@@ -131,7 +158,7 @@ class BarcodeReplacedElementFactory extends ITextReplacedElementFactory {
         int newWidth = -1;
         int newHeight = fsImage.getHeight();
 
-        // Downsize an maintain aspect ratio...
+        // Downsize and maintain aspect ratio...
         if (fsImage.getWidth() > cssWidth && cssWidth > -1) {
             newWidth = cssWidth;
             newHeight = (newWidth * fsImage.getHeight()) / fsImage.getWidth();

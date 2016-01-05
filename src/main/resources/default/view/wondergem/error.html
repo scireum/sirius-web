@@ -1,0 +1,29 @@
+@args String message
+@extends(view.wondergem.template.html, title: NLS.get("BasicController.error"))
+@section(head) {
+    <style>
+        .breadcumbs {
+            display: none;
+        }
+    </style>
+}
+
+<div class="well feature-unavailable">
+    <span class="legend">@i18n("Messages.Error")</span>
+    <div class="row">
+        <div class="span3">
+            <img src="@prefix/assets/images/skip-sad-small.png" />
+        </div>
+        <div class="span8">
+            <p class="lead">
+                @i18n("Messages.Error.Info")
+            </p>
+            <p class="lead">
+                @i18n("Messages.Support")
+            </p>
+            <p class="lead">
+                <i class="icon-double-angle-right"></i> <a href="@prefix/" class="link">@NLS.get("Messages.toDashboard")</a>
+            </p>
+        </div>
+    </div>
+</div>

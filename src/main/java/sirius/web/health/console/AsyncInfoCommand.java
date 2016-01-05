@@ -12,12 +12,15 @@ import sirius.kernel.async.AsyncExecutor;
 import sirius.kernel.async.BackgroundLoop;
 import sirius.kernel.async.Operation;
 import sirius.kernel.async.Tasks;
+import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -55,12 +58,20 @@ public class AsyncInfoCommand implements Command {
         }
         output.separator();
         output.blankLine();
+        output.apply("Frequency Limited Tasks");
+        output.separator();
+        for (Tuple<String, LocalDateTime> task : tasks.getScheduledTasks()) {
+            output.apply("%-60s %s", task.getFirst(), NLS.toUserString(task.getSecond()));
+        }
+        output.separator();
+        output.blankLine();
         output.apply("Background Loops");
         output.separator();
         for (BackgroundLoop loop : loops) {
-            output.apply("%-40s %s", loop.getName(), loop.getExecutionInfo());
+            output.apply("%-60s %s", loop.getName(), loop.getExecutionInfo());
         }
         output.separator();
+        output.blankLine();
         List<Operation> ops = Operation.getActiveOperations();
         if (!ops.isEmpty()) {
             output.blankLine();

@@ -11,13 +11,17 @@ package sirius.web.templates;
 import au.com.bytecode.opencsv.CSVReader;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import sirius.kernel.async.TaskContext;
 import sirius.kernel.commons.BOMReader;
 import sirius.kernel.commons.Doubles;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Values;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.health.Exceptions;
@@ -43,7 +47,10 @@ public abstract class LineBasedProcessor {
      */
     public static LineBasedProcessor create(String name, InputStream input) {
         if (name.toLowerCase().endsWith("xls")) {
-            return new XLSProcessor(input);
+            return new XLSProcessor(input, false);
+        }
+        if (name.toLowerCase().endsWith("xlsx")) {
+            return new XLSProcessor(input, true);
         }
         if (name.toLowerCase().endsWith("csv")) {
             return new CSVProcessor(input);
@@ -64,16 +71,18 @@ public abstract class LineBasedProcessor {
      */
     protected static class XLSProcessor extends LineBasedProcessor {
         private InputStream input;
+        private boolean xslx;
 
-        public XLSProcessor(InputStream input) {
+        public XLSProcessor(InputStream input, boolean xslx) {
             super();
             this.input = input;
+            this.xslx = xslx;
         }
 
         @Override
         public void run(RowProcessor rowProcessor) throws Exception {
-            HSSFWorkbook wb = new HSSFWorkbook(input);
-            HSSFSheet sheet = wb.getSheetAt(0);
+            Workbook wb = xslx ? new XSSFWorkbook(input) : new HSSFWorkbook(input);
+            Sheet sheet = wb.getSheetAt(0);
             Iterator<Row> iter = sheet.rowIterator();
             int current = 0;
             TaskContext tc = TaskContext.get();
@@ -86,29 +95,48 @@ public abstract class LineBasedProcessor {
                 List<Object> values = Lists.newArrayList();
                 for (int i = first; i <= last; i++) {
                     Cell cell = row.getCell(i);
-                    Object value = null;
-                    if (cell != null) {
-                        if (cell.getCellType() == Cell.CELL_TYPE_BOOLEAN) {
-                            value = cell.getBooleanCellValue();
-                        } else if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-                            double val = cell.getNumericCellValue();
-                            if (Doubles.isZero(Doubles.frac(val))) {
-                                value = Math.round(val);
-                            } else {
-                                value = val;
-                            }
-                        } else if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
-                            value = cell.getRichStringCellValue().getString();
-                            if (value != null) {
-                                value = ((String) value).trim();
-                            }
-                        }
-                    }
+                    Object value = extractCellValue(cell);
                     values.add(value);
                 }
                 rowProcessor.handleRow(current, Values.of(values));
                 tc.setState(NLS.get("LineBasedProcessor.linesProcessed"), current);
             }
+        }
+
+        private Object extractCellValue(Cell cell) {
+            if (cell == null) {
+                return null;
+            }
+            int cellType = cell.getCellType();
+            if (cellType == HSSFCell.CELL_TYPE_FORMULA) {
+                cellType = cell.getCachedFormulaResultType();
+            }
+            if (cellType == HSSFCell.CELL_TYPE_BOOLEAN) {
+                return cell.getBooleanCellValue();
+            }
+
+            if (cellType == HSSFCell.CELL_TYPE_NUMERIC) {
+                double val = cell.getNumericCellValue();
+                if (Doubles.isZero(Doubles.frac(val))) {
+                    return Math.round(val);
+                } else {
+                    return val;
+                }
+            }
+
+            if (cellType == HSSFCell.CELL_TYPE_STRING) {
+                String value = cell.getRichStringCellValue().getString();
+                if (value != null) {
+                    return value.trim();
+                } else {
+                    return null;
+                }
+            }
+            throw new IllegalArgumentException(Strings.apply(
+                    "Cannot read a value of type %d from cell at row %d, column  %d",
+                    cellType,
+                    cell.getRowIndex(),
+                    cell.getColumnIndex()));
         }
     }
 

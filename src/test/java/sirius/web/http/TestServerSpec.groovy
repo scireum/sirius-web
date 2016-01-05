@@ -19,7 +19,7 @@ class TestServerSpec extends BaseSpecification {
         def lock = new ReentrantLock()
         def condition = lock.newCondition()
         then:
-        if (Boolean.parseBoolean(System.getenv().get("keep-running"))) {
+        if (Boolean.parseBoolean(System.getProperty("keepRunning"))) {
             lock.lock();
             condition.await();
         }

@@ -24,6 +24,7 @@ import sirius.web.http.WebContext;
 import sirius.web.http.session.ServerSession;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
@@ -319,27 +320,43 @@ public abstract class GenericUserManager implements UserManager {
             if (ctx.getServerSession(false).isPresent()) {
                 Value userId = ctx.getServerSession().getValue(scope.getScopeId() + "-user-id");
                 if (userId.isFilled()) {
-                    return new UserInfo(ctx.getServerSession().getValue(scope.getScopeId() + "-tenant-id").asString(),
-                                        ctx.getServerSession().getValue(scope.getScopeId() + "-tenant-name").asString(),
-                                        userId.asString(),
-                                        ctx.getServerSession().getValue(scope.getScopeId() + "-user-name").asString(),
-                                        ctx.getServerSession().getValue(scope.getScopeId() + "-user-email").asString(),
-                                        ctx.getServerSession().getValue(scope.getScopeId() + "-user-lang").asString(),
-                                        computeRoles(ctx, userId.asString()),
-                                        u -> getUserObject(u));
+                    Set<String> roles = computeRoles(ctx, userId.asString());
+                    if (roles != null) {
+                        return new UserInfo(ctx.getServerSession()
+                                               .getValue(scope.getScopeId() + "-tenant-id")
+                                               .asString(),
+                                            ctx.getServerSession()
+                                               .getValue(scope.getScopeId() + "-tenant-name")
+                                               .asString(),
+                                            userId.asString(),
+                                            ctx.getServerSession()
+                                               .getValue(scope.getScopeId() + "-user-name")
+                                               .asString(),
+                                            ctx.getServerSession()
+                                               .getValue(scope.getScopeId() + "-user-email")
+                                               .asString(),
+                                            ctx.getServerSession()
+                                               .getValue(scope.getScopeId() + "-user-lang")
+                                               .asString(),
+                                            roles,
+                                            u -> getUserObject(u));
+                    }
                 }
             }
         } else if (sessionStorage == SESSION_STORAGE_TYPE_CLIENT) {
             Value userId = ctx.getSessionValue(scope.getScopeId() + "-user-id");
             if (userId.isFilled()) {
-                return new UserInfo(ctx.getSessionValue(scope.getScopeId() + "-tenant-id").asString(),
-                                    ctx.getSessionValue(scope.getScopeId() + "-tenant-name").asString(),
-                                    userId.asString(),
-                                    ctx.getSessionValue(scope.getScopeId() + "-user-name").asString(),
-                                    ctx.getSessionValue(scope.getScopeId() + "-user-email").asString(),
-                                    ctx.getSessionValue(scope.getScopeId() + "-user-lang").asString(),
-                                    computeRoles(ctx, userId.asString()),
-                                    u -> getUserObject(u));
+                Set<String> roles = computeRoles(ctx, userId.asString());
+                if (roles != null) {
+                    return new UserInfo(ctx.getSessionValue(scope.getScopeId() + "-tenant-id").asString(),
+                                        ctx.getSessionValue(scope.getScopeId() + "-tenant-name").asString(),
+                                        userId.asString(),
+                                        ctx.getSessionValue(scope.getScopeId() + "-user-name").asString(),
+                                        ctx.getSessionValue(scope.getScopeId() + "-user-email").asString(),
+                                        ctx.getSessionValue(scope.getScopeId() + "-user-lang").asString(),
+                                        roles,
+                                        u -> getUserObject(u));
+                }
             }
         }
         return null;
@@ -355,6 +372,7 @@ public abstract class GenericUserManager implements UserManager {
      * @return a set of roles granted to the user or an empty set if no roles were found
      */
     @SuppressWarnings("unchecked")
+    @Nullable
     protected Set<String> computeRoles(WebContext ctx, String userId) {
         if (sessionStorage == SESSION_STORAGE_TYPE_SERVER && ctx.getServerSession(false).isPresent()) {
             return ctx.getServerSession()

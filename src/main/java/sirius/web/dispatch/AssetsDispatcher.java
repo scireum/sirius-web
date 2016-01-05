@@ -12,6 +12,7 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.serversass.Generator;
 import org.serversass.Output;
+import org.serversass.ast.Value;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.PriorityCollector;
@@ -145,6 +146,10 @@ public class AssetsDispatcher implements WebDispatcher {
             }
             return null;
         }
+
+        SIRIUSGenerator() {
+            scope.set("prefix", new Value(WebContext.getContextPrefix()));
+        }
     }
 
     @Part
@@ -215,11 +220,8 @@ public class AssetsDispatcher implements WebDispatcher {
     private File getCacheDirFile() {
         if (cacheDirFile == null) {
             File tmpDir = new File(System.getProperty("java.io.tmpdir"),
-                                   Strings.toSaneFileName(Product.getProduct().getName()).orElse("")
-                                   + "_"
-                                   + CallContext.getNodeName()
-                                   + "_"
-                                   + cacheDir);
+                                   Strings.toSaneFileName(Product.getProduct().getName()).orElse("") + "_" + CallContext
+                                           .getNodeName() + "_" + cacheDir);
             tmpDir.mkdirs();
             cacheDirFile = tmpDir;
         }

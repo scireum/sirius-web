@@ -17,6 +17,7 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.nls.NLS;
+import sirius.web.controller.BasicController;
 import sirius.web.controller.Controller;
 import sirius.web.controller.Routed;
 import sirius.web.http.WebContext;
@@ -31,8 +32,8 @@ import java.io.InputStreamReader;
 /**
  * Created by aha on 30.10.15.
  */
-@Register
-public class JobsController implements Controller {
+@Register(classes = Controller.class)
+public class JobsController extends BasicController {
 
     public static final String PERMISSION_SYSTEM_SCRIPTING = "permission-system-scripting";
 
