@@ -22,6 +22,7 @@ import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.health.metrics.Metrics;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.nls.Translation;
+import sirius.web.controller.BasicController;
 import sirius.web.controller.Controller;
 import sirius.web.controller.Page;
 import sirius.web.controller.Routed;
@@ -37,7 +38,7 @@ import java.util.stream.Stream;
  * Contains the default admin GUI.
  */
 @Register(classes = Controller.class)
-public class SystemController implements Controller {
+public class SystemController extends BasicController {
 
     public static final String PERMISSION_SYSTEM_CONSOLE = "permission-system-console";
 
@@ -47,11 +48,6 @@ public class SystemController implements Controller {
     @Permission(PERMISSION_SYSTEM_CONSOLE)
     public void console(WebContext ctx) {
         ctx.respondWith().cached().template("/view/system/console.html");
-    }
-
-    @Override
-    public void onError(WebContext ctx, HandledException error) {
-        ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
     }
 
     @Part

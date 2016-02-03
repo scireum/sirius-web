@@ -778,7 +778,7 @@ public class Response {
                           .to(WebServer.LOG)
                           .withSystemErrorMessage("An excption occurred while responding to: %s - %s (%s)",
                                                   wc == null || wc.getRequest() == null ?
-                                                  "?" :
+                                                  "?"                                   :
                                                   wc.getRequest().getUri())
                           .handle();
                 error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
@@ -838,7 +838,7 @@ public class Response {
         addHeaderIfNotExists("Content-Disposition",
                              (download ? "attachment;" : "inline;") + "filename=\"" + name.replaceAll(
                                      "[^A-Za-z0-9\\-_\\.]",
-                                     "_") + "\";filename*=UTF-8''" + Strings.urlEncode(name.replace(" ", "_")));
+                                     "_")                                             +                                           "\";filename*=UTF-8''"                    + Strings.urlEncode(name.replace(" ", "_")));
     }
 
     /*
@@ -1143,8 +1143,9 @@ public class Response {
      */
     protected static AsyncHttpClient getAsyncClient() {
         if (asyncClient == null) {
-            asyncClient = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setAllowPoolingConnection(true)
-                                                                                 .setRequestTimeoutInMs(-1)
+            asyncClient = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setAllowPoolingConnections(true)
+                                                                                 .setAllowPoolingSslConnections(true)
+                                                                                 .setRequestTimeout(-1)
                                                                                  .build());
         }
         return asyncClient;

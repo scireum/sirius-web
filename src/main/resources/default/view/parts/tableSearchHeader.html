@@ -1,16 +1,18 @@
-@args String uri, sirius.web.controller.Page page
+@args Page page, String baseURL
 <div class="well">
     <div class="pull-left">
-        <form class="form-inline" action="@prefix/@uri" method="get" id="search">
-            <div class="input-append">
-                <input type="text" name="query" value="@page.getQuery()" placeholder="@i18n("NLS.searchkey")" autofocus />
-                <span class="add-on" onclick="$('#search').submit()"><i class="icon-search"></i></span>
+        <form class="form-inline" action="@prefix/@baseURL" method="get" id="search">
+            <div class="input-group">
+                <input type="text" name="query" class="form-control" value="@page.getQuery()" placeholder="@i18n("NLS.searchkey")" autofocus />
+                <span class="input-group-addon" onclick="$('#search').submit()"><i class="fa fa-search"></i></span>
             </div>
         </form>
     </div>
     <div class="pull-right">
-        @renderBody()
-        <a class="btn" href="@prefix/@uri?@page.createQueryString()"><i class="icon-refresh"></i></a>
+        <span>
+            @renderBody()
+        </span>
+        <a class="btn btn-default" href="@prefix/@baseURL?@page.createQueryString()"><i class="fa fa-refresh"></i></a>
     </div>
     <span class="clearfix"></span>
 </div>

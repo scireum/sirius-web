@@ -24,6 +24,23 @@
         });
     }
 
+    function colorpickerPatchForms() {
+        $(".pick-a-color").each(function(index, element) {
+            var input = $(element);
+            var parentDiv = $(input.parent());
+
+            // remove pick-a-color from input, add it to parentDiv
+            input.removeClass("pick-a-color").addClass("field");
+            parentDiv.addClass("pick-a-color").addClass("input-prepend");
+
+            // create span before the input
+            $('<span class="add-on"><i></i></span>').insertBefore(input);
+        });
+
+        // instanciate colorpickers.
+        $('.pick-a-color').colorpicker();
+    }
+
     function enableAutocomplete(field) {
         function createSubmitData(key, value) {
             var data = {};
@@ -41,6 +58,32 @@
             data[key] = value;
             return data;
         }
+
+
+        if (field.data('optional')) {
+            field.prepend('<option value=""></option>');
+        }
+
+        field.on('select2:open', function (e) {
+            $('.select2-search__field').each(function(e) {
+                var search = $(this);
+                if (search.parent().hasClass('select2-search--inline')) {
+                    // Don't add placeholder and graphic to inline search fields
+                    return;
+                }
+                search.css({
+                    'background-image': 'url("/assets/wondergem/select2/chosen-sprite.png")',
+                    'background-repeat': 'no-repeat',
+                    'background-position': '100% -22px'
+                });
+                var placeholder = field.attr('data-searchtext');
+                if (typeof placeholder === 'undefined' || placeholder === '') {
+                    placeholder = '@i18n("template.html.placeholder")';
+                }
+                search.attr('placeholder', placeholder);
+            });
+        });
+
         field.select2({
             allowClear: field.data('optional'),
             placeholder: '@i18n("template.html.select2.selection")',
@@ -75,6 +118,7 @@
 
     $(document).ready(function() {
         createConfirmForDangerousLinks();
+        colorpickerPatchForms();
 
         $('.date-picker').datepicker({
             format: '@dateFormat',
@@ -84,15 +128,39 @@
             todayHighlight: true
         });
 
-
         $('select[data-autocomplete]').each(function(e) {
+            var field = $(this);
+
+            enableAutocomplete(field);
+        });
+
+        $('.select2-select').each(function(e) {
             var field = $(this);
 
             if (field.data('optional')) {
                 field.prepend('<option value=""></option>');
             }
 
-            enableAutocomplete(field);
+            field.select2({
+                allowClear: field.data('optional'),
+                placeholder: '@i18n("template.html.select2.selection")',
+                minimumResultsForSearch: 10,
+                language : {
+                    maximumSelected: function(args) {
+                        return '@i18n("template.html.select2.maximumSelected.prefix") ' + args.maximum + ' @i18n("template.html.select2.maximumSelected.suffix")';
+                    },
+                    searching: function () {
+                        return '@i18n("template.html.select2.searching")';
+                    },
+                    noResults: function () {
+                        return '@i18n("template.html.select2.noMatches")';
+                    }
+                },
+                escapeMarkup: function(m) {
+                    // Do not escape HTML in the select options text
+                    return m;
+                }
+            });
         });
 
         $(window).resize(invokeResizeHandler);

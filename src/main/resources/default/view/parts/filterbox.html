@@ -1,0 +1,35 @@
+@*
+*  Made with all the love in the world
+*  by scireum in Remshalden, Germany
+*
+*  Copyright by scireum GmbH
+*  http://www.scireum.de - info@scireum.de
+*@
+@args Page page, String baseURL
+
+@if (page.hasFacets()) {
+    <div class="well filter-box">
+        <ul class="nav nav-list">
+            @for(sirius.web.controller.Facet facet : page.getFacets()) {
+                @if (facet.hasItems()) {
+                    <li class="nav-header">@facet.getTitle()</li>
+                    @for(sirius.web.controller.FacetItem item : facet.getItems()) {
+                        <li @if (item.isActive()) { class="active" }>
+
+                            <a href="@prefix/@baseURL?@facet.createToggleQueryString(item)" class="row">
+                                <span class="filter-title word-wrap">
+                                    <i @if (item.isActive()) { class="fa fa-check-square-o" } else { class="fa fa-square-o" }></i> <span class="filter-title-inner">@item.getTitle()</span>
+                                </span>
+                                @if (item.getCount() >= 0) { <span class="filter-counter-wrapper"><span class="pull-right badge">@item.getCount()</span></span> }
+                            </a>
+                        </li>
+                    }
+                }
+            }
+        <div class="clearfix"></div>
+        </ul>
+    </div>
+} else {
+    <p class="muted" style="padding: 0px 8px"><i>@i18n("Filterbox.noItems")</i></p>
+}
+<div class="clearfix">&nbsp;</div>

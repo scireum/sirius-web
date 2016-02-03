@@ -1,0 +1,34 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+//
+// Code (inline and blocK)
+// --------------------------------------------------
+pre {
+  padding: 0px;
+  background: none;
+  border: none;
+}
+
+// Code Output with prettypring
+pre.prettyprint {
+  padding: 19px;
+}
+
+pre.infotext {
+  margin-top: 10px;
+  background-color: #393939;
+  padding: 5px;
+  font-family: monospace;
+  color: $primary-color-light;
+}
+
+.code-with-config-buttons {
+  margin: 10px 0;
+  font-family: monospace;
+}

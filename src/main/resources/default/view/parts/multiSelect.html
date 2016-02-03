@@ -1,0 +1,26 @@
+@*
+*  Made with all the love in the world
+*  by scireum in Remshalden, Germany
+*
+*  Copyright by scireum GmbH
+*  http://www.scireum.de - info@scireum.de
+*@
+@args String span, String name, String labelKey, String helpKey, boolean optional, int maxItems
+<div class="col-md-@(span == null || span == "" ? 6 : span)  form-group">
+    @if (labelKey != null) {
+        <label>@i18n(labelKey)</label>
+    }
+    <select name="@name" class="select2-select form-control"
+            @if(maxItems != 0) {
+                data-maximum-selection-length="@(maxItems)"
+            }
+            multiple="multiple">
+        @renderBody()
+    </select>
+    @if (helpKey != null) {
+        <span class="help-block">@i18n(helpKey)</span>
+    }
+    @if (optional) {
+        <input name="@name" type="hidden" value="" />
+    }
+</div>

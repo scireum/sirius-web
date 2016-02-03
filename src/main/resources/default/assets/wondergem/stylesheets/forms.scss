@@ -1,0 +1,145 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+//
+// Forms
+// --------------------------------------------------
+
+// Variables Forms
+// -------------------------
+$inputBorder:                   $borderColor;
+$inputDisabledBackground:       $whiteDark;
+
+// Groups of fields with labels on top (legends)
+legend, .legend, h1 {
+  display: block;
+  width: 100%;
+  font-size: $headingsfontSize;
+  padding: 0;
+  padding-bottom: 5px;
+  font-family: $headingsFontFamily;
+  color: $gray;
+  border: 0;
+  border-bottom: 1px solid $borderColor;
+  margin-top: 20px;
+  margin-bottom: 15px;
+}
+
+// Small
+legend.legend-small, .legend.legend-small {
+  margin-top: 20px;
+  font-size: 16px;
+  line-height: 30px;
+}
+
+// Small Legend top spacing
+legend.legend-small:first-child, .legend.legend-small:first-child {
+  margin-top: 0;
+}
+
+// make first label headline
+label:first-child,
+label {
+  font-weight: $headingsFontWeight;
+}
+
+// helper class for labels that shouldnt be headlines
+label:first-child.label-normal {
+  font-weight: $bodyFontWeight;
+}
+
+// Uneditable inputs
+// -------------------------
+
+// Make uneditable inputs look inactive
+.uneditable-input,
+.uneditable-textarea {
+  background-color: #e9eaea;
+  background-color: rgba(94, 99, 103, 0.08);
+}
+
+// DISABLED STATE
+// --------------
+// Disabled and read-only inputs
+input[disabled],
+select[disabled],
+textarea[disabled],
+input[readonly],
+select[readonly],
+textarea[readonly] {
+  background-color: #e9eaea;
+  background-color: rgba(94, 99, 103, 0.08);
+}
+
+// FORM FIELD FEEDBACK STATES
+// --------------------------
+
+// Error
+.control-group.error {
+  //.formFieldState($errorText, $errorText, $errorBackground);
+}
+
+// FORM ACTIONS
+// ------------
+.form-actions {
+  border-top: 1px solid $borderColor;
+  margin-bottom: 20px;
+  margin-top: 20px;
+  padding: 19px 0;
+}
+.form-actions:before, .form-actions:after {
+  content: "";
+  display: table;
+  line-height: 0;
+}
+.form-actions:after {
+  clear: both;
+}
+.form-actions a.pull-right {
+  margin-left: 5px;
+}
+
+// HELP TEXT
+// ---------
+.help-block,
+.help-inline,
+label .help-block,
+label .help-inline {
+  color: lighten( $textColor, 15%); // lighten the text some for contrast
+}
+
+.help-block, label .help-block {
+  display: block; // account for any element using help-block
+  font-size: 85%;
+  font-family: $sansFontFamily;
+  font-weight: $bodyFontWeight;
+}
+
+// Required Fields
+// --------------------------
+.input-required:after {
+  font-family: "FontAwesome";
+  font-size: 7px;
+  line-height: 12px;
+  vertical-align: top;
+  margin-left: 0.2em;
+  content: "\f069";
+  color: $primary-color;
+}
+
+.checkbox, .radio {
+  margin-top: 0;
+}
+.admin-link:after {
+  font-family: "FontAwesome";
+  font-size: 10px;
+  line-height: 12px;
+  vertical-align: top;
+  margin-left: 0.2em;
+  content: "\f023";
+}

@@ -1,0 +1,24 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+//
+// Sprites
+// --------------------------------------------------
+// Glyphicons will be overwritten by Font Awesome
+
+a i {
+  color: $textColor;
+}
+
+a:hover i {
+  text-decoration: none;
+}
+
+a.btn i {
+  color: $white;
+}

@@ -8,7 +8,6 @@
 
 package sirius.web.templates;
 
-import au.com.bytecode.opencsv.CSVReader;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import org.apache.poi.hssf.usermodel.HSSFCell;
@@ -20,6 +19,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import sirius.kernel.async.TaskContext;
 import sirius.kernel.commons.BOMReader;
+import sirius.kernel.commons.CSVReader;
 import sirius.kernel.commons.Doubles;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Values;
@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Processes line based input files like MS Excel or CSV.
@@ -153,16 +154,14 @@ public abstract class LineBasedProcessor {
 
         @Override
         public void run(RowProcessor rowProcessor) throws Exception {
-            CSVReader reader = new CSVReader(new BOMReader(new InputStreamReader(input, Charsets.UTF_8)), ';');
-            String[] nextLine;
-            int current = 0;
+            CSVReader reader = new CSVReader(new BOMReader(new InputStreamReader(input, Charsets.UTF_8)));
+            AtomicInteger rowCounter = new AtomicInteger(0);
             TaskContext tc = TaskContext.get();
-            while ((nextLine = reader.readNext()) != null && tc.isActive()) {
-                Watch w = Watch.start();
-                current++;
-                tc.setState(NLS.get("LineBasedProcessor.linesProcessed"), current);
-                rowProcessor.handleRow(current, Values.of(nextLine));
-            }
+
+            reader.execute(row -> {
+                rowProcessor.handleRow(rowCounter.incrementAndGet(), row);
+                tc.setState(NLS.get("LineBasedProcessor.linesProcessed"), rowCounter.get());
+            });
         }
     }
 

@@ -1,0 +1,59 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+.well.filter-box {
+  padding: 8px 0;
+}
+
+.filter-box {
+  .nav-list .fa {
+    margin-right: 5px;
+  }
+
+  .nav-list > li {
+    clear: both;
+  }
+
+  .badge {
+    background-color: #B6B7BB;
+    padding-left: 10px; // Temp
+    padding-right: 10px; // Temp
+
+  }
+
+}
+
+.filter-title {
+  float: left;
+  display: block;
+  width: 77%;
+  margin-right: 5px;
+}
+
+.filter-title-inner {
+  //float: left;
+  width: 80%;
+}
+
+@media (min-width: 1200px) {
+  .filter-title-inner {
+    width: 85%;
+  }
+}
+
+.filter-counter-wrapper {
+  display: block;
+  float: right;
+  width: 20%;
+}
+
+.nav-list > .active > a .badge,
+.nav-list  a:hover .badge  {
+  background-color: $primary-color;
+}
+

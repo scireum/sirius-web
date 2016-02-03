@@ -1,0 +1,33 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+//
+// Breadcrumbs
+// --------------------------------------------------
+.breadcrumb {
+  list-style: none;
+  border-bottom: 1px solid #EAEAEA;
+  color: #AEB2B8;
+  padding: 0 0 5px 0;
+  margin: 0 0 10px 0;
+  a {
+    color: #9D9FA3;
+    font-size: 85%;
+
+    &:hover {
+      color: $linkColorHover;
+      text-decoration: none;
+    }
+
+  }
+
+}
+
+.breadcrumb > li + li:before {
+  content: "\203a";
+}

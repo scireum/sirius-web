@@ -1,0 +1,123 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+//
+// Utility classes
+// --------------------------------------------------
+
+// Block element
+.block-element {
+  display: block;
+}
+
+.link-block {
+  display: block;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+// aligns (custom)
+th.align-left, td.align-left, .align-left {
+  text-align: left;
+}
+
+th.align-right, td.align-right, .align-right {
+  text-align: right;
+}
+
+th.align-center, td.align-center, .align-center {
+  text-align: center;
+}
+
+
+// Helper since there is no max-width: 100% for images
+// We could also include .img-responsive where needed
+img {
+  max-width: 100%;
+}
+
+
+// Used for thumbnails in tables or lists
+.list-thumbnail {
+  display: inline-block;
+  max-width: 140px;
+  max-height: 80px;
+}
+
+.list-thumbnail img {
+  max-height: 75px;
+  max-width: 135px;
+}
+
+// Display inline-block to center images
+.inline-thumbnail {
+  display: inline-block;
+}
+
+
+// Break syllables
+// --------------------------------------------------
+
+.word-wrap {
+  word-wrap: break-word;
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  -ms-hyphens: auto;
+  hyphens: auto;
+  display: block;
+}
+
+// same width as span in tables
+.table td.span1 .word-wrap, .table th.span1 .word-wrap {
+  width: 44px;
+}
+
+.table td.span2 .word-wrap, .table th.span2 .word-wrap {
+  width: 124px;
+}
+
+.table td.span3 .word-wrap, .table th.span3 .word-wrap {
+  width: 204px;
+}
+
+.table td.span4 .word-wrap, .table th.span4 .word-wrap {
+  width: 284px;
+}
+
+.table td.span5 .word-wrap, .table th.span5 .word-wrap {
+  width: 364px;
+}
+
+.table td.span6 .word-wrap, .table th.span6 .word-wrap {
+  width: 444px;
+}
+
+.table td.span7 .word-wrap, .table th.span7 .word-wrap {
+  width: 524px;
+}
+
+.table td.span8 .word-wrap, .table th.span8 .word-wrap {
+  width: 604px;
+}
+
+.table td.span9 .word-wrap, .table th.span9 .word-wrap {
+  width: 684px;
+}
+
+.table td.span10 .word-wrap, .table th.span10 .word-wrap {
+  width: 764px;
+}
+
+.table td.span11 .word-wrap, .table th.span11 .word-wrap {
+  width: 844px;
+}
+
+.table td.span12 .word-wrap, .table th.span12 .word-wrap {
+  width: 924px;
+}
+

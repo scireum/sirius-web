@@ -1,0 +1,245 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+// --------------------------------------------------
+// WIKI
+// --------------------------------------------------
+
+//
+// Help
+// --------------------------------------------------
+
+.help .seperator {
+  border-top: 1px solid $borderColor;
+  margin-top: 45px;
+}
+
+.help .breadcrumb {
+  padding-left: 0;
+}
+
+.help .help-headline {
+  color: #E7E7E7;
+  font-size: 21px;
+  font-weight: $headingsFontWeight;
+  padding: 20px 15px;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+
+.help .link, .help li {
+  font-weight: $bodyFontWeight;
+}
+
+.help .modal .link {
+  font-weight: $headingsFontWeight;
+}
+
+.help .sub-nav i {
+  float: left;
+  line-height: 24px;
+}
+
+.help .main-nav li a {
+  font-size: 18px;
+  line-height: 34px;
+}
+
+.help .carousel h5 {
+  margin-top: 5px;
+}
+
+.help .carousel-control {
+  left: 0;
+}
+
+.help .carousel-control.right {
+  left: auto;
+  right: 0;
+}
+
+.help .nav-list li li a {
+  padding: 3px 5px 3px 15px;
+  margin-right: -15px;
+  display: block;
+}
+
+.help .nav-list li small {
+  display: block;
+  margin-left: 20px;
+  line-height: 18px;
+}
+
+.help .nav-list li li a.link:hover {
+  background-color: $primary-color;
+  color: $white;
+}
+
+.help .nav-list .link:hover {
+  background-color: $primary-color;
+  color: $white;
+  text-decoration: none;
+}
+
+.help .nav-list.nav-small-a a {
+  font-size: 12px;
+}
+
+.help .nav-list.nav-chapters li ul {
+  margin-left: 10px;
+}
+
+// 2nd level
+.help .nav-list .nav-list > li > a {
+  padding-left: 30px;
+}
+
+.help .nav-list .nav-list > li > a,
+.help .nav-list .nav-list .nav-header {
+  margin-left:  -30px;
+  margin-right: -30px;
+}
+
+.help .nav-list .icon-time .duration {
+  font-weight: $bodyFontWeight;
+}
+
+.help p .icon-time .duration {
+  font-weight: $bodyFontWeight;
+}
+
+.help p span.duration-wrap {
+  padding: 0px 7px 0px 4px;
+}
+
+.help p, .help .help-text li {
+  line-height: 27px;
+  font-size: 16px;
+  text-align: justify;
+  margin-bottom: 20px;
+}
+
+.help .help-text li .thumbnail {
+  margin-top: 10px;
+}
+
+.help h3 {
+  margin: 20px 0 5px;
+}
+
+.help h4 {
+  font-size: 16px;
+  margin-bottom: 0;
+}
+
+.help .well p {
+  margin-bottom: 0;
+}
+
+// Start - First Steps
+.help .first-steps .lead {
+  margin-bottom: 20px;
+}
+
+.help .first-steps .skip {
+  margin-left: 11px;
+}
+
+@media (min-width: 1200px) {
+  .help .first-steps .skip {
+    margin-left: 18px;
+  }
+}
+
+.help .well-dashboard.first-steps {
+  padding-bottom: 0;
+}
+
+.help .first-steps .btn {
+  margin-right: 15px;
+}
+// content
+.help .table-small-text td {
+  font-size: 85%;
+}
+
+.help .nav-list i.icon-secondary {
+  color: $grayLight;
+}
+
+.help .alert p:last-of-type {
+  margin-bottom: 0px;
+}
+
+.help td p {
+  font-size: 100%;
+  text-align: left;
+}
+
+.help td p:last-of-type {
+  margin-bottom: 0px;
+}
+
+.help td code {
+  font-size: 85%;
+}
+
+.help table table {
+  margin-left: 0px;
+}
+
+.help .prettyprint {
+  font-size: 12px;
+}
+
+.help a.one-line {
+  white-space: nowrap;
+}
+
+.help .legend-row {
+  margin-top: 15px;
+}
+
+.help .legend-row ul.legend-list {
+  margin-left: 0px;
+  list-style: none;
+}
+
+.help .legend-row ul.legend-list li {
+  display: inline;
+  margin-right: 15px;
+}
+
+.help h2 {
+  margin-top: 45px;
+}
+
+// Sidebar right hand side
+.help .sidebar h4 {
+  margin-bottom: 5px;
+}
+
+.help .sidebar p {
+  font-size: 85%;
+  line-height: 18px;
+  text-align: left;
+}
+
+.help .sidebar p:last-of-type {
+  margin-bottom: 0px;
+}
+
+.help .showcase-description {
+  border-bottom: 1px solid $borderColor;
+  padding-bottom: 25px;
+  margin-bottom: 10px;
+}
+
+.help .showcase-head-actions {
+  border-bottom: 1px solid $borderColor;
+  padding-bottom: 13px;
+}

@@ -1,0 +1,70 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+// --------------------------------------------------
+// PLUGINS
+// --------------------------------------------------
+
+//
+// Colorpicker
+// --------------------------------------------------
+.pick-a-color.colorpicker-element .add-on i {
+  vertical-align: sub;
+}
+
+//
+// select2
+// --------------------------------------------------
+.select2 {
+  margin-bottom: 10px;
+
+  &-container.input-block-level {
+    margin-bottom: 10px;
+  }
+
+  &-container .select2-choice {
+    background-image: none;
+  }
+
+  &-container .select2-selection--single .select2-selection__rendered {
+    white-space: normal;  // Icon to clear selection should be aligned properly
+  }
+
+}
+
+
+
+//
+// Password
+// --------------------------------------------------
+.password-security-info h4 {
+  padding: 10px 0;
+  margin: 0 0 10px 0;
+}
+
+.password-security-info .alert-success {
+  color: darken($green, 10%);
+}
+
+//
+// Featherlight
+// --------------------------------------------------
+.featherlight-fullscreen .featherlight-content {
+  width: 90%;
+  height: 100%;
+  padding: 0;
+  border-bottom: none;
+}
+
+.featherlight-fullscreen .featherlight-inner {
+  width: 100%;
+  height: 100%;
+}
+
+
+

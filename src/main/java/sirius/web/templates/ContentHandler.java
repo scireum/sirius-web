@@ -23,7 +23,7 @@ import java.io.OutputStream;
  * appropriate file extension.
  *
  * @see sirius.web.templates.Templates.Generator#getHandlerType()
- * @see sirius.web.templates.Templates.Generator#isTemplateEndsWith(String)
+ * @see sirius.web.templates.Templates.Generator#isTemplateFileExtension(String)
  */
 public interface ContentHandler extends Priorized {
 

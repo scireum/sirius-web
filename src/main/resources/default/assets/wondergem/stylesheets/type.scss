@@ -1,0 +1,66 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+//
+// Type
+// --------------------------------------------------
+
+// Emphasis & misc
+// -------------------------
+
+// Utility classes
+.muted {
+  color: $muted;
+}
+
+.muted-darker {
+  color: $gray; // really?
+}
+a.muted-darker:hover,
+a.muted-darker:focus {
+  color: darken($gray, 10%); // really?
+}
+
+// uppercase
+.uppercase {
+  text-transform: uppercase;
+}
+
+// large
+.large {
+  font-size: 150%;
+}
+
+
+// Headings
+// -------------------------
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: $headingsFontFamily;
+  font-weight: $headingsFontWeight;
+  color: $headingsColor;
+  small {
+    font-weight: normal;
+    line-height: 1;
+    color: $grayLight;
+  }
+}
+
+
+// make h1 appear like legend
+h1 {
+  display: block;
+  width: 100%;
+  font-size: $headingsfontSize;
+  padding: 0;
+  padding-bottom: 5px;
+  font-family: $headingsFontFamily;
+  color: $gray;
+  border: 0;
+  border-bottom: 1px solid $borderColor;
+}

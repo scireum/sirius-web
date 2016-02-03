@@ -1,0 +1,24 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+//
+// Carousel
+// --------------------------------------------------
+
+// Left/right controls for nav
+// ---------------------------
+
+.carousel-control {
+  color: $gray;
+
+  // Hover/focus state
+  &:hover,
+  &:focus {
+    color: $grayDarker;
+  }
+}

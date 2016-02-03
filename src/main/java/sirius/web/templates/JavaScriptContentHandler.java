@@ -11,6 +11,9 @@ package sirius.web.templates;
 import sirius.kernel.di.std.Register;
 
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 /**
  * Executes the given JavaScript script (most probably without generating any output).
@@ -33,7 +36,12 @@ public class JavaScriptContentHandler extends JavaScriptBasedContentHandler {
             return false;
         }
 
+        PrintWriter writer = new PrintWriter(out == null ?
+                                             new StringWriter() :
+                                             new OutputStreamWriter(out, generator.getEncoding()));
+        generator.put("out", writer);
         execute(generator);
+        writer.flush();
 
         return true;
     }

@@ -1,0 +1,42 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+//
+// Search Input
+// --------------------------------------------------
+// Former .input-append and .add-onn
+
+#search .input-group-addon {
+  background-color: $grayLight;
+  border: 1px solid $grayLight;
+  //border-left: none;
+  color: $white;
+  //box-shadow: 0 3px 0 0 #7F8084; // really? – inconsistency with flat btn style
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); // really? – inconsistency with flat btn style
+}
+
+// Give user Feedback on hover
+#search .input-group .input-group-addon:hover {
+  cursor: pointer;
+  background-color: darken($grayLight, 10%);
+}
+
+.search-row .search-box {
+  padding-bottom: 20px;
+}
+
+.search-row .search-box .search-form {
+  width: 100%;
+}
+
+.search-row .search-box .search-form #searchbox {
+  width: 95%;
+  font-size: medium;
+}
+
+

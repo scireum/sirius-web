@@ -1,0 +1,199 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+//
+// Navs
+// --------------------------------------------------
+
+
+// Navbar Variables
+// -------------------------
+$navbarBackground:              $grayDark;
+$navbarBorder:                  $primary-color;
+$navbarLinkColor:               darken($whiteDark, 5%);
+$navbarLinkColorHover:          $white;
+$navbarLinkColorActive:         $white;
+/*
+$navbarLinkBackgroundHover:     darken($navbarBackground, 5%);
+$navbarLinkBackgroundActive:    darken($navbarLinkBackgroundHover, 5%);
+*/
+
+
+
+// BASE CLASS
+// ----------
+
+.nav > li > a:hover,
+.nav > li > a:focus {
+  text-decoration: none;
+  background-color: $primary-color;
+  color: $white;
+}
+
+// Nav headers (for dropdowns and lists)
+.nav-header {
+  font-weight: 600;
+  color: $grayLight;
+  display: block;
+  font-size: 11px;
+  font-weight: normal;
+  line-height: 20px;
+  padding: 3px 15px;
+  text-transform: uppercase;
+}
+
+.nav li + .nav-header {
+  margin-top: 9px;
+}
+
+
+
+// NAV LIST
+// --------
+
+.nav-list {
+  padding-left: 15px;
+  padding-right: 15px;
+  margin-bottom: 0;
+}
+.nav-list > li > a,
+.nav-list .nav-header {
+  margin-left:  -15px;
+  margin-right: -15px;
+  //text-shadow: 0 1px 0 rgba(255,255,255,.5);
+}
+.nav-list > li > a {
+  padding: 3px 15px;
+}
+.nav-list > .active > a,
+.nav-list > .active > a:hover,
+.nav-list > .active > a:focus {
+  color: $white;
+  //text-shadow: 0 -1px 0 rgba(0,0,0,.2);
+  background-color: $linkColor;
+}
+.nav-list [class^="icon-"],
+.nav-list [class*=" icon-"] {
+  margin-right: 5px;
+}
+// Dividers (basically an hr) within the dropdown
+//.nav-list .divider {
+  //.nav-divider();
+//}
+
+
+
+// SUB NAV
+// --------
+
+.sub-nav {
+  a {
+    border-bottom: 1px solid #E5E5E5;
+    font-weight: $headingsFontWeight;
+    font-size: 14px;
+    line-height: 24px;
+    i {
+      line-height: 24px;
+      color: $gray;
+    }
+  }
+}
+
+.sub-nav > li > a {
+  padding-right: 5px;
+}
+
+
+// SUB SUB  NAV
+// --------
+
+.sub-sub-nav {
+  a {
+    font-weight: $headingsFontWeight;
+    font-size: 11.9px;
+    color: #8E9399;
+    border-bottom: 0;
+    line-height: 18px;
+    background-color: $white;
+  }
+}
+
+.nav.sub-sub-nav > li > a:hover,
+.nav.sub-sub-nav > li > a:focus,
+.nav-list.sub-sub-nav > .active > a,
+.nav-list.sub-sub-nav > .active > a:hover,
+.nav-list.sub-sub-nav > .active > a:focus {
+  background-color: #8E9399;
+}
+
+// TABS
+// ----
+// Make the list-items overlay the bottom border
+.nav-tabs > li {
+  margin-right: 3px;
+}
+
+.nav-tabs > li > a {
+  border: 1px solid $inputBorder;
+}
+
+// Active state, and it's :hover/:focus to override normal :hover/:focus
+.nav-tabs > .active > a,
+.nav-tabs > .active > a:hover,
+.nav-tabs > .active > a:focus {
+  color: $white;
+  background-color: $primary-color;
+}
+
+.nav-tabs > .active > a {
+  border: 1px solid $primary-color;
+}
+
+.nav-tabs > .active > a:hover {
+  color: $white;
+  background-color: $primary-color;
+  border: 1px solid $primary-color;
+  cursor: pointer;
+}
+
+.nav-tabs > li > a:hover {
+  color: $primary-color;
+  background-color: #e7e8e8;
+  background-color: rgba(94, 99, 103, 0.08);
+  border: 1px solid $inputBorder;
+  text-shadow: none;
+}
+
+
+//
+// Navbars
+// --------------------------------------------------
+
+// Inner for background effects
+.navbar-static-top {
+  border-top: 3px solid $navbarBorder;
+  border-bottom: none;
+  background-color: $navbarBackground;
+  border-radius: none;
+}
+
+.navbar-static-top .navbar-nav > li > a {
+  color: #e7e7e7;
+  float: none;
+  font-size: 16px;
+  padding: 20px 15px;
+  text-decoration: none;
+}
+
+.navbar-static-top .navbar-nav > li > a:hover,
+.navbar-static-top .navbar-nav > li > a:focus,
+.navbar-static-top .dropdown-menu > li > a:hover,
+.navbar-static-top .navbar-nav > li > a:focus {
+  background-color: $primary-color;
+  color: #e7e7e7;
+}

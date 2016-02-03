@@ -38,8 +38,8 @@ public class DefaultContentContextExtender implements ContentContextExtender {
         context.put("ctx", ctx);
         CallContext call = CallContext.getCurrent();
         context.put("call", call);
-        context.put("user", call.get(UserContext.class));
-        context.put("task", call.get(TaskContext.class));
+        context.put("users", call.get(UserContext.class));
+        context.put("tasks", call.get(TaskContext.class));
         context.put("config", Sirius.getConfig());
         context.put("product", Product.getProduct().getName());
         context.put("version", Product.getProduct().getDetails());

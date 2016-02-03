@@ -24,8 +24,7 @@ public abstract class JavaScriptBasedContentHandler implements ContentHandler {
 
     /**
      * Can be used to tweak the scripting engine used. By default "js" is used to select the default implementation
-     * provided by the JDK. As Java 8 will probably support a faster engine (Nashorn) with JIT to Java and therefore
-     * eventually to machine code, we load this setting from the system configuration.
+     * provided by the JDK.
      */
     @ConfigValue("content.script-engine")
     protected String scriptEngine;

@@ -39,7 +39,7 @@ public class VelocityContentHandler implements ContentHandler {
     public boolean generate(Templates.Generator generator, OutputStream out) throws Exception {
         if (!VM.equals(generator.getHandlerType())
             && !Strings.isFilled(generator.getTemplateCode())
-            && !generator.isTemplateFileExtension("vm")) {
+            && !generator.isTemplateEndsWith("." + VM)) {
             return false;
         }
 

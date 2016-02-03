@@ -100,7 +100,7 @@ class URLTemplateResource extends TemplateResourceBase {
 
     @Override
     public String getSuggestedClassName() {
-        return path2CN(resource.getScopeId() + resource.getPath());
+        return path2CN("Template_" + resource.getScopeId() + resource.getPath());
     }
 
     @Override

@@ -19,7 +19,7 @@ public class Message {
 
     public static final String INFO = "alert-info";
     public static final String WARN = "alert-warn";
-    public static final String ERROR = "alert-error";
+    public static final String ERROR = "alert-danger";
 
     private String message;
     private String details;
