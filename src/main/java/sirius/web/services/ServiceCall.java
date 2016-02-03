@@ -123,7 +123,7 @@ public abstract class ServiceCall {
      * <p>
      * If no parameters are found, an empty list is returned.
      *
-     * @param keys the keys to check for paramets
+     * @param keys the keys to check for parameters
      * @return a list of all parameters found for the given keys
      */
     public List<String> getParameters(String... keys) {
