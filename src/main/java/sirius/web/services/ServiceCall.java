@@ -18,6 +18,8 @@ import sirius.kernel.xml.StructuredOutput;
 import sirius.web.http.WebContext;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Provides access to the underlying request of a call to a {@link StructuredService}
@@ -101,7 +103,7 @@ public abstract class ServiceCall {
     /**
      * Returns the value provided for the given key(s).
      * <p>
-     * The fist non empty value is used. If all values are empty, an empty value is returned.
+     * The first non empty value is used. If all values are empty, an empty value is returned.
      *
      * @param keys the keys to check for a value
      * @return the first non empty value found for one of the given keys
@@ -114,6 +116,22 @@ public abstract class ServiceCall {
             }
         }
         return Value.of(null);
+    }
+
+    /**
+     * Returns all query string or POST parameters provided for the given key(s).
+     * <p>
+     * If no parameters are found, an empty list is returned.
+     *
+     * @param keys the keys to check for paramets
+     * @return a list of all parameters found for the given keys
+     */
+    public List<String> getParameters(String... keys) {
+        List<String> result = Collections.emptyList();
+        for (String key : keys) {
+            result.addAll(ctx.getParameters(key));
+        }
+        return result;
     }
 
     /**
