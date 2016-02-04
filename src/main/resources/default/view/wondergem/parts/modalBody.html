@@ -1,0 +1,9 @@
+@args String helpKey
+<div class="modal-body">
+    @if (Strings.isFilled(helpKey)) {
+    <div class="alert alert-info">
+        @i18n(helpKey)
+    </div>
+    }
+    @renderBody()
+</div>
