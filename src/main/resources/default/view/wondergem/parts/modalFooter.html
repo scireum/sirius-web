@@ -1,0 +1,13 @@
+@args String submitKey, String dangerKey, String cancelKey
+<div class="modal-footer">
+    @renderBody()
+    @if (Strings.isFilled(submitKey)) {
+    <button type="submit" class="btn btn-primary">@i18n(submitKey)</button>
+    }
+    @if (Strings.isFilled(dangerKey)) {
+    <button type="submit" class="btn btn-danger">@i18n(dangerKey)</button>
+    }
+    @if (Strings.isFilled(cancelKey)) {
+    <button class="btn" data-dismiss="modal" aria-hidden="true">@i18n(cancelKey)</button>
+    }
+</div>
