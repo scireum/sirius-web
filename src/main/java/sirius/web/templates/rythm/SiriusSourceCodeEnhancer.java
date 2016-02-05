@@ -45,6 +45,7 @@ class SiriusSourceCodeEnhancer implements ISourceCodeEnhancer {
         result.add("sirius.kernel.commons.Strings");
         result.add("sirius.kernel.nls.NLS");
         result.add("sirius.web.controller.Page");
+        result.add("java.util.*");
 
         return result;
     }
