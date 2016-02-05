@@ -73,22 +73,6 @@ public class ServiceDispatcher implements WebDispatcher {
      */
     private boolean doDispatch(WebContext ctx) {
         String uri = ctx.getRequestedURI();
-        if ("/service".equals(uri)) {
-            if (ctx.get("service").isFilled()) {
-                StructuredService service = gc.getPart(ctx.get("service").asString(), StructuredService.class);
-                if (service != null && service.getClass().isAnnotationPresent(AutoDoc.class)) {
-                    ctx.respondWith()
-                       .cached()
-                       .template("/help/service/service.html",
-                                 ctx.get("service").asString(),
-                                 service.getClass().getAnnotation(AutoDoc.class));
-                    return true;
-                }
-            }
-            List<ComparableTuple<String, Collection<StructuredService>>> allDocumentedServices = collectServiceInfo();
-            ctx.respondWith().cached().template("/help/service/info.html", allDocumentedServices);
-            return true;
-        }
         Tuple<ServiceCall, StructuredService> handler = parsePath(ctx, uri);
         if (handler.getSecond() == null) {
             return false;
@@ -142,17 +126,9 @@ public class ServiceDispatcher implements WebDispatcher {
             }
         }
 
+        ctx.enableTiming(null);
+
         call.invoke(serv);
     }
 
-    private List<ComparableTuple<String, Collection<StructuredService>>> collectServiceInfo() {
-        MultiMap<String, StructuredService> result = MultiMap.create();
-        for (StructuredService ss : gc.getParts(StructuredService.class)) {
-            AutoDoc ad = ss.getClass().getAnnotation(AutoDoc.class);
-            if (ad != null) {
-                result.put(ad.category(), ss);
-            }
-        }
-        return ComparableTuple.fromComparableMap(result.getUnderlyingMap());
-    }
 }

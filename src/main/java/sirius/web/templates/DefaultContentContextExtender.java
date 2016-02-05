@@ -9,12 +9,15 @@
 package sirius.web.templates;
 
 import sirius.kernel.Sirius;
+import sirius.kernel.async.CallContext;
+import sirius.kernel.async.TaskContext;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
+import sirius.web.security.UserContext;
 
 import javax.annotation.Nonnull;
 import java.time.LocalDate;
@@ -33,12 +36,16 @@ public class DefaultContentContextExtender implements ContentContextExtender {
     @Override
     public void extend(@Nonnull Context context) {
         context.put("ctx", ctx);
+        CallContext call = CallContext.getCurrent();
+        context.put("call", call);
+        context.put("users", call.get(UserContext.class));
+        context.put("tasks", call.get(TaskContext.class));
         context.put("config", Sirius.getConfig());
         context.put("product", Product.getProduct().getName());
         context.put("version", Product.getProduct().getDetails());
         context.put("nls", NLS.class);
         context.put("strings", Strings.class);
-        context.put("log", Templates.LOG);
+        context.put("logger", Templates.LOG);
         context.put("helper", ContentHelper.INSTANCE);
 
         context.put("now", LocalDateTime.now());

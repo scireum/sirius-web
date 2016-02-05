@@ -306,7 +306,7 @@ public class WebServer implements Lifecycle, MetricProvider {
      * Determines the priority of the start of the web server. This is exposed as public so that other life cycles
      * can determine their own priority on this.
      */
-    public static int LIFECYCLE_PRIORITY = 500;
+    public static final int LIFECYCLE_PRIORITY = 500;
 
     @Override
     public int getPriority() {
@@ -377,16 +377,13 @@ public class WebServer implements Lifecycle, MetricProvider {
 
     private ServerBootstrap createServerBootstrap(ChannelInitializer<SocketChannel> initializer) {
         ServerBootstrap bootstrap = new ServerBootstrap();
-        bootstrap.childOption(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024);
-        bootstrap.childOption(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024);
+        bootstrap.childOption(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 64 * 1024);
+        bootstrap.childOption(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 32 * 1024);
         bootstrap.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         // At mose have 128 connections waiting to be "connected" - drop everything else...
         bootstrap.option(ChannelOption.SO_BACKLOG, 128);
         // Send a KEEPALIVE packet every 2h and expect and ACK on the TCP layer
         bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
-        // Tell the kernel not to buffer our data - we're quite aware of what we're doing and
-        // will not create "mini writes" anyway
-        bootstrap.childOption(ChannelOption.TCP_NODELAY, true);
         bootstrap.group(eventLoop);
         bootstrap.channel(NioServerSocketChannel.class);
         bootstrap.childHandler(ctx.wire(initializer));
@@ -423,8 +420,8 @@ public class WebServer implements Lifecycle, MetricProvider {
 
     @Override
     public void stopped() {
-        Operation.cover("web", () -> "WebServer.stopHTTPChannel", Duration.ofSeconds(15), this::stopHTTPChannel);
-        Operation.cover("web", () -> "WebServer.stopHTTPSChannel", Duration.ofSeconds(15), this::stopHTTPSChannel);
+        stopChannel(channel, "http");
+        stopChannel(sslChannel, "https");
         Operation.cover("web",
                         () -> "eventLoop.shutdownGracefully",
                         Duration.ofSeconds(15),
@@ -432,29 +429,15 @@ public class WebServer implements Lifecycle, MetricProvider {
         Operation.cover("web", () -> "Response.closeAsyncClient", Duration.ofSeconds(15), Response::closeAsyncClient);
     }
 
-    private void stopHTTPSChannel() {
-        Operation op = Operation.create("web", () -> "stopHTTPSChannel", Duration.ofSeconds(15));
-        try {
-            if (sslChannel != null) {
-                sslChannel.close().sync();
-            }
-        } catch (InterruptedException e) {
-            Exceptions.ignore(e);
-            LOG.SEVERE("Interrupted while waiting for the sslChannel to shut down");
-        } finally {
-            Operation.release(op);
-        }
-    }
-
-    private void stopHTTPChannel() {
-        Operation op = Operation.create("web", () -> "stopHTTPChannel", Duration.ofSeconds(15));
+    private void stopChannel(Channel channel, String name) {
+        Operation op = Operation.create("web", () -> "stopChannel(" + name + ")", Duration.ofSeconds(15));
         try {
             if (channel != null) {
                 channel.close().sync();
             }
         } catch (InterruptedException e) {
             Exceptions.ignore(e);
-            LOG.SEVERE("Interrupted while waiting for the channel to shut down");
+            LOG.SEVERE(Strings.apply("Interrupted while waiting for the %s channel to shut down", name));
         } finally {
             Operation.release(op);
         }

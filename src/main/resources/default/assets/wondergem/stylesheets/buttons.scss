@@ -1,0 +1,150 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+//
+// Buttons
+// --------------------------------------------------
+
+// Buttons Variables
+// -------------------------
+$btnBackground:                 $grayLight;
+$btnBackgroundHover:            darken($btnBackground, 3%);
+
+$btnPrimaryBackground:          $linkColor;
+$btnPrimaryBackgroundHover:     darken($linkColor, 3%);
+
+$btnInfoBackground:             #4a697d;
+$btnInfoBackgroundHover:        darken($btnInfoBackground, 3%);
+
+$btnSuccessBackground:          $green;
+$btnSuccessBackgroundHover:     darken($btnSuccessBackground, 3%);
+
+$btnWarningBackground:          $orange;
+$btnWarningBackgroundHover:     lighten($orange, 10%);
+
+$btnDangerBackground:           #ee5f5b;
+$btnDangerBackgroundHover:      darken($btnDangerBackground, 3%);
+
+$btnInverseBackground:          $grayDark;
+$btnInverseBackgroundHover:     darken($btnInverseBackground, 3%);
+
+$btnBackgroundActive:           #5E6468;
+$btnBackgroundActiveHightlight: darken($btnBackgroundActive, 8%);
+
+// special Links Variables
+// -------------------------
+$linkDangerHover:               darken($btnDangerBackground, 15%);
+$linkInfoHover:                 darken($btnInfoBackground, 15%);
+
+
+
+// Base styles
+// --------------------------------------------------
+.btn {
+  color: $white;
+  //text-shadow: 0 -1px 0 #010101; // really?
+  //text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); // really?
+  background-color: $btnBackground;
+  border: 0;
+  &:hover {
+    color: $white;
+  }
+}
+
+//.btn-large is now .btn-lg TODO: change in Templates
+
+
+// Set the backgrounds
+// -------------------------
+.btn-primary {
+  background-color: $btnPrimaryBackground;
+}
+
+.btn-primary:hover,
+.btn-primary:active,
+.btn-primary.active {
+  background-color: $btnPrimaryBackgroundHover;
+}
+
+// Warning appears are orange
+.btn-warning {
+  background-color: $btnWarningBackground;
+}
+.btn-warning:hover,
+.btn-warning:active,
+.btn-warning.active {
+  background-color: $btnWarningBackgroundHover;
+}
+// Danger and error appear as red
+.btn-danger {
+  background-color: $btnDangerBackground;
+}
+.btn-danger:hover,
+.btn-danger:active,
+.btn-danger.active {
+  background-color: $btnDangerBackgroundHover;
+}
+// Success appears as green
+.btn-success {
+  background-color: $btnSuccessBackground;
+}
+.btn-success:hover,
+.btn-success:active,
+.btn-success.active {
+  background-color: $btnSuccessBackgroundHover;
+}
+// Info appears as a neutral blue
+.btn-info {
+  background-color: $btnInfoBackground;
+}
+.btn-info:hover,
+.btn-info:active,
+.btn-info.active {
+  background-color: $btnInfoBackgroundHover;
+}
+// Inverse appears as dark gray
+.btn-inverse {
+  background-color: $btnInverseBackground;
+}
+.btn-inverse:hover,
+.btn-inverse:active,
+.btn-inverse.active {
+  background-color: $btnInverseBackgroundHover;
+}
+
+// Simple Link
+// --------------------------------------------------
+
+// Make easy recognizable action links
+
+a.link {
+  font-weight: 600;
+}
+
+// Link color is default primary-color
+// Danger and error Links appear as red
+a.link-danger, .link-danger, a.link-red, .link-red {
+  color: $btnDangerBackground;
+}
+
+// secondary Links
+a.link-secondary, .link-secondary {
+  color: #8E9399;
+}
+
+a:hover.link-danger {
+  color: $linkDangerHover;
+}
+
+a.link-info {
+  color: #4a697d;
+}
+
+a:hover.link-info {
+  color: $linkInfoHover;
+}

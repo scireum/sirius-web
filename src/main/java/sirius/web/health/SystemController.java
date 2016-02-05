@@ -22,6 +22,7 @@ import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.health.metrics.Metrics;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.nls.Translation;
+import sirius.web.controller.BasicController;
 import sirius.web.controller.Controller;
 import sirius.web.controller.Page;
 import sirius.web.controller.Routed;
@@ -37,31 +38,17 @@ import java.util.stream.Stream;
  * Contains the default admin GUI.
  */
 @Register(classes = Controller.class)
-public class SystemController implements Controller {
+public class SystemController extends BasicController {
 
     public static final String PERMISSION_SYSTEM_CONSOLE = "permission-system-console";
 
-    public static final String PERMISSION_SYSTEM_LOGS = "permission-system-logs";
-
-    public static final String PERMISSION_SYSTEM_ERRORS = "permission-system-errors";
-
     public static final String PERMISSION_SYSTEM_STATE = "permission-system-state";
-
-    public static final String PERMISSION_SYSTEM_NLS = "permission-system-nls";
 
     @Routed("/system/console")
     @Permission(PERMISSION_SYSTEM_CONSOLE)
     public void console(WebContext ctx) {
         ctx.respondWith().cached().template("/view/system/console.html");
     }
-
-    @Override
-    public void onError(WebContext ctx, HandledException error) {
-        ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
-    }
-
-    @Part
-    private MemoryBasedHealthMonitor monitor;
 
     @Part
     private Cluster cluster;
@@ -71,31 +58,6 @@ public class SystemController implements Controller {
 
     @Context
     private GlobalContext context;
-
-    @Routed("/system/logs")
-    @Permission(PERMISSION_SYSTEM_LOGS)
-    public void logs(WebContext ctx) {
-        ctx.respondWith().template("/view/system/logs.html", monitor.getMessages());
-    }
-
-    @Routed("/system/errors")
-    @Permission(PERMISSION_SYSTEM_ERRORS)
-    public void errors(WebContext ctx) {
-        ctx.respondWith().template("/view/system/errors.html", monitor.getIncidents());
-    }
-
-    @Routed("/system/nls")
-    @Permission(PERMISSION_SYSTEM_NLS)
-    public void nls(WebContext ctx) {
-        Page<Translation> result = new Page<>();
-        result.addFacet("mode", "Mode", null);
-        result.bindToRequest(ctx);
-        Stream<Translation> translationStream = NLS.getTranslationEngine().getTranslations(result.getQuery());
-        List<Translation> translationsPage =
-                translationStream.skip(result.getStart() - 1).limit(result.getPageSize()).collect(Collectors.toList());
-        result.withItems(translationsPage);
-        ctx.respondWith().template("/view/system/nls.html", NLS.getSupportedLanguages(), "de", "en", translationsPage);
-    }
 
     @Routed("/system/ok")
     public void ok(WebContext ctx) {

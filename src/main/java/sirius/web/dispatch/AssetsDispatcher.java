@@ -12,6 +12,7 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.serversass.Generator;
 import org.serversass.Output;
+import org.serversass.ast.Value;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.PriorityCollector;
@@ -91,6 +92,7 @@ public class AssetsDispatcher implements WebDispatcher {
         }
         Optional<Resource> res = resources.resolve(uri);
         if (res.isPresent()) {
+            ctx.enableTiming("/assets/");
             URL url = res.get().getUrl();
             if ("file".equals(url.getProtocol())) {
                 ctx.respondWith().file(new File(url.toURI()));
@@ -104,6 +106,7 @@ public class AssetsDispatcher implements WebDispatcher {
 
         // If the file is not found not is a .css file, check if we need to generate it via a .scss file
         if (uri.endsWith(".css")) {
+            ctx.enableTiming("/assets/*.css");
             String scssUri = uri.substring(0, uri.length() - 4) + ".scss";
             if (resources.resolve(scssUri).isPresent()) {
                 handleSASS(ctx, uri, scssUri, scopeId);
@@ -112,6 +115,7 @@ public class AssetsDispatcher implements WebDispatcher {
         }
         // If the file is non existent, check if we can generate it by using a velocity template
         if (resources.resolve(uri + ".vm").isPresent()) {
+            ctx.enableTiming("/assets/*.vm");
             handleVM(ctx, uri, scopeId);
             return true;
         }
@@ -141,6 +145,10 @@ public class AssetsDispatcher implements WebDispatcher {
                 return res.get().getUrl().openStream();
             }
             return null;
+        }
+
+        SIRIUSGenerator() {
+            scope.set("prefix", new Value(WebContext.getContextPrefix()));
         }
     }
 
@@ -212,11 +220,8 @@ public class AssetsDispatcher implements WebDispatcher {
     private File getCacheDirFile() {
         if (cacheDirFile == null) {
             File tmpDir = new File(System.getProperty("java.io.tmpdir"),
-                                   Strings.toSaneFileName(Product.getProduct().getName()).orElse("")
-                                   + "_"
-                                   + CallContext.getNodeName()
-                                   + "_"
-                                   + cacheDir);
+                                   Strings.toSaneFileName(Product.getProduct().getName()).orElse("") + "_" + CallContext
+                                           .getNodeName() + "_" + cacheDir);
             tmpDir.mkdirs();
             cacheDirFile = tmpDir;
         }

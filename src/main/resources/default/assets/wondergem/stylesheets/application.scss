@@ -1,3 +1,52 @@
-@import "/assets/wondergem/stylesheets/settings";
 @import "/assets/wondergem/stylesheets/opensans";
-@import "/assets/wondergem/stylesheets/main";
+
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+// Core Variables
+@import "/assets/wondergem/stylesheets/variables";
+
+// Grid and Page Structure
+@import "/assets/wondergem/stylesheets/scaffolding";
+
+// Base CSS
+@import "/assets/wondergem/stylesheets/type";
+@import "/assets/wondergem/stylesheets/code";
+@import "/assets/wondergem/stylesheets/forms";
+@import "/assets/wondergem/stylesheets/tables";
+
+// Components: common
+@import "/assets/wondergem/stylesheets/sprites";
+@import "/assets/wondergem/stylesheets/dropdowns";
+@import "/assets/wondergem/stylesheets/wells";
+
+// Components: Buttons & Alerts
+@import "/assets/wondergem/stylesheets/buttons";
+@import "/assets/wondergem/stylesheets/alerts";
+
+// Components: Nav
+@import "/assets/wondergem/stylesheets/navs";
+@import "/assets/wondergem/stylesheets/breadcrumb";
+@import "/assets/wondergem/stylesheets/pagination";
+
+// Components: Misc
+@import "/assets/wondergem/stylesheets/select2-bootstrap3";
+@import "/assets/wondergem/stylesheets/labels-badges";
+@import "/assets/wondergem/stylesheets/search";
+
+// Templates
+@import "/assets/wondergem/stylesheets/carousel";
+@import "/assets/wondergem/stylesheets/statistics";
+@import "/assets/wondergem/stylesheets/filterbox";
+@import "/assets/wondergem/stylesheets/footer";
+
+// Utilities
+@import "/assets/wondergem/stylesheets/utilities";
+@import "/assets/wondergem/stylesheets/plugins";
+
+@import "/assets/stylesheets/custom.scss";

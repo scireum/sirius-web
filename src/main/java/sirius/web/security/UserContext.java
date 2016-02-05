@@ -60,7 +60,8 @@ public class UserContext implements SubContext {
      */
     private static UserManager getManager(ScopeInfo scope) {
         Extension ext = Extensions.getExtension("security.scopes", scope.getScopeType());
-        return context.getPart(ext.get("manager").asString(), UserManagerFactory.class).createManager(scope, ext);
+        return context.getPart(ext.get("manager").asString("public"), UserManagerFactory.class)
+                      .createManager(scope, ext);
     }
 
     /**
@@ -72,10 +73,22 @@ public class UserContext implements SubContext {
         return CallContext.getCurrent().get(UserContext.class);
     }
 
+    /**
+     * Boilerplate method to quickly access the current user.
+     *
+     * @return the current user
+     * @see #getUser()
+     */
     public static UserInfo getCurrentUser() {
         return get().getUser();
     }
 
+    /**
+     * Boilerplate method to quickly access the current scope.
+     *
+     * @return the currently active scope
+     * @see #getScope()
+     */
     public static ScopeInfo getCurrentScope() {
         return get().getScope();
     }
@@ -263,7 +276,7 @@ public class UserContext implements SubContext {
         if (ctx == null || !ctx.isValid()) {
             return;
         }
-        if (!getCurrentUser().isLoggedIn()) {
+        if (!getUser().isLoggedIn()) {
             return;
         }
         UserManager manager = getUserManager();

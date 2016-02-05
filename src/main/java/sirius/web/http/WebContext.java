@@ -1126,6 +1126,19 @@ public class WebContext implements SubContext {
     }
 
     /**
+     * Determines if a response was already committed.
+     * <p>
+     * If a response is committed a HTTP state and some headers have already been sent. Therefore a new / other
+     * response
+     * cannot be created to this request.
+     *
+     * @return <tt>true</tt> if the response has been committed, <tt>false</tt> otherwise.
+     */
+    public boolean isResponseCommitted() {
+        return responseCommitted;
+    }
+
+    /**
      * Date format used by HTTP date headers
      */
     public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";

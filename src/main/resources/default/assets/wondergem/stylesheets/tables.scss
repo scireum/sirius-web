@@ -1,0 +1,98 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+//
+// Tables
+// --------------------------------------------------
+
+// Tables Variables
+// -------------------------
+$tableBackground:               $white;
+$tableBorder:                   $borderColor;
+
+
+// BASE TABLES
+// -----------------
+table {
+  border: 1px solid $tableBorder;
+  background-color: $tableBackground;
+}
+
+// BASELINE STYLES
+// ---------------
+th,
+td {
+  border-bottom: 1px solid $tableBorder;
+}
+
+td {
+  font-size: 85%;
+}
+
+td:first-child,
+td.title {
+  font-size: 100%;
+}
+.table > thead > tr > th {
+  font-weight: 600;
+  border-bottom: 1px solid #ededed;
+  vertical-align: top;
+}
+
+// Table foot
+tfoot {
+  background-color: #e6e6e6;
+}
+
+// TABLE BACKGROUNDS
+// -----------------
+.table > tbody > tr {
+  &.success > td {
+    background-color: #dcf0ce;
+  }
+  &.success > td:first-child {
+    background-color: #5eb526;
+  }
+  &.error > td {
+    background-color: #f0ced0;
+  }
+  &.error > td:first-child {
+    background-color: #b7343c;
+  }
+  &.warning > td {
+    background-color: #faedbb;
+  }
+  &.warning > td:first-child {
+    background-color: #f1c40f;
+  }
+  &.info > td {
+    background-color: #d0e5f2;
+  }
+  &.info > td:first-child {
+    background-color: #3498db;
+  }
+}
+
+// Enhance readabilty
+tr.info a {
+  color: #4a697d;
+}
+
+tr.info .muted {
+  color: #4a697d;
+}
+
+tr.error a {
+  color: $errorText;
+}
+
+tr.info a.link-danger, tr.error a.link-danger {
+  color: #EE5F5B;
+}
+
+

@@ -52,7 +52,6 @@ class WebServerInitializer extends ChannelInitializer<SocketChannel> {
                              new IdleStateHandler(0, 0, idleTimeout.get(ChronoUnit.SECONDS), TimeUnit.SECONDS));
         }
         pipeline.addLast("compressor", new SmartHttpContentCompressor());
-        pipeline.addLast("chunkedWriter", new ChunkedWriteHandler());
         if (WebServerHandler.sortedDispatchers == null) {
             WebServerHandler.sortedDispatchers = getSortedDispatchers();
         }

@@ -1,0 +1,60 @@
+@extends(view.wondergem.template.html, title: "Active Tasks")
+
+@section(breadcrumbs) {
+    <li><a href="/system/tasks">Active Tasks</a></li>
+}
+
+@pageHeader() {
+    Active Tasks
+}
+
+<table class="table table-striped">
+    <tr>
+        <th class="col-md-6">Name<br>Id</th>
+        <th class="col-md-2">State</th>
+        <th class="col-md-2">User</th>
+        <th class="col-md-2 align-right">Scheduled<br>Started</th>
+    </tr>
+    <tbody id="output">
+
+    </tbody>
+</table>
+
+<script type="text/javascript">
+    var timer = null;
+
+    function updateState() {
+        $.getJSON('@prefix/system/api/tasks',
+              { },
+              function(data) {
+                    $('#output').html('');
+                    clearTimeout(timer);
+                    if (data.tasks != null) {
+                        for (i = 0; i < data.tasks.length; i++) {
+                            var row = $('<tr></tr>');
+                            var state = data.tasks[i].state;
+                            var htmlState = '';
+                            if (state == 'SCHEDULED') {
+                                htmlState = '<span class="label label-info">SCHEDULED</span>';
+                            } else if (state == 'RUNNING') {
+                                htmlState = '<span class="label label-success">RUNNING</span>';
+                            } else if (state == 'WARNINGS') {
+                                htmlState = '<span class="label label-warn">WARNINGS</span>';
+                            } else if (state == 'TERMINATED') {
+                                htmlState = '<span class="label label-default">TERMINATED</span>';
+                            }
+                            row.append($('<td></td>').html(data.tasks[i].name+'<br>'+data.tasks[i].id));
+                            row.append($('<td></td>').html(htmlState));
+                            row.append($('<td></td>').html(data.tasks[i].user));
+                            row.append($('<td></td>').html(data.tasks[i].scheduled+'<br>'+data.tasks[i].started).addClass('align-right'));
+                            row.appendTo($('#output'));
+                        }
+                    }
+                    timer = setTimeout(updateState, 2000);
+              }
+        );
+    }
+
+    updateState();
+
+</script>

@@ -1,0 +1,7 @@
+@args String labelKey
+
+@if (Strings.isFilled(labelKey)) {
+    <span class="legend">@i18n(labelKey)</span>
+} else {
+    <span class="legend">@renderBody()</span>
+}

@@ -1,0 +1,29 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+//
+// Pagination (multiple pages)
+// --------------------------------------------------
+.pagination .jump-to {
+  float: left;
+  width: 90px;
+  padding: 4px 12px;
+  margin-left: -1px;
+  text-align:center;
+}
+.pagination > li > a,
+.pagination > li > span {
+  color: $linkColor;
+}
+
+.pagination > li > a:focus,
+.pagination > li > a:hover,
+.pagination > li > span:focus,
+.pagination > li > span:hover {
+  color: $linkColorHover;
+}

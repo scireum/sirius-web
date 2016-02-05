@@ -36,7 +36,7 @@ public class VelocityPDFContentHandler implements ContentHandler {
 
     @Override
     public boolean generate(Templates.Generator generator, OutputStream out) throws Exception {
-        if (!PDF_VM.equals(generator.getHandlerType()) && !generator.isTemplateEndsWith(".pdf.vm")) {
+        if (!PDF_VM.equals(generator.getHandlerType()) && !generator.isTemplateFileExtension("pdf.vm")) {
             return false;
         }
 
@@ -52,7 +52,7 @@ public class VelocityPDFContentHandler implements ContentHandler {
 
         ITextRenderer renderer = new ITextRenderer();
         renderer.getSharedContext()
-                .setReplacedElementFactory(new BarcodeReplacedElementFactory(renderer.getOutputDevice()));
+                .setReplacedElementFactory(new ImageReplacedElementFactory(renderer.getOutputDevice()));
         renderer.setDocumentFromString(writer.toString());
         renderer.layout();
         renderer.createPDF(out);

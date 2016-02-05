@@ -8,8 +8,11 @@
 
 package sirius.web.services;
 
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.xml.StructuredOutput;
 import sirius.web.http.WebContext;
+
+import java.io.IOException;
 
 /**
  * JSON encoder for calls to a {@link StructuredService}.

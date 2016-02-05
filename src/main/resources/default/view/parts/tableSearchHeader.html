@@ -1,0 +1,18 @@
+@args Page page, String baseURL
+<div class="well">
+    <div class="pull-left">
+        <form class="form-inline" action="@prefix/@baseURL" method="get" id="search">
+            <div class="input-group">
+                <input type="text" name="query" class="form-control" value="@page.getQuery()" placeholder="@i18n("NLS.searchkey")" autofocus />
+                <span class="input-group-addon" onclick="$('#search').submit()"><i class="fa fa-search"></i></span>
+            </div>
+        </form>
+    </div>
+    <div class="pull-right">
+        <span>
+            @renderBody()
+        </span>
+        <a class="btn btn-default" href="@prefix/@baseURL?@page.createQueryString()"><i class="fa fa-refresh"></i></a>
+    </div>
+    <span class="clearfix"></span>
+</div>

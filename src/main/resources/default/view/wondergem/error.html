@@ -1,0 +1,27 @@
+@*
+*  Made with all the love in the world
+*  by scireum in Remshalden, Germany
+*
+*  Copyright by scireum GmbH
+*  http://www.scireum.de - info@scireum.de
+*@
+@args String message
+@extends(view.wondergem.template.html, title: NLS.get("BasicController.error"))
+@section(head) {
+    <style>
+        .breadcrumb {
+            display: none;
+        }
+    </style>
+}
+
+@pageHeader() {
+    @i18n("BasicController.error")
+}
+
+<div class="well">
+    <pre style="font-size: small">
+        @message
+    </pre>
+</div>
+<a href="@prefix/" class="btn"><i class="fa fa-angle-double-right"></i> @NLS.get("BasicController.toDashboard")</a>

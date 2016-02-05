@@ -1,0 +1,42 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+//
+// Alerts
+// --------------------------------------------------
+
+// Base styles
+// -------------------------
+
+.alert {
+  text-shadow: none;
+}
+
+// Alternate styles
+// -------------------------
+
+.alert-success {
+  color: $white;
+}
+
+.alert-danger {
+  color: $white;
+  h4 {
+    color: $white;
+  }
+}
+
+// nested Links
+// --------------------------
+.alert-danger a.link-info {
+  color: #5C0000;
+}
+
+.alert-danger a.link-info:hover {
+  color: #2f0000;
+}

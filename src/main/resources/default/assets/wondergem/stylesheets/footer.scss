@@ -1,0 +1,32 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+//
+// Footer
+// --------------------------------------------------
+.footer {
+  padding: 15px 0;
+  border-top: 3px solid $primary-color;
+  background-color: $grayDark;
+  color: #E7E7E7;
+}
+
+.footer a:hover {
+  color: $primary-color-light;
+  text-decoration: none;
+}
+
+.footer small:after {
+  content: "|";
+  padding: 0 0.2em;
+}
+
+.footer small:last-child:after {
+  content: " ";
+  padding: 0;
+}

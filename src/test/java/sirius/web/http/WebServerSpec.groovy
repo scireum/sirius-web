@@ -11,10 +11,12 @@ package sirius.web.http
 import com.alibaba.fastjson.JSON
 import com.google.common.base.Charsets
 import com.google.common.io.ByteStreams
+import org.apache.log4j.Level
 import sirius.kernel.BaseSpecification
 import sirius.kernel.commons.Strings
 import sirius.kernel.commons.Watch
 import sirius.kernel.health.Average
+import sirius.kernel.health.LogHelper
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -45,7 +47,10 @@ class WebServerSpec extends BaseSpecification {
             avg.addValue(w.elapsed(TimeUnit.MILLISECONDS, true));
 
         }
-        WebServer.LOG.INFO("Executing %s resulted in %1.2f RPS", "/system/ok", 1000 / (avg.getAvg() / 1000d));
+        WebServer.LOG.INFO("Executing %s resulted in %1.2f RPS (%1.2f ms per 1000)",
+                           "/system/ok",
+                           1000 / (avg.getAvg() / 1000d),
+                           avg.getAvg());
         then:
         avg.getAvg() < 1000
     }
@@ -63,7 +68,10 @@ class WebServerSpec extends BaseSpecification {
             avg.addValue(w.elapsed(TimeUnit.MILLISECONDS, true));
 
         }
-        WebServer.LOG.INFO("Executing %s resulted in %1.2f RPS", "/system/info", 1000 / (avg.getAvg() / 1000d));
+        WebServer.LOG.INFO("Executing %s resulted in %1.2f RPS (%1.2f ms per 1000)",
+                           "/system/info",
+                           1000 / (avg.getAvg() / 1000d),
+                            avg.getAvg());
         then:
         avg.getAvg() < 1000
     }
@@ -156,6 +164,25 @@ class WebServerSpec extends BaseSpecification {
         then:
         // Size should be contents of large test file plus json overhead and escaping....
         60543 == data.length()
+    }
+
+    /**
+     * Call a service which generates a small result and then fails.
+     * <p>
+     * We expect an appropriate error in this case.
+     */
+    def "Invoke /service/xml/test_large_failure and expect a proper error"() {
+        given:
+        def uri = "/service/xml/test_large_failure";
+        def expectedHeaders = ['content-type': 'text/xml;charset=UTF-8']
+        when:
+        LogHelper.clearMessages();
+        and:
+        def data = callAndRead(uri, null, expectedHeaders);
+        then: "We expect a warning as the server was unable to send an error"
+        LogHelper.hasMessage(Level.WARN, "services", "Cannot send service error for.*");
+        and: "As the connection is closed due to an inconsistent state, an IO exception will occur on the client side"
+        thrown(IOException)
     }
 
     /**
@@ -266,6 +293,19 @@ class WebServerSpec extends BaseSpecification {
         "Hello" == result;
     }
 
+    def "test that outputstreams work"() {
+        given:
+        def HttpURLConnection u = new URL("http://localhost:9999/test/os").openConnection();
+        when:
+        u.setRequestMethod("GET");
+        u.setDoInput(true);
+        u.setDoOutput(false);
+        def arr = ByteStreams.toByteArray(u.getInputStream());
+        then:
+        9 * 8192 == arr.length;
+
+    }
+
     /**
      * Test an empty POST
      */
@@ -283,7 +323,7 @@ class WebServerSpec extends BaseSpecification {
         u.setDoInput(true);
         u.setDoOutput(true);
         def out = u.getOutputStream();
-            out.write(testString.getBytes(Charsets.UTF_8));
+        out.write(testString.getBytes(Charsets.UTF_8));
         out.close();
         def result = new String(ByteStreams.toByteArray(u.getInputStream()), Charsets.UTF_8);
         then:

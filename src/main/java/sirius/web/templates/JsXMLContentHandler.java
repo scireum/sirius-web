@@ -21,7 +21,7 @@ import java.io.OutputStream;
  * <b>.xml.js</b>
  */
 @Register(name = JsXMLContentHandler.XML_JS, classes = ContentHandler.class)
-public class JsXMLContentHandler extends JavaScriptContentHandler {
+public class JsXMLContentHandler extends JavaScriptBasedContentHandler {
 
     /**
      * Contains the name (type) of this handler
@@ -30,7 +30,7 @@ public class JsXMLContentHandler extends JavaScriptContentHandler {
 
     @Override
     public boolean generate(Templates.Generator generator, OutputStream out) throws Exception {
-        if (!XML_JS.equals(generator.getHandlerType()) && !generator.isTemplateEndsWith(".xml.js")) {
+        if (!XML_JS.equals(generator.getHandlerType()) && !generator.isTemplateFileExtension("xml.js")) {
             return false;
         }
 

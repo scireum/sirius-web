@@ -193,6 +193,14 @@ public class ControllerDispatcher implements WebDispatcher {
                                  route.getController().getClass().getName() + "." + route.getSuccessCallback()
                                                                                          .getName());
             if (route.isJSONCall()) {
+                if (ctx.isResponseCommitted()) {
+                    // Force underlying request / response to be closed...
+                    ctx.respondWith()
+                       .error(HttpResponseStatus.INTERNAL_SERVER_ERROR,
+                              Exceptions.handle(ControllerDispatcher.LOG, ex));
+                    return;
+                }
+
                 JSONStructuredOutput out = ctx.respondWith().json();
                 out.beginResult();
                 out.property("success", false);

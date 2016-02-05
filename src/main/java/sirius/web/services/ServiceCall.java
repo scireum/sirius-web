@@ -8,6 +8,7 @@
 
 package sirius.web.services;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
@@ -43,26 +44,41 @@ public abstract class ServiceCall {
                                         .to(LOG)
                                         .error(error)
                                         .withSystemErrorMessage("Service call to '%s' failed: %s (%s)",
-                                                                ctx.getRequest() == null ? "? " : ctx.getRequest().getUri())
+                                                                ctx.getRequest() == null ?
+                                                                "? " :
+                                                                ctx.getRequest().getUri())
                                         .handle();
+        if (ctx.isResponseCommitted()) {
+            LOG.WARN(
+                    "Cannot send service error for: %s. As a partially successful response has already been created and committed!",
+                    ctx.getRequest().getUri());
+
+            // Force underlying request / response to be closed...
+            ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, he);
+            return;
+        }
+
         StructuredOutput out = createOutput();
         out.beginResult();
-        markCallFailed(out, he.getMessage());
-        Throwable cause = error.getCause();
-        while (cause != null && cause.getCause() != null && !cause.getCause().equals(cause)) {
-            cause = cause.getCause();
+        try {
+            markCallFailed(out, he.getMessage());
+            Throwable cause = error.getCause();
+            while (cause != null && cause.getCause() != null && !cause.getCause().equals(cause)) {
+                cause = cause.getCause();
+            }
+            if (cause == null) {
+                cause = error;
+            }
+            out.property("type", cause.getClass().getName());
+            if (Strings.isFilled(errorCode)) {
+                out.property("code", errorCode);
+            } else {
+                out.property("code", "ERROR");
+            }
+            out.property("flow", CallContext.getCurrent().getMDCValue(CallContext.MDC_FLOW));
+        } finally {
+            out.endResult();
         }
-        if (cause == null) {
-            cause = error;
-        }
-        out.property("type", cause.getClass().getName());
-        if (Strings.isFilled(errorCode)) {
-            out.property("code", errorCode);
-        } else {
-            out.property("code", "ERROR");
-        }
-        out.property("flow", CallContext.getCurrent().getMDCValue(CallContext.MDC_FLOW));
-        out.endResult();
     }
 
     /**
@@ -145,7 +161,8 @@ public abstract class ServiceCall {
      */
     protected void invoke(StructuredService serv) {
         try {
-            serv.call(this, createOutput());
+            StructuredOutput output = createOutput();
+            serv.call(this, output);
         } catch (Throwable t) {
             handle(null, t);
         }

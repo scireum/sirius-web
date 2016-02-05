@@ -1,0 +1,163 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+//
+// Labels and badges
+// --------------------------------------------------
+
+// Base classes
+.label {
+  vertical-align: middle;
+  margin: -0.25em 0.25em 0em;
+  padding: 0.5em 0.8em;
+  border-radius: $baseBorderRadius;
+  font-size: $baseFontSize * 0.8;
+  font-weight: $headingsFontWeight;
+  text-transform: uppercase;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-transition: background 0.1s linear;
+  transition: background 0.1s linear;
+}
+
+// Colors
+// Only give background-color difference to links (and to simplify, we don't qualifty with `a` but [href] attribute)
+.label {
+  // Primary Color
+  &-primary {
+    background-color: $primary-color;
+  }
+  &-primary[href] {
+    background-color: darken($primary-color, 10%);
+  }
+  // Success (green)
+  &-success {
+    background-color: $green;
+  }
+  &-success[href] {
+    background-color: darken($green, 10%);
+  }
+  // Info (turquoise)
+  &-info {
+    background-color: $blue;
+  }
+  &-info[href] {
+    background-color: darken($blue, 10%);
+  }
+  // Warnings (orange)
+  &-warning {
+    background-color: $yellow;
+  }
+  &-warning[href] {
+    background-color: darken($yellow, 10%);
+  }
+  // Important (red) + danger
+  &-important,
+  &-danger {
+    background-color: $red;
+  }
+  &-important[href],
+  &-danger[href] {
+    background-color: darken($red, 10%);
+  }
+}
+
+// Label-small
+.label.label-small {
+  font-size: $fontSizeSmall;
+}
+
+// Ribbons
+// --------------------------------------------------
+
+.ribbon.label {
+  position: relative;
+  margin: 0em 0.2em;
+  left: -32px; /* IE Fallback */
+  left: -2rem;
+  padding-left: 32px; /* IE Fallback */
+  padding-left: 2rem;
+  border-radius: 0px 4px 4px 0px;
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+.ribbon.label:after {
+  position: absolute;
+  content: "";
+  top: 100%;
+  left: 0%;
+  border-top: 0em solid transparent;
+  border-right-width: 1em;
+  border-right-color: inherit;
+  border-right-style: solid;
+  border-bottom: 1em solid transparent;
+  border-left: 0em solid transparent;
+  width: 0em;
+  height: 0em;
+}
+
+.ribbon.label.right {
+  position: relative;
+  float: right;
+  margin: 0em 0.2em;
+  right: auto;
+  left: 32px; /* IE Fallback */
+  left: 2rem;
+  padding-right: 32px; /* IE Fallback */
+  padding-right: 2rem;
+  border-radius: 4px 0px 0px 4px;
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+.ribbon.label.right:after {
+  position: absolute;
+  content: "";
+  top: 100%;
+  left: auto;
+  right: 0%;
+  border-top: 0em solid transparent;
+  border-left-width: 1em;
+  border-left-color: inherit;
+  border-left-style: solid;
+  border-bottom: 1em solid transparent;
+  border-right: 0em solid transparent;
+  width: 0em;
+  height: 0em;
+}
+
+
+// Circular
+// --------------------------------------------------
+
+.circular.labels .label,
+.circular.label {
+  min-height: 1em;
+  max-height: 2em;
+  padding: 0.5em !important;
+  line-height: 1em;
+  text-align: center;
+  border-radius: 80000px; /* IE Fallback */
+  border-radius: 500rem;
+}
+
+// custom styles labels and circular badges
+.circular.label.label-state {
+  padding: 0.3em 0.35em !important;
+}
+
+.circular.label.label-state.label-important {
+  padding-left: 0.65em !important;
+  padding-right: 0.65em !important;
+}
+
+.circular.label.label-state.label-warning {
+  padding-left: 0.65em !important;
+  padding-right: 0.65em !important;
+}

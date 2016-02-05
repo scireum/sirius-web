@@ -10,6 +10,7 @@ package sirius.web.templates.rythm;
 
 import org.rythmengine.extension.II18nMessageResolver;
 import org.rythmengine.template.ITemplate;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.nls.NLS;
 
 /**
@@ -19,6 +20,6 @@ public class I18nResourceResolver implements II18nMessageResolver {
 
     @Override
     public String getMessage(ITemplate template, String key, Object... args) {
-        return NLS.apply(key, args);
+        return Strings.apply(NLS.get(key), args);
     }
 }

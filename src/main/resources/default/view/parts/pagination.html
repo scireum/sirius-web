@@ -1,0 +1,49 @@
+@*
+*  Made with all the love in the world
+*  by scireum in Remshalden, Germany
+*
+*  Copyright by scireum GmbH
+*  http://www.scireum.de - info@scireum.de
+*@
+@args Page page, String baseURL, String type
+
+<nav class="text-center">
+    <ul class="pagination">
+        @if (page.hasLess()) {
+            @if (Strings.isFilled(type)) {
+                <li><a href="@prefix/@baseURL?@page.createPrevPageQueryString()&pageType=@type">&#8592;</a></li>
+            } else {
+                <li><a href="@prefix/@baseURL?@page.createPrevPageQueryString()">&#8592;</a></li>
+            }
+        } else {
+        <li class="disabled"><span>&#8592;</span></li>
+        }
+        <li>
+            <input type="text" class="jump-to" placeholder="@page.getRange()">
+            <script type="text/javascript">
+                $(document).ready(function() {
+                    $("input:text.jump-to").keyup(function (e) {
+                        var startIndex = $(this).val();
+                        var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
+                        if (key == 13 && /^\d+$/.test(startIndex)) {
+                            var location = "@prefix/@baseURL?@page.createQueryStringForConfigurableStart()" + startIndex;
+                            @if (Strings.isFilled(type)) {
+                                location += "&pageType=@type";
+                            }
+                            window.location.replace(location);
+                        }
+                    });
+                });
+            </script>
+        </li>
+        @if (page.hasMore()) {
+            @if (Strings.isFilled(type)) {
+                <li><a href="@prefix/@baseURL?@page.createNextPageQueryString()&pageType=@type">&#8594;</a></li>
+            } else {
+                <li><a href="@prefix/@baseURL?@page.createNextPageQueryString()">&#8594;</a></li>
+            }
+        } else {
+            <li class="disabled"><span>&#8594;</span></li>
+        }
+    </ul>
+</nav>

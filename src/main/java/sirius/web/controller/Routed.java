@@ -72,6 +72,12 @@ public @interface Routed {
      * Also the properties <tt>success</tt> and <tt>error</tt> are automatically filled. In case on an exception
      * within the controller method, a result with <tt>success</tt>, <tt>errro</tt> and <tt>message</tt> is
      * automatically created.
+     * <p>
+     *     <b>Note:</b> The implementing method must not fork a new thread and pass the given output along,
+     *     as it is closed by the framework once the method completed. If this is a requirement, create your
+     *     own output by setting jsonCall to <tt>false</tt> and using <code>ctx.respondWith().json()</code>
+     *     manually.
+     * </p>
      *
      * @return <tt>true</tt> if the method is used to create a JSON response for an AJAX call, <tt>false</tt> otherwise
      */

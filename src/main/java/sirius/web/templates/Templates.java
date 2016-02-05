@@ -25,6 +25,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Log;
 
+import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -290,12 +291,28 @@ public class Templates {
          * Can be used by a {@link ContentHandler} to determine the file ending of the selected template. This is
          * used to select which content handler is actually used to generate the output.
          *
-         * @param extension the expected file extension
-         * @return <tt>true</tt> if the given template ends with the given extensions, <tt>false</tt> otherwise.
+         * @param extension the expected file extension, without a "." at the beginning
+         * @return <tt>true</tt> if the given template ends with the given extension, <tt>false</tt> otherwise. This
+         * first dot is considered the start of the file extension so "foobar.test.js" has "test.js" as extension.
          * If the templateName is <tt>null</tt>, this method always returns <tt>false</tt>.
          */
-        public boolean isTemplateEndsWith(String extension) {
-            return Strings.isFilled(templateName) && templateName.endsWith(extension);
+        public boolean isTemplateFileExtension(@Nonnull String extension) {
+            return Strings.isFilled(templateName) && extension.equalsIgnoreCase(Strings.split(templateName, ".")
+                                                                                       .getSecond());
+        }
+
+        /**
+         * Can be used by a {@link ContentHandler} to determine the effective ending of the underlying template name.
+         *
+         * @param extension the expected end of the file name.
+         * @return <tt>true</tt> if the given template ends with the given extension, <tt>false</tt> otherwise.
+         * In contrast to {@link #isTemplateFileExtension(String)} this will not consider the first "." to be the
+         * file extension but rather really check if the template name ends with the given extension. Therefore
+         * for a template named <tt>test.js.vm</tt> this will return <tt>true</tt> for
+         * {@code isTemplateEndsWith(".vm")} but <tt>false</tt> for {@code isTemplateFileExtension("vm")}
+         */
+        public boolean isTemplateEndsWith(@Nonnull String extension) {
+            return Strings.isFilled(templateName) && extension.toLowerCase().endsWith(extension);
         }
 
         /**

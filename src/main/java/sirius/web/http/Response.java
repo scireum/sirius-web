@@ -30,6 +30,7 @@ import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpChunkedInput;
 import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
@@ -39,6 +40,7 @@ import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedFile;
 import io.netty.handler.stream.ChunkedStream;
+import io.netty.handler.stream.ChunkedWriteHandler;
 import org.rythmengine.Rythm;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
@@ -685,6 +687,14 @@ public class Response {
                 response = createResponse(responseStatus, true);
             }
             commit(response, false);
+            installChunkedWriteHandler();
+            ChannelFuture writeFuture = executeChunkedWrite();
+            writeFuture.addListener(channelFuture -> raf.close());
+            complete(writeFuture);
+            return false;
+        }
+
+        private ChannelFuture executeChunkedWrite() throws IOException {
             if (responseChunked) {
                 // Send chunks of data which can be compressed
                 ctx.write(new HttpChunkedInput(new ChunkedFile(raf, contentStart, expectedContentLength, BUFFER_SIZE)));
@@ -694,12 +704,13 @@ public class Response {
                 // Send file using zero copy approach!
                 ctx.write(new DefaultFileRegion(raf.getChannel(), contentStart, expectedContentLength));
             }
-            ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+            return ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+        }
 
-            // Close file once completed
-            writeFuture.addListener(channelFuture -> raf.close());
-            complete(writeFuture);
-            return false;
+        private void installChunkedWriteHandler() {
+            if (ctx.channel().pipeline().get(ChunkedWriteHandler.class) == null) {
+                ctx.channel().pipeline().addBefore("handler", "chunkedWriter", new ChunkedWriteHandler());
+            }
         }
 
         private Tuple<Long, Long> parseRange(long availableLength) {
@@ -773,12 +784,13 @@ public class Response {
             if (t instanceof HandledException) {
                 error(HttpResponseStatus.INTERNAL_SERVER_ERROR, (HandledException) t);
             } else {
+                String requestUri = "?";
+                if (wc != null && wc.getRequest() != null) {
+                    requestUri = wc.getRequest().getUri();
+                }
                 Exceptions.handle()
                           .to(WebServer.LOG)
-                          .withSystemErrorMessage("An excption occurred while responding to: %s - %s (%s)",
-                                                  wc == null || wc.getRequest() == null ?
-                                                  "?" :
-                                                  wc.getRequest().getUri())
+                          .withSystemErrorMessage("An excption occurred while responding to: %s - %s (%s)", requestUri)
                           .handle();
                 error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
             }
@@ -834,10 +846,14 @@ public class Response {
      * Sets the content disposition header for the HTTP Response
      */
     private void setContentDisposition(String name, boolean download) {
+        String cleanName = name.replaceAll("[^A-Za-z0-9\\-_\\.]", "_");
+        String utf8Name = Strings.urlEncode(name.replace(" ", "_"));
         addHeaderIfNotExists("Content-Disposition",
-                             (download ? "attachment;" : "inline;") + "filename=\"" + name.replaceAll(
-                                     "[^A-Za-z0-9\\-_\\.]",
-                                     "_") + "\";filename*=UTF-8''" + Strings.urlEncode(name.replace(" ", "_")));
+                             (download ? "attachment;" : "inline;")
+                             + "filename=\""
+                             + cleanName
+                             + "\";filename*=UTF-8''"
+                             + utf8Name);
     }
 
     /*
@@ -976,6 +992,10 @@ public class Response {
                 return;
             }
             if (!ctx.channel().isWritable()) {
+                return;
+            }
+            if (wc.getRequest().getMethod() == HttpMethod.HEAD) {
+                status(status);
                 return;
             }
             String content = Rythm.renderIfTemplateExists("view/errors/" + status.code() + ".html", status, message);
@@ -1138,8 +1158,9 @@ public class Response {
      */
     protected static AsyncHttpClient getAsyncClient() {
         if (asyncClient == null) {
-            asyncClient = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setAllowPoolingConnection(true)
-                                                                                 .setRequestTimeoutInMs(-1)
+            asyncClient = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setAllowPoolingConnections(true)
+                                                                                 .setAllowPoolingSslConnections(true)
+                                                                                 .setRequestTimeout(-1)
                                                                                  .build());
         }
         return asyncClient;
@@ -1184,6 +1205,9 @@ public class Response {
             if (Strings.isFilled(range)) {
                 brb.addHeader(HttpHeaders.Names.RANGE, range);
             }
+            if (WebServer.LOG.isFINE()) {
+                WebServer.LOG.FINE("Tunnel START: %s", url);
+            }
             // Tunnel it through...
             brb.execute(new TunnelHandler(url));
         } catch (Throwable t) {
@@ -1204,15 +1228,19 @@ public class Response {
     private class TunnelHandler implements AsyncHandler<String> {
 
         private final String url;
+        private final CallContext cc;
         private int responseCode = HttpResponseStatus.OK.code();
         private boolean contentLengthKnown;
 
         private TunnelHandler(String url) {
             this.url = url;
+            this.cc = CallContext.getCurrent();
         }
 
         @Override
         public STATE onHeadersReceived(HttpResponseHeaders h) throws Exception {
+            CallContext.setCurrent(cc);
+
             if (wc.responseCommitted) {
                 if (WebServer.LOG.isFINE()) {
                     WebServer.LOG.FINE("Tunnel - BLOCKED HEADERS (already sent) for %s", wc.getRequestedURI());
@@ -1265,6 +1293,8 @@ public class Response {
         @Override
         public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
             try {
+                CallContext.setCurrent(cc);
+
                 if (WebServer.LOG.isFINE()) {
                     WebServer.LOG.FINE("Tunnel - CHUNK: %s for %s (Last: %s)",
                                        bodyPart,
@@ -1294,11 +1324,6 @@ public class Response {
                     }
                 }
 
-                if (responseChunked) {
-                    ctx.write(new DefaultHttpContent(data));
-                } else {
-                    ctx.channel().write(data);
-                }
                 if (bodyPart.isLast()) {
                     if (responseChunked) {
                         ChannelFuture writeFuture = ctx.writeAndFlush(new DefaultLastHttpContent(data));
@@ -1308,6 +1333,9 @@ public class Response {
                         ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
                         complete(writeFuture);
                     }
+                } else {
+                    Object msg = responseChunked ? new DefaultHttpContent(data) : data;
+                    contentionAwareWrite(msg);
                 }
                 return STATE.CONTINUE;
             } catch (HandledException e) {
@@ -1321,6 +1349,8 @@ public class Response {
 
         @Override
         public STATE onStatusReceived(com.ning.http.client.HttpResponseStatus httpResponseStatus) throws Exception {
+            CallContext.setCurrent(cc);
+
             if (WebServer.LOG.isFINE()) {
                 WebServer.LOG.FINE("Tunnel - STATUS %s for %s",
                                    httpResponseStatus.getStatusCode(),
@@ -1340,6 +1370,8 @@ public class Response {
 
         @Override
         public String onCompleted() throws Exception {
+            CallContext.setCurrent(cc);
+
             if (WebServer.LOG.isFINE()) {
                 WebServer.LOG.FINE("Tunnel - COMPLETE for %s", wc.getRequestedURI());
             }
@@ -1357,6 +1389,8 @@ public class Response {
 
         @Override
         public void onThrowable(Throwable t) {
+            CallContext.setCurrent(cc);
+
             WebServer.LOG.WARN("Tunnel - ERROR %s for %s",
                                t.getMessage() + " (" + t.getMessage() + ")",
                                wc.getRequestedURI());
@@ -1413,7 +1447,14 @@ public class Response {
      * @return an output stream which will be sent as response
      */
     public OutputStream outputStream(final HttpResponseStatus status, @Nullable final String contentType) {
-        wc.enableTiming(null);
+        if (wc.responseCommitted) {
+            throw Exceptions.handle()
+                            .to(WebServer.LOG)
+                            .error(new IllegalStateException())
+                            .withSystemErrorMessage("Response for %s was already committed!", wc.getRequestedURI())
+                            .handle();
+        }
+
         return new ChunkedOutputStream(contentType, status);
     }
 
@@ -1432,7 +1473,7 @@ public class Response {
             buffer = null;
         }
 
-        private void ensureCapacity(int length) throws IOException {
+        private void ensureCapacity(int length) {
             if (buffer != null && buffer.writableBytes() < length) {
                 flushBuffer(false);
             }
@@ -1441,7 +1482,7 @@ public class Response {
             }
         }
 
-        private void flushBuffer(boolean last) throws IOException {
+        private void flushBuffer(boolean last) {
             if ((buffer == null || buffer.readableBytes() == 0) && !last) {
                 if (buffer != null) {
                     buffer.release();
@@ -1467,18 +1508,8 @@ public class Response {
                     complete(ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT));
                 }
             } else {
-                ChannelFuture future = ctx.write(new DefaultHttpContent(buffer));
-                while (!ctx.channel().isWritable() && open && ctx.channel().isOpen()) {
-                    try {
-                        future.await(5, TimeUnit.SECONDS);
-                    } catch (InterruptedException e) {
-                        open = false;
-                        ctx.channel().close();
-                        throw Exceptions.createHandled()
-                                        .withSystemErrorMessage("Interrupted while waiting for a chunk to be written")
-                                        .handle();
-                    }
-                }
+                Object message = new DefaultHttpContent(buffer);
+                contentionAwareWrite(message);
             }
             buffer = null;
         }
@@ -1560,6 +1591,25 @@ public class Response {
                 buffer.release();
                 buffer = null;
             }
+        }
+    }
+
+    private void contentionAwareWrite(Object message) {
+        if (!ctx.channel().isWritable()) {
+            ChannelFuture future = ctx.writeAndFlush(message);
+            while (!ctx.channel().isWritable() && ctx.channel().isOpen()) {
+                try {
+                    future.await(5, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    ctx.channel().close();
+                    Exceptions.ignore(e);
+                    throw Exceptions.createHandled()
+                                    .withSystemErrorMessage("Interrupted while waiting for a chunk to be written")
+                                    .handle();
+                }
+            }
+        } else {
+            ctx.write(message);
         }
     }
 

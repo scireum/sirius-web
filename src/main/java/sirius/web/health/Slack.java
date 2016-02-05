@@ -10,6 +10,7 @@ package sirius.web.health;
 
 import com.google.common.collect.Maps;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.commons.RateLimit;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.ConfigValue;
@@ -34,7 +35,7 @@ import java.util.stream.Collectors;
 /**
  * Helper class to notify an Slack room about certain events.
  */
-@Register
+@Register(classes = {Slack.class, ExceptionHandler.class})
 public class Slack implements ExceptionHandler {
 
     @Override
@@ -54,26 +55,22 @@ public class Slack implements ExceptionHandler {
     }
 
     @ConfigValue("health.slack.messageUrl")
-    protected static String messageUrl;
+    protected String messageUrl;
 
     @ConfigValue("health.slack.channel")
-    protected static String channel;
+    protected String channel;
 
     @ConfigValue("health.slack.sender")
-    protected static String sender;
+    protected String sender;
 
     @ConfigValue("health.slack.icon_url")
-    protected static String iconUrl;
+    protected String iconUrl;
 
     @ConfigValue("health.slack.types")
-    protected static List<String> messageTypes;
-    protected static Set<String> messageFilter;
+    protected List<String> messageTypes;
+    protected Set<String> messageFilter;
 
-    // Limit to max. 5 messages every 15 seconds
-    protected static long lastMessage;
-    private static final long MIN_SEND_INTERVAL = TimeUnit.MILLISECONDS.convert(15, TimeUnit.SECONDS);
-    protected static long messagesFlooded = 0;
-    private static final long MAX_FLOOD_MESSAGES = 5;
+    private RateLimit rateLimit = RateLimit.nTimesPerInterval(15, TimeUnit.SECONDS, 5);
 
     /**
      * Sends the given message to Slack (if configured property).
@@ -85,22 +82,14 @@ public class Slack implements ExceptionHandler {
      * @param color       the color to use
      * @param fields      the fields to submit
      */
-    public static void sendMessage(@Nullable String messageType,
-                                   String message,
-                                   Color color,
-                                   @Nullable Map<String, String> fields) {
+    public void sendMessage(@Nullable String messageType,
+                            String message,
+                            Color color,
+                            @Nullable Map<String, String> fields) {
         try {
-            // Limit to 5 msg every 15 sec to prevent flooding....
-            long now = System.currentTimeMillis();
-            if (now - lastMessage < MIN_SEND_INTERVAL) {
-                if (messagesFlooded > MAX_FLOOD_MESSAGES) {
-                    return;
-                }
-                messagesFlooded++;
-            } else {
-                messagesFlooded = 0;
+            if (!rateLimit.check()) {
+                return;
             }
-            lastMessage = now;
 
             if (Strings.isEmpty(messageUrl) || Strings.isEmpty(message)) {
                 return;
@@ -118,8 +107,7 @@ public class Slack implements ExceptionHandler {
         }
     }
 
-    private static void sendJSONMessage(String message, Color color, @Nullable Map<String, String> fields)
-            throws IOException {
+    private void sendJSONMessage(String message, Color color, @Nullable Map<String, String> fields) throws IOException {
         JSONCall call = JSONCall.to(new URL(messageUrl));
         JSONStructuredOutput out = call.getOutput();
         out.beginResult();
@@ -171,7 +159,7 @@ public class Slack implements ExceptionHandler {
      * @param color       the color to use
      * @param fields      the fields to submit as a list like (Name, Value, Name, Value...)
      */
-    public static void sendMessage(@Nullable String messageType, String message, Color color, String... fields) {
+    public void sendMessage(@Nullable String messageType, String message, Color color, String... fields) {
         Map<String, String> fieldMap = Maps.newLinkedHashMap();
         for (int i = 0; i < fields.length; i += 2) {
             if (i + 1 < fields.length) {

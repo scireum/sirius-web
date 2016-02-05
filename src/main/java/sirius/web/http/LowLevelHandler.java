@@ -70,7 +70,7 @@ class LowLevelHandler extends ChannelDuplexHandler {
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         if (msg instanceof ByteBuf) {
-            int messageSize = ((ByteBuf) msg).writableBytes();
+            int messageSize = ((ByteBuf) msg).readableBytes();
             WebServer.bytesOut += messageSize;
             if (WebServer.bytesOut < 0) {
                 WebServer.bytesOut = 0;

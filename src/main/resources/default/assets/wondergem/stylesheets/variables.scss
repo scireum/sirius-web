@@ -1,0 +1,78 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+//
+// Variables
+// --------------------------------------------------
+
+// Primary Color
+// -------------------------
+$primary-color:                 $yellow;
+$primary-color-light:           lighten($primary-color, 10%);
+
+// Colors
+// -------------------------
+$grayDarker:                    #2b3037;
+$grayDark:                      #43474A;
+$gray:                          #5E6468;
+$grayLight:                     #949598;
+$whiteDark:                     #f4f4f4;
+$white:                         #ffffff;
+
+$blueDark:                      #4E6D81;
+$blueLight:                     #6D98B4;
+
+// Accent colors
+// -------------------------
+$green:                         #5eb526;
+$blue:                          #497EBF;
+$red:                           #e74c3c;
+$orange:                        #f89406;
+$yellow:                        #f1c40f;
+
+// States and Alerts
+// -------------------------
+$errorText:                     #5C0000;
+$errorBackground:               #B7343C;
+//$errorBorder:                 darken(spin($errorBackground, -10), 3%);
+
+$infoText:                      #4a697d;
+$infoBackground:                #d9edf8;
+//$infoBorder:                  darken($infoBackground, 6%);
+
+
+// Scaffolding
+// -------------------------
+$bodyBackground:                $whiteDark;
+$textColor:                     $gray;
+$borderColor:                   #dddddd;
+$muted:                         $grayLight;
+
+// Links
+// -------------------------
+$linkColor:                     $primary-color;
+$linkColorHover:                $gray;
+
+// Typography
+// -------------------------
+$sansFontFamily:                'Open Sans', Verdana, Tahoma, Arial, sans-serif;
+$bodyFontWeight:                400;
+$baseFontSize:                  14px;
+$fontSizeSmall:                 85%;
+$baseLineHeight:                20px;
+$headingsFontWeight:            600;
+$headingsColor:                 $gray;
+$headingsfontSize:              1.75em;
+
+// Components
+// -------------------------
+$baseBorderRadius:              2px;
+$borderRadiusLarge:             4px;
+
+$component-active-color:        $white;
+$component-active-bg:           $primary-color;
