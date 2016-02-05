@@ -40,6 +40,7 @@ import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedFile;
 import io.netty.handler.stream.ChunkedStream;
+import io.netty.handler.stream.ChunkedWriteHandler;
 import org.rythmengine.Rythm;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
@@ -686,6 +687,14 @@ public class Response {
                 response = createResponse(responseStatus, true);
             }
             commit(response, false);
+            installChunkedWriteHandler();
+            ChannelFuture writeFuture = executeChunkedWrite();
+            writeFuture.addListener(channelFuture -> raf.close());
+            complete(writeFuture);
+            return false;
+        }
+
+        private ChannelFuture executeChunkedWrite() throws IOException {
             if (responseChunked) {
                 // Send chunks of data which can be compressed
                 ctx.write(new HttpChunkedInput(new ChunkedFile(raf, contentStart, expectedContentLength, BUFFER_SIZE)));
@@ -695,12 +704,13 @@ public class Response {
                 // Send file using zero copy approach!
                 ctx.write(new DefaultFileRegion(raf.getChannel(), contentStart, expectedContentLength));
             }
-            ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+            return ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+        }
 
-            // Close file once completed
-            writeFuture.addListener(channelFuture -> raf.close());
-            complete(writeFuture);
-            return false;
+        private void installChunkedWriteHandler() {
+            if (ctx.channel().pipeline().get(ChunkedWriteHandler.class) == null) {
+                ctx.channel().pipeline().addBefore("handler", "chunkedWriter", new ChunkedWriteHandler());
+            }
         }
 
         private Tuple<Long, Long> parseRange(long availableLength) {
