@@ -784,12 +784,13 @@ public class Response {
             if (t instanceof HandledException) {
                 error(HttpResponseStatus.INTERNAL_SERVER_ERROR, (HandledException) t);
             } else {
+                String requestUri = "?";
+                if (wc != null && wc.getRequest() != null) {
+                    requestUri = wc.getRequest().getUri();
+                }
                 Exceptions.handle()
                           .to(WebServer.LOG)
-                          .withSystemErrorMessage("An excption occurred while responding to: %s - %s (%s)",
-                                                  wc == null || wc.getRequest() == null ?
-                                                  "?"                                   :
-                                                  wc.getRequest().getUri())
+                          .withSystemErrorMessage("An excption occurred while responding to: %s - %s (%s)", requestUri)
                           .handle();
                 error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
             }
@@ -845,10 +846,14 @@ public class Response {
      * Sets the content disposition header for the HTTP Response
      */
     private void setContentDisposition(String name, boolean download) {
+        String cleanName = name.replaceAll("[^A-Za-z0-9\\-_\\.]", "_");
+        String utf8Name = Strings.urlEncode(name.replace(" ", "_"));
         addHeaderIfNotExists("Content-Disposition",
-                             (download ? "attachment;" : "inline;") + "filename=\"" + name.replaceAll(
-                                     "[^A-Za-z0-9\\-_\\.]",
-                                     "_")                                             +                                           "\";filename*=UTF-8''"                    + Strings.urlEncode(name.replace(" ", "_")));
+                             (download ? "attachment;" : "inline;")
+                             + "filename=\""
+                             + cleanName
+                             + "\";filename*=UTF-8''"
+                             + utf8Name);
     }
 
     /*
