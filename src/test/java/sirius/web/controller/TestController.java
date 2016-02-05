@@ -16,6 +16,9 @@ import sirius.web.http.InputStreamHandler;
 import sirius.web.http.WebContext;
 import sirius.web.services.JSONStructuredOutput;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 @Register
 public class TestController implements Controller {
     @Override
@@ -66,5 +69,15 @@ public class TestController implements Controller {
         }
         in.close();
         ctx.respondWith().direct(HttpResponseStatus.OK, String.valueOf(size));
+    }
+
+    @Routed("/test/os")
+    public void testOutputStream(WebContext ctx) throws IOException {
+        OutputStream out = ctx.respondWith().outputStream(HttpResponseStatus.OK, "text/plain");
+        byte[] buffer = new byte[8192];
+        for(int i = 0; i < 9; i++) {
+            out.write(buffer, 0, 8192);
+        }
+        out.close();
     }
 }

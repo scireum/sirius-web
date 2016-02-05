@@ -47,7 +47,10 @@ class WebServerSpec extends BaseSpecification {
             avg.addValue(w.elapsed(TimeUnit.MILLISECONDS, true));
 
         }
-        WebServer.LOG.INFO("Executing %s resulted in %1.2f RPS", "/system/ok", 1000 / (avg.getAvg() / 1000d));
+        WebServer.LOG.INFO("Executing %s resulted in %1.2f RPS (%1.2f ms per 1000)",
+                           "/system/ok",
+                           1000 / (avg.getAvg() / 1000d),
+                           avg.getAvg());
         then:
         avg.getAvg() < 1000
     }
@@ -65,7 +68,10 @@ class WebServerSpec extends BaseSpecification {
             avg.addValue(w.elapsed(TimeUnit.MILLISECONDS, true));
 
         }
-        WebServer.LOG.INFO("Executing %s resulted in %1.2f RPS", "/system/info", 1000 / (avg.getAvg() / 1000d));
+        WebServer.LOG.INFO("Executing %s resulted in %1.2f RPS (%1.2f ms per 1000)",
+                           "/system/info",
+                           1000 / (avg.getAvg() / 1000d),
+                            avg.getAvg());
         then:
         avg.getAvg() < 1000
     }
@@ -285,6 +291,19 @@ class WebServerSpec extends BaseSpecification {
         def result = new String(ByteStreams.toByteArray(u.getInputStream()), Charsets.UTF_8);
         then:
         "Hello" == result;
+    }
+
+    def "test that outputstreams work"() {
+        given:
+        def HttpURLConnection u = new URL("http://localhost:9999/test/os").openConnection();
+        when:
+        u.setRequestMethod("GET");
+        u.setDoInput(true);
+        u.setDoOutput(false);
+        def arr = ByteStreams.toByteArray(u.getInputStream());
+        then:
+        9 * 8192 == arr.length;
+
     }
 
     /**
