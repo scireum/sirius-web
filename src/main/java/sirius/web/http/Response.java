@@ -707,12 +707,6 @@ public class Response {
             return ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
         }
 
-        private void installChunkedWriteHandler() {
-            if (ctx.channel().pipeline().get(ChunkedWriteHandler.class) == null) {
-                ctx.channel().pipeline().addBefore("handler", "chunkedWriter", new ChunkedWriteHandler());
-            }
-        }
-
         private Tuple<Long, Long> parseRange(long availableLength) {
             String header = wc.getHeader(HttpHeaders.Names.RANGE);
             if (Strings.isEmpty(header)) {
@@ -747,17 +741,23 @@ public class Response {
 
             return result;
         }
+    }
 
-        /*
-         * Determines if the current request should be compressed or not
-         */
-        private boolean canBeCompressed(String contentType) {
-            String acceptEncoding = wc.getRequest().headers().get(HttpHeaders.Names.ACCEPT_ENCODING);
-            if (acceptEncoding == null || (!acceptEncoding.contains(HttpHeaders.Values.GZIP)
-                                           && !acceptEncoding.contains(HttpHeaders.Values.DEFLATE))) {
-                return false;
-            }
-            return MimeHelper.isCompressable(contentType);
+    /*
+     * Determines if the current request should be compressed or not
+     */
+    private boolean canBeCompressed(String contentType) {
+        String acceptEncoding = wc.getRequest().headers().get(HttpHeaders.Names.ACCEPT_ENCODING);
+        if (acceptEncoding == null || (!acceptEncoding.contains(HttpHeaders.Values.GZIP) && !acceptEncoding.contains(
+                HttpHeaders.Values.DEFLATE))) {
+            return false;
+        }
+        return MimeHelper.isCompressable(contentType);
+    }
+
+    private void installChunkedWriteHandler() {
+        if (ctx.channel().pipeline().get(ChunkedWriteHandler.class) == null) {
+            ctx.channel().pipeline().addBefore("handler", "chunkedWriter", new ChunkedWriteHandler());
         }
     }
 
@@ -906,7 +906,8 @@ public class Response {
         try {
             long fileLength = urlConnection.getContentLength();
             addHeaderIfNotExists(HttpHeaders.Names.CONTENT_LENGTH, fileLength);
-            setContentTypeHeader(name != null ? name : urlConnection.getURL().getFile());
+            String contentType = MimeHelper.guessMimeType(name != null ? name : urlConnection.getURL().getFile());
+            addHeaderIfNotExists(HttpHeaders.Names.CONTENT_TYPE, contentType);
             setDateAndCacheHeaders(urlConnection.getLastModified(),
                                    cacheSeconds == null ? HTTP_CACHE : cacheSeconds,
                                    isPrivate);
@@ -914,13 +915,16 @@ public class Response {
                 setContentDisposition(name, download);
             }
 
-            DefaultHttpResponse response = createResponse(HttpResponseStatus.OK, true);
-
-            // Write the initial line and the header.
+            DefaultHttpResponse response = canBeCompressed(contentType) ?
+                                           createChunkedResponse(HttpResponseStatus.OK, true) :
+                                           createResponse(HttpResponseStatus.OK, true);
             commit(response);
-            // Write the content.
-            ctx.write(new HttpChunkedInput(new ChunkedStream(urlConnection.getInputStream(), BUFFER_SIZE)));
-            // Write last chunk to signal the end of content
+            installChunkedWriteHandler();
+            if (responseChunked) {
+                ctx.write(new HttpChunkedInput(new ChunkedStream(urlConnection.getInputStream(), BUFFER_SIZE)));
+            } else {
+                ctx.write(new ChunkedStream(urlConnection.getInputStream(), BUFFER_SIZE));
+            }
             ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
             complete(writeFuture);
         } catch (Throwable t) {

@@ -139,6 +139,29 @@ class WebServerSpec extends BaseSpecification {
         1298 == data.length()
     }
 
+    def "Invoke /test/resource to access a resource"() {
+        given:
+        def uri = "/test/resource";
+        def headers = ['accept-encoding': 'gzip'];
+        def expectedHeaders = ['content-encoding': 'gzip']
+        when:
+        def data = callAndRead(uri, headers, expectedHeaders);
+        then:
+        // URLConnection does not understand GZIP and therefore does not unzip... :-(
+        1298 == data.length()
+    }
+
+    def "Invoke /test/resource_uncompressable to access a non-compressable resource"() {
+        given:
+        def uri = "/test/resource_uncompressable";
+        def headers = ['accept-encoding': 'gzip'];
+        def expectedHeaders = ['content-encoding': null]
+        when:
+        def data = callAndRead(uri, headers, expectedHeaders);
+        then:
+        60_314 == data.length()
+    }
+
     /**
      * Call a small service which result fits into a single response chunk...
      */
