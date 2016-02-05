@@ -1324,11 +1324,6 @@ public class Response {
                     }
                 }
 
-                if (responseChunked) {
-                    ctx.write(new DefaultHttpContent(data));
-                } else {
-                    ctx.channel().write(data);
-                }
                 if (bodyPart.isLast()) {
                     if (responseChunked) {
                         ChannelFuture writeFuture = ctx.writeAndFlush(new DefaultLastHttpContent(data));
@@ -1338,6 +1333,9 @@ public class Response {
                         ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
                         complete(writeFuture);
                     }
+                } else {
+                    Object msg = responseChunked ? new DefaultHttpContent(data) : data;
+                    contentionAwareWrite(msg);
                 }
                 return STATE.CONTINUE;
             } catch (HandledException e) {
@@ -1510,19 +1508,8 @@ public class Response {
                     complete(ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT));
                 }
             } else {
-                ChannelFuture future = ctx.write(new DefaultHttpContent(buffer));
-                while (!ctx.channel().isWritable() && open && ctx.channel().isOpen()) {
-                    try {
-                        future.await(5, TimeUnit.SECONDS);
-                    } catch (InterruptedException e) {
-                        open = false;
-                        ctx.channel().close();
-                        Exceptions.ignore(e);
-                        throw Exceptions.createHandled()
-                                        .withSystemErrorMessage("Interrupted while waiting for a chunk to be written")
-                                        .handle();
-                    }
-                }
+                Object message = new DefaultHttpContent(buffer);
+                contentionAwareWrite(message);
             }
             buffer = null;
         }
@@ -1604,6 +1591,25 @@ public class Response {
                 buffer.release();
                 buffer = null;
             }
+        }
+    }
+
+    private void contentionAwareWrite(Object message) {
+        if (!ctx.channel().isWritable()) {
+            ChannelFuture future = ctx.writeAndFlush(message);
+            while (!ctx.channel().isWritable() && ctx.channel().isOpen()) {
+                try {
+                    future.await(5, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    ctx.channel().close();
+                    Exceptions.ignore(e);
+                    throw Exceptions.createHandled()
+                                    .withSystemErrorMessage("Interrupted while waiting for a chunk to be written")
+                                    .handle();
+                }
+            }
+        } else {
+            ctx.write(message);
         }
     }
 
