@@ -18,6 +18,8 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
 import io.netty.handler.codec.http.multipart.DiskAttribute;
 import io.netty.handler.codec.http.multipart.DiskFileUpload;
@@ -346,12 +348,36 @@ public class WebServer implements Lifecycle, MetricProvider {
         }
     }
 
+    /**
+     * As some client (namely ICEFaces) tend to create POSTs which contain empty
+     * field names (which is forbidden by nettys implementation), we resort to
+     * use "unknown" as backup name for those values so that the requests can
+     * be processes without failing.
+     */
+    private static class SiriusHttpDataFactory extends DefaultHttpDataFactory {
+
+        SiriusHttpDataFactory(long minSize) {
+            super(minSize);
+        }
+
+        @Override
+        public Attribute createAttribute(HttpRequest request, String name) {
+            return super.createAttribute(request, Strings.isEmpty(name) ? "_sirius_unknown" : name);
+        }
+
+        @Override
+        public Attribute createAttribute(HttpRequest request, String name, String value) {
+            return super.createAttribute(request, Strings.isEmpty(name) ? "_sirius_unknown" : name, value);
+        }
+    }
+
     private void configureNetty() {
         DiskFileUpload.deleteOnExitTemporaryFile = true;
         DiskFileUpload.baseDirectory = null;
         DiskAttribute.deleteOnExitTemporaryFile = true;
         DiskAttribute.baseDirectory = null;
         httpDataFactory = new DefaultHttpDataFactory(uploadDiskThreshold);
+//        httpDataFactory = new SiriusHttpDataFactory(uploadDiskThreshold);
         Operation.cover("web", () -> "WebServer.createEventLoop", Duration.ofSeconds(15), () -> {
             eventLoop = createEventLoop(AUTOSELECT_EVENT_LOOP_SIZE, "netty-");
         });
