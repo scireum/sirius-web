@@ -46,7 +46,7 @@
         <dependency>
             <groupId>org.rythmengine</groupId>
             <artifactId>rythm-engine</artifactId>
-            <version>1.0.1</version>
+            <version>1.0</version>
         </dependency>
 
         <!-- Async http client used to tunnel http data from a backend server -->
