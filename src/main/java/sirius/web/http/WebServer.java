@@ -376,8 +376,7 @@ public class WebServer implements Lifecycle, MetricProvider {
         DiskFileUpload.baseDirectory = null;
         DiskAttribute.deleteOnExitTemporaryFile = true;
         DiskAttribute.baseDirectory = null;
-        httpDataFactory = new DefaultHttpDataFactory(uploadDiskThreshold);
-//        httpDataFactory = new SiriusHttpDataFactory(uploadDiskThreshold);
+        httpDataFactory = new SiriusHttpDataFactory(uploadDiskThreshold);
         Operation.cover("web", () -> "WebServer.createEventLoop", Duration.ofSeconds(15), () -> {
             eventLoop = createEventLoop(AUTOSELECT_EVENT_LOOP_SIZE, "netty-");
         });
