@@ -1,1 +1,6 @@
-<h1 class="legend">@renderBody()</h1>
+@args String titleKey
+@if (Strings.isFilled(titleKey)) {
+    <h1 class="legend">@NLS.get(titleKey)</h1>
+} else {
+    <h1 class="legend">@renderBody()</h1>
+}
