@@ -39,9 +39,10 @@
   line-height: 17px;
   padding: 8px;
 
-  p:last-child {
-    margin-bottom: 0;
-  }
+}
+
+.well.help-box.p:last-child {
+  margin-bottom: 0;
 }
 
 .infobox {
