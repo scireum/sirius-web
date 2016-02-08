@@ -35,9 +35,12 @@ $navbarLinkBackgroundActive:    darken($navbarLinkBackgroundHover, 5%);
   color: $white;
 }
 
+// Component: Navs
+// --------------------------------------------------
+
 // Nav headers (for dropdowns and lists)
 .nav-header {
-  font-weight: 600;
+  font-weight: 700;
   color: $grayLight;
   display: block;
   font-size: 11px;
@@ -81,12 +84,9 @@ $navbarLinkBackgroundActive:    darken($navbarLinkBackgroundHover, 5%);
 .nav-list [class*=" icon-"] {
   margin-right: 5px;
 }
-// Dividers (basically an hr) within the dropdown
-//.nav-list .divider {
-  //.nav-divider();
-//}
-
-
+.nav-list i {
+  margin-right: 5px;
+}
 
 // SUB NAV
 // --------
