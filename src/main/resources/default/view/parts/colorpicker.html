@@ -1,0 +1,11 @@
+@args String span, String name, String value, String labelKey, String helpKey
+<div class="col-md-@(span == null || span == "" ? 6 : span) form-group @user.signalFieldError(name)">
+<label>@i18n(labelKey)</label>
+<div class="input-group pick-a-color">
+    <input name="@name" type="text" value="@user.getFieldValue(name, value)" class="form-control"/>
+    <span class="input-group-addon"><i></i></span>
+</div>
+@if (helpKey != null) {
+<span class="help-block">@i18n(helpKey)</span>
+}
+</div>

@@ -24,20 +24,7 @@
         });
     }
 
-    function colorpickerPatchForms() {
-        $(".pick-a-color").each(function(index, element) {
-            var input = $(element);
-            var parentDiv = $(input.parent());
-
-            // remove pick-a-color from input, add it to parentDiv
-            input.removeClass("pick-a-color").addClass("field");
-            parentDiv.addClass("pick-a-color").addClass("input-prepend");
-
-            // create span before the input
-            $('<span class="add-on"><i></i></span>').insertBefore(input);
-        });
-
-        // instanciate colorpickers.
+    function instanciateColorPickers() {
         $('.pick-a-color').colorpicker();
     }
 
@@ -118,7 +105,7 @@
 
     $(document).ready(function() {
         createConfirmForDangerousLinks();
-        colorpickerPatchForms();
+        instanciateColorPickers();
 
         $('.date-picker').datepicker({
             format: '@dateFormat',
