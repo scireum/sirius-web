@@ -24,8 +24,7 @@
         });
     }
 
-    function colorpickerPatchForms() {
-        // instanciate colorpickers
+    function instanciateColorPickers() {
         $('.pick-a-color').colorpicker();
     }
 
@@ -106,7 +105,7 @@
 
     $(document).ready(function() {
         createConfirmForDangerousLinks();
-        colorpickerPatchForms();
+        instanciateColorPickers();
 
         $('.date-picker').datepicker({
             format: '@dateFormat',
