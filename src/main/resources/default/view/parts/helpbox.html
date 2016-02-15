@@ -1,10 +1,8 @@
-@*
-*  Made with all the love in the world
-*  by scireum in Remshalden, Germany
-*
-*  Copyright by scireum GmbH
-*  http://www.scireum.de - info@scireum.de
-*@
+@args String labelKey
+
 <div class="well help-box">
+    @if (Strings.isFilled(labelKey)) {
+    <span class="legend">@i18n(labelKey)</span>
+    }
     @renderBody()
 </div>
