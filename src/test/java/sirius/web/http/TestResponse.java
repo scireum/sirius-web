@@ -113,6 +113,11 @@ public class TestResponse extends Response {
         return Value.indexOf(index, templateParameters);
     }
 
+    @Override
+    public HttpHeaders headers() {
+        return super.headers();
+    }
+
     /**
      * Returns the target URL if the response is a redirect.
      *
