@@ -12,6 +12,7 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.Sets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
+import com.typesafe.config.Config;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
@@ -69,6 +70,7 @@ public abstract class GenericUserManager implements UserManager {
     protected final String hashFunction;
     protected String sessionStorage;
     protected boolean ssoEnabled;
+    protected boolean keepLoginEnabled;
     protected String ssoSecret;
     protected List<String> defaultRoles;
     protected List<String> trustedRoles;
@@ -83,6 +85,7 @@ public abstract class GenericUserManager implements UserManager {
         this.ssoSecret = config.get("ssoSecret").asString();
         this.hashFunction = config.get("hashFunction").asString("md5");
         this.ssoEnabled = Strings.isFilled(ssoSecret) && config.get("ssoEnabled").asBoolean(false);
+        this.keepLoginEnabled = config.get("keepLoginEnabled").asBoolean(true);
         this.defaultRoles = config.get("defaultRoles").get(List.class, Collections.emptyList());
         this.trustedRoles = config.get("trustedRoles").get(List.class, Collections.emptyList());
         this.loginCookieTTL = config.get("loginCookieTTL").get(Duration.class, Duration.ofDays(90));
@@ -93,6 +96,7 @@ public abstract class GenericUserManager implements UserManager {
                                         null,
                                         null,
                                         Permissions.applyProfilesAndPublicRoles(Collections.emptySet()),
+                                        null,
                                         null);
     }
 
@@ -101,6 +105,10 @@ public abstract class GenericUserManager implements UserManager {
     protected abstract UserInfo findUserByCredentials(WebContext ctx, String user, String password);
 
     protected abstract Object getUserObject(UserInfo u);
+
+    protected abstract boolean isSupportsUserConfig();
+
+    protected abstract Config getUserConfig(UserInfo u);
 
     @Nonnull
     @Override
@@ -128,15 +136,24 @@ public abstract class GenericUserManager implements UserManager {
 
         result = loginViaSSOToken(ctx);
         if (result != null) {
-            recordUserLogin(ctx, result);
+            onLogin(ctx, result);
             return result;
         }
 
         return defaultUser;
     }
 
+    private void onLogin(WebContext ctx, UserInfo user) {
+        updateLoginCookie(ctx, user);
+        recordUserLogin(ctx, user);
+    }
+
     protected void recordUserLogin(WebContext ctx, UserInfo user) {
-        if (ctx.get("recordUserLogin").asBoolean(false)) {
+
+    }
+
+    protected void updateLoginCookie(WebContext ctx, UserInfo user) {
+        if (keepLoginEnabled && ctx.get("keepLogin").asBoolean(false)) {
             ctx.setCookie(scope.getScopeId() + USER_COOKIE_SUFFIX,
                           user.getUserName().trim(),
                           loginCookieTTL.getSeconds());
@@ -186,6 +203,9 @@ public abstract class GenericUserManager implements UserManager {
     }
 
     private UserInfo loginViaCookie(WebContext ctx) {
+        if (!keepLoginEnabled) {
+            return null;
+        }
         String user = ctx.getCookieValue(scope.getScopeId() + USER_COOKIE_SUFFIX);
         String token = ctx.getCookieValue(scope.getScopeId() + TOKEN_COOKIE_SUFFIX);
 
@@ -339,7 +359,8 @@ public abstract class GenericUserManager implements UserManager {
                                                .getValue(scope.getScopeId() + "-user-lang")
                                                .asString(),
                                             roles,
-                                            u -> getUserObject(u));
+                                            isSupportsUserConfig() ? this::getUserConfig : null,
+                                            this::getUserObject);
                     }
                 }
             }
@@ -355,7 +376,8 @@ public abstract class GenericUserManager implements UserManager {
                                         ctx.getSessionValue(scope.getScopeId() + "-user-email").asString(),
                                         ctx.getSessionValue(scope.getScopeId() + "-user-lang").asString(),
                                         roles,
-                                        u -> getUserObject(u));
+                                        isSupportsUserConfig() ? this::getUserConfig : null,
+                                        this::getUserObject);
                 }
             }
         }
@@ -461,7 +483,11 @@ public abstract class GenericUserManager implements UserManager {
             ctx.setSessionValue(scope.getScopeId() + "-user-email", null);
             ctx.setSessionValue(scope.getScopeId() + "-user-lang", null);
         }
+
         clearRolesForUser(user, ctx);
+
+        ctx.setCookie(scope.getScopeId() + USER_COOKIE_SUFFIX, null, -1);
+        ctx.setCookie(scope.getScopeId() + TOKEN_COOKIE_SUFFIX, null, -1);
     }
 
     /**
@@ -485,5 +511,10 @@ public abstract class GenericUserManager implements UserManager {
     @Override
     public boolean isLoginSupported() {
         return true;
+    }
+
+    @Override
+    public boolean isKeepLoginSupported() {
+        return keepLoginEnabled;
     }
 }

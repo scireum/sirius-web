@@ -11,6 +11,7 @@ package sirius.web.security;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 import com.google.common.hash.Hashing;
+import com.typesafe.config.Config;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.extensions.Extension;
 import sirius.kernel.extensions.Extensions;
@@ -67,7 +68,8 @@ public class ConfigUserManager extends GenericUserManager {
         if (e != null && e.get("passwordHash").isFilled()) {
             if (Hashing.md5()
                        .hashBytes((e.get("salt").asString() + password).getBytes(Charsets.UTF_8))
-                       .toString().equals(e.get("passwordHash").asString())) {
+                       .toString()
+                       .equals(e.get("passwordHash").asString())) {
                 return getUserInfo(ctx, user, e);
             }
         } else {
@@ -85,6 +87,16 @@ public class ConfigUserManager extends GenericUserManager {
         return Extensions.getExtension("security.users", u.getUserId());
     }
 
+    @Override
+    protected boolean isSupportsUserConfig() {
+        return false;
+    }
+
+    @Override
+    protected Config getUserConfig(UserInfo u) {
+        return null;
+    }
+
     private UserInfo getUserInfo(WebContext ctx, String userId, Extension e) {
         Set<String> roles = computeRoles(ctx, userId);
         return new UserInfo(null,
@@ -92,7 +104,9 @@ public class ConfigUserManager extends GenericUserManager {
                             userId,
                             e.get("name").asString(),
                             e.get("email").asString(),
-                            e.get("lang").asString(null), roles,
+                            e.get("lang").asString(null),
+                            roles,
+                            null,
                             u -> e);
     }
 

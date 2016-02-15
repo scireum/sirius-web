@@ -8,6 +8,7 @@
 
 package sirius.web.security;
 
+import com.typesafe.config.Config;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.morphium.Adaptable;
 import sirius.kernel.health.Exceptions;
@@ -24,9 +25,10 @@ public class UserInfo implements Adaptable {
 
     public static final String PERMISSION_LOGGED_IN = "flag-logged-in";
 
-    public static final UserInfo NOBODY = new UserInfo(null, null, "ANONYMOUS", "(no user)", "", null, null, null);
+    public static final UserInfo NOBODY =
+            new UserInfo(null, null, "ANONYMOUS", "(no user)", "", null, null, null, null);
     public static final UserInfo GOD_LIKE =
-            new UserInfo(null, null, "ADMIN", "(admin)", "", null, Collections.singleton("*"), null);
+            new UserInfo(null, null, "ADMIN", "(admin)", "", null, Collections.singleton("*"), null, null);
 
     private String tenantId;
     private String tenantName;
@@ -35,8 +37,10 @@ public class UserInfo implements Adaptable {
     private String eMail;
     private String lang;
     private Set<String> permissions = null;
+    private Function<UserInfo, Config> configSupplier;
     private boolean allPermissions = false;
     private Function<UserInfo, Object> userSupplier;
+    private Config config;
 
     public UserInfo(String tenantId,
                     String tenantName,
@@ -45,6 +49,7 @@ public class UserInfo implements Adaptable {
                     String eMail,
                     @Nullable String lang,
                     Set<String> permissions,
+                    Function<UserInfo, Config> configSupplier,
                     Function<UserInfo, Object> userSupplier) {
         this.tenantId = tenantId;
         this.tenantName = tenantName;
@@ -53,6 +58,7 @@ public class UserInfo implements Adaptable {
         this.eMail = eMail;
         this.lang = lang;
         this.permissions = permissions;
+        this.configSupplier = configSupplier;
         this.allPermissions = permissions != null && permissions.contains("*");
         this.userSupplier = userSupplier;
     }
@@ -129,5 +135,17 @@ public class UserInfo implements Adaptable {
 
     public Set<String> getPermissions() {
         return Collections.unmodifiableSet(permissions);
+    }
+
+    public Config getConfig() {
+        if (config == null) {
+            Config spaceConfig = UserContext.getCurrentScope().getConfig();
+            if (configSupplier == null) {
+                return spaceConfig;
+            } else {
+                config = configSupplier.apply(this).withFallback(spaceConfig);
+            }
+        }
+        return config;
     }
 }

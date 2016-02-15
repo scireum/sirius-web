@@ -10,6 +10,7 @@ package sirius.web.security;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.typesafe.config.Config;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
 import sirius.kernel.di.GlobalContext;
@@ -81,6 +82,14 @@ public class UserContext implements SubContext {
      */
     public static UserInfo getCurrentUser() {
         return get().getUser();
+    }
+
+    public static Config getConfig() {
+        return get().getUser().getConfig();
+    }
+
+    public static <H> H getHelper(Class<H> helperType) {
+        return getCurrentScope().getHelper(helperType);
     }
 
     /**
