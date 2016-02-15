@@ -9,6 +9,7 @@
 package sirius.web.security;
 
 import com.google.common.collect.Sets;
+import com.typesafe.config.Config;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.Register;
@@ -69,7 +70,15 @@ public class SSOUserManager extends GenericUserManager {
             roles = Sets.newTreeSet();
         }
         roles.add(UserInfo.PERMISSION_LOGGED_IN);
-        return new UserInfo(null, null, user, user, null, null, transformRoles(roles, ctx.isTrusted()), null);
+        return new UserInfo(null,
+                            null,
+                            user,
+                            user,
+                            null,
+                            null,
+                            transformRoles(roles, ctx.isTrusted()),
+                            isSupportsUserConfig() ? this::getUserConfig : null,
+                            null);
     }
 
     private Set<String> parseRolesString(String rolesString) {
@@ -87,6 +96,16 @@ public class SSOUserManager extends GenericUserManager {
 
     @Override
     protected Object getUserObject(UserInfo u) {
+        return null;
+    }
+
+    @Override
+    protected boolean isSupportsUserConfig() {
+        return false;
+    }
+
+    @Override
+    protected Config getUserConfig(UserInfo u) {
         return null;
     }
 

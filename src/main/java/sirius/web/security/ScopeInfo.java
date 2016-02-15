@@ -8,10 +8,20 @@
 
 package sirius.web.security;
 
+import com.google.common.collect.Maps;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import sirius.kernel.Sirius;
+import sirius.kernel.di.GlobalContext;
+import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.morphium.Adaptable;
+import sirius.kernel.di.std.Context;
+import sirius.kernel.di.std.Parts;
+import sirius.kernel.health.Exceptions;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -29,13 +39,16 @@ public class ScopeInfo implements Adaptable {
      * If no distinct scope is recognized by the current <tt>ScopeDetector</tt> or if no detector is installed,
      * this scope is used.
      */
-    public static final ScopeInfo DEFAULT_SCOPE = new ScopeInfo("default", "default", "default", null, null);
+    public static final ScopeInfo DEFAULT_SCOPE = new ScopeInfo("default", "default", "default", null, null, null);
 
     private String scopeId;
     private String scopeType;
     private String scopeName;
     private String lang;
+    private Function<ScopeInfo, Config> configSupplier;
     private Function<ScopeInfo, Object> scopeSupplier;
+    private Map<Class<?>, Object> helpers = Maps.newConcurrentMap();
+    private Config config;
 
     /**
      * Creates a new <tt>ScopeInfo</tt> with the given parameters.
@@ -52,11 +65,13 @@ public class ScopeInfo implements Adaptable {
                      @Nonnull String scopeType,
                      @Nonnull String scopeName,
                      @Nullable String lang,
-                     Function<ScopeInfo, Object> scopeSupplier) {
+                     @Nullable Function<ScopeInfo, Config> configSupplier,
+                     @Nullable Function<ScopeInfo, Object> scopeSupplier) {
         this.scopeId = scopeId;
         this.scopeType = scopeType;
         this.scopeName = scopeName;
         this.lang = lang;
+        this.configSupplier = configSupplier;
         this.scopeSupplier = scopeSupplier;
     }
 
@@ -124,5 +139,46 @@ public class ScopeInfo implements Adaptable {
             return (T) scope;
         }
         return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getHelper(Class<T> clazz) {
+        return (T) helpers.computeIfAbsent(clazz, this::makeHelper);
+    }
+
+    @Parts(HelperFactory.class)
+    private static PartCollection<HelperFactory<?>> factories;
+
+    @Context
+    private static GlobalContext ctx;
+
+    private Object makeHelper(Class<?> aClass) {
+        for (HelperFactory<?> factory : factories) {
+            if (aClass.equals(factory.getHelperType())) {
+                Object result = factory.make(this);
+                if (result != null) {
+                    ctx.wire(result);
+                    return result;
+                }
+            }
+        }
+
+        throw Exceptions.handle()
+                        .to(UserContext.LOG)
+                        .withSystemErrorMessage("Cannot make a helper of type %s", aClass.getName())
+                        .handle();
+    }
+
+    protected Config getConfig() {
+        if (config == null) {
+            config = Sirius.getConfig().hasPath("security.scopes." + scopeType + ".config") ?
+                     Sirius.getConfig().getConfig("security.scopes." + scopeType + ".config") :
+                     ConfigFactory.empty();
+            if (configSupplier != null) {
+                config = configSupplier.apply(this).withFallback(config);
+            }
+        }
+
+        return config;
     }
 }

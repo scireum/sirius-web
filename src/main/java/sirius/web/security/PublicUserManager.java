@@ -8,6 +8,7 @@
 
 package sirius.web.security;
 
+import com.typesafe.config.Config;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.extensions.Extension;
 import sirius.web.http.WebContext;
@@ -52,6 +53,7 @@ public class PublicUserManager extends GenericUserManager {
                                  "",
                                  null,
                                  transformRoles(Collections.emptyList(), false),
+                                 null,
                                  null);
         this.trustedUser = new UserInfo(null,
                                         null,
@@ -60,6 +62,7 @@ public class PublicUserManager extends GenericUserManager {
                                         "",
                                         null,
                                         transformRoles(Collections.emptyList(), true),
+                                        null,
                                         null);
     }
 
@@ -86,6 +89,16 @@ public class PublicUserManager extends GenericUserManager {
     @Override
     protected Object getUserObject(UserInfo u) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected boolean isSupportsUserConfig() {
+        return false;
+    }
+
+    @Override
+    protected Config getUserConfig(UserInfo u) {
+        return null;
     }
 
     @Override

@@ -9,6 +9,7 @@
 package sirius.web.security;
 
 import com.google.common.collect.Sets;
+import com.typesafe.config.Config;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.extensions.Extension;
 import sirius.kernel.health.Exceptions;
@@ -106,7 +107,7 @@ public class LDAPUserManager extends GenericUserManager {
                         return null;
                     }
 
-                    return new UserInfo(null, null, user, user, null, null, permissions, null);
+                    return new UserInfo(null, null, user, user, null, null, permissions, null, null);
                 }
             } finally {
                 ctx.close();
@@ -176,6 +177,16 @@ public class LDAPUserManager extends GenericUserManager {
 
     @Override
     protected Object getUserObject(UserInfo u) {
+        return null;
+    }
+
+    @Override
+    protected boolean isSupportsUserConfig() {
+        return false;
+    }
+
+    @Override
+    protected Config getUserConfig(UserInfo u) {
         return null;
     }
 }
