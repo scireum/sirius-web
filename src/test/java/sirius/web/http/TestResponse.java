@@ -36,7 +36,7 @@ import java.util.List;
 /**
  * Created by {@link TestRequest#execute()} or {@link TestRequest#executeAndBlock()} and represents a response
  * generated for a test request.
- * <p>
+ * <p/>
  * Provides additional information like {@link #getStatus()} or {@link #getType()} to verify what kind of
  * response was created.
  */
@@ -111,6 +111,11 @@ public class TestResponse extends Response {
      */
     public Value getTemplateParameter(int index) {
         return Value.indexOf(index, templateParameters);
+    }
+
+    @Override
+    public HttpHeaders headers() {
+        return super.headers();
     }
 
     /**

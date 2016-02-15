@@ -508,7 +508,7 @@ public class Response {
         return this;
     }
 
-    private HttpHeaders headers() {
+    protected HttpHeaders headers() {
         if (headers == null) {
             headers = new DefaultHttpHeaders();
         }
