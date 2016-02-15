@@ -1,8 +1,8 @@
-@args String labelKey
+@args String helpKey
 
 <div class="well help-box">
-    @if (Strings.isFilled(labelKey)) {
-    <span class="legend">@i18n(labelKey)</span>
+    @if (Strings.isFilled(helpKey)) {
+    @i18n(helpKey)
     }
     @renderBody()
 </div>
