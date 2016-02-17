@@ -238,12 +238,13 @@
         $('.img', container).css('max-width', maxWidth -  30 + 'px');
     }
 
-    function fileUpload(url, target, defaultPreview, defaultImage) {
+    function fileUpload(url, target, params) {
         var container = target;
 
         new qq.FileUploader({
             element: target,
             action: url,
+            params: params,
             debug: false,
             onComplete: function (cmp_id, fileName, responseJSON) {
                 clearMessages();
