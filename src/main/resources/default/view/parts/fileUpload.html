@@ -1,9 +1,11 @@
 @args String name, String uploadUrl
 
-@def String getContainerName() { return Strings.isFilled(name) ? name : "image-upload"; }
-<div class="@getContainerName()"></div>
+@{
+    String containerClassName = Strings.isFilled(name) ? name : "file-upload-" + call.generateLocalId();
+}
+<div class="@containerClassName"></div>
 <script type="text/javascript">
-    $('.@getContainerName()').each(function (index) {
+    $('.@containerClassName').each(function (index) {
         fileUpload('@uploadUrl', this);
     });
 </script>
