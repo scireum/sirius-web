@@ -7,7 +7,7 @@
  */
 
 //
-// Code (inline and blocK)
+// Code (inline and block)
 // --------------------------------------------------
 
 pre.plain {
@@ -15,9 +15,10 @@ pre.plain {
   margin: 0px;
   background: none;
   border: none;
+  white-space: pre-wrap;
 }
 
-// Code Output with prettypring
+// Code Output with prettyprinting
 pre.prettyprint {
   padding: 19px;
 }
