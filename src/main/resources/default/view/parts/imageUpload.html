@@ -1,0 +1,20 @@
+@args String name, String uploadUrl, String previewUrl, String imageUrl
+
+@def String getContainerName() { return Strings.isFilled(name) ? name : "image-upload"; }
+<div class="@getContainerName()"></div>
+<script type="text/javascript">
+    $('.@getContainerName()').each(function (index) {
+        imageUpload('@uploadUrl',
+                this,
+                @
+        if (Strings.isFilled(previewUrl)) {
+            '@previewUrl'
+        } else {
+            '@imageUrl'
+        }
+        ,
+        '@imageUrl'
+        )
+        ;
+    });
+</script>
