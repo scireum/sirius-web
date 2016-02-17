@@ -1,4 +1,4 @@
-@args String span, String name, String value, String labelKey, String helpKey, boolean required, int rows
+@args String span, String name, String value, String labelKey, String helpKey, boolean required, int rows, boolean readonly
 <div class="col-md-@(span == null || span == "" ? 6 : span) form-group @user.signalFieldError(name)">
     @if (required) {
     <label>
@@ -7,7 +7,7 @@
     } else {
         <label>@i18n(labelKey)</label>
     }
-    <textarea name="@name" type="text" class="form-control input-block-level" rows="@rows">@user.getFieldValue(name, value)</textarea>
+    <textarea name="@name" type="text" class="form-control input-block-level" rows="@rows" @if (readonly) { readonly }>@user.getFieldValue(name, value)</textarea>
     @if (helpKey != null) {
         <span class="help-block">@i18n(helpKey)</span>
     }
