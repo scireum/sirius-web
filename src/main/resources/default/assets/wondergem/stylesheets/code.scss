@@ -10,6 +10,13 @@
 // Code (inline and blocK)
 // --------------------------------------------------
 
+pre.plain {
+  padding: 0px;
+  margin: 0px;
+  background: none;
+  border: none;
+}
+
 // Code Output with prettypring
 pre.prettyprint {
   padding: 19px;
