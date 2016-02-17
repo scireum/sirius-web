@@ -238,5 +238,51 @@
         $('.img', container).css('max-width', maxWidth -  30 + 'px');
     }
 
+    function fileUpload(url, target, params) {
+        var container = target;
+
+        new qq.FileUploader({
+            element: target,
+            action: url,
+            params: params,
+            debug: false,
+            onComplete: function (cmp_id, fileName, responseJSON) {
+                clearMessages();
+                if (responseJSON.error) {
+                    addError(responseJSON.error);
+                } else if (responseJSON.message) {
+                    if (responseJSON.action) {
+                        addInfo(responseJSON.message, responseJSON.action, responseJSON.actionLabel);
+                    } else {
+                        addInfo(responseJSON.message);
+                    }
+                }
+                if (responseJSON.refresh) {
+                    setTimeout(function () {
+                        window.location.reload()
+                    }, 1250);
+                }
+            },
+            messages: {
+                typeError: '@i18n("template.html.errInvalidExtension")',
+                sizeError: '@i18n("template.html.errTooLarge")',
+                minSizeError: '@i18n("template.html.errTooSmall")',
+                emptyError: '@i18n("template.html.errEmpty")'
+            },
+            template: '<div class="qq-uploader">' +
+            '<div class="qq-upload-drop-area"><span>@i18n("template.html.uploadArea")</span></div>' +
+            '<div class="qq-upload-button btn btn-primary" style="display: block">@i18n("template.html.uploadBtn")</div>' +
+            '<ul class="qq-upload-list"></ul>' +
+            '</div>',
+            fileTemplate: '<li>' +
+            '<span class="qq-upload-file"></span>' +
+            '<span class="qq-upload-spinner"></span>' +
+            '<span class="qq-upload-size"></span>' +
+            '<a class="qq-upload-cancel" href="#">@i18n("NLS.cancel")</a>' +
+            '<span class="qq-upload-failed-text">@i18n("template.html.uploadFailed")</span>' +
+            '</li>'
+        });
+    }
+
     @includeExtensions("view-template-script")
 </script>
