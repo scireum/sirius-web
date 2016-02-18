@@ -1,4 +1,4 @@
-@args String span, String name, String value, String labelKey, String helpKey, boolean required, int rows, boolean readonly
+@args String span, String name, String value, String labelKey, String helpKey, boolean required, String rows, boolean readonly
 <div class="col-md-@(span == null || span == "" ? 6 : span) form-group @user.signalFieldError(name)">
     @if (required) {
     <label>
