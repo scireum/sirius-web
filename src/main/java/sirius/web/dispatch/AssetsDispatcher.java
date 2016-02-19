@@ -177,6 +177,7 @@ public class AssetsDispatcher implements WebDispatcher {
             } catch (Throwable t) {
                 file.delete();
                 ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(Templates.LOG, t));
+                return;
             }
         }
 
@@ -208,6 +209,7 @@ public class AssetsDispatcher implements WebDispatcher {
             } catch (Throwable t) {
                 file.delete();
                 ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(SASS_LOG, t));
+                return;
             }
         }
 
