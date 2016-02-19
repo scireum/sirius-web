@@ -164,7 +164,9 @@ public class AssetsDispatcher implements WebDispatcher {
         String cacheKey = computeCacheKey(uri, scopeId);
         File file = new File(getCacheDirFile(), cacheKey);
 
-        if (!file.exists() || file.lastModified() < resources.resolve(uri + ".vm").get().getLastModified()) {
+        if (Sirius.isStartedAsTest() || !file.exists() || file.lastModified() < resources.resolve(uri + ".vm")
+                                                                                         .get()
+                                                                                         .getLastModified()) {
             try {
                 if (Sirius.isDev()) {
                     Resources.LOG.INFO("Compiling: " + uri + ".vm");
@@ -188,7 +190,9 @@ public class AssetsDispatcher implements WebDispatcher {
         String cacheKey = computeCacheKey(uri, scopeId);
         File file = new File(getCacheDirFile(), cacheKey);
 
-        if (!file.exists() || resources.resolve(scssUri).get().getLastModified() - file.lastModified() > 5000) {
+        if (Sirius.isStartedAsTest()
+            || !file.exists()
+            || resources.resolve(scssUri).get().getLastModified() - file.lastModified() > 5000) {
             if (Sirius.isDev()) {
                 SASS_LOG.INFO("Compiling: " + scssUri);
             }
