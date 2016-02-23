@@ -34,13 +34,11 @@ th.align-center, td.align-center, .align-center {
   text-align: center;
 }
 
-
 // Helper since there is no max-width: 100% for images
 // We could also include .img-responsive where needed
 img {
   max-width: 100%;
 }
-
 
 // Used for thumbnails in tables or lists
 .list-thumbnail {
@@ -59,7 +57,6 @@ img {
   display: inline-block;
 }
 
-
 // Break syllables
 // --------------------------------------------------
 
@@ -74,8 +71,6 @@ img {
 
 //Info Line
 .info-line {
-  margin-left: -10px;
-  margin-right: -10px;
   margin-bottom: 5px;
   font-size: 11.9px;
   line-height: 20px;
@@ -87,10 +82,12 @@ img {
 
   .name {
     font-weight: bold;
+    float: left;
   }
 
   .value {
     text-align: right;
+    float: right;
   }
 }
 
