@@ -353,10 +353,10 @@ public class Page<E> {
      */
     public String createQueryStringForConfigurableStart() {
         String result = createQueryString(null, null, true);
-        if (result.contains("&")) {
+        if (result.contains("?")) {
             return result + "&start=";
         } else {
-            return result + "start=";
+            return result + "?start=";
         }
     }
 
