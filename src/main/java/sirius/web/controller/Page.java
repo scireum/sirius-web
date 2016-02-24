@@ -342,7 +342,7 @@ public class Page<E> {
      * Creates an incomplete query string to be completed by appending the start index.
      * The Query String will contain all filters and the search query except 'start', for which the value must be
      * appended.
-     * <p>
+     * <p/>
      * ex.:
      * <pre>
      * var startIndex = "33";
@@ -353,10 +353,10 @@ public class Page<E> {
      */
     public String createQueryStringForConfigurableStart() {
         String result = createQueryString(null, null, true);
-        if (result.contains("&")) {
+        if (result.contains("?")) {
             return result + "&start=";
         } else {
-            return result + "start=";
+            return result + "?start=";
         }
     }
 
