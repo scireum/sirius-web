@@ -200,7 +200,7 @@
         }
         setTimeout(function() {
             var yscroll = $(window).scrollTop();
-            if (keepScrollPosition === true && yscroll > 0) {
+            if (yscroll > 0) {
                 var params = getUrlParameters(reloadUrl);
                 params['yscroll'] = yscroll;
                 reloadUrl = reloadUrl.split('?')[0] + '?' + $.param(params);
