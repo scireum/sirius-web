@@ -193,12 +193,10 @@
         $('#messageBox').html('');
     }
 
-    function autoUpdate(reloadUrl, keepScrollPosition) {
-        if (keepScrollPosition === true) {
-            var yscroll = getUrlParameters(window.location.href)['yscroll'];
-            if (typeof yscroll !== 'undefined') {
-                $(window).scrollTop(yscroll);
-            }
+    function autoUpdate(reloadUrl) {
+        var yscroll = getUrlParameters(window.location.href)['yscroll'];
+        if (typeof yscroll !== 'undefined') {
+            $(window).scrollTop(yscroll);
         }
         setTimeout(function() {
             var yscroll = $(window).scrollTop();
@@ -213,11 +211,11 @@
 
     function getUrlParameters(url) {
         var params = {}, param;
-        var q = url.split('?')[1];
-        if(q != undefined){
-            q = q.split('&');
-            for(var i = 0; i < q.length; i++){
-                param = q[i].split('=');
+        var query = url.split('?')[1];
+        if (query != undefined) {
+            query = query.split('&');
+            for (var i = 0; i < q.length; i++) {
+                param = query[i].split('=');
                 params[param[0]] = param[1];
             }
         }
