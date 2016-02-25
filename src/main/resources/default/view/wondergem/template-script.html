@@ -193,8 +193,35 @@
         $('#messageBox').html('');
     }
 
-    function autoUpdate(reloadUrl) {
-        setTimeout(function() { window.location.replace(reloadUrl); }, 10000);
+    function autoUpdate(reloadUrl, keepScrollPosition) {
+        if (keepScrollPosition === true) {
+            var yscroll = getUrlParameters(window.location.href)['yscroll'];
+            if (typeof yscroll !== 'undefined') {
+                $(window).scrollTop(yscroll);
+            }
+        }
+        setTimeout(function() {
+            var yscroll = $(window).scrollTop();
+            if (keepScrollPosition === true && yscroll > 0) {
+                var params = getUrlParameters(reloadUrl);
+                params['yscroll'] = yscroll;
+                reloadUrl = reloadUrl.split('?')[0] + '?' + $.param(params);
+            }
+            window.location.replace(reloadUrl);
+        }, 10000);
+    }
+
+    function getUrlParameters(url) {
+        var params = {}, param;
+        var q = url.split('?')[1];
+        if(q != undefined){
+            q = q.split('&');
+            for(var i = 0; i < q.length; i++){
+                param = q[i].split('=');
+                params[param[0]] = param[1];
+            }
+        }
+        return params;
     }
 
     function imageUpload(url, target, defaultPreview, defaultImage) {
