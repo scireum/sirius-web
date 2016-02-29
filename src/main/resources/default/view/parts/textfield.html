@@ -1,12 +1,8 @@
-@args String span, String name, String value, String labelKey, String helpKey, String addonText, boolean required, boolean readonly
+@args String span, String name, String value, String labelKey, String helpKey, String addonText, boolean required, boolean readonly, boolean adminonly
 <div class="col-md-@(span == null || span == "" ? 6 : span) form-group @user.signalFieldError(name)">
-    @if (required) {
-        <label>
-            <span class="input-required">@i18n(labelKey)</span>
-        </label>
-    } else {
-        <label>@i18n(labelKey)</label>
-    }
+    <label>
+        <span class="@if (required) { input-required } @if (required) { admin-link }">@i18n(labelKey)</span>
+    </label>
     @if (addonText) {
         <div class="input-group">
             <input name="@name" type="text" value="@user.getFieldValue(name, value)" class="form-control input-block-level" @if (readonly) { readonly } />
