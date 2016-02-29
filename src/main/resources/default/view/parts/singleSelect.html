@@ -5,10 +5,10 @@
 *  Copyright by scireum GmbH
 *  http://www.scireum.de - info@scireum.de
 *@
-@args String span, String name, String labelKey, String helpKey, boolean optional
+@args String span, String name, String labelKey, String helpKey, boolean optional, boolean adminonly
 <div class="col-md-@(span == null || span == "" ? 6 : span) form-group">
     @if (labelKey != null) {
-        <label>@i18n(labelKey)</label>
+        <label class="@if (adminonly) { admin-link }">@i18n(labelKey)</label>
     }
     <select name="@name"
             class="select2-select form-control @user.signalFieldError(name)"
