@@ -1,4 +1,4 @@
-@args String name, String uploadUrl
+@args String name, String uploadUrl, String allowedExtensions
 
 @{
     String containerClassName = Strings.isFilled(name) ? name : "file-upload-" + call.generateLocalId();
@@ -6,6 +6,6 @@
 <div class="@containerClassName"></div>
 <script type="text/javascript">
     $('.@containerClassName').each(function (index) {
-        fileUpload('@uploadUrl', this);
+        fileUpload('@uploadUrl', this, @raw() { @allowedExtensions });
     });
 </script>

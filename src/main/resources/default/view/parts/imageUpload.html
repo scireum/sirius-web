@@ -1,4 +1,4 @@
-@args String name, String uploadUrl, String previewUrl, String imageUrl
+@args String name, String uploadUrl, String previewUrl, String imageUrl, String allowedExtensions
 
 @{
     String containerClassName = Strings.isFilled(name) ? name : "image-upload-" + call.generateLocalId();
@@ -9,6 +9,7 @@
         imageUpload('@uploadUrl',
                     this,
                     @if (Strings.isFilled(previewUrl)) { '@previewUrl' } else { '@imageUrl' },
-                    '@imageUrl');
+                    '@imageUrl',
+                    @raw() { @allowedExtensions });
     });
 </script>
