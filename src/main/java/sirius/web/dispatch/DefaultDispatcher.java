@@ -16,6 +16,7 @@ import sirius.kernel.di.std.Register;
 import sirius.web.http.MimeHelper;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
+import sirius.web.security.UserContext;
 
 /**
  * Sends a 404 (not found) for all unhandled URIs.
@@ -78,6 +79,9 @@ public class DefaultDispatcher implements WebDispatcher {
             ctx.clearSession();
             ctx.respondWith().redirectTemporarily(ctx.get("path").asString(WebContext.getContextPrefix() + "/"));
         } else {
+            // Bind user to request if present to that translations etc. work correctly...
+            UserContext.getCurrentUser();
+
             ctx.respondWith()
                .error(HttpResponseStatus.NOT_FOUND,
                       Strings.apply("No dispatcher found for: %s", ctx.getRequest().getUri()));
