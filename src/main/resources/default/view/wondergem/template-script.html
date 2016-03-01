@@ -186,7 +186,7 @@
     }
 
     function addError(message) {
-        $('<div class="alert alert-error"></div>').html(message).appendTo($('#messageBox'));
+        $('<div class="alert alert-danger"></div>').html(message).appendTo($('#messageBox'));
     }
 
     function clearMessages() {
@@ -222,7 +222,7 @@
         return params;
     }
 
-    function imageUpload(url, target, defaultPreview, defaultImage) {
+    function imageUpload(url, target, defaultPreview, defaultImage, allowedExtensions) {
         var container = target;
         new qq.FileUploader({
             element: target,
@@ -240,12 +240,17 @@
                     $('.lnk', container).attr('href', responseJSON.imageUrl);
                 }
             },
+            showMessage: function (message) {
+                clearMessages();
+                addError(message);
+            },
             messages: {
                 typeError: '@i18n("template.html.errInvalidExtension")',
                 sizeError: '@i18n("template.html.errTooLarge")',
                 minSizeError: '@i18n("template.html.errTooSmall")',
                 emptyError: '@i18n("template.html.errEmpty")'
             },
+            allowedExtensions: allowedExtensions,
             template: '<div class="qq-uploader">' +
                     '<div class="qq-upload-drop-area qq-image-area"><div><span style="display: inline-block"><a href="'+defaultImage+'" class="thumbnail lnk"><img class="img" src="'+defaultPreview+'" /></a></span></div><span>@i18n("template.html.uploadArea")</span></div>' +
                     '<div class="qq-upload-button btn btn-primary" style="display: block">@i18n("template.html.uploadBtn")</div>' +
@@ -263,7 +268,7 @@
         $('.img', container).css('max-width', maxWidth -  30 + 'px');
     }
 
-    function fileUpload(url, target, params) {
+    function fileUpload(url, target, params, allowedExtensions) {
         var container = target;
 
         new qq.FileUploader({
@@ -287,6 +292,10 @@
                         window.location.reload()
                     }, 1250);
                 }
+            },
+            showMessage: function (message) {
+                clearMessages();
+                addError(message);
             },
             messages: {
                 typeError: '@i18n("template.html.errInvalidExtension")',
