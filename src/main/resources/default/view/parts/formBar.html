@@ -4,7 +4,7 @@
         <i class="icon-ok"></i> @i18n("NLS.save")
     </a>
     @if (Strings.isFilled(backUrl)) {
-        <a href="@backUrl" class="btn">@i18n("NLS.back")</a>
+        <a href="@prefix/@backUrl" class="btn">@i18n("NLS.back")</a>
     }
 
     @renderBody()
