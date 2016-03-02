@@ -9,6 +9,6 @@
         fileUpload('@uploadUrl',
                    this,
                    undefined,
-                   @if (Strings.isFilled(allowedExtensions)) { @raw() { @allowedExtensions } } else { "[]" });
+                   @if (Strings.isFilled(allowedExtensions)) { @raw() { @allowedExtensions } } else { [] });
     });
 </script>
