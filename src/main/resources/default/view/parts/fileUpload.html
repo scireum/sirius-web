@@ -6,6 +6,8 @@
 <div class="@containerClassName"></div>
 <script type="text/javascript">
     $('.@containerClassName').each(function (index) {
-        fileUpload('@uploadUrl', this, @raw() { @allowedExtensions });
+        fileUpload('@uploadUrl',
+                   this,
+                   @if (Strings.isFilled(allowedExtensions)) { @raw() { @allowedExtensions } } else { "[]" });
     });
 </script>
