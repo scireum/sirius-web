@@ -10,6 +10,6 @@
                     this,
                     @if (Strings.isFilled(previewUrl)) { '@previewUrl' } else { '@imageUrl' },
                     '@imageUrl',
-                    @if (Strings.isFilled(allowedExtensions)) { @raw() { @allowedExtensions } } else { "[]" });
+                    @if (Strings.isFilled(allowedExtensions)) { @raw() { @allowedExtensions } } else { [] });
     });
 </script>
