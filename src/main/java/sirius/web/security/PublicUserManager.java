@@ -92,16 +92,6 @@ public class PublicUserManager extends GenericUserManager {
     }
 
     @Override
-    protected boolean isSupportsUserConfig() {
-        return false;
-    }
-
-    @Override
-    protected Config getUserConfig(UserInfo u) {
-        return null;
-    }
-
-    @Override
     public void attachToSession(@Nonnull UserInfo user, @Nonnull WebContext ctx) {
     }
 

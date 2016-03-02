@@ -77,7 +77,7 @@ public class SSOUserManager extends GenericUserManager {
                             null,
                             null,
                             transformRoles(roles, ctx.isTrusted()),
-                            isSupportsUserConfig() ? this::getUserConfig : null,
+                            ui -> getUserConfig(getScopeConfig(), ui),
                             null);
     }
 
@@ -96,16 +96,6 @@ public class SSOUserManager extends GenericUserManager {
 
     @Override
     protected Object getUserObject(UserInfo u) {
-        return null;
-    }
-
-    @Override
-    protected boolean isSupportsUserConfig() {
-        return false;
-    }
-
-    @Override
-    protected Config getUserConfig(UserInfo u) {
         return null;
     }
 

@@ -180,13 +180,5 @@ public class LDAPUserManager extends GenericUserManager {
         return null;
     }
 
-    @Override
-    protected boolean isSupportsUserConfig() {
-        return false;
-    }
 
-    @Override
-    protected Config getUserConfig(UserInfo u) {
-        return null;
-    }
 }
