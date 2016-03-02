@@ -1,0 +1,23 @@
+@*
+*  Made with all the love in the world
+*  by scireum in Remshalden, Germany
+*
+*  Copyright by scireum GmbH
+*  http://www.scireum.de - info@scireum.de
+*@
+@args Object data
+
+@if (data == null ||
+     ((data instanceof Page) && !((Page)data).getItems().isEmpty()) ||
+     ((data instanceof java.util.Collection) && !((Collection)data).isEmpty()))
+{
+    <table class="table table-striped">
+        @renderBody()
+    </table>
+} else {
+    <table class="table table-striped">
+        <tr>
+            <th class="align-center">@i18n("table.html.empty")</th>
+        </tr>
+    </table>
+}
