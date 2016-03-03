@@ -87,16 +87,6 @@ public class ConfigUserManager extends GenericUserManager {
         return Extensions.getExtension("security.users", u.getUserId());
     }
 
-    @Override
-    protected boolean isSupportsUserConfig() {
-        return false;
-    }
-
-    @Override
-    protected Config getUserConfig(UserInfo u) {
-        return null;
-    }
-
     private UserInfo getUserInfo(WebContext ctx, String userId, Extension e) {
         Set<String> roles = computeRoles(ctx, userId);
         return new UserInfo(null,

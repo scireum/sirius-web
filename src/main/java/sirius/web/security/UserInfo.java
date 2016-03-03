@@ -40,7 +40,6 @@ public class UserInfo implements Adaptable {
     private Function<UserInfo, Config> configSupplier;
     private boolean allPermissions = false;
     private Function<UserInfo, Object> userSupplier;
-    private Config config;
 
     public UserInfo(String tenantId,
                     String tenantName,
@@ -138,14 +137,10 @@ public class UserInfo implements Adaptable {
     }
 
     public Config getConfig() {
-        if (config == null) {
-            Config spaceConfig = UserContext.getCurrentScope().getConfig();
-            if (configSupplier == null) {
-                return spaceConfig;
-            } else {
-                config = configSupplier.apply(this).withFallback(spaceConfig);
-            }
+        if (configSupplier == null) {
+            return UserContext.getCurrentScope().getConfig();
+        } else {
+            return configSupplier.apply(this);
         }
-        return config;
     }
 }

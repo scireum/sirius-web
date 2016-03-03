@@ -106,9 +106,10 @@ public abstract class GenericUserManager implements UserManager {
 
     protected abstract Object getUserObject(UserInfo u);
 
-    protected abstract boolean isSupportsUserConfig();
-
-    protected abstract Config getUserConfig(UserInfo u);
+    @Nonnull
+    protected Config getUserConfig(@Nonnull Config scopeConfig, UserInfo u) {
+        return scopeConfig;
+    }
 
     @Nonnull
     @Override
@@ -118,14 +119,18 @@ public abstract class GenericUserManager implements UserManager {
             return result;
         }
 
-        result = loginViaCookie(ctx);
-        if (result != null) {
-            return result;
+        if (sessionStorage == SESSION_STORAGE_TYPE_SERVER) {
+            result = loginViaCookie(ctx);
+            if (result != null) {
+                recordUserLogin(ctx, result);
+                return result;
+            }
         }
+
         try {
             result = loginViaUsernameAndPassword(ctx);
             if (result != null) {
-                recordUserLogin(ctx, result);
+                onLogin(ctx, result);
                 return result;
             }
         } catch (HandledException e) {
@@ -153,19 +158,27 @@ public abstract class GenericUserManager implements UserManager {
     }
 
     protected void updateLoginCookie(WebContext ctx, UserInfo user) {
-        if (keepLoginEnabled && ctx.get("keepLogin").asBoolean(false)) {
-            ctx.setCookie(scope.getScopeId() + USER_COOKIE_SUFFIX,
-                          user.getUserName().trim(),
-                          loginCookieTTL.getSeconds());
+        if (sessionStorage == SESSION_STORAGE_TYPE_SERVER) {
+            if (isKeepLogin(ctx)) {
+                ctx.setCookie(scope.getScopeId() + USER_COOKIE_SUFFIX,
+                              user.getUserName().trim(),
+                              loginCookieTTL.getSeconds());
 
-            String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
-            String input = computeSSOHashInput(ctx, user.getUserName().trim(), new Tuple<>(timestamp, null));
-            String challenge = getSSOHashFunction().hashBytes(input.getBytes(Charsets.UTF_8)).toString();
+                String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
+                String input = computeSSOHashInput(ctx, user.getUserName().trim(), new Tuple<>(timestamp, null));
+                String challenge = getSSOHashFunction().hashBytes(input.getBytes(Charsets.UTF_8)).toString();
 
-            ctx.setCookie(scope.getScopeId() + TOKEN_COOKIE_SUFFIX,
-                          timestamp + ":" + challenge,
-                          loginCookieTTL.getSeconds());
+                ctx.setCookie(scope.getScopeId() + TOKEN_COOKIE_SUFFIX,
+                              timestamp + ":" + challenge,
+                              loginCookieTTL.getSeconds());
+            }
+        } else if (sessionStorage == SESSION_STORAGE_TYPE_CLIENT) {
+            ctx.setCustomSessionCookieTTL(isKeepLogin(ctx) ? loginCookieTTL : Duration.ZERO);
         }
+    }
+
+    private boolean isKeepLogin(WebContext ctx) {
+        return keepLoginEnabled && ctx.get("keepLogin").asBoolean(false);
     }
 
     /*
@@ -339,7 +352,7 @@ public abstract class GenericUserManager implements UserManager {
         if (sessionStorage == SESSION_STORAGE_TYPE_SERVER) {
             if (ctx.getServerSession(false).isPresent()) {
                 Value userId = ctx.getServerSession().getValue(scope.getScopeId() + "-user-id");
-                if (userId.isFilled()) {
+                if (userId.isFilled() && isUserStillValid(userId.asString())) {
                     Set<String> roles = computeRoles(ctx, userId.asString());
                     if (roles != null) {
                         return new UserInfo(ctx.getServerSession()
@@ -359,14 +372,14 @@ public abstract class GenericUserManager implements UserManager {
                                                .getValue(scope.getScopeId() + "-user-lang")
                                                .asString(),
                                             roles,
-                                            isSupportsUserConfig() ? this::getUserConfig : null,
+                                            ui -> getUserConfig(getScopeConfig(), ui),
                                             this::getUserObject);
                     }
                 }
             }
         } else if (sessionStorage == SESSION_STORAGE_TYPE_CLIENT) {
             Value userId = ctx.getSessionValue(scope.getScopeId() + "-user-id");
-            if (userId.isFilled()) {
+            if (userId.isFilled() && isUserStillValid(userId.asString())) {
                 Set<String> roles = computeRoles(ctx, userId.asString());
                 if (roles != null) {
                     return new UserInfo(ctx.getSessionValue(scope.getScopeId() + "-tenant-id").asString(),
@@ -376,12 +389,20 @@ public abstract class GenericUserManager implements UserManager {
                                         ctx.getSessionValue(scope.getScopeId() + "-user-email").asString(),
                                         ctx.getSessionValue(scope.getScopeId() + "-user-lang").asString(),
                                         roles,
-                                        isSupportsUserConfig() ? this::getUserConfig : null,
+                                        ui -> getUserConfig(getScopeConfig(), ui),
                                         this::getUserObject);
                 }
             }
         }
         return null;
+    }
+
+    protected boolean isUserStillValid(String userId) {
+        return true;
+    }
+
+    protected Config getScopeConfig() {
+        return UserContext.getCurrentScope().getConfig();
     }
 
     /**
