@@ -1,13 +1,15 @@
-@args Page page, String baseURL
+@args Page page, String baseURL, Boolean hideSearchBox
 <div class="well">
-    <div class="pull-left">
-        <form class="form-inline" action="@prefix/@baseURL" method="get" id="search">
-            <div class="input-group">
-                <input type="text" name="query" class="form-control" value="@page.getQuery()" placeholder="@i18n("NLS.searchkey")" autofocus />
-                <span class="input-group-addon" onclick="$('#search').submit()"><i class="fa fa-search"></i></span>
-            </div>
-        </form>
-    </div>
+    @if (hideSearchBox != true) {
+        <div class="pull-left">
+            <form class="form-inline" action="@prefix/@baseURL" method="get" id="search">
+                <div class="input-group">
+                    <input type="text" name="query" class="form-control" value="@page.getQuery()" placeholder="@i18n("NLS.searchkey")" autofocus />
+                    <span class="input-group-addon" onclick="$('#search').submit()"><i class="fa fa-search"></i></span>
+                </div>
+            </form>
+        </div>
+    }
     <div class="pull-right">
         <span>
             @renderBody()
