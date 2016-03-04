@@ -171,6 +171,13 @@ public class UserContext implements SubContext {
      */
     public void setCurrentScope(ScopeInfo scope) {
         this.currentScope = scope == null ? ScopeInfo.DEFAULT_SCOPE : scope;
+
+        Message msg =
+                this.currentScope.tryAs(MaintenanceInfo.class).map(MaintenanceInfo::maintenanceMessage).orElse(null);
+        if (msg != null) {
+            addMessage(msg);
+        }
+
         CallContext.getCurrent().addToMDC(MDC_SCOPE, currentScope.getScopeId());
     }
 

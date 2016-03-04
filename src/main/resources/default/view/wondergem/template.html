@@ -6,6 +6,7 @@
  *  Copyright by scireum GmbH
  *  http://www.scireum.de - info@scireum.de
  *@
+@import sirius.web.security.MaintenanceInfo;
 @args String title
 <!--
   ~ Made with all the love in the world
@@ -48,47 +49,51 @@
         }
     </head>
     <body>
-        @render(menu) {
-            @view.wondergem.menu.html()
-        }
-        <div class="wrap">
-
-            @render(header) {
+        @if (user.getCurrentScope().is(MaintenanceInfo.class) && user.getCurrentScope().as(MaintenanceInfo.class).isLocked()) {
+            MÖÖÖP
+        } else {
+            @render(menu) {
+                @view.wondergem.menu.html()
             }
+            <div class="wrap">
 
-            <div id="mainContainer" class="container">
-                @render(aboveMessages) {
+                @render(header) {
                 }
 
-                <ol class="breadcrumb">
-                    <li><a href="/"><span class="fa fa-home"></span></a></li>
-                    @render(breadcrumbs) {
-
+                <div id="mainContainer" class="container">
+                    @render(aboveMessages) {
                     }
-                </ol>
 
-                @render(messages) {
-                    <div class="row">
-                        <div class="col-md-12" id="messageBox">
-                            @for(sirius.web.controller.Message msg : user.getMessages()) {
-                                <div class="alert @msg.getType()">
-                                    @msg.getMessage()
-                                    @if (msg.getAction() != null) {
-                                        @if (msg.isActionJavascript()) {
-                                            <a href="#" onclick="@msg.getAction()" class="link link-info">@msg.getActionLabel()</a>
-                                        } else {
-                                            <a href="@prefix/@msg.getAction()" class="link link-info">@msg.getActionLabel()</a>
+                    <ol class="breadcrumb">
+                        <li><a href="/"><span class="fa fa-home"></span></a></li>
+                        @render(breadcrumbs) {
+
+                        }
+                    </ol>
+
+                    @render(messages) {
+                        <div class="row">
+                            <div class="col-md-12" id="messageBox">
+                                @for(sirius.web.controller.Message msg : user.getMessages()) {
+                                    <div class="alert @msg.getType()">
+                                        @msg.getMessage()
+                                        @if (msg.getAction() != null) {
+                                            @if (msg.isActionJavascript()) {
+                                                <a href="#" onclick="@msg.getAction()" class="link link-info">@msg.getActionLabel()</a>
+                                            } else {
+                                                <a href="@prefix/@msg.getAction()" class="link link-info">@msg.getActionLabel()</a>
+                                            }
                                         }
-                                    }
-                                </div>
-                            }
+                                    </div>
+                                }
+                            </div>
                         </div>
-                    </div>
-                }
+                    }
 
-                @render()
+                    @render()
+                </div>
             </div>
-        </div>
+        }
         @render(footer) {
             @invoke("view/wondergem/template-footer.html")
         }
