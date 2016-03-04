@@ -18,7 +18,7 @@ import sirius.web.security.UserContext;
 public class Message {
 
     public static final String INFO = "alert-info";
-    public static final String WARN = "alert-warn";
+    public static final String WARN = "alert-warning";
     public static final String ERROR = "alert-danger";
 
     private String message;
