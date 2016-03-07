@@ -112,6 +112,11 @@ public class Message {
         return this;
     }
 
+    @Override
+    public String toString() {
+        return message;
+    }
+
     /**
      * Factory method to create a info message
      *
