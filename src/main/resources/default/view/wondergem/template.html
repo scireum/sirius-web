@@ -6,7 +6,6 @@
  *  Copyright by scireum GmbH
  *  http://www.scireum.de - info@scireum.de
  *@
-@import sirius.web.security.MaintenanceInfo;
 @args String title
 <!--
   ~ Made with all the love in the world
@@ -49,18 +48,21 @@
         }
     </head>
     <body>
-        @if (user.getCurrentScope().is(MaintenanceInfo.class) && user.getCurrentScope().as(MaintenanceInfo.class).isLocked()) {
-            MÖÖÖP
-        } else {
-            @render(menu) {
-                @view.wondergem.menu.html()
-            }
-            <div class="wrap">
+        @render(menu) {
+            @invoke("view/wondergem/menu.html")
+        }
+        <div class="wrap">
+
+            @if (user.getCurrentScope().is(MaintenanceInfo.class) && user.getCurrentScope().as(MaintenanceInfo.class).isLocked()) {
+                @invoke("view/wondergem/template-disaster.html")
+            } else {
 
                 @render(header) {
                 }
 
                 <div id="mainContainer" class="container">
+
+
                     @render(aboveMessages) {
                     }
 
@@ -92,8 +94,9 @@
 
                     @render()
                 </div>
-            </div>
-        }
+            }
+        </div>
+
         @render(footer) {
             @invoke("view/wondergem/template-footer.html")
         }
