@@ -289,7 +289,13 @@
                 }
                 if (responseJSON.refresh) {
                     setTimeout(function () {
-                        window.location.reload()
+                        var editForm = $('#editForm');
+                        if (editForm.length) {
+                            $('#uploadedFile').val(responseJSON.fileId);
+                            editForm.submit();
+                        } else {
+                            window.location.reload();
+                        }
                     }, 1250);
                 }
             },
