@@ -5,8 +5,12 @@
 *  Copyright by scireum GmbH
 *  http://www.scireum.de - info@scireum.de
 *@
+@args String headerKey
 <div class="well nav-box">
     <ul class="nav nav-list sub-nav">
+        @if (Strings.isFilled(headerKey)) {
+            <li class="nav-header">@i18n(headerKey)</li>
+        }
         @renderBody()
     </ul>
 </div>
