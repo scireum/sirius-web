@@ -53,13 +53,14 @@ public class ScopeInfo implements Adaptable {
     /**
      * Creates a new <tt>ScopeInfo</tt> with the given parameters.
      *
-     * @param scopeId       the unique id of the scope
-     * @param scopeType     the type of the scope (like "backend" or "frontend"). This is used to retrieve the
-     *                      associated {@link UserManager} from the system config.
-     * @param scopeName     the representative name of the scope
-     * @param lang          the language used by the scope or <tt>null</tt>  for the default language
-     * @param scopeSupplier used to fetch the associated scope object. This can be a database entity or the like
-     *                      associated with the scope
+     * @param scopeId        the unique id of the scope
+     * @param scopeType      the type of the scope (like "backend" or "frontend"). This is used to retrieve the
+     *                       associated {@link UserManager} from the system config.
+     * @param scopeName      the representative name of the scope
+     * @param lang           the language used by the scope or <tt>null</tt>  for the default language
+     * @param configSupplier used to fetch the scope specific configuration
+     * @param scopeSupplier  used to fetch the associated scope object. This can be a database entity or the like
+     *                       associated with the scope
      */
     public ScopeInfo(@Nonnull String scopeId,
                      @Nonnull String scopeType,
@@ -169,6 +170,14 @@ public class ScopeInfo implements Adaptable {
                         .handle();
     }
 
+    /**
+     * Returns the scope specific configuration.
+     * <p>
+     * This may (should) be used by the {@link UserManager} to create a proper {@link UserInfo} which can provide
+     * a scope an user specific config via {@link UserInfo#getConfig()}.
+     *
+     * @return the config the this scope
+     */
     protected Config getConfig() {
         if (config == null) {
             config = Sirius.getConfig().hasPath("security.scopes." + scopeType + ".config") ?

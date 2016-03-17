@@ -31,6 +31,9 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
+/**
+ * Creates a new pipeline for processing incoming requests of the HTTPS web server.
+ */
 class SSLWebServerInitializer extends WebServerInitializer {
 
     private final SSLContext context;
@@ -53,6 +56,9 @@ class SSLWebServerInitializer extends WebServerInitializer {
     @ConfigValue("http.ssl.ciphers")
     private static List<String> ciphers;
 
+    /**
+     * Adds support for SNI for the SSL engine.
+     */
     static class SniKeyManager extends X509ExtendedKeyManager {
         private final X509ExtendedKeyManager keyManager;
 

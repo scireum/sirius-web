@@ -17,6 +17,15 @@
   text-shadow: none;
 }
 
+// Fix styling in tables
+// -------------------------
+
+th, td .alert {
+  padding: 8px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
 // Alternate styles
 // -------------------------
 

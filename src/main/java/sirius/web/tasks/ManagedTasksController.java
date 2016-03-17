@@ -28,19 +28,35 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 /**
- * Created by aha on 30.10.15.
+ * Used to view and manage tasks.
  */
 @Register(classes = Controller.class)
 public class ManagedTasksController extends BasicController {
 
+    /**
+     * This permission is needed to access the scripting facility of the system. Note that this give <b>FULL</b> access
+     * the the whole system as <b>ANY</b> code can be executed. This permission should be granted to system
+     * administrators only.
+     */
     public static final String PERMISSION_SYSTEM_SCRIPTING = "permission-system-scripting";
 
+    /**
+     * Lists all active tasks
+     *
+     * @param ctx the request being handled
+     */
     @LoginRequired
     @Routed("/system/tasks")
     public void tasks(WebContext ctx) {
         ctx.respondWith().template("view/system/tasks.html");
     }
 
+    /**
+     * Lists all active tasks as JSON
+     *
+     * @param ctx  the request being handled
+     * @param json the JSON response being generated
+     */
     @LoginRequired
     @Routed(value = "/system/api/tasks", jsonCall = true)
     public void tasksAPI(WebContext ctx, JSONStructuredOutput json) {
@@ -58,41 +74,25 @@ public class ManagedTasksController extends BasicController {
         json.endArray();
     }
 
+    /**
+     * Displays details to a running task
+     *
+     * @param ctx    the request being handled
+     * @param taskId the id of the task to be shown
+     */
     @Routed("/system/task/:1")
     @LoginRequired
     public void task(WebContext ctx, String taskId) {
 
     }
 
-    @Permission(PERMISSION_SYSTEM_SCRIPTING)
-    @Routed("/system/scripting")
-    public void scripting(WebContext ctx) {
-        ctx.respondWith().template("view/system/scripting.html");
-    }
-
-    @Part
-    private ManagedTasks managedTasks;
-
-    @Part
-    private Templates templates;
-
-    @Routed(value = "/system/scripting/api/execute", jsonCall = true)
-    @Permission(PERMISSION_SYSTEM_SCRIPTING)
-    public void scriptingExecute(WebContext ctx, JSONStructuredOutput json) throws IOException {
-        String scriptSource = CharStreams.toString(new InputStreamReader(ctx.getContent(), Charsets.UTF_8));
-        ManagedTask mt = managedTasks.createManagedTaskSetup("Custom Script").execute(jobCtx -> {
-            Context params = Context.create();
-            params.set("task", jobCtx);
-            templates.generator()
-                     .applyContext(params)
-                     .direct(scriptSource, JavaScriptContentHandler.JS)
-                     .generateTo(null);
-        });
-
-        json.property("success", true);
-        json.property("task", mt.getId());
-    }
-
+    /**
+     * Displays details to a running task as JSON
+     *
+     * @param ctx    the request being handled
+     * @param json   the JSON response being generated
+     * @param taskId the id of the task to be shown
+     */
     @Routed(value = "/system/task/:1/api/info", jsonCall = true)
     @LoginRequired
     public void taskInfo(WebContext ctx, JSONStructuredOutput json, String taskId) {
@@ -123,13 +123,61 @@ public class ManagedTasksController extends BasicController {
         }
     }
 
+    /**
+     * Cancels the given tasks as response to an AJAX call.
+     *
+     * @param ctx    the request being handled
+     * @param json   the JSON response being generated
+     * @param taskId the id of the task to be shown
+     */
     @LoginRequired
-    @Routed(value = "/system/task/:1/api/cancel",jsonCall = true)
+    @Routed(value = "/system/task/:1/api/cancel", jsonCall = true)
     public void taskCancel(WebContext ctx, JSONStructuredOutput json, String taskId) {
         ManagedTask task = managedTasks.findTask(taskId);
 
         if (task != null) {
             task.cancel();
         }
+    }
+
+    /**
+     * Displays the system scripting facility.
+     *
+     * @param ctx the request being handled
+     */
+    @Permission(PERMISSION_SYSTEM_SCRIPTING)
+    @Routed("/system/scripting")
+    public void scripting(WebContext ctx) {
+        ctx.respondWith().template("view/system/scripting.html");
+    }
+
+    @Part
+    private ManagedTasks managedTasks;
+
+    @Part
+    private Templates templates;
+
+    /**
+     * Executes the given script.
+     *
+     * @param ctx  the request being handled
+     * @param json the response sent to the browser
+     * @throws IOException in case of an io error
+     */
+    @Routed(value = "/system/scripting/api/execute", jsonCall = true)
+    @Permission(PERMISSION_SYSTEM_SCRIPTING)
+    public void scriptingExecute(WebContext ctx, JSONStructuredOutput json) throws IOException {
+        String scriptSource = CharStreams.toString(new InputStreamReader(ctx.getContent(), Charsets.UTF_8));
+        ManagedTask mt = managedTasks.createManagedTaskSetup("Custom Script").execute(jobCtx -> {
+            Context params = Context.create();
+            params.set("task", jobCtx);
+            templates.generator()
+                     .applyContext(params)
+                     .direct(scriptSource, JavaScriptContentHandler.JS)
+                     .generateTo(null);
+        });
+
+        json.property("success", true);
+        json.property("task", mt.getId());
     }
 }

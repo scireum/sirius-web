@@ -12,8 +12,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.TaskContext;
 import sirius.kernel.async.Tasks;
-import sirius.kernel.commons.ComparableTuple;
-import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
@@ -27,9 +25,6 @@ import sirius.web.http.WebDispatcher;
 import sirius.web.security.Permissions;
 import sirius.web.security.UserContext;
 import sirius.web.security.UserInfo;
-
-import java.util.Collection;
-import java.util.List;
 
 /**
  * Dispatches calls to the JSON / XML Service-Framework (/service).
@@ -130,5 +125,4 @@ public class ServiceDispatcher implements WebDispatcher {
 
         call.invoke(serv);
     }
-
 }

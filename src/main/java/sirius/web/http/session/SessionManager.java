@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 @Register(classes = {SessionManager.class, EveryTenMinutes.class})
 public class SessionManager implements EveryTenMinutes {
 
-    /*
+    /**
      * Default implementation which uses heap based maps for session storage
      */
     @Register(name = "memory")

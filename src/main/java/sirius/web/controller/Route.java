@@ -69,32 +69,8 @@ class Route {
 
         String[] elements = routed.value().split("/");
         StringBuilder finalPattern = new StringBuilder();
-        int params = 0;
-        for (String element : elements) {
-            if (Strings.isFilled(element)) {
-                element = element.trim();
-                element = element.replace("\n", "").replace("\t", "");
-                Matcher m = EXPR.matcher(element);
-                if (m.matches()) {
-                    String key = m.group(1).intern();
-                    if (key == ":") {
-                        result.expressions.add(Tuple.create(":", Integer.parseInt(m.group(2))));
-                        params++;
-                    } else {
-                        result.expressions.add(Tuple.create(key, m.group(2)));
-                    }
-                    finalPattern.append("/([^/]+)");
-                } else if ("*".equals(element)) {
-                    finalPattern.append("/[^/]+");
-                } else if ("**".equals(element)) {
-                    finalPattern.append("/?(.*)");
-                    result.expressions.add(Tuple.create("**", params++));
-                } else {
-                    finalPattern.append("/");
-                    finalPattern.append(Pattern.quote(element));
-                }
-            }
-        }
+        int params = compileRouteURI(result, elements, finalPattern);
+
         if (parameterTypes.isEmpty() || !WebContext.class.equals(parameterTypes.get(0))) {
             throw new IllegalArgumentException(Strings.apply("Method needs '%s' as first parameter",
                                                              WebContext.class.getName()));
@@ -128,6 +104,40 @@ class Route {
         result.parameterTypes = parameterTypes.toArray(new Class[parameterTypes.size()]);
         result.pattern = Pattern.compile(finalPattern.toString());
         return result;
+    }
+
+    /*
+     * Compiles a routed URI (which is already split into its path parts.
+     * See Route.value() for a description
+     */
+    private static int compileRouteURI(Route result, String[] elements, StringBuilder finalPattern) {
+        int params = 0;
+        for (String element : elements) {
+            if (Strings.isFilled(element)) {
+                element = element.trim();
+                element = element.replace("\n", "").replace("\t", "");
+                Matcher m = EXPR.matcher(element);
+                if (m.matches()) {
+                    String key = m.group(1).intern();
+                    if (key == ":") {
+                        result.expressions.add(Tuple.create(":", Integer.parseInt(m.group(2))));
+                        params++;
+                    } else {
+                        result.expressions.add(Tuple.create(key, m.group(2)));
+                    }
+                    finalPattern.append("/([^/]+)");
+                } else if ("*".equals(element)) {
+                    finalPattern.append("/[^/]+");
+                } else if ("**".equals(element)) {
+                    finalPattern.append("/?(.*)");
+                    result.expressions.add(Tuple.create("**", params++));
+                } else {
+                    finalPattern.append("/");
+                    finalPattern.append(Pattern.quote(element));
+                }
+            }
+        }
+        return params;
     }
 
     /**

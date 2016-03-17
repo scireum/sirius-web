@@ -28,6 +28,11 @@ public class VelocityHelper {
     private VelocityHelper() {
     }
 
+    /**
+     * Returns the velocity engine.
+     *
+     * @return the velocity instance crated by this helper
+     */
     public static VelocityEngine getEngine() {
         if (engine == null) {
             engine = createVelocityEngine();

@@ -10,7 +10,6 @@ package sirius.web.templates.rythm;
 
 import org.rythmengine.resource.ITemplateResource;
 import org.rythmengine.resource.ResourceLoaderBase;
-import sirius.kernel.Sirius;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.web.templates.Resources;

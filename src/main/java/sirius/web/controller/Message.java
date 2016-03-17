@@ -17,8 +17,19 @@ import sirius.web.security.UserContext;
  */
 public class Message {
 
+    /**
+     * Declares a message as information.
+     */
     public static final String INFO = "alert-info";
+
+    /**
+     * Declares a message as warning.
+     */
     public static final String WARN = "alert-warning";
+
+    /**
+     * Declares a message as error.
+     */
     public static final String ERROR = "alert-danger";
 
     private String message;
@@ -77,10 +88,20 @@ public class Message {
         return action;
     }
 
+    /**
+     * Returns the label to be used for the action
+     *
+     * @return the label for the action which is shown to the user
+     */
     public String getActionLabel() {
         return actionLabel;
     }
 
+    /**
+     * Determines if the action is an URL or a piece of JavaScript
+     *
+     * @return <tt>true</tt> if it is JS, <tt>false</tt> otherwise
+     */
     public boolean isActionJavascript() {
         return actionJavascript;
     }

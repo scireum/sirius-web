@@ -9,7 +9,6 @@
 package sirius.web.security;
 
 import com.google.common.collect.Sets;
-import com.typesafe.config.Config;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.Register;
@@ -30,6 +29,9 @@ import java.util.stream.Collectors;
  */
 public class SSOUserManager extends GenericUserManager {
 
+    /**
+     * Used to create <tt>sso</tt> user managers.
+     */
     @Register(name = "sso")
     public static class Factory implements UserManagerFactory {
 

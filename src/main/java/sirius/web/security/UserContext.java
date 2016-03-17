@@ -38,10 +38,22 @@ import java.util.Map;
  */
 public class UserContext implements SubContext {
 
+    /**
+     * The key used to store the current scope in the MDC
+     */
     public static final String MDC_SCOPE = "scope";
+    /**
+     * The key used to store the current user id in the MDC
+     */
     public static final String MDC_USER_ID = "userId";
+    /**
+     * The key used to store the current user name in the MDC
+     */
     public static final String MDC_USER_NAME = "username";
 
+    /**
+     * Contains the logger <tt>user</tt> used by the auth framework
+     */
     public static final Log LOG = Log.get("user");
 
     @Part
@@ -280,6 +292,14 @@ public class UserContext implements SubContext {
         return CallContext.getCurrent().get(WebContext.class).getParameters(field);
     }
 
+    /**
+     * Returns the current user.
+     * <p>
+     * If no user is present yet, it tries to parse the current {@link WebContext} and retireve the user from the
+     * session.
+     *
+     * @return the currently active user
+     */
     public UserInfo getUser() {
         if (currentUser == null) {
             bindUserToRequest(CallContext.getCurrent().get(WebContext.class));
@@ -287,6 +307,22 @@ public class UserContext implements SubContext {
         return currentUser;
     }
 
+    /**
+     * Determines if the user is present.
+     * <p>
+     * This can be either direclty via a {@link #setCurrentUser(UserInfo)} or implicitely via {@link #getUser()}
+     *
+     * @return the currently active user
+     */
+    public boolean isUserPresent() {
+        return currentUser != null;
+    }
+
+    /**
+     * Binds the currently active user to the session.
+     * <p>
+     * This will make the authentication of a user persistent als long as the session remains
+     */
     public void attachUserToSession() {
         WebContext ctx = CallContext.getCurrent().get(WebContext.class);
         if (ctx == null || !ctx.isValid()) {
@@ -299,6 +335,15 @@ public class UserContext implements SubContext {
         manager.attachToSession(getUser(), ctx);
     }
 
+    /**
+     * Determines and returns the current user manager.
+     * <p>
+     * The user manager is determined by the current scope.
+     *
+     * @return the currently active user manager
+     * @see #getCurrentScope()
+     * @see ScopeDetector
+     */
     public UserManager getUserManager() {
         UserManager manager = managers.get(getScope().getScopeId());
         if (manager == null) {
@@ -308,6 +353,11 @@ public class UserContext implements SubContext {
         return manager;
     }
 
+    /**
+     * Removes the authentication and user identity from the session.
+     * <p>
+     * This can be considered a <tt>logout</tt>.
+     */
     public void detachUserFromSession() {
         WebContext ctx = CallContext.getCurrent().get(WebContext.class);
         if (ctx == null || !ctx.isValid()) {
@@ -317,6 +367,14 @@ public class UserContext implements SubContext {
         manager.detachFromSession(getCurrentUser(), ctx);
     }
 
+    /**
+     * Returns the currently active scope.
+     * <p>
+     * This is determined using the {@link ScopeDetector} or it will always be the {@link ScopeInfo#DEFAULT_SCOPE} if
+     * no scope detector is present.
+     *
+     * @return the currently active scope
+     */
     public ScopeInfo getScope() {
         if (currentScope == null) {
             bindScopeToRequest(CallContext.getCurrent().get(WebContext.class));

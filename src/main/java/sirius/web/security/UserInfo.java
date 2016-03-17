@@ -19,14 +19,26 @@ import java.util.Set;
 import java.util.function.Function;
 
 /**
- * Created by aha on 20.06.14.
+ * Represents an user.
+ * <p>
+ * A user is authenticated using a {@link UserManager}. To obtain or modify the current user, use {@link
+ * UserContext#getCurrentUser()} or {@link UserContext#setCurrentUser(UserInfo)}.
  */
 public class UserInfo implements Adaptable {
 
+    /**
+     * This permission represents a user which was successfully authenticated by its user manager.
+     */
     public static final String PERMISSION_LOGGED_IN = "flag-logged-in";
 
+    /**
+     * Fallback user if no user is currently available. This user has no permissions.
+     */
     public static final UserInfo NOBODY =
             new UserInfo(null, null, "ANONYMOUS", "(no user)", "", null, null, null, null);
+    /**
+     * User which is used for system activities as it has <b>all</b> permissions.
+     */
     public static final UserInfo GOD_LIKE =
             new UserInfo(null, null, "ADMIN", "(admin)", "", null, Collections.singleton("*"), null, null);
 
@@ -41,11 +53,28 @@ public class UserInfo implements Adaptable {
     private boolean allPermissions = false;
     private Function<UserInfo, Object> userSupplier;
 
-    public UserInfo(String tenantId,
-                    String tenantName,
+    /**
+     * Creates a new user info.
+     * <p>
+     * A new user should only be created by a {@link UserManager}
+     * </p>
+     *
+     * @param tenantId       the ID of the tenant the user belongs to
+     * @param tenantName     the name of the tenant the user belongs to
+     * @param userId         the unique and eternal ID of the user
+     * @param username       the name of the user
+     * @param eMail          the email address of the user
+     * @param lang           the two letter language code of the user
+     * @param permissions    a set of permissions granted to the user
+     * @param configSupplier a supplier which created the user specific config on demand
+     * @param userSupplier   a suppler which creates or retrieves the real user object (like a database entity) on
+     *                       demand
+     */
+    public UserInfo(@Nullable String tenantId,
+                    @Nullable String tenantName,
                     String userId,
                     String username,
-                    String eMail,
+                    @Nullable String eMail,
                     @Nullable String lang,
                     Set<String> permissions,
                     Function<UserInfo, Config> configSupplier,
@@ -62,30 +91,69 @@ public class UserInfo implements Adaptable {
         this.userSupplier = userSupplier;
     }
 
+    /**
+     * Returns the unique ID of the user.
+     *
+     * @return the unique ID of the user
+     */
     public String getUserId() {
         return userId;
     }
 
+    /**
+     * Returns the login or descriptive name of the user.
+     *
+     * @return the name of the user
+     */
     public String getUserName() {
         return username;
     }
 
+    /**
+     * The unique ID of the tenant.
+     *
+     * @return the unique ID the tenant the user belongs to
+     */
+    @Nullable
     public String getTenantId() {
         return tenantId;
     }
 
+    /**
+     * The name of the tenant.
+     *
+     * @return the name of the tenant the user belongs to
+     */
+    @Nullable
     public String getTenantName() {
         return tenantName;
     }
 
+    /**
+     * The email address of the user
+     *
+     * @return the email address of the user
+     */
+    @Nullable
     public String getEmail() {
         return eMail;
     }
 
+    /**
+     * The language code of the user.
+     *
+     * @return the two-letter language code of the user
+     */
     public String getLang() {
         return lang;
     }
 
+    /**
+     * Determines if the user has the requested permissions
+     *
+     * @param permissions the permissions to check
+     * @return <tt>true</tt> if the user has all the requested permissions, <tt>false</tt> otherwise
+     */
     public boolean hasPermissions(String... permissions) {
         for (String permission : permissions) {
             if (!hasPermission(permission)) {
@@ -96,6 +164,14 @@ public class UserInfo implements Adaptable {
         return true;
     }
 
+    /**
+     * Determines if the user has the given permission.
+     * <p>
+     * If the permission starts with an "!", the check is inverted.
+     *
+     * @param permission the permission to check
+     * @return <tt>true</tt> if the user has the permission, <tt>false</tt> otherwise
+     */
     public boolean hasPermission(String permission) {
         if (Strings.isEmpty(permission)) {
             return true;
@@ -107,6 +183,13 @@ public class UserInfo implements Adaptable {
         }
     }
 
+    /**
+     * Asserts that the user has the given permission.
+     * <p>
+     * If the user does not have the given permission, an exception is thrown.
+     *
+     * @param permission the permission to check
+     */
     public void assertPermission(String permission) {
         if (!hasPermission(permission)) {
             throw Exceptions.createHandled()
@@ -116,11 +199,24 @@ public class UserInfo implements Adaptable {
         }
     }
 
+    /**
+     * Determines if the user is logged in.
+     *
+     * @return <tt>true</tt> if the user has the permission {@link #PERMISSION_LOGGED_IN}, <tt>false</tt> otherwise
+     */
     public boolean isLoggedIn() {
         return hasPermission(PERMISSION_LOGGED_IN);
     }
 
+    /**
+     * Fetches the underlying user object of the given type.
+     *
+     * @param clazz  the excepted type of the user object
+     * @param <T> the excepted type of the user object
+     * @return the underlying user object or <tt>null</tt> if no object is present or if it has a non matching type
+     */
     @SuppressWarnings("unchecked")
+    @Nullable
     public <T> T getUserObject(Class<T> clazz) {
         if (userSupplier == null) {
             return null;
@@ -132,10 +228,22 @@ public class UserInfo implements Adaptable {
         return null;
     }
 
+    /**
+     * Returns a set of all permissions granted to the user.
+     *
+     * @return all permissions granted to the user.
+     */
     public Set<String> getPermissions() {
         return Collections.unmodifiableSet(permissions);
     }
 
+    /**
+     * Obtains the user specific config.
+     * <p>
+     * This can be used to make parts of the system behave specific to the current scope, current tenant and user.
+     *
+     * @return the config object which contains all settings of the current scope, current tenant and user.
+     */
     public Config getConfig() {
         if (configSupplier == null) {
             return UserContext.getCurrentScope().getConfig();

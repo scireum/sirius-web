@@ -14,9 +14,6 @@ import sirius.kernel.BaseSpecification
 import sirius.kernel.commons.Values
 import sirius.kernel.di.std.Part
 
-/**
- * Created by aha on 22.12.15.
- */
 class LineBasedProcessorSpec extends BaseSpecification {
 
     @Part

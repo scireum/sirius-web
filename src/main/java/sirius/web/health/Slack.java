@@ -50,6 +50,9 @@ public class Slack implements ExceptionHandler {
         sendMessage("incident", incident.getException().getMessage(), Color.DANGER, fields);
     }
 
+    /**
+     * Determines which color to use for a message
+     */
     public enum Color {
         GOOD, WARNING, DANGER
     }

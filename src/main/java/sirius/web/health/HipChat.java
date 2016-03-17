@@ -41,6 +41,9 @@ public class HipChat implements ExceptionHandler {
                     true);
     }
 
+    /**
+     * Determines the color to use for a message
+     */
     public enum Color {
         YELLOW, RED, GREEN, PURPLE, GRAY
     }

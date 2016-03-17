@@ -15,16 +15,19 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.nls.NLS;
 import sirius.web.http.WebContext;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
 /**
  * Represents a slice of a result set which is being "paged through" and can provide filter facets.
+ *
+ * @param <E> the type of object in the page
  */
 public class Page<E> {
 
-    public static final int DEFAULT_PAGE_SIZE = 25;
+    private static final int DEFAULT_PAGE_SIZE = 25;
     private String query;
     private int start;
     private int total;
@@ -91,7 +94,15 @@ public class Page<E> {
         return this;
     }
 
-    public Facet addFacet(String field, String title, ValueComputer<String, String> translator) {
+    /**
+     * Adds a filter facet with the given name, title and translator.
+     *
+     * @param field      the name of the field being filtered
+     * @param title      the title of the filter shown to the user
+     * @param translator the trnanslater used to convert filter values to visual representations for the user
+     * @return a newly created facet
+     */
+    public Facet addFacet(String field, String title, @Nullable ValueComputer<String, String> translator) {
         if (this.facets == null) {
             this.facets = Lists.newArrayList();
         }
@@ -101,6 +112,14 @@ public class Page<E> {
         return facet;
     }
 
+    /**
+     * Binds the page to the request.
+     * <p>
+     * This will read <tt>start</tt>, <tt>query</tt> and all facet values from the given request.
+     *
+     * @param ctx the request to parse
+     * @return the page itself for fluent method calls
+     */
     public Page<E> bindToRequest(WebContext ctx) {
         if (ctx.get("start").isFilled()) {
             withStart(ctx.get("start").asInt(1));
@@ -407,6 +426,14 @@ public class Page<E> {
         return hasFacets;
     }
 
+    /**
+     * Returns the total page size.
+     * <p>
+     * This not the number of items in the page but rather the general paging size currently being used.
+     *
+     * @return the max number of items in a page
+     * @see #DEFAULT_PAGE_SIZE
+     */
     public int getPageSize() {
         return pageSize;
     }

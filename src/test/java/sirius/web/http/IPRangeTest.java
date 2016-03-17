@@ -16,6 +16,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class IPRangeTest {
+
     @Test
     public void testSimpleRange() throws Exception {
         assertTrue(IPRange.parseRange("192.168.192.1").matches(InetAddress.getByName("192.168.192.1")));

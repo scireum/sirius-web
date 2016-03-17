@@ -9,7 +9,6 @@
 package sirius.web.security;
 
 import com.google.common.collect.Sets;
-import com.typesafe.config.Config;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.extensions.Extension;
 import sirius.kernel.health.Exceptions;
@@ -37,6 +36,9 @@ import java.util.Set;
  */
 public class LDAPUserManager extends GenericUserManager {
 
+    /**
+     * Used to create <tt>ldap</tt> user managers.
+     */
     @Register(name = "ldap")
     public static class Factory implements UserManagerFactory {
 
@@ -179,6 +181,4 @@ public class LDAPUserManager extends GenericUserManager {
     protected Object getUserObject(UserInfo u) {
         return null;
     }
-
-
 }

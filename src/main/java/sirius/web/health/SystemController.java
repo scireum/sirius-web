@@ -15,24 +15,15 @@ import sirius.kernel.di.std.Context;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
-import sirius.kernel.health.HandledException;
-import sirius.kernel.health.MemoryBasedHealthMonitor;
 import sirius.kernel.health.metrics.Metric;
-import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.health.metrics.Metrics;
 import sirius.kernel.nls.NLS;
-import sirius.kernel.nls.Translation;
 import sirius.web.controller.BasicController;
 import sirius.web.controller.Controller;
-import sirius.web.controller.Page;
 import sirius.web.controller.Routed;
 import sirius.web.http.WebContext;
 import sirius.web.http.session.ServerSession;
 import sirius.web.security.Permission;
-
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Contains the default admin GUI.
@@ -40,8 +31,14 @@ import java.util.stream.Stream;
 @Register(classes = Controller.class)
 public class SystemController extends BasicController {
 
+    /**
+     * Describes the permission required to access the system console.
+     */
     public static final String PERMISSION_SYSTEM_CONSOLE = "permission-system-console";
 
+    /**
+     * Describes the permission required to view the system state.
+     */
     public static final String PERMISSION_SYSTEM_STATE = "permission-system-state";
 
     @Routed("/system/console")
@@ -59,45 +56,53 @@ public class SystemController extends BasicController {
     @Context
     private GlobalContext context;
 
+    /**
+     * Simply responds with OK for <tt>/system/ok</tt>
+     * <p>
+     * This can be used to monitoring tools the check the system health.
+     *
+     * @param ctx the request being handled
+     */
     @Routed("/system/ok")
     public void ok(WebContext ctx) {
         ctx.respondWith().direct(HttpResponseStatus.OK, "OK");
     }
 
+    /**
+     * Sends the current node state for <tt>/system/monitor</tt>
+     *
+     * @param ctx the request being handled
+     */
     @Routed("/system/monitor")
     public void monitorNode(WebContext ctx) {
         ctx.respondWith().direct(HttpResponseStatus.OK, cluster.getNodeState().name());
     }
 
-    @Routed("/system/monitor/details")
-    public void monitorNodeDetails(WebContext ctx) {
-        if (cluster.getNodeState() != MetricState.GREEN) {
-            for (Metric m : metrics.getMetrics()) {
-                if (m.getState() != MetricState.GREEN && m.getState() != MetricState.GRAY) {
-                    ctx.respondWith().direct(HttpResponseStatus.OK, m.getName() + ": " + m.getValueAsString());
-                    return;
-                }
-            }
-        }
-        ctx.respondWith().direct(HttpResponseStatus.OK, cluster.getNodeState().name());
-    }
-
-    @Routed("/system/metric/:1")
-    public void metric(WebContext ctx, String key) {
-        if (cluster.getNodeState() != MetricState.GREEN) {
-            for (Metric m : metrics.getMetrics()) {
-                if (Strings.areEqual(key, m.getName())) {
-                    ctx.respondWith().direct(HttpResponseStatus.OK, NLS.toMachineString(m.getValue()));
-                    return;
-                }
-            }
-        }
-        ctx.respondWith().direct(HttpResponseStatus.OK, NLS.toMachineString(0d));
-    }
-
+    /**
+     * Sends the current cluster state for <tt>/system/monitor/cluster</tt>
+     *
+     * @param ctx the request being handled
+     */
     @Routed("/system/monitor/cluster")
     public void monitorCluster(WebContext ctx) {
         ctx.respondWith().direct(HttpResponseStatus.OK, cluster.getClusterState().name());
+    }
+
+    /**
+     * Sends the value for the requested metric for <tt>/system/metric/[name]</tt>
+     *
+     * @param ctx the request being handled
+     * @param key the name of the metric to fetch
+     */
+    @Routed("/system/metric/:1")
+    public void metric(WebContext ctx, String key) {
+        for (Metric m : metrics.getMetrics()) {
+            if (Strings.areEqual(key, m.getName())) {
+                ctx.respondWith().direct(HttpResponseStatus.OK, NLS.toMachineString(m.getValue()));
+                return;
+            }
+        }
+        ctx.respondWith().direct(HttpResponseStatus.OK, NLS.toMachineString(0d));
     }
 
     /**
@@ -110,20 +115,37 @@ public class SystemController extends BasicController {
         throw Exceptions.createHandled().withSystemErrorMessage("Forced Exception").handle();
     }
 
+    /**
+     * Reports useful information for the current user agent and request.
+     * <p>
+     * This will output all headers and session information available for the current request
+     *
+     * @param ctx the current request
+     */
     @Routed("/system/info")
     public void info(WebContext ctx) {
         ctx.respondWith().template("/view/system/info.html");
     }
 
+    /**
+     * Clears the server and client session.
+     * <p>
+     * Clears all session data available for the current request.
+     *
+     * @param ctx the current request
+     */
     @Routed("/system/reset")
     public void reset(WebContext ctx) {
         ctx.clearSession();
         ctx.getServerSession(false).ifPresent(ServerSession::invalidate);
-        ctx.deleteCookie("user");
-        ctx.deleteCookie("token");
         ctx.respondWith().direct(HttpResponseStatus.OK, "Session has been cleared...");
     }
 
+    /**
+     * Reports the system and cluster state.
+     *
+     * @param ctx the current request
+     */
     @Routed("/system/state")
     @Permission(PERMISSION_SYSTEM_STATE)
     public void state(WebContext ctx) {

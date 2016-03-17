@@ -12,9 +12,8 @@
 
 // Tables Variables
 // -------------------------
-$tableBackground:               $white;
-$tableBorder:                   $borderColor;
-
+$tableBackground: $white;
+$tableBorder: $borderColor;
 
 // BASE TABLES
 // -----------------
@@ -38,6 +37,7 @@ td:first-child,
 td.title {
   font-size: 100%;
 }
+
 .table > thead > tr > th {
   font-weight: 600;
   border-bottom: 1px solid #ededed;
@@ -55,6 +55,18 @@ tfoot {
   &.success > td {
     background-color: #dcf0ce;
   }
+  &.danger > td {
+    background-color: #f0ced0;
+  }
+  &.warning > td {
+    background-color: #faedbb;
+  }
+  &.info > td {
+    background-color: #d0e5f2;
+  }
+
+  // TODO replace with table-colorized (see below)
+  // which also fixes the width of the first column...
   &.success > td:first-child {
     background-color: #5eb526;
   }
@@ -64,17 +76,40 @@ tfoot {
   &.error > td:first-child {
     background-color: #b7343c;
   }
-  &.warning > td {
-    background-color: #faedbb;
+  &.info > td:first-child {
+    background-color: #3498db;
   }
   &.warning > td:first-child {
     background-color: #f1c40f;
   }
-  &.info > td {
-    background-color: #d0e5f2;
+
+}
+
+.table-colorized {
+
+  tr > th:first-child {
+    width: 10px;
+    padding: 0px;
   }
-  &.info > td:first-child {
-    background-color: #3498db;
+
+  tr > td:first-child {
+    width: 10px;
+    padding: 0px;
+  }
+
+  tbody > tr {
+    &.success > td:first-child {
+      background-color: #5eb526;
+    }
+    &.danger > td:first-child {
+      background-color: #b7343c;
+    }
+    &.warning > td:first-child {
+      background-color: #f1c40f;
+    }
+    &.info > td:first-child {
+      background-color: #3498db;
+    }
   }
 }
 

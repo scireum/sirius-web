@@ -14,9 +14,7 @@ import org.rythmengine.extension.ISourceCodeEnhancer;
 import org.rythmengine.template.ITemplate;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
-import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.ConfigValue;
-import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
@@ -101,7 +99,6 @@ class SiriusSourceCodeEnhancer implements ISourceCodeEnhancer {
         template.__setRenderArg("dateFormat", NLS.get("RythmConfig.jsDateFormat"));
         template.__setRenderArg("timeFormat", NLS.get("RythmConfig.jsTimeFormat"));
         template.__setRenderArg("tagLine", tagLine);
-
 
         for (RythmExtension ext : extensions) {
             ext.collectExtensionValues(entity -> template.__setRenderArg(entity.getFirst(), entity.getSecond()));

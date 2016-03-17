@@ -64,9 +64,18 @@ import java.util.Properties;
 @Register(classes = {Mails.class, MetricProvider.class})
 public class Mails implements MetricProvider {
 
+    /**
+     * Contains the logger <tt>mail</tt> used by the mailing framework.
+     */
     public static final Log LOG = Log.get("mail");
 
+    /**
+     * Defines a header which can be used to add a bounce token to an email.
+     * <p>
+     * This token can be extracted from received bounce mails and handled properly.
+     */
     public static final String X_BOUNCETOKEN = "X-Bouncetoken";
+
     private static final String X_MAILER = "X-Mailer";
     private static final String MIXED = "mixed";
     private static final String TEXT_HTML_CHARSET_UTF_8 = "text/html; charset=\"UTF-8\"";
@@ -178,6 +187,9 @@ public class Mails implements MetricProvider {
         }
     }
 
+    /**
+     * Used as bridge between the given parameters and JavaMail
+     */
     protected class DefaultSMTPConfig implements SMTPConfiguration {
 
         @Override

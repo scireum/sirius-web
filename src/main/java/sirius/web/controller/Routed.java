@@ -36,11 +36,23 @@ public @interface Routed {
     int priority() default PriorityCollector.DEFAULT_PRIORITY;
 
     /**
-     * Returns the URI pattern which describes which request should be handled. Parameters can be placed by
-     * using :1, :2 etc. Therefore {@code /foo/:1} matches {@code /foo/test, /foo/hello}. For handling
-     * paths with varying parts you can use /foo/:1/** which will expect a method with a signature like:
-     * {@code public void foo(WebContext ctx, String param1, List&lt;String&gt; subPath)}. Such a list can
-     * contain 0 to n entries.
+     * Returns the URI pattern which describes matching request.
+     * <p>
+     * The pattern should start with a / character, which is also use to separate path elements. Each element
+     * can be one of the following:
+     * <ul>
+     * <li>a string literal like "hello". This must match the part in the request URI</li>
+     * <li>a parameter index like :1. This will copy the path-element from the request into the n-th method
+     * parameter</li>
+     * <li>a attribute expression like #{name}: This will copy the path-element form the request into an request
+     * attribute ({@link sirius.web.http.WebContext#setAttribute(String, Object)}</li>
+     * <li>an i18n string like ${i18n.key}: This will be transalted using {@link sirius.kernel.nls.NLS}. The resulting
+     * string must match the part in the request URI</li>
+     * <li>a * can be used to accept any path element in the request URI</li>
+     * <li>a ** behaves like a variac parameter. It can only occur at the end of the expression and the method has to
+     * provide a List&lt;String&gt; subPath as last parameter which will contain all matched elements</li>
+     * </ul>
+     * </p>
      *
      * @return the URI pattern describing which requests to handle
      */
@@ -73,10 +85,10 @@ public @interface Routed {
      * within the controller method, a result with <tt>success</tt>, <tt>errro</tt> and <tt>message</tt> is
      * automatically created.
      * <p>
-     *     <b>Note:</b> The implementing method must not fork a new thread and pass the given output along,
-     *     as it is closed by the framework once the method completed. If this is a requirement, create your
-     *     own output by setting jsonCall to <tt>false</tt> and using <code>ctx.respondWith().json()</code>
-     *     manually.
+     * <b>Note:</b> The implementing method must not fork a new thread and pass the given output along,
+     * as it is closed by the framework once the method completed. If this is a requirement, create your
+     * own output by setting jsonCall to <tt>false</tt> and using {@code ctx.respondWith().json()}
+     * manually.
      * </p>
      *
      * @return <tt>true</tt> if the method is used to create a JSON response for an AJAX call, <tt>false</tt> otherwise

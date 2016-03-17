@@ -263,7 +263,7 @@ public class Cluster implements EveryMinute, Lifecycle {
         return newNodeState;
     }
 
-    public MetricState updateNodeState(MetricState newClusterState, NodeInfo info) {
+    private MetricState updateNodeState(MetricState newClusterState, NodeInfo info) {
         try {
             LOG.FINE("Testing node: %s", info.getEndpoint());
             URLConnection c = new URL(info.getEndpoint() + "/service/json/system/node-info").openConnection();

@@ -136,7 +136,7 @@ public class ControllerDispatcher implements WebDispatcher {
     private void executeRoute(WebContext ctx, Route route, List<Object> params) throws Exception {
         // Intercept call...
         for (Interceptor interceptor : interceptors) {
-            if (interceptor.before(ctx, route.getController(), route.getSuccessCallback())) {
+            if (interceptor.before(ctx, route.isJSONCall(), route.getController(), route.getSuccessCallback())) {
                 return;
             }
         }
@@ -168,10 +168,17 @@ public class ControllerDispatcher implements WebDispatcher {
         for (Interceptor interceptor : interceptors) {
             if (interceptor.beforePermissionError(missingPermission,
                                                   ctx,
+                                                  route.isJSONCall(),
                                                   route.getController(),
                                                   route.getSuccessCallback())) {
                 return;
             }
+        }
+
+        if (route.isJSONCall()) {
+            throw Exceptions.createHandled()
+                            .withSystemErrorMessage("Missing permission: %s", missingPermission)
+                            .handle();
         }
 
         // No Interceptor is in charge...report error...

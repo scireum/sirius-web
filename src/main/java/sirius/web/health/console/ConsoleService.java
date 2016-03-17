@@ -37,13 +37,14 @@ public class ConsoleService implements StructuredService {
     private GlobalContext ctx;
 
     @Override
+    @SuppressWarnings("unchecked")
     public void call(ServiceCall call, StructuredOutput out) throws Exception {
         out.beginResult();
         try {
             Watch w = Watch.start();
             Map<String, Object> map = call.getContext().getJSONContent();
             String command = (String) map.get("method");
-            @SuppressWarnings("unchecked") List<Object> params = (List<Object>) map.get("params");
+            List<Object> params = (List<Object>) map.get("params");
             String[] strParams = new String[params.size()];
             int i = 0;
             for (Object val : params) {

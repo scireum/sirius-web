@@ -8,7 +8,6 @@
 
 package sirius.web.security;
 
-import com.typesafe.config.Config;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.extensions.Extension;
 import sirius.web.http.WebContext;
@@ -34,6 +33,9 @@ public class PublicUserManager extends GenericUserManager {
     private final UserInfo user;
     private final UserInfo trustedUser;
 
+    /**
+     * Used to create <tt>public</tt> user managers.
+     */
     @Register(name = "public")
     public static class Factory implements UserManagerFactory {
 

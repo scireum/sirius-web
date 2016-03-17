@@ -34,7 +34,17 @@ public class QRCodeController implements Controller {
         ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
     }
 
-    @Routed("/qr")
+    /**
+     * Creates an QR code for the given content.
+     * <p>
+     * The parameter <tt>content</tt> determines the contents of the qr code. The parameters <tt>with</tt> and
+     * <tt>height</tt> its dimensions.
+     * </p>
+     *
+     * @param ctx the current request
+     * @throws Exception in case an error occures when generatng the qr code
+     */
+    @Routed(value = "/qr", priority = 999)
     public void qr(WebContext ctx) throws Exception {
         int h = ctx.getFirstFilled("w", "width").asInt(200);
         int w = ctx.getFirstFilled("h", "height").asInt(200);
