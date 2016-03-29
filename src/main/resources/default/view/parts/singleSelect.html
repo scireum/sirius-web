@@ -12,12 +12,14 @@
     }
     <select name="@name"
             class="select2-select form-control @user.signalFieldError(name)"
-            @if (optional) { data-optional="true" }>
+            @if (optional) {
+                data-optional="true"
+            }
+            @if(forceFullWidth) {
+                style="width: 100%;"
+            }>
         @if (optional) {
             <option value=""></option>
-        }
-        @if(forceFullWidth) {
-            style="width: 100%;"
         }
         @renderBody()
     </select>
