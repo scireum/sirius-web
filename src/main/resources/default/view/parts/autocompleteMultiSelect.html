@@ -5,7 +5,7 @@
 *  Copyright by scireum GmbH
 *  http://www.scireum.de - info@scireum.de
 *@
-@args String span, String name, String labelKey, String helpKey, boolean optional, int maxItems, String serviceUri, String type, String searchKey, boolean strict
+@args String span, String name, String labelKey, String helpKey, boolean optional, int maxItems, String serviceUri, String type, String searchKey, boolean strict, boolean forceFullWidth
 
 <div class="col-md-@(span == null || span == "" ? 6 : span)  form-group">
     @if (labelKey != null) {
@@ -24,6 +24,9 @@
             }
             @if(strict) {
                 data-strict="true"
+            }
+            @if(forceFullWidth) {
+                style="width: 100%;"
             }
             multiple="multiple">
         @renderBody()

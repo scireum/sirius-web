@@ -5,7 +5,7 @@
 *  Copyright by scireum GmbH
 *  http://www.scireum.de - info@scireum.de
 *@
-@args String span, String name, String labelKey, String helpKey, boolean optional, String serviceUri, String searchKey, String type, boolean strict
+@args String span, String name, String labelKey, String helpKey, boolean optional, String serviceUri, String searchKey, String type, boolean strict, boolean forceFullWidth
 
 <div class="col-md-@(span == null || span == "" ? 6 : span)  form-group">
     @if (labelKey != null) {
@@ -23,6 +23,9 @@
             }
             @if (optional) {
                 data-optional="true"
+            }
+            @if(forceFullWidth) {
+                style="width: 100%;"
             }
             data-autocomplete="@(serviceUri)">
         @renderBody()
