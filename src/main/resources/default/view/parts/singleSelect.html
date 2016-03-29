@@ -5,7 +5,7 @@
 *  Copyright by scireum GmbH
 *  http://www.scireum.de - info@scireum.de
 *@
-@args String span, String name, String labelKey, String helpKey, boolean optional, boolean adminOnly
+@args String span, String name, String labelKey, String helpKey, boolean optional, boolean adminOnly, boolean forceFullWidth
 <div class="col-md-@(span == null || span == "" ? 6 : span) form-group">
     @if (labelKey != null) {
         <label class="@if (adminOnly) { admin-link }">@i18n(labelKey)</label>
@@ -15,6 +15,9 @@
             @if (optional) { data-optional="true" }>
         @if (optional) {
             <option value=""></option>
+        }
+        @if(forceFullWidth) {
+            style="width: 100%;"
         }
         @renderBody()
     </select>
