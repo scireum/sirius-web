@@ -55,7 +55,8 @@ tfoot {
   &.success > td {
     background-color: #dcf0ce;
   }
-  &.danger > td {
+  &.danger > td,
+  &.error > td {
     background-color: #f0ced0;
   }
   &.warning > td {
@@ -64,25 +65,6 @@ tfoot {
   &.info > td {
     background-color: #d0e5f2;
   }
-
-  // TODO replace with table-colorized (see below)
-  // which also fixes the width of the first column...
-  &.success > td:first-child {
-    background-color: #5eb526;
-  }
-  &.error > td {
-    background-color: #f0ced0;
-  }
-  &.error > td:first-child {
-    background-color: #b7343c;
-  }
-  &.info > td:first-child {
-    background-color: #3498db;
-  }
-  &.warning > td:first-child {
-    background-color: #f1c40f;
-  }
-
 }
 
 .table-colorized {
@@ -98,20 +80,36 @@ tfoot {
   }
 
   tbody > tr {
-    &.success > td:first-child {
-      background-color: #5eb526;
+    &.default > td:first-child {
+      background-color: #b6b7bb;
     }
-    &.danger > td:first-child {
-      background-color: #b7343c;
+    &.success > td:first-child {
+      background-color: $oxomi;
+    }
+    &.danger > td:first-child,
+    &.error > td:first-child {
+      background-color: $red;
     }
     &.warning > td:first-child {
-      background-color: #f1c40f;
+      background-color: $yellow;
     }
     &.info > td:first-child {
-      background-color: #3498db;
+      background-color: $blue;
     }
   }
 }
+
+// reset regular TABLE BACKGROUND colors
+.table-colorized > tbody > tr {
+  &.success > td,
+  &.danger > td,
+  &.error > td,
+  &.warning > td,
+  &.info > td {
+    background-color: transparent;
+  }
+}
+
 
 // Enhance readabilty
 tr.info a {
