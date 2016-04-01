@@ -140,7 +140,7 @@
 .circular.label {
   min-height: 1em;
   max-height: 2em;
-  padding: 0.5em !important;
+  padding: 0.5em;
   line-height: 1em;
   text-align: center;
   border-radius: 80000px; /* IE Fallback */
@@ -149,15 +149,5 @@
 
 // custom styles labels and circular badges
 .circular.label.label-state {
-  padding: 0.3em 0.35em !important;
-}
-
-.circular.label.label-state.label-important {
-  padding-left: 0.65em !important;
-  padding-right: 0.65em !important;
-}
-
-.circular.label.label-state.label-warning {
-  padding-left: 0.65em !important;
-  padding-right: 0.65em !important;
+  padding: 0.2em 0.1em;
 }
