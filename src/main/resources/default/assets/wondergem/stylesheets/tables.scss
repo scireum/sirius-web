@@ -87,7 +87,7 @@ tfoot {
       background-color: #b6b7bb;
     }
     &.success > td:first-child {
-      background-color: $oxomi;
+      background-color: $green;
     }
     &.danger > td:first-child {
       background-color: $red;
@@ -102,7 +102,7 @@ tfoot {
     // Set .link colors
     // Set pre.plain colors
     &.success pre.plain {
-      color: $oxomi;
+      color: $green;
     }
     &.default .link,
     &.default pre.plain {
