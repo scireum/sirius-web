@@ -129,22 +129,22 @@ a.link {
 // Link color is default primary-color
 // Danger and error Links appear as red
 a.link-danger, .link-danger, a.link-red, .link-red {
-  color: $btnDangerBackground;
+  color: $btnDangerBackground !important;
 }
 
 // secondary Links
 a.link-secondary, .link-secondary {
-  color: #8E9399;
+  color: #8E9399 !important;
 }
 
 a:hover.link-danger {
-  color: $linkDangerHover;
+  color: $linkDangerHover !important;
 }
 
 a.link-info {
-  color: #4a697d;
+  color: #4a697d !important;
 }
 
 a:hover.link-info {
-  color: $linkInfoHover;
+  color: $linkInfoHover !important;
 }

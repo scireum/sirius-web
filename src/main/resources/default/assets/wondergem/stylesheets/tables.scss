@@ -15,6 +15,7 @@
 $tableBackground: $white;
 $tableBorder: $borderColor;
 
+
 // BASE TABLES
 // -----------------
 table {
@@ -80,14 +81,15 @@ tfoot {
   }
 
   tbody > tr {
+
+    // Set colors for first column
     &.default > td:first-child {
       background-color: #b6b7bb;
     }
     &.success > td:first-child {
       background-color: $oxomi;
     }
-    &.danger > td:first-child,
-    &.error > td:first-child {
+    &.danger > td:first-child {
       background-color: $red;
     }
     &.warning > td:first-child {
@@ -95,6 +97,20 @@ tfoot {
     }
     &.info > td:first-child {
       background-color: $blue;
+    }
+
+    // Set .link colors
+    &.default .link {
+      color: lighten($gray, 20%);
+    }
+    &.danger .link {
+      color: darken($red, 30%);
+    }
+    &.warning .link {
+      color: darken($yellow, 15%);
+    }
+    &.info .link {
+      color: darken($blue, 20%);
     }
   }
 }
