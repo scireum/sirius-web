@@ -5,13 +5,13 @@
 *  Copyright by scireum GmbH
 *  http://www.scireum.de - info@scireum.de
 *@
-@args Object data
+@args Object data, boolean colorized
 
 @if (data == null ||
      ((data instanceof Page) && !((Page)data).getItems().isEmpty()) ||
      ((data instanceof java.util.Collection) && !((Collection)data).isEmpty()))
 {
-    <table class="table table-striped">
+    <table class="table table-striped @if (colorized) { table-colorized }">
         @renderBody()
     </table>
 } else {
