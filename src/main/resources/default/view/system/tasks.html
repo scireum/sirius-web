@@ -1,20 +1,23 @@
-@extends(view.wondergem.template.html, title: "Active Tasks")
+@extends(view.wondergem.template.html, title: (NLS.get("ManagedTask.plural")))
 
 @section(breadcrumbs) {
-    <li><a href="/system/tasks">Active Tasks</a></li>
+<li><a href="/system/tasks">@i18n("ManagedTask.plural")</a></li>
 }
 
-@pageHeader() {
-    Active Tasks
-}
+@pageHeader("ManagedTask.plural")
 
 <table class="table table-striped">
+    <thead>
     <tr>
-        <th class="col-md-6">Name<br>Id</th>
-        <th class="col-md-2">State</th>
-        <th class="col-md-2">User</th>
-        <th class="col-md-2 align-right">Scheduled<br>Started</th>
+        <th class="col-md-6">@i18n("ManagedTask.name")<br>
+            <small class=muted">@i18n("ManagedTask.message")</small>
+        </th>
+        <th>@i18n("ManagedTask.state")</th>
+        <th>@i18n("ManagedTask.user")</th>
+        <th class="align-right">@i18n("ManagedTask.scheduled")<br>@i18n("ManagedTask.started")</th>
+        <th></th>
     </tr>
+    </thead>
     <tbody id="output">
 
     </tbody>
@@ -25,34 +28,45 @@
 
     function updateState() {
         $.getJSON('@prefix/system/api/tasks',
-              { },
-              function(data) {
+                {},
+                function (data) {
                     $('#output').html('');
                     clearTimeout(timer);
-                    if (data.tasks != null) {
+                    if (data.tasks != null && data.tasks.length > 0) {
                         for (i = 0; i < data.tasks.length; i++) {
                             var row = $('<tr></tr>');
-                            var state = data.tasks[i].state;
-                            var htmlState = '';
-                            if (state == 'SCHEDULED') {
-                                htmlState = '<span class="label label-info">SCHEDULED</span>';
-                            } else if (state == 'RUNNING') {
-                                htmlState = '<span class="label label-success">RUNNING</span>';
-                            } else if (state == 'WARNINGS') {
-                                htmlState = '<span class="label label-warn">WARNINGS</span>';
-                            } else if (state == 'TERMINATED') {
-                                htmlState = '<span class="label label-default">TERMINATED</span>';
+                            var task = data.tasks[i];
+                            row.append($('<td></td>').html('<a href="@prefix/system/task/' + task.id + '" class="link">' + task.name + '</a><br><small class=muted">' + task.message + '</small>'));
+                            row.append($('<td></td>').html('<span class="label ' + task.stateClass + '">' + task.stateName + '</span>'));
+                            row.append($('<td></td>').html(task.user));
+                            row.append($('<td></td>').html(task.scheduled + '<br>' + task.started).addClass('align-right'));
+                            if (task.state != 'TERMINATED') {
+                                row.append($('<td></td>').html('<a href="#" data-task="' + task.id + '" class="cancel link link-danger">@i18n("NLS.cancel")</a>').addClass('align-right'));
+                            } else {
+                                row.append($('<td></td>'));
                             }
-                            row.append($('<td></td>').html(data.tasks[i].name+'<br>'+data.tasks[i].id));
-                            row.append($('<td></td>').html(htmlState));
-                            row.append($('<td></td>').html(data.tasks[i].user));
-                            row.append($('<td></td>').html(data.tasks[i].scheduled+'<br>'+data.tasks[i].started).addClass('align-right'));
                             row.appendTo($('#output'));
+                            $('a.cancel', row).click(cancelTask);
                         }
+                    } else {
+                        $('#output').append($('<tr><td colspan="5" class="align-center">@i18n("table.html.empty")</td></tr>'));
                     }
                     timer = setTimeout(updateState, 2000);
-              }
+                }
         );
+    }
+
+    function cancelTask() {
+        var taskId = $(this).data("task");
+        if (taskId != null) {
+            $.getJSON('@prefix/system/task/' + taskId + '/api/cancel',
+                    {},
+                    function (data) {
+                        clearTimeout(timer);
+                        timer = setTimeout(updateState, 500);
+                    }
+            );
+        }
     }
 
     updateState();

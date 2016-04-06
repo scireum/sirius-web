@@ -8,6 +8,8 @@
 
 package sirius.web.tasks;
 
+import sirius.kernel.nls.NLS;
+
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.List;
@@ -29,7 +31,21 @@ public interface ManagedTask {
      * Enuemrates possible states of a task.
      */
     enum State {
-        SCHEDULED, RUNNING, WARNINGS, TERMINATED
+        SCHEDULED("label-info"), RUNNING("label-success"), WARNINGS("label-warn"), TERMINATED("label-default");
+
+        State(String labelClass) {
+            this.labelClass = labelClass;
+        }
+
+        private String labelClass;
+
+        public String getLabelClass() {
+            return labelClass;
+        }
+
+        public String toString() {
+            return NLS.get("ManagedTask.State." + name());
+        }
     }
 
     /**

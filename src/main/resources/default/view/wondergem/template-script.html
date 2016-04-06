@@ -214,7 +214,7 @@
         var query = url.split('?')[1];
         if (query != undefined) {
             query = query.split('&');
-            for (var i = 0; i < q.length; i++) {
+            for (var i = 0; i < query.length; i++) {
                 param = query[i].split('=');
                 params[param[0]] = param[1];
             }

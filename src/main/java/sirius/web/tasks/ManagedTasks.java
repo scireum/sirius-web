@@ -17,6 +17,7 @@ import sirius.kernel.commons.RateLimit;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Log;
+import sirius.kernel.nls.NLS;
 import sirius.web.security.UserContext;
 import sirius.web.security.UserInfo;
 
@@ -66,6 +67,7 @@ public class ManagedTasks {
         cleanupTasks();
         exec.scheduled = Instant.now();
         exec.state = ManagedTask.State.SCHEDULED;
+        exec.setState(NLS.get("ManagedTaskExecution.scheduled"));
         activeTasks.put(exec.getId(), exec);
         Future future = tasks.executor(exec.setup.category).fork(exec);
         future.onComplete(new CompletionHandler<Object>() {
