@@ -16,6 +16,7 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -23,11 +24,15 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.timeout.IdleStateEvent;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.TaskContext;
+import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Watch;
+import sirius.kernel.di.PartCollection;
+import sirius.kernel.di.std.Parts;
 import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
@@ -46,7 +51,6 @@ import java.util.concurrent.TimeUnit;
  */
 class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnection {
 
-    protected static WebDispatcher[] sortedDispatchers;
     private int numKeepAlive = 15;
     private HttpRequest currentRequest;
     private WebContext currentContext;
@@ -66,6 +70,29 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     private Average processLatency = new Average();
     private Watch latencyWatch;
     private boolean ssl;
+
+    @Parts(WebDispatcher.class)
+    private static PartCollection<WebDispatcher> dispatchers;
+    protected static WebDispatcher[] sortedDispatchers;
+
+    /*
+     * Sorts all available dispatchers by their priority ascending
+     */
+    private static WebDispatcher[] computeSortedDispatchers() {
+        PriorityCollector<WebDispatcher> collector = PriorityCollector.create();
+        for (WebDispatcher wd : dispatchers.getParts()) {
+            collector.add(wd.getPriority(), wd);
+        }
+        return collector.getData().toArray(new WebDispatcher[collector.getData().size()]);
+    }
+
+    protected static WebDispatcher[] getSortedDispatchers() {
+        if (sortedDispatchers == null) {
+            sortedDispatchers = computeSortedDispatchers();
+        }
+
+        return sortedDispatchers;
+    }
 
     /**
      * Creates a new instance and initializes some statistics.
@@ -190,7 +217,9 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
         cleanup();
+
         WebServer.removeOpenConnection(this);
+
         // Detach the CallContext we created
         if (currentCall != null) {
             currentCall.detachContext();
@@ -540,7 +569,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             WebServer.LOG.FINE("DISPATCHING: " + currentContext.getRequestedURI());
         }
 
-        for (WebDispatcher wd : sortedDispatchers) {
+        for (WebDispatcher wd : getSortedDispatchers()) {
             try {
                 currentCall.get(TaskContext.class).setSubSystem(wd.getClass().getSimpleName());
                 if (wd.preDispatch(currentContext)) {
@@ -566,7 +595,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         }
         currentContext.started = System.currentTimeMillis();
         dispatched = true;
-        for (WebDispatcher wd : sortedDispatchers) {
+        for (WebDispatcher wd : getSortedDispatchers()) {
             try {
                 currentCall.get(TaskContext.class).setSubSystem(wd.getClass().getSimpleName());
                 if (wd.dispatch(currentContext)) {
