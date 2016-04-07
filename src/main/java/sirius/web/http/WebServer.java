@@ -273,6 +273,7 @@ public class WebServer implements Lifecycle, MetricProvider {
     protected static volatile long idleTimeouts = 0;
     protected static volatile long clientErrors = 0;
     protected static volatile long serverErrors = 0;
+    protected static volatile long websockets = 0;
     protected static Map<WebServerHandler, WebServerHandler> openConnections = Maps.newConcurrentMap();
     protected static Average responseTime = new Average();
     protected static volatile MicrotimingMode microtimingMode = MicrotimingMode.URI;
@@ -549,6 +550,13 @@ public class WebServer implements Lifecycle, MetricProvider {
     }
 
     /**
+     * Returns the number of currently open websockets
+     */
+    public static long getNumberOfWebsockets() {
+        return websockets;
+    }
+
+    /**
      * Returns the total number of HTTP requests received by the web server
      *
      * @return the total number of requests received
@@ -636,6 +644,7 @@ public class WebServer implements Lifecycle, MetricProvider {
         collector.metric("http-open-connections", "HTTP Open Connections", openConnections.size(), null);
         collector.metric("http-response-time", "HTTP Avg. Reponse Time", responseTime.getAndClearAverage(), "ms");
         collector.metric("http-sessions", "HTTP Sessions", sessionManager.getNumberOfSessions(), null);
+        collector.metric("websockets", "Open Websockets", websockets, null);
     }
 
     /**

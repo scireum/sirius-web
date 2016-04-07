@@ -265,7 +265,7 @@ public class TestRequest extends WebContext implements HttpRequest {
      */
     public Promise<TestResponse> execute() {
         CallContext.getCurrent().set(WebContext.class, this);
-        for (WebDispatcher dispatcher : WebServerInitializer.getSortedDispatchers()) {
+        for (WebDispatcher dispatcher : WebServerHandler.getSortedDispatchers()) {
             try {
                 if (dispatcher.dispatch(this)) {
                     return testResponsePromise;

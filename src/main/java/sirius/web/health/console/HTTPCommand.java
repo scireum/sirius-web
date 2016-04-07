@@ -73,6 +73,7 @@ public class HTTPCommand implements Command {
             output.apply("%-20s %10d", "Chunks", WebServer.getChunks());
             output.apply("%-20s %10d", "Keepalives", WebServer.getKeepalives());
             output.apply("%-20s %10d", "Open Connections", WebServer.getNumberOfOpenConnections());
+            output.apply("%-20s %10d", "Websockets", WebServer.getNumberOfWebsockets());
             output.apply("%-20s %10d", "Idle Timeouts", WebServer.getIdleTimeouts());
             output.apply("%-20s %10d", "Client Errors", WebServer.getClientErrors());
             output.apply("%-20s %10d", "Server Errors", WebServer.getServerErrors());
