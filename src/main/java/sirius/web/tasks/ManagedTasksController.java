@@ -66,6 +66,9 @@ public class ManagedTasksController extends BasicController {
             json.property("id", task.getId());
             json.property("name", task.getName());
             json.property("state", task.getState().name());
+            json.property("stateClass", task.getState().getLabelClass());
+            json.property("stateName", task.getState().toString());
+            json.property("message", task.getStateString());
             json.property("user", task.getUsername());
             json.property("started", NLS.toUserString(task.getStarted()));
             json.property("scheduled", NLS.toUserString(task.getScheduled()));
@@ -83,7 +86,7 @@ public class ManagedTasksController extends BasicController {
     @Routed("/system/task/:1")
     @LoginRequired
     public void task(WebContext ctx, String taskId) {
-
+        ctx.respondWith().template("view/system/task.html", taskId);
     }
 
     /**
@@ -103,7 +106,14 @@ public class ManagedTasksController extends BasicController {
         } else {
             json.property("found", true);
             json.property("name", task.getName());
-            json.property("state", task.getState());
+            json.property("message", task.getStateString());
+            json.property("user", task.getUsername());
+            json.property("started", NLS.toUserString(task.getStarted()));
+            json.property("scheduled", NLS.toUserString(task.getScheduled()));
+            json.property("state", task.getState().name());
+            json.property("stateClass", task.getState().getLabelClass());
+            json.property("stateName", task.getState().toString());
+
             long logLimit = ctx.get("logLimit").asLong(0);
             json.array("logs", task.getLastLogs(), (o, log) -> {
                 if (logLimit == 0 || log.getTod().toEpochMilli() > logLimit) {

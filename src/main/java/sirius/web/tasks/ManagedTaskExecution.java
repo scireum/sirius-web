@@ -41,7 +41,7 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
     protected volatile boolean canceled;
     protected volatile boolean erroneous;
     protected State state = State.SCHEDULED;
-    protected String stateString;
+    protected String stateString = "";
     protected final List<TaskLogEntry> logs = Lists.newArrayList();
     protected Instant scheduled;
     protected Instant started;
@@ -64,6 +64,8 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
 
     @Override
     public void run() {
+        setState(NLS.get("ManagedTaskExecution.started"));
+        started = Instant.now();
         state = State.RUNNING;
         TaskContext.get().setAdapter(this);
         if (!canceled) {
@@ -74,6 +76,7 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
             }
             waitForForkedTasks();
         }
+        setState(NLS.get("ManagedTaskExecution.completed"));
     }
 
     @Override
@@ -82,6 +85,7 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
             return;
         }
         log(TaskLogEntry.LogType.NORMAL, NLS.get("ManagedTaskExecution.waitingForForkedTasks"));
+        setState(NLS.get("ManagedTaskExecution.waitingForForkedTasks"));
         while (!canceled) {
             if (barrier.await(5, TimeUnit.SECONDS)) {
                 return;
@@ -137,7 +141,7 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
 
     @Override
     public void setState(String message) {
-        this.stateString = message;
+        this.stateString = message == null ? "" : message;
     }
 
     @Nullable
@@ -155,7 +159,7 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
     public void cancel() {
         if (hasCurrentUserAccess()) {
             if (!canceled) {
-                warn("Execution has been aborted by " + UserContext.getCurrentUser().getUserName());
+                warn(NLS.fmtr("ManagedTask.canceled").set("user",UserContext.getCurrentUser().getUserName()).format());
             }
             canceled = true;
         }

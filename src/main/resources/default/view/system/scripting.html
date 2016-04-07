@@ -1,4 +1,4 @@
-@extends(view.wondergem.template.html, title: "Scripting")
+@extends(view.wondergem.template.html, title: (NLS.get("ManagedTaskController.scripting")))
 @section(head) {
 <script src="/assets/wondergem/ace/ace.js" type="text/javascript"></script>
 
@@ -26,29 +26,27 @@
 }
 
 @section(breadcrumbs) {
-<li><a href="/system/state">System Scripting</a></li>
+<li><a href="/system/scripting">@i18n("ManagedTaskController.scripting")</a></li>
 }
 
-@pageHeader() {
-System Scripting
-}
+@pageHeader("ManagedTaskController.scripting")
 
 <div id="editor">task.log('Good Morning Dave');</div>
 <div class="form-actions">
-    <a href="#" id="execute" class="btn btn-success btn-lg">Run</a>
-    <a href="#" id="cancel" style="display:none" class="btn btn-danger btn-lg">Cancel</a>
+    <a href="#" id="execute" class="btn btn-success btn-lg">@i18n("ManagedTaskController.run")</a>
+    <a href="#" id="cancel" style="display:none" class="btn btn-danger btn-lg">@i18n("NLS.cancel")</a>
 </div>
 
 <div id="outputBlock" style="display: none">
     @heading() {
-    <i class="fa fa-refresh fa-spin" id="spinner"></i> Output <span class="label"></span>
-    <span class="pull-right small" id="taskId"></span>
+        <i class="fa fa-refresh fa-spin" id="spinner"></i> @i18n("ManagedTask.output") <span class="label"></span>
+        <span class="pull-right"><a href="#" id="clearBtn" class="btn">@i18n("ManagedTask.cleanup")</a></span>
     }
 
     <table class="table table-striped">
         <tr>
-            <th class="col-md-3 align-right">Timestamp</th>
-            <th class="col-md-9">Message</th>
+            <th class="col-md-3 align-right">@i18n("ManagedTask.timestamp")</th>
+            <th class="col-md-9">@i18n("ManagedTask.message")</th>
         </tr>
         <tbody id="output">
 
@@ -61,9 +59,19 @@ System Scripting
     var editor = ace.edit("editor");
     editor.setTheme("ace/theme/idle_fingers");
     editor.getSession().setMode("ace/mode/javascript");
+    var $output = $('#output');
     var taskId = null;
     var lastLog = 0;
     var timer = null;
+
+    function limitNumberOfLogs() {
+        var numberOfRows = $('tr', $output).length;
+        var rowsToRemove = numberOfRows - 256;
+        while (rowsToRemove > 0) {
+            $('tr:last', $output).remove();
+            rowsToRemove--;
+        }
+    }
 
     function updateState() {
         $.getJSON('@prefix/system/task/' + taskId + '/api/info',
@@ -75,23 +83,22 @@ System Scripting
                             var row = $('<tr></tr>');
                             row.append($('<td></td>').text(data.logs[i].date).addClass("align-right"));
                             row.append($('<td></td>').text(data.logs[i].message).addClass("message").addClass(data.logs[i].type));
-                            row.appendTo($('#output'));
+                            row.prependTo($output);
                         }
+                        limitNumberOfLogs();
                         lastLog = data.lastLog;
                     }
 
-                    $('#outputBlock .label').show();
+                    $('#outputBlock .label')
+                            .removeClass()
+                            .addClass('label')
+                            .addClass(data.stateClass)
+                            .text(data.stateName)
+                            .show();
+
                     if (data.found && data.state != 'TERMINATED') {
-                        if (data.state == 'RUNNING') {
-                            $('#outputBlock .label').removeClass().addClass('label').addClass('label-success').text(data.state);
-                        } else if (data.state == 'SCHEDULED') {
-                            $('#outputBlock .label').removeClass().addClass('label').addClass('label-info').text(data.state);
-                        } else {
-                            $('#outputBlock .label').removeClass().addClass('label').addClass('label-warning').text(data.state);
-                        }
                         timer = setTimeout(updateState, 1000);
                     } else {
-                        $('#outputBlock .label').removeClass().addClass('label').addClass('label-default').text(data.state != null ? data.state : '');
                         taskId = null;
                         $('#cancel').hide();
                         $('#execute').removeClass('disabled');
@@ -134,6 +141,11 @@ System Scripting
                 }
             }
         })
+    });
+
+    $('#clearBtn').click(function() {
+        $output.html('');
+        return true;
     });
 
     $('#cancel').click(function () {
