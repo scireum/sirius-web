@@ -17,6 +17,7 @@ import javax.annotation.Nonnull;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -77,13 +78,18 @@ class MemoryServerSession implements ServerSession {
 
     @Override
     public int getMaxInactiveInterval() {
-        if (numAccesses < 2) {
+        if (isUserAgentBot() || numAccesses <= 2) {
             return (int) miniSessionLifetime.getSeconds();
         } else if (userAttached) {
             return (int) userSessionLifetime.getSeconds();
         } else {
             return (int) sessionLifetime.getSeconds();
         }
+    }
+
+    private boolean isUserAgentBot() {
+        String userAgent = getValue(USER_AGENT).asString("").toLowerCase();
+        return !userAgent.startsWith("mozilla") || userAgent.contains("bot");
     }
 
     @Nonnull
@@ -138,5 +144,22 @@ class MemoryServerSession implements ServerSession {
     @Override
     public String toString() {
         return id + " (Created by: " + getValue(INITIAL_URI).asString() + ")";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof MemoryServerSession)) {
+            return false;
+        }
+        MemoryServerSession that = (MemoryServerSession) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

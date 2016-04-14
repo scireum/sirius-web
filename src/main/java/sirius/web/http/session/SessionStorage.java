@@ -22,11 +22,24 @@ public interface SessionStorage {
 
     /**
      * Returns the session associated with the given id or an empty value if no such session exists.
+     * <p>
+     * Invoking this method will "touch" the session and mark it as recently accessed.
      *
      * @param id the id of the desired session
      * @return the session with the given id wrapped as {@link java.util.Optional}
      */
     Optional<ServerSession> getSession(String id);
+
+    /**
+     * Returns the session for the given ID or <tt>null</tt> if no such session exists.
+     * <p>
+     * In contrast to {@link #getSession(String)}, this is a technical API which will not be considered an "access"
+     * for the session.
+     *
+     * @param id the id of the desired session
+     * @return the session with the given ID or <tt>null</tt> if no such session exists
+     */
+    ServerSession findSession(String id);
 
     /**
      * Creates a new session.
