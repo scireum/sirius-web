@@ -63,6 +63,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.net.SocketException;
 import java.net.URLConnection;
 import java.nio.channels.ClosedChannelException;
 import java.text.SimpleDateFormat;
@@ -1453,9 +1454,7 @@ public class Response {
      */
     public OutputStream outputStream(final HttpResponseStatus status, @Nullable final String contentType) {
         if (wc.responseCommitted) {
-            throw Exceptions.handle()
-                            .to(WebServer.LOG)
-                            .error(new IllegalStateException())
+            throw Exceptions.createHandled()
                             .withSystemErrorMessage("Response for %s was already committed!", wc.getRequestedURI())
                             .handle();
         }
@@ -1478,7 +1477,7 @@ public class Response {
             buffer = null;
         }
 
-        private void ensureCapacity(int length) {
+        private void ensureCapacity(int length) throws IOException {
             if (buffer != null && buffer.writableBytes() < length) {
                 flushBuffer(false);
             }
@@ -1487,7 +1486,7 @@ public class Response {
             }
         }
 
-        private void flushBuffer(boolean last) {
+        private void flushBuffer(boolean last) throws IOException {
             if ((buffer == null || buffer.readableBytes() == 0) && !last) {
                 if (buffer != null) {
                     buffer.release();
@@ -1497,7 +1496,7 @@ public class Response {
             }
             if (!ctx.channel().isOpen()) {
                 open = false;
-                throw Exceptions.createHandled().withSystemErrorMessage("Channel closed by peer").handle();
+                throw new ClosedChannelException();
             }
             if (!wc.responseCommitted) {
                 createResponse(last);
@@ -1599,7 +1598,7 @@ public class Response {
         }
     }
 
-    private void contentionAwareWrite(Object message) {
+    private void contentionAwareWrite(Object message) throws IOException {
         if (!ctx.channel().isWritable()) {
             ChannelFuture future = ctx.writeAndFlush(message);
             while (!ctx.channel().isWritable() && ctx.channel().isOpen()) {
@@ -1608,9 +1607,7 @@ public class Response {
                 } catch (InterruptedException e) {
                     ctx.channel().close();
                     Exceptions.ignore(e);
-                    throw Exceptions.createHandled()
-                                    .withSystemErrorMessage("Interrupted while waiting for a chunk to be written")
-                                    .handle();
+                    throw new SocketException("Interrupted while waiting for a chunk to be written");
                 }
             }
         } else {
