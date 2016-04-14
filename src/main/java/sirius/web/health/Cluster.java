@@ -354,18 +354,21 @@ public class Cluster implements EveryMinute, Lifecycle {
     private Mails ms;
 
     private void alertClusterFailure(boolean firstAlert) {
-        Context ctx = Context.create()
-                             .set("app", Product.getProduct().toString())
-                             .set("node", CallContext.getNodeName())
-                             .set("nodeState", nodeState.name())
-                             .set("clusterState", clusterState.name())
-                             .set("metrics", metrics)
-                             .set("nodes", nodes);
-        for (String receiver : alertReceivers) {
-            ms.createEmail().useMailTemplate("system-alert", ctx).toEmail(receiver).send();
+        if (firstAlert) {
+            Context ctx = Context.create()
+                                 .set("app", Product.getProduct().toString())
+                                 .set("node", CallContext.getNodeName())
+                                 .set("nodeState", nodeState.name())
+                                 .set("clusterState", clusterState.name())
+                                 .set("metrics", metrics)
+                                 .set("nodes", nodes);
+            for (String receiver : alertReceivers) {
+                ms.createEmail().useMailTemplate("system-alert", ctx).toEmail(receiver).send();
+            }
+            hipChat.sendMessage("cluster", "Cluster is RED", HipChat.Color.RED, firstAlert);
+            slack.sendMessage("cluster", "Cluster is RED", Slack.Color.DANGER);
         }
-        hipChat.sendMessage("cluster", "Cluster is RED", HipChat.Color.RED, firstAlert);
-        slack.sendMessage("cluster", "Cluster is RED", Slack.Color.DANGER);
+
         if (logState) {
             LOG.WARN("NodeState: %s, ClusterState: %s", nodeState, clusterState);
         }
