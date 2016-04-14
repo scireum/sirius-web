@@ -29,6 +29,7 @@ import sirius.kernel.Lifecycle;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.Operation;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Value;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Context;
@@ -45,6 +46,7 @@ import sirius.web.http.session.SessionManager;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -67,6 +69,13 @@ public class WebServer implements Lifecycle, MetricProvider {
      */
     @ConfigValue("http.port")
     private static int port;
+
+    /**
+     * Config value for additional ports (next to the default port). This is only used in edge cases and by default
+     * turned off. Add additional ports by naming them under <tt>http.additionalPorts</tt> in the system config.
+     */
+    @ConfigValue("http.additionalPorts")
+    private static List<String> additionalPorts;
 
     /**
      * Returns the port used by the web server
@@ -324,7 +333,19 @@ public class WebServer implements Lifecycle, MetricProvider {
         }
         reportSettings();
         configureNetty();
-        Operation.cover("web", () -> "WebServer.createHTTPChannel", Duration.ofSeconds(15), this::createHTTPChannel);
+        Operation.cover("web",
+                        () -> "WebServer.createHTTPChannel:" + port,
+                        Duration.ofSeconds(15),
+                        () -> createHTTPChannel(port));
+        for (String additionalPort : additionalPorts) {
+            Value additionalPortValue = Value.of(additionalPort);
+            if (additionalPortValue.isNumeric()) {
+                Operation.cover("web",
+                                () -> "WebServer.createHTTPChannel:" + additionalPort,
+                                Duration.ofSeconds(15),
+                                () -> createHTTPChannel(additionalPortValue.asInt(-1)));
+            }
+        }
         if (ssl) {
             Operation.cover("web",
                             () -> "WebServer.createHTTPSChannel",
@@ -335,6 +356,10 @@ public class WebServer implements Lifecycle, MetricProvider {
 
     private void reportSettings() {
         LOG.INFO("Initializing netty at port %d", port);
+
+        for (String additionalPort : additionalPorts) {
+            LOG.INFO("Initializing netty also at port %s", additionalPort);
+        }
 
         if (Strings.isFilled(bindAddress)) {
             LOG.INFO("Binding netty to %s", bindAddress);
@@ -416,7 +441,7 @@ public class WebServer implements Lifecycle, MetricProvider {
         return bootstrap;
     }
 
-    private void createHTTPChannel() {
+    private void createHTTPChannel(int port) {
         try {
             ServerBootstrap bootstrap = createServerBootstrap(new WebServerInitializer());
             // Bind and start to accept incoming connections.
@@ -426,7 +451,11 @@ public class WebServer implements Lifecycle, MetricProvider {
                 channel = bootstrap.bind(new InetSocketAddress(port)).sync().channel();
             }
         } catch (Throwable t) {
-            Exceptions.handle().to(LOG).error(t).withSystemErrorMessage("Cannot setup HTTP: %s (%s)").handle();
+            Exceptions.handle()
+                      .to(LOG)
+                      .error(t)
+                      .withSystemErrorMessage("Cannot setup HTTP (%d): %s (%s)", port)
+                      .handle();
         }
     }
 
