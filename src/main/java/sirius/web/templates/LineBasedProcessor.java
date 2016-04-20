@@ -133,6 +133,9 @@ public abstract class LineBasedProcessor {
                     return null;
                 }
             }
+            if (cellType == HSSFCell.CELL_TYPE_BLANK) {
+                return null;
+            }
             throw new IllegalArgumentException(Strings.apply(
                     "Cannot read a value of type %d from cell at row %d, column  %d",
                     cellType,
