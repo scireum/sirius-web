@@ -10,6 +10,7 @@ package sirius.web.health.console;
 
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.health.console.Command;
 import sirius.kernel.nls.NLS;
 import sirius.web.http.ActiveHTTPConnection;
 import sirius.web.http.WebServer;

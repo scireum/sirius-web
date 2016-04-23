@@ -18,12 +18,12 @@
         <dependency>
             <groupId>com.scireum</groupId>
             <artifactId>sirius-kernel</artifactId>
-            <version>2.5.1</version>
+            <version>2.6</version>
         </dependency>
         <dependency>
             <groupId>com.scireum</groupId>
             <artifactId>sirius-kernel</artifactId>
-            <version>2.5.1</version>
+            <version>2.6</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
@@ -42,14 +42,14 @@
             <version>4.0.34.Final</version>
         </dependency>
 
-        <!-- Used to compile SCSS (SASS) files into CSS file -->
+        <!-- Used to compile SCSS (SASS) files into CSS files -->
         <dependency>
             <groupId>com.scireum</groupId>
             <artifactId>server-sass</artifactId>
             <version>1.8.2</version>
         </dependency>
 
-        <!-- Used to compile SCSS (SASS) files into CSS file -->
+        <!-- Used as main template engine for HTML templates... -->
         <dependency>
             <groupId>org.rythmengine</groupId>
             <artifactId>rythm-engine</artifactId>
@@ -101,7 +101,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- Velocity pulls commons-collections-3.2.1 which as a remote code execution vulnerability
+        <!-- Velocity pulls commons-collections-3.2.1 which has a remote code execution vulnerability
              COLLECTIONS-580 / VELOCITY-869
              As long as 1.7.1 is not released, we force the correct version of collections here -->
         <dependency>
