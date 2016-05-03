@@ -25,13 +25,23 @@ import javax.annotation.Nonnull;
 public interface UserManager {
 
     /**
-     * Binds the user manager to the given scope to extract the current user from the session
+     * Tries to find the current user in the current session or by checking the request for valid credentials
      *
      * @param ctx the request to attach to
      * @return the user found in the session. If no user is available {@link UserInfo#NOBODY} can be used.
      */
     @Nonnull
     UserInfo bindToRequest(@Nonnull WebContext ctx);
+
+    /**
+     * Tries to find the current user in the current session. In contrast to {@link #bindToRequest(WebContext)} this
+     * will not try to log a user in via credentials found in the request.
+     *
+     * @param ctx the request to attach to
+     * @return the user found in the session. If no user is available {@link UserInfo#NOBODY} can be used.
+     */
+    @Nonnull
+    UserInfo findUserForRequest(@Nonnull WebContext ctx);
 
     /**
      * Makes the currently authenticated user persistent by storing the required information in the session.

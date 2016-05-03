@@ -13,6 +13,7 @@ import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Context;
 import sirius.kernel.di.std.Part;
@@ -61,6 +62,15 @@ public class UserContext implements SubContext {
     private static Map<String, UserManager> managers = Maps.newConcurrentMap();
 
     private UserInfo currentUser = null;
+
+    /*
+     * As getUserForScope will most probalby only hit one other scope
+     * we cache the last user and scope here to speed up almost all cases
+     * without the need for a map.
+     */
+    private String spaceIdOfCachedUser = null;
+    private UserInfo cachedUser = null;
+
     private ScopeInfo currentScope = null;
     private List<Message> msgList = Lists.newArrayList();
     private Map<String, String> fieldErrors = Maps.newHashMap();
@@ -183,6 +193,11 @@ public class UserContext implements SubContext {
      */
     public void setCurrentScope(ScopeInfo scope) {
         this.currentScope = scope == null ? ScopeInfo.DEFAULT_SCOPE : scope;
+        if (this.currentUser != null) {
+            this.currentUser = null;
+            CallContext.getCurrent().addToMDC(MDC_USER_ID, null);
+            CallContext.getCurrent().addToMDC(MDC_USER_NAME, null);
+        }
 
         Message msg =
                 this.currentScope.tryAs(MaintenanceInfo.class).map(MaintenanceInfo::maintenanceMessage).orElse(null);
@@ -308,6 +323,28 @@ public class UserContext implements SubContext {
     }
 
     /**
+     * Returns the used which would be the current user if the space with the given id would be active.
+     * <p>
+     * You can use {@link ScopeInfo#DEFAULT_SCOPE} to access the user of the default scope which will
+     * most probably the administrative backend.
+     * <p>
+     * Note that this method will only check the session ({@link UserManager#findUserForRequest(WebContext)}) and will
+     * not try to perform a login via credentials as given in the current request.
+     *
+     * @param scopeId the id of the scope to fethc the user for
+     * @return the user found for the given scope or {@link UserInfo#NOBODY} if no user was found
+     */
+    public UserInfo getUserForScope(String scopeId) {
+        if (cachedUser != null && Strings.areEqual(scopeId, spaceIdOfCachedUser)) {
+            return cachedUser;
+        }
+
+        cachedUser = getUserManagerForScope(scopeId).findUserForRequest(CallContext.getCurrent().get(WebContext.class));
+        spaceIdOfCachedUser = scopeId;
+        return cachedUser;
+    }
+
+    /**
      * Determines if the user is present.
      * <p>
      * This can be either direclty via a {@link #setCurrentUser(UserInfo)} or implicitely via {@link #getUser()}
@@ -345,10 +382,14 @@ public class UserContext implements SubContext {
      * @see ScopeDetector
      */
     public UserManager getUserManager() {
-        UserManager manager = managers.get(getScope().getScopeId());
+        return getUserManagerForScope(getScope().getScopeId());
+    }
+
+    private UserManager getUserManagerForScope(String scopeId) {
+        UserManager manager = managers.get(scopeId);
         if (manager == null) {
             manager = getManager(currentScope);
-            managers.put(currentScope.getScopeId(), manager);
+            managers.put(scopeId, manager);
         }
         return manager;
     }

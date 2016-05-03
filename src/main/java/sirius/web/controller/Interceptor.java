@@ -8,6 +8,7 @@
 
 package sirius.web.controller;
 
+import sirius.kernel.di.std.Priorized;
 import sirius.web.http.WebContext;
 
 import java.lang.reflect.Method;
@@ -15,7 +16,7 @@ import java.lang.reflect.Method;
 /**
  * Can be used to intercept calls to controllers ({@link Controller})
  */
-public interface Interceptor {
+public interface Interceptor extends Priorized {
     /**
      * Invoked before the call to the given method would be performed.
      *
@@ -49,4 +50,9 @@ public interface Interceptor {
                                   boolean jsonCall,
                                   Controller controller,
                                   Method method) throws Exception;
+
+    @Override
+    default int getPriority() {
+        return DEFAULT_PRIORITY;
+    }
 }

@@ -79,12 +79,12 @@ public class DefaultDispatcher implements WebDispatcher {
             ctx.clearSession();
             ctx.respondWith().redirectTemporarily(ctx.get("path").asString(WebContext.getContextPrefix() + "/"));
         } else {
-            // Bind user to request if present to that translations etc. work correctly...
+            // Bind user to request if present for translations etc. to work correctly...
             UserContext.getCurrentUser();
 
             ctx.respondWith()
                .error(HttpResponseStatus.NOT_FOUND,
-                      Strings.apply("No dispatcher found for: %s", ctx.getRequest().getUri()));
+                      Strings.apply("No dispatcher found for: %s", ctx.getRequestedURI()));
         }
         return true;
     }
