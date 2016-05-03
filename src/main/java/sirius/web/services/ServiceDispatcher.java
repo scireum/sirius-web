@@ -56,7 +56,7 @@ public class ServiceDispatcher implements WebDispatcher {
 
     @Override
     public boolean dispatch(final WebContext ctx) throws Exception {
-        if (!ctx.getRequestedURI().startsWith("/service")) {
+        if (!ctx.getRequest().getUri().startsWith("/service")) {
             return false;
         }
         // The real dispatching is put into its own method to support inlining of this check by the JIT
@@ -112,8 +112,17 @@ public class ServiceDispatcher implements WebDispatcher {
         // Install language
         CallContext.getCurrent().setLang(NLS.makeLang(ctx.getLang()));
 
-        // Install user and check permissions
+        // Install user. This is forcefully called here to ensure that the ScopeDetetor
+        // and the user manager are guaranteed to be invoked one we enter the service code...
         UserInfo user = UserContext.getCurrentUser();
+
+        // If the underlying ScopeDetector made a redirect (for whatever reasons)
+        // the response will be committed and we can (must) safely return...
+        if (ctx.isResponseCommitted()) {
+            return;
+        }
+
+        // ... and check permissions
         for (String p : Permissions.computePermissionsFromAnnotations(serv.getClass())) {
             if (!user.hasPermission(p)) {
                 ctx.respondWith().error(HttpResponseStatus.UNAUTHORIZED, "Missing permission: " + p);

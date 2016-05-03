@@ -21,6 +21,7 @@ import sirius.web.http.WebContext;
 import sirius.web.http.WebServer;
 import sirius.web.security.Permissions;
 import sirius.web.security.UserContext;
+import sirius.web.security.UserInfo;
 import sirius.web.services.JSONStructuredOutput;
 
 import java.io.UnsupportedEncodingException;
@@ -209,12 +210,12 @@ class Route {
      * @return <tt>null</tt> if the user is authorized or otherwise the name of the permission which the user is
      * missing.
      */
-    protected String checkAuth() {
+    protected String checkAuth(UserInfo user) {
         if (permissions == null) {
             return null;
         }
         for (String p : permissions) {
-            if (!UserContext.getCurrentUser().hasPermission(p)) {
+            if (!user.hasPermission(p)) {
                 return p;
             }
         }

@@ -57,8 +57,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
@@ -113,6 +115,11 @@ public class WebContext implements SubContext {
      * The effective request uri (without the query string)
      */
     private String requestedURI;
+
+    /*
+     * The base url (without the uri, like: http://myhost.com)
+     */
+    private String baseURL;
 
     /*
      * Contains the parameters submitted in the query string (?param=value...)
@@ -604,7 +611,9 @@ public class WebContext implements SubContext {
 
     private boolean checkSessionDataIntegrity(Tuple<String, String> sessionInfo) {
         return Strings.areEqual(sessionInfo.getFirst(),
-                                Hashing.sha512().hashString(sessionInfo.getSecond() + getSessionSecret()).toString());
+                                Hashing.sha512()
+                                       .hashString(sessionInfo.getSecond() + getSessionSecret(), Charsets.UTF_8)
+                                       .toString());
     }
 
     /**
@@ -766,6 +775,36 @@ public class WebContext implements SubContext {
             decodeQueryString();
         }
         return requestedURI;
+    }
+
+    /**
+     * Returns the base url (the protocol + host) for which this request was made.
+     *
+     * @return the base url which created this request, without the actual URI
+     */
+    public String getBaseURL() {
+        if (baseURL == null) {
+            StringBuffer sb = new StringBuffer();
+            sb.append(isSSL() ? "https" : "http");
+            sb.append("://");
+            if (getRequest().headers().contains("X-Forwarded-Host")) {
+                sb.append(getHeader("X-Forwarded-Host"));
+            } else {
+                sb.append(getHeader(HttpHeaders.Names.HOST));
+            }
+            baseURL = sb.toString();
+        }
+
+        return baseURL;
+    }
+
+    /**
+     * Returns the complete URL as requested by the browser.
+     *
+     * @return the complete url (base url + uri) which created this request
+     */
+    public String getRequestedURL() {
+        return getBaseURL() + getRequestedURI();
     }
 
     /**
@@ -1063,7 +1102,7 @@ public class WebContext implements SubContext {
                     encoder.addParam(TTL_SESSION_KEY, String.valueOf(sessionCookieTTL));
                 }
                 String value = encoder.toString();
-                String protection = Hashing.sha512().hashString(value + getSessionSecret()).toString();
+                String protection = Hashing.sha512().hashString(value + getSessionSecret(), Charsets.UTF_8).toString();
                 long ttl = determineSessionCookieTTL();
                 if (ttl == 0) {
                     setHTTPSessionCookie(sessionCookieName, protection + ":" + value);

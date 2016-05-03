@@ -15,7 +15,7 @@ import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.di.Injector;
 import sirius.kernel.di.std.Part;
-import sirius.kernel.di.std.Parts;
+import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
@@ -24,6 +24,7 @@ import sirius.web.http.InputStreamHandler;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 import sirius.web.security.UserContext;
+import sirius.web.security.UserInfo;
 import sirius.web.services.JSONStructuredOutput;
 
 import java.lang.reflect.InvocationTargetException;
@@ -42,7 +43,7 @@ public class ControllerDispatcher implements WebDispatcher {
 
     private List<Route> routes;
 
-    @Parts(Interceptor.class)
+    @PriorityParts(Interceptor.class)
     private Collection<Interceptor> interceptors;
 
     @Part
@@ -119,7 +120,17 @@ public class ControllerDispatcher implements WebDispatcher {
         try {
             setupContext(ctx, route);
 
-            String missingPermission = route.checkAuth();
+            // Install user. This is forcefully called here to ensure that the ScopeDetetor
+            // and the user manager are guaranteed to be invoked one we enter the controller code...
+            UserInfo user = UserContext.getCurrentUser();
+
+            // If the underlying ScopeDetector made a redirect (for whatever reasons)
+            // the response will be committed and we can (must) safely return...
+            if (ctx.isResponseCommitted()) {
+                return;
+            }
+
+            String missingPermission = route.checkAuth(user);
             if (missingPermission != null) {
                 handlePermissionError(ctx, route, missingPermission);
             } else {

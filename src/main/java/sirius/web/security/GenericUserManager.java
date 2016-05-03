@@ -148,6 +148,17 @@ public abstract class GenericUserManager implements UserManager {
         return defaultUser;
     }
 
+    @Nonnull
+    @Override
+    public UserInfo findUserForRequest(@Nonnull WebContext ctx) {
+        UserInfo result = findUserInSession(ctx);
+        if (result != null) {
+            return result;
+        } else {
+            return defaultUser;
+        }
+    }
+
     private void onLogin(WebContext ctx, UserInfo user) {
         updateLoginCookie(ctx, user);
         recordUserLogin(ctx, user);
