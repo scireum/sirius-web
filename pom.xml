@@ -53,7 +53,9 @@
         <dependency>
             <groupId>org.rythmengine</groupId>
             <artifactId>rythm-engine</artifactId>
-            <version>1.0.1</version>
+            <!-- Do NOT USE Rythm 1.0.1 as it seems to cache included tempaltes and leads to
+                 VERY STRANGE BUGS -->
+            <version>1.0</version>
         </dependency>
 
         <!-- Async http client used to tunnel http data from a backend server -->
