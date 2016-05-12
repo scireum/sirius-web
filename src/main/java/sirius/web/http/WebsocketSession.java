@@ -51,14 +51,12 @@ public abstract class WebsocketSession {
      * Triggered when the websocket was sucessfully initialized.
      */
     public void onWebsocketOpened() {
-
     }
 
     /**
      * Tirggered when the websocket is closed.
      */
     public void onWebsocketClosed() {
-
     }
 
     /**

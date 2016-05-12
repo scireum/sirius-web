@@ -24,7 +24,7 @@ public interface UserManagerFactory {
 
     /**
      * Creates a new user manager for the given scope and config settings (the block in
-     * tt>security.scope.[scopeType]</tt>).
+     * <tt>security.scope.[scopeType]</tt>).
      *
      * @param scope  the scope for which the user manager is to be created
      * @param config the config section from the system config

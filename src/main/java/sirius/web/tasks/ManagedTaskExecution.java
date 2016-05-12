@@ -159,7 +159,7 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
     public void cancel() {
         if (hasCurrentUserAccess()) {
             if (!canceled) {
-                warn(NLS.fmtr("ManagedTask.canceled").set("user",UserContext.getCurrentUser().getUserName()).format());
+                warn(NLS.fmtr("ManagedTask.canceled").set("user", UserContext.getCurrentUser().getUserName()).format());
             }
             canceled = true;
         }
