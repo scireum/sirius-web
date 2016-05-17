@@ -52,7 +52,6 @@ public @interface Routed {
      * <li>a ** behaves like a variac parameter. It can only occur at the end of the expression and the method has to
      * provide a List&lt;String&gt; subPath as last parameter which will contain all matched elements</li>
      * </ul>
-     * </p>
      *
      * @return the URI pattern describing which requests to handle
      */

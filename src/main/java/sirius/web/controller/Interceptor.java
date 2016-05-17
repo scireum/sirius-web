@@ -35,6 +35,7 @@ public interface Interceptor extends Priorized {
     /**
      * Invoked before the request is aborted due to a missing permission.
      *
+     * @param permission the permission which wasn't granted to the user and therefore caused the error
      * @param ctx        provides access to the current web context
      * @param jsonCall   determines if this is a JSON call or a regular wb request (probably serving html).
      * @param controller the controller which is active

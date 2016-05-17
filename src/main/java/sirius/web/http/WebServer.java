@@ -580,6 +580,8 @@ public class WebServer implements Lifecycle, MetricProvider {
 
     /**
      * Returns the number of currently open websockets
+     *
+     * @return the number of currently open websockets
      */
     public static long getNumberOfWebsockets() {
         return websockets;
