@@ -37,12 +37,13 @@ public interface ManagedTask {
             this.labelClass = labelClass;
         }
 
-        private String labelClass;
+        private final String labelClass;
 
         public String getLabelClass() {
             return labelClass;
         }
 
+        @Override
         public String toString() {
             return NLS.get("ManagedTask.State." + name());
         }

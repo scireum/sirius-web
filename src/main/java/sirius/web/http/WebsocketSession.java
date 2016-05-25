@@ -31,7 +31,7 @@ public abstract class WebsocketSession {
      * @param ctx     the channel (context) which started the websocket
      * @param request the request made before upgrading to websocket
      */
-    public WebsocketSession(ChannelHandlerContext ctx, HttpRequest request) {
+    protected WebsocketSession(ChannelHandlerContext ctx, HttpRequest request) {
         this.ctx = ctx;
         this.request = request;
         this.queryString = new QueryStringDecoder(request.getUri());

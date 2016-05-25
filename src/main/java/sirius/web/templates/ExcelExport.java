@@ -164,11 +164,11 @@ public class ExcelExport {
     /**
      * Writes the generated excel file to the given stream.
      *
-     * @param out the target stream to write the excel workbook to
+     * @param stream the target stream to write the excel workbook to
      */
-    public void writeToStream(OutputStream out) {
+    public void writeToStream(OutputStream stream) {
         try {
-            try {
+            try (OutputStream out = stream) {
                 // Make it pretty...
                 for (short col = 0; col < maxCols; col++) {
                     sheet.autoSizeColumn(col);
@@ -176,8 +176,6 @@ public class ExcelExport {
                 // Add autofilter...
                 sheet.setAutoFilter(new CellRangeAddress(0, rows, 0, maxCols - 1));
                 workbook.write(out);
-            } finally {
-                out.close();
             }
         } catch (IOException e) {
             throw Exceptions.handle(e);

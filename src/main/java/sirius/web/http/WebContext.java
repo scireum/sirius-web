@@ -735,7 +735,11 @@ public class WebContext implements SubContext {
      * @return the currently active session for this client. Will create a new session if no active session was found
      */
     public ServerSession getServerSession() {
-        return getServerSession(true).get();
+        return getServerSession(true).orElseThrow(() -> Exceptions.handle()
+                                                                  .to(WebServer.LOG)
+                                                                  .withSystemErrorMessage(
+                                                                          "SessionManager was unable to create a session!")
+                                                                  .handle());
     }
 
     /**
@@ -784,7 +788,7 @@ public class WebContext implements SubContext {
      */
     public String getBaseURL() {
         if (baseURL == null) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(isSSL() ? "https" : "http");
             sb.append("://");
             if (getRequest().headers().contains("X-Forwarded-Host")) {
@@ -1309,12 +1313,21 @@ public class WebContext implements SubContext {
     }
 
     /**
-     * Returns the original query string sent by the client
+     * Returns the original query string sent by the client.
+     * <p>
+     * This will not include the initial question mark.
      *
-     * @return the query string (?x=y&amp;z=a...)
+     * @return the query string (x=y&amp;z=a...) or an empty string if there is no query string
      */
+    @Nonnull
     public String getQueryString() {
-        return request.getUri().substring(getRequestedURI().length());
+        String fullURI = request.getUri();
+        String uri = getRequestedURI();
+        if (uri.length() >= fullURI.length()) {
+            return "";
+        }
+
+        return request.getUri().substring(uri.length() + 1);
     }
 
     /**
