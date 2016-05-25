@@ -158,26 +158,45 @@ public class AssetsDispatcher implements WebDispatcher {
     private Templates templates;
 
     /*
-     * Uses Velocity (via the content generator) to generate the desired file
+     * Helper interface to factor the content generation by velocity and SASS out of the
+     * actual handling of the cache file etc.
      */
-    private void handleVM(WebContext ctx, String uri, String scopeId) {
-        String cacheKey = computeCacheKey(uri, scopeId);
+    private interface DynamicGenerator {
+        /**
+         * Creates the desired output into the given cache file
+         *
+         * @param output the file used to cache the generated contents
+         * @throws IOException in case of an IO error
+         */
+        void generate(File output) throws IOException;
+    }
+
+    private void handleByGeneratingFile(WebContext ctx,
+                                        String uri,
+                                        String resourceName,
+                                        String scopeId,
+                                        DynamicGenerator generator) {
+        String cacheKey = scopeId + "-" + Strings.toSaneFileName(uri.substring(1)).orElse("");
         File file = new File(getCacheDirFile(), cacheKey);
 
-        if (Sirius.isStartedAsTest() || !file.exists() || file.lastModified() < resources.resolve(uri + ".vm")
-                                                                                         .get()
-                                                                                         .getLastModified()) {
-            try {
-                if (Sirius.isDev()) {
-                    Resources.LOG.INFO("Compiling: " + uri + ".vm");
-                }
-                FileOutputStream out = new FileOutputStream(file, false);
-                templates.generator().useTemplate(uri + ".vm").generateTo(out);
-                out.close();
-            } catch (Throwable t) {
-                file.delete();
-                ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(Templates.LOG, t));
+        if (Sirius.isStartedAsTest() || !file.exists()) {
+            Optional<Resource> resource = resources.resolve(resourceName);
+            if (!resource.isPresent()) {
                 return;
+            }
+            Resource resolved = resource.get();
+            if (file.lastModified() < resolved.getLastModified()) {
+                try {
+                    if (Sirius.isDev()) {
+                        Resources.LOG.INFO("Compiling: " + resourceName);
+                    }
+                    generator.generate(file);
+                } catch (Throwable t) {
+                    file.delete();
+                    ctx.respondWith()
+                       .error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(Templates.LOG, t));
+                    return;
+                }
             }
         }
 
@@ -185,39 +204,30 @@ public class AssetsDispatcher implements WebDispatcher {
     }
 
     /*
+     * Uses Velocity (via the content generator) to generate the desired file
+     */
+    private void handleVM(WebContext ctx, String uri, String scopeId) {
+        handleByGeneratingFile(ctx, uri, uri + ".vm", scopeId, file -> {
+            try (FileOutputStream out = new FileOutputStream(file, false)) {
+                templates.generator().useTemplate(uri + ".vm").generateTo(out);
+            }
+        });
+    }
+
+    /*
      * Uses server-sass to compile a SASS file (.scss) into a .css file
      */
     private void handleSASS(WebContext ctx, String uri, String scssUri, String scopeId) {
-        String cacheKey = computeCacheKey(uri, scopeId);
-        File file = new File(getCacheDirFile(), cacheKey);
-
-        if (Sirius.isStartedAsTest()
-            || !file.exists()
-            || resources.resolve(scssUri).get().getLastModified() - file.lastModified() > 5000) {
-            if (Sirius.isDev()) {
-                SASS_LOG.INFO("Compiling: " + scssUri);
-            }
-            try {
-                SIRIUSGenerator gen = new SIRIUSGenerator();
-                gen.importStylesheet(scssUri);
-                gen.compile();
-                FileWriter writer = new FileWriter(file, false);
+        handleByGeneratingFile(ctx, uri, scssUri, scopeId, file -> {
+            SIRIUSGenerator gen = new SIRIUSGenerator();
+            gen.importStylesheet(scssUri);
+            gen.compile();
+            try (FileWriter writer = new FileWriter(file, false)) {
                 // Let the content compressor take care of minifying the CSS
                 Output out = new Output(writer, false);
                 gen.generate(out);
-                writer.close();
-            } catch (Throwable t) {
-                file.delete();
-                ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(SASS_LOG, t));
-                return;
             }
-        }
-
-        ctx.respondWith().named(uri.substring(uri.lastIndexOf("/") + 1)).file(file);
-    }
-
-    private String computeCacheKey(String uri, String scopeId) {
-        return scopeId + "-" + Strings.toSaneFileName(uri.substring(1)).orElse("");
+        });
     }
 
     /*

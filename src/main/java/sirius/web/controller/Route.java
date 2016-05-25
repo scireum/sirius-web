@@ -20,7 +20,6 @@ import sirius.web.http.InputStreamHandler;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebServer;
 import sirius.web.security.Permissions;
-import sirius.web.security.UserContext;
 import sirius.web.security.UserInfo;
 import sirius.web.services.JSONStructuredOutput;
 
