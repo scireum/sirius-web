@@ -179,28 +179,26 @@ public class AssetsDispatcher implements WebDispatcher {
         String cacheKey = scopeId + "-" + Strings.toSaneFileName(uri.substring(1)).orElse("");
         File file = new File(getCacheDirFile(), cacheKey);
 
-        if (Sirius.isStartedAsTest() || !file.exists()) {
-            Optional<Resource> resource = resources.resolve(resourceName);
-            if (!resource.isPresent()) {
-                return;
-            }
-            Resource resolved = resource.get();
-            if (file.lastModified() < resolved.getLastModified()) {
-                try {
-                    if (Sirius.isDev()) {
-                        Resources.LOG.INFO("Compiling: " + resourceName);
-                    }
-                    generator.generate(file);
-                } catch (Throwable t) {
-                    file.delete();
-                    ctx.respondWith()
-                       .error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(Templates.LOG, t));
-                    return;
+        Optional<Resource> resource = resources.resolve(resourceName);
+        if (!resource.isPresent()) {
+            return;
+        }
+        Resource resolved = resource.get();
+        if (Sirius.isStartedAsTest() || !file.exists() || file.lastModified() < resolved.getLastModified()) {
+            try {
+                if (Sirius.isDev()) {
+                    Resources.LOG.INFO("Compiling: " + resourceName);
                 }
+                generator.generate(file);
+            } catch (Throwable t) {
+                file.delete();
+                ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(Templates.LOG, t));
+                return;
             }
         }
 
-        ctx.respondWith().named(uri.substring(uri.lastIndexOf("/") + 1)).file(file);
+        ctx.respondWith().
+                named(uri.substring(uri.lastIndexOf("/") + 1)).file(file);
     }
 
     /*
