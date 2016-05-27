@@ -41,6 +41,7 @@ import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
+import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.StructuredInput;
 import sirius.kernel.xml.XMLStructuredInput;
@@ -1703,8 +1704,6 @@ public class WebContext implements SubContext {
         }
     }
 
-    private static final String DYNAMIC_ASSET_TOKEN = String.valueOf(System.currentTimeMillis());
-
     /**
      * Returns a token which can be added to dynamic asset-URLS (/asset/dynamic/TOKEN/...) to force a reload of the
      * specified resource.
@@ -1712,7 +1711,7 @@ public class WebContext implements SubContext {
      * @return a random token which is guaranteed to be free of special chars (like / and the like)
      */
     public String getDynamicAssetToken() {
-        return DYNAMIC_ASSET_TOKEN;
+        return Product.getProduct().getUniqueVersionString();
     }
 
     @Override
