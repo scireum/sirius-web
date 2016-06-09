@@ -18,12 +18,12 @@
         <dependency>
             <groupId>com.scireum</groupId>
             <artifactId>sirius-kernel</artifactId>
-            <version>2.11</version>
+            <version>2.12</version>
         </dependency>
         <dependency>
             <groupId>com.scireum</groupId>
             <artifactId>sirius-kernel</artifactId>
-            <version>2.11</version>
+            <version>2.12</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>

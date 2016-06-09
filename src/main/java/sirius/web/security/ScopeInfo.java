@@ -12,9 +12,11 @@ import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import sirius.kernel.Sirius;
+import sirius.kernel.commons.Reflection;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.morphium.Adaptable;
+import sirius.kernel.di.std.ConfigValueAnnotationProcessor;
 import sirius.kernel.di.std.Context;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.health.Exceptions;
@@ -159,6 +161,7 @@ public class ScopeInfo implements Adaptable {
                 Object result = factory.make(this);
                 if (result != null) {
                     ctx.wire(result);
+                    fillConfig(result);
                     return result;
                 }
             }
@@ -168,6 +171,19 @@ public class ScopeInfo implements Adaptable {
                         .to(UserContext.LOG)
                         .withSystemErrorMessage("Cannot make a helper of type %s", aClass.getName())
                         .handle();
+    }
+
+    private void fillConfig(Object result) {
+        Config config = UserContext.getConfig();
+        Reflection.getAllFields(result.getClass())
+                  .stream()
+                  .filter(f -> f.isAnnotationPresent(HelperConfig.class))
+                  .forEach(f -> {
+                      ConfigValueAnnotationProcessor.injectValueFromConfig(result,
+                                                                           f,
+                                                                           f.getAnnotation(HelperConfig.class).value(),
+                                                                           config);
+                  });
     }
 
     /**
@@ -180,11 +196,16 @@ public class ScopeInfo implements Adaptable {
      */
     protected Config getConfig() {
         if (config == null) {
-            config = Sirius.getConfig().hasPath("security.scopes." + scopeType + ".config") ?
-                     Sirius.getConfig().getConfig("security.scopes." + scopeType + ".config") :
-                     ConfigFactory.empty();
+            config = ConfigFactory.empty();
+            Config sysConfig = Sirius.getConfig();
+            if (sysConfig.hasPath("security.scopes.default.config")) {
+                this.config = sysConfig.getConfig("security.scopes.default.config");
+            }
+            if (sysConfig.hasPath("security.scopes." + scopeType + ".config")) {
+                this.config = config.withFallback(sysConfig.getConfig("security.scopes." + scopeType + ".config"));
+            }
             if (configSupplier != null) {
-                config = configSupplier.apply(this).withFallback(config);
+                this.config = configSupplier.apply(this).withFallback(this.config);
             }
         }
 
