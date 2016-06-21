@@ -52,28 +52,61 @@ public class AutocompleteHelper {
             this.description = description;
         }
 
+        /**
+         * Sets the label for the suggestion
+         *
+         * @param label the label shown to the user
+         * @return the completion itself for fluent method calls
+         */
         public Completion setLabel(String label) {
             this.label = label;
             return this;
         }
 
+        /**
+         * Sets the value for the suggestion
+         *
+         * @param value the value used in the entry field
+         * @return the completion itself for fluent method calls
+         */
         public Completion setValue(String value) {
             this.value = value;
             return this;
         }
 
+        /**
+         * Returns the effective value of the suggestion
+         *
+         * @return the effective value
+         */
         public String getValue() {
             return value;
         }
 
+        /**
+         * Returns the label shown to the user
+         *
+         * @return the label of the suggestion
+         */
         public String getLabel() {
             return label;
         }
 
+        /**
+         * Returns the description of the suggestion
+         *
+         * @return the description to show to the user
+         */
         public String getDescription() {
             return description;
         }
 
+        /**
+         * Sets the description for the suggestion
+         *
+         * @param description the description to show to the user
+         * @return the completion itself for fluent method calls
+         */
         public Completion setDescription(String description) {
             this.description = description;
             return this;

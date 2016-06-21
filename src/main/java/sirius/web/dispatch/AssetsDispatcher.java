@@ -15,6 +15,7 @@ import org.serversass.Output;
 import org.serversass.ast.Value;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.commons.Files;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
@@ -176,7 +177,7 @@ public class AssetsDispatcher implements WebDispatcher {
                                         String resourceName,
                                         String scopeId,
                                         DynamicGenerator generator) {
-        String cacheKey = scopeId + "-" + Strings.toSaneFileName(uri.substring(1)).orElse("");
+        String cacheKey = scopeId + "-" + Files.toSaneFileName(uri.substring(1)).orElse("");
         File file = new File(getCacheDirFile(), cacheKey);
 
         Optional<Resource> resource = resources.resolve(resourceName);
@@ -234,8 +235,11 @@ public class AssetsDispatcher implements WebDispatcher {
     private File getCacheDirFile() {
         if (cacheDirFile == null) {
             File tmpDir = new File(System.getProperty("java.io.tmpdir"),
-                                   Strings.toSaneFileName(Product.getProduct().getName()).orElse("") + "_" + CallContext
-                                           .getNodeName() + "_" + cacheDir);
+                                   Files.toSaneFileName(Product.getProduct().getName()).orElse("")
+                                   + "_"
+                                   + CallContext.getNodeName()
+                                   + "_"
+                                   + cacheDir);
             tmpDir.mkdirs();
             cacheDirFile = tmpDir;
         }
