@@ -8,6 +8,11 @@
 
 package sirius.web.templates;
 
+import sirius.kernel.di.std.Part;
+
+import javax.annotation.Nonnull;
+import java.util.Optional;
+
 /**
  * Provides helper methods used in Velocity Macros.
  * <p>
@@ -35,5 +40,26 @@ public class ContentHelper {
             return null;
         }
         return content.replace("\n", " <br> ");
+    }
+
+    @Part
+    private static Resources resources;
+
+    /**
+     * Returns the contents of the given template as a single line string which can be embedded into a string
+     * enclosed by ' (e.g. a JavaScript string).
+     *
+     * @param resource the template to fetch
+     * @return the contents of the template without line breaks and with escaped ticks (<tt>'</tt>). If the template
+     * cannot be found an empty string is returned
+     */
+    @Nonnull
+    public String getResourceAsInlineString(String resource) {
+        Optional<Resource> res = resources.resolve(resource);
+        if (!res.isPresent()) {
+            return "";
+        }
+
+        return res.get().getContentAsString().replace("\n", " ").replace("'", "\\'");
     }
 }

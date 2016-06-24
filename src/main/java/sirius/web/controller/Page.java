@@ -103,13 +103,27 @@ public class Page<E> {
      * @return a newly created facet
      */
     public Facet addFacet(String field, String title, @Nullable ValueComputer<String, String> translator) {
+        Facet facet = new Facet(title, field, null, translator);
+        addFacet(facet);
+
+        return facet;
+    }
+
+    /**
+     * Adds a filter facet to this result page.
+     *
+     * @param facet the facet to add
+     */
+    public Page<E> addFacet(Facet facet) {
         if (this.facets == null) {
             this.facets = Lists.newArrayList();
         }
-        Facet facet = new Facet(title, field, null, translator);
-        facets.add(facet);
 
-        return facet;
+        facets.add(facet);
+        facet.parent = this;
+        hasFacets = true;
+
+        return this;
     }
 
     /**
@@ -380,17 +394,6 @@ public class Page<E> {
     }
 
     /**
-     * Adds a filter facet to this result page.
-     *
-     * @param facet the facet to add
-     */
-    public void addFacet(Facet facet) {
-        getFacets().add(facet);
-        facet.parent = this;
-        hasFacets = true;
-    }
-
-    /**
      * Returns all filter facets available.
      *
      * @return all filter facets of the underlying result set
@@ -400,7 +403,7 @@ public class Page<E> {
             if (facetsSupplier != null) {
                 facets = facetsSupplier.get();
             } else {
-                facets = Collections.emptyList();
+                return Collections.emptyList();
             }
             for (Facet facet : facets) {
                 facet.parent = this;
