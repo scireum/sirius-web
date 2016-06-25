@@ -60,6 +60,6 @@ public class ContentHelper {
             return "";
         }
 
-        return res.get().getContentAsString().replace("\n", " ").replace("'", "\\'");
+        return res.get().getContentAsString().replaceAll("\\r?\\n", " ").replace("'", "\\'");
     }
 }
