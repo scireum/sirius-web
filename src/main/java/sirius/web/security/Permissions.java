@@ -109,6 +109,8 @@ public class Permissions {
     public static Set<String> computePermissionsFromAnnotations(AnnotatedElement object) {
         if (object.isAnnotationPresent(Permission.class)
             || object.isAnnotationPresent(NotPermission.class)
+            || object.isAnnotationPresent(PermissionList.class)
+            || object.isAnnotationPresent(NotPermissionList.class)
             || object.isAnnotationPresent(LoginRequired.class)) {
             Set<String> result = Sets.newTreeSet();
             for (Permission p : object.getAnnotationsByType(Permission.class)) {
