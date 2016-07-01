@@ -36,7 +36,7 @@ public class UserInfo implements Adaptable {
     /**
      * Fallback user if no user is currently available. This user has no permissions.
      */
-    public static final UserInfo NOBODY = Builder.createUser("ANONYMOUS").withUsername("(no user").build();
+    public static final UserInfo NOBODY = Builder.createUser("ANONYMOUS").withUsername("(no user)").build();
 
     private String tenantId;
     private String tenantName;

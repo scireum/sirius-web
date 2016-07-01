@@ -49,11 +49,11 @@ public class PublicUserManager extends GenericUserManager {
     protected PublicUserManager(ScopeInfo scope, Extension config) {
         super(scope, config);
         this.user = UserInfo.Builder.createUser("(public)")
-                                    .withUsername("(public")
+                                    .withUsername("(public)")
                                     .withPermissions(transformRoles(Collections.emptyList(), false))
                                     .build();
         this.trustedUser = UserInfo.Builder.createUser("(public)")
-                                           .withUsername("(public")
+                                           .withUsername("(public)")
                                            .withPermissions(transformRoles(Collections.emptyList(), false))
                                            .build();
     }
