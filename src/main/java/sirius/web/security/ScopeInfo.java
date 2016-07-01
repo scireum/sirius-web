@@ -191,6 +191,9 @@ public class ScopeInfo implements Adaptable {
      * <p>
      * This may (should) be used by the {@link UserManager} to create a proper {@link UserInfo} which can provide
      * a scope an user specific config via {@link UserInfo#getConfig()}.
+     * <p>
+     * Applications should always prefer {@link UserInfo#getConfig()} or {@link UserContext#getConfig()} as this
+     * also includes user specific settings.
      *
      * @return the config the this scope
      */

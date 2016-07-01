@@ -72,15 +72,11 @@ public class SSOUserManager extends GenericUserManager {
             roles = Sets.newTreeSet();
         }
         roles.add(UserInfo.PERMISSION_LOGGED_IN);
-        return new UserInfo(null,
-                            null,
-                            user,
-                            user,
-                            null,
-                            null,
-                            transformRoles(roles, ctx.isTrusted()),
-                            ui -> getUserConfig(getScopeConfig(), ui),
-                            null);
+        return UserInfo.Builder.createUser(user)
+                               .withUsername(user)
+                               .withPermissions(transformRoles(roles, ctx.isTrusted()))
+                               .withConfigSupplier(ui -> getUserConfig(getScopeConfig(), ui))
+                               .build();
     }
 
     private Set<String> parseRolesString(String rolesString) {

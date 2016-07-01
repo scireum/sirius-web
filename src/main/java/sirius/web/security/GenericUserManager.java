@@ -89,15 +89,10 @@ public abstract class GenericUserManager implements UserManager {
         this.defaultRoles = config.get("defaultRoles").get(List.class, Collections.emptyList());
         this.trustedRoles = config.get("trustedRoles").get(List.class, Collections.emptyList());
         this.loginCookieTTL = config.get("loginCookieTTL").get(Duration.class, Duration.ofDays(90));
-        this.defaultUser = new UserInfo(null,
-                                        null,
-                                        "(nobody)",
-                                        "(nobody)",
-                                        null,
-                                        null,
-                                        Permissions.applyProfilesAndPublicRoles(Collections.emptySet()),
-                                        null,
-                                        null);
+        this.defaultUser = UserInfo.Builder.createUser("(nobody)")
+                                           .withUsername("(nobody)")
+                                           .withPermissions(Permissions.applyProfilesAndPublicRoles(Collections.emptySet()))
+                                           .build();
     }
 
     protected abstract UserInfo findUserByName(WebContext ctx, String user);
@@ -365,25 +360,26 @@ public abstract class GenericUserManager implements UserManager {
                 if (userId.isFilled() && isUserStillValid(userId.asString())) {
                     Set<String> roles = computeRoles(ctx, userId.asString());
                     if (roles != null) {
-                        return new UserInfo(ctx.getServerSession()
-                                               .getValue(scope.getScopeId() + "-tenant-id")
-                                               .asString(),
-                                            ctx.getServerSession()
-                                               .getValue(scope.getScopeId() + "-tenant-name")
-                                               .asString(),
-                                            userId.asString(),
-                                            ctx.getServerSession()
-                                               .getValue(scope.getScopeId() + "-user-name")
-                                               .asString(),
-                                            ctx.getServerSession()
-                                               .getValue(scope.getScopeId() + "-user-email")
-                                               .asString(),
-                                            ctx.getServerSession()
-                                               .getValue(scope.getScopeId() + "-user-lang")
-                                               .asString(),
-                                            roles,
-                                            ui -> getUserConfig(getScopeConfig(), ui),
-                                            this::getUserObject);
+                        return UserInfo.Builder.createUser(userId.asString())
+                                               .withUsername(ctx.getServerSession()
+                                                                .getValue(scope.getScopeId() + "-user-name")
+                                                                .asString())
+                                               .withTenantId(ctx.getServerSession()
+                                                                .getValue(scope.getScopeId() + "-tenant-id")
+                                                                .asString())
+                                               .withTenantName(ctx.getServerSession()
+                                                                  .getValue(scope.getScopeId() + "-tenant-name")
+                                                                  .asString())
+                                               .withEmail(ctx.getServerSession()
+                                                             .getValue(scope.getScopeId() + "-user-email")
+                                                             .asString())
+                                               .withLang(ctx.getServerSession()
+                                                            .getValue(scope.getScopeId() + "-user-lang")
+                                                            .asString())
+                                               .withPermissions(roles)
+                                               .withConfigSupplier(ui -> getUserConfig(getScopeConfig(), ui))
+                                               .withUserSupplier(this::getUserObject)
+                                               .build();
                     }
                 }
             }
@@ -392,15 +388,20 @@ public abstract class GenericUserManager implements UserManager {
             if (userId.isFilled() && isUserStillValid(userId.asString())) {
                 Set<String> roles = computeRoles(ctx, userId.asString());
                 if (roles != null) {
-                    return new UserInfo(ctx.getSessionValue(scope.getScopeId() + "-tenant-id").asString(),
-                                        ctx.getSessionValue(scope.getScopeId() + "-tenant-name").asString(),
-                                        userId.asString(),
-                                        ctx.getSessionValue(scope.getScopeId() + "-user-name").asString(),
-                                        ctx.getSessionValue(scope.getScopeId() + "-user-email").asString(),
-                                        ctx.getSessionValue(scope.getScopeId() + "-user-lang").asString(),
-                                        roles,
-                                        ui -> getUserConfig(getScopeConfig(), ui),
-                                        this::getUserObject);
+                    return UserInfo.Builder.createUser(userId.asString())
+                                           .withUsername(ctx.getSessionValue(scope.getScopeId() + "-user-name")
+                                                            .asString())
+                                           .withTenantId(ctx.getSessionValue(scope.getScopeId() + "-tenant-id")
+                                                            .asString())
+                                           .withTenantName(ctx.getSessionValue(scope.getScopeId() + "-tenant-name")
+                                                              .asString())
+                                           .withEmail(ctx.getSessionValue(scope.getScopeId() + "-user-email")
+                                                         .asString())
+                                           .withLang(ctx.getSessionValue(scope.getScopeId() + "-user-lang").asString())
+                                           .withPermissions(roles)
+                                           .withConfigSupplier(ui -> getUserConfig(getScopeConfig(), ui))
+                                           .withUserSupplier(this::getUserObject)
+                                           .build();
                 }
             }
         }

@@ -113,6 +113,7 @@ public class Page<E> {
      * Adds a filter facet to this result page.
      *
      * @param facet the facet to add
+     * @return the page itself for fluent method calls
      */
     public Page<E> addFacet(Facet facet) {
         if (this.facets == null) {

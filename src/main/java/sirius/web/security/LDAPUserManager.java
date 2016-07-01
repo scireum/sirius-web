@@ -109,7 +109,7 @@ public class LDAPUserManager extends GenericUserManager {
                         return null;
                     }
 
-                    return new UserInfo(null, null, user, user, null, null, permissions, null, null);
+                    return UserInfo.Builder.createUser(user).withUsername(user).withPermissions(permissions).build();
                 }
             } finally {
                 ctx.close();

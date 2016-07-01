@@ -28,7 +28,8 @@ class SystemControllerSpec extends BaseSpecification {
 
     def "/system/console renders its template"() {
         given:
-        UserContext.get().setCurrentUser(UserInfo.GOD_LIKE);
+        UserContext.get().setCurrentUser(UserInfo.Builder.createUser("test")
+                .withPermissions(Collections.singleton(SystemController.PERMISSION_SYSTEM_CONSOLE)).build());
         when:
         def result = TestRequest.GET("/system/console").executeAndBlock();
         then:
@@ -38,6 +39,9 @@ class SystemControllerSpec extends BaseSpecification {
     }
 
     def "/system/state renders its template"() {
+        given:
+        UserContext.get().setCurrentUser(UserInfo.Builder.createUser("test")
+                .withPermissions(Collections.singleton(SystemController.PERMISSION_SYSTEM_STATE)).build());
         when:
         def result = TestRequest.GET("/system/state").executeAndBlock();
         then:
