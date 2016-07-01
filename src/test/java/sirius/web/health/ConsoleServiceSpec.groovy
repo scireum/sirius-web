@@ -21,7 +21,8 @@ class ConsoleServiceSpec extends BaseSpecification {
 
     def "/service/xml/console returns XML for help"() {
         when:
-        UserContext.get().setCurrentUser(UserInfo.GOD_LIKE);
+        UserContext.get().setCurrentUser(UserInfo.Builder.createUser("test")
+                .withPermissions(Collections.singleton(SystemController.PERMISSION_SYSTEM_CONSOLE)).build());
         JSONObject data = new JSONObject();
         data.put("method", "help");
         data.put("params", Lists.newArrayList());

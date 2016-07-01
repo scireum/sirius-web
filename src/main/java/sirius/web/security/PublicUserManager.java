@@ -48,24 +48,14 @@ public class PublicUserManager extends GenericUserManager {
 
     protected PublicUserManager(ScopeInfo scope, Extension config) {
         super(scope, config);
-        this.user = new UserInfo(null,
-                                 null,
-                                 "(public)",
-                                 "(public)",
-                                 "",
-                                 null,
-                                 transformRoles(Collections.emptyList(), false),
-                                 null,
-                                 null);
-        this.trustedUser = new UserInfo(null,
-                                        null,
-                                        "(public)",
-                                        "(public)",
-                                        "",
-                                        null,
-                                        transformRoles(Collections.emptyList(), true),
-                                        null,
-                                        null);
+        this.user = UserInfo.Builder.createUser("(public)")
+                                    .withUsername("(public")
+                                    .withPermissions(transformRoles(Collections.emptyList(), false))
+                                    .build();
+        this.trustedUser = UserInfo.Builder.createUser("(public)")
+                                           .withUsername("(public")
+                                           .withPermissions(transformRoles(Collections.emptyList(), false))
+                                           .build();
     }
 
     @Nonnull

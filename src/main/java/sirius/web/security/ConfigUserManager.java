@@ -88,15 +88,13 @@ public class ConfigUserManager extends GenericUserManager {
 
     private UserInfo getUserInfo(WebContext ctx, String userId, Extension e) {
         Set<String> roles = computeRoles(ctx, userId);
-        return new UserInfo(null,
-                            null,
-                            userId,
-                            e.get("name").asString(),
-                            e.get("email").asString(),
-                            e.get("lang").asString(null),
-                            roles,
-                            null,
-                            u -> e);
+        return UserInfo.Builder.createUser(userId)
+                               .withUsername(e.get("name").asString())
+                               .withEmail(e.get("email").asString())
+                               .withLang(e.get("lang").asString(null))
+                               .withPermissions(roles)
+                               .withUserSupplier(u -> e)
+                               .build();
     }
 
     @SuppressWarnings("unchecked")

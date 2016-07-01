@@ -13,6 +13,8 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.di.morphium.Adaptable;
 import sirius.kernel.health.Exceptions;
 
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Set;
@@ -34,19 +36,13 @@ public class UserInfo implements Adaptable {
     /**
      * Fallback user if no user is currently available. This user has no permissions.
      */
-    public static final UserInfo NOBODY =
-            new UserInfo(null, null, "ANONYMOUS", "(no user)", "", null, null, null, null);
-    /**
-     * User which is used for system activities as it has <b>all</b> permissions.
-     */
-    public static final UserInfo GOD_LIKE =
-            new UserInfo(null, null, "ADMIN", "(admin)", "", null, Collections.singleton("*"), null, null);
+    public static final UserInfo NOBODY = Builder.createUser("ANONYMOUS").withUsername("(no user").build();
 
     private String tenantId;
     private String tenantName;
     private String userId;
     private String username;
-    private String eMail;
+    private String email;
     private String lang;
     private Set<String> permissions = null;
     private Function<UserInfo, Config> configSupplier;
@@ -54,41 +50,144 @@ public class UserInfo implements Adaptable {
     private Function<UserInfo, Object> userSupplier;
 
     /**
-     * Creates a new user info.
-     * <p>
-     * A new user should only be created by a {@link UserManager}
-     * </p>
-     *
-     * @param tenantId       the ID of the tenant the user belongs to
-     * @param tenantName     the name of the tenant the user belongs to
-     * @param userId         the unique and eternal ID of the user
-     * @param username       the name of the user
-     * @param eMail          the email address of the user
-     * @param lang           the two letter language code of the user
-     * @param permissions    a set of permissions granted to the user
-     * @param configSupplier a supplier which created the user specific config on demand
-     * @param userSupplier   a suppler which creates or retrieves the real user object (like a database entity) on
-     *                       demand
+     * Builder pattern to create a new {@link UserInfo}.
      */
-    public UserInfo(@Nullable String tenantId,
-                    @Nullable String tenantName,
-                    String userId,
-                    String username,
-                    @Nullable String eMail,
-                    @Nullable String lang,
-                    Set<String> permissions,
-                    Function<UserInfo, Config> configSupplier,
-                    Function<UserInfo, Object> userSupplier) {
-        this.tenantId = tenantId;
-        this.tenantName = tenantName;
-        this.userId = userId;
-        this.username = username;
-        this.eMail = eMail;
-        this.lang = lang;
-        this.permissions = permissions;
-        this.configSupplier = configSupplier;
-        this.allPermissions = permissions != null && permissions.contains("*");
-        this.userSupplier = userSupplier;
+    public static class Builder {
+
+        private UserInfo user;
+
+        private Builder() {
+        }
+
+        /**
+         * Creates a new builder and initializes it with an id for the user.
+         *
+         * @param id the id of the user to build.
+         * @return the builder itself for fluent method calls
+         */
+        @CheckReturnValue
+        public static Builder createUser(@Nonnull String id) {
+            Builder builder = new Builder();
+            builder.user = new UserInfo();
+            builder.user.userId = id;
+            return builder;
+        }
+
+        /**
+         * Sets the name of the user.
+         *
+         * @param name the name of the user.
+         * @return the builder itself for fluent method calls
+         */
+        public Builder withUsername(String name) {
+            verifyState();
+            user.username = name;
+            return this;
+        }
+
+        /**
+         * Sets the id of the tenant the user belongs to.
+         *
+         * @param id the id of the tenant
+         * @return the builder itself for fluent method calls
+         */
+        public Builder withTenantId(String id) {
+            verifyState();
+            user.tenantId = id;
+            return this;
+        }
+
+        /**
+         * Sets the name of the tenant the user belongs to.
+         *
+         * @param name the name of the tenant
+         * @return the builder itself for fluent method calls
+         */
+        public Builder withTenantName(String name) {
+            verifyState();
+            user.tenantName = name;
+            return this;
+        }
+
+        private void verifyState() {
+            if (user == null) {
+                throw new IllegalStateException("UserInfo already built.");
+            }
+        }
+
+        /**
+         * Sets the email address of the user.
+         *
+         * @param email the email address
+         * @return the builder itself for fluent method calls
+         */
+        public Builder withEmail(String email) {
+            verifyState();
+            user.email = email;
+            return this;
+        }
+
+        /**
+         * Sets the language code of the user.
+         *
+         * @param lang a two-letter language code which should be understood by {@link sirius.kernel.nls.NLS}.
+         * @return the builder itself for fluent method calls
+         */
+        public Builder withLang(String lang) {
+            verifyState();
+            user.lang = lang;
+            return this;
+        }
+
+        /**
+         * Sets the permissions granted to the user.
+         *
+         * @param permissions the set of permissions granted to the user
+         * @return the builder itself for fluent method calls
+         */
+        public Builder withPermissions(Set<String> permissions) {
+            verifyState();
+            user.permissions = permissions;
+            return this;
+        }
+
+        /**
+         * Sets a config supplier which can provide an individual configuration for the current user.
+         *
+         * @param configSupplier the function which fetches or computes the configuration for this user on demand.
+         * @return the builder itself for fluent method calls
+         */
+        public Builder withConfigSupplier(Function<UserInfo, Config> configSupplier) {
+            verifyState();
+            user.configSupplier = configSupplier;
+            return this;
+        }
+
+        /**
+         * Sets a user supplier which returns the underlying user object (e.g. a database entity).
+         *
+         * @param userSupplier the function which fetches or computes the user object
+         * @return the builder itself for fluent method calls
+         */
+        public Builder withUserSupplier(Function<UserInfo, Object> userSupplier) {
+            verifyState();
+            user.userSupplier = userSupplier;
+            return this;
+        }
+
+        /**
+         * Builds the user, with the previously given settings.
+         *
+         * @return the resulting user
+         */
+        public UserInfo build() {
+            UserInfo result = user;
+            user = null;
+            return result;
+        }
+    }
+
+    protected UserInfo() {
     }
 
     /**
@@ -136,7 +235,7 @@ public class UserInfo implements Adaptable {
      */
     @Nullable
     public String getEmail() {
-        return eMail;
+        return email;
     }
 
     /**
@@ -211,8 +310,8 @@ public class UserInfo implements Adaptable {
     /**
      * Fetches the underlying user object of the given type.
      *
-     * @param clazz  the excepted type of the user object
-     * @param <T> the excepted type of the user object
+     * @param clazz the excepted type of the user object
+     * @param <T>   the excepted type of the user object
      * @return the underlying user object or <tt>null</tt> if no object is present or if it has a non matching type
      */
     @SuppressWarnings("unchecked")
