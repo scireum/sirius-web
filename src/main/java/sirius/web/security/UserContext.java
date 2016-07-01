@@ -106,6 +106,14 @@ public class UserContext implements SubContext {
         return get().getUser();
     }
 
+    /**
+     * Returns the configuration with is specific to the current user.
+     * <p>
+     * This is boilerplate for {@code UserContext.getCurrentUser().getConfig()}.
+     *
+     * @return the config for the current user
+     * @see UserInfo#getConfig()
+     */
     public static Config getConfig() {
         return get().getUser().getConfig();
     }
