@@ -89,7 +89,7 @@ public abstract class GenericUserManager implements UserManager {
         this.defaultRoles = config.get("defaultRoles").get(List.class, Collections.emptyList());
         this.trustedRoles = config.get("trustedRoles").get(List.class, Collections.emptyList());
         this.loginCookieTTL = config.get("loginCookieTTL").get(Duration.class, Duration.ofDays(90));
-        this.defaultUser = UserInfo.Builder.createUser("(nobody")
+        this.defaultUser = UserInfo.Builder.createUser("(nobody)")
                                            .withUsername("(nobody)")
                                            .withPermissions(Permissions.applyProfilesAndPublicRoles(Collections.emptySet()))
                                            .build();
