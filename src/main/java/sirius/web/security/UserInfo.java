@@ -46,7 +46,6 @@ public class UserInfo implements Adaptable {
     private String lang;
     private Set<String> permissions = null;
     private Function<UserInfo, Config> configSupplier;
-    private boolean allPermissions = false;
     private Function<UserInfo, Object> userSupplier;
 
     /**
@@ -278,7 +277,7 @@ public class UserInfo implements Adaptable {
         if (permission.startsWith("!")) {
             return permissions == null || !permissions.contains(permission.substring(1));
         } else {
-            return allPermissions || (permissions != null && permissions.contains(permission));
+            return permissions != null && permissions.contains(permission);
         }
     }
 
