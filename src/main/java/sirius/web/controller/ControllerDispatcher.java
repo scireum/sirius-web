@@ -120,6 +120,13 @@ public class ControllerDispatcher implements WebDispatcher {
         try {
             setupContext(ctx, route);
 
+            // Intercept call...
+            for (Interceptor interceptor : interceptors) {
+                if (interceptor.before(ctx, route.isJSONCall(), route.getController(), route.getSuccessCallback())) {
+                    return;
+                }
+            }
+
             // Install user. This is forcefully called here to ensure that the ScopeDetetor
             // and the user manager are guaranteed to be invoked one we enter the controller code...
             UserInfo user = UserContext.getCurrentUser();
@@ -145,13 +152,6 @@ public class ControllerDispatcher implements WebDispatcher {
     }
 
     private void executeRoute(WebContext ctx, Route route, List<Object> params) throws Exception {
-        // Intercept call...
-        for (Interceptor interceptor : interceptors) {
-            if (interceptor.before(ctx, route.isJSONCall(), route.getController(), route.getSuccessCallback())) {
-                return;
-            }
-        }
-
         // If a user authenticated during this call...bind to session!
         UserContext userCtx = UserContext.get();
         if (userCtx.getUser().isLoggedIn()) {
