@@ -1120,6 +1120,48 @@ public class Response {
     }
 
     /**
+     * Tries to render the given Rythm template and sends the output as response.
+     * <p>
+     * If the template with the given name is not available, the fallback template is used.
+     * <p>
+     * By default caching will be disabled. If the file ends with .html, <tt>text/html; charset=UTF-8</tt> will be set
+     * as content type. Otherwise the content type will be guessed from the filename.
+     *
+     * @param name   the name of the template to render. It's recommended to use files in /view/... and to place them
+     *               in the resources directory.
+     * @param params contains the parameters sent to the template
+     */
+    public void alternativeTemplate(String name, String fallbackName, Object... params) {
+        String content = null;
+        wc.enableTiming(null);
+        if (params.length == 1 && params[0] instanceof Object[]) {
+            params = (Object[]) params[0];
+        }
+        try {
+            content = Rythm.renderIfTemplateExists(name, params);
+        } catch (Throwable e) {
+            throw Exceptions.handle()
+                            .to(RythmConfig.LOG)
+                            .error(e)
+                            .withSystemErrorMessage("Failed to render the template '%s': %s (%s)", name)
+                            .handle();
+        }
+        if (Strings.isEmpty(content)) {
+            try {
+                content = Rythm.renderIfTemplateExists(fallbackName, params);
+            } catch (Throwable e) {
+                throw Exceptions.handle()
+                                .to(RythmConfig.LOG)
+                                .error(e)
+                                .withSystemErrorMessage("Failed to render the template '%s': %s (%s)", fallbackName)
+                                .handle();
+            }
+        }
+
+        sendTemplateContent(name, content);
+    }
+
+    /**
      * Tries to find an appropriate Rythm template for the current language and sends the output as response.
      * <p>
      * Based on the given name, <tt>name_LANG.html</tt> or as fallback <tt>name.html</tt> will be loaded. As
