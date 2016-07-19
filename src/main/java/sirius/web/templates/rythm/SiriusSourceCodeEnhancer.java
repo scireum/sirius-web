@@ -10,11 +10,11 @@ package sirius.web.templates.rythm;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.typesafe.config.Config;
 import org.rythmengine.extension.ISourceCodeEnhancer;
 import org.rythmengine.template.ITemplate;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
-import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
@@ -33,9 +33,6 @@ class SiriusSourceCodeEnhancer implements ISourceCodeEnhancer {
 
     @Parts(RythmExtension.class)
     private static Collection<RythmExtension> extensions;
-
-    @ConfigValue("product.tagLine")
-    private static String tagLine;
 
     @Override
     public List<String> imports() {
@@ -68,7 +65,7 @@ class SiriusSourceCodeEnhancer implements ISourceCodeEnhancer {
         map.put("lang", String.class);
         map.put("dateFormat", String.class);
         map.put("timeFormat", String.class);
-        map.put("tagLine", String.class);
+        map.put("config", Config.class);
 
         for (RythmExtension ext : extensions) {
             ext.collectExtensionNames(entity -> map.put(entity.getFirst(), entity.getSecond()));
@@ -98,7 +95,7 @@ class SiriusSourceCodeEnhancer implements ISourceCodeEnhancer {
         template.__setRenderArg("lang", NLS.getCurrentLang());
         template.__setRenderArg("dateFormat", NLS.get("RythmConfig.jsDateFormat"));
         template.__setRenderArg("timeFormat", NLS.get("RythmConfig.jsTimeFormat"));
-        template.__setRenderArg("tagLine", tagLine);
+        template.__setRenderArg("config", Sirius.getConfig());
 
         for (RythmExtension ext : extensions) {
             ext.collectExtensionValues(entity -> template.__setRenderArg(entity.getFirst(), entity.getSecond()));
