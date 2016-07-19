@@ -56,4 +56,17 @@ public interface Interceptor extends Priorized {
     default int getPriority() {
         return DEFAULT_PRIORITY;
     }
+
+    /**
+     * Determines if a matched routing should be executed.
+     * <p>
+     * By default this should most probably return <tt>true</tt> to invoke the {@link Controller}. However,
+     * <tt>false</tt> can be returned to skip this routing.
+     *
+     * @param ctx        the current request
+     * @param jsonCall   determines if this is a JSON call (<tt>true</tt>) or a plain request
+     * @param controller the controller which contains the matching route
+     * @return <tt>true</tt> if the route should be executed, <tt>false</tt> otherwise
+     */
+    boolean shouldExecuteRoute(WebContext ctx, boolean jsonCall, Controller controller);
 }

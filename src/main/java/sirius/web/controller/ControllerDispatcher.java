@@ -84,36 +84,52 @@ public class ControllerDispatcher implements WebDispatcher {
             uri = uri.substring(0, uri.length() - 1);
         }
         for (final Route route : routes) {
-            try {
-                final List<Object> params = route.matches(ctx, uri, preDispatch);
-                if (params != null) {
-                    // Inject WebContext as first parameter...
-                    params.add(0, ctx);
-
-                    // If a route is pre-dispatchable we inject an InputStream as last parameter of the
-                    // call. This is also checked by the route-compiler
-                    if (preDispatch) {
-                        InputStreamHandler ish = new InputStreamHandler();
-                        params.add(ish);
-                        ctx.setContentHandler(ish);
-                    }
-                    tasks.executor("web-mvc")
-                         .dropOnOverload(() -> ctx.respondWith()
-                                                  .error(HttpResponseStatus.INTERNAL_SERVER_ERROR,
-                                                         "Request dropped - System overload!"))
-                         .fork(() -> performRouteInOwnThread(ctx, route, params));
-                    return true;
-                }
-            } catch (final Throwable e) {
-                tasks.executor("web-mvc")
-                     .dropOnOverload(() -> ctx.respondWith()
-                                              .error(HttpResponseStatus.INTERNAL_SERVER_ERROR,
-                                                     "Request dropped - System overload!"))
-                     .fork(() -> handleFailure(ctx, route, e));
+            if (tryExecuteRoute(ctx, preDispatch, uri, route)) {
                 return true;
             }
         }
         return false;
+    }
+
+    private boolean tryExecuteRoute(WebContext ctx, boolean preDispatch, String uri, Route route) {
+        try {
+            final List<Object> params = route.matches(ctx, uri, preDispatch);
+            if (params == null) {
+                // Route did not match...
+                return false;
+            }
+
+            // Check if interceptors permit execution of route...
+            for (Interceptor interceptor : interceptors) {
+                if (!interceptor.shouldExecuteRoute(ctx, route.isJSONCall(), route.getController())) {
+                    return false;
+                }
+            }
+
+            // Inject WebContext as first parameter...
+            params.add(0, ctx);
+
+            // If a route is pre-dispatchable we inject an InputStream as last parameter of the
+            // call. This is also checked by the route-compiler
+            if (preDispatch) {
+                InputStreamHandler ish = new InputStreamHandler();
+                params.add(ish);
+                ctx.setContentHandler(ish);
+            }
+            tasks.executor("web-mvc")
+                 .dropOnOverload(() -> ctx.respondWith()
+                                          .error(HttpResponseStatus.INTERNAL_SERVER_ERROR,
+                                                 "Request dropped - System overload!"))
+                 .fork(() -> performRouteInOwnThread(ctx, route, params));
+            return true;
+        } catch (final Throwable e) {
+            tasks.executor("web-mvc")
+                 .dropOnOverload(() -> ctx.respondWith()
+                                          .error(HttpResponseStatus.INTERNAL_SERVER_ERROR,
+                                                 "Request dropped - System overload!"))
+                 .fork(() -> handleFailure(ctx, route, e));
+            return true;
+        }
     }
 
     private void performRouteInOwnThread(WebContext ctx, Route route, List<Object> params) {
