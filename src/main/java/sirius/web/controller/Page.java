@@ -34,9 +34,9 @@ public class Page<E> {
     private List<E> items = Collections.emptyList();
     private boolean more;
     private String duration;
-    private List<Facet> facets;
+    private List<Facet> facets = Lists.newArrayList();
     private Supplier<List<Facet>> facetsSupplier;
-    private boolean hasFacets;
+    private Boolean hasFacets = null;
     private int pageSize = DEFAULT_PAGE_SIZE;
 
     /**
@@ -90,7 +90,8 @@ public class Page<E> {
      * @return the page itself for fluent method calls
      */
     public Page<E> withFactes(List<Facet> facets) {
-        this.facets = facets;
+        this.facets.addAll(facets);
+        this.hasFacets = null;
         return this;
     }
 
@@ -122,7 +123,7 @@ public class Page<E> {
 
         facets.add(facet);
         facet.parent = this;
-        hasFacets = true;
+        hasFacets = null;
 
         return this;
     }
@@ -400,12 +401,13 @@ public class Page<E> {
      * @return all filter facets of the underlying result set
      */
     public List<Facet> getFacets() {
-        if (facets == null) {
-            if (facetsSupplier != null) {
-                facets = facetsSupplier.get();
-            } else {
-                return Collections.emptyList();
-            }
+        if (facetsSupplier != null) {
+            facets.addAll(facetsSupplier.get());
+            facetsSupplier = null;
+            hasFacets = null;
+        }
+        if (hasFacets == null) {
+            hasFacets = false;
             for (Facet facet : facets) {
                 facet.parent = this;
                 if (facet.hasItems()) {
@@ -423,7 +425,7 @@ public class Page<E> {
      * @return <tt>true</tt> if there is at least one filter facet with items
      */
     public boolean hasFacets() {
-        if (facets == null) {
+        if (hasFacets == null) {
             getFacets();
         }
 
