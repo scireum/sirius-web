@@ -262,6 +262,13 @@ public class Response {
         if (WebContext.addP3PHeader) {
             response.headers().set("P3P", "CP=\"This site does not have a p3p policy.\"");
         }
+
+        // Adds a Strict Transport Security (HSTS) header...
+        if (WebContext.forceHSTS) {
+            response.headers()
+                    .set("Strict-Transport-Security", "max-age=" + WebContext.hstsMaxAge + "; includeSubDomains");
+        }
+
         // Add CORS header...: http://enable-cors.org
         if (WebContext.corsAllowAll && !response.headers().contains(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_ORIGIN)) {
             String requestedOrigin = wc.getHeader(HttpHeaders.Names.ORIGIN);

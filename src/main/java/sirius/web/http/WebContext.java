@@ -318,6 +318,18 @@ public class WebContext implements SubContext {
     @ConfigValue("http.corsAllowAll")
     protected static boolean corsAllowAll;
 
+    /*
+     * Should a Strict-Transport-Security header be sent?
+     */
+    @ConfigValue("http.ssl.forceHSTS")
+    protected static boolean forceHSTS;
+
+    /*
+     * Should the automatic CORS handling be done or not?
+     */
+    @ConfigValue("http.ssl.hstsMaxAge")
+    protected static int hstsMaxAge;
+
     @Part
     private static SessionManager sessionManager;
 
