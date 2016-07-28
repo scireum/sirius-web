@@ -99,7 +99,7 @@ public class BasicController implements Controller {
      * is used in case another route throws an error.
      */
     public BasicController() {
-        Optional<Method> defaultMethod = Arrays.stream(getClass().getDeclaredMethods())
+        Optional<Method> defaultMethod = Arrays.stream(getClass().getMethods())
                                                .filter(m -> m.isAnnotationPresent(DefaultRoute.class))
                                                .findFirst();
         if (defaultMethod.isPresent()) {
