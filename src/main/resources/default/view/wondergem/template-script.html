@@ -231,7 +231,7 @@
             onComplete: function (cmp_id, fileName, responseJSON) {
                 clearMessages();
                 if (responseJSON.error) {
-                    addError(responseJSON.error);
+                    addError(responseJSON.message);
                 } else if (responseJSON.message) {
                     addInfo(responseJSON.message);
                 }
@@ -279,7 +279,7 @@
             onComplete: function (cmp_id, fileName, responseJSON) {
                 clearMessages();
                 if (responseJSON.error) {
-                    addError(responseJSON.error);
+                    addError(responseJSON.message);
                 } else if (responseJSON.message) {
                     if (responseJSON.action) {
                         addInfo(responseJSON.message, responseJSON.action, responseJSON.actionLabel);
