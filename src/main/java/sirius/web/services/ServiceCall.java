@@ -16,6 +16,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Log;
 import sirius.kernel.xml.StructuredOutput;
+import sirius.web.ErrorCodeException;
 import sirius.web.http.WebContext;
 
 import java.util.Arrays;
@@ -74,6 +75,8 @@ public abstract class ServiceCall {
             out.property("type", cause.getClass().getName());
             if (Strings.isFilled(errorCode)) {
                 out.property("code", errorCode);
+            } else if (error instanceof ErrorCodeException) {
+                out.property("code", ((ErrorCodeException) error).getCode());
             } else {
                 out.property("code", "ERROR");
             }

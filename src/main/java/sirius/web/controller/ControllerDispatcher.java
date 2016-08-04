@@ -20,6 +20,7 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
+import sirius.web.ErrorCodeException;
 import sirius.web.http.InputStreamHandler;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
@@ -239,7 +240,12 @@ public class ControllerDispatcher implements WebDispatcher {
                 out.beginResult();
                 out.property("success", false);
                 out.property("error", true);
-                out.property("message", Exceptions.handle(ControllerDispatcher.LOG, ex).getMessage());
+                if (ex instanceof ErrorCodeException) {
+                    out.property("code", ((ErrorCodeException) ex).getCode());
+                    out.property("message", ex.getMessage());
+                } else {
+                    out.property("message", Exceptions.handle(ControllerDispatcher.LOG, ex).getMessage());
+                }
                 out.endResult();
             } else {
                 route.getController().onError(ctx, Exceptions.handle(ControllerDispatcher.LOG, ex));
