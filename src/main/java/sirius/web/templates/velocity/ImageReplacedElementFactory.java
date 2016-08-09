@@ -86,7 +86,14 @@ class ImageReplacedElementFactory extends ITextReplacedElementFactory {
             if (!src.toLowerCase().startsWith("http")) {
                 Resource resource = resolver.resolve(UserContext.getCurrentScope().getScopeId(), src);
                 if (resource != null) {
-                    image = new ITextFSImage(Image.getInstance(resource.getUrl()));
+                    try {
+                        // First try to load the URL via the user agent - this will somehow result
+                        // in better images (correct DPI settings)
+                        image = uac.getImageResource(resource.getUrl().toString()).getImage();
+                    } catch (Throwable t) {
+                        // Fallback which works but seems to have strange DPI settings sometimes
+                        image = new ITextFSImage(Image.getInstance(resource.getUrl()));
+                    }
                 }
             }
 
