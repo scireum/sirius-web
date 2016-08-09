@@ -326,9 +326,9 @@ public class Cluster implements EveryMinute, Lifecycle {
             return true;
         }
         for (NodeInfo info : getNodeInfos()) {
-            if (isBetter(info) &&
-                info.getClusterState() == clusterStateToBroadcast &&
-                info.getNodeState() != MetricState.RED) {
+            if (isBetter(info)
+                && info.getClusterState() == clusterStateToBroadcast
+                && info.getNodeState() != MetricState.RED) {
                 // Another node took care of it...
                 LOG.FINE("Node %s is in charge of sending an alert", info.getName());
                 return false;

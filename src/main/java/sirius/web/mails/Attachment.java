@@ -33,7 +33,8 @@ public class Attachment implements DataSource {
      * Generates a new attachment with the given name, mime type and contents.
      *
      * @param name          the name of the attached file
-     * @param mimeType      the mime type of the file. Use {@link sirius.web.http.MimeHelper} to determine it at runtime
+     * @param mimeType      the mime type of the file. Use {@link sirius.web.http.MimeHelper} to determine it at
+     *                      runtime
      *                      if
      *                      it is not know in advance
      * @param byteArray     the contents of the template

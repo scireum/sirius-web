@@ -14,8 +14,8 @@ import org.apache.velocity.runtime.resource.Resource;
 import org.apache.velocity.runtime.resource.loader.ResourceLoader;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
-import sirius.web.templates.Resources;
 import sirius.web.templates.Resolver;
+import sirius.web.templates.Resources;
 
 import java.io.InputStream;
 import java.net.URL;

@@ -31,5 +31,4 @@ class RawServiceCall extends ServiceCall {
     protected StructuredOutput createOutput() {
         return null;
     }
-
 }

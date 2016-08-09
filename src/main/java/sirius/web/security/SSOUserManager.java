@@ -80,8 +80,7 @@ public class SSOUserManager extends GenericUserManager {
     }
 
     private Set<String> parseRolesString(String rolesString) {
-        return Arrays.asList(rolesString.split(","))
-                     .stream()
+        return Arrays.stream(rolesString.split(","))
                      .map(String::trim)
                      .filter(Strings::isEmpty)
                      .collect(Collectors.toSet());
