@@ -58,10 +58,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
@@ -971,12 +969,7 @@ public class WebContext implements SubContext {
      */
     private void decodeQueryString() {
         QueryStringDecoder qsd = new QueryStringDecoder(request.getUri(), Charsets.UTF_8);
-        try {
-            requestedURI = URLDecoder.decode(qsd.path(), Charsets.UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            requestedURI = qsd.path();
-            Exceptions.ignore(e);
-        }
+        requestedURI = QueryStringDecoder.decodeComponent(qsd.path());
         queryString = qsd.parameters();
     }
 
