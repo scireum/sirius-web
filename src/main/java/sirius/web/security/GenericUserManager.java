@@ -350,10 +350,15 @@ public abstract class GenericUserManager implements UserManager {
         return null;
     }
 
-    /*
-     * Tries to find a user in the current session
+    /**
+     * Tries to fetch the current user from the current session.
+     * <p>
+     * This can be either the client sided session (cookie) or the server session.
+     *
+     * @param ctx the current request to use the session from
+     * @return the user in the session or <tt>null</tt> if no user is attached
      */
-    private UserInfo findUserInSession(WebContext ctx) {
+    protected UserInfo findUserInSession(WebContext ctx) {
         if (sessionStorage == SESSION_STORAGE_TYPE_SERVER) {
             if (ctx.getServerSession(false).isPresent()) {
                 Value userId = ctx.getServerSession().getValue(scope.getScopeId() + "-user-id");
