@@ -194,29 +194,48 @@ public abstract class GenericUserManager implements UserManager {
             return null;
         }
         String user = ctx.get("user").trim();
-        String token = ctx.get("token").trim();
-        if (Strings.isFilled(user) && Strings.isFilled(token)) {
-            ctx.hidePost();
-
-            UserInfo result = findUserByName(ctx, user);
-            if (result != null) {
-                // An SSO token is TIMESTAMP:MD5
-                Tuple<String, String> challengeResponse = Strings.split(token, ":");
-                // Verify age...
-                if (checkTokenTTL(Value.of(challengeResponse.getFirst()).asLong(0), SSO_GRACE_PERIOD_IN_SECONDS)) {
-                    // Verify hash...
-                    if (checkTokenValidity(ctx, user, challengeResponse)) {
-                        log("SSO-Login of %s succeeded with token: %s", user, token);
-                        return result;
-                    } else {
-                        log("SSO-Login of %s failed due to invalid hash in token: %s", user, token);
-                    }
-                } else {
-                    log("SSO-Login of %s failed due to outdated timestamp in token: %s", user, token);
-                }
-            }
-            UserContext.message(Message.error(NLS.get("GenericUserManager.invalidSSO")));
+        if (Strings.isEmpty(user)) {
+            return null;
         }
+        Tuple<String, String> challengeResponse = extractChallengeAndResponse(ctx);
+        if (challengeResponse == null) {
+            return null;
+        }
+
+        ctx.hidePost();
+        UserInfo result = findUserByName(ctx, user);
+        if (result == null) {
+            UserContext.message(Message.error(NLS.get("GenericUserManager.invalidSSO")));
+            return null;
+        }
+        if (checkTokenTTL(Value.of(challengeResponse.getFirst()).asLong(0), SSO_GRACE_PERIOD_IN_SECONDS)) {
+            if (checkTokenValidity(ctx, user, challengeResponse)) {
+                log("SSO-Login of %s succeeded with token: %s", user, challengeResponse);
+                return result;
+            } else {
+                log("SSO-Login of %s failed due to invalid hash in token: %s", user, challengeResponse);
+            }
+        } else {
+            log("SSO-Login of %s failed due to outdated timestamp in token: %s", user, challengeResponse);
+        }
+
+        return null;
+    }
+
+    protected Tuple<String, String> extractChallengeAndResponse(WebContext ctx) {
+        // Supports the modern parameter token which contains TIMESTAMP:MD5
+        String token = ctx.get("token").trim();
+        if (Strings.isFilled(token)) {
+            return Strings.split(token, ":");
+        }
+
+        // Supports the legacy parameters hash and timestamp...
+        String hash = ctx.get("hash").trim();
+        String timestamp = ctx.get("timestamp").trim();
+        if (Strings.isFilled(hash) && Strings.isFilled(timestamp)) {
+            return Tuple.create(timestamp, hash);
+        }
+
         return null;
     }
 
@@ -523,8 +542,8 @@ public abstract class GenericUserManager implements UserManager {
 
         clearRolesForUser(user, ctx);
 
-        ctx.setCookie(scope.getScopeId() + USER_COOKIE_SUFFIX, null, -1);
-        ctx.setCookie(scope.getScopeId() + TOKEN_COOKIE_SUFFIX, null, -1);
+        ctx.deleteCookie(scope.getScopeId() + USER_COOKIE_SUFFIX);
+        ctx.deleteCookie(scope.getScopeId() + TOKEN_COOKIE_SUFFIX);
     }
 
     /**
