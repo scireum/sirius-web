@@ -41,11 +41,6 @@ import java.util.Set;
 public abstract class GenericUserManager implements UserManager {
 
     /**
-     * A SSO token might be one hour off and will still be accepted. This is defined by this constant.
-     */
-    protected static final long SSO_GRACE_PERIOD_IN_SECONDS = 60 * 60;
-
-    /**
      * Defines the name used to store the user detail for cookie login storage
      */
     private static final String USER_COOKIE_SUFFIX = "-sirius-user";
@@ -215,7 +210,7 @@ public abstract class GenericUserManager implements UserManager {
             UserContext.message(Message.error(NLS.get("GenericUserManager.invalidSSO")));
             return null;
         }
-        if (checkTokenTTL(Value.of(challengeResponse.getFirst()).asLong(0), SSO_GRACE_PERIOD_IN_SECONDS)) {
+        if (checkTokenTTL(Value.of(challengeResponse.getFirst()).asLong(0), ssoGraceInterval)) {
             if (checkTokenValidity(ctx, user, challengeResponse)) {
                 log("SSO-Login of %s succeeded with token: %s", user, challengeResponse);
                 return result;
