@@ -651,7 +651,11 @@ public class WebContext implements SubContext {
         if (session == null) {
             initSession();
         }
-        session.put(key, NLS.toMachineString(value));
+        if (value == null) {
+            session.remove(key);
+        } else {
+            session.put(key, NLS.toMachineString(value));
+        }
         sessionModified = true;
     }
 
