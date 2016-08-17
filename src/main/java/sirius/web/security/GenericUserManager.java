@@ -281,7 +281,7 @@ public abstract class GenericUserManager implements UserManager {
                                                                   user,
                                                                   challengeResponse).getBytes(Charsets.UTF_8))
                                    .toString()
-                                   .equals(challengeResponse.getSecond());
+                                   .equalsIgnoreCase(challengeResponse.getSecond());
     }
 
     /**
@@ -313,7 +313,7 @@ public abstract class GenericUserManager implements UserManager {
      * @return the input string used by the hash function
      */
     protected String computeSSOHashInput(WebContext ctx, String user, Tuple<String, String> challengeResponse) {
-        return ssoSecret + challengeResponse.getFirst() + user;
+        return user + challengeResponse.getFirst() + ssoSecret;
     }
 
     /**
