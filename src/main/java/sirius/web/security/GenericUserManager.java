@@ -55,19 +55,25 @@ public abstract class GenericUserManager implements UserManager {
      */
     private static final String TOKEN_COOKIE_SUFFIX = "-sirius-token";
 
-    /*
+    /**
      * Defines the name used to signal that the user should be stored in the server session
      */
     protected static final String SESSION_STORAGE_TYPE_SERVER = "server";
 
-    /*
+    /**
      * Defines the name used to signal that the user should be stored in the client session (cookie)
      */
     protected static final String SESSION_STORAGE_TYPE_CLIENT = "client";
 
+    /**
+     * Defines the default grace period (max age of an sso timestamp) which is accepted by the system
+     */
+    private static final long DEFAULT_SSO_GRACE_INTERVAL = 60 * 60 * 24;
+
     protected final ScopeInfo scope;
     protected final Extension config;
     protected final String hashFunction;
+    protected final long ssoGraceInterval;
     protected String sessionStorage;
     protected boolean ssoEnabled;
     protected boolean keepLoginEnabled;
@@ -85,6 +91,7 @@ public abstract class GenericUserManager implements UserManager {
         this.ssoSecret = config.get("ssoSecret").asString();
         this.hashFunction = config.get("hashFunction").asString("md5");
         this.ssoEnabled = Strings.isFilled(ssoSecret) && config.get("ssoEnabled").asBoolean(false);
+        this.ssoGraceInterval = config.get("ssoGraceInterval").asLong(DEFAULT_SSO_GRACE_INTERVAL);
         this.keepLoginEnabled = config.get("keepLoginEnabled").asBoolean(true);
         this.defaultRoles = config.get("defaultRoles").get(List.class, Collections.emptyList());
         this.trustedRoles = config.get("trustedRoles").get(List.class, Collections.emptyList());
