@@ -796,6 +796,13 @@ public class Mails implements MetricProvider {
 
         @Override
         public void run() {
+            if (mail.receiverEmail != null && mail.receiverEmail.toLowerCase().endsWith(".local")) {
+                LOG.WARN(
+                        "Not going to send an email to '%s' with subject '%s' as this is a local address. Going to simulate...",
+                        mail.receiverEmail,
+                        mail.subject);
+                mail.simulate = true;
+            }
             determineTechnicalSender();
             Operation op = Operation.create("mail",
                                             () -> "Sending eMail: " + mail.subject + " to: " + mail.receiverEmail,
