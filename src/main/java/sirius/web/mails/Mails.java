@@ -812,6 +812,7 @@ public class Mails implements MetricProvider {
                     sendMail();
                 } else {
                     messageId = "SIMULATED";
+                    success = true;
                 }
             } finally {
                 Operation.release(op);
