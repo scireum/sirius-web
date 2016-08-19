@@ -105,12 +105,12 @@ public class BasicController implements Controller {
                                                .filter(m -> m.isAnnotationPresent(DefaultRoute.class))
                                                .findFirst();
         if (defaultMethod.isPresent()) {
-                    Set<String> requiredPermissions = Permissions.computePermissionsFromAnnotations(defaultMethod.get());
+            Set<String> requiredPermissions = Permissions.computePermissionsFromAnnotations(defaultMethod.get());
             this.defaultRoute = ctx -> {
                 try {
                     if (!requiredPermissions.isEmpty()) {
                         UserInfo user = UserContext.getCurrentUser();
-                        for(String permission : requiredPermissions) {
+                        for (String permission : requiredPermissions) {
                             user.assertPermission(permission);
                         }
                     }
