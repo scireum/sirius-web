@@ -13,6 +13,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.nls.NLS;
 import sirius.web.http.WebContext;
+import sirius.web.security.Permissions;
 import sirius.web.security.UserContext;
 import sirius.web.security.UserInfo;
 
@@ -20,6 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -103,8 +105,16 @@ public class BasicController implements Controller {
                                                .filter(m -> m.isAnnotationPresent(DefaultRoute.class))
                                                .findFirst();
         if (defaultMethod.isPresent()) {
+            Set<String> requiredPermissions = Permissions.computePermissionsFromAnnotations(defaultMethod.get());
             this.defaultRoute = ctx -> {
                 try {
+                    if (!requiredPermissions.isEmpty()) {
+                        UserInfo user = UserContext.getCurrentUser();
+                        for (String permission : requiredPermissions) {
+                            user.assertPermission(permission);
+                        }
+                    }
+
                     defaultMethod.get().invoke(this, ctx);
                 } catch (IllegalAccessException e) {
                     fail(ctx, Exceptions.handle(e));
