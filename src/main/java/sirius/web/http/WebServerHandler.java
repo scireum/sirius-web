@@ -303,6 +303,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         String requestHeaders = currentRequest.headers().get(HttpHeaders.Names.ACCESS_CONTROL_REQUEST_HEADERS);
         currentContext.respondWith()
                       .setHeader(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_METHODS, "GET,PUT,POST,DELETE")
+                      .setHeader(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true")
                       .setHeader(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_HEADERS,
                                  requestHeaders == null ? "" : requestHeaders)
                       .status(HttpResponseStatus.OK);
