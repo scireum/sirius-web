@@ -60,7 +60,11 @@ public class UserContext implements SubContext {
      */
     public static final Log LOG = Log.get("user");
 
-    private static final String PERMISSION_SYSTEM_NOTIFY_STATE = "permission-system-notify-state";
+    /**
+     * Determines the permission required to be notified (see an error in the wondergem UI) when the system state goes
+     * to red.
+     */
+    public static final String PERMISSION_SYSTEM_NOTIFY_STATE = "permission-system-notify-state";
 
     @Part
     private static ScopeDetector detector;
