@@ -20,12 +20,15 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.extensions.Extension;
 import sirius.kernel.extensions.Extensions;
 import sirius.kernel.health.Log;
+import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.nls.NLS;
 import sirius.web.controller.Message;
+import sirius.web.health.Cluster;
 import sirius.web.http.WebContext;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -57,9 +60,14 @@ public class UserContext implements SubContext {
      */
     public static final Log LOG = Log.get("user");
 
+    private static final String PERMISSION_SYSTEM_NOTIFY_STATE = "permission-system-notify-state";
+
     @Part
     private static ScopeDetector detector;
     private static Map<String, UserManager> managers = Maps.newConcurrentMap();
+
+    @Part
+    private static Cluster cluster;
 
     private UserInfo currentUser = null;
 
@@ -244,6 +252,19 @@ public class UserContext implements SubContext {
      * @return a list of messages to be shown to the user
      */
     public List<Message> getMessages() {
+        if (cluster.getClusterState() != MetricState.GREEN && getUser().hasPermission(PERMISSION_SYSTEM_NOTIFY_STATE)) {
+            Message systemStateWarning = Message.error(Strings.apply("System state is %s (Cluster state is %s)",
+                                                                     cluster.getNodeState(),
+                                                                     cluster.getClusterState()))
+                                                .withAction("/system/state", "View System State");
+            if (msgList.isEmpty()) {
+                return Collections.singletonList(systemStateWarning);
+            } else {
+                List<Message> result = Lists.newArrayList(msgList);
+                result.add(0, systemStateWarning);
+                return result;
+            }
+        }
         return msgList;
     }
 
@@ -253,6 +274,7 @@ public class UserContext implements SubContext {
      * @param field the name of the field
      * @param value the value which was supplied and rejected
      */
+
     public void addFieldError(String field, String value) {
         fieldErrors.put(field, value);
     }
