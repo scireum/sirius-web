@@ -1134,9 +1134,11 @@ public class Response {
      * By default caching will be disabled. If the file ends with .html, <tt>text/html; charset=UTF-8</tt> will be set
      * as content type. Otherwise the content type will be guessed from the filename.
      *
-     * @param name   the name of the template to render. It's recommended to use files in /view/... and to place them
-     *               in the resources directory.
-     * @param params contains the parameters sent to the template
+     * @param name         the name of the template to render. It's recommended to use files in /view/... and to place
+     *                     them in the resources directory.
+     * @param fallbackName the name which is used to search for the template, if no template with the given name does
+     *                     exist.
+     * @param params       contains the parameters sent to the template
      */
     public void alternativeTemplate(String name, String fallbackName, Object... params) {
         String content = null;
