@@ -16,6 +16,7 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.metrics.Metric;
+import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.health.metrics.Metrics;
 import sirius.kernel.nls.NLS;
 import sirius.web.controller.BasicController;
@@ -75,7 +76,7 @@ public class SystemController extends BasicController {
      */
     @Routed("/system/monitor")
     public void monitorNode(WebContext ctx) {
-        ctx.respondWith().direct(HttpResponseStatus.OK, cluster.getNodeState().name());
+        ctx.respondWith().direct(HttpResponseStatus.OK, cluster.getNodeState() == MetricState.RED ? "ERROR" : "OK");
     }
 
     /**
@@ -85,7 +86,7 @@ public class SystemController extends BasicController {
      */
     @Routed("/system/monitor/cluster")
     public void monitorCluster(WebContext ctx) {
-        ctx.respondWith().direct(HttpResponseStatus.OK, cluster.getClusterState().name());
+        ctx.respondWith().direct(HttpResponseStatus.OK, cluster.getClusterState() == MetricState.RED ? "ERROR" : "OK");
     }
 
     /**
