@@ -252,7 +252,7 @@ public class UserContext implements SubContext {
      * @return a list of messages to be shown to the user
      */
     public List<Message> getMessages() {
-        if (cluster.getClusterState() != MetricState.GREEN && getUser().hasPermission(PERMISSION_SYSTEM_NOTIFY_STATE)) {
+        if (cluster.getClusterState() == MetricState.RED && getUser().hasPermission(PERMISSION_SYSTEM_NOTIFY_STATE)) {
             Message systemStateWarning = Message.error(Strings.apply("System state is %s (Cluster state is %s)",
                                                                      cluster.getNodeState(),
                                                                      cluster.getClusterState()))
