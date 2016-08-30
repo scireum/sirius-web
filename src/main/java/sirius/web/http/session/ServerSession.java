@@ -81,6 +81,24 @@ public interface ServerSession {
     int getMaxInactiveInterval();
 
     /**
+     * Determines if the user agent which belongs to the session is likely a bot.
+     *
+     * @return <tt>true</tt> if the session was likely started by a bot, <tt>false</tt> otherwise
+     */
+    boolean isUserAgentBot();
+
+    /**
+     * Determines if a user is attached to the session.
+     * <p>
+     * If a user is logged in, we generally want a longer session lifetime
+     * (set by <tt>http.serverUserSessionLifetime</tt>). Therefore if {@link #markAsUserSession()} was called,
+     * we consider this session to be attached to a user and use the longer timeout.
+     *
+     * @return <tt>true</tt> if a user is attached to the session, <tt>false</tt> otherwise
+     */
+    boolean isUserAttached();
+
+    /**
      * Fetches a previously stored value from the session.
      *
      * @param key the key for which the value is requested.

@@ -8,6 +8,7 @@
 
 package sirius.web.http.session;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Lambdas;
@@ -66,7 +67,7 @@ public class SessionManager implements EveryMinute {
 
         @Override
         public Stream<String> getSessions() {
-            return sessions.keySet().stream();
+            return Lists.newArrayList(sessions.keySet()).stream();
         }
 
         @Override

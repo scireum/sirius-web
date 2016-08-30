@@ -737,7 +737,7 @@ public class WebContext implements SubContext {
         serverSession.putValue(ServerSession.INITIAL_URI, getRequestedURI());
         serverSession.putValue(ServerSession.USER_AGENT, getHeader(HttpHeaders.Names.USER_AGENT));
         serverSession.putValue(ServerSession.REMOTE_IP, getRemoteIP().toString());
-        return Optional.ofNullable(serverSession);
+        return Optional.of(serverSession);
     }
 
     /**
