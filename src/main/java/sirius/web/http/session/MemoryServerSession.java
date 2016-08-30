@@ -87,9 +87,15 @@ class MemoryServerSession implements ServerSession {
         }
     }
 
-    private boolean isUserAgentBot() {
+    @Override
+    public boolean isUserAgentBot() {
         String userAgent = getValue(USER_AGENT).asString("").toLowerCase();
         return !userAgent.startsWith("mozilla") || userAgent.contains("bot");
+    }
+
+    @Override
+    public boolean isUserAttached() {
+        return userAttached;
     }
 
     @Nonnull
