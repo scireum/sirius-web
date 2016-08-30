@@ -16,7 +16,6 @@ import sirius.kernel.nls.NLS;
 import javax.annotation.Nonnull;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Optional;
 
 /**
  * Lists all server-sided sessions in the system console.
@@ -33,19 +32,19 @@ public class SessionCommand implements Command {
         output.separator();
 
         manager.getSessions().forEach(id -> {
-            Optional<ServerSession> session = manager.getSession(id);
-            if (!session.isPresent()) {
+            ServerSession session = manager.findSession(id);
+            if (session == null) {
                 return;
             }
-            Instant lastAccessed = Instant.ofEpochMilli(session.get().getLastAccessedTime());
+            Instant lastAccessed = Instant.ofEpochMilli(session.getLastAccessedTime());
             output.apply("%-19s  %-19s (%3sm)  %-4s  %-5s  %-20s",
-                         NLS.toUserString(Instant.ofEpochMilli(session.get().getCreationTime())),
+                         NLS.toUserString(Instant.ofEpochMilli(session.getCreationTime())),
                          NLS.toUserString(lastAccessed),
                          Duration.between(lastAccessed, Instant.now()).getSeconds() / 60,
-                         NLS.toUserString(session.get().isUserAgentBot()),
-                         NLS.toUserString(session.get().isUserAttached()),
-                         session.get().getValue(ServerSession.REMOTE_IP).asString());
-            output.line(session.get().getValue(ServerSession.INITIAL_URI).asString());
+                         NLS.toUserString(session.isUserAgentBot()),
+                         NLS.toUserString(session.isUserAttached()),
+                         session.getValue(ServerSession.REMOTE_IP).asString());
+            output.line(session.getValue(ServerSession.INITIAL_URI).asString());
         });
         output.separator();
     }
