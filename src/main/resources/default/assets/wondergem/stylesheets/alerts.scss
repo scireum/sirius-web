@@ -45,9 +45,9 @@ th, td .alert {
 // nested Links
 // --------------------------
 .alert-danger a.link-info {
-  color: #5C0000;
+  color: #5C0000 !important;
 }
 
 .alert-danger a.link-info:hover {
-  color: #2f0000;
+  color: #2f0000 !important;
 }
