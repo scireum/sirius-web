@@ -8,13 +8,13 @@
 
 package sirius.web.http.session;
 
-import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.console.Command;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nonnull;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -28,24 +28,26 @@ public class SessionCommand implements Command {
 
     @Override
     public void execute(Output output, String... params) throws Exception {
-        if ("list".equalsIgnoreCase(Value.indexOf(0, params).asString())) {
-            output.apply("%-20s %-5s %5s %20s %40s", "LAST ACCESSED", "BOT", "USER", "IP", "INITIAL URI");
-            output.separator();
+        output.apply("%-19s  %-19s         %-4s  %-5s  %-20s", "CREATED AT", "LAST ACCESSED", "BOT", "USER", "IP");
+        output.line("INITIAL URI");
+        output.separator();
 
-            manager.getSessions().forEach(id -> {
-                Optional<ServerSession> session = manager.getSession(id);
-                if (!session.isPresent()) {
-                    return;
-                }
-                output.apply("%-20s %-5s %5s %20s %40s",
-                             NLS.toUserString(Instant.ofEpochMilli(session.get().getLastAccessedTime())),
-                             NLS.toUserString(session.get().isUserAgentBot()),
-                             NLS.toUserString(session.get().isUserAttached()),
-                             session.get().getValue(ServerSession.REMOTE_IP).asString(),
-                             session.get().getValue(ServerSession.INITIAL_URI).asString());
-            });
-            output.separator();
-        }
+        manager.getSessions().forEach(id -> {
+            Optional<ServerSession> session = manager.getSession(id);
+            if (!session.isPresent()) {
+                return;
+            }
+            Instant lastAccessed = Instant.ofEpochMilli(session.get().getLastAccessedTime());
+            output.apply("%-19s  %-19s (%3sm)  %-4s  %-5s  %-20s",
+                         NLS.toUserString(Instant.ofEpochMilli(session.get().getCreationTime())),
+                         NLS.toUserString(lastAccessed),
+                         Duration.between(lastAccessed, Instant.now()).getSeconds() / 60,
+                         NLS.toUserString(session.get().isUserAgentBot()),
+                         NLS.toUserString(session.get().isUserAttached()),
+                         session.get().getValue(ServerSession.REMOTE_IP).asString());
+            output.line(session.get().getValue(ServerSession.INITIAL_URI).asString());
+        });
+        output.separator();
     }
 
     @Override
