@@ -8,6 +8,7 @@
 
 package sirius.web.http.session;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -39,6 +40,7 @@ public interface SessionStorage {
      * @param id the id of the desired session
      * @return the session with the given ID or <tt>null</tt> if no such session exists
      */
+    @Nullable
     ServerSession findSession(String id);
 
     /**
