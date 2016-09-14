@@ -8,6 +8,7 @@
 
 package sirius.web.health;
 
+import com.google.common.base.Charsets;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.RateLimit;
@@ -101,8 +102,8 @@ public class HipChat implements ExceptionHandler {
             ctx.put("message",
                     Strings.apply("%s on %s: %s", Product.getProduct().toString(), CallContext.getNodeName(), message));
             ctx.put("notify", notify ? 1 : 0);
-            Outcall call = new Outcall(new URL(messageUrl), ctx);
-            call.getData();
+            Outcall call = new Outcall(new URL(messageUrl));
+            call.postData(ctx, Charsets.UTF_8).getData();
         } catch (Exception e) {
             Exceptions.handle(e);
         }
