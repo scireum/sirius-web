@@ -82,7 +82,9 @@
                             <div class="col-md-12" id="messageBox">
                                 @for(sirius.web.controller.Message msg : user.getMessages()) {
                                     <div class="alert @msg.getType()">
-                                        @msg.getMessage()
+                                        @raw() {
+                                            @msg.getMessage()
+                                        }
                                         @if (msg.getAction() != null) {
                                             @if (msg.isActionJavascript()) {
                                                 <a href="#" onclick="@msg.getAction()" class="link link-info">@msg.getActionLabel()</a>
