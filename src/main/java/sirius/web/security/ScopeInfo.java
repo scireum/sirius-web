@@ -8,11 +8,15 @@
 
 package sirius.web.security;
 
+import com.google.common.base.Charsets;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.io.CharStreams;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Reflection;
+import sirius.kernel.commons.ValueHolder;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.morphium.Adaptable;
@@ -23,8 +27,13 @@ import sirius.kernel.health.Exceptions;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 /**
  * Represents the scope the current call is being processed in.
@@ -186,27 +195,123 @@ public class ScopeInfo implements Adaptable {
                   });
     }
 
+    private static Config scopeDefaultConfig;
+    private static Map<String, String> scopeDefaultConfigFiles;
+
+    /**
+     * Lists the names of all loaded default config files.
+     * <p>
+     * This and {@link #getDefaulScopeConfigContents(String)} can be used to output the default configuration for
+     * users which customizes the scope configuration.
+     *
+     * @return the names of all known default config files.
+     */
+    public static List<String> getDefaultScopeConfigFiles() {
+        if (scopeDefaultConfigFiles == null) {
+            determineScopeConfigFiles();
+        }
+        return Lists.newArrayList(scopeDefaultConfigFiles.keySet());
+    }
+
+    /**
+     * Returns the original contents of the given default config file.
+     * <p>
+     * Can be used to display the default config (with explaining comments) to the user which customizes the
+     * scope configuration.
+     *
+     * @param name the name of the config file to show
+     * @return the string contents of the config file
+     */
+    public static String getDefaulScopeConfigContents(String name) {
+        if (scopeDefaultConfigFiles == null) {
+            determineScopeConfigFiles();
+        }
+
+        String resource = scopeDefaultConfigFiles.get(name);
+        if (resource == null) {
+            return "";
+        }
+        try (InputStream contents = Sirius.class.getResourceAsStream("/" + resource)) {
+            if (contents == null) {
+                return "";
+            }
+
+            return CharStreams.toString(new InputStreamReader(contents, Charsets.UTF_8));
+        } catch (IOException e) {
+            Exceptions.ignore(e);
+            return "";
+        }
+    }
+
+    /**
+     * Returns the default config for all scopes.
+     * <p>
+     * This is build by loading all <tt>scope-*.conf</tt> files. Additional the <tt>scope-settings.conf</tt> for
+     * all active customizations are used as well (if present).
+     *
+     * @return the default config object shared by all scopes
+     */
+    public static Config getScopeDefaultConfig() {
+        if (scopeDefaultConfig == null) {
+            determineScopeConfigFiles();
+        }
+
+        return scopeDefaultConfig;
+    }
+
+    private static void determineScopeConfigFiles() {
+        final Map<String, String> configFiles = Maps.newLinkedHashMap();
+        final ValueHolder<Config> configHolder = ValueHolder.of(ConfigFactory.empty());
+
+        collectDefaultConfigFiles(configFiles, configHolder);
+        collectCustomizationConfigFiles(configFiles, configHolder);
+
+        scopeDefaultConfig = configHolder.get();
+        scopeDefaultConfigFiles = configFiles;
+    }
+
+    private static void collectCustomizationConfigFiles(Map<String, String> configFiles, ValueHolder<Config> configHolder) {
+        for (String conf : Sirius.getActiveConfigurations()) {
+            String configName = "customizations/" + conf + "/scope-settings.conf";
+            if (Sirius.class.getResource("/" + configName) != null) {
+                UserContext.LOG.INFO("loading scope-settings.conf for customization '" + conf + "'");
+                try {
+                    Config configInFile = ConfigFactory.load(Sirius.getSetup().getLoader(), configName);
+                    configFiles.put("scope-settings.conf (" + conf + ")", configName);
+                    configHolder.set(configInFile.withFallback(configHolder.get()));
+                } catch (Throwable e) {
+                    UserContext.LOG.WARN("Cannot load %s: %s", configName, e.getMessage());
+                }
+            }
+        }
+    }
+
+    private static void collectDefaultConfigFiles(Map<String, String> configFiles, ValueHolder<Config> configHolder) {
+        Sirius.getClasspath().find(Pattern.compile("scope-conf/(.*?)\\.conf")).forEach(value -> {
+            if (value.group().startsWith("customizations")) {
+                return;
+            }
+            try {
+                Config configInFile = ConfigFactory.load(Sirius.getSetup().getLoader(), value.group());
+                configFiles.put(value.group(1), value.group());
+                configHolder.set(configInFile.withFallback(configHolder.get()));
+            } catch (Throwable e) {
+                UserContext.LOG.WARN("Cannot load %s: %s", value.group(), e.getMessage());
+            }
+        });
+    }
+
     /**
      * Returns the scope specific configuration.
      * <p>
-     * This may (should) be used by the {@link UserManager} to create a proper {@link UserInfo} which can provide
-     * a scope an user specific config via {@link UserInfo#getConfig()}.
-     * <p>
-     * Applications should always prefer {@link UserInfo#getConfig()} or {@link UserContext#getConfig()} as this
+     * Applications should consider using {@link UserInfo#getConfig()} or {@link UserContext#getConfig()} as this
      * also includes user specific settings.
      *
      * @return the config the this scope
      */
-    protected Config getConfig() {
+    public Config getConfig() {
         if (config == null) {
-            config = ConfigFactory.empty();
-            Config sysConfig = Sirius.getConfig();
-            if (sysConfig.hasPath("security.scopes.default.config")) {
-                this.config = sysConfig.getConfig("security.scopes.default.config");
-            }
-            if (sysConfig.hasPath("security.scopes." + scopeType + ".config")) {
-                this.config = config.withFallback(sysConfig.getConfig("security.scopes." + scopeType + ".config"));
-            }
+            config = getScopeDefaultConfig();
             if (configSupplier != null) {
                 this.config = configSupplier.apply(this).withFallback(this.config);
             }
