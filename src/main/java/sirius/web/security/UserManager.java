@@ -45,7 +45,7 @@ public interface UserManager {
     UserInfo findUserForRequest(@Nonnull WebContext ctx);
 
     /**
-     * Trie to find a user with the given username.
+     * Tries to find a user with the given username.
      *
      * @param ctx  the current HTTP request if one is present
      * @param user the login name of the user to find

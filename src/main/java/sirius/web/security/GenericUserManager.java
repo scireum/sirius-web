@@ -106,20 +106,20 @@ public abstract class GenericUserManager implements UserManager {
     /**
      * Resolves the given user info back into the original (underlying) user object.
      *
-     * @param u the user info which was passed to the outside world.
+     * @param user the user info which was passed to the outside world.
      * @return the original (underlying) user object
      */
-    protected abstract Object getUserObject(UserInfo u);
+    protected abstract Object getUserObject(UserInfo user);
 
     /**
      * Fetches the user specific configuration if available.
      *
      * @param scopeConfig the config of the outside scope
-     * @param u           the user info which identifies the user to fetch the config for
+     * @param user        the user info which identifies the user to fetch the config for
      * @return the config specific for this user. If no config is present, the <tt>scopeConfig</tt> can be returned.
      */
     @Nonnull
-    protected Config getUserConfig(@Nonnull Config scopeConfig, UserInfo u) {
+    protected Config getUserConfig(@Nonnull Config scopeConfig, UserInfo user) {
         return scopeConfig;
     }
 

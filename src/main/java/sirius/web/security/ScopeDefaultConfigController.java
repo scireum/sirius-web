@@ -17,6 +17,11 @@ import sirius.web.http.WebContext;
 
 import java.util.List;
 
+/**
+ * Provides a GUI to inspect the default config provided for all scope.
+ * <p>
+ * This can be shown to a user as a source for inspiration when writing a custom scope or user config.
+ */
 @Register(classes = Controller.class)
 public class ScopeDefaultConfigController extends BasicController {
 

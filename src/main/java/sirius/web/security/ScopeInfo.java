@@ -246,7 +246,7 @@ public class ScopeInfo implements Adaptable {
     /**
      * Returns the default config for all scopes.
      * <p>
-     * This is build by loading all <tt>scope-*.conf</tt> files. Additional the <tt>scope-settings.conf</tt> for
+     * This is built by loading all <tt>scope-*.conf</tt> files. Additionaly the <tt>scope-settings.conf</tt> for
      * all active customizations are used as well (if present).
      *
      * @return the default config object shared by all scopes

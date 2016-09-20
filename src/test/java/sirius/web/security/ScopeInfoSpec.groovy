@@ -10,9 +10,6 @@ package sirius.web.security
 
 import sirius.kernel.BaseSpecification
 
-/**
- * Created by aha on 16.09.16.
- */
 class ScopeInfoSpec extends BaseSpecification {
 
     def "default config is loaded"() {
