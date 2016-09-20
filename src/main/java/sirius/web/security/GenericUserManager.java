@@ -97,12 +97,27 @@ public abstract class GenericUserManager implements UserManager {
                                            .build();
     }
 
-    protected abstract UserInfo findUserByName(WebContext ctx, String user);
+    @Override
+    public abstract UserInfo findUserByName(@Nullable WebContext ctx, String user);
 
-    protected abstract UserInfo findUserByCredentials(WebContext ctx, String user, String password);
+    @Override
+    public abstract UserInfo findUserByCredentials(@Nullable WebContext ctx, String user, String password);
 
+    /**
+     * Resolves the given user info back into the original (underlying) user object.
+     *
+     * @param u the user info which was passed to the outside world.
+     * @return the original (underlying) user object
+     */
     protected abstract Object getUserObject(UserInfo u);
 
+    /**
+     * Fetches the user specific configuration if available.
+     *
+     * @param scopeConfig the config of the outside scope
+     * @param u           the user info which identifies the user to fetch the config for
+     * @return the config specific for this user. If no config is present, the <tt>scopeConfig</tt> can be returned.
+     */
     @Nonnull
     protected Config getUserConfig(@Nonnull Config scopeConfig, UserInfo u) {
         return scopeConfig;
@@ -156,14 +171,32 @@ public abstract class GenericUserManager implements UserManager {
         }
     }
 
+    /**
+     * Invoked once a user actually performs a login via the web interface.
+     *
+     * @param ctx  the current request
+     * @param user the user which logged in
+     */
     private void onLogin(WebContext ctx, UserInfo user) {
         updateLoginCookie(ctx, user);
         recordUserLogin(ctx, user);
     }
 
+    /**
+     * Provides a method which can track logins of users.
+     *
+     * @param ctx  the current request
+     * @param user the user which logged in
+     */
     protected void recordUserLogin(WebContext ctx, UserInfo user) {
     }
 
+    /**
+     * Updates the lifetime of the login cooke if required.
+     *
+     * @param ctx  the current request
+     * @param user the user that logged in
+     */
     protected void updateLoginCookie(WebContext ctx, UserInfo user) {
         if (sessionStorage == SESSION_STORAGE_TYPE_SERVER) {
             if (isKeepLogin(ctx)) {
@@ -453,8 +486,8 @@ public abstract class GenericUserManager implements UserManager {
      */
     @SuppressWarnings("unchecked")
     @Nullable
-    protected Set<String> computeRoles(WebContext ctx, String userId) {
-        if (sessionStorage == SESSION_STORAGE_TYPE_SERVER && ctx.getServerSession(false).isPresent()) {
+    protected Set<String> computeRoles(@Nullable WebContext ctx, String userId) {
+        if (ctx != null && sessionStorage == SESSION_STORAGE_TYPE_SERVER && ctx.getServerSession(false).isPresent()) {
             return ctx.getServerSession()
                       .getValue(scope.getScopeId() + "-user-roles")
                       .get(Set.class, Collections.emptySet());

@@ -11,6 +11,7 @@ package sirius.web.security;
 import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Responsible for authentication and session management.
@@ -42,6 +43,27 @@ public interface UserManager {
      */
     @Nonnull
     UserInfo findUserForRequest(@Nonnull WebContext ctx);
+
+    /**
+     * Trie to find a user with the given username.
+     *
+     * @param ctx  the current HTTP request if one is present
+     * @param user the login name of the user to find
+     * @return the user with the given login name or <tt>null</tt>  if no user is found
+     */
+    @Nullable
+    UserInfo findUserByName(@Nullable WebContext ctx, String user);
+
+    /**
+     * Tries to find a user with the given credentials.
+     *
+     * @param ctx      the current HTTP request if one is present
+     * @param user     the login name of the user to find
+     * @param password the password of the user to find
+     * @return the user with the given credentials or <tt>null</tt> if no user is found
+     */
+    @Nullable
+    UserInfo findUserByCredentials(@Nullable WebContext ctx, String user, String password);
 
     /**
      * Makes the currently authenticated user persistent by storing the required information in the session.

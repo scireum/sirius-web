@@ -16,6 +16,7 @@ import sirius.kernel.extensions.Extension;
 import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -64,9 +65,9 @@ public class SSOUserManager extends GenericUserManager {
     }
 
     @Override
-    protected UserInfo findUserByName(WebContext ctx, String user) {
+    public UserInfo findUserByName(@Nullable WebContext ctx, String user) {
         Set<String> roles;
-        if (parseRoles) {
+        if (ctx != null && parseRoles) {
             roles = ctx.get("roles").asOptionalString().map(this::parseRolesString).orElseGet(() -> Sets.newTreeSet());
         } else {
             roles = Sets.newTreeSet();
@@ -74,7 +75,7 @@ public class SSOUserManager extends GenericUserManager {
         roles.add(UserInfo.PERMISSION_LOGGED_IN);
         return UserInfo.Builder.createUser(user)
                                .withUsername(user)
-                               .withPermissions(transformRoles(roles, ctx.isTrusted()))
+                               .withPermissions(transformRoles(roles, ctx != null && ctx.isTrusted()))
                                .withConfigSupplier(ui -> getUserConfig(getScopeConfig(), ui))
                                .build();
     }
@@ -87,7 +88,7 @@ public class SSOUserManager extends GenericUserManager {
     }
 
     @Override
-    protected UserInfo findUserByCredentials(WebContext ctx, String user, String password) {
+    public UserInfo findUserByCredentials(@Nullable WebContext ctx, String user, String password) {
         return null;
     }
 

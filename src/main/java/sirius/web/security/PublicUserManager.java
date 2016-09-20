@@ -13,6 +13,7 @@ import sirius.kernel.extensions.Extension;
 import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collections;
 
 /**
@@ -69,13 +70,13 @@ public class PublicUserManager extends GenericUserManager {
     }
 
     @Override
-    protected UserInfo findUserByName(WebContext ctx, String user) {
+    public UserInfo findUserByName(@Nullable WebContext ctx, String user) {
         return null;
     }
 
     @Override
-    protected UserInfo findUserByCredentials(WebContext ctx, String user, String password) {
-        throw new UnsupportedOperationException();
+    public UserInfo findUserByCredentials(@Nullable WebContext ctx, String user, String password) {
+        return null;
     }
 
     @Override
