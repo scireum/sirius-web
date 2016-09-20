@@ -17,6 +17,7 @@ import sirius.kernel.extensions.Extensions;
 import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +53,7 @@ public class ConfigUserManager extends GenericUserManager {
     private Map<String, Set<String>> userRoles = Maps.newTreeMap();
 
     @Override
-    protected UserInfo findUserByName(WebContext ctx, String user) {
+    public UserInfo findUserByName(@Nullable  WebContext ctx, String user) {
         Extension e = Extensions.getExtension("security.users", user);
         if (e != null) {
             return getUserInfo(ctx, user, e);
@@ -62,7 +63,7 @@ public class ConfigUserManager extends GenericUserManager {
     }
 
     @Override
-    protected UserInfo findUserByCredentials(WebContext ctx, String user, String password) {
+    public UserInfo findUserByCredentials(@Nullable  WebContext ctx, String user, String password) {
         Extension e = Extensions.getExtension("security.users", user);
         if (e != null && e.get("passwordHash").isFilled()) {
             if (Hashing.md5()
@@ -86,7 +87,7 @@ public class ConfigUserManager extends GenericUserManager {
         return Extensions.getExtension("security.users", u.getUserId());
     }
 
-    private UserInfo getUserInfo(WebContext ctx, String userId, Extension e) {
+    private UserInfo getUserInfo(@Nullable WebContext ctx, String userId, Extension e) {
         Set<String> roles = computeRoles(ctx, userId);
         return UserInfo.Builder.createUser(userId)
                                .withUsername(e.get("name").asString())
@@ -99,7 +100,7 @@ public class ConfigUserManager extends GenericUserManager {
 
     @SuppressWarnings("unchecked")
     @Override
-    protected Set<String> computeRoles(WebContext ctx, String userId) {
+    protected Set<String> computeRoles(@Nullable  WebContext ctx, String userId) {
         Set<String> roles = userRoles.get(userId);
         if (roles == null) {
             Extension e = Extensions.getExtension("security.users", userId);

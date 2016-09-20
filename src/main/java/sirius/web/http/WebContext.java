@@ -1468,20 +1468,6 @@ public class WebContext implements SubContext {
      *
      * @return the file pointing to the content sent by the client
      * @throws IOException in case of an IO error
-     * @deprecated Method renamed to {@link #getContentAsFile()}
-     */
-    @Deprecated
-    public File getFileContent() throws IOException {
-        return getContentAsFile();
-    }
-
-    /**
-     * Returns the content of the HTTP request as file on disk.
-     * <p>
-     * Note that the file will be deleted once the request is completely handled.
-     *
-     * @return the file pointing to the content sent by the client
-     * @throws IOException in case of an IO error
      */
     public File getContentAsFile() throws IOException {
         if (content == null) {

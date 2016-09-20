@@ -26,6 +26,7 @@ import sirius.web.controller.Message;
 import sirius.web.health.Cluster;
 import sirius.web.http.WebContext;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
@@ -235,10 +236,28 @@ public class UserContext implements SubContext {
      *
      * @param user the user to set
      */
-    public void setCurrentUser(UserInfo user) {
+    public void setCurrentUser(@Nullable UserInfo user) {
         this.currentUser = user == null ? UserInfo.NOBODY : user;
         CallContext.getCurrent().addToMDC(MDC_USER_ID, currentUser.getUserId());
         CallContext.getCurrent().addToMDC(MDC_USER_NAME, currentUser.getUserName());
+    }
+
+    /**
+     * Executes the given section as the given user.
+     * <p>
+     * Restores the previously active user once the section is left.
+     *
+     * @param user    the user to install
+     * @param section the section to execute as user
+     */
+    public void runAs(@Nullable UserInfo user, @Nonnull Runnable section) {
+        UserInfo lastUser = getCurrentUser();
+        try {
+            setCurrentUser(user);
+            section.run();
+        } finally {
+            setCurrentUser(lastUser);
+        }
     }
 
     /**

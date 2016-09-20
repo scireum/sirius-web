@@ -15,6 +15,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.naming.AuthenticationException;
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
@@ -74,7 +75,7 @@ public class LDAPUserManager extends GenericUserManager {
     }
 
     @Override
-    protected UserInfo findUserByName(WebContext ctx, String user) {
+    public UserInfo findUserByName(WebContext ctx, String user) {
         return null;
     }
 
@@ -91,7 +92,7 @@ public class LDAPUserManager extends GenericUserManager {
     private final List<String> requiredRoles;
 
     @Override
-    protected UserInfo findUserByCredentials(WebContext wc, String user, String password) {
+    public UserInfo findUserByCredentials(@Nullable WebContext wc, String user, String password) {
         try {
             String logonUser = authPrefix + user + authSuffix;
             String searchUser = searchPrefix + user + searchSuffix;
@@ -137,13 +138,13 @@ public class LDAPUserManager extends GenericUserManager {
         return new InitialDirContext(env);
     }
 
-    private Set<String> computePermissions(Set<String> roles, SearchResult sr, WebContext ctx) {
+    private Set<String> computePermissions(Set<String> roles, SearchResult sr, @Nullable WebContext ctx) {
         Attributes attrs = sr.getAttributes();
         if (attrs != null) {
             extractRoles(roles, attrs);
         }
 
-        Set<String> permissions = transformRoles(roles, ctx.isTrusted());
+        Set<String> permissions = transformRoles(roles, ctx != null && ctx.isTrusted());
         permissions.add(UserInfo.PERMISSION_LOGGED_IN);
         return permissions;
     }
