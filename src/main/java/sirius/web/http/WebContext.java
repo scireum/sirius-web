@@ -1715,6 +1715,13 @@ public class WebContext implements SubContext {
     }
 
     @Override
+    public SubContext fork() {
+        // There is no reasonable way to clone this context. So we simply return the original instance as there
+        // is only one request to answer anyway.
+        return this;
+    }
+
+    @Override
     public void detach() {
         // Detaching the context from the current thread has no consequences as
         // a request cann be passed on to another thread...
