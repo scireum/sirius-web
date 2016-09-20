@@ -18,7 +18,7 @@ import sirius.web.http.WebContext;
 import java.util.List;
 
 /**
- * Provides a GUI to inspect the default config provided for all scoped.
+ * Provides a GUI to inspect the default config provided for all scopes.
  * <p>
  * This can be shown to a user as a source of inspiration when writing a custom scope or user config.
  */
