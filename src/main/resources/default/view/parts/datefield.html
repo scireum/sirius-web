@@ -7,7 +7,7 @@
         <label>@i18n(labelKey)</label>
     }
     <input name="@name" type="text" value="@user.getFieldValue(name, value)" class="form-control input-block-level date-picker"/>
-    @if (helpKey != null) {
+    @if (Strings.isFilled(helpKey)) {
         <span class="help-block">@i18n(helpKey)</span>
     }
 </div>

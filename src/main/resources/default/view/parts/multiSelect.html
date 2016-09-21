@@ -7,7 +7,7 @@
 *@
 @args String span, String name, String labelKey, String helpKey, boolean optional, int maxItems, boolean forceFullWidth
 <div class="col-md-@(span == null || span == "" ? 6 : span)  form-group">
-    @if (labelKey != null) {
+    @if (Strings.isFilled(labelKey)) {
         <label>@i18n(labelKey)</label>
     }
     <select name="@name" class="select2-select form-control"
@@ -20,7 +20,7 @@
             multiple="multiple">
         @renderBody()
     </select>
-    @if (helpKey != null) {
+    @if (Strings.isFilled(helpKey)) {
         <span class="help-block">@i18n(helpKey)</span>
     }
     @if (optional) {

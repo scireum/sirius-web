@@ -7,7 +7,7 @@
 *@
 @args String span, String name, String labelKey, String helpKey, boolean optional, boolean adminOnly, boolean forceFullWidth, boolean required
 <div class="col-md-@(span == null || span == "" ? 6 : span) form-group">
-    @if (labelKey != null) {
+    @if (Strings.isFilled(labelKey)) {
         <label class="@if (required) { input-required } @if (adminOnly) { admin-link }">@i18n(labelKey)</label>
     }
     <select name="@name"
@@ -23,7 +23,7 @@
         }
         @renderBody()
     </select>
-    @if (helpKey != null) {
+    @if (Strings.isFilled(helpKey)) {
         <span class="help-block">@i18n(helpKey)</span>
     }
 </div>

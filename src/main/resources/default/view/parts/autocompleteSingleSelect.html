@@ -8,7 +8,7 @@
 @args String span, String name, String labelKey, String helpKey, boolean optional, String serviceUri, String searchKey, String type, boolean strict, boolean forceFullWidth
 
 <div class="col-md-@(span == null || span == "" ? 6 : span)  form-group">
-    @if (labelKey != null) {
+    @if (Strings.isFilled(labelKey)) {
         <label>@i18n(labelKey)</label>
     }
     <select name="@name" class="form-control @user.signalFieldError(name)"
@@ -30,7 +30,7 @@
             data-autocomplete="@(serviceUri)">
         @renderBody()
     </select>
-    @if (helpKey != null) {
+    @if (Strings.isFilled(helpKey)) {
         <span class="help-block">@i18n(helpKey)</span>
     }
 </div>
