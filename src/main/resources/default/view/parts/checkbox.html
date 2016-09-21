@@ -4,7 +4,7 @@
         <label>
             <input type="checkbox" name="@name" value="true" @if (value) { checked="checked" } @if (readonly) { disabled="disabled" } />
             @i18n(labelKey)
-            @if (helpKey != null) {
+            @if (Strings.isFilled(helpKey)) {
                 <span class="help-block">@i18n(helpKey)</span>
             }
         </label>

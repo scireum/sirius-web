@@ -11,7 +11,7 @@
     } else {
         <input name="@name" type="text" value="@user.getFieldValue(name, value)" class="form-control input-block-level" @if (readonly) { readonly } />
     }
-    @if (helpKey != null) {
+    @if (Strings.isFilled(helpKey)) {
         <span class="help-block">@i18n(helpKey)</span>
     }
 </div>
