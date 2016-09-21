@@ -477,6 +477,18 @@ public class UserContext implements SubContext {
     }
 
     @Override
+    public SubContext fork() {
+        // We return a copy which keeps the same user and scope - but which can be change independently.
+        // Otherwise a UserContext.runAs(...) which forks a task, would run into trouble as the
+        // context is immediatelly switched back.
+        UserContext child = new UserContext();
+        child.currentUser = currentUser;
+        child.currentScope = currentScope;
+
+        return child;
+    }
+
+    @Override
     public void detach() {
         // No action needed when this is detached from the current thread...
     }
