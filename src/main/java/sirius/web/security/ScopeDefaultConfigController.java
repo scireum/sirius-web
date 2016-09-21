@@ -25,8 +25,16 @@ import java.util.List;
 @Register(classes = Controller.class)
 public class ScopeDefaultConfigController extends BasicController {
 
+    /**
+     * Describes the permission required to view the default scope config.
+     */
     public static final String PERMISSION_VIEW_SCOPE_DEFAULT_CONFIG = "permission-view-scope-default-config";
 
+    /**
+     * Shows the default scope config for the first of the known default config file.
+     *
+     * @param ctx the current request
+     */
     @DefaultRoute
     @Permission(PERMISSION_VIEW_SCOPE_DEFAULT_CONFIG)
     @Routed("/system/scope-config")
@@ -39,6 +47,12 @@ public class ScopeDefaultConfigController extends BasicController {
         config(ctx, files.get(0));
     }
 
+    /**
+     * Shows the default scope config for the given config file.
+     *
+     * @param ctx  the current request
+     * @param name the name of the config file
+     */
     @Permission(PERMISSION_VIEW_SCOPE_DEFAULT_CONFIG)
     @Routed("/system/scope-config/:1")
     public void config(WebContext ctx, String name) {
