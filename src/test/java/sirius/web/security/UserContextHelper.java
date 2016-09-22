@@ -9,6 +9,7 @@
 package sirius.web.security;
 
 import sirius.web.controller.Message;
+import sirius.web.http.TestResponse;
 
 /**
  * Provides boiler plate methods to assert a certain state in the {@link sirius.web.security.UserContext}.
@@ -26,8 +27,18 @@ public class UserContextHelper {
      *
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
-    public static boolean expectNoMessages() {
-        return UserContext.get().getMessages().isEmpty();
+    public static boolean expectNoMessages(TestResponse response) {
+        return getUserContext(response).getMessages().isEmpty();
+    }
+
+    /**
+     * Extracts the <tt>UserContext</tt> which was active when the response was built.
+     *
+     * @param response the response to dissect
+     * @return the user context which was able while creating the response
+     */
+    public static UserContext getUserContext(TestResponse response) {
+        return response.getCallContext().get(UserContext.class);
     }
 
     /**
@@ -35,8 +46,8 @@ public class UserContextHelper {
      *
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
-    public static boolean expectNoErrorMessages() {
-        for (Message msg : UserContext.get().getMessages()) {
+    public static boolean expectNoErrorMessages(TestResponse response) {
+        for (Message msg : getUserContext(response).getMessages()) {
             if (msg.getType() == Message.ERROR) {
                 return false;
             }
@@ -49,8 +60,8 @@ public class UserContextHelper {
      *
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
-    public static boolean expectErrorMessage() {
-        for (Message msg : UserContext.get().getMessages()) {
+    public static boolean expectErrorMessage(TestResponse response) {
+        for (Message msg : getUserContext(response).getMessages()) {
             if (msg.getType() == Message.ERROR) {
                 return true;
             }
@@ -64,8 +75,8 @@ public class UserContextHelper {
      * @param textPart the expected text part to be contained in the error message
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
-    public static boolean expectErrorMessageContaining(String textPart) {
-        for (Message msg : UserContext.get().getMessages()) {
+    public static boolean expectErrorMessageContaining(TestResponse response, String textPart) {
+        for (Message msg : getUserContext(response).getMessages()) {
             if (msg.getType() == Message.ERROR && msg.getMessage().contains(textPart)) {
                 return true;
             }
@@ -78,8 +89,8 @@ public class UserContextHelper {
      *
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
-    public static boolean expectSuccessMessage() {
-        for (Message msg : UserContext.get().getMessages()) {
+    public static boolean expectSuccessMessage(TestResponse response) {
+        for (Message msg : getUserContext(response).getMessages()) {
             if (msg.getType() == Message.INFO) {
                 return true;
             }
@@ -93,8 +104,8 @@ public class UserContextHelper {
      * @param textPart the expected text part to be contained in the success message
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
-    public static boolean expectSuccessMessageContaining(String textPart) {
-        for (Message msg : UserContext.get().getMessages()) {
+    public static boolean expectSuccessMessageContaining(TestResponse response,String textPart) {
+        for (Message msg : getUserContext(response).getMessages()) {
             if (msg.getType() == Message.INFO && msg.getMessage().contains(textPart)) {
                 return true;
             }
