@@ -15,6 +15,7 @@ import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
@@ -48,6 +49,18 @@ public class TestResponse extends Response {
     }
 
     /**
+     * Returns the call context which was active during the call.
+     * <p>
+     * Used e.g. by {@link sirius.web.security.UserContextHelper} to fetch the inner <tt>UserContext</tt> to check for
+     * errors.
+     *
+     * @return the <tt>CallContext</tt> which was active while handling (responding to) the request.
+     */
+    public CallContext getCallContext() {
+        return innerCallContext;
+    }
+
+    /**
      * Represents the types of result which can be captured.
      */
     public enum ResponseType {
@@ -66,6 +79,7 @@ public class TestResponse extends Response {
     private Promise<TestResponse> responsePromise;
     private JSONObject jsonContent;
     private XMLStructuredInput xmlContent;
+    private CallContext innerCallContext;
 
     /**
      * Returns the HTTP status set by the application.
@@ -192,6 +206,11 @@ public class TestResponse extends Response {
     public void status(HttpResponseStatus status) {
         type = ResponseType.STATUS;
         this.status = status;
+        completeResponse();
+    }
+
+    private void completeResponse() {
+        innerCallContext = CallContext.getCurrent();
         responsePromise.success(this);
     }
 
@@ -200,7 +219,7 @@ public class TestResponse extends Response {
         type = ResponseType.TEMPORARY_REDIRECT;
         status = HttpResponseStatus.TEMPORARY_REDIRECT;
         redirectUrl = url;
-        responsePromise.success(this);
+        completeResponse();
     }
 
     @Override
@@ -208,7 +227,7 @@ public class TestResponse extends Response {
         type = ResponseType.PERMANENT_REDIRECT;
         status = HttpResponseStatus.MOVED_PERMANENTLY;
         redirectUrl = url;
-        responsePromise.success(this);
+        completeResponse();
     }
 
     @Override
@@ -216,7 +235,7 @@ public class TestResponse extends Response {
         type = ResponseType.FILE;
         status = HttpResponseStatus.OK;
         this.file = file;
-        responsePromise.success(this);
+        completeResponse();
     }
 
     @Override
@@ -225,8 +244,9 @@ public class TestResponse extends Response {
             type = ResponseType.RESOURCE;
             status = HttpResponseStatus.OK;
             content = ByteStreams.toByteArray(urlConnection.getInputStream());
-            responsePromise.success(this);
+            completeResponse();
         } catch (IOException e) {
+            innerCallContext = CallContext.getCurrent();
             responsePromise.fail(e);
         }
     }
@@ -236,7 +256,7 @@ public class TestResponse extends Response {
         type = ResponseType.ERROR;
         this.status = status;
         this.errorMessage = message;
-        responsePromise.success(this);
+        completeResponse();
     }
 
     @Override
@@ -244,7 +264,7 @@ public class TestResponse extends Response {
         type = ResponseType.DIRECT;
         this.status = status;
         this.content = content.getBytes(Charsets.UTF_8);
-        responsePromise.success(this);
+        completeResponse();
     }
 
     @Override
@@ -256,6 +276,7 @@ public class TestResponse extends Response {
             templateParameters = Arrays.asList(params);
             super.template(name, params);
         } catch (Throwable e) {
+            innerCallContext = CallContext.getCurrent();
             responsePromise.fail(e);
         }
     }
@@ -269,6 +290,7 @@ public class TestResponse extends Response {
             templateParameters = Arrays.asList(params);
             super.nlsTemplate(name, params);
         } catch (Throwable e) {
+            innerCallContext = CallContext.getCurrent();
             responsePromise.fail(e);
         }
     }
@@ -276,7 +298,7 @@ public class TestResponse extends Response {
     @Override
     protected void sendTemplateContent(String name, String content) {
         this.content = content.getBytes(Charsets.UTF_8);
-        responsePromise.success(this);
+        completeResponse();
     }
 
     @Override
@@ -284,7 +306,7 @@ public class TestResponse extends Response {
         type = ResponseType.TUNNEL;
         status = HttpResponseStatus.OK;
         tunnelTargetUrl = url;
-        responsePromise.success(this);
+        completeResponse();
     }
 
     @Override
@@ -299,7 +321,7 @@ public class TestResponse extends Response {
             public void close() throws IOException {
                 super.close();
                 content = toByteArray();
-                responsePromise.success(TestResponse.this);
+                completeResponse();
             }
         };
     }
