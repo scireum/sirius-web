@@ -484,6 +484,8 @@ public class UserContext implements SubContext {
         UserContext child = new UserContext();
         child.currentUser = currentUser;
         child.currentScope = currentScope;
+        child.msgList = msgList;
+        child.fieldErrors = fieldErrors;
 
         return child;
     }
