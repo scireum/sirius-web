@@ -8,6 +8,8 @@
 
 package sirius.web.tasks;
 
+import sirius.kernel.nls.NLS;
+
 import java.time.Instant;
 
 /**
@@ -63,5 +65,10 @@ public class TaskLogEntry {
      */
     public LogType getType() {
         return type;
+    }
+
+    @Override
+    public String toString() {
+        return NLS.toUserString(tod) + " " + type.toString() + ": " + NLS.toUserString(message);
     }
 }
