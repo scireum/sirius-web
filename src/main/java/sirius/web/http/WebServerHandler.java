@@ -11,6 +11,7 @@ package sirius.web.http;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpContent;
@@ -136,20 +137,35 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         if (currentCall != null) {
             CallContext.setCurrent(currentCall);
         }
-        if (e instanceof ClosedChannelException || e instanceof IOException || e instanceof SSLHandshakeException) {
-            WebServer.LOG.FINE(e);
-        } else {
-            Exceptions.handle(WebServer.LOG, e);
-            try {
-                if (ctx.channel().isOpen()) {
-                    ctx.channel().close();
-                }
-            } catch (Throwable t) {
-                Exceptions.ignore(t);
-            }
+
+        String uri = "unknown";
+        if (currentContext != null && currentContext.getRequest() != null) {
+            uri = currentContext.getRequest().getUri();
         }
-        currentRequest = null;
+
+        if (e instanceof ClosedChannelException
+            || e instanceof IOException
+            || e instanceof SSLHandshakeException
+            || e instanceof DecoderException) {
+            WebServer.LOG.FINE("Received an error for url: %s - %s", uri, NLS.toUserString(e));
+        } else {
+            Exceptions.handle()
+                      .to(WebServer.LOG)
+                      .error(e)
+                      .withSystemErrorMessage("Received an error for %s - %s (%s)", uri);
+        }
+
+        try {
+            if (ctx.channel().isOpen()) {
+                ctx.channel().close();
+            }
+        } catch (Throwable t) {
+            Exceptions.ignore(t);
+        }
+
+        currentRequest =null;
     }
+
 
     /*
      * Binds the request to the CallContext
