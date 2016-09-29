@@ -56,7 +56,7 @@ public class ServiceDispatcher implements WebDispatcher {
 
     @Override
     public boolean dispatch(final WebContext ctx) throws Exception {
-        if (!ctx.getRequest().getUri().startsWith("/service")) {
+        if (!ctx.getRequest().getUri().startsWith("/service/")) {
             return false;
         }
         // The real dispatching is put into its own method to support inlining of this check by the JIT
