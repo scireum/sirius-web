@@ -10,7 +10,14 @@ package sirius.web.http
 
 import com.alibaba.fastjson.JSON
 import com.google.common.base.Charsets
+import com.google.common.collect.Lists
 import com.google.common.io.ByteStreams
+import io.netty.bootstrap.Bootstrap
+import io.netty.channel.*
+import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.channel.socket.SocketChannel
+import io.netty.channel.socket.nio.NioSocketChannel
+import io.netty.handler.codec.http.*
 import org.apache.log4j.Level
 import sirius.kernel.BaseSpecification
 import sirius.kernel.commons.Strings
@@ -48,9 +55,9 @@ class WebServerSpec extends BaseSpecification {
 
         }
         WebServer.LOG.INFO("Executing %s resulted in %1.2f RPS (%1.2f ms per 1000)",
-                           "/system/ok",
-                           1000 / (avg.getAvg() / 1000d),
-                           avg.getAvg());
+                "/system/ok",
+                1000 / (avg.getAvg() / 1000d),
+                avg.getAvg());
         then:
         avg.getAvg() < 1000
     }
@@ -69,9 +76,9 @@ class WebServerSpec extends BaseSpecification {
 
         }
         WebServer.LOG.INFO("Executing %s resulted in %1.2f RPS (%1.2f ms per 1000)",
-                           "/system/info",
-                           1000 / (avg.getAvg() / 1000d),
-                            avg.getAvg());
+                "/system/info",
+                1000 / (avg.getAvg() / 1000d),
+                avg.getAvg());
         then:
         avg.getAvg() < 1000
     }
@@ -363,6 +370,54 @@ class WebServerSpec extends BaseSpecification {
         u.setRequestMethod("GET");
         then:
         u.getResponseCode() == 404;
+    }
+
+    def "HTTP pipelining is supported correctly"() {
+        given:
+        List<HttpResponse> responses = Lists.newArrayList();
+        when:
+        EventLoopGroup workerGroup = new NioEventLoopGroup();
+        try {
+            Bootstrap b = new Bootstrap();
+            b.group(workerGroup);
+            b.channel(NioSocketChannel.class);
+            b.handler(new ChannelInitializer<SocketChannel>() {
+                @Override
+                public void initChannel(SocketChannel ch) throws Exception {
+                    ch.pipeline().addLast(new HttpClientCodec());
+                    ch.pipeline().addLast(new ChannelInboundHandlerAdapter() {
+                        @Override
+                        void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+                            if (msg instanceof HttpResponse) {
+                                responses.add(msg);
+                            }
+                            super.channelRead(ctx, msg)
+                            if (responses.size() == 3) {
+                                ctx.channel().close();
+                            }
+                        }
+                    });
+                }
+            });
+
+            ChannelFuture f = b.connect("localhost", 9999).sync();
+            f.channel().writeAndFlush(new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/pipelining/1000"));
+            f.channel().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+            f.channel().writeAndFlush(new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/pipelining/500"));
+            f.channel().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+            f.channel().writeAndFlush(new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/pipelining/10"));
+            f.channel().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+
+            // Wait until the connection is closed.
+            f.channel().closeFuture().sync();
+        } finally {
+            workerGroup.shutdownGracefully();
+        }
+        then:
+        responses.size() == 3
+        responses.get(0).headers().get("URI") == "/pipelining/1000"
+        responses.get(1).headers().get("URI") == "/pipelining/500"
+        responses.get(2).headers().get("URI") == "/pipelining/10"
     }
 
 }
