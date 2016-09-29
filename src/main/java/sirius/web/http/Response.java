@@ -581,6 +581,9 @@ public class Response {
     /**
      * Sends a 307 (temporary redirect) or 302 (found) to the given url as result, depending on the given HTTP
      * protocol in the request.
+     * <p>
+     * If contrast to {@link #redirectToGet(String)}, this uses <tt>307</tt> as status code - if possible (HTTP 1.1).
+     * This will re-issue the same request method which was made to trigger the original request.
      *
      * @param url the URL to redirect to
      */
@@ -590,9 +593,7 @@ public class Response {
             // URL hijacking via faulty search engines. The main difference is that 307 will enforce the browser
             // to use the same method for the request to the reported location. Where as 302 doesn't specify which
             // method to use, so a POST might be re-sent as GET to the new location
-            HttpResponse response = createFullResponse(HttpResponseStatus.FOUND, true, Unpooled.EMPTY_BUFFER);
-            response.headers().set(HttpHeaders.Names.LOCATION, url);
-            complete(commit(response));
+            redirectToGet(url);
         } else {
             // Prefer the HTTP/1.1 code 307 as temporary redirect
             HttpResponse response =
@@ -600,6 +601,21 @@ public class Response {
             response.headers().set(HttpHeaders.Names.LOCATION, url);
             complete(commit(response));
         }
+    }
+
+    /**
+     * Sends 302 (found) to the given url as result.
+     * <p>
+     * In contrast to {@link #redirectTemporarily(String)}, which uses <tt>307</tt> as HTTP response code, a 302 will
+     * cause the browser to always GET as method to access the new URL. A <tt>307</tt> preserves the method and e.g.
+     * keeps a POST as being a POST.
+     *
+     * @param url the URL to redirect to
+     */
+    public void redirectToGet(String url) {
+        HttpResponse response = createFullResponse(HttpResponseStatus.FOUND, true, Unpooled.EMPTY_BUFFER);
+        response.headers().set(HttpHeaders.Names.LOCATION, url);
+        complete(commit(response));
     }
 
     /**
