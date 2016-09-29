@@ -9,6 +9,11 @@
 package sirius.web.tasks;
 
 import sirius.kernel.async.TaskContextAdapter;
+import sirius.kernel.commons.Tuple;
+
+import javax.annotation.Nullable;
+import java.io.Writer;
+import java.util.List;
 
 /**
  * Provides an execution context for managed tasks.
@@ -32,6 +37,50 @@ public interface ManagedTaskContext extends TaskContextAdapter {
      * @param message the message to add to the logs.
      */
     void logLimited(Object message);
+
+    /**
+     * Returns the latest log entries.
+     * <p>
+     * The log is limited to a sane number of entries to pevent excessive memory usage.
+     *
+     * @return a list containing the last few log entries
+     */
+    List<TaskLogEntry> getLastLogs();
+
+    /**
+     * Installs a writer into the running context which is supplied with all logged messages.
+     *
+     * @param writer the writer to print all logged messages to
+     */
+    void setLogWriter(@Nullable Writer writer);
+
+    /**
+     * Increments the given performance counter by one.
+     *
+     * @param counter the counter to increment
+     */
+    void inc(String counter);
+
+    /**
+     * Increments the given performance counter by one and supplies a loop duration in milliseconds.
+     * <p>
+     * The avarage value will be computed for the given counter and gives the user a rough estimate what the current
+     * task is doing.
+     *
+     * @param counter the counter to increment
+     * @param millis  the current duration for the block being counted
+     */
+    void addTiming(String counter, long millis);
+
+    /**
+     * Returns a list of all recorded performance counters.
+     * <p>
+     * The first part of the tuple will be the name of the counter. The second will contain the counter value along with
+     * the avarage duration (if supplied).
+     *
+     * @return a list of tuples which contains all recorded performance counters
+     */
+    List<Tuple<String, String>> getTimings();
 
     /**
      * Adds a warning to the task log.

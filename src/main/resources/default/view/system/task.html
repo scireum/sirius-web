@@ -22,14 +22,14 @@
 }
 
 @section(breadcrumbs) {
-    <li><a href="/system/tasks">@i18n("ManagedTask.plural")</a></li>
-    <li><a href="/system/task/@id">@i18n("ManagedTask.title")</a></li>
+<li><a href="/system/tasks">@i18n("ManagedTask.plural")</a></li>
+<li><a href="/system/task/@id">@i18n("ManagedTask.title")</a></li>
 }
 
 @pageHeader() {
-    Aktiver Task
-    <span class="pull-right"><a href="#" id="cancel" class="btn btn-danger">@i18n("NLS.cancel")</a></span>
-    <div class="clearfix"></div>
+Aktiver Task
+<span class="pull-right"><a href="#" id="cancel" class="btn btn-danger">@i18n("NLS.cancel")</a></span>
+<div class="clearfix"></div>
 }
 
 <div class="row">
@@ -37,7 +37,7 @@
         <label>
             <span>@i18n("ManagedTask.name")</span>
         </label>
-        <input id="nameField" type="text" value="" class="form-control input-block-level" readonly />
+        <input id="nameField" type="text" value="" class="form-control input-block-level" readonly/>
     </div>
 </div>
 <div class="row">
@@ -45,7 +45,7 @@
         <label>
             <span>@i18n("ManagedTask.message")</span>
         </label>
-        <input id="messageField" type="text" value="" class="form-control input-block-level" readonly />
+        <input id="messageField" type="text" value="" class="form-control input-block-level" readonly/>
     </div>
 </div>
 <div class="row">
@@ -53,31 +53,36 @@
         <label>
             <span>@i18n("ManagedTask.user")</span>
         </label>
-        <input id="userField" type="text" value="" class="form-control input-block-level" readonly />
+        <input id="userField" type="text" value="" class="form-control input-block-level" readonly/>
     </div>
     <div class="col-md-4 form-group ">
         <label>
             <span>@i18n("ManagedTask.scheduled")</span>
         </label>
-        <input id="scheduledField" type="text" value="" class="form-control input-block-level" readonly />
+        <input id="scheduledField" type="text" value="" class="form-control input-block-level" readonly/>
     </div>
     <div class="col-md-4 form-group ">
         <label>
             <span>@i18n("ManagedTask.started")</span>
         </label>
-        <input id="startedField" type="text" value="" class="form-control input-block-level" readonly />
+        <input id="startedField" type="text" value="" class="form-control input-block-level" readonly/>
     </div>
 </div>
-
 
 
 <div class="form-actions">
     <a href="@prefix/system/tasks" class="btn">@i18n("NLS.back")</a>
 </div>
 
+<div class="counterBox" style="display: none">
+    @heading("ManagedTask.counters")
+    <div class="counters row"></div>
+    <div class="clearfix"></div>
+</div>
 @heading() {
-    <i class="fa fa-refresh fa-spin" id="spinner"></i> @i18n("ManagedTask.output") <span id="stateLabel" class="label"></span>
-    <span class="pull-right"><a href="#" id="clearBtn" class="btn">@i18n("ManagedTask.cleanup")</a></span>
+<i class="fa fa-refresh fa-spin" id="spinner"></i> @i18n("ManagedTask.output") <span id="stateLabel"
+                                                                                     class="label"></span>
+<span class="pull-right"><a href="#" id="clearBtn" class="btn">@i18n("ManagedTask.cleanup")</a></span>
 }
 
 <table class="table table-striped">
@@ -96,6 +101,7 @@
     var lastLog = 0;
     var timer = null;
     var $output = $('#output');
+    var $counters = $('.counters');
 
     function limitNumberOfLogs() {
         var numberOfRows = $('tr', $output).length;
@@ -120,6 +126,19 @@
                         }
                         limitNumberOfLogs();
                         lastLog = data.lastLog;
+                    }
+
+                    if (data.counters.length > 0) {
+                        $('.counterBox').show();
+                        $counters.html('');
+                        for (i = 0; i < data.counters.length; i++) {
+                            var table = $('<table class="table table-striped"></table>');
+                            table.append($('<thead></thead>').append($('<tr></tr>').append($('<th></th>').text(data.counters[i].name))));
+                            table.append($('<tbody></tbody>').append($('<tr></tr>').append($('<td></td>').text(data.counters[i].value))));
+                            var box = $('<div class="col-md-4"></div>');
+                            table.appendTo(box);
+                            box.appendTo($counters);
+                        }
                     }
 
                     if (data.found) {

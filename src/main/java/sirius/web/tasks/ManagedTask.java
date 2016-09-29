@@ -8,6 +8,7 @@
 
 package sirius.web.tasks;
 
+import sirius.kernel.commons.Tuple;
 import sirius.kernel.nls.NLS;
 
 import javax.annotation.Nullable;
@@ -130,9 +131,19 @@ public interface ManagedTask {
      * <p>
      * The log is limited to a sane number of entries to pevent excessive memory usage.
      *
-     * @return a list containing the lastest log entries
+     * @return a list containing the last few log entries
      */
     List<TaskLogEntry> getLastLogs();
+
+    /**
+     * Returns a list of all recorded performance counters.
+     * <p>
+     * The first part of the tuple will be the name of the counter. The second will contain the counter value along with
+     * the avarage duration (if supplied).
+     *
+     * @return a list of tuples which contains all recorded performance counters
+     */
+    List<Tuple<String, String>> getTimings();
 
     /**
      * Cancels the execution of the task.

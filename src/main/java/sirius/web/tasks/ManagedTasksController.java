@@ -125,6 +125,12 @@ public class ManagedTasksController extends BasicController {
                     o.endObject();
                 }
             });
+            json.array("counters", task.getTimings(), (o, counter) -> {
+                o.beginObject("counter");
+                o.property("name", counter.getFirst());
+                o.property("value", counter.getSecond());
+                o.endObject();
+            });
             if (task.getLastLogs().isEmpty()) {
                 json.property("lastLog", 0);
             } else {

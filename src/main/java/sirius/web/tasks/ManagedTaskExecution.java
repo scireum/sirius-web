@@ -9,20 +9,27 @@
 package sirius.web.tasks;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import sirius.kernel.async.Barrier;
 import sirius.kernel.async.TaskContext;
 import sirius.kernel.async.Tasks;
+import sirius.kernel.commons.Doubles;
 import sirius.kernel.commons.RateLimit;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.Part;
+import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 import sirius.web.security.UserContext;
 import sirius.web.security.UserInfo;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.io.Writer;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -43,6 +50,8 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
     protected State state = State.SCHEDULED;
     protected String stateString = "";
     protected final List<TaskLogEntry> logs = Lists.newArrayList();
+    protected Writer writer;
+    private final Map<String, Average> timings = Maps.newConcurrentMap();
     protected Instant scheduled;
     protected Instant started;
     protected Instant terminated;
@@ -99,6 +108,13 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
     }
 
     @Override
+    public void setLogWriter(@Nullable Writer writer) {
+        synchronized (logs) {
+            this.writer = writer;
+        }
+    }
+
+    @Override
     public void logLimited(Object message) {
         if (logLimit.check()) {
             log(TaskLogEntry.LogType.NORMAL, message);
@@ -107,7 +123,16 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
 
     private void log(TaskLogEntry.LogType type, Object message) {
         synchronized (logs) {
-            logs.add(new TaskLogEntry(NLS.toUserString(message), type));
+            TaskLogEntry taskLogEntry = new TaskLogEntry(NLS.toUserString(message), type);
+            if (writer != null) {
+                try {
+                    writer.append(taskLogEntry.toString());
+                    writer.append("\n");
+                } catch (IOException e) {
+                    Exceptions.ignore(e);
+                }
+            }
+            logs.add(taskLogEntry);
             while (logs.size() > 512) {
                 logs.remove(0);
             }
@@ -153,6 +178,35 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
     @Override
     public void markErroneous() {
         erroneous = true;
+    }
+
+    @Override
+    public void inc(String counter) {
+        addTiming(counter, 0);
+    }
+
+    @Override
+    public void addTiming(String counter, long timeMillis) {
+        Average avg = timings.computeIfAbsent(counter, key -> new Average());
+        avg.addValue(timeMillis);
+    }
+
+    @Override
+    public List<Tuple<String, String>> getTimings() {
+        List<Tuple<String, String>> result = Lists.newArrayListWithCapacity(timings.size());
+        for (Map.Entry<String, Average> e : timings.entrySet()) {
+            if (!Doubles.isZero(e.getValue().getAvg())) {
+                result.add(Tuple.create(e.getKey(),
+                                        e.getValue().getCount()
+                                        + " ("
+                                        + NLS.toUserString(e.getValue().getAvg())
+                                        + "ms)"));
+            } else {
+                result.add(Tuple.create(e.getKey(), String.valueOf(e.getValue().getCount())));
+            }
+        }
+
+        return result;
     }
 
     @Override

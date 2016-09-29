@@ -40,6 +40,7 @@ class WebServerInitializer extends ChannelInitializer<SocketChannel> {
 
         pipeline.addFirst("lowlevel", LowLevelHandler.INSTANCE);
         pipeline.addLast(new HttpServerCodec());
+        pipeline.addLast(new HttpPipeliningHandler());
         if (idleTimeout != null && idleTimeout.get(ChronoUnit.SECONDS) > 0) {
             pipeline.addLast("idler",
                              new IdleStateHandler(0, 0, idleTimeout.get(ChronoUnit.SECONDS), TimeUnit.SECONDS));
