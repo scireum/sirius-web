@@ -15,6 +15,7 @@ import org.rythmengine.conf.RythmConfigurationKey;
 import sirius.kernel.Lifecycle;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.commons.Files;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Log;
 import sirius.kernel.info.Product;
@@ -72,8 +73,8 @@ public class RythmConfig implements Lifecycle {
         File tmpDir = new File(System.getProperty("java.io.tmpdir"),
                                Product.getProduct().getName().replaceAll("[^a-zA-Z0-9\\-]", "_")
                                + "_"
-                               + CallContext.getNodeName()
-                               + "_rythm");
+                               + Files.toSaneFileName(CallContext.getNodeName())
+                                                      + "_rythm");
         tmpDir.mkdirs();
         if (Sirius.isDev()) {
             if (tmpDir.listFiles() != null) {
