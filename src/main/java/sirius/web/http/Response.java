@@ -1038,9 +1038,10 @@ public class Response {
             HttpResponse response = createFullResponse(status, false, channelBuffer);
             completeAndClose(commit(response));
         } catch (Throwable e) {
-            Exceptions.handle()
+           HandledException he = Exceptions.handle()
                       .to(WebServer.LOG)
-                      .withSystemErrorMessage("An excption occurred while sending an HTTP error! "
+                      .error(e)
+                      .withSystemErrorMessage("An exception occurred while sending an HTTP error! "
                                               + "Original Status Code: %s, Original Error: %s, URL: %s - %s (%s)",
                                               status == null ? "null" : status.code(),
                                               message,
@@ -1055,7 +1056,8 @@ public class Response {
             if (!ctx.channel().isWritable()) {
                 return;
             }
-            ByteBuf channelBuffer = wrapUTF8String(Exceptions.handle(WebServer.LOG, e).getMessage());
+
+            ByteBuf channelBuffer = wrapUTF8String(he.getMessage());
             HttpResponse response = createFullResponse(HttpResponseStatus.INTERNAL_SERVER_ERROR, false, channelBuffer);
             response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/plain; charset=UTF-8");
             HttpHeaders.setContentLength(response, channelBuffer.readableBytes());
