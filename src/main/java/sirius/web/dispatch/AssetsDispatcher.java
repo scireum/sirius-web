@@ -187,9 +187,7 @@ public class AssetsDispatcher implements WebDispatcher {
         Resource resolved = resource.get();
         if (Sirius.isStartedAsTest() || !file.exists() || file.lastModified() < resolved.getLastModified()) {
             try {
-                if (Sirius.isDev()) {
-                    Resources.LOG.INFO("Compiling: " + resourceName);
-                }
+                Resources.LOG.FINE("Compiling: " + resourceName);
                 generator.generate(file);
             } catch (Throwable t) {
                 file.delete();
@@ -237,7 +235,7 @@ public class AssetsDispatcher implements WebDispatcher {
             File tmpDir = new File(System.getProperty("java.io.tmpdir"),
                                    Files.toSaneFileName(Product.getProduct().getName()).orElse("")
                                    + "_"
-                                   + CallContext.getNodeName()
+                                   + Files.toSaneFileName(CallContext.getNodeName())
                                    + "_"
                                    + cacheDir);
             tmpDir.mkdirs();
