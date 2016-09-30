@@ -1069,7 +1069,7 @@ public class Response {
      * Converts a string into a ByteBuf
      */
     private ByteBuf wrapUTF8String(String content) {
-        // Returns a heap buffer - but strings are almost always compressed (HTML templtes etc.) so this
+        // Returns a heap buffer - but strings are almost always compressed (HTML templates etc.) so this
         // is probably faster
         return Unpooled.copiedBuffer(content.toCharArray(), Charsets.UTF_8);
     }
