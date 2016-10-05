@@ -244,6 +244,9 @@ public class Response {
         if (responseKeepalive && keepalive && isKeepalive()) {
             response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
         } else {
+            if (wc.getRequest().getProtocolVersion() != HttpVersion.HTTP_1_0) {
+                response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
+            }
             responseKeepalive = false;
         }
 
