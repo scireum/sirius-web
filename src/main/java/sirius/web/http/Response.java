@@ -1565,6 +1565,10 @@ public class Response {
             }
             if (!ctx.channel().isOpen()) {
                 open = false;
+                if (buffer != null) {
+                    buffer.release();
+                    buffer = null;
+                }
                 throw new ClosedChannelException();
             }
             if (!wc.responseCommitted) {
