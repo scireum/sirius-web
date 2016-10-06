@@ -13,6 +13,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.async.CallContext;
@@ -314,7 +315,7 @@ public class TestResponse extends Response {
         type = ResponseType.STREAM;
         this.status = status;
         if (Strings.isFilled(contentType)) {
-            addHeaderIfNotExists(HttpHeaders.Names.CONTENT_TYPE, contentType);
+            addHeaderIfNotExists(HttpHeaderNames.CONTENT_TYPE, contentType);
         }
         return new ByteArrayOutputStream() {
             @Override

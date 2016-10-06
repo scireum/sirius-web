@@ -10,7 +10,8 @@ package sirius.web.http;
 
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpContentCompressor;
-import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpResponse;
 import sirius.kernel.commons.Value;
 
@@ -27,18 +28,18 @@ class SmartHttpContentCompressor extends HttpContentCompressor {
     @Override
     protected Result beginEncode(HttpResponse res, String acceptEncoding) throws Exception {
         if (!(res instanceof FullHttpResponse)) {
-            if (!HttpHeaders.Values.CHUNKED.equals(res.headers().get(HttpHeaders.Names.TRANSFER_ENCODING))) {
+            if (!res.headers().contains(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED, true)) {
                 return null;
             }
         }
 
         // If the content type is not compressable (jpg, png ...), we skip compression
-        String contentType = res.headers().get(HttpHeaders.Names.CONTENT_TYPE);
+        String contentType = res.headers().get(HttpHeaderNames.CONTENT_TYPE);
         if (!MimeHelper.isCompressable(contentType)) {
             return null;
         }
         // If the content length is less than 1 kB but known, we also skip compression
-        int contentLength = Value.of(res.headers().get(HttpHeaders.Names.CONTENT_LENGTH)).asInt(0);
+        int contentLength = Value.of(res.headers().get(HttpHeaderNames.CONTENT_LENGTH)).asInt(0);
         if (contentLength > 0 && contentLength < MIN_COMPRESSABLE_CONTENT_LENGTH) {
             return null;
         }

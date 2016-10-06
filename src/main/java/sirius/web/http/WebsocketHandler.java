@@ -108,10 +108,10 @@ public class WebsocketHandler extends ChannelDuplexHandler {
     }
 
     private boolean isWebsocketRequest(ChannelHandlerContext ctx, HttpRequest req) {
-        if (websocketDispatcher == null || req.getUri() == null) {
+        if (websocketDispatcher == null || req.uri() == null) {
             return false;
         }
 
-        return req.getUri().startsWith(websocketDispatcher.getWebsocketUri());
+        return req.uri().startsWith(websocketDispatcher.getWebsocketUri());
     }
 }

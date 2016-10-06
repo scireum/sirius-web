@@ -8,7 +8,7 @@
 
 package sirius.web.dispatch;
 
-import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
@@ -52,7 +52,7 @@ public class DefaultDispatcher implements WebDispatcher {
         if ("/crossdomain.xml".equals(ctx.getRequestedURI()) && serveCrossdomain) {
             ctx.respondWith()
                .infinitelyCached()
-               .setHeader(HttpHeaders.Names.CONTENT_TYPE, MimeHelper.TEXT_XML)
+               .setHeader(HttpHeaderNames.CONTENT_TYPE, MimeHelper.TEXT_XML)
                .direct(HttpResponseStatus.OK,
                        "<?xml version=\"1.0\"?>\n"
                        + "<!DOCTYPE cross-domain-policy SYSTEM "
@@ -66,12 +66,12 @@ public class DefaultDispatcher implements WebDispatcher {
             if (robotsDisallowAll) {
                 ctx.respondWith()
                    .infinitelyCached()
-                   .setHeader(HttpHeaders.Names.CONTENT_TYPE, MimeHelper.TEXT_PLAIN)
+                   .setHeader(HttpHeaderNames.CONTENT_TYPE, MimeHelper.TEXT_PLAIN)
                    .direct(HttpResponseStatus.OK, "User-agent: *\n" + "Disallow: /\n");
             } else {
                 ctx.respondWith()
                    .infinitelyCached()
-                   .setHeader(HttpHeaders.Names.CONTENT_TYPE, MimeHelper.TEXT_PLAIN)
+                   .setHeader(HttpHeaderNames.CONTENT_TYPE, MimeHelper.TEXT_PLAIN)
                    .direct(HttpResponseStatus.OK, "User-agent: *\n" + "Disallow:\n");
             }
         } else if ("/reset".equals(ctx.getRequestedURI())) {

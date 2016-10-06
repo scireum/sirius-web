@@ -8,7 +8,7 @@
 
 package sirius.web.controller;
 
-import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
@@ -31,7 +31,7 @@ public class TestController implements Controller {
     @Routed("/test/post")
     public void postTest(WebContext ctx) {
         ctx.respondWith()
-           .setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/plain")
+           .setHeader(HttpHeaderNames.CONTENT_TYPE, "text/plain")
            .direct(HttpResponseStatus.OK, ctx.get("value").asString());
     }
 
@@ -54,7 +54,7 @@ public class TestController implements Controller {
     @Routed("/tunnel/test")
     public void tunnelTest(WebContext ctx) {
         ctx.respondWith()
-           .setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/test")
+           .setHeader(HttpHeaderNames.CONTENT_TYPE, "text/test")
            .tunnel("http://localhost:9999/service/json/test");
     }
 

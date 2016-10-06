@@ -15,11 +15,13 @@ import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http.multipart.Attribute;
@@ -140,7 +142,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
 
         String uri = "unknown";
         if (currentContext != null && currentContext.getRequest() != null) {
-            uri = currentContext.getRequest().getUri();
+            uri = currentContext.getRequest().uri();
         }
 
         if (e instanceof ClosedChannelException
@@ -162,24 +164,22 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         } catch (Throwable t) {
             Exceptions.ignore(t);
         }
-
-        currentRequest =null;
+        currentRequest = null;
     }
-
 
     /*
      * Binds the request to the CallContext
      */
     private WebContext setupContext(ChannelHandlerContext ctx, HttpRequest req) {
         currentCall = CallContext.initialize();
-        currentCall.addToMDC("uri", req.getUri());
+        currentCall.addToMDC("uri", req.uri());
         WebContext wc = currentCall.get(WebContext.class);
         if (ssl) {
             wc.ssl = true;
         }
         wc.setCtx(ctx);
         wc.setRequest(req);
-        currentCall.get(TaskContext.class).setSystem("HTTP").setJob(req.getUri());
+        currentCall.get(TaskContext.class).setSystem("HTTP").setJob(req.uri());
         return wc;
     }
 
@@ -316,26 +316,26 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     }
 
     private void handlePreflightRequest() {
-        String requestHeaders = currentRequest.headers().get(HttpHeaders.Names.ACCESS_CONTROL_REQUEST_HEADERS);
+        String requestHeaders = currentRequest.headers().get(HttpHeaderNames.ACCESS_CONTROL_REQUEST_HEADERS);
         currentContext.respondWith()
-                      .setHeader(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_METHODS, "GET,PUT,POST,DELETE")
-                      .setHeader(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true")
-                      .setHeader(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_HEADERS,
+                      .setHeader(HttpHeaderNames.ACCESS_CONTROL_ALLOW_METHODS, "GET,PUT,POST,DELETE")
+                      .setHeader(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true")
+                      .setHeader(HttpHeaderNames.ACCESS_CONTROL_ALLOW_HEADERS,
                                  requestHeaders == null ? "" : requestHeaders)
                       .status(HttpResponseStatus.OK);
     }
 
     private boolean isPreflightRequest() {
-        if (currentRequest == null || HttpMethod.OPTIONS != currentRequest.getMethod()) {
+        if (currentRequest == null || HttpMethod.OPTIONS != currentRequest.method()) {
             return false;
         }
 
         HttpHeaders headers = currentRequest.headers();
-        if (!headers.contains(HttpHeaders.Names.ORIGIN)) {
+        if (!headers.contains(HttpHeaderNames.ORIGIN)) {
             return false;
         }
 
-        return headers.contains(HttpHeaders.Names.ACCESS_CONTROL_REQUEST_METHOD);
+        return headers.contains(HttpHeaderNames.ACCESS_CONTROL_REQUEST_METHOD);
     }
 
     private void channelReadRequest(ChannelHandlerContext ctx, HttpRequest msg) {
@@ -376,10 +376,10 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     private void handleRequest(ChannelHandlerContext ctx, HttpRequest req) {
         try {
             if (WebServer.LOG.isFINE()) {
-                WebServer.LOG.FINE("OPEN: " + req.getUri());
+                WebServer.LOG.FINE("OPEN: " + req.uri());
             }
             // Handle a bad request.
-            if (!req.getDecoderResult().isSuccess()) {
+            if (!req.decoderResult().isSuccess()) {
                 signalBadRequest(ctx);
                 return;
             }
@@ -412,34 +412,34 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     }
 
     private void processRequestMethod(HttpRequest req) throws Exception {
-        if (req.getMethod() == HttpMethod.POST || req.getMethod() == HttpMethod.PUT) {
+        if (req.method() == HttpMethod.POST || req.method() == HttpMethod.PUT) {
             preDispatched = preDispatch();
             if (!preDispatched) {
                 setupContentReceiver(req);
             }
-        } else if (currentRequest.getMethod() != HttpMethod.GET
-                   && currentRequest.getMethod() != HttpMethod.HEAD
-                   && currentRequest.getMethod() != HttpMethod.DELETE
-                   && currentRequest.getMethod() != HttpMethod.OPTIONS) {
+        } else if (currentRequest.method() != HttpMethod.GET
+                   && currentRequest.method() != HttpMethod.HEAD
+                   && currentRequest.method() != HttpMethod.DELETE
+                   && currentRequest.method() != HttpMethod.OPTIONS) {
             currentContext.respondWith()
                           .error(HttpResponseStatus.BAD_REQUEST,
                                  Strings.apply("Cannot %s as method. Use GET, POST, PUT, HEAD, DELETE, OPTIONS",
-                                               req.getMethod().name()));
+                                               req.method().name()));
             currentRequest = null;
         }
     }
 
     private void setupContentReceiver(HttpRequest req) throws IOException {
-        String contentType = req.headers().get(HttpHeaders.Names.CONTENT_TYPE);
+        String contentType = req.headers().get(HttpHeaderNames.CONTENT_TYPE);
         if (isDecodeableContent(contentType)) {
             if (WebServer.LOG.isFINE()) {
-                WebServer.LOG.FINE("POST/PUT-FORM: " + req.getUri());
+                WebServer.LOG.FINE("POST/PUT-FORM: " + req.uri());
             }
             HttpPostRequestDecoder postDecoder = new HttpPostRequestDecoder(WebServer.getHttpDataFactory(), req);
             currentContext.setPostDecoder(postDecoder);
         } else {
             if (WebServer.LOG.isFINE()) {
-                WebServer.LOG.FINE("POST/PUT-DATA: " + req.getUri());
+                WebServer.LOG.FINE("POST/PUT-DATA: " + req.uri());
             }
             Attribute body = WebServer.getHttpDataFactory().createAttribute(req, "body");
             if (req instanceof FullHttpRequest) {
@@ -455,9 +455,9 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     }
 
     private void handle100Continue(ChannelHandlerContext ctx, HttpRequest req) {
-        if (HttpHeaders.is100ContinueExpected(req)) {
+        if (HttpUtil.is100ContinueExpected(req)) {
             if (WebServer.LOG.isFINE()) {
-                WebServer.LOG.FINE("CONTINUE: " + req.getUri());
+                WebServer.LOG.FINE("CONTINUE: " + req.uri());
             }
             send100Continue(ctx);
         }
@@ -470,7 +470,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                 WebServer.blocks = 0;
             }
             if (WebServer.LOG.isFINE()) {
-                WebServer.LOG.FINE("BLOCK: " + req.getUri());
+                WebServer.LOG.FINE("BLOCK: " + req.uri());
             }
             ctx.channel().close();
             return true;
@@ -530,7 +530,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                     checkUploadFileLimits(file);
                 }
             } else if (!(chunk instanceof LastHttpContent)) {
-                if (currentRequest.getMethod() != HttpMethod.POST && currentRequest.getMethod() != HttpMethod.PUT) {
+                if (currentRequest.method() != HttpMethod.POST && currentRequest.method() != HttpMethod.PUT) {
                     currentContext.respondWith()
                                   .error(HttpResponseStatus.BAD_REQUEST, "Only POST or PUT may sent chunked data");
                     currentRequest = null;
