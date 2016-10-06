@@ -162,10 +162,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         } catch (Throwable t) {
             Exceptions.ignore(t);
         }
-
-        currentRequest =null;
+        currentRequest = null;
     }
-
 
     /*
      * Binds the request to the CallContext
