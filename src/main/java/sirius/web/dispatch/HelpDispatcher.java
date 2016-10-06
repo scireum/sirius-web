@@ -39,7 +39,7 @@ public class HelpDispatcher implements WebDispatcher {
 
     @Override
     public boolean dispatch(WebContext ctx) throws Exception {
-        if (!ctx.getRequest().getUri().startsWith("/help") || HttpMethod.GET != ctx.getRequest().getMethod()) {
+        if (!ctx.getRequest().uri().startsWith("/help") || HttpMethod.GET != ctx.getRequest().method()) {
             return false;
         }
         String uri = ctx.getRequestedURI();

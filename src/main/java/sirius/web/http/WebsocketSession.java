@@ -34,7 +34,7 @@ public abstract class WebsocketSession {
     protected WebsocketSession(ChannelHandlerContext ctx, HttpRequest request) {
         this.ctx = ctx;
         this.request = request;
-        this.queryString = new QueryStringDecoder(request.getUri());
+        this.queryString = new QueryStringDecoder(request.uri());
     }
 
     /**

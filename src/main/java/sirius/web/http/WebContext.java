@@ -18,7 +18,7 @@ import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.QueryStringDecoder;
@@ -31,6 +31,7 @@ import io.netty.handler.codec.http.multipart.FileUpload;
 import io.netty.handler.codec.http.multipart.HttpData;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
+import io.netty.handler.codec.http.multipart.InterfaceHttpPostRequestDecoder;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
 import sirius.kernel.commons.Callback;
@@ -138,7 +139,7 @@ public class WebContext implements SubContext {
     /*
      * Stores the decoder which was used to process a POST or PUT request
      */
-    protected HttpPostRequestDecoder postDecoder;
+    protected InterfaceHttpPostRequestDecoder postDecoder;
 
     /*
      * Sometimes it is usefult to "hide" the fact that this is a POST request.
@@ -735,7 +736,7 @@ public class WebContext implements SubContext {
 
         serverSession = sessionManager.create();
         serverSession.putValue(ServerSession.INITIAL_URI, getRequestedURI());
-        serverSession.putValue(ServerSession.USER_AGENT, getHeader(HttpHeaders.Names.USER_AGENT));
+        serverSession.putValue(ServerSession.USER_AGENT, getHeader(HttpHeaderNames.USER_AGENT));
         serverSession.putValue(ServerSession.REMOTE_IP, getRemoteIP().toString());
         return Optional.of(serverSession);
     }
@@ -809,7 +810,7 @@ public class WebContext implements SubContext {
             if (getRequest().headers().contains("X-Forwarded-Host")) {
                 sb.append(getHeader("X-Forwarded-Host"));
             } else {
-                sb.append(getHeader(HttpHeaders.Names.HOST));
+                sb.append(getHeader(HttpHeaderNames.HOST));
             }
             baseURL = sb.toString();
         }
@@ -860,7 +861,7 @@ public class WebContext implements SubContext {
                                     "Cannot parse X-Forwarded-For address: %s, Remote-IP: %s, Request: %s, SSL: %s - %s (%s)",
                                     forwardedFor,
                                     remoteIp,
-                                    request.getUri(),
+                                    request.uri(),
                                     NLS.toMachineString(isSSL()),
                                     e.getMessage(),
                                     e.getClass().getName()));
@@ -972,7 +973,7 @@ public class WebContext implements SubContext {
      * Decodes the query string on demand
      */
     private void decodeQueryString() {
-        QueryStringDecoder qsd = new QueryStringDecoder(request.getUri(), Charsets.UTF_8);
+        QueryStringDecoder qsd = new QueryStringDecoder(request.uri(), Charsets.UTF_8);
         requestedURI = QueryStringDecoder.decodeComponent(qsd.path());
         queryString = qsd.parameters();
     }
@@ -1006,7 +1007,7 @@ public class WebContext implements SubContext {
         if (cookiesIn == null) {
             cookiesIn = Maps.newHashMap();
             if (request != null) {
-                String cookieHeader = request.headers().get(HttpHeaders.Names.COOKIE);
+                String cookieHeader = request.headers().get(HttpHeaderNames.COOKIE);
                 if (Strings.isFilled(cookieHeader)) {
                     for (Cookie cookie : ServerCookieDecoder.LAX.decode(cookieHeader)) {
                         this.cookiesIn.put(cookie.name(), cookie);
@@ -1154,7 +1155,7 @@ public class WebContext implements SubContext {
     private String parseAcceptLanguage() {
         double bestQ = 0;
         String lang = CallContext.getCurrent().getLang();
-        String header = getHeader(HttpHeaders.Names.ACCEPT_LANGUAGE);
+        String header = getHeader(HttpHeaderNames.ACCEPT_LANGUAGE);
         if (Strings.isEmpty(header)) {
             return lang;
         }
@@ -1228,7 +1229,7 @@ public class WebContext implements SubContext {
      * @return the value of the given header or <tt>null</tt> if no such header is present
      */
     @Nullable
-    public String getHeader(String header) {
+    public String getHeader(CharSequence header) {
         if (request == null) {
             return null;
         }
@@ -1242,7 +1243,7 @@ public class WebContext implements SubContext {
      * @return the contents of the named header wrapped as <tt>Value</tt>
      */
     @Nonnull
-    public Value getHeaderValue(String header) {
+    public Value getHeaderValue(CharSequence header) {
         if (request == null) {
             return Value.EMPTY;
         }
@@ -1255,7 +1256,7 @@ public class WebContext implements SubContext {
      * @param header the name of the header to fetch
      * @return the value in milliseconds of the submitted date or 0 if the header was not present.
      */
-    public long getDateHeader(String header) {
+    public long getDateHeader(CharSequence header) {
         String value = request.headers().get(header);
         if (Strings.isEmpty(value)) {
             return 0;
@@ -1331,13 +1332,13 @@ public class WebContext implements SubContext {
      */
     @Nonnull
     public String getQueryString() {
-        String fullURI = request.getUri();
+        String fullURI = request.uri();
         String uri = getRequestedURI();
         if (uri.length() >= fullURI.length()) {
             return "";
         }
 
-        return request.getUri().substring(uri.length() + 1);
+        return request.uri().substring(uri.length() + 1);
     }
 
     /**
@@ -1356,7 +1357,7 @@ public class WebContext implements SubContext {
      *
      * @return the post decoder or <tt>null</tt>, if no post request is available
      */
-    public HttpPostRequestDecoder getPostDecoder() {
+    public InterfaceHttpPostRequestDecoder getPostDecoder() {
         return postDecoder;
     }
 
@@ -1368,7 +1369,7 @@ public class WebContext implements SubContext {
      * @return <tt>true</tt> if the method of the current request is POST, false otherwise
      */
     public boolean isPOST() {
-        return request.getMethod() == HttpMethod.POST && !hidePost;
+        return request.method() == HttpMethod.POST && !hidePost;
     }
 
     /**
@@ -1591,7 +1592,7 @@ public class WebContext implements SubContext {
      */
     public Charset getRequestEncoding() {
         try {
-            Value contentType = getHeaderValue(HttpHeaders.Names.CONTENT_TYPE);
+            Value contentType = getHeaderValue(HttpHeaderNames.CONTENT_TYPE);
             if (contentType.isFilled()) {
                 for (String property : contentType.asString().split(";")) {
                     Tuple<String, String> nameValue = Strings.split(property.trim(), "=");
@@ -1678,7 +1679,7 @@ public class WebContext implements SubContext {
             // Also tell the factory to release all allocated data, as it keeps an internal reference to the request
             // (...along with all its data!).
             try {
-                WebServer.getHttpDataFactory().cleanRequestHttpDatas(request);
+                WebServer.getHttpDataFactory().cleanRequestHttpData(request);
             } catch (Exception e) {
                 Exceptions.handle(WebServer.LOG, e);
             }

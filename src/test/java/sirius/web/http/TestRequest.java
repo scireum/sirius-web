@@ -16,6 +16,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
@@ -24,7 +25,7 @@ import io.netty.handler.codec.http.cookie.ClientCookieEncoder;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.multipart.Attribute;
-import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
+import io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.MemoryAttribute;
 import sirius.kernel.async.Barrier;
@@ -202,7 +203,7 @@ public class TestRequest extends WebContext implements HttpRequest {
             }
         }
         dec.offer(new DefaultLastHttpContent(Unpooled.EMPTY_BUFFER));
-        result.postDecoder = dec;
+        result.postDecoder = new MutableHttpPostRequestDecoder(result);
         return result;
     }
 
@@ -228,7 +229,7 @@ public class TestRequest extends WebContext implements HttpRequest {
      * @param value the value of the header to add
      * @return the request itself for fluent method calls
      */
-    public TestRequest addHeader(HttpHeaders.Names name, Object value) {
+    public TestRequest addHeader(CharSequence name, Object value) {
         testHeaders.add(name.toString(), value);
         return this;
     }
@@ -251,7 +252,7 @@ public class TestRequest extends WebContext implements HttpRequest {
         if (!updated) {
             testCookies.add(new DefaultCookie(name, value));
         }
-        testHeaders.set(HttpHeaders.Names.COOKIE, ClientCookieEncoder.STRICT.encode(testCookies));
+        testHeaders.set(HttpHeaderNames.COOKIE, ClientCookieEncoder.STRICT.encode(testCookies));
         return this;
     }
 
@@ -274,7 +275,7 @@ public class TestRequest extends WebContext implements HttpRequest {
                 throw Exceptions.handle(e);
             }
         }
-        throw Exceptions.handle().withSystemErrorMessage("No Dispatcher found for request: " + getUri()).handle();
+        throw Exceptions.handle().withSystemErrorMessage("No Dispatcher found for request: " + uri()).handle();
     }
 
     /**
@@ -290,13 +291,13 @@ public class TestRequest extends WebContext implements HttpRequest {
                 return testResponsePromise.get();
             } else {
                 throw Exceptions.handle()
-                                .withSystemErrorMessage("Failed to create a response for: %s", getUri())
+                                .withSystemErrorMessage("Failed to create a response for: %s", uri())
                                 .error(testResponsePromise.getFailure())
                                 .handle();
             }
         } else {
             throw Exceptions.handle()
-                            .withSystemErrorMessage("No response was created after 60s: %s", getUri())
+                            .withSystemErrorMessage("No response was created after 60s: %s", uri())
                             .handle();
         }
     }
@@ -322,7 +323,13 @@ public class TestRequest extends WebContext implements HttpRequest {
     }
 
     @Override
+    @Deprecated
     public HttpMethod getMethod() {
+        return testMethod;
+    }
+
+    @Override
+    public HttpMethod method() {
         return testMethod;
     }
 
@@ -332,6 +339,12 @@ public class TestRequest extends WebContext implements HttpRequest {
     }
 
     @Override
+    public String uri() {
+        return testUri;
+    }
+
+    @Override
+    @Deprecated
     public String getUri() {
         return testUri;
     }
@@ -342,7 +355,13 @@ public class TestRequest extends WebContext implements HttpRequest {
     }
 
     @Override
+    @Deprecated
     public HttpVersion getProtocolVersion() {
+        return HttpVersion.HTTP_1_1;
+    }
+
+    @Override
+    public HttpVersion protocolVersion() {
         return HttpVersion.HTTP_1_1;
     }
 
@@ -356,8 +375,14 @@ public class TestRequest extends WebContext implements HttpRequest {
         return testHeaders;
     }
 
+    @Deprecated
     @Override
     public DecoderResult getDecoderResult() {
+        return DecoderResult.SUCCESS;
+    }
+
+    @Override
+    public DecoderResult decoderResult() {
         return DecoderResult.SUCCESS;
     }
 
@@ -368,10 +393,10 @@ public class TestRequest extends WebContext implements HttpRequest {
 
     @Override
     public String toString() {
-        return "TestRequest: " + getUri();
+        return "TestRequest: " + uri();
     }
 
-    private static class MutableHttpPostRequestDecoder extends HttpPostRequestDecoder {
+    private static class MutableHttpPostRequestDecoder extends HttpPostStandardRequestDecoder {
         private MutableHttpPostRequestDecoder(TestRequest result) {
             super(result.getRequest());
         }

@@ -29,10 +29,13 @@ import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpChunkedInput;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http.cookie.Cookie;
@@ -180,7 +183,7 @@ public class Response {
     private DefaultFullHttpResponse createFullResponse(HttpResponseStatus status, boolean keepalive, ByteBuf buffer) {
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, buffer);
         setupResponse(status, keepalive, response);
-        response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, buffer.readableBytes());
+        response.headers().set(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());
         return response;
     }
 
@@ -190,7 +193,7 @@ public class Response {
      */
     private DefaultHttpResponse createResponse(HttpResponseStatus status, boolean keepalive) {
         DefaultHttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status);
-        if (headers == null || !headers.contains(HttpHeaders.Names.CONTENT_LENGTH)) {
+        if (headers == null || !headers.contains(HttpHeaderNames.CONTENT_LENGTH)) {
             // We cannot keepalive if the response length is unknown...
             keepalive = false;
         }
@@ -208,12 +211,12 @@ public class Response {
      * Takes care of the keep alive logic, cookies and other default headers
      */
     private DefaultHttpResponse createChunkedResponse(HttpResponseStatus status, boolean keepalive) {
-        if (wc.getRequest().getProtocolVersion() == HttpVersion.HTTP_1_0) {
+        if (wc.getRequest().protocolVersion() == HttpVersion.HTTP_1_0) {
             // HTTP 1.0 does not support chunked results...
             return createResponse(status, keepalive);
         }
         DefaultHttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status);
-        response.headers().set(HttpHeaders.Names.TRANSFER_ENCODING, HttpHeaders.Values.CHUNKED);
+        response.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
         responseChunked = true;
         setupResponse(status, keepalive, response);
         return response;
@@ -242,10 +245,10 @@ public class Response {
 
         // Add keepalive header if required
         if (responseKeepalive && keepalive && isKeepalive()) {
-            response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+            response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
         } else {
-            if (wc.getRequest().getProtocolVersion() != HttpVersion.HTTP_1_0) {
-                response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
+            if (wc.getRequest().protocolVersion() != HttpVersion.HTTP_1_0) {
+                response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
             }
             responseKeepalive = false;
         }
@@ -253,12 +256,12 @@ public class Response {
         // Add cookies
         Collection<Cookie> cookies = wc.getOutCookies();
         if (cookies != null && !cookies.isEmpty()) {
-            response.headers().set(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.LAX.encode(cookies));
+            response.headers().set(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.LAX.encode(cookies));
         }
 
         // Add Server: nodeName as header
         response.headers()
-                .set(HttpHeaders.Names.SERVER, CallContext.getNodeName() + " (scireum SIRIUS - powered by Netty)");
+                .set(HttpHeaderNames.SERVER, CallContext.getNodeName() + " (scireum SIRIUS - powered by Netty)");
 
         // Add a P3P-Header. This is used to disable the 3rd-Party auth handling of InternetExplorer
         // which is pretty broken and not used (google and facebook does the same).
@@ -273,10 +276,10 @@ public class Response {
         }
 
         // Add CORS header...: http://enable-cors.org
-        if (WebContext.corsAllowAll && !response.headers().contains(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_ORIGIN)) {
-            String requestedOrigin = wc.getHeader(HttpHeaders.Names.ORIGIN);
+        if (WebContext.corsAllowAll && !response.headers().contains(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN)) {
+            String requestedOrigin = wc.getHeader(HttpHeaderNames.ORIGIN);
             if (Strings.isFilled(requestedOrigin)) {
-                response.headers().set(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_ORIGIN, requestedOrigin);
+                response.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, requestedOrigin);
             }
         }
     }
@@ -323,7 +326,7 @@ public class Response {
      * Determines if keepalive is requested by the client and wanted by the server
      */
     private boolean isKeepalive() {
-        return HttpHeaders.isKeepAlive(wc.getRequest()) && ((WebServerHandler) ctx.handler()).shouldKeepAlive();
+        return HttpUtil.isKeepAlive(wc.getRequest()) && ((WebServerHandler) ctx.handler()).shouldKeepAlive();
     }
 
     /*
@@ -398,7 +401,7 @@ public class Response {
      * request is auto-completed with a 304 status (NOT_MODIFIED)
      */
     private boolean handleIfModifiedSince(long lastModifiedInMillis) {
-        long ifModifiedSinceDateSeconds = wc.getDateHeader(HttpHeaders.Names.IF_MODIFIED_SINCE) / 1000;
+        long ifModifiedSinceDateSeconds = wc.getDateHeader(HttpHeaderNames.IF_MODIFIED_SINCE) / 1000;
         if (ifModifiedSinceDateSeconds > 0 && lastModifiedInMillis > 0) {
             if (ifModifiedSinceDateSeconds >= lastModifiedInMillis / 1000) {
                 setDateAndCacheHeaders(lastModifiedInMillis,
@@ -514,7 +517,7 @@ public class Response {
      * @param value value of the header
      * @return <tt>this</tt> to fluently create the response
      */
-    public Response setHeader(String name, Object value) {
+    public Response setHeader(CharSequence name, Object value) {
         headers().set(name, value);
         return this;
     }
@@ -530,14 +533,14 @@ public class Response {
     /**
      * Adds the specified header.
      * <p>
-     * In contrast to {@link #setHeader(String, Object)} this method can be called multiple times for the same
+     * In contrast to {@link #setHeader(CharSequence, Object)} this method can be called multiple times for the same
      * header and its values will be concatenated as specified in the HTTP protocol.
      *
      * @param name  name of the header
      * @param value value of the header
      * @return <tt>this</tt> to fluently create the response
      */
-    public Response addHeader(String name, Object value) {
+    public Response addHeader(CharSequence name, Object value) {
         headers().add(name, value);
         return this;
     }
@@ -549,7 +552,7 @@ public class Response {
      * @param value value of the header
      * @return <tt>this</tt> to fluently create the response
      */
-    public Response addHeaderIfNotExists(String name, Object value) {
+    public Response addHeaderIfNotExists(CharSequence name, Object value) {
         if (!headers().contains(name)) {
             headers().set(name, value);
         }
@@ -591,7 +594,7 @@ public class Response {
      * @param url the URL to redirect to
      */
     public void redirectTemporarily(String url) {
-        if (wc.getRequest().getProtocolVersion() == HttpVersion.HTTP_1_0) {
+        if (wc.getRequest().protocolVersion() == HttpVersion.HTTP_1_0) {
             // Fallback to HTTP/1.0 code 302 found, which does mostly the same job but has a bad image due to
             // URL hijacking via faulty search engines. The main difference is that 307 will enforce the browser
             // to use the same method for the request to the reported location. Where as 302 doesn't specify which
@@ -601,7 +604,7 @@ public class Response {
             // Prefer the HTTP/1.1 code 307 as temporary redirect
             HttpResponse response =
                     createFullResponse(HttpResponseStatus.TEMPORARY_REDIRECT, true, Unpooled.EMPTY_BUFFER);
-            response.headers().set(HttpHeaders.Names.LOCATION, url);
+            response.headers().set(HttpHeaderNames.LOCATION, url);
             complete(commit(response));
         }
     }
@@ -617,7 +620,7 @@ public class Response {
      */
     public void redirectToGet(String url) {
         HttpResponse response = createFullResponse(HttpResponseStatus.FOUND, true, Unpooled.EMPTY_BUFFER);
-        response.headers().set(HttpHeaders.Names.LOCATION, url);
+        response.headers().set(HttpHeaderNames.LOCATION, url);
         complete(commit(response));
     }
 
@@ -628,7 +631,7 @@ public class Response {
      */
     public void redirectPermanently(String url) {
         HttpResponse response = createFullResponse(HttpResponseStatus.MOVED_PERMANENTLY, true, Unpooled.EMPTY_BUFFER);
-        response.headers().set(HttpHeaders.Names.LOCATION, url);
+        response.headers().set(HttpHeaderNames.LOCATION, url);
         complete(commit(response));
     }
 
@@ -677,24 +680,24 @@ public class Response {
         }
 
         private void parseRangesAndUpdateHeaders() throws IOException {
-            addHeaderIfNotExists(HttpHeaders.Names.ACCEPT_RANGES, HttpHeaders.Values.BYTES);
+            addHeaderIfNotExists(HttpHeaderNames.ACCEPT_RANGES, HttpHeaderValues.BYTES);
             contentStart = 0;
             expectedContentLength = raf.length();
             range = parseRange(raf.length());
             if (range == null) {
-                addHeaderIfNotExists(HttpHeaders.Names.CONTENT_LENGTH, expectedContentLength);
+                addHeaderIfNotExists(HttpHeaderNames.CONTENT_LENGTH, expectedContentLength);
             } else {
                 contentStart = range.getFirst();
                 expectedContentLength = range.getSecond() - range.getFirst() + 1;
-                setHeader(HttpHeaders.Names.CONTENT_LENGTH, expectedContentLength);
-                setHeader(HttpHeaders.Names.CONTENT_RANGE,
+                setHeader(HttpHeaderNames.CONTENT_LENGTH, expectedContentLength);
+                setHeader(HttpHeaderNames.CONTENT_RANGE,
                           "bytes " + range.getFirst() + "-" + range.getSecond() + "/" + raf.length());
             }
         }
 
         private void determineContentType() {
             contentType = MimeHelper.guessMimeType(name != null ? name : file.getName());
-            addHeaderIfNotExists(HttpHeaders.Names.CONTENT_TYPE, contentType);
+            addHeaderIfNotExists(HttpHeaderNames.CONTENT_TYPE, contentType);
         }
 
         /*
@@ -735,7 +738,7 @@ public class Response {
         }
 
         private Tuple<Long, Long> parseRange(long availableLength) {
-            String header = wc.getHeader(HttpHeaders.Names.RANGE);
+            String header = wc.getHeader(HttpHeaderNames.RANGE);
             if (Strings.isEmpty(header)) {
                 return null;
             }
@@ -774,9 +777,9 @@ public class Response {
      * Determines if the current request should be compressed or not
      */
     private boolean canBeCompressed(String contentType) {
-        String acceptEncoding = wc.getRequest().headers().get(HttpHeaders.Names.ACCEPT_ENCODING);
-        if (acceptEncoding == null || (!acceptEncoding.contains(HttpHeaders.Values.GZIP) && !acceptEncoding.contains(
-                HttpHeaders.Values.DEFLATE))) {
+        String acceptEncoding = wc.getRequest().headers().get(HttpHeaderNames.ACCEPT_ENCODING);
+        if (acceptEncoding == null || (!acceptEncoding.contains(HttpHeaderValues.GZIP) && !acceptEncoding.contains(
+                HttpHeaderValues.DEFLATE))) {
             return false;
         }
         return MimeHelper.isCompressable(contentType);
@@ -813,7 +816,7 @@ public class Response {
             } else {
                 String requestUri = "?";
                 if (wc != null && wc.getRequest() != null) {
-                    requestUri = wc.getRequest().getUri();
+                    requestUri = wc.getRequest().uri();
                 }
                 Exceptions.handle()
                           .to(WebServer.LOG)
@@ -831,7 +834,7 @@ public class Response {
      * Sets the Date and Cache headers for the HTTP Response
      */
     private void setDateAndCacheHeaders(long lastModifiedMillis, int cacheSeconds, boolean isPrivate) {
-        if (headers().contains(HttpHeaders.Names.EXPIRES) || headers().contains(HttpHeaders.Names.CACHE_CONTROL)) {
+        if (headers().contains(HttpHeaderNames.EXPIRES) || headers().contains(HttpHeaderNames.CACHE_CONTROL)) {
             return;
         }
         SimpleDateFormat dateFormatter = getHTTPDateFormat();
@@ -839,21 +842,21 @@ public class Response {
         if (cacheSeconds > 0) {
             // Date header
             Calendar time = new GregorianCalendar();
-            addHeaderIfNotExists(HttpHeaders.Names.DATE, dateFormatter.format(time.getTime()));
+            addHeaderIfNotExists(HttpHeaderNames.DATE, dateFormatter.format(time.getTime()));
 
             // Add cached headers
             time.add(Calendar.SECOND, cacheSeconds);
-            addHeaderIfNotExists(HttpHeaders.Names.EXPIRES, dateFormatter.format(time.getTime()));
+            addHeaderIfNotExists(HttpHeaderNames.EXPIRES, dateFormatter.format(time.getTime()));
             if (isPrivate) {
-                addHeaderIfNotExists(HttpHeaders.Names.CACHE_CONTROL, "private, max-age=" + cacheSeconds);
+                addHeaderIfNotExists(HttpHeaderNames.CACHE_CONTROL, "private, max-age=" + cacheSeconds);
             } else {
-                addHeaderIfNotExists(HttpHeaders.Names.CACHE_CONTROL, "public, max-age=" + cacheSeconds);
+                addHeaderIfNotExists(HttpHeaderNames.CACHE_CONTROL, "public, max-age=" + cacheSeconds);
             }
         } else {
-            addHeaderIfNotExists(HttpHeaders.Names.CACHE_CONTROL, HttpHeaders.Values.NO_CACHE + ", max-age=0");
+            addHeaderIfNotExists(HttpHeaderNames.CACHE_CONTROL, HttpHeaderValues.NO_CACHE + ", max-age=0");
         }
-        if (lastModifiedMillis > 0 && !headers().contains(HttpHeaders.Names.LAST_MODIFIED)) {
-            addHeaderIfNotExists(HttpHeaders.Names.
+        if (lastModifiedMillis > 0 && !headers().contains(HttpHeaderNames.LAST_MODIFIED)) {
+            addHeaderIfNotExists(HttpHeaderNames.
                                          LAST_MODIFIED, dateFormatter.format(new Date(lastModifiedMillis)));
         }
     }
@@ -887,7 +890,7 @@ public class Response {
      * Sets the content type header for the HTTP Response
      */
     private void setContentTypeHeader(String name) {
-        addHeaderIfNotExists(HttpHeaders.Names.CONTENT_TYPE, MimeHelper.guessMimeType(name));
+        addHeaderIfNotExists(HttpHeaderNames.CONTENT_TYPE, MimeHelper.guessMimeType(name));
     }
 
     /**
@@ -913,7 +916,7 @@ public class Response {
                           .withSystemErrorMessage(
                                   "An excption occurred while sending content! Content-Name: %s, URL: %s - %s (%s)",
                                   name,
-                                  wc == null || wc.getRequest() == null ? "?" : wc.getRequest().getUri())
+                                  wc == null || wc.getRequest() == null ? "?" : wc.getRequest().uri())
                           .handle();
                 error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, e));
             }
@@ -932,9 +935,9 @@ public class Response {
     public void resource(URLConnection urlConnection) {
         try {
             long fileLength = urlConnection.getContentLength();
-            addHeaderIfNotExists(HttpHeaders.Names.CONTENT_LENGTH, fileLength);
+            addHeaderIfNotExists(HttpHeaderNames.CONTENT_LENGTH, fileLength);
             String contentType = MimeHelper.guessMimeType(name != null ? name : urlConnection.getURL().getFile());
-            addHeaderIfNotExists(HttpHeaders.Names.CONTENT_TYPE, contentType);
+            addHeaderIfNotExists(HttpHeaderNames.CONTENT_TYPE, contentType);
             setDateAndCacheHeaders(urlConnection.getLastModified(),
                                    cacheSeconds == null ? HTTP_CACHE : cacheSeconds,
                                    isPrivate);
@@ -960,7 +963,7 @@ public class Response {
                       .withSystemErrorMessage(
                               "An excption occurred while sending a resource! Resource: %s, URL: %s - %s (%s)",
                               urlConnection == null ? "null" : urlConnection.getURL().toString(),
-                              wc == null || wc.getRequest() == null ? "?" : wc.getRequest().getUri())
+                              wc == null || wc.getRequest() == null ? "?" : wc.getRequest().uri())
                       .handle();
             error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
         }
@@ -1025,7 +1028,7 @@ public class Response {
             if (!ctx.channel().isWritable()) {
                 return;
             }
-            if (wc.getRequest().getMethod() == HttpMethod.HEAD) {
+            if (wc.getRequest().method() == HttpMethod.HEAD) {
                 status(status);
                 return;
             }
@@ -1036,20 +1039,23 @@ public class Response {
             if (Strings.isEmpty(content)) {
                 content = Rythm.renderIfTemplateExists("view/errors/default.html", status, message);
             }
-            setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/html; charset=UTF-8");
+            setHeader(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=UTF-8");
             ByteBuf channelBuffer = wrapUTF8String(content);
             HttpResponse response = createFullResponse(status, false, channelBuffer);
             completeAndClose(commit(response));
         } catch (Throwable e) {
-           HandledException he = Exceptions.handle()
-                      .to(WebServer.LOG)
-                      .error(e)
-                      .withSystemErrorMessage("An exception occurred while sending an HTTP error! "
-                                              + "Original Status Code: %s, Original Error: %s, URL: %s - %s (%s)",
-                                              status == null ? "null" : status.code(),
-                                              message,
-                                              wc == null || wc.getRequest() == null ? "?" : wc.getRequest().getUri())
-                      .handle();
+            HandledException he = Exceptions.handle()
+                                            .to(WebServer.LOG)
+                                            .error(e)
+                                            .withSystemErrorMessage(
+                                                    "An exception occurred while sending an HTTP error! "
+                                                    + "Original Status Code: %s, Original Error: %s, URL: %s - %s (%s)",
+                                                    status == null ? "null" : status.code(),
+                                                    message,
+                                                    wc == null || wc.getRequest() == null ?
+                                                    "?" :
+                                                    wc.getRequest().uri())
+                                            .handle();
             if (wc.responseCommitted) {
                 if (ctx.channel().isOpen()) {
                     ctx.channel().close();
@@ -1062,8 +1068,8 @@ public class Response {
 
             ByteBuf channelBuffer = wrapUTF8String(he.getMessage());
             HttpResponse response = createFullResponse(HttpResponseStatus.INTERNAL_SERVER_ERROR, false, channelBuffer);
-            response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/plain; charset=UTF-8");
-            HttpHeaders.setContentLength(response, channelBuffer.readableBytes());
+            response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
+            HttpUtil.setContentLength(response, channelBuffer.readableBytes());
             completeAndClose(commit(response));
         }
     }
@@ -1132,7 +1138,7 @@ public class Response {
     protected void sendTemplateContent(String name, String content) {
         try {
             if (name.endsWith("html")) {
-                setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/html; charset=UTF-8");
+                setHeader(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=UTF-8");
             } else {
                 setContentTypeHeader(name);
             }
@@ -1252,11 +1258,12 @@ public class Response {
         }
     }
 
-    private static final Set<String> NON_TUNNELLED_HEADERS = Sets.newHashSet(HttpHeaders.Names.TRANSFER_ENCODING,
-                                                                             HttpHeaders.Names.SERVER,
-                                                                             HttpHeaders.Names.CONTENT_ENCODING,
-                                                                             HttpHeaders.Names.EXPIRES,
-                                                                             HttpHeaders.Names.CACHE_CONTROL);
+    private static final Set<String> NON_TUNNELLED_HEADERS =
+            Sets.newHashSet(HttpHeaderNames.TRANSFER_ENCODING.toString(),
+                            HttpHeaderNames.SERVER.toString(),
+                            HttpHeaderNames.CONTENT_ENCODING.toString(),
+                            HttpHeaderNames.EXPIRES.toString(),
+                            HttpHeaderNames.CACHE_CONTROL.toString());
 
     /**
      * Tunnels the contents retrieved from the given URL as result of this response.
@@ -1272,15 +1279,16 @@ public class Response {
         try {
             AsyncHttpClient.BoundRequestBuilder brb = getAsyncClient().prepareGet(url);
             // Support caching...
-            long ifModifiedSince = wc.getDateHeader(HttpHeaders.Names.IF_MODIFIED_SINCE);
+            long ifModifiedSince = wc.getDateHeader(HttpHeaderNames.IF_MODIFIED_SINCE);
             if (ifModifiedSince > 0) {
-                brb.addHeader(HttpHeaders.Names.IF_MODIFIED_SINCE, getHTTPDateFormat().format(ifModifiedSince));
+                brb.addHeader(HttpHeaderNames.IF_MODIFIED_SINCE.toString(),
+                              getHTTPDateFormat().format(ifModifiedSince));
             }
 
             // Support range requests...
-            String range = wc.getHeader(HttpHeaders.Names.RANGE);
+            String range = wc.getHeader(HttpHeaderNames.RANGE);
             if (Strings.isFilled(range)) {
-                brb.addHeader(HttpHeaders.Names.RANGE, range);
+                brb.addHeader(HttpHeaderNames.RANGE.toString(), range);
             }
             if (WebServer.LOG.isFINE()) {
                 WebServer.LOG.FINE("Tunnel START: %s", url);
@@ -1296,7 +1304,7 @@ public class Response {
                           .withSystemErrorMessage(
                                   "An excption occurred while tunneling a request! Target-URL: %s, URL: %s - %s (%s)",
                                   url,
-                                  wc == null || wc.getRequest() == null ? "?" : wc.getRequest().getUri())
+                                  wc == null || wc.getRequest() == null ? "?" : wc.getRequest().uri())
                           .handle();
                 error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
             }
@@ -1336,7 +1344,7 @@ public class Response {
                 if ((Sirius.isDev() || !entry.getKey().startsWith("x-"))
                     && !NON_TUNNELLED_HEADERS.contains(entry.getKey())) {
                     for (String value : entry.getValue()) {
-                        if (HttpHeaders.Names.LAST_MODIFIED.equals(entry.getKey())) {
+                        if (HttpHeaderNames.LAST_MODIFIED.contentEqualsIgnoreCase(entry.getKey())) {
                             try {
                                 lastModified = getHTTPDateFormat().parse(value).getTime();
                             } catch (Throwable e) {
@@ -1346,7 +1354,7 @@ public class Response {
                             addHeaderIfNotExists(entry.getKey(), value);
                         }
                     }
-                    if (HttpHeaders.Names.CONTENT_LENGTH.equals(entry.getKey())) {
+                    if (HttpHeaderNames.CONTENT_LENGTH.contentEqualsIgnoreCase(entry.getKey())) {
                         contentLengthKnown = true;
                     }
                 }
@@ -1356,7 +1364,7 @@ public class Response {
                 return STATE.ABORT;
             }
 
-            if (!headers().contains(HttpHeaders.Names.CONTENT_TYPE)) {
+            if (!headers().contains(HttpHeaderNames.CONTENT_TYPE)) {
                 setContentTypeHeader(name != null ? name : url);
             }
             setDateAndCacheHeaders(lastModified, cacheSeconds == null ? HTTP_CACHE : cacheSeconds, isPrivate);
@@ -1390,7 +1398,7 @@ public class Response {
                     if (bodyPart.isLast()) {
                         HttpResponse response =
                                 createFullResponse(HttpResponseStatus.valueOf(responseCode), true, data);
-                        HttpHeaders.setContentLength(response, bodyPart.getBodyByteBuffer().remaining());
+                        HttpUtil.setContentLength(response, bodyPart.getBodyByteBuffer().remaining());
                         complete(commit(response));
                         return STATE.CONTINUE;
                     } else {
@@ -1456,7 +1464,7 @@ public class Response {
             if (!wc.responseCommitted) {
                 HttpResponse response =
                         createFullResponse(HttpResponseStatus.valueOf(responseCode), true, Unpooled.EMPTY_BUFFER);
-                HttpHeaders.setContentLength(response, 0);
+                HttpUtil.setContentLength(response, 0);
                 complete(commit(response));
             } else if (!wc.responseCompleted) {
                 ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
@@ -1596,7 +1604,7 @@ public class Response {
 
         private void createResponse(boolean last) {
             if (Strings.isFilled(contentType)) {
-                addHeaderIfNotExists(HttpHeaders.Names.CONTENT_TYPE, contentType);
+                addHeaderIfNotExists(HttpHeaderNames.CONTENT_TYPE, contentType);
             }
             setDateAndCacheHeaders(System.currentTimeMillis(),
                                    cacheSeconds == null || Sirius.isDev() ? 0 : cacheSeconds,
@@ -1610,7 +1618,7 @@ public class Response {
                     initialBuffer = Unpooled.EMPTY_BUFFER;
                 }
                 HttpResponse response = createFullResponse(status, true, initialBuffer);
-                HttpHeaders.setContentLength(response, initialBuffer.readableBytes());
+                HttpUtil.setContentLength(response, initialBuffer.readableBytes());
                 complete(commit(response));
             } else {
                 HttpResponse response = createChunkedResponse(HttpResponseStatus.OK, true);
