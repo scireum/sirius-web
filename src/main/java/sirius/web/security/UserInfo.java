@@ -10,7 +10,7 @@ package sirius.web.security;
 
 import com.typesafe.config.Config;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.di.morphium.Adaptable;
+import sirius.kernel.di.morphium.Composable;
 import sirius.kernel.health.Exceptions;
 
 import javax.annotation.CheckReturnValue;
@@ -26,7 +26,7 @@ import java.util.function.Function;
  * A user is authenticated using a {@link UserManager}. To obtain or modify the current user, use {@link
  * UserContext#getCurrentUser()} or {@link UserContext#setCurrentUser(UserInfo)}.
  */
-public class UserInfo implements Adaptable {
+public class UserInfo extends Composable {
 
     /**
      * This permission represents a user which was successfully authenticated by its user manager.
