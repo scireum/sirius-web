@@ -26,6 +26,8 @@ public @interface HelperConfig {
     /**
      * Returns the key or path within the scope config ({@link ScopeInfo#getConfig()} which should be used
      * to populate the field.
+     *
+     * @return the path within the scope config to read
      */
     String value();
 }

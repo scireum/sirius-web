@@ -237,10 +237,9 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
 
         // Detach the CallContext we created
         if (currentCall != null) {
-            currentCall.detachContext();
+            CallContext.setCurrent(currentCall);
+            CallContext.detach();
         }
-        // Also removed from this thread if it is still bound
-        CallContext.detach();
         super.channelUnregistered(ctx);
     }
 
@@ -281,7 +280,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
 
     private void channelReadHttpContent(ChannelHandlerContext ctx, Object msg) throws IOException {
         try {
-            if (currentRequest == null) {
+            if (currentRequest == null || currentCall == null) {
                 WebServer.LOG.FINE("Ignoring CHUNK without request: " + msg);
                 return;
             }
@@ -293,6 +292,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                 }
             }
             if (currentContext.contentHandler != null) {
+                CallContext.setCurrent(currentCall);
                 currentContext.contentHandler.handle(((HttpContent) msg).content(), last);
             } else {
                 processContent(ctx, (HttpContent) msg);
@@ -304,7 +304,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
 
     private void channelReadLastHttpContent(ChannelHandlerContext ctx, Object msg) throws Exception {
         channelReadHttpContent(ctx, msg);
-        if (currentRequest != null) {
+        if (currentRequest != null && currentCall != null) {
+            CallContext.setCurrent(currentCall);
             if (!preDispatched) {
                 if (WebContext.corsAllowAll && isPreflightRequest()) {
                     handlePreflightRequest();
@@ -312,6 +313,9 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                     dispatch();
                 }
             }
+        } else if (!preDispatched) {
+            WebServer.LOG.FINE("Terminating a channel for a last http content without a request: " + msg);
+            ctx.channel().close();
         }
     }
 
@@ -376,8 +380,9 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     private void handleRequest(ChannelHandlerContext ctx, HttpRequest req) {
         try {
             if (WebServer.LOG.isFINE()) {
-                WebServer.LOG.FINE("OPEN: " + req.uri());
+                WebServer.LOG.FINE("REQUEST: " + req.uri());
             }
+
             // Handle a bad request.
             if (!req.decoderResult().isSuccess()) {
                 signalBadRequest(ctx);
