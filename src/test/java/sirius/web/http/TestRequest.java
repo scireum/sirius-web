@@ -203,7 +203,7 @@ public class TestRequest extends WebContext implements HttpRequest {
             }
         }
         dec.offer(new DefaultLastHttpContent(Unpooled.EMPTY_BUFFER));
-        result.postDecoder = new MutableHttpPostRequestDecoder(result);
+        result.postDecoder = dec;
         return result;
     }
 
