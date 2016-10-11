@@ -53,7 +53,7 @@ public class HttpPipeliningHandler extends ChannelDuplexHandler {
         }
 
         // If a conflicting request was put aside in the bufferedRequests list, we can safely
-        // ignore the empty  LastHttpeContent for it - we will emulate this in <tt>write</tt>
+        // ignore the empty  LastHttpContent for it - we will emulate this in <tt>write</tt>
         if (msg instanceof LastHttpContent) {
             if (((LastHttpContent) msg).content().readableBytes() == 0) {
                 ((LastHttpContent) msg).release();
@@ -61,7 +61,7 @@ public class HttpPipeliningHandler extends ChannelDuplexHandler {
             }
         }
 
-        // If any other content is received (that would by another POST for example, we give up!) There
+        // If any other content is received (that would be another POST for example, we give up!) There
         // is no sane way to handle and support that correctly...
         if (msg instanceof ReferenceCounted) {
             ((ReferenceCounted) msg).release();
