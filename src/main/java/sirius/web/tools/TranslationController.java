@@ -9,9 +9,7 @@
 package sirius.web.tools;
 
 import sirius.kernel.di.std.Register;
-import sirius.kernel.nls.Babelfish;
 import sirius.kernel.nls.NLS;
-import sirius.kernel.nls.Translation;
 import sirius.web.controller.BasicController;
 import sirius.web.controller.Controller;
 import sirius.web.controller.Routed;
@@ -21,11 +19,9 @@ import sirius.web.templates.ExcelExport;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
- * Controller which holds admin tools for the translation engine
+ * Controller which provides admin tools for the translation engine.
  */
 @Register(classes = Controller.class)
 public class TranslationController extends BasicController {
@@ -44,19 +40,15 @@ public class TranslationController extends BasicController {
     @Routed("/babelfish/export/:1")
     @Permission(PERMISSION_BABELFISH)
     public void export(WebContext ctx, String filter) {
-        Set<String> langs = NLS.getSupportedLanguages();
         ExcelExport excelExport = new ExcelExport();
-        Babelfish blubb = new Babelfish();
         List<String> header = new ArrayList<String>();
         header.add("key");
-        header.addAll(langs);
+        header.addAll(NLS.getSupportedLanguages());
         excelExport.addRowAsList(header);
-        List<Translation> translationsList =
-                NLS.getTranslationEngine().getTranslations(filter).collect(Collectors.toList());
-        translationsList.forEach(translation -> {
+        NLS.getTranslationEngine().getTranslations(filter).forEach(translation -> {
             List<String> row = new ArrayList<String>();
             row.add(translation.getKey());
-            langs.forEach(lang -> {
+            NLS.getSupportedLanguages().forEach(lang -> {
                 row.add(translation.translateWithoutFallback(lang));
             });
             excelExport.addRowAsList(row);
