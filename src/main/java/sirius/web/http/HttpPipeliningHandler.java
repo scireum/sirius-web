@@ -43,16 +43,26 @@ public class HttpPipeliningHandler extends ChannelDuplexHandler {
             }
             return;
         }
-        if (currentRequest != null && bufferedRequests.isEmpty()) {
+        // As long as there is no conflicting request present,
+        // we continue with the pipeline. This is especially required for web sockets,
+        // which receive WebsocketFrames after the request and LastHttpContent were
+        // received....
+        if (currentRequest == null || (currentRequest != null && bufferedRequests.isEmpty())) {
             ctx.fireChannelRead(msg);
             return;
         }
+
+        // If a conflicting request was put aside in the bufferedRequests list, we can safely
+        // ignore the empty  LastHttpContent for it - we will emulate this in <tt>write</tt>
         if (msg instanceof LastHttpContent) {
             if (((LastHttpContent) msg).content().readableBytes() == 0) {
                 ((LastHttpContent) msg).release();
                 return;
             }
         }
+
+        // If any other content is received (that would be another POST for example, we give up!) There
+        // is no sane way to handle and support that correctly...
         if (msg instanceof ReferenceCounted) {
             ((ReferenceCounted) msg).release();
         }

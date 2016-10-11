@@ -101,7 +101,7 @@ public class WebsocketHandler extends ChannelDuplexHandler {
         ctx.pipeline()
            .addAfter("aggregator",
                      "websocketx",
-                     new WebSocketServerProtocolHandler(websocketDispatcher.getWebsocketUri(), "xmpp", true));
+                     new WebSocketServerProtocolHandler(((HttpRequest) msg).uri(), "xmpp", true));
         ctx.pipeline().remove("idler");
         ctx.pipeline().remove("compressor");
         handler.channelRead(ctx, msg);
