@@ -81,6 +81,14 @@ public interface ServerSession {
     int getMaxInactiveInterval();
 
     /**
+     * Overwrites the max. inactivity period allowed for this session.
+     *
+     * @param seconds the max number of seconds this session may be inactive or 0 to use the default settings
+     * @see #getMaxInactiveInterval()
+     */
+    void setMaxInactiveInterval(int seconds);
+
+    /**
      * Determines if the user agent which belongs to the session is likely a bot.
      *
      * @return <tt>true</tt> if the session was likely started by a bot, <tt>false</tt> otherwise
