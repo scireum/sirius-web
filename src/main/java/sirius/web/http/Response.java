@@ -675,7 +675,7 @@ public class Response {
                 }
                 sendFileResponse();
             } catch (Throwable e) {
-                internalServerError(e);
+                internalServerError("File: " + file.getAbsolutePath(), e);
             }
         }
 
@@ -808,7 +808,7 @@ public class Response {
     /*
      * Signals an internal server error if one of the response method fails.
      */
-    private void internalServerError(Throwable t) {
+    private void internalServerError(String debugMessage, Throwable t) {
         WebServer.LOG.FINE(t);
         if (!(t instanceof ClosedChannelException)) {
             if (t instanceof HandledException) {
@@ -820,7 +820,10 @@ public class Response {
                 }
                 Exceptions.handle()
                           .to(WebServer.LOG)
-                          .withSystemErrorMessage("An excption occurred while responding to: %s - %s (%s)", requestUri)
+                          .withSystemErrorMessage(
+                                  "An excption occurred while responding to: %s - %s (%s) [Debug-Message: %s]",
+                                  requestUri,
+                                  debugMessage)
                           .handle();
                 error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
             }
@@ -911,14 +914,7 @@ public class Response {
                     resource(res.get().getUrl().openConnection());
                 }
             } catch (Throwable e) {
-                Exceptions.handle()
-                          .to(WebServer.LOG)
-                          .withSystemErrorMessage(
-                                  "An excption occurred while sending content! Content-Name: %s, URL: %s - %s (%s)",
-                                  name,
-                                  wc == null || wc.getRequest() == null ? "?" : wc.getRequest().uri())
-                          .handle();
-                error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, e));
+                internalServerError("Content to send: " + name, e);
             }
         } else {
             error(HttpResponseStatus.NOT_FOUND);
@@ -958,14 +954,7 @@ public class Response {
             ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
             complete(writeFuture);
         } catch (Throwable t) {
-            Exceptions.handle()
-                      .to(WebServer.LOG)
-                      .withSystemErrorMessage(
-                              "An excption occurred while sending a resource! Resource: %s, URL: %s - %s (%s)",
-                              urlConnection == null ? "null" : urlConnection.getURL().toString(),
-                              wc == null || wc.getRequest() == null ? "?" : wc.getRequest().uri())
-                      .handle();
-            error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
+            internalServerError("Resource to send: " + urlConnection.getURL().toString(), t);
         }
     }
 
@@ -1044,6 +1033,9 @@ public class Response {
             HttpResponse response = createFullResponse(status, false, channelBuffer);
             completeAndClose(commit(response));
         } catch (Throwable e) {
+            if (e instanceof ClosedChannelException) {
+                return;
+            }
             HandledException he = Exceptions.handle()
                                             .to(WebServer.LOG)
                                             .error(e)
@@ -1052,9 +1044,7 @@ public class Response {
                                                     + "Original Status Code: %s, Original Error: %s, URL: %s - %s (%s)",
                                                     status == null ? "null" : status.code(),
                                                     message,
-                                                    wc == null || wc.getRequest() == null ?
-                                                    "?" :
-                                                    wc.getRequest().uri())
+                                                    wc == null || wc.getRequest() == null ? "?" : wc.getRequest().uri())
                                             .handle();
             if (wc.responseCommitted) {
                 if (ctx.channel().isOpen()) {
@@ -1103,7 +1093,7 @@ public class Response {
             HttpResponse response = createFullResponse(status, true, channelBuffer);
             complete(commit(response));
         } catch (Throwable e) {
-            internalServerError(e);
+            internalServerError("Cannot send direct content", e);
         }
     }
 
@@ -1149,7 +1139,7 @@ public class Response {
             HttpResponse response = createFullResponse(HttpResponseStatus.OK, true, channelBuffer);
             complete(commit(response));
         } catch (Throwable e) {
-            internalServerError(e);
+            internalServerError("Cannot send content of template: " + name, e);
         }
     }
 
@@ -1296,18 +1286,7 @@ public class Response {
             // Tunnel it through...
             brb.execute(new TunnelHandler(url));
         } catch (Throwable t) {
-            if (!(t instanceof ClosedChannelException)) {
-                // We do not use the message generated by this, to respond to the client,
-                // as we do not want to reveal the backing URL
-                Exceptions.handle()
-                          .to(WebServer.LOG)
-                          .withSystemErrorMessage(
-                                  "An excption occurred while tunneling a request! Target-URL: %s, URL: %s - %s (%s)",
-                                  url,
-                                  wc == null || wc.getRequest() == null ? "?" : wc.getRequest().uri())
-                          .handle();
-                error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
-            }
+            internalServerError("Target-URL: " + url, t);
         }
     }
 
