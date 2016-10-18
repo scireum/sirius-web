@@ -56,6 +56,11 @@ public class TranslationController extends BasicController {
         excelExport.writeResponseTo("translations.xls", ctx);
     }
 
+    /**
+     * Exports all loaded translations into a xls file containing all supported languages
+     *
+     * @param ctx the request being handled
+     */
     @Routed(priority = 99, value = "/babelfish/export/all")
     @Permission(PERMISSION_BABELFISH)
     public void export(WebContext ctx) {
