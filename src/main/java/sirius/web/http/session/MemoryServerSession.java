@@ -50,6 +50,7 @@ class MemoryServerSession implements ServerSession {
     private Map<String, Object> values = Maps.newHashMap();
     private long lastAccessed = System.currentTimeMillis();
     private int numAccesses = 0;
+    private int customMaxInactiveInterval = 0;
     private String id = UUID.randomUUID().toString();
 
     @ConfigValue("http.serverMiniSessionLifetime")
@@ -78,6 +79,9 @@ class MemoryServerSession implements ServerSession {
 
     @Override
     public int getMaxInactiveInterval() {
+        if (customMaxInactiveInterval > 0) {
+            return customMaxInactiveInterval;
+        }
         if (isUserAgentBot() || numAccesses <= 2) {
             return (int) miniSessionLifetime.getSeconds();
         } else if (userAttached) {
@@ -85,6 +89,11 @@ class MemoryServerSession implements ServerSession {
         } else {
             return (int) sessionLifetime.getSeconds();
         }
+    }
+
+    @Override
+    public void setMaxInactiveInterval(int seconds) {
+        this.customMaxInactiveInterval = seconds;
     }
 
     @Override

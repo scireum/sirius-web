@@ -19,7 +19,7 @@ import sirius.kernel.commons.Reflection;
 import sirius.kernel.commons.ValueHolder;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.PartCollection;
-import sirius.kernel.di.morphium.Adaptable;
+import sirius.kernel.di.morphium.Composable;
 import sirius.kernel.di.std.ConfigValueAnnotationProcessor;
 import sirius.kernel.di.std.Context;
 import sirius.kernel.di.std.Parts;
@@ -44,7 +44,7 @@ import java.util.regex.Pattern;
  * The current scope is used to determine which {@link sirius.web.security.UserManager} is used. Therefore
  * a system consisting of a backend and frontend can use distinct scopes and a different user manager for each.
  */
-public class ScopeInfo implements Adaptable {
+public class ScopeInfo extends Composable {
 
     /**
      * If no distinct scope is recognized by the current <tt>ScopeDetector</tt> or if no detector is installed,

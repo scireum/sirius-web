@@ -14,16 +14,15 @@
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
     <dependencies>
-
         <dependency>
             <groupId>com.scireum</groupId>
             <artifactId>sirius-kernel</artifactId>
-            <version>3.0.1</version>
+            <version>3.1</version>
         </dependency>
         <dependency>
             <groupId>com.scireum</groupId>
             <artifactId>sirius-kernel</artifactId>
-            <version>[3.0.1,)</version>
+            <version>3.1</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
