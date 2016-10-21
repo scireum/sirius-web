@@ -349,7 +349,7 @@ public class CrunchlogKernel extends BackgroundLoop implements Lifecycle, Metric
             return;
         }
         try {
-            Files.walk(baseDirectory.toPath()).map(Path::toFile).forEach(file -> {
+            Files.walk(baseDirectory.toPath()).map(Path::toFile).filter(File::isFile).forEach(file -> {
                 if (currentFile == null || !currentFile.equals(file)) {
                     fileProcessor.accept(file);
                 }
