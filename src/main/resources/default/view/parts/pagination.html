@@ -17,7 +17,7 @@
                     <li><a href="@prefix/@baseURL?@page.createPrevPageQueryString()">&#8592;</a></li>
                 }
             } else {
-            <li class="disabled"><span>&#8592;</span></li>
+                <li class="disabled"><span>&#8592;</span></li>
             }
             <li>
                 <input type="text" class="jump-to" placeholder="@page.getRange()">
@@ -34,6 +34,31 @@
                                 window.location.replace(location);
                             }
                         });
+    
+                        @if (page.hasLess()) {
+                            $(document).keyup(function (e) {
+                                if (e.shiftKey && (e.which === 37)) {
+                                    @if (Strings.isFilled(type)) {
+                                        var location = '@prefix/@baseURL?@page.createPrevPageQueryString()&pageType=@type';
+                                    } else {
+                                        var location = '@prefix/@baseURL?@page.createPrevPageQueryString()';
+                                    }
+                                    window.location.replace(location);
+                                }
+                            });
+                        }
+                        @if (page.hasMore()) {
+                            $(document).keyup(function (e) {
+                                if (e.shiftKey && (e.which === 39)) {
+                                    @if (Strings.isFilled(type)) {
+                                        var location = '@prefix/@baseURL?@page.createNextPageQueryString()&pageType=@type';
+                                    } else {
+                                        var location = '@prefix/@baseURL?@page.createNextPageQueryString()';
+                                    }
+                                    window.location.replace(location);
+                                }
+                            });
+                        }
                     });
                 </script>
             </li>
