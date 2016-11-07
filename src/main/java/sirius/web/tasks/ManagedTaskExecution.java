@@ -103,6 +103,11 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
     }
 
     @Override
+    public boolean isErroneous() {
+        return erroneous;
+    }
+
+    @Override
     public void log(String message) {
         log(TaskLogEntry.LogType.NORMAL, message);
     }

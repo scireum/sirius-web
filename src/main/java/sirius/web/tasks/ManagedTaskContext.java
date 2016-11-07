@@ -119,4 +119,11 @@ public interface ManagedTaskContext extends TaskContextAdapter {
      * Blocks the current thread until all forked tasks have completed.
      */
     void waitForForkedTasks();
+
+    /**
+     * Determines if the current task is erroneous
+     *
+     * @return <tt>true</tt> if the task is marked as erroneous, <tt>false</tt> otherwise.
+     */
+    boolean isErroneous();
 }
