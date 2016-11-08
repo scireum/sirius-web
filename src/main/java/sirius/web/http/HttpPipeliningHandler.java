@@ -14,6 +14,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.ReferenceCounted;
 
@@ -77,6 +78,11 @@ public class HttpPipeliningHandler extends ChannelDuplexHandler {
             if (currentRequest == null) {
                 throw new IllegalStateException("Received a response without a request");
             }
+
+            if (msg instanceof FullHttpResponse && ((FullHttpResponse) msg).status() == HttpResponseStatus.CONTINUE) {
+                return;
+            }
+
             currentRequest = null;
 
             if (!bufferedRequests.isEmpty()) {
