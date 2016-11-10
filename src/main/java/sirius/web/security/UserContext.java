@@ -14,6 +14,7 @@ import com.typesafe.config.Config;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Value;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Context;
 import sirius.kernel.di.std.Part;
@@ -131,7 +132,26 @@ public class UserContext implements SubContext {
         return get().getUser().getConfig();
     }
 
-    public static <H> H getHelper(Class<H> helperType) {
+    /**
+     * Returns the value present in the configuration for the current user and given config key.
+     * <p>
+     * This is boilerplate for {@code UserContext.getUser().getConfigValue(key)}.
+     *
+     * @param key the config key to fetch
+     * @return the value present for the key. If the value does not exist, an empty <tt>Value</tt> is returned.
+     */
+    @Nonnull
+    public static Value getConfigValue(@Nonnull String key) {
+        return get().getUser().getConfigValue(key);
+    }
+
+    @Nonnull
+    public static String getConfigString(@Nonnull String key) {
+        return get().getUser().getConfigString(key);
+    }
+
+    @Nonnull
+    public static <H> H getHelper(@Nonnull Class<H> helperType) {
         return getCurrentScope().getHelper(helperType);
     }
 

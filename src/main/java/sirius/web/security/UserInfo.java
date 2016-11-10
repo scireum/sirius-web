@@ -9,7 +9,9 @@
 package sirius.web.security;
 
 import com.typesafe.config.Config;
+import com.typesafe.config.ConfigException;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Value;
 import sirius.kernel.di.morphium.Composable;
 import sirius.kernel.health.Exceptions;
 
@@ -348,5 +350,36 @@ public class UserInfo extends Composable {
         } else {
             return configSupplier.apply(this);
         }
+    }
+
+    /**
+     * Returns the value present for the given config key.
+     * <p>
+     * This is boilerplate for {@code Value.of(getConfig().getObject(key))}.
+     *
+     * @param key the config key to fetch
+     * @return the value present for the key. If the value does not exist, an empty <tt>Value</tt> is returned.
+     */
+    @Nonnull
+    public Value getConfigValue(@Nonnull String key) {
+        try {
+            return Value.of(getConfig().getObject(key));
+        } catch (ConfigException e) {
+            Exceptions.handle(e);
+            return Value.EMPTY;
+        }
+    }
+
+    /**
+     * Returns the string present for the given config key.
+     * <p>
+     * This is boilerplate for {@code getConfigValue(key).asString()}.
+     *
+     * @param key the config key to fetch
+     * @return the string present for the key. If the value does not exist, an empty string is returned.
+     */
+    @Nonnull
+    public String getConfigString(@Nonnull String key) {
+        return getConfigValue(key).asString();
     }
 }
