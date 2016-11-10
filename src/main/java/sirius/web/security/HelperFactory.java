@@ -13,6 +13,10 @@ package sirius.web.security;
  * <p>
  * Note that a helper is created <b>once</b> per scope and not per user or request. Everything that is specific
  * to the user or request has the be in the request itself or the session.
+ * <p>
+ * Variables can be annotated using {@link HelperConfig} and will be automatically filled with the value set in the
+ * scope config. HOWEVER: Note that user specific overwrites of this coinf values cannot be applied. These values
+ * have to be fetched using {@link UserContext#getConfigValue(String)} or {@link UserInfo#getConfigValue(String)}.
  *
  * @param <H> the type of helpers created by this factory
  */

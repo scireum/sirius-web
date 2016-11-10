@@ -145,11 +145,30 @@ public class UserContext implements SubContext {
         return get().getUser().getConfigValue(key);
     }
 
+    /**
+     * Returns the string present in the configuration for the current user and given config key.
+     * <p>
+     * This is boilerplate for {@code UserContext.getUser().getConfigString(key)}.
+     *
+     * @param key the config key to fetch
+     * @return the string present for the key. If the value does not exist, an empty string is returned.
+     */
     @Nonnull
     public static String getConfigString(@Nonnull String key) {
         return get().getUser().getConfigString(key);
     }
 
+    /**
+     * Returns the helper of the given class for the current scope.
+     * <p>
+     * NOTE: This helper is per {@link ScopeInfo} not per {@link UserInfo}! Therefore no user dependent data may be kept
+     * in its state.
+     *
+     * @param helperType the type of the helper to fetch
+     * @param <H>        the generic type of the helper
+     * @return an instance of the given helper. If the helper can neither be found nor created, an exception will be
+     * thrown.
+     */
     @Nonnull
     public static <H> H getHelper(@Nonnull Class<H> helperType) {
         return getCurrentScope().getHelper(helperType);
