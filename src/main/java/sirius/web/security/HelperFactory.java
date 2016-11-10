@@ -8,6 +8,8 @@
 
 package sirius.web.security;
 
+import javax.annotation.Nonnull;
+
 /**
  * Helpers are used by the {@link ScopeInfo} to perform certain tasks.
  * <p>
@@ -27,7 +29,18 @@ public interface HelperFactory<H> {
      *
      * @return the class of helpers produced by this factory
      */
+    @Nonnull
     Class<H> getHelperType();
+
+    /**
+     * Returns a short an descriptive name which can be use to fetch the helper in templates.
+     * <p>
+     * We prefer using names over class names in templates as this make refactorings way easier.
+     *
+     * @return the unique name used to fetch the helper in a template
+     */
+    @Nonnull
+    String getName();
 
     /**
      * Creates a new helper for the given scope.
@@ -35,5 +48,6 @@ public interface HelperFactory<H> {
      * @param scope the scope for which this helper is created
      * @return a new instance of the helper class for the given scope
      */
-    H make(ScopeInfo scope);
+    @Nonnull
+    H make(@Nonnull ScopeInfo scope);
 }

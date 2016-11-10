@@ -16,6 +16,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Reflection;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.ValueHolder;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.PartCollection;
@@ -58,7 +59,8 @@ public class ScopeInfo extends Composable {
     private String lang;
     private Function<ScopeInfo, Config> configSupplier;
     private Function<ScopeInfo, Object> scopeSupplier;
-    private Map<Class<?>, Object> helpers = Maps.newConcurrentMap();
+    private Map<Class<?>, Object> helpersByType = Maps.newConcurrentMap();
+    private Map<String, Object> helpersByName = Maps.newConcurrentMap();
     private Config config;
 
     /**
@@ -153,9 +155,46 @@ public class ScopeInfo extends Composable {
         return null;
     }
 
+    /**
+     * Retrieves the helper of the given type.
+     * <p>
+     * Helpers are utility classes which are kept per <tt>ScopeInfo</tt> and created by {@link HelperFactory} instances.
+     *
+     * @param clazz the type of the helper to fetch
+     * @param <T>   the generic type of the helper
+     * @return a cached or newly created instance of the helper for this scope.
+     */
     @SuppressWarnings("unchecked")
     public <T> T getHelper(Class<T> clazz) {
-        return (T) helpers.computeIfAbsent(clazz, this::makeHelper);
+        Object result = helpersByType.get(clazz);
+        if (result == null) {
+            result = makeHelperByType(clazz);
+        }
+
+        return (T) result;
+    }
+
+    /**
+     * Retrieves the helper of the given name.
+     * <p>
+     * Helpers are utility classes which are kept per <tt>ScopeInfo</tt> and created by {@link HelperFactory}
+     * instances.
+     * <p>
+     * When using helpers in templates, it is better to refer to them via name than via class, as this stays constant
+     * when renaming or moving classes.
+     *
+     * @param name the name of the helper to fetch
+     * @param <T>  the generic type of the helper
+     * @return a cached or newly created instance of the helper for this scope.
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T getHelper(String name) {
+        Object result = helpersByName.get(name);
+        if (result == null) {
+            result = makeHelperByName(name);
+        }
+
+        return (T) result;
     }
 
     @Parts(HelperFactory.class)
@@ -164,15 +203,10 @@ public class ScopeInfo extends Composable {
     @Context
     private static GlobalContext ctx;
 
-    private Object makeHelper(Class<?> aClass) {
+    private Object makeHelperByType(Class<?> aClass) {
         for (HelperFactory<?> factory : factories) {
             if (aClass.equals(factory.getHelperType())) {
-                Object result = factory.make(this);
-                if (result != null) {
-                    ctx.wire(result);
-                    fillConfig(result);
-                    return result;
-                }
+                return makeHelper(factory);
             }
         }
 
@@ -180,6 +214,29 @@ public class ScopeInfo extends Composable {
                         .to(UserContext.LOG)
                         .withSystemErrorMessage("Cannot make a helper of type %s", aClass.getName())
                         .handle();
+    }
+
+    private Object makeHelperByName(String name) {
+        for (HelperFactory<?> factory : factories) {
+            if (Strings.areEqual(name, factory.getName())) {
+                return makeHelper(factory);
+            }
+        }
+
+        throw Exceptions.handle()
+                        .to(UserContext.LOG)
+                        .withSystemErrorMessage("Cannot make a helper named %s", name)
+                        .handle();
+    }
+
+    private Object makeHelper(HelperFactory<?> factory) {
+        Object result = factory.make(this);
+        ctx.wire(result);
+        fillConfig(result);
+        helpersByType.put(factory.getHelperType(), result);
+        helpersByName.put(factory.getName(), result);
+
+        return result;
     }
 
     private void fillConfig(Object result) {
@@ -270,7 +327,8 @@ public class ScopeInfo extends Composable {
         scopeDefaultConfigFiles = configFiles;
     }
 
-    private static void collectCustomizationConfigFiles(Map<String, String> configFiles, ValueHolder<Config> configHolder) {
+    private static void collectCustomizationConfigFiles(Map<String, String> configFiles,
+                                                        ValueHolder<Config> configHolder) {
         for (String conf : Sirius.getActiveConfigurations()) {
             String configName = "customizations/" + conf + "/scope-settings.conf";
             if (Sirius.class.getResource("/" + configName) != null) {
