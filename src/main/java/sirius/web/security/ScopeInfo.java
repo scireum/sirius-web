@@ -19,7 +19,6 @@ import sirius.kernel.commons.Reflection;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.ValueHolder;
 import sirius.kernel.di.GlobalContext;
-import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.morphium.Composable;
 import sirius.kernel.di.std.ConfigValueAnnotationProcessor;
 import sirius.kernel.di.std.Context;
@@ -198,7 +197,7 @@ public class ScopeInfo extends Composable {
     }
 
     @PriorityParts(HelperFactory.class)
-    private static PartCollection<HelperFactory<?>> factories;
+    private static List<HelperFactory<?>> factories;
 
     @Context
     private static GlobalContext ctx;
