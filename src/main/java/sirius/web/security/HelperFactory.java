@@ -26,6 +26,11 @@ import javax.annotation.Nonnull;
  */
 public interface HelperFactory<H> extends Priorized {
 
+    @Override
+    default int getPriority() {
+        return Priorized.DEFAULT_PRIORITY;
+    }
+
     /**
      * Returns the type of helpers produced by this factory.
      *
