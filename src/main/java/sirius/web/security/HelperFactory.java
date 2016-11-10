@@ -8,6 +8,8 @@
 
 package sirius.web.security;
 
+import sirius.kernel.di.std.Priorized;
+
 import javax.annotation.Nonnull;
 
 /**
@@ -22,7 +24,7 @@ import javax.annotation.Nonnull;
  *
  * @param <H> the type of helpers created by this factory
  */
-public interface HelperFactory<H> {
+public interface HelperFactory<H> extends Priorized {
 
     /**
      * Returns the type of helpers produced by this factory.

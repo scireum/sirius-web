@@ -23,7 +23,7 @@ import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.morphium.Composable;
 import sirius.kernel.di.std.ConfigValueAnnotationProcessor;
 import sirius.kernel.di.std.Context;
-import sirius.kernel.di.std.Parts;
+import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.health.Exceptions;
 
 import javax.annotation.Nonnull;
@@ -197,7 +197,7 @@ public class ScopeInfo extends Composable {
         return (T) result;
     }
 
-    @Parts(HelperFactory.class)
+    @PriorityParts(HelperFactory.class)
     private static PartCollection<HelperFactory<?>> factories;
 
     @Context
