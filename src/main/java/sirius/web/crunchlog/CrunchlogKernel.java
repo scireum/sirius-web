@@ -287,10 +287,10 @@ public class CrunchlogKernel extends BackgroundLoop implements Lifecycle, Metric
             if (Files.getFileStore(baseDirectory.toPath().toRealPath()).getUsableSpace() >= MIN_FREE_SPACE) {
                 return true;
             }
-            emitOverflowWarning(
-                    "Crunchlog was stopped as the device (for directory: %s) has not enough usable space (We require at least: %s)",
-                    baseDirectory.getAbsolutePath(),
-                    NLS.formatSize(MIN_FREE_SPACE));
+            emitOverflowWarning("Crunchlog was stopped as the device (for directory: %s) has not enough usable space "
+                                + "(We require at least: %s)",
+                                baseDirectory.getAbsolutePath(),
+                                NLS.formatSize(MIN_FREE_SPACE));
         } catch (IOException e) {
             Exceptions.handle(Crunchlog.LOG, e);
             emitOverflowWarning(
@@ -321,7 +321,6 @@ public class CrunchlogKernel extends BackgroundLoop implements Lifecycle, Metric
 
     @Override
     public void started() {
-
     }
 
     @Override
@@ -336,7 +335,6 @@ public class CrunchlogKernel extends BackgroundLoop implements Lifecycle, Metric
 
     @Override
     public void awaitTermination() {
-
     }
 
     /**
