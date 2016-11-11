@@ -22,6 +22,7 @@ import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.ConfigValueAnnotationProcessor;
 import sirius.kernel.di.std.Context;
 import sirius.kernel.di.std.PriorityParts;
+import sirius.kernel.di.transformers.Composable;
 import sirius.kernel.di.transformers.Transformable;
 import sirius.kernel.health.Exceptions;
 
@@ -45,7 +46,7 @@ import java.util.regex.Pattern;
  * The current scope is used to determine which {@link sirius.web.security.UserManager} is used. Therefore
  * a system consisting of a backend and frontend can use distinct scopes and a different user manager for each.
  */
-public class ScopeInfo implements Transformable {
+public class ScopeInfo extends Composable {
 
     /**
      * If no distinct scope is recognized by the current <tt>ScopeDetector</tt> or if no detector is installed,
@@ -155,46 +156,23 @@ public class ScopeInfo implements Transformable {
         return null;
     }
 
-
     @Override
     public boolean is(@Nonnull Class<?> type) {
-        if (ScopeInfo.class.isAssignableFrom(type)) {
-            return true;
-        }
-
         Transformable userObject = getScopeObject(Transformable.class);
         if (userObject != null) {
             return userObject.is(type);
         }
-        return false;
+        return super.is(type);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <A> Optional<A> tryAs(@Nonnull Class<A> adapterType) {
-        if (ScopeInfo.class.isAssignableFrom(adapterType)) {
-            return Optional.of((A) this);
-        }
-
         Transformable userObject = getScopeObject(Transformable.class);
         if (userObject != null) {
             return userObject.tryAs(adapterType);
         }
-        return Optional.empty();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public <A> A as(@Nonnull Class<A> adapterType) {
-        if (ScopeInfo.class.isAssignableFrom(adapterType)) {
-            return (A) this;
-        }
-
-        return tryAs(adapterType).orElseThrow(() -> {
-            return new IllegalArgumentException(Strings.apply("Cannot transform %s into %s",
-                                                              getClass().getName(),
-                                                              adapterType.getName()));
-        });
+        return super.tryAs(adapterType);
     }
 
     /**
