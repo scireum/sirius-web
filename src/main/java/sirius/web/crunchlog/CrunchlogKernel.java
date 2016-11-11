@@ -270,7 +270,8 @@ public class CrunchlogKernel extends BackgroundLoop implements Lifecycle, Metric
 
         if (!baseDirectory.exists() || !baseDirectory.isDirectory()) {
             if (warnIfNonexistent) {
-                emitOverflowWarning("Crunchlog was stopped as the base directory: %s does not exist!", baseDirectory.getAbsolutePath());
+                emitOverflowWarning("Crunchlog was stopped as the base directory: %s does not exist!",
+                                    baseDirectory.getAbsolutePath());
             }
             return false;
         }
