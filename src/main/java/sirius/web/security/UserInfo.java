@@ -12,13 +12,14 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
-import sirius.kernel.di.morphium.Composable;
+import sirius.kernel.di.transformers.Transformable;
 import sirius.kernel.health.Exceptions;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -28,7 +29,7 @@ import java.util.function.Function;
  * A user is authenticated using a {@link UserManager}. To obtain or modify the current user, use {@link
  * UserContext#getCurrentUser()} or {@link UserContext#setCurrentUser(UserInfo)}.
  */
-public class UserInfo extends Composable {
+public class UserInfo implements Transformable {
 
     /**
      * This permission represents a user which was successfully authenticated by its user manager.
@@ -326,6 +327,47 @@ public class UserInfo extends Composable {
             return (T) user;
         }
         return null;
+    }
+
+    @Override
+    public boolean is(@Nonnull Class<?> type) {
+        if (UserInfo.class.isAssignableFrom(type)) {
+            return true;
+        }
+
+        Transformable userObject = getUserObject(Transformable.class);
+        if (userObject != null) {
+            return userObject.is(type);
+        }
+        return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <A> Optional<A> tryAs(@Nonnull Class<A> adapterType) {
+        if (UserInfo.class.isAssignableFrom(adapterType)) {
+            return Optional.of((A) this);
+        }
+
+        Transformable userObject = getUserObject(Transformable.class);
+        if (userObject != null) {
+            return userObject.tryAs(adapterType);
+        }
+        return Optional.empty();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <A> A as(@Nonnull Class<A> adapterType) {
+        if (UserInfo.class.isAssignableFrom(adapterType)) {
+            return (A) this;
+        }
+
+        return tryAs(adapterType).orElseThrow(() -> {
+            return new IllegalArgumentException(Strings.apply("Cannot transform %s into %s",
+                                                              getClass().getName(),
+                                                              adapterType.getName()));
+        });
     }
 
     /**
