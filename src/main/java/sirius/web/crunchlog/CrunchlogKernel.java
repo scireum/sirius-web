@@ -195,7 +195,7 @@ public class CrunchlogKernel extends BackgroundLoop implements Lifecycle, Metric
      * @return <tt>true</tt> if a file was successfully created, <tt>false</tt> otherwise
      */
     private boolean openWriter() {
-        if (!ensureBaseDirectoryExists()) {
+        if (!ensureBaseDirectoryExists(true)) {
             return false;
         }
 
@@ -262,15 +262,16 @@ public class CrunchlogKernel extends BackgroundLoop implements Lifecycle, Metric
      *
      * @return <tt>true</tt> if the directory exists, <tt>false</tt> otherwise
      */
-    private boolean ensureBaseDirectoryExists() {
+    private boolean ensureBaseDirectoryExists(boolean warnIfNonexistent) {
         if (baseDirectory == null) {
             baseDirectory = new File(baseDirName);
             Crunchlog.LOG.INFO("Crunchlog writes to: %s", baseDirectory.getAbsolutePath());
         }
 
         if (!baseDirectory.exists() || !baseDirectory.isDirectory()) {
-            emitOverflowWarning("Crunchlog was stopped as the base directory: %s does not exist!",
-                                baseDirectory.getAbsolutePath());
+            if (warnIfNonexistent) {
+                emitOverflowWarning("Crunchlog was stopped as the base directory: %s does not exist!", baseDirectory.getAbsolutePath());
+            }
             return false;
         }
 
@@ -343,7 +344,7 @@ public class CrunchlogKernel extends BackgroundLoop implements Lifecycle, Metric
      * @param fileProcessor the processor being supplied with all completed files
      */
     protected void collectAllCompletedFiles(Consumer<File> fileProcessor) {
-        if (!ensureBaseDirectoryExists()) {
+        if (!ensureBaseDirectoryExists(false)) {
             return;
         }
         try {

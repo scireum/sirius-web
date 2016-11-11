@@ -40,7 +40,7 @@ import java.util.function.Consumer;
 @Register(classes = Crunchlog.class)
 public class Crunchlog {
 
-    protected static Log LOG = Log.get("crunchlog");
+    protected static final Log LOG = Log.get("crunchlog");
 
     /**
      * This field will be automatically added to each record, containing the timestamp when is was logged.
