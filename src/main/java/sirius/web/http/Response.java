@@ -728,13 +728,15 @@ public class Response {
             if (responseChunked) {
                 // Send chunks of data which can be compressed
                 ctx.write(new HttpChunkedInput(new ChunkedFile(raf, contentStart, expectedContentLength, BUFFER_SIZE)));
+                return ctx.writeAndFlush(Unpooled.EMPTY_BUFFER);
             } else if (isSSL()) {
                 ctx.write(new ChunkedFile(raf, contentStart, expectedContentLength, BUFFER_SIZE));
+                return ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
             } else {
                 // Send file using zero copy approach!
                 ctx.write(new DefaultFileRegion(raf.getChannel(), contentStart, expectedContentLength));
+                return ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
             }
-            return ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
         }
 
         private Tuple<Long, Long> parseRange(long availableLength) {
@@ -948,11 +950,13 @@ public class Response {
             installChunkedWriteHandler();
             if (responseChunked) {
                 ctx.write(new HttpChunkedInput(new ChunkedStream(urlConnection.getInputStream(), BUFFER_SIZE)));
+                ChannelFuture writeFuture = ctx.writeAndFlush(Unpooled.EMPTY_BUFFER);
+                complete(writeFuture);
             } else {
                 ctx.write(new ChunkedStream(urlConnection.getInputStream(), BUFFER_SIZE));
+                ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+                complete(writeFuture);
             }
-            ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
-            complete(writeFuture);
         } catch (Throwable t) {
             internalServerError("Resource to send: " + urlConnection.getURL().toString(), t);
         }
