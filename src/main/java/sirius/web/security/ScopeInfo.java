@@ -19,10 +19,11 @@ import sirius.kernel.commons.Reflection;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.ValueHolder;
 import sirius.kernel.di.GlobalContext;
-import sirius.kernel.di.morphium.Composable;
 import sirius.kernel.di.std.ConfigValueAnnotationProcessor;
 import sirius.kernel.di.std.Context;
 import sirius.kernel.di.std.PriorityParts;
+import sirius.kernel.di.transformers.Composable;
+import sirius.kernel.di.transformers.Transformable;
 import sirius.kernel.health.Exceptions;
 
 import javax.annotation.Nonnull;
@@ -32,6 +33,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
@@ -152,6 +154,25 @@ public class ScopeInfo extends Composable {
             return (T) scope;
         }
         return null;
+    }
+
+    @Override
+    public boolean is(@Nonnull Class<?> type) {
+        Transformable userObject = getScopeObject(Transformable.class);
+        if (userObject != null) {
+            return userObject.is(type);
+        }
+        return super.is(type);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <A> Optional<A> tryAs(@Nonnull Class<A> adapterType) {
+        Transformable userObject = getScopeObject(Transformable.class);
+        if (userObject != null) {
+            return userObject.tryAs(adapterType);
+        }
+        return super.tryAs(adapterType);
     }
 
     /**

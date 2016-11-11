@@ -17,7 +17,7 @@ import javax.annotation.Nullable;
  * <p>
  * To keep the {@link ScopeInfo} class small and conceise, this interface is obtained via the <tt>Adapters</tt>
  * framework by calling {@link ScopeInfo#tryAs(Class)}. Therefore either a subclass implementing this interface
- * has to be used or an appropriate {@link sirius.kernel.di.morphium.AdapterFactory} has to be created.
+ * has to be used or an appropriate {@link sirius.kernel.di.transformers.Transformer} has to be created.
  */
 public interface MaintenanceInfo {
 

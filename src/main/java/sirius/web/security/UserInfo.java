@@ -12,13 +12,15 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
-import sirius.kernel.di.morphium.Composable;
+import sirius.kernel.di.transformers.Composable;
+import sirius.kernel.di.transformers.Transformable;
 import sirius.kernel.health.Exceptions;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -326,6 +328,27 @@ public class UserInfo extends Composable {
             return (T) user;
         }
         return null;
+    }
+
+    @Override
+    public boolean is(@Nonnull Class<?> type) {
+        Transformable userObject = getUserObject(Transformable.class);
+        if (userObject != null) {
+            return userObject.is(type);
+        }
+
+        return super.is(type);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <A> Optional<A> tryAs(@Nonnull Class<A> adapterType) {
+        Transformable userObject = getUserObject(Transformable.class);
+        if (userObject != null) {
+            return userObject.tryAs(adapterType);
+        }
+
+        return super.tryAs(adapterType);
     }
 
     /**
