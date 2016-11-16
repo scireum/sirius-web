@@ -30,6 +30,7 @@ import sirius.web.services.JSONStructuredOutput;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.channels.ClosedChannelException;
 import java.util.Collection;
 import java.util.List;
 
@@ -162,6 +163,10 @@ public class ControllerDispatcher implements WebDispatcher {
             }
         } catch (InvocationTargetException ex) {
             handleFailure(ctx, route, ex.getTargetException());
+        } catch (ClosedChannelException ex) {
+            // Especially a JSON call might re-throw this. As this simply states, the connection was
+            // closed while writing JSON data, we can safely ignore it....
+            Exceptions.ignore(ex);
         } catch (Throwable ex) {
             handleFailure(ctx, route, ex);
         }
