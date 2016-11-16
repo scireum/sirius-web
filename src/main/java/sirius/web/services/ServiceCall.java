@@ -19,6 +19,7 @@ import sirius.kernel.xml.StructuredOutput;
 import sirius.web.ErrorCodeException;
 import sirius.web.http.WebContext;
 
+import java.nio.channels.ClosedChannelException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -184,6 +185,9 @@ public abstract class ServiceCall {
         try {
             StructuredOutput output = createOutput();
             serv.call(this, output);
+        } catch (ClosedChannelException ex) {
+            // If the user unexpectedly closes the connection, we do not need to log an error...
+            Exceptions.ignore(ex);
         } catch (Throwable t) {
             handle(null, t);
         }
