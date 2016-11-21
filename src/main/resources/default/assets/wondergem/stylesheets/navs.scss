@@ -198,3 +198,11 @@ $navbarLinkBackgroundActive:    darken($navbarLinkBackgroundHover, 5%);
   background-color: $primary-color;
   color: #e7e7e7;
 }
+
+
+// Resize Logo in Navbar
+.navbar .navbar-brand img,
+.navbar .navbar-brand svg {
+  max-height: 33px;
+  max-width: 100px;
+}
