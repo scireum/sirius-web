@@ -232,6 +232,14 @@ public class TestResponse extends Response {
     }
 
     @Override
+    public void redirectToGet(String url) {
+        type = ResponseType.TEMPORARY_REDIRECT;
+        status = HttpResponseStatus.FOUND;
+        redirectUrl = url;
+        completeResponse();
+    }
+
+    @Override
     public void file(File file) {
         type = ResponseType.FILE;
         status = HttpResponseStatus.OK;
