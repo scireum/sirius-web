@@ -68,6 +68,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
@@ -524,6 +525,28 @@ public class WebContext implements SubContext {
             decodeQueryString();
         }
         return queryString.containsKey(key);
+    }
+
+    /**
+     * Returns the value provided for the given key(s) or reports an error if no non empty value was found.
+     * <p>
+     * The first non empty value is used. If all values are empty, an exception is thrown.
+     *
+     * @param keys the keys to check for a value
+     * @return the first non empty value found for one of the given keys
+     */
+    public Value require(String... keys) {
+        for (String key : keys) {
+            Value result = get(key);
+            if (result.isFilled()) {
+                return result;
+            }
+        }
+        throw Exceptions.createHandled()
+                        .withSystemErrorMessage(
+                                "A required parameter was not filled. Provide at least one value for: %s",
+                                Arrays.asList(keys))
+                        .handle();
     }
 
     /**
