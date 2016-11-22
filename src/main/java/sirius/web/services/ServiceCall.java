@@ -20,7 +20,6 @@ import sirius.web.ErrorCodeException;
 import sirius.web.http.WebContext;
 
 import java.nio.channels.ClosedChannelException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -163,17 +162,7 @@ public abstract class ServiceCall {
      * @return the first non empty value found for one of the given keys
      */
     public Value require(String... keys) {
-        for (String key : keys) {
-            Value result = ctx.get(key);
-            if (result.isFilled()) {
-                return result;
-            }
-        }
-        throw Exceptions.createHandled()
-                        .withSystemErrorMessage(
-                                "A required parameter was not filled. Provide at least one value for: %s",
-                                Arrays.asList(keys))
-                        .handle();
+        return ctx.require(keys);
     }
 
     /**
