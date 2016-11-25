@@ -86,6 +86,20 @@ public class Resources {
         return result;
     }
 
+    /**
+     * Deletes the cached resource for the given scope and uri.
+     * <p>
+     * If one knows that an underlying template was created or deleted and therefore the cached lookup URL has to be
+     * removed, this method can be invoked to remove the entry from the cache.
+     *
+     * @param scopeId the scope to use
+     * @param uri     the local name of the uri to flush
+     */
+    public void flushCache(@Nonnull String scopeId, @Nonnull String uri) {
+        String lookupKey = scopeId + "://" + uri;
+        resolverCache.remove(lookupKey);
+    }
+
     /*
      * Calls all available resolvers to pick the right content for the given scope and uri (without using a cache)
      */
