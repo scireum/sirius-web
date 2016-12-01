@@ -205,8 +205,10 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
         for (Map.Entry<String, Average> e : timings.entrySet()) {
             if (!Doubles.isZero(e.getValue().getAvg())) {
                 result.add(Tuple.create(e.getKey(),
-                                        e.getValue().getCount() + " (" + NLS.toUserString(e.getValue()
-                                                                                           .getAvg()) + "ms)"));
+                                        e.getValue().getCount()
+                                        + " ("
+                                        + NLS.toUserString(e.getValue().getAvg())
+                                        + "ms)"));
             } else {
                 result.add(Tuple.create(e.getKey(), String.valueOf(e.getValue().getCount())));
             }
@@ -308,8 +310,8 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
 
     protected boolean hasCurrentUserAccess() {
         UserInfo user = UserContext.getCurrentUser();
-        return user.hasPermission(ManagedTasks.PERMISSION_ALL_TASKS) || Strings.areEqual(user.getUserId(),
-                                                                                         userId) || (Strings.isFilled(
-                user.getTenantId()) && Strings.areEqual(user.getTenantId(), tenantId));
+        return user.hasPermission(ManagedTasks.PERMISSION_ALL_TASKS) || Strings.areEqual(user.getUserId(), userId) || (
+                Strings.isFilled(user.getTenantId())
+                && Strings.areEqual(user.getTenantId(), tenantId));
     }
 }
