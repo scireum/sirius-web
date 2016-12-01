@@ -74,6 +74,14 @@ public interface ManagedTask {
     String getUsername();
 
     /**
+     * Contains the unique ID of the tenant the user who started the task belongs to if present.
+     *
+     * @return the unique ID of the tenant the user who started the task belongs to
+     */
+    @Nullable
+    String getTenantId();
+
+    /**
      * Returns the timestamp when the task was scheduled (started in the users eye).
      *
      * @return the timestamp when the task was scheduled

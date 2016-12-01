@@ -44,6 +44,7 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
     protected final String taskId;
     protected final String userId;
     protected final String userName;
+    protected final String tenantId;
     protected final ManagedTaskSetup setup;
     protected volatile boolean canceled;
     protected volatile boolean erroneous;
@@ -65,9 +66,11 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
         if (currentUser.isLoggedIn()) {
             this.userId = currentUser.getUserId();
             this.userName = currentUser.getUserName();
+            this.tenantId = currentUser.getTenantId();
         } else {
             this.userId = null;
             this.userName = null;
+            this.tenantId = null;
         }
     }
 
@@ -275,6 +278,11 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
     }
 
     @Override
+    public String getTenantId() {
+        return tenantId;
+    }
+
+    @Override
     public Instant getScheduled() {
         return scheduled;
     }
@@ -302,6 +310,8 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
 
     protected boolean hasCurrentUserAccess() {
         UserInfo user = UserContext.getCurrentUser();
-        return user.hasPermission(ManagedTasks.PERMISSION_ALL_TASKS) || Strings.areEqual(user.getUserId(), userId);
+        return user.hasPermission(ManagedTasks.PERMISSION_ALL_TASKS) || Strings.areEqual(user.getUserId(), userId) || (
+                Strings.isFilled(user.getTenantId())
+                && Strings.areEqual(user.getTenantId(), tenantId));
     }
 }
