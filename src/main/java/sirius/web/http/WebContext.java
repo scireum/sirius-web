@@ -475,7 +475,11 @@ public class WebContext implements SubContext {
                     return Value.of(((Attribute) data).getValue());
                 }
             } catch (Throwable e) {
-                Exceptions.handle(WebServer.LOG, e);
+                Exceptions.handle()
+                          .to(WebServer.LOG)
+                          .error(e)
+                          .withSystemErrorMessage("Failed to fetch parameter %s: %s (%s)", key)
+                          .handle();
             }
         }
         return Value.of(null);
