@@ -386,7 +386,7 @@ public class UserInfo extends Composable {
     @Nonnull
     public Value getConfigValue(@Nonnull String key) {
         try {
-            return Value.of(getConfig().getObject(key));
+            return Value.of(getConfig().getAnyRef(key));
         } catch (ConfigException e) {
             Exceptions.handle(e);
             return Value.EMPTY;
