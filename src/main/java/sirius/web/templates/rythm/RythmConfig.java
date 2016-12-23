@@ -71,10 +71,10 @@ public class RythmConfig implements Lifecycle {
         // We always put Rythm in dev mode to support dynamic reloading of templates...
         config.put("rythm.engine.mode", "dev");
         File tmpDir = new File(System.getProperty("java.io.tmpdir"),
-                               Product.getProduct().getName().replaceAll("[^a-zA-Z0-9\\-]", "_")
+                               Files.toSaneFileName(Product.getProduct().getName()).orElse("sirius")
                                + "_"
-                               + Files.toSaneFileName(CallContext.getNodeName())
-                                                      + "_rythm");
+                               + Files.toSaneFileName(CallContext.getNodeName()).orElse("node")
+                               + "_rythm");
         tmpDir.mkdirs();
         if (Sirius.isDev()) {
             if (tmpDir.listFiles() != null) {
