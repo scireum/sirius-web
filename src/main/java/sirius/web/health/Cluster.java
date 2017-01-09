@@ -40,7 +40,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -221,12 +220,7 @@ public class Cluster implements EveryMinute, Lifecycle {
 
     private void cleanNodeInfos() {
         // Since the cluster.nodes array might contain all nodes of the cluster, we filter out or own (by name)
-        Iterator<NodeInfo> iter = getNodeInfos().iterator();
-        while (iter.hasNext()) {
-            if (Strings.areEqual(CallContext.getNodeName(), iter.next().getName())) {
-                iter.remove();
-            }
-        }
+        getNodeInfos().removeIf(nodeInfo -> Strings.areEqual(CallContext.getNodeName(), nodeInfo.getName()));
     }
 
     private MetricState computeClusterState(MetricState newNodeState) {

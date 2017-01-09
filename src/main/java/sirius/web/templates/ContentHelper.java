@@ -56,10 +56,6 @@ public class ContentHelper {
     @Nonnull
     public String getResourceAsInlineString(String resource) {
         Optional<Resource> res = resources.resolve(resource);
-        if (!res.isPresent()) {
-            return "";
-        }
-
-        return res.get().getContentAsString().replaceAll("\\r?\\n", " ").replace("'", "\\'");
+        return res.map(r -> r.getContentAsString().replaceAll("\\r?\\n", " ").replace("'", "\\'")).orElse("");
     }
 }

@@ -142,7 +142,7 @@ public class ManagedTasks {
             }
         }
 
-        Collections.sort(result, Comparator.comparing(ManagedTask::getScheduled));
+        result.sort(Comparator.comparing(ManagedTask::getScheduled));
 
         return result;
     }

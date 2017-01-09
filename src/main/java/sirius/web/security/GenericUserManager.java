@@ -540,9 +540,8 @@ public abstract class GenericUserManager implements UserManager {
     protected void storeRolesForUser(UserInfo user, WebContext ctx) {
         if (sessionStorage == SESSION_STORAGE_TYPE_SERVER) {
             Optional<ServerSession> sess = ctx.getServerSession(false);
-            if (sess.isPresent()) {
-                sess.get().putValue(scope.getScopeId() + "-user-roles", user.getPermissions());
-            }
+            sess.ifPresent(serverSession -> serverSession.putValue(scope.getScopeId() + "-user-roles",
+                                                                   user.getPermissions()));
         }
     }
 
@@ -593,9 +592,7 @@ public abstract class GenericUserManager implements UserManager {
     protected void clearRolesForUser(UserInfo user, WebContext ctx) {
         if (sessionStorage == SESSION_STORAGE_TYPE_SERVER) {
             Optional<ServerSession> sess = ctx.getServerSession(false);
-            if (sess.isPresent()) {
-                sess.get().putValue(scope.getScopeId() + "-user-roles", null);
-            }
+            sess.ifPresent(serverSession -> serverSession.putValue(scope.getScopeId() + "-user-roles", null));
         }
     }
 

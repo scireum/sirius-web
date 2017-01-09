@@ -494,12 +494,7 @@ public class UserContext implements SubContext {
     }
 
     private UserManager getUserManagerForScope(String scopeId) {
-        UserManager manager = managers.get(scopeId);
-        if (manager == null) {
-            manager = getManager(currentScope);
-            managers.put(scopeId, manager);
-        }
-        return manager;
+        return managers.computeIfAbsent(scopeId, k -> getManager(currentScope));
     }
 
     /**
