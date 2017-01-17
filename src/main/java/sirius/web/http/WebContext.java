@@ -1682,24 +1682,29 @@ public class WebContext implements SubContext {
     void release() {
         if (contentHandler != null) {
             try {
-                contentHandler.cleanup();
+                ContentHandler copy = this.contentHandler;
+                contentHandler = null;
+                copy.cleanup();
             } catch (Exception e) {
                 Exceptions.handle(WebServer.LOG, e);
             }
-            contentHandler = null;
         }
         if (postDecoder != null) {
             try {
-                postDecoder.cleanFiles();
+                InterfaceHttpPostRequestDecoder copy = this.postDecoder;
+                postDecoder = null;
+                copy.cleanFiles();
             } catch (Exception e) {
                 Exceptions.handle(WebServer.LOG, e);
             }
-            postDecoder = null;
         }
         if (content != null) {
             // Delete manually if anything like a file or so was allocated
             try {
-                content.delete();
+                Attribute copy = this.content;
+                content = null;
+                contentAsFile = null;
+                copy.delete();
             } catch (Exception e) {
                 Exceptions.handle(WebServer.LOG, e);
             }
@@ -1710,8 +1715,6 @@ public class WebContext implements SubContext {
             } catch (Exception e) {
                 Exceptions.handle(WebServer.LOG, e);
             }
-            content = null;
-            contentAsFile = null;
         }
         if (filesToCleanup != null) {
             for (File file : filesToCleanup) {

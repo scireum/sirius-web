@@ -16,14 +16,14 @@ import sirius.web.templates.velocity.VelocityContentHandler
 class TemplatesSpec extends BaseSpecification {
 
     @Part
-    private static Templates templates;
+    private static Templates templates
 
     def "direct generation works"() {
         when:
         def result = templates.generator()
                 .applyContext(Context.create().set("hello", "World"))
                 .direct('$hello', VelocityContentHandler.VM)
-                .generate();
+                .generate()
         then:
         result == "World"
     }
@@ -32,7 +32,7 @@ class TemplatesSpec extends BaseSpecification {
         when:
         def result = templates.generator().useTemplate("helloWorld.vm")
                 .applyContext(Context.create().set("hello", "World"))
-                .generate();
+                .generate()
         then:
         result == "Hello World"
     }
@@ -41,7 +41,7 @@ class TemplatesSpec extends BaseSpecification {
         when:
         def result = templates.generator().useTemplate("helloWorld.js.vm")
                 .applyContext(Context.create().set("hello", "World"))
-                .generate();
+                .generate()
         then:
         result == "var text = 'World';"
     }
@@ -50,7 +50,7 @@ class TemplatesSpec extends BaseSpecification {
         when:
         def result = templates.generator().useTemplate("template.js")
                 .applyContext(Context.create().set("x", "5"))
-                .generate();
+                .generate()
         then:
         result == "25.0"
     }
@@ -59,7 +59,7 @@ class TemplatesSpec extends BaseSpecification {
         when:
         def result = templates.generator().useTemplate("template.xml.js")
                 .applyContext(Context.create().set("x", "5"))
-                .generate();
+                .generate()
         then:
         result == '<?xml version="1.0" encoding="UTF-8"?><result>\n<x>5</x>\n</result>\n'
     }

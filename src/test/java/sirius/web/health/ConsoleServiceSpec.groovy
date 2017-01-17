@@ -22,13 +22,13 @@ class ConsoleServiceSpec extends BaseSpecification {
     def "/service/xml/console returns XML for help"() {
         when:
         UserContext.get().setCurrentUser(UserInfo.Builder.createUser("test")
-                .withPermissions(Collections.singleton(SystemController.PERMISSION_SYSTEM_CONSOLE)).build());
-        JSONObject data = new JSONObject();
-        data.put("method", "help");
-        data.put("params", Lists.newArrayList());
-        def result = TestRequest.POST("/service/xml/system/console", data).executeAndBlock();
+                .withPermissions(Collections.singleton(SystemController.PERMISSION_SYSTEM_CONSOLE)).build())
+        JSONObject data = new JSONObject()
+        data.put("method", "help")
+        data.put("params", Lists.newArrayList())
+        def result = TestRequest.POST("/service/xml/system/console", data).executeAndBlock()
         then:
-        result.getStatus() == HttpResponseStatus.OK;
+        result.getStatus() == HttpResponseStatus.OK
         result.xmlContent().queryString("error/code") == null
         result.xmlContent().queryString("result") != null
     }

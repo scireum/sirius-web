@@ -17,14 +17,14 @@ import sirius.kernel.di.std.Part
 class LineBasedProcessorSpec extends BaseSpecification {
 
     @Part
-    private static Resolver resolver;
+    private static Resolver resolver
 
     def "readingExcel works including formulas"() {
         given:
-        LineBasedProcessor proc = LineBasedProcessor.create("test.xls", getClass().getResourceAsStream("/test.xls"));
-        List<Values> contents = Lists.newArrayList();
+        LineBasedProcessor proc = LineBasedProcessor.create("test.xls", getClass().getResourceAsStream("/test.xls"))
+        List<Values> contents = Lists.newArrayList()
         when:
-        proc.run({ l, v -> contents.add(v) } as LineBasedProcessor.RowProcessor);
+        proc.run({ l, v -> contents.add(v) } as LineBasedProcessor.RowProcessor)
         then:
         contents.size() == 3
         and:
@@ -37,10 +37,10 @@ class LineBasedProcessorSpec extends BaseSpecification {
 
     def "readingXSLX works including formulas"() {
         given:
-        LineBasedProcessor proc = LineBasedProcessor.create("test.xlsx", getClass().getResourceAsStream("/test.xlsx"));
-        List<Values> contents = Lists.newArrayList();
+        LineBasedProcessor proc = LineBasedProcessor.create("test.xlsx", getClass().getResourceAsStream("/test.xlsx"))
+        List<Values> contents = Lists.newArrayList()
         when:
-        proc.run({ l, v -> contents.add(v) } as LineBasedProcessor.RowProcessor);
+        proc.run({ l, v -> contents.add(v) } as LineBasedProcessor.RowProcessor)
         then:
         contents.size() == 3
         and:
@@ -53,10 +53,10 @@ class LineBasedProcessorSpec extends BaseSpecification {
 
     def "reading CSV works with line breaks"() {
         given:
-        LineBasedProcessor proc = LineBasedProcessor.create("test.csv", getClass().getResourceAsStream("/test.csv"));
-        List<Values> contents = Lists.newArrayList();
+        LineBasedProcessor proc = LineBasedProcessor.create("test.csv", getClass().getResourceAsStream("/test.csv"))
+        List<Values> contents = Lists.newArrayList()
         when:
-        proc.run({ l, v -> contents.add(v) } as LineBasedProcessor.RowProcessor);
+        proc.run({ l, v -> contents.add(v) } as LineBasedProcessor.RowProcessor)
         then:
         contents.size() == 2
         and:
