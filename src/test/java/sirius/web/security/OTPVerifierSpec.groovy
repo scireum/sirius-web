@@ -15,20 +15,20 @@ class OTPVerifierSpec extends BaseSpecification {
 
     def "computeCode produces codes accepted by checkCode"() {
         given:
-        def verifier = Injector.context().getPart(OTPVerifier.class);
+        def verifier = Injector.context().getPart(OTPVerifier.class)
         when:
-        def secret = verifier.generateSharedSecret();
+        def secret = verifier.generateSharedSecret()
         and:
-        def code = verifier.computeCode(secret);
+        def code = verifier.computeCode(secret)
         then:
         verifier.checkCode(secret, code)
     }
 
     def "codes generated with other secret are not accepted"() {
         given:
-        def verifier = Injector.context().getPart(OTPVerifier.class);
+        def verifier = Injector.context().getPart(OTPVerifier.class)
         when:
-        def code = verifier.computeCode(verifier.generateSharedSecret());
+        def code = verifier.computeCode(verifier.generateSharedSecret())
         then:
         verifier.checkCode(verifier.generateSharedSecret(), code) == false
     }

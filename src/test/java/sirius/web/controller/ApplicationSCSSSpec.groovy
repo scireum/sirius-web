@@ -21,42 +21,42 @@ class ApplicationSCSSSpec extends BaseSpecification {
 
     class TestGenerator extends Generator {
         @Override
-        public void debug(String message) {
+         void debug(String message) {
 
         }
 
         @Override
-        public void warn(String message) {
-            throw new RuntimeException(message);
+         void warn(String message) {
+            throw new RuntimeException(message)
         }
 
         @Part
-        private static Resources resources;
+        private static Resources resources
 
         @Override
         protected InputStream resolveIntoStream(String sheet) throws IOException {
-            Optional<Resource> res = resources.resolve(sheet);
+            Optional<Resource> res = resources.resolve(sheet)
             if (res.isPresent()) {
-                return res.get().getUrl().openStream();
+                return res.get().getUrl().openStream()
             }
-            return null;
+            return null
         }
 
         TestGenerator() {
-            scope.set("prefix", new Value(WebContext.getContextPrefix()));
+            scope.set("prefix", new Value(WebContext.getContextPrefix()))
         }
     }
 
     def "application.scss can be compiled"() {
         when:
-        TestGenerator gen = new TestGenerator();
-        gen.importStylesheet("/assets/wondergem/stylesheets/application.scss");
-        gen.compile();
+        TestGenerator gen = new TestGenerator()
+        gen.importStylesheet("/assets/wondergem/stylesheets/application.scss")
+        gen.compile()
         // Let the content compressor take care of minifying the CSS
         StringWriter writer = new StringWriter()
-        Output out = new Output(writer, false);
-        gen.generate(out);
-        writer.close();
+        Output out = new Output(writer, false)
+        gen.generate(out)
+        writer.close()
         then:
         writer.toString().length() > 0
     }

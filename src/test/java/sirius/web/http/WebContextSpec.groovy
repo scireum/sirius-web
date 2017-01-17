@@ -14,7 +14,7 @@ class WebContextSpec extends BaseSpecification {
 
     def "getQueryString returns the full query string"() {
         when:
-        TestRequest r = TestRequest.GET("/test?a=a&b=b");
+        TestRequest r = TestRequest.GET("/test?a=a&b=b")
         then:
         r.getParameter("a") == "a"
         and:
@@ -25,14 +25,14 @@ class WebContextSpec extends BaseSpecification {
 
     def "getQueryString returns an empty string when no query string is present"() {
         when:
-        TestRequest r = TestRequest.GET("/test");
+        TestRequest r = TestRequest.GET("/test")
         then:
         r.getQueryString() == ""
     }
 
     def "getQueryString returns an empty string when an empty query string is present"() {
         when:
-        TestRequest r = TestRequest.GET("/test?");
+        TestRequest r = TestRequest.GET("/test?")
         then:
         r.getQueryString() == ""
     }
