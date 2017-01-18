@@ -47,8 +47,6 @@ $linkInfoHover:                 darken($btnInfoBackground, 15%);
 // --------------------------------------------------
 .btn {
   color: $white;
-  //text-shadow: 0 -1px 0 #010101; // really?
-  //text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); // really?
   background-color: $btnBackground;
   border: 0;
   &:hover {
@@ -128,23 +126,23 @@ a.link {
 
 // Link color is default primary-color
 // Danger and error Links appear as red
-a.link-danger, .link-danger, a.link-red, .link-red {
-  color: $btnDangerBackground !important;
+.link-danger, .link-red {
+  color: $btnDangerBackground;
 }
 
 // secondary Links
-a.link-secondary, .link-secondary {
-  color: #8E9399 !important;
+.link-secondary {
+    color: #8E9399;
 }
 
 a:hover.link-danger {
-  color: $linkDangerHover !important;
+  color: $linkDangerHover;
 }
 
 a.link-info {
-  color: #4a697d !important;
+  color: #4a697d;
 }
 
 a:hover.link-info {
-  color: $linkInfoHover !important;
+  color: $linkInfoHover;
 }
