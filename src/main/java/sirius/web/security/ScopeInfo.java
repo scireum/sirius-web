@@ -255,6 +255,7 @@ public class ScopeInfo extends Composable {
         fillConfig(result);
         helpersByType.put(factory.getHelperType(), result);
         helpersByName.put(factory.getName(), result);
+        fillFriends(result);
 
         return result;
     }
@@ -269,6 +270,27 @@ public class ScopeInfo extends Composable {
                                                                            f,
                                                                            f.getAnnotation(HelperConfig.class).value(),
                                                                            config);
+                  });
+    }
+
+    private void fillFriends(Object result) {
+        Reflection.getAllFields(result.getClass())
+                  .stream()
+                  .filter(f -> f.isAnnotationPresent(Helper.class))
+                  .forEach(f -> {
+                      try {
+                          f.set(result, makeHelperByType(f.getType()));
+                      } catch (Throwable e) {
+                          Exceptions.handle()
+                                    .error(e)
+                                    .to(UserContext.LOG)
+                                    .withSystemErrorMessage("Cannot fill friend %s in %s of helper %s (%s): %s (%s)",
+                                                            f.getType().getName(),
+                                                            f.getName(),
+                                                            result,
+                                                            result.getClass().getName())
+                                    .handle();
+                      }
                   });
     }
 
