@@ -28,7 +28,7 @@ a {
 
   &:hover,
   &:focus {
-    color: $linkColorHover !important;
+    color: $linkColorHover;
     text-decoration: none;
   }
 
