@@ -1050,7 +1050,7 @@ public class WebContext implements SubContext {
      * @param name the cookie to fetch
      * @return the contents of the cookie wrapped as <tt>Value</tt>
      */
-    @Nonnull
+    @Nullable
     public String getCookieValue(String name) {
         Cookie c = getCookie(name);
         if (c == null) {

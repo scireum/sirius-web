@@ -1,0 +1,57 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+package sirius.web.templates
+
+import com.google.common.collect.Lists
+import sirius.kernel.BaseSpecification
+import sirius.kernel.commons.Value
+import sirius.kernel.di.std.Part
+
+class SmartLineBasedProcessorSpec extends BaseSpecification {
+
+    @Part
+    private static Resolver resolver
+
+    def "reading CSVs works with different column orders and aliases"() {
+        given:
+        List<Map<String, Value>> contents1 = Lists.newArrayList()
+        List<Map<String, Value>> contents2 = Lists.newArrayList()
+        SmartLineBasedProcessor proc1 = new SmartLineBasedProcessor()
+                .withColumn("item", "artikel")
+                .withColumn("quantity")
+                .withProcessor({ l, v -> contents1.add(v) } as NamedRowProcessor)
+        SmartLineBasedProcessor proc2 = new SmartLineBasedProcessor()
+                .withColumn("item", "artikel")
+                .withColumn("quantity")
+                .withProcessor({ l, v -> contents2.add(v) } as NamedRowProcessor)
+
+        LineBasedProcessor lineProc1 = LineBasedProcessor.create("smart-test1.csv", getClass().getResourceAsStream("/smart-test1.csv"))
+        LineBasedProcessor lineProc2 = LineBasedProcessor.create("smart-test2.csv", getClass().getResourceAsStream("/smart-test2.csv"))
+        when:
+        lineProc1.run(proc1)
+        lineProc2.run(proc2)
+        then:
+        contents1.size() == 2
+        contents2.size() == 2
+        and:
+        contents1.get(0).get("item").asString() == 'A'
+        contents1.get(0).get("quantity").asInt(-1) == 1
+        and:
+        contents2.get(0).get("item").asString() == 'A'
+        contents2.get(0).get("quantity").asInt(-1) == 1
+        and:
+        contents1.get(1).get("item").asString() == 'B'
+        contents1.get(1).get("quantity").asInt(-1) == 2
+        and:
+        contents2.get(1).get("item").asString() == 'B'
+        contents2.get(1).get("quantity").asInt(-1) == 2
+    }
+
+
+}

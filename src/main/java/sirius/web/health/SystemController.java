@@ -11,7 +11,6 @@ package sirius.web.health;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.GlobalContext;
-import sirius.kernel.di.std.Context;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
@@ -54,7 +53,7 @@ public class SystemController extends BasicController {
     @Part
     private Metrics metrics;
 
-    @Context
+    @Part
     private GlobalContext context;
 
     /**
