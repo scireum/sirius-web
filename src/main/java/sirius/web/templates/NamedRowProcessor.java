@@ -21,7 +21,9 @@ public interface NamedRowProcessor {
      * <p>
      * Note that an exception thrown here will completely abort the whole process. Therefore proper exception
      * handling is required.
-     * </p>
+     * <p>
+     * Note that row does not necessarily contain a value for every key, therefore use
+     * {@code row.getOrDefault(key, Value.EMPTY)} to safely obtain a non-null value.
      *
      * @param lineNumber the line number which is currently being processed.
      * @param row        the data of the row / line to process
