@@ -9,7 +9,6 @@
 package sirius.web.templates
 
 import com.google.common.collect.Lists
-import jdk.nashorn.internal.runtime.regexp.joni.Config
 import sirius.kernel.BaseSpecification
 import sirius.kernel.commons.Values
 import sirius.kernel.di.std.Part
@@ -24,7 +23,7 @@ class LineBasedProcessorSpec extends BaseSpecification {
         LineBasedProcessor proc = LineBasedProcessor.create("test.xls", getClass().getResourceAsStream("/test.xls"))
         List<Values> contents = Lists.newArrayList()
         when:
-        proc.run({ l, v -> contents.add(v) } as LineBasedProcessor.RowProcessor)
+        proc.run({ l, v -> contents.add(v) } as RowProcessor)
         then:
         contents.size() == 3
         and:
@@ -40,7 +39,7 @@ class LineBasedProcessorSpec extends BaseSpecification {
         LineBasedProcessor proc = LineBasedProcessor.create("test.xlsx", getClass().getResourceAsStream("/test.xlsx"))
         List<Values> contents = Lists.newArrayList()
         when:
-        proc.run({ l, v -> contents.add(v) } as LineBasedProcessor.RowProcessor)
+        proc.run({ l, v -> contents.add(v) } as RowProcessor)
         then:
         contents.size() == 3
         and:
@@ -56,7 +55,7 @@ class LineBasedProcessorSpec extends BaseSpecification {
         LineBasedProcessor proc = LineBasedProcessor.create("test.csv", getClass().getResourceAsStream("/test.csv"))
         List<Values> contents = Lists.newArrayList()
         when:
-        proc.run({ l, v -> contents.add(v) } as LineBasedProcessor.RowProcessor)
+        proc.run({ l, v -> contents.add(v) } as RowProcessor)
         then:
         contents.size() == 2
         and:
