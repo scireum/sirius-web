@@ -83,7 +83,7 @@ public class Templates {
     @Parts(ContentContextExtender.class)
     private Collection<ContentContextExtender> extenders;
 
-    @sirius.kernel.di.std.Context
+    @Part
     private GlobalContext ctx;
 
     @Part

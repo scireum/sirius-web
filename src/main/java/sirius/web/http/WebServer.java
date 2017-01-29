@@ -33,7 +33,6 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.ConfigValue;
-import sirius.kernel.di.std.Context;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Average;
@@ -227,7 +226,7 @@ public class WebServer implements Lifecycle, MetricProvider {
         return proxyRanges;
     }
 
-    @Context
+    @Part
     private GlobalContext ctx;
 
     private static HttpDataFactory httpDataFactory;

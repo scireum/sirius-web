@@ -20,7 +20,7 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.ValueHolder;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.ConfigValueAnnotationProcessor;
-import sirius.kernel.di.std.Context;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.di.transformers.Composable;
 import sirius.kernel.di.transformers.Transformable;
@@ -220,7 +220,7 @@ public class ScopeInfo extends Composable {
     @PriorityParts(HelperFactory.class)
     private static List<HelperFactory<?>> factories;
 
-    @Context
+    @Part
     private static GlobalContext ctx;
 
     private Object makeHelperByType(Class<?> aClass) {

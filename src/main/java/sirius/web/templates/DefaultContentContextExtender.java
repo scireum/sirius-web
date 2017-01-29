@@ -14,6 +14,7 @@ import sirius.kernel.async.TaskContext;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.GlobalContext;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
@@ -30,7 +31,7 @@ import java.time.LocalTime;
 @Register
 public class DefaultContentContextExtender implements ContentContextExtender {
 
-    @sirius.kernel.di.std.Context
+    @Part
     private GlobalContext ctx;
 
     @Override

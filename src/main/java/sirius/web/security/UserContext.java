@@ -16,7 +16,6 @@ import sirius.kernel.async.SubContext;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.GlobalContext;
-import sirius.kernel.di.std.Context;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.extensions.Extension;
 import sirius.kernel.extensions.Extensions;
@@ -89,7 +88,7 @@ public class UserContext implements SubContext {
     private List<Message> msgList = Lists.newArrayList();
     private Map<String, String> fieldErrors = Maps.newHashMap();
 
-    @Context
+    @Part
     private static GlobalContext context;
 
     /*
