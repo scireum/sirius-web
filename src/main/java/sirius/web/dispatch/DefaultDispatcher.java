@@ -81,7 +81,7 @@ public class DefaultDispatcher implements WebDispatcher {
         } else {
             // Bind user to request if present for translations etc. to work correctly...
             UserContext.getCurrentUser();
-
+".".indexOf(".");
             ctx.respondWith()
                .error(HttpResponseStatus.NOT_FOUND,
                       Strings.apply("No dispatcher found for: %s", ctx.getRequestedURI()));
