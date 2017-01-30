@@ -1282,10 +1282,14 @@ public class Response {
      * Uses non-blocking APIs in order to maximize throughput. Therefore this can be called in an unforked
      * dispatcher.
      * <p>
-     * If the called URL returns an error (>= 400) and the given failureHandler is non null, it is supplied
+     * If the called URL returns an error (&gt;= 400) and the given failureHandler is non null, it is supplied
      * with the status code and can re-try or answer the request by itself.
      *
-     * @param url the url to tunnel through.
+     * @param url            the url to tunnel through.
+     * @param failureHandler supplies a handler which is invoked if the called URL fails. The handler is provided with
+     *                       the HTTP status code and can (and must) handle the request on its own. It is save to
+     *                       call {@link WebContext#respondWith()} again for the request, as no response was created
+     *                       yet.
      */
     public void tunnel(final String url, @Nullable Consumer<Integer> failureHandler) {
         try {
