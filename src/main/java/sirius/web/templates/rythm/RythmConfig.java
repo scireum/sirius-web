@@ -13,7 +13,6 @@ import org.rythmengine.Rythm;
 import org.rythmengine.RythmEngine;
 import org.rythmengine.conf.RythmConfigurationKey;
 import sirius.kernel.Lifecycle;
-import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Files;
 import sirius.kernel.di.std.Register;
@@ -76,12 +75,13 @@ public class RythmConfig implements Lifecycle {
                                + Files.toSaneFileName(CallContext.getNodeName()).orElse("node")
                                + "_rythm");
         tmpDir.mkdirs();
-        if (Sirius.isDev()) {
-            if (tmpDir.listFiles() != null) {
-                for (File file : tmpDir.listFiles()) {
-                    if (file.getName().endsWith(".java") || file.getName().endsWith(".rythm")) {
-                        file.delete();
-                    }
+
+        // Delete all templates on startup to force a clean recompile - otherwise *SOMETIMES* old
+        // templates might get used :-/
+        if (tmpDir.listFiles() != null) {
+            for (File file : tmpDir.listFiles()) {
+                if (file.getName().endsWith(".java") || file.getName().endsWith(".rythm")) {
+                    file.delete();
                 }
             }
         }
