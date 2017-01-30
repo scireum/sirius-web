@@ -247,7 +247,7 @@ class WebServerSpec extends BaseSpecification {
      */
     def "Invoke /tunnel/fallback_for_404 and expect the fallback to work"() {
         given:
-        def uri = "/tunnel/test"
+        def uri = "/tunnel/fallback_for_404"
         def expectedHeaders = ['content-type': 'text/test']
         when:
         def data = callAndRead(uri, null, expectedHeaders)
@@ -260,7 +260,7 @@ class WebServerSpec extends BaseSpecification {
      */
     def "Invoke /tunnel/fallback_for_error and expect the fallback to work"() {
         given:
-        def uri = "/tunnel/test"
+        def uri = "/tunnel/fallback_for_error"
         def expectedHeaders = ['content-type': 'text/test']
         when:
         def data = callAndRead(uri, null, expectedHeaders)

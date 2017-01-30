@@ -1309,14 +1309,6 @@ public class Response {
             // Tunnel it through...
             brb.execute(new TunnelHandler(url, failureHandler));
         } catch (Throwable t) {
-            if (failureHandler != null) {
-                try {
-                    failureHandler.accept(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
-                    return;
-                } catch (Throwable e) {
-                    Exceptions.handle(WebServer.LOG, e);
-                }
-            }
             internalServerError("Target-URL: " + url, t);
         }
     }
@@ -1328,6 +1320,7 @@ public class Response {
         private final CallContext cc;
         private int responseCode = HttpResponseStatus.OK.code();
         private boolean contentLengthKnown;
+        private volatile boolean failed;
 
         private TunnelHandler(String url, Consumer<Integer> failureHandler) {
             this.url = url;
@@ -1354,6 +1347,7 @@ public class Response {
             if (status.getStatusCode() >= 400 && failureHandler != null) {
                 try {
                     failureHandler.accept(status.getStatusCode());
+                    failed = true;
                 } catch (Throwable t) {
                     error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
                 }
@@ -1478,6 +1472,13 @@ public class Response {
 
         @Override
         public String onCompleted() throws Exception {
+            // If the request to tunnel failed and we successfully
+            // invoked a failureHandler, we must not do any housekeeping
+            // here but rely on the failure handler to take care of the request.
+            if (failed) {
+                return "";
+            }
+
             CallContext.setCurrent(cc);
 
             if (WebServer.LOG.isFINE()) {
@@ -1503,6 +1504,15 @@ public class Response {
                                t.getMessage() + " (" + t.getMessage() + ")",
                                wc.getRequestedURI());
             if (!(t instanceof ClosedChannelException)) {
+                if (failureHandler != null) {
+                    try {
+                        failureHandler.accept(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
+                        failed = true;
+                        return;
+                    } catch (Throwable e) {
+                        Exceptions.handle(WebServer.LOG, e);
+                    }
+                }
                 error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
             }
         }

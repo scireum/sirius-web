@@ -72,7 +72,7 @@ public class TestController implements Controller {
     public void tunnelFallbackForError(WebContext ctx) {
         ctx.respondWith()
            .setHeader(HttpHeaderNames.CONTENT_TYPE, "text/test")
-           .tunnel("http://unknownHost:9999/service/json/DOES_NOT_EXIST",
+           .tunnel("http://unknownHost",
                    (code) -> ctx.respondWith()
                                 .setHeader(HttpHeaderNames.CONTENT_TYPE, "text/test")
                                 .tunnel("http://localhost:9999/service/json/test"));
