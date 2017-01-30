@@ -243,6 +243,32 @@ class WebServerSpec extends BaseSpecification {
     }
 
     /**
+     * Call a controller which uses a fallback for a failed tunnel (404)
+     */
+    def "Invoke /tunnel/fallback_for_404 and expect the fallback to work"() {
+        given:
+        def uri = "/tunnel/test"
+        def expectedHeaders = ['content-type': 'text/test']
+        when:
+        def data = callAndRead(uri, null, expectedHeaders)
+        then:
+        '{"test":true}' == data
+    }
+
+    /**
+     * Call a controller which uses a fallback for a failed tunnel (connection error)
+     */
+    def "Invoke /tunnel/fallback_for_error and expect the fallback to work"() {
+        given:
+        def uri = "/tunnel/test"
+        def expectedHeaders = ['content-type': 'text/test']
+        when:
+        def data = callAndRead(uri, null, expectedHeaders)
+        then:
+        '{"test":true}' == data
+    }
+
+    /**
      * Call a controller which uses JSON Calls
      */
     def "Invoke /test/json testing built in JSON handling"() {

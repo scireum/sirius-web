@@ -58,6 +58,26 @@ public class TestController implements Controller {
            .tunnel("http://localhost:9999/service/json/test");
     }
 
+    @Routed("/tunnel/fallback_for_404")
+    public void tunnelFallbackFor404(WebContext ctx) {
+        ctx.respondWith()
+           .setHeader(HttpHeaderNames.CONTENT_TYPE, "text/test")
+           .tunnel("http://localhost:9999/service/json/DOES_NOT_EXIST",
+                   (code) -> ctx.respondWith()
+                                .setHeader(HttpHeaderNames.CONTENT_TYPE, "text/test")
+                                .tunnel("http://localhost:9999/service/json/test"));
+    }
+
+    @Routed("/tunnel/fallback_for_error")
+    public void tunnelFallbackForError(WebContext ctx) {
+        ctx.respondWith()
+           .setHeader(HttpHeaderNames.CONTENT_TYPE, "text/test")
+           .tunnel("http://unknownHost:9999/service/json/DOES_NOT_EXIST",
+                   (code) -> ctx.respondWith()
+                                .setHeader(HttpHeaderNames.CONTENT_TYPE, "text/test")
+                                .tunnel("http://localhost:9999/service/json/test"));
+    }
+
     @Routed("/tunnel/test_large")
     public void tunnelTestLarge(WebContext ctx) {
         ctx.respondWith().tunnel("http://localhost:9999/service/json/test_large");
@@ -93,7 +113,8 @@ public class TestController implements Controller {
 
     @Routed("/test/resource_uncompressable")
     public void testResourceUncompressable(WebContext ctx) throws IOException {
-        ctx.respondWith().named("test_large.jpg").resource(res.resolve("assets/test_large.css").get().getUrl().openConnection());
+        ctx.respondWith()
+           .named("test_large.jpg")
+           .resource(res.resolve("assets/test_large.css").get().getUrl().openConnection());
     }
-
 }

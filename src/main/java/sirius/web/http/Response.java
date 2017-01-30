@@ -81,6 +81,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1270,6 +1271,23 @@ public class Response {
      * @param url the url to tunnel through.
      */
     public void tunnel(final String url) {
+        tunnel(url, null);
+    }
+
+    /**
+     * Tunnels the contents retrieved from the given URL as result of this response.
+     * <p>
+     * Caching and range headers will be forwarded and adhered.
+     * <p>
+     * Uses non-blocking APIs in order to maximize throughput. Therefore this can be called in an unforked
+     * dispatcher.
+     * <p>
+     * If the called URL returns an error (>= 400) and the given failureHandler is non null, it is supplied
+     * with the status code and can re-try or answer the request by itself.
+     *
+     * @param url the url to tunnel through.
+     */
+    public void tunnel(final String url, @Nullable Consumer<Integer> failureHandler) {
         try {
             AsyncHttpClient.BoundRequestBuilder brb = getAsyncClient().prepareGet(url);
             // Support caching...
@@ -1287,9 +1305,18 @@ public class Response {
             if (WebServer.LOG.isFINE()) {
                 WebServer.LOG.FINE("Tunnel START: %s", url);
             }
+
             // Tunnel it through...
-            brb.execute(new TunnelHandler(url));
+            brb.execute(new TunnelHandler(url, failureHandler));
         } catch (Throwable t) {
+            if (failureHandler != null) {
+                try {
+                    failureHandler.accept(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
+                    return;
+                } catch (Throwable e) {
+                    Exceptions.handle(WebServer.LOG, e);
+                }
+            }
             internalServerError("Target-URL: " + url, t);
         }
     }
@@ -1297,17 +1324,50 @@ public class Response {
     private class TunnelHandler implements AsyncHandler<String> {
 
         private final String url;
+        private Consumer<Integer> failureHandler;
         private final CallContext cc;
         private int responseCode = HttpResponseStatus.OK.code();
         private boolean contentLengthKnown;
 
-        private TunnelHandler(String url) {
+        private TunnelHandler(String url, Consumer<Integer> failureHandler) {
             this.url = url;
+            this.failureHandler = failureHandler;
             this.cc = CallContext.getCurrent();
         }
 
         @Override
-        public STATE onHeadersReceived(HttpResponseHeaders h) throws Exception {
+        public STATE onStatusReceived(com.ning.http.client.HttpResponseStatus status) throws Exception {
+            CallContext.setCurrent(cc);
+
+            if (WebServer.LOG.isFINE()) {
+                WebServer.LOG.FINE("Tunnel - STATUS %s for %s", status.getStatusCode(), wc.getRequestedURI());
+            }
+            if (status.getStatusCode() >= 200 && status.getStatusCode() < 300) {
+                responseCode = status.getStatusCode();
+                return STATE.CONTINUE;
+            }
+            if (status.getStatusCode() == HttpResponseStatus.NOT_MODIFIED.code()) {
+                status(HttpResponseStatus.NOT_MODIFIED);
+                return STATE.ABORT;
+            }
+            // Everything above 400 is an error and should be forwarded to the failure handler (if present)
+            if (status.getStatusCode() >= 400 && failureHandler != null) {
+                try {
+                    failureHandler.accept(status.getStatusCode());
+                } catch (Throwable t) {
+                    error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
+                }
+            } else {
+                // Even not technically an error, status codes 300..399 are handled here,
+                // as the behaviour is the same as for a real error - which is also handled here, if no
+                // failureHandler is present...
+                error(HttpResponseStatus.valueOf(status.getStatusCode()));
+            }
+            return STATE.ABORT;
+        }
+
+        @Override
+        public STATE onHeadersReceived(HttpResponseHeaders httpHeaders) throws Exception {
             CallContext.setCurrent(cc);
 
             if (wc.responseCommitted) {
@@ -1319,7 +1379,7 @@ public class Response {
             if (WebServer.LOG.isFINE()) {
                 WebServer.LOG.FINE("Tunnel - HEADERS for %s", wc.getRequestedURI());
             }
-            FluentCaseInsensitiveStringsMap headers = h.getHeaders();
+            FluentCaseInsensitiveStringsMap headers = httpHeaders.getHeaders();
 
             long lastModified = 0;
 
@@ -1414,27 +1474,6 @@ public class Response {
                 Exceptions.handle(e);
                 return STATE.ABORT;
             }
-        }
-
-        @Override
-        public STATE onStatusReceived(com.ning.http.client.HttpResponseStatus httpResponseStatus) throws Exception {
-            CallContext.setCurrent(cc);
-
-            if (WebServer.LOG.isFINE()) {
-                WebServer.LOG.FINE("Tunnel - STATUS %s for %s",
-                                   httpResponseStatus.getStatusCode(),
-                                   wc.getRequestedURI());
-            }
-            if (httpResponseStatus.getStatusCode() >= 200 && httpResponseStatus.getStatusCode() < 300) {
-                responseCode = httpResponseStatus.getStatusCode();
-                return STATE.CONTINUE;
-            }
-            if (httpResponseStatus.getStatusCode() == HttpResponseStatus.NOT_MODIFIED.code()) {
-                status(HttpResponseStatus.NOT_MODIFIED);
-                return STATE.ABORT;
-            }
-            error(HttpResponseStatus.valueOf(httpResponseStatus.getStatusCode()));
-            return STATE.ABORT;
         }
 
         @Override
