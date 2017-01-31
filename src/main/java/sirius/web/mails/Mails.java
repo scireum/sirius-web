@@ -11,8 +11,13 @@ package sirius.web.mails;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.sun.mail.smtp.SMTPMessage;
 import com.typesafe.config.Config;
+import net.markenwerk.utils.mail.dkim.Canonicalization;
+import net.markenwerk.utils.mail.dkim.DkimMessage;
+import net.markenwerk.utils.mail.dkim.DkimSigner;
+import net.markenwerk.utils.mail.dkim.SigningAlgorithm;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Operation;
 import sirius.kernel.async.Tasks;
@@ -47,8 +52,10 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.time.Duration;
 import java.util.Arrays;
@@ -57,6 +64,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Used to send mails using predefined templates.
@@ -102,16 +110,33 @@ public class Mails implements MetricProvider {
 
     @ConfigValue("mail.smtp.host")
     private String smtpHost;
+
     @ConfigValue("mail.smtp.port")
     private int smtpPort;
+
     @ConfigValue("mail.smtp.user")
     private String smtpUser;
+
     @ConfigValue("mail.smtp.password")
     private String smtpPassword;
+
     @ConfigValue("mail.smtp.sender")
     private String smtpSender;
+
     @ConfigValue("mail.smtp.senderName")
     private String smtpSenderName;
+
+    @ConfigValue("mail.smtp.dkim.keyFile")
+    private String dkimKeyFile;
+
+    @ConfigValue("mail.smtp.dkim.domains")
+    private List<String> dkimDomains;
+    private Set<String> dkimDomainSet;
+
+    @ConfigValue("mail.smtp.dkim.selector")
+    private String dkimSelector;
+
+    private Boolean dkimEnabled;
 
     private final SMTPConfiguration defaultConfig = new DefaultSMTPConfig();
 
@@ -857,6 +882,7 @@ public class Mails implements MetricProvider {
                 try {
                     try {
                         SMTPMessage msg = createMessage(session);
+
                         transport.sendMessage(msg, msg.getAllRecipients());
                         messageId = msg.getMessageID();
                         success = true;
@@ -922,6 +948,54 @@ public class Mails implements MetricProvider {
             }
             msg.setSentDate(new Date());
             return msg;
+        }
+
+        private boolean isDkimDomain(String domain) {
+            if (dkimDomainSet == null) {
+                dkimDomainSet = Sets.newTreeSet(dkimDomains);
+            }
+
+            return dkimDomainSet.contains(domain);
+        }
+
+        private boolean isDkimEnabled() {
+            if (dkimEnabled == null) {
+                dkimEnabled = Strings.isFilled(dkimSelector)
+                              && Strings.isFilled(dkimKeyFile)
+                              && new File(dkimKeyFile).exists();
+            }
+
+            return dkimEnabled;
+        }
+
+        private MimeMessage signMessage(MimeMessage message) {
+            if (!isDkimEnabled()) {
+                return message;
+            }
+            String effectiveFrom = mail.senderEmail;
+            if (Strings.isEmpty(effectiveFrom)) {
+                effectiveFrom = technicalSender;
+            }
+
+            String domain = Strings.split(effectiveFrom, "@").getSecond();
+            if (!isDkimDomain(domain)) {
+                return message;
+            }
+
+            try {
+                DkimSigner dkimSigner = new DkimSigner(domain, dkimSelector, new File(dkimKeyFile));
+                dkimSigner.setIdentity(effectiveFrom);
+                dkimSigner.setHeaderCanonicalization(Canonicalization.SIMPLE);
+                dkimSigner.setBodyCanonicalization(Canonicalization.RELAXED);
+                dkimSigner.setSigningAlgorithm(SigningAlgorithm.SHA256_WITH_RSA);
+                dkimSigner.setLengthParam(true);
+                dkimSigner.setZParam(false);
+                return new DkimMessage(message, dkimSigner);
+            } catch (Throwable e) {
+                Exceptions.handle().to(LOG).error(e).withNLSKey("Skipping DKIM signing due to: %s (%s)").handle();
+            }
+
+            return message;
         }
 
         private void setupSender(SMTPMessage msg) throws MessagingException, UnsupportedEncodingException {

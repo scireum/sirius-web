@@ -6,10 +6,10 @@
     <parent>
         <groupId>com.scireum</groupId>
         <artifactId>sirius-parent</artifactId>
-        <version>3.7.1</version>
+        <version>3.8.3</version>
     </parent>
     <artifactId>sirius-web</artifactId>
-    <version>6.2.1</version>
+    <version>6.3</version>
     <name>SIRIUS web</name>
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
@@ -88,6 +88,11 @@
             <groupId>javax.mail</groupId>
             <artifactId>mail</artifactId>
             <version>1.4.7</version>
+        </dependency>
+        <dependency>
+            <groupId>net.markenwerk</groupId>
+            <artifactId>utils-mail-dkim</artifactId>
+            <version>1.1.7</version>
         </dependency>
 
         <!-- Velocity and xhtml renderer are mainly used to generate mails and attachments -->
