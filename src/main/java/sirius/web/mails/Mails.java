@@ -881,7 +881,7 @@ public class Mails implements MetricProvider {
                 Transport transport = getSMTPTransport(session, config);
                 try {
                     try {
-                        SMTPMessage msg = createMessage(session);
+                        MimeMessage msg = signMessage(createMessage(session));
 
                         transport.sendMessage(msg, msg.getAllRecipients());
                         messageId = msg.getMessageID();
