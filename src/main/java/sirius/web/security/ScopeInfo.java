@@ -279,6 +279,7 @@ public class ScopeInfo extends Composable {
                   .filter(f -> f.isAnnotationPresent(Helper.class))
                   .forEach(f -> {
                       try {
+                          f.setAccessible(true);
                           f.set(result, makeHelperByType(f.getType()));
                       } catch (Throwable e) {
                           Exceptions.handle()
