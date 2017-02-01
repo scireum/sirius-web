@@ -24,7 +24,11 @@ import sirius.kernel.extensions.Extensions;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Log;
+import sirius.web.http.MimeHelper;
+import sirius.web.mails.Attachment;
+import sirius.web.mails.BufferedAttachment;
 
+import javax.activation.DataSource;
 import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -219,6 +223,23 @@ public class Templates {
             } finally {
                 CallContext.getCurrent().removeFromMDC("content-generator-template");
             }
+        }
+
+        /**
+         * Convenience method to directly create an {@link Attachment} which can be added to an email.
+         * <p>
+         * Internally a buffer is created and {@link #generateTo(OutputStream)} is invoked to generate
+         * the actual content of the attachment.
+         *
+         * @param filename the filename of the attachment.
+         * @return the attachment which can be passed to
+         * {@link sirius.web.mails.Mails.MailSender#addAttachment(DataSource)}.
+         */
+        public Attachment generateAttachment(@Nonnull String filename) {
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            generateTo(buffer);
+
+            return new BufferedAttachment(filename, MimeHelper.guessMimeType(filename), buffer.toByteArray(), false);
         }
 
         private void findAndInvokeContentHandler(OutputStream out) throws Exception {

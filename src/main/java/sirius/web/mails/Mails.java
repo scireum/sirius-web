@@ -22,6 +22,7 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Operation;
 import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Context;
+import sirius.kernel.commons.Files;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
@@ -37,6 +38,8 @@ import sirius.kernel.health.metrics.MetricProvider;
 import sirius.kernel.health.metrics.MetricsCollector;
 import sirius.kernel.nls.NLS;
 import sirius.web.http.MimeHelper;
+import sirius.web.templates.Resource;
+import sirius.web.templates.Resources;
 import sirius.web.templates.Templates;
 import sirius.web.templates.velocity.VelocityContentHandler;
 
@@ -142,6 +145,9 @@ public class Mails implements MetricProvider {
 
     @ConfigValue("mail.mailer")
     private String mailer;
+
+    @Part
+    private Resources resources;
 
     @Part
     private Templates templates;
@@ -482,12 +488,49 @@ public class Mails implements MetricProvider {
 
         /**
          * Adds an attachment to the email.
+         * <p>
+         * Use {@link Templates.Generator#generateAttachment(String)} to directly generate an attachment from a
+         * template.
          *
          * @param attachment the attachment to add to the email
          * @return the builder itself
          */
         public MailSender addAttachment(DataSource attachment) {
             attachments.add(attachment);
+            return this;
+        }
+
+        /**
+         * Adds a resource as attachment.
+         *
+         * @param resource  the resource to lookup using {@link Resources#resolve(String)}
+         * @param filename  the filename to use for the attachment
+         * @param contentId the content id to reference it within HTML content. &lt; and &gt; are automatically added.
+         *                  Note that most mail clients like to see a valid message id (xxx@domain.tld) here.
+         * @return the builder itself
+         */
+        public MailSender addResourceAsAttachment(@Nonnull String resource,
+                                                  @Nullable String filename,
+                                                  @Nullable String contentId) {
+            Resource res = resources.resolve(resource)
+                                    .orElseThrow(() -> Exceptions.handle()
+                                                                 .to(LOG)
+                                                                 .withSystemErrorMessage(
+                                                                         "Cannot resolve %s as mail attachment",
+                                                                         resource)
+                                                                 .handle());
+
+            if (Strings.isEmpty(filename)) {
+                filename = Files.getFilenameAndExtension(resource);
+            }
+
+            ResourceAttachment attachment =
+                    new ResourceAttachment(filename, MimeHelper.guessMimeType(filename), res, false);
+            if (Strings.isFilled(contentId)) {
+                attachment.addHeader("Content-ID", "<" + contentId + ">");
+            }
+            attachments.add(attachment);
+
             return this;
         }
 
@@ -721,7 +764,7 @@ public class Mails implements MetricProvider {
                     if (attachmentConfig.hasPath("alternative")) {
                         asAlternative = attachmentConfig.getBoolean("alternative");
                     }
-                    Attachment att = new Attachment(fileName, mimeType, out.toByteArray(), asAlternative);
+                    Attachment att = new BufferedAttachment(fileName, mimeType, out.toByteArray(), asAlternative);
                     if (attachmentConfig.hasPath("headers")) {
                         for (Map.Entry<String, com.typesafe.config.ConfigValue> e : attachmentConfig.getConfig("headers")
                                                                                                     .entrySet()) {
