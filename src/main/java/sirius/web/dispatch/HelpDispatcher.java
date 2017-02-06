@@ -54,9 +54,12 @@ public class HelpDispatcher implements WebDispatcher {
             if (subUri.startsWith(language)) {
                 if ((language).equals(subUri) || (language + "/").equals(subUri)) {
                     uri = "/help/" + language + "/" + indexTemplate;
+                    lang = language;
+                    break;
+                } else if (subUri.startsWith(language + "/")) {
+                    lang = language;
+                    break;
                 }
-                lang = language;
-                break;
             }
         }
         if (uri.contains(".") && !uri.endsWith("html")) {
