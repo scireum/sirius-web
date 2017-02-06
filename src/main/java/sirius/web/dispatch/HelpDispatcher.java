@@ -50,8 +50,9 @@ public class HelpDispatcher implements WebDispatcher {
             uri = "/help/" + indexTemplate;
         }
         for (String language : getLanguages()) {
-            if (uri.startsWith("/help/" + language)) {
-                if (("/help/" + language).equals(uri) || ("/help/" + language + "/").equals(uri)) {
+            String subUri = uri.substring("/help/".length());
+            if (subUri.startsWith(language)) {
+                if ((language).equals(subUri) || (language + "/").equals(subUri)) {
                     uri = "/help/" + language + "/" + indexTemplate;
                 }
                 lang = language;
