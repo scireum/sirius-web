@@ -45,7 +45,7 @@ public class HelpDispatcher implements WebDispatcher {
             return false;
         }
         String uri = ctx.getRequestedURI();
-        String lang = "";
+        String helpSystemlanguage = "";
         if ("/help".equals(uri) || "/help/".equals(uri)) {
             uri = "/help/" + indexTemplate;
         }
@@ -54,10 +54,10 @@ public class HelpDispatcher implements WebDispatcher {
             if (subUri.startsWith(language)) {
                 if ((language).equals(subUri) || (language + "/").equals(subUri)) {
                     uri = "/help/" + language + "/" + indexTemplate;
-                    lang = language;
+                    helpSystemlanguage = language;
                     break;
                 } else if (subUri.startsWith(language + "/")) {
-                    lang = language;
+                    helpSystemlanguage = language;
                     break;
                 }
             }
@@ -74,7 +74,7 @@ public class HelpDispatcher implements WebDispatcher {
             }
         } else {
             // Render help template...
-            ctx.respondWith().cached().nlsTemplate(uri, lang);
+            ctx.respondWith().cached().nlsTemplate(uri, helpSystemlanguage);
         }
         ctx.enableTiming("/help/");
         return true;
