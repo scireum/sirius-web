@@ -47,7 +47,7 @@ public class HelpDispatcher implements WebDispatcher {
             return false;
         }
         String uri = getRequestedURI(ctx);
-        String helpSystemLanguageDirectory = getHelpSystemLanguageDirectory(uri);
+        String helpsystemHomeURI = "/help/" + getHelpSystemLanguageDirectory(uri);
         if (uri.contains(".") && !uri.endsWith("html")) {
             // Dispatch static content...
             URL url = getClass().getResource(uri);
@@ -60,7 +60,7 @@ public class HelpDispatcher implements WebDispatcher {
             }
         } else {
             // Render help template...
-            ctx.respondWith().cached().nlsTemplate(uri, helpSystemLanguageDirectory);
+            ctx.respondWith().cached().nlsTemplate(uri, helpsystemHomeURI);
         }
         ctx.enableTiming("/help/");
         return true;
