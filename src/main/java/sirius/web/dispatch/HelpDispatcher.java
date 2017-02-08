@@ -92,10 +92,10 @@ public class HelpDispatcher implements WebDispatcher {
     }
 
     public String buildStartUri(String lang) {
-        String uri = "/help/";
+        String uri = "/help";
         if (Strings.isFilled(lang)) {
-            uri = uri + lang + "/";
+            uri = uri + "/" + lang;
         }
-        return uri + indexTemplate;
+        return uri + "/" + indexTemplate;
     }
 }
