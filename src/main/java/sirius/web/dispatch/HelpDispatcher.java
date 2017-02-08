@@ -79,19 +79,19 @@ public class HelpDispatcher implements WebDispatcher {
     public String getRequestedURI(WebContext ctx) {
         String uri = ctx.getRequestedURI();
         if ("/help".equals(uri) || "/help/".equals(uri)) {
-            return buildStartUri(null);
+            return buildStartURI(null);
         }
         Matcher matcher = startPagePattern.matcher(uri);
         if (matcher.matches()) {
             String lang = matcher.group(1);
             if (helpSystemLanguageDirectories.contains(lang)) {
-                return buildStartUri(lang);
+                return buildStartURI(lang);
             }
         }
         return uri;
     }
 
-    public String buildStartUri(String lang) {
+    public String buildStartURI(String lang) {
         String uri = "/help";
         if (Strings.isFilled(lang)) {
             uri = uri + "/" + lang;
