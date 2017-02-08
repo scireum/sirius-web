@@ -9,7 +9,6 @@
 package sirius.web.dispatch;
 
 import io.netty.handler.codec.http.HttpMethod;
-import sirius.kernel.Sirius;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
@@ -29,6 +28,9 @@ public class HelpDispatcher implements WebDispatcher {
     @ConfigValue("help.indexTemplate")
     private String indexTemplate;
 
+    @ConfigValue("help.languages")
+    private List<String> helpSystemLanguageDirectories;
+
     @Override
     public boolean preDispatch(WebContext ctx) throws Exception {
         return false;
@@ -44,24 +46,8 @@ public class HelpDispatcher implements WebDispatcher {
         if (!ctx.getRequest().uri().startsWith("/help") || HttpMethod.GET != ctx.getRequest().method()) {
             return false;
         }
-        String uri = ctx.getRequestedURI();
-        String helpSystemlanguage = "";
-        if ("/help".equals(uri) || "/help/".equals(uri)) {
-            uri = "/help/" + indexTemplate;
-        }
-        for (String language : getLanguages()) {
-            String subUri = uri.substring("/help/".length());
-            if (subUri.startsWith(language)) {
-                if ((language).equals(subUri) || (language + "/").equals(subUri)) {
-                    uri = "/help/" + language + "/" + indexTemplate;
-                    helpSystemlanguage = language;
-                    break;
-                } else if (subUri.startsWith(language + "/")) {
-                    helpSystemlanguage = language;
-                    break;
-                }
-            }
-        }
+        String uri = getRequestedURI(ctx);
+        String helpSystemLanguageDirectory = getHelpSystemLanguageDirectory(uri);
         if (uri.contains(".") && !uri.endsWith("html")) {
             // Dispatch static content...
             URL url = getClass().getResource(uri);
@@ -74,13 +60,34 @@ public class HelpDispatcher implements WebDispatcher {
             }
         } else {
             // Render help template...
-            ctx.respondWith().cached().nlsTemplate(uri, helpSystemlanguage);
+            ctx.respondWith().cached().nlsTemplate(uri, helpSystemLanguageDirectory);
         }
         ctx.enableTiming("/help/");
         return true;
     }
 
-    public static List<String> getLanguages() {
-        return Sirius.getConfig().getStringList("help.languages");
+    public String getHelpSystemLanguageDirectory(String uri) {
+        String helpSystemLanguageDirectory = "";
+        for (String language : helpSystemLanguageDirectories) {
+            String subUri = uri.substring("/help/".length());
+            if ((language).equals(subUri) || (language + "/").equals(subUri) || subUri.startsWith(language + "/")) {
+                helpSystemLanguageDirectory = language;
+            }
+        }
+        return helpSystemLanguageDirectory;
+    }
+
+    public String getRequestedURI(WebContext ctx) {
+        String uri = ctx.getRequestedURI();
+        if ("/help".equals(uri) || "/help/".equals(uri)) {
+            uri = "/help/" + indexTemplate;
+        }
+        String subUri = uri.substring("/help/".length());
+        for (String language : helpSystemLanguageDirectories) {
+            if ((language).equals(subUri) || (language + "/").equals(subUri)) {
+                uri = "/help/" + language + "/" + indexTemplate;
+            }
+        }
+        return uri;
     }
 }
