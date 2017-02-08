@@ -10,6 +10,7 @@ package sirius.web.dispatch;
 
 import io.netty.handler.codec.http.HttpMethod;
 import sirius.kernel.commons.PriorityCollector;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
 import sirius.web.http.WebContext;
@@ -27,7 +28,7 @@ import java.util.regex.Pattern;
 @Register
 public class HelpDispatcher implements WebDispatcher {
 
-    private static Pattern helpSystemLanguageDirectoryPattern = Pattern.compile("^/help/(..)/?$");
+    private static Pattern startPagePattern = Pattern.compile("^/help/(..)/?$");
 
     @ConfigValue("help.indexTemplate")
     private String indexTemplate;
@@ -78,15 +79,23 @@ public class HelpDispatcher implements WebDispatcher {
     public String getRequestedURI(WebContext ctx) {
         String uri = ctx.getRequestedURI();
         if ("/help".equals(uri) || "/help/".equals(uri)) {
-            return "/help/" + indexTemplate;
+            return buildStartUri(null);
         }
-        Matcher matcher = helpSystemLanguageDirectoryPattern.matcher(uri);
+        Matcher matcher = startPagePattern.matcher(uri);
         if (matcher.matches()) {
             String lang = matcher.group(1);
             if (helpSystemLanguageDirectories.contains(lang)) {
-                return "/help/" + lang + "/" + indexTemplate;
+                return buildStartUri(lang);
             }
         }
         return uri;
+    }
+
+    public String buildStartUri(String lang) {
+        String uri = "/help/";
+        if (Strings.isFilled(lang)) {
+            uri = uri + lang + "/";
+        }
+        return uri + indexTemplate;
     }
 }
