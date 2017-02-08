@@ -52,7 +52,7 @@ public class HelpDispatcher implements WebDispatcher {
             return false;
         }
         String uri = getRequestedURI(ctx);
-        String helpsystemHomeURI = "/help/" + getHelpSystemLanguageDirectory(uri);
+        String helpSystemHomeURI = "/help/" + getHelpSystemLanguageDirectory(uri);
         if (uri.contains(".") && !uri.endsWith("html")) {
             // Dispatch static content...
             URL url = getClass().getResource(uri);
@@ -65,7 +65,7 @@ public class HelpDispatcher implements WebDispatcher {
             }
         } else {
             // Render help template...
-            ctx.respondWith().cached().nlsTemplate(uri, helpsystemHomeURI);
+            ctx.respondWith().cached().nlsTemplate(uri, helpSystemHomeURI);
         }
         ctx.enableTiming("/help/");
         return true;
@@ -79,19 +79,19 @@ public class HelpDispatcher implements WebDispatcher {
     public String getRequestedURI(WebContext ctx) {
         String uri = ctx.getRequestedURI();
         if ("/help".equals(uri) || "/help/".equals(uri)) {
-            return buildStartURI(null);
+            return buildHomeURI(null);
         }
         Matcher matcher = startPagePattern.matcher(uri);
         if (matcher.matches()) {
             String lang = matcher.group(1);
             if (helpSystemLanguageDirectories.contains(lang)) {
-                return buildStartURI(lang);
+                return buildHomeURI(lang);
             }
         }
         return uri;
     }
 
-    public String buildStartURI(String lang) {
+    public String buildHomeURI(String lang) {
         String uri = "/help";
         if (Strings.isFilled(lang)) {
             uri = uri + "/" + lang;
