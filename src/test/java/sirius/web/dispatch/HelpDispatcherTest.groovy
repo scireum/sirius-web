@@ -35,6 +35,7 @@ class HelpDispatcherTest extends Specification {
         "/help/decoding"     | ""
         "/help/es"           | ""
         "/help/"             | ""
+        "/help/index"        | ""
     }
 
     def "test getRequestedURI"() {

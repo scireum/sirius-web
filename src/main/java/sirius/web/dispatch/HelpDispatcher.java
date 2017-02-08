@@ -18,12 +18,16 @@ import sirius.web.http.WebDispatcher;
 import java.io.File;
 import java.net.URL;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Takes care of all /help URIs and sub-uris.
  */
 @Register
 public class HelpDispatcher implements WebDispatcher {
+
+    private static Pattern helpSystemLanguageDirectoryPattern = Pattern.compile("^/help/(..)/?$");
 
     @ConfigValue("help.indexTemplate")
     private String indexTemplate;
@@ -67,25 +71,20 @@ public class HelpDispatcher implements WebDispatcher {
     }
 
     public String getHelpSystemLanguageDirectory(String uri) {
-        String helpSystemLanguageDirectory = "";
-        for (String language : helpSystemLanguageDirectories) {
-            String subUri = uri.substring("/help/".length());
-            if ((language).equals(subUri) || (language + "/").equals(subUri) || subUri.startsWith(language + "/")) {
-                helpSystemLanguageDirectory = language;
-            }
-        }
-        return helpSystemLanguageDirectory;
+        String subUri = uri.substring("/help/".length()).split("/")[0];
+        return helpSystemLanguageDirectories.contains(subUri) ? subUri : "";
     }
 
     public String getRequestedURI(WebContext ctx) {
         String uri = ctx.getRequestedURI();
         if ("/help".equals(uri) || "/help/".equals(uri)) {
-            uri = "/help/" + indexTemplate;
+            return "/help/" + indexTemplate;
         }
-        String subUri = uri.substring("/help/".length());
-        for (String language : helpSystemLanguageDirectories) {
-            if ((language).equals(subUri) || (language + "/").equals(subUri)) {
-                uri = "/help/" + language + "/" + indexTemplate;
+        Matcher matcher = helpSystemLanguageDirectoryPattern.matcher(uri);
+        if (matcher.matches()) {
+            String lang = matcher.group(1);
+            if (helpSystemLanguageDirectories.contains(lang)) {
+                return "/help/" + lang + "/" + indexTemplate;
             }
         }
         return uri;
