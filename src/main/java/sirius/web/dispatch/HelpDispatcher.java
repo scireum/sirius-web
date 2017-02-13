@@ -71,12 +71,12 @@ public class HelpDispatcher implements WebDispatcher {
         return true;
     }
 
-    public String getHelpSystemLanguageDirectory(String uri) {
+    private String getHelpSystemLanguageDirectory(String uri) {
         String subUri = uri.substring("/help/".length()).split("/")[0];
         return helpSystemLanguageDirectories.contains(subUri) ? subUri : "";
     }
 
-    public String getRequestedURI(WebContext ctx) {
+    private String getRequestedURI(WebContext ctx) {
         String uri = ctx.getRequestedURI();
         if ("/help".equals(uri) || "/help/".equals(uri)) {
             return buildHomeURI(null);
@@ -91,7 +91,7 @@ public class HelpDispatcher implements WebDispatcher {
         return uri;
     }
 
-    public String buildHomeURI(String lang) {
+    private String buildHomeURI(String lang) {
         String uri = "/help";
         if (Strings.isFilled(lang)) {
             uri = uri + "/" + lang;
