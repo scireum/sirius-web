@@ -438,7 +438,7 @@ public class UserContext implements SubContext {
      * Note that this method will only check the session ({@link UserManager#findUserForRequest(WebContext)}) and will
      * not try to perform a login via credentials as given in the current request.
      *
-     * @param scope the scope to fethc the user for
+     * @param scope the scope to fetch the user for
      * @return the user found for the given scope or {@link UserInfo#NOBODY} if no user was found
      */
     public UserInfo getUserForScope(ScopeInfo scope) {
