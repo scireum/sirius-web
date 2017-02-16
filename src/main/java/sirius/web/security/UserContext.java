@@ -81,7 +81,7 @@ public class UserContext implements SubContext {
      * we cache the last user and scope here to speed up almost all cases
      * without the need for a map.
      */
-    private String spaceIdOfCachedUser = null;
+    private String scopeIdOfCachedUser = null;
     private UserInfo cachedUser = null;
 
     private ScopeInfo currentScope = null;
@@ -438,16 +438,16 @@ public class UserContext implements SubContext {
      * Note that this method will only check the session ({@link UserManager#findUserForRequest(WebContext)}) and will
      * not try to perform a login via credentials as given in the current request.
      *
-     * @param scopeId the id of the scope to fethc the user for
+     * @param scope the scope to fethc the user for
      * @return the user found for the given scope or {@link UserInfo#NOBODY} if no user was found
      */
-    public UserInfo getUserForScope(String scopeId) {
-        if (cachedUser != null && Strings.areEqual(scopeId, spaceIdOfCachedUser)) {
+    public UserInfo getUserForScope(ScopeInfo scope) {
+        if (cachedUser != null && Strings.areEqual(scope.getScopeId(), scopeIdOfCachedUser)) {
             return cachedUser;
         }
 
-        cachedUser = getUserManagerForScope(scopeId).findUserForRequest(CallContext.getCurrent().get(WebContext.class));
-        spaceIdOfCachedUser = scopeId;
+        cachedUser = getUserManagerForScope(scope).findUserForRequest(CallContext.getCurrent().get(WebContext.class));
+        scopeIdOfCachedUser = scope.getScopeId();
         return cachedUser;
     }
 
@@ -488,12 +488,20 @@ public class UserContext implements SubContext {
      * @see #getCurrentScope()
      * @see ScopeDetector
      */
+    @Nonnull
     public UserManager getUserManager() {
-        return getUserManagerForScope(getScope().getScopeId());
+        return getUserManagerForScope(getScope());
     }
 
-    private UserManager getUserManagerForScope(String scopeId) {
-        return managers.computeIfAbsent(scopeId, k -> getManager(currentScope));
+    /**
+     * Returns the user manager responsible for the given scope.
+     *
+     * @param scope the scope to fetch the user manager for
+     * @return the user manager responsible for the given scope
+     */
+    @Nonnull
+    public UserManager getUserManagerForScope(ScopeInfo scope) {
+        return managers.computeIfAbsent(scope.getScopeId(), k -> getManager(scope));
     }
 
     /**
