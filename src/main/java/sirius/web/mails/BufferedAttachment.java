@@ -30,7 +30,7 @@ public class BufferedAttachment extends Attachment {
      *                      (<tt>true</tt>) or a real attachment (<tt>false</tt>)
      */
     public BufferedAttachment(String name, String mimeType, byte[] byteArray, boolean asAlternative) {
-        super(name,mimeType, asAlternative);
+        super(name, mimeType, asAlternative);
         this.buffer = byteArray;
     }
 
@@ -38,5 +38,4 @@ public class BufferedAttachment extends Attachment {
     public InputStream getInputStream() throws IOException {
         return new ByteArrayInputStream(buffer);
     }
-
 }

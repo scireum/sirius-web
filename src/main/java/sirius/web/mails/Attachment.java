@@ -35,7 +35,7 @@ public abstract class Attachment implements DataSource {
      * @param asAlternative determines if this attachment is an alternative to the text content of the mail
      *                      (<tt>true</tt>) or a real attachment (<tt>false</tt>)
      */
-    public Attachment(String name, String mimeType,boolean asAlternative) {
+    public Attachment(String name, String mimeType, boolean asAlternative) {
         this.name = name;
         this.contentType = mimeType;
         this.asAlternative = asAlternative;
