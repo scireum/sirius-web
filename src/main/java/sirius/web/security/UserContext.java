@@ -11,6 +11,7 @@ package sirius.web.security;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
+import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
 import sirius.kernel.commons.Strings;
@@ -329,7 +330,7 @@ public class UserContext implements SubContext {
      * @return a list of messages to be shown to the user
      */
     public List<Message> getMessages() {
-        if (cluster.getClusterState() == MetricState.RED && getUser().hasPermission(PERMISSION_SYSTEM_NOTIFY_STATE)) {
+        if (cluster.getClusterState() == MetricState.RED && getUser().hasPermission(PERMISSION_SYSTEM_NOTIFY_STATE) && !Sirius.isStartedAsTest()) {
             Message systemStateWarning = Message.error(Strings.apply("System state is %s (Cluster state is %s)",
                                                                      cluster.getNodeState(),
                                                                      cluster.getClusterState()))
