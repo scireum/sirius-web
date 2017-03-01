@@ -1,6 +1,6 @@
 @args String backUrl
 <div class="form-actions">
-    <a onclick="$('#editForm').submit()" class="btn btn-primary">
+    <a onclick="$(this).removeAttr('onclick').attr('disabled', 'disabled');$('#editForm').submit()" class="btn btn-primary">
         <i class="fa fa-check"></i> @i18n("NLS.save")
     </a>
     @if (Strings.isFilled(backUrl)) {
