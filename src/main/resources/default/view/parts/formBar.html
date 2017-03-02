@@ -9,18 +9,3 @@
 
     @renderBody()
 </div>
-
-@if (singleClick) {
-    <script type="text/javascript">
-        $(function () {
-            $('.single-click-link').click(function () {
-                var a = $(this);
-                if (!a.hasClass("single-click-pending")) {
-                    a.addClass("single-click-pending");
-                    return true;
-                }
-                return false;
-            });
-        });
-    </script>
-}
