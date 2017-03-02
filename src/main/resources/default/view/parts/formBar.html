@@ -1,6 +1,6 @@
-@args String backUrl
+@args String backUrl, boolean singleClick
 <div class="form-actions">
-    <a onclick="$('#editForm').submit()" class="btn btn-primary">
+    <a href="javascript:$('#editForm').submit()" class="btn btn-primary @if (singleClick) { single-click-link }">
         <i class="fa fa-check"></i> @i18n("NLS.save")
     </a>
     @if (Strings.isFilled(backUrl)) {
