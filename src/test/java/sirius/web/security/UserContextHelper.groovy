@@ -47,7 +47,7 @@ class UserContextHelper {
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
     public static void expectNoErrorMessages(TestResponse response) {
-        assert !getUserContext(response).getMessages().any { msg -> msg.getType() == Message.ERROR }
+        assert getUserContext(response).getMessages().all { msg -> msg.getType() != Message.ERROR }
     }
 
     /**
