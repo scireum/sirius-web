@@ -355,13 +355,18 @@
     }
 
     $(function () {
-        $('.single-click-link').click(function () {
-            var a = $(this);
-            if (!a.hasClass("single-click-pending")) {
-                a.addClass("single-click-pending");
-                return true;
+        $('.submit-link').click(function () {
+            if (!$(this).hasClass("single-click-pending")) {
+                $('#editForm').submit();
             }
-            return false;
+        });
+        $('.single-click-link').click(function (e) {
+            var a = $(this);
+            if (a.hasClass("single-click-pending")) {
+                e.preventDefault();
+                return false;
+            }
+            a.addClass("single-click-pending");
         });
     });
 
