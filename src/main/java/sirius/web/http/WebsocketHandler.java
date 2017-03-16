@@ -59,10 +59,8 @@ public class WebsocketHandler extends ChannelDuplexHandler {
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt == WebSocketServerProtocolHandler.ServerHandshakeStateEvent.HANDSHAKE_COMPLETE) {
-            if (websocketSession != null) {
-                websocketSession.onWebsocketOpened();
-            }
+        if (websocketSession != null && evt instanceof WebSocketServerProtocolHandler.HandshakeComplete) {
+            websocketSession.onWebsocketOpened();
         }
 
         super.userEventTriggered(ctx, evt);
@@ -70,7 +68,7 @@ public class WebsocketHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (msg instanceof HttpRequest && isWebsocketRequest(ctx, (HttpRequest) msg)) {
+        if (msg instanceof HttpRequest && isWebsocketRequest((HttpRequest) msg)) {
             websocketSession = websocketDispatcher.createSession(ctx, (HttpRequest) msg);
             WebServer.websockets++;
             setupWebsocketPipeline(ctx, msg);
@@ -107,7 +105,7 @@ public class WebsocketHandler extends ChannelDuplexHandler {
         handler.channelRead(ctx, msg);
     }
 
-    private boolean isWebsocketRequest(ChannelHandlerContext ctx, HttpRequest req) {
+    private boolean isWebsocketRequest(HttpRequest req) {
         if (websocketDispatcher == null || req.uri() == null) {
             return false;
         }

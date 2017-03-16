@@ -196,7 +196,7 @@ public class Mails implements MetricProvider {
                 new InternetAddress(address).validate();
             }
             return true;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             Exceptions.ignore(e);
             return false;
         }
@@ -304,9 +304,9 @@ public class Mails implements MetricProvider {
             if (langs == null) {
                 return this;
             }
-            for (String lang : langs) {
-                if (Strings.isFilled(lang)) {
-                    this.lang = lang;
+            for (String language : langs) {
+                if (Strings.isFilled(language)) {
+                    this.lang = language;
                     return this;
                 }
             }
@@ -612,7 +612,7 @@ public class Mails implements MetricProvider {
                 }
             } catch (HandledException e) {
                 throw e;
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 throw Exceptions.handle()
                                 .withSystemErrorMessage(
                                         "Cannot send mail to '%s (%s)' from '%s (%s)' with subject '%s': %s (%s)",
@@ -665,7 +665,7 @@ public class Mails implements MetricProvider {
                         new InternetAddress(senderEmail).validate();
                     }
                 }
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 throw Exceptions.handle()
                                 .to(LOG)
                                 .error(e)
@@ -715,7 +715,7 @@ public class Mails implements MetricProvider {
                 generateAttachments(ex);
             } catch (HandledException e) {
                 throw e;
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 throw Exceptions.handle()
                                 .withSystemErrorMessage(
                                         "Cannot send mail to '%s (%s)' from '%s (%s)' with subject '%s': %s (%s)",
@@ -772,7 +772,7 @@ public class Mails implements MetricProvider {
                         }
                     }
                     addAttachment(att);
-                } catch (Throwable t) {
+                } catch (Exception t) {
                     Exceptions.handle()
                               .to(LOG)
                               .error(t)
@@ -810,7 +810,7 @@ public class Mails implements MetricProvider {
                                                     .asString(ex.get("html").asString()))
                                      .applyContext(context)
                                      .generate());
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 Exceptions.handle()
                           .to(LOG)
                           .error(e)
@@ -872,10 +872,8 @@ public class Mails implements MetricProvider {
                 mail.simulate = true;
             }
             determineTechnicalSender();
-            Operation op = Operation.create("mail",
-                                            () -> "Sending eMail: " + mail.subject + " to: " + mail.receiverEmail,
-                                            Duration.ofSeconds(30));
-            try {
+            try (Operation op = new Operation(() -> "Sending eMail: " + mail.subject + " to: " + mail.receiverEmail,
+                                              Duration.ofSeconds(30))) {
                 if (!mail.simulate) {
                     sendMail();
                 } else {
@@ -883,7 +881,6 @@ public class Mails implements MetricProvider {
                     success = true;
                 }
             } finally {
-                Operation.release(op);
                 if (logs.isEmpty()) {
                     if (!success) {
                         LOG.WARN("FAILED to send mail from: '%s' to '%s' with subject: '%s'",
@@ -923,29 +920,26 @@ public class Mails implements MetricProvider {
                 Session session = getMailSession(config);
                 Transport transport = getSMTPTransport(session, config);
                 try {
-                    try {
-                        MimeMessage msg = signMessage(createMessage(session));
+                    MimeMessage msg = signMessage(createMessage(session));
 
-                        transport.sendMessage(msg, msg.getAllRecipients());
-                        messageId = msg.getMessageID();
-                        success = true;
-                    } catch (Throwable e) {
-                        throw Exceptions.handle()
-                                        .withSystemErrorMessage(
-                                                "Cannot send mail to %s from %s with subject '%s': %s (%s)",
-                                                mail.receiverEmail,
-                                                mail.senderEmail,
-                                                mail.subject)
-                                        .to(LOG)
-                                        .error(e)
-                                        .handle();
-                    }
+                    transport.sendMessage(msg, msg.getAllRecipients());
+                    messageId = msg.getMessageID();
+                    success = true;
+                } catch (Exception e) {
+                    throw Exceptions.handle()
+                                    .withSystemErrorMessage("Cannot send mail to %s from %s with subject '%s': %s (%s)",
+                                                            mail.receiverEmail,
+                                                            mail.senderEmail,
+                                                            mail.subject)
+                                    .to(LOG)
+                                    .error(e)
+                                    .handle();
                 } finally {
                     transport.close();
                 }
             } catch (HandledException e) {
                 throw e;
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 throw Exceptions.handle()
                                 .withSystemErrorMessage(
                                         "Invalid mail configuration: %s (Host: %s, Port: %s, User: %s, Password used: %s)",
@@ -1034,7 +1028,7 @@ public class Mails implements MetricProvider {
                 dkimSigner.setLengthParam(true);
                 dkimSigner.setZParam(false);
                 return new DkimMessage(message, dkimSigner);
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 Exceptions.handle().to(LOG).error(e).withNLSKey("Skipping DKIM signing due to: %s (%s)").handle();
             }
 
