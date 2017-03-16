@@ -89,9 +89,6 @@ public class Cluster implements EveryMinute, Lifecycle {
     @ConfigValue("health.cluster.priority")
     private int priority;
 
-    @ConfigValue("health.cluster.logState")
-    private boolean logState;
-
     @ConfigValue("health.cluster.alerts.mail")
     private List<String> alertReceivers;
 
@@ -99,10 +96,10 @@ public class Cluster implements EveryMinute, Lifecycle {
     private Metrics metrics;
 
     @Part
-    private HipChat hipChat;
+    private Tasks tasks;
 
     @Part
-    private Slack slack;
+    private Mails ms;
 
     /**
      * Reports infos for all known cluster members.
@@ -177,9 +174,6 @@ public class Cluster implements EveryMinute, Lifecycle {
         return clusterState;
     }
 
-    @Part
-    private Tasks tasks;
-
     /*
      * Re-computes the node and cluster state...
      */
@@ -207,11 +201,6 @@ public class Cluster implements EveryMinute, Lifecycle {
         } else if (clusterState == MetricState.RED && newClusterState != MetricState.RED) {
             if (inCharge(newClusterState)) {
                 LOG.FINE("Cluster recovered");
-                hipChat.sendMessage("cluster",
-                                    "Cluster is now in state: " + newClusterState,
-                                    HipChat.Color.GREEN,
-                                    true);
-                slack.sendMessage("cluster", "Cluster is now in state: " + newClusterState, Slack.Color.GOOD);
             }
             currentlyNotifying = false;
         }
@@ -238,26 +227,16 @@ public class Cluster implements EveryMinute, Lifecycle {
             if (m.getState().ordinal() > newNodeState.ordinal()) {
                 newNodeState = m.getState();
             }
-            if (m.getState().ordinal() > MetricState.GREEN.ordinal()) {
-                String message = Strings.apply("%s is %s (%s)", m.getName(), m.getValueAsString(), m.getState());
-                hipChat.sendMessage("metric",
-                                    message,
-                                    m.getState() == MetricState.YELLOW ? HipChat.Color.YELLOW : HipChat.Color.RED,
-                                    false);
-                slack.sendMessage("metric",
-                                  message,
-                                  m.getState() == MetricState.YELLOW ? Slack.Color.WARNING : Slack.Color.DANGER);
-
-                if (logState) {
-                    LOG.WARN("NodeState: Metric %s", message);
-                }
+            if (nodeState != MetricState.RED && m.getState() == MetricState.RED) {
+                LOG.WARN("NodeState: Metric %s is %s", m.getName(), m.getValueAsString());
             }
         }
         this.nodeState = newNodeState;
         return newNodeState;
     }
 
-    private MetricState updateNodeState(MetricState newClusterState, NodeInfo info) {
+    private MetricState updateNodeState(MetricState currentClusterState, NodeInfo info) {
+        MetricState newClusterState = currentClusterState;
         try {
             LOG.FINE("Testing node: %s", info.getEndpoint());
             URLConnection c = new URL(info.getEndpoint() + "/service/json/system/node-info").openConnection();
@@ -276,40 +255,47 @@ public class Cluster implements EveryMinute, Lifecycle {
                 info.setPriority(response.getInteger("priority"));
                 info.setUptime(response.getString("uptime"));
                 info.getMetrics().clear();
-                JSONArray metrics = response.getJSONArray("metrics");
-                for (int i = 0; i < metrics.size(); i++) {
-                    try {
-                        JSONObject metric = (JSONObject) metrics.get(i);
-                        Metric m = new Metric(metric.getString("name"),
-                                              metric.getDoubleValue("value"),
-                                              MetricState.valueOf(metric.getString("state")),
-                                              metric.getString("unit"));
-                        info.getMetrics().add(m);
-                    } catch (Throwable e) {
-                        // Ignore non-well-formed metrics...
-                        LOG.FINE(e);
-                    }
-                }
+                parseNodeMetrics(info, response);
                 info.pingSucceeded();
                 LOG.FINE("Node: %s is %s (%s)", info.getName(), info.getNodeState(), info.getClusterState());
             }
-        } catch (Throwable t) {
-            if (t instanceof IOException) {
-                if (logState) {
-                    LOG.WARN("Cannot reach node %s: %s (%s)",
-                             info.getEndpoint(),
-                             t.getMessage(),
-                             t.getClass().getSimpleName());
-                }
-            } else {
-                Exceptions.handle(LOG, t);
+        } catch (IOException t) {
+            Exceptions.ignore(t);
+            if (clusterState != MetricState.RED) {
+                LOG.WARN("Cannot reach node %s: %s (%s)",
+                         info.getEndpoint(),
+                         t.getMessage(),
+                         t.getClass().getSimpleName());
             }
+            info.setNodeState(MetricState.RED);
+            info.setClusterState(MetricState.RED);
+            newClusterState = MetricState.RED;
+            info.incPingFailures();
+        } catch (Exception t) {
+            Exceptions.handle(LOG, t);
             info.setNodeState(MetricState.RED);
             info.setClusterState(MetricState.RED);
             newClusterState = MetricState.RED;
             info.incPingFailures();
         }
         return newClusterState;
+    }
+
+    private void parseNodeMetrics(NodeInfo info, JSONObject response) {
+        JSONArray nodeMetrics = response.getJSONArray("metrics");
+        for (int i = 0; i < nodeMetrics.size(); i++) {
+            try {
+                JSONObject metric = (JSONObject) nodeMetrics.get(i);
+                Metric m = new Metric(metric.getString("name"),
+                                      metric.getDoubleValue("value"),
+                                      MetricState.valueOf(metric.getString("state")),
+                                      metric.getString("unit"));
+                info.getMetrics().add(m);
+            } catch (Exception e) {
+                // Ignore non-well-formed metrics...
+                LOG.FINE(e);
+            }
+        }
     }
 
     /*
@@ -344,9 +330,6 @@ public class Cluster implements EveryMinute, Lifecycle {
         return info.getName().compareTo(CallContext.getNodeName()) < 0;
     }
 
-    @Part
-    private Mails ms;
-
     private void alertClusterFailure(boolean firstAlert) {
         if (firstAlert) {
             Context ctx = Context.create()
@@ -359,11 +342,6 @@ public class Cluster implements EveryMinute, Lifecycle {
             for (String receiver : alertReceivers) {
                 ms.createEmail().useMailTemplate("system-alert", ctx).toEmail(receiver).send();
             }
-            hipChat.sendMessage("cluster", "Cluster is RED", HipChat.Color.RED, firstAlert);
-            slack.sendMessage("cluster", "Cluster is RED", Slack.Color.DANGER);
-        }
-
-        if (logState) {
             LOG.WARN("NodeState: %s, ClusterState: %s", nodeState, clusterState);
         }
     }
@@ -384,23 +362,21 @@ public class Cluster implements EveryMinute, Lifecycle {
 
     @Override
     public void started() {
-        hipChat.sendMessage("start", "Node is starting up...", HipChat.Color.GREEN, false);
         LinkedHashMap<String, String> ctx = Maps.newLinkedHashMap();
         ctx.put("Product", Product.getProduct().getDetails());
         for (Module m : Product.getModules()) {
             ctx.put(m.getName(), m.getDetails());
         }
-        slack.sendMessage("start", "Node is starting up...", Slack.Color.GOOD, ctx);
     }
 
     @Override
     public void stopped() {
-        hipChat.sendMessage("start", "Node is starting up...", HipChat.Color.GRAY, true);
-        slack.sendMessage("stop", "Node is shutting down...", Slack.Color.WARNING);
+        // Nothing to do
     }
 
     @Override
     public void awaitTermination() {
+        // Nothing to do
     }
 
     @Override

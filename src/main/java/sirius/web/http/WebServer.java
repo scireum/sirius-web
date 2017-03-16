@@ -334,24 +334,23 @@ public class WebServer implements Lifecycle, MetricProvider {
         }
         reportSettings();
         configureNetty();
-        Operation.cover("web",
-                        () -> "WebServer.createHTTPChannel:" + port,
-                        Duration.ofSeconds(15),
-                        () -> createHTTPChannel(port));
+        try (Operation op = new Operation(() -> "WebServer.createHTTPChannel:" + port, Duration.ofSeconds(15))) {
+            createHTTPChannel(port);
+        }
         for (String additionalPort : additionalPorts) {
             Value additionalPortValue = Value.of(additionalPort);
             if (additionalPortValue.isNumeric()) {
-                Operation.cover("web",
-                                () -> "WebServer.createHTTPChannel:" + additionalPort,
-                                Duration.ofSeconds(15),
-                                () -> createHTTPChannel(additionalPortValue.asInt(-1)));
+                try (Operation op = new Operation(() -> "WebServer.createHTTPChannel:" + additionalPort,
+                                                  Duration.ofSeconds(15))) {
+                    createHTTPChannel(additionalPortValue.asInt(-1));
+                }
             }
         }
+
         if (ssl) {
-            Operation.cover("web",
-                            () -> "WebServer.createHTTPSChannel",
-                            Duration.ofSeconds(15),
-                            this::createHTTPSChannel);
+            try (Operation op = new Operation(() -> "WebServer.createHTTPSChannel", Duration.ofSeconds(15))) {
+                createHTTPSChannel();
+            }
         }
     }
 
@@ -400,10 +399,9 @@ public class WebServer implements Lifecycle, MetricProvider {
 
     private void configureNetty() {
         setupUploads();
-        Operation.cover("web",
-                        () -> "WebServer.createEventLoop",
-                        Duration.ofSeconds(15),
-                        () -> eventLoop = createEventLoop(AUTOSELECT_EVENT_LOOP_SIZE, "netty-"));
+        try (Operation op = new Operation(() -> "WebServer.createEventLoop", Duration.ofSeconds(15))) {
+            eventLoop = createEventLoop(AUTOSELECT_EVENT_LOOP_SIZE, "netty-");
+        }
     }
 
     private static void setupUploads() {
@@ -482,16 +480,16 @@ public class WebServer implements Lifecycle, MetricProvider {
     public void stopped() {
         stopChannel(channel, "http");
         stopChannel(sslChannel, "https");
-        Operation.cover("web",
-                        () -> "eventLoop.shutdownGracefully",
-                        Duration.ofSeconds(15),
-                        eventLoop::shutdownGracefully);
-        Operation.cover("web", () -> "Response.closeAsyncClient", Duration.ofSeconds(15), Response::closeAsyncClient);
+        try (Operation op = new Operation(() -> "eventLoop.shutdownGracefully", Duration.ofSeconds(15))) {
+            eventLoop.shutdownGracefully();
+        }
+        try (Operation op = new Operation(() -> "Response.closeAsyncClient", Duration.ofSeconds(15))) {
+            Response.closeAsyncClient();
+        }
     }
 
     private void stopChannel(Channel channel, String name) {
-        Operation op = Operation.create("web", () -> "stopChannel(" + name + ")", Duration.ofSeconds(15));
-        try {
+        try (Operation op = new Operation(() -> "stopChannel(" + name + ")", Duration.ofSeconds(15))) {
             if (channel != null) {
                 channel.close().sync();
             }
@@ -499,8 +497,6 @@ public class WebServer implements Lifecycle, MetricProvider {
             Exceptions.ignore(e);
             LOG.SEVERE(Strings.apply("Interrupted while waiting for the %s channel to shut down", name));
             Thread.currentThread().interrupt();
-        } finally {
-            Operation.release(op);
         }
     }
 
