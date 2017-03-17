@@ -54,9 +54,8 @@ public class ScopeInfo extends Composable {
      * If no distinct scope is recognized by the current <tt>ScopeDetector</tt> or if no detector is installed,
      * this scope is used.
      */
-    public static final ScopeInfo DEFAULT_SCOPE = new ScopeInfo(DEFAULT_SCOPE_ID,
-                                                                DEFAULT_SCOPE_ID,
-                                                                DEFAULT_SCOPE_ID, null, null, null);
+    public static final ScopeInfo DEFAULT_SCOPE =
+            new ScopeInfo(DEFAULT_SCOPE_ID, DEFAULT_SCOPE_ID, DEFAULT_SCOPE_ID, null, null, null);
 
     private String scopeId;
     private String scopeType;
@@ -172,7 +171,7 @@ public class ScopeInfo extends Composable {
     @Override
     public boolean is(@Nonnull Class<?> type) {
         Transformable userObject = getScopeObject(Transformable.class);
-        if (userObject != null&& userObject.is(type)) {
+        if (userObject != null && userObject.is(type)) {
             return true;
         }
         return super.is(type);
