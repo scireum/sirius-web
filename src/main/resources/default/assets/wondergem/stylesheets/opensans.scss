@@ -9,35 +9,35 @@
   font-family: 'Open Sans';
   font-style: normal;
   font-weight: 300;
-  src: local('Open Sans Light'), local('OpenSans-Light'), url($prefix + '/assets/wondergem/fonts/OpenSans-Light-webfont.eot'), url($prefix + '/assets/wondergem/fonts/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'), url($prefix + '/assets/wondergem/fonts/OpenSans-Light-webfont.woff') format('woff'), url($prefix + '/assets/wondergem/fonts/OpenSans-Light-webfont.ttf') format('truetype'), url($prefix + '/assets/wondergem/fonts/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
+  src: local('Open Sans Light'), local('OpenSans-Light'), url($prefix + '/assets/wondergem/fonts/OpenSans-Light-webfont.woff') format('woff'), url($prefix + '/assets/wondergem/fonts/OpenSans-Light-webfont.ttf') format('truetype'), url($prefix + '/assets/wondergem/fonts/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
 }
 
 @font-face {
   font-family: 'Open Sans';
   font-style: normal;
   font-weight: 400;
-  src: local('Open Sans'), local('OpenSans'), url($prefix + '/assets/wondergem/fonts/OpenSans-Regular-webfont.eot'), url($prefix + '/assets/wondergem/fonts/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'), url($prefix + '/assets/wondergem/fonts/OpenSans-Regular-webfont.woff') format('woff'), url($prefix + '/assets/wondergem/fonts/OpenSans-Regular-webfont.ttf') format('truetype'), url($prefix + '/assets/wondergem/fonts/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
+  src: local('Open Sans'), local('OpenSans'), url($prefix + '/assets/wondergem/fonts/OpenSans-Regular-webfont.woff') format('woff'), url($prefix + '/assets/wondergem/fonts/OpenSans-Regular-webfont.ttf') format('truetype'), url($prefix + '/assets/wondergem/fonts/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
 }
 
 @font-face {
   font-family: 'Open Sans';
   font-style: normal;
   font-weight: 600;
-  src: local('Open Sans Semibold'), local('OpenSans-Semibold'), url($prefix + '/assets/wondergem/fonts/OpenSans-Semibold-webfont.eot'), url($prefix + '/assets/wondergem/fonts/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'), url($prefix + '/assets/wondergem/fonts/OpenSans-Semibold-webfont.woff') format('woff'), url($prefix + '/assets/wondergem/fonts/OpenSans-Semibold-webfont.ttf') format('truetype'), url($prefix + '/assets/wondergem/fonts/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
+  src: local('Open Sans Semibold'), local('OpenSans-Semibold'), url($prefix + '/assets/wondergem/fonts/OpenSans-Semibold-webfont.woff') format('woff'), url($prefix + '/assets/wondergem/fonts/OpenSans-Semibold-webfont.ttf') format('truetype'), url($prefix + '/assets/wondergem/fonts/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
 }
 
 @font-face {
   font-family: 'Open Sans';
   font-style: normal;
   font-weight: 700;
-  src: local('Open Sans Bold'), local('OpenSans-Bold'), url($prefix + '/assets/wondergem/fonts/OpenSans-Bold-webfont.eot'), url($prefix + '/assets/wondergem/fonts/OpenSans-Bold-webfont.eot?#iefix') format('embedded-opentype'), url($prefix + '/assets/wondergem/fonts/OpenSans-Bold-webfont.woff') format('woff'), url($prefix + '/assets/wondergem/fonts/OpenSans-Bold-webfont.ttf') format('truetype'), url($prefix + '/assets/wondergem/fonts/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
+  src: local('Open Sans Bold'), local('OpenSans-Bold'), url($prefix + '/assets/wondergem/fonts/OpenSans-Bold-webfont.woff') format('woff'), url($prefix + '/assets/wondergem/fonts/OpenSans-Bold-webfont.ttf') format('truetype'), url($prefix + '/assets/wondergem/fonts/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
 }
 
 @font-face {
   font-family: 'Open Sans';
   font-style: italic;
   font-weight: 400;
-  src: local('Open Sans Italic'), local('OpenSans-Italic'), url($prefix + '/assets/wondergem/fonts/OpenSans-Italic-webfont.eot'), url($prefix + '/assets/wondergem/fonts/OpenSans-Italic-webfont.eot?#iefix') format('embedded-opentype'), url($prefix + '/assets/wondergem/fonts/OpenSans-Italic-webfont.woff') format('woff'), url($prefix + '/assets/wondergem/fonts/OpenSans-Italic-webfont.ttf') format('truetype'), url($prefix + '/assets/wondergem/fonts/OpenSans-Italic-webfont.svg#OpenSansItalic') format('svg');
+  src: local('Open Sans Italic'), local('OpenSans-Italic'), url($prefix + '/assets/wondergem/fonts/OpenSans-Italic-webfont.woff') format('woff'), url($prefix + '/assets/wondergem/fonts/OpenSans-Italic-webfont.ttf') format('truetype'), url($prefix + '/assets/wondergem/fonts/OpenSans-Italic-webfont.svg#OpenSansItalic') format('svg');
 }
 
 body {
