@@ -490,10 +490,10 @@ public class WebContext implements SubContext {
                 }
             } catch (Exception e) {
                 Exceptions.handle()
-                          .to(WebServer.LOG)
-                          .error(e)
-                          .withSystemErrorMessage("Failed to fetch parameter %s: %s (%s)", key)
-                          .handle();
+                        .to(WebServer.LOG)
+                        .error(e)
+                        .withSystemErrorMessage("Failed to fetch parameter %s: %s (%s)", key)
+                        .handle();
             }
         }
         return Value.of(null);
@@ -561,10 +561,10 @@ public class WebContext implements SubContext {
             }
         }
         throw Exceptions.createHandled()
-                        .withSystemErrorMessage(
-                                "A required parameter was not filled. Provide at least one value for: %s",
-                                Arrays.asList(keys))
-                        .handle();
+                .withSystemErrorMessage(
+                        "A required parameter was not filled. Provide at least one value for: %s",
+                        Arrays.asList(keys))
+                .handle();
     }
 
     /**
@@ -678,10 +678,10 @@ public class WebContext implements SubContext {
 
     private boolean checkSessionDataIntegrity(Map<String, String> currentSession, Tuple<String, String> sessionInfo) {
         return Strings.areEqual(sessionInfo.getFirst(),
-                                Hashing.sha512()
-                                       .hashString(sessionInfo.getSecond() + getSessionSecret(currentSession),
-                                                   Charsets.UTF_8)
-                                       .toString());
+                Hashing.sha512()
+                        .hashString(sessionInfo.getSecond() + getSessionSecret(currentSession),
+                                Charsets.UTF_8)
+                        .toString());
     }
 
     /**
@@ -808,10 +808,10 @@ public class WebContext implements SubContext {
      */
     public ServerSession getServerSession() {
         return getServerSession(true).orElseThrow(() -> Exceptions.handle()
-                                                                  .to(WebServer.LOG)
-                                                                  .withSystemErrorMessage(
-                                                                          "SessionManager was unable to create a session!")
-                                                                  .handle());
+                .to(WebServer.LOG)
+                .withSystemErrorMessage(
+                        "SessionManager was unable to create a session!")
+                .handle());
     }
 
     /**
@@ -908,8 +908,8 @@ public class WebContext implements SubContext {
                             // in the last IP -> cut appropriately
                             Tuple<String, String> splitIPs = Strings.splitAtLast(forwardedFor.asString(), ",");
                             String forwardedForIp = Strings.isFilled(splitIPs.getSecond()) ?
-                                                    splitIPs.getSecond().trim() :
-                                                    splitIPs.getFirst().trim();
+                                    splitIPs.getSecond().trim() :
+                                    splitIPs.getFirst().trim();
                             remoteIp = InetAddress.getByName(forwardedForIp);
                         } catch (Throwable e) {
                             Exceptions.ignore(e);
@@ -1365,10 +1365,7 @@ public class WebContext implements SubContext {
      * @return a collection of all parameters sent by the client
      */
     public Collection<String> getParameterNames() {
-        if (queryString == null) {
-            decodeQueryString();
-        }
-        Set<String> names = Sets.newTreeSet(queryString.keySet());
+        Collection<String> names = getGETParameterNames();
         if (postDecoder != null) {
             try {
                 for (InterfaceHttpData data : postDecoder.getBodyHttpDatas()) {
@@ -1380,6 +1377,18 @@ public class WebContext implements SubContext {
         }
 
         return names;
+    }
+
+    /**
+     * Returns a collection of only GET parameters names.
+     *
+     * @return a collection of all GET parameters sent by the client
+     */
+    public Collection<String> getGETParameterNames() {
+        if (queryString == null) {
+            decodeQueryString();
+        }
+        return Sets.newTreeSet(queryString.keySet());
     }
 
     /**
@@ -1568,20 +1577,20 @@ public class WebContext implements SubContext {
         try {
             if (content == null) {
                 throw Exceptions.handle()
-                                .to(WebServer.LOG)
-                                .withSystemErrorMessage("Expected valid XML as body of this request.")
-                                .handle();
+                        .to(WebServer.LOG)
+                        .withSystemErrorMessage("Expected valid XML as body of this request.")
+                        .handle();
             }
             if (content.isInMemory()) {
                 return new XMLStructuredInput(new ByteArrayInputStream(content.get()), true);
             } else {
                 if (content.getFile().length() > maxStructuredInputSize && maxStructuredInputSize > 0) {
                     throw Exceptions.handle()
-                                    .to(WebServer.LOG)
-                                    .withSystemErrorMessage(
-                                            "Request body is too large to parse as XML. The limit is %d bytes",
-                                            maxStructuredInputSize)
-                                    .handle();
+                            .to(WebServer.LOG)
+                            .withSystemErrorMessage(
+                                    "Request body is too large to parse as XML. The limit is %d bytes",
+                                    maxStructuredInputSize)
+                            .handle();
                 }
                 return new XMLStructuredInput(new FileInputStream(content.getFile()), true);
             }
@@ -1589,10 +1598,10 @@ public class WebContext implements SubContext {
             throw e;
         } catch (Exception e) {
             throw Exceptions.handle()
-                            .to(WebServer.LOG)
-                            .error(e)
-                            .withSystemErrorMessage("Expected valid XML as body of this request: %s (%s).")
-                            .handle();
+                    .to(WebServer.LOG)
+                    .error(e)
+                    .withSystemErrorMessage("Expected valid XML as body of this request: %s (%s).")
+                    .handle();
         }
     }
 
@@ -1608,20 +1617,20 @@ public class WebContext implements SubContext {
         try {
             if (content == null) {
                 throw Exceptions.handle()
-                                .to(WebServer.LOG)
-                                .withSystemErrorMessage("Expected a valid JSON map as body of this request.")
-                                .handle();
+                        .to(WebServer.LOG)
+                        .withSystemErrorMessage("Expected a valid JSON map as body of this request.")
+                        .handle();
             }
             if (content.isInMemory()) {
                 return JSON.parseObject(content.getString(getRequestEncoding()));
             } else {
                 if (content.getFile().length() > maxStructuredInputSize && maxStructuredInputSize > 0) {
                     throw Exceptions.handle()
-                                    .to(WebServer.LOG)
-                                    .withSystemErrorMessage(
-                                            "Request body is too large to parse as JSON. The limit is %d bytes",
-                                            maxStructuredInputSize)
-                                    .handle();
+                            .to(WebServer.LOG)
+                            .withSystemErrorMessage(
+                                    "Request body is too large to parse as JSON. The limit is %d bytes",
+                                    maxStructuredInputSize)
+                            .handle();
                 }
                 return JSON.parseObject(content.getString(getRequestEncoding()));
             }
@@ -1629,10 +1638,10 @@ public class WebContext implements SubContext {
             throw e;
         } catch (Exception e) {
             throw Exceptions.handle()
-                            .to(WebServer.LOG)
-                            .error(e)
-                            .withSystemErrorMessage("Expected a valid JSON map as body of this request: %s (%s).")
-                            .handle();
+                    .to(WebServer.LOG)
+                    .error(e)
+                    .withSystemErrorMessage("Expected a valid JSON map as body of this request: %s (%s).")
+                    .handle();
         }
     }
 
@@ -1696,10 +1705,10 @@ public class WebContext implements SubContext {
             throw e;
         } catch (Exception e) {
             throw Exceptions.handle()
-                            .to(WebServer.LOG)
-                            .error(e)
-                            .withSystemErrorMessage("Error parsing request content: %s (%s).")
-                            .handle();
+                    .to(WebServer.LOG)
+                    .error(e)
+                    .withSystemErrorMessage("Error parsing request content: %s (%s).")
+                    .handle();
         }
     }
 
