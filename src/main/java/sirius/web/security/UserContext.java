@@ -368,13 +368,13 @@ public class UserContext implements SubContext {
     }
 
     /**
-     * Returns "error" if an error was added for the given field.
+     * Returns "has-error" if an error was added for the given field.
      *
      * @param field the field to check
-     * @return "error" if an error was added for the given field, an empty string otherwise
+     * @return "has-error" if an error was added for the given field, an empty string otherwise
      */
     public String signalFieldError(String field) {
-        return hasError(field) ? "error" : "";
+        return hasError(field) ? "has-error" : "";
     }
 
     /**
