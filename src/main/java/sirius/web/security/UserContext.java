@@ -88,6 +88,7 @@ public class UserContext implements SubContext {
     private ScopeInfo currentScope = null;
     private List<Message> msgList = Lists.newArrayList();
     private Map<String, String> fieldErrors = Maps.newHashMap();
+    private Map<String, String> fieldErrorMessages = Maps.newHashMap();
 
     @Part
     private static GlobalContext context;
@@ -98,7 +99,7 @@ public class UserContext implements SubContext {
     private static UserManager getManager(ScopeInfo scope) {
         Extension ext = Extensions.getExtension("security.scopes", scope.getScopeType());
         return context.getPart(ext.get("manager").asString("public"), UserManagerFactory.class)
-                      .createManager(scope, ext);
+                .createManager(scope, ext);
     }
 
     /**
@@ -332,9 +333,9 @@ public class UserContext implements SubContext {
     public List<Message> getMessages() {
         if (cluster.getClusterState() == MetricState.RED && getUser().hasPermission(PERMISSION_SYSTEM_NOTIFY_STATE) && !Sirius.isStartedAsTest()) {
             Message systemStateWarning = Message.error(Strings.apply("System state is %s (Cluster state is %s)",
-                                                                     cluster.getNodeState(),
-                                                                     cluster.getClusterState()))
-                                                .withAction("system/state", "View System State");
+                    cluster.getNodeState(),
+                    cluster.getClusterState()))
+                    .withAction("system/state", "View System State");
             if (msgList.isEmpty()) {
                 return Collections.singletonList(systemStateWarning);
             } else {
@@ -358,13 +359,13 @@ public class UserContext implements SubContext {
     }
 
     /**
-     * Determines if there is an error for the given field
+     * Determines if there is an error or error message for the given field
      *
      * @param field the field to check for errors
      * @return <tt>true</tt> if an error was added for the field, <tt>false</tt> otherwise
      */
     public boolean hasError(String field) {
-        return fieldErrors.containsKey(field);
+        return fieldErrors.containsKey(field) || fieldErrorMessages.containsKey(field);
     }
 
     /**
@@ -413,6 +414,41 @@ public class UserContext implements SubContext {
      */
     public Collection<String> getFieldValues(String field) {
         return CallContext.getCurrent().get(WebContext.class).getParameters(field);
+    }
+
+    /**
+     * Adds an error message for the given field
+     *
+     * @param field name of the form field
+     * @param errorMessage value to be added
+     */
+    public static void setErrorMessage(String field, String errorMessage) {
+        get().addFieldErrorMessage(field, errorMessage);
+    }
+
+    /**
+     * Adds an error message for the given field
+     *
+     * @param field name of the form field
+     * @param errorMessage value to be added
+     */
+    public void addFieldErrorMessage(String field, String errorMessage) {
+        fieldErrorMessages.put(field, errorMessage);
+    }
+
+
+    /**
+     * Returns an error message for the given field
+     *
+     * @param field name of the form field
+     * @return error message if existant else an empty string
+     */
+    public String getFieldErrorMessage(String field) {
+        if (fieldErrorMessages.containsKey(field)) {
+            return fieldErrorMessages.get(field);
+        }
+
+        return "";
     }
 
     /**
