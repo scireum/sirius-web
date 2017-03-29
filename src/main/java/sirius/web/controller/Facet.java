@@ -158,6 +158,7 @@ public class Facet {
      * @return the facet itself for fluent method calls
      */
     public Facet withValue(String value) {
+        this.values.clear();
         this.values.add(value);
 
         return this;
