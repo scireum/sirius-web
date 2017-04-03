@@ -29,7 +29,7 @@ class SiriusResourceLoader extends ResourceLoaderBase {
         return "";
     }
 
-    private static final Pattern QUALIFIED_TEMPLATE_URI = Pattern.compile("/?(view|help)(\\.|/).*");
+    private static final Pattern QUALIFIED_TEMPLATE_URI = Pattern.compile("/?(view|help|assets)(\\.|/).*");
 
     @Override
     public ITemplateResource load(String path) {
