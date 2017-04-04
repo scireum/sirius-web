@@ -146,3 +146,12 @@ a.link-info {
 a:hover.link-info {
   color: $linkInfoHover;
 }
+
+// External links are indicated with an icon
+.external-link:before {
+  font-family: 'FontAwesome';
+  content: '\f101';
+  font-weight: normal;
+  margin-right: 0.2em;
+  color: $textColor;
+}
