@@ -10,6 +10,7 @@ package sirius.web.dispatch;
 
 import io.netty.handler.codec.http.HttpMethod;
 import sirius.kernel.commons.PriorityCollector;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
 import sirius.web.http.WebContext;
@@ -17,6 +18,9 @@ import sirius.web.http.WebDispatcher;
 
 import java.io.File;
 import java.net.URL;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Takes care of all /help URIs and sub-uris.
@@ -24,13 +28,13 @@ import java.net.URL;
 @Register
 public class HelpDispatcher implements WebDispatcher {
 
-    @Override
-    public int getPriority() {
-        return PriorityCollector.DEFAULT_PRIORITY + 100;
-    }
+    private static Pattern startPagePattern = Pattern.compile("^/help/(..)/?$");
 
     @ConfigValue("help.indexTemplate")
     private String indexTemplate;
+
+    @ConfigValue("help.languages")
+    private List<String> helpSystemLanguageDirectories;
 
     @Override
     public boolean preDispatch(WebContext ctx) throws Exception {
@@ -38,14 +42,17 @@ public class HelpDispatcher implements WebDispatcher {
     }
 
     @Override
+    public int getPriority() {
+        return PriorityCollector.DEFAULT_PRIORITY + 100;
+    }
+
+    @Override
     public boolean dispatch(WebContext ctx) throws Exception {
         if (!ctx.getRequest().uri().startsWith("/help") || HttpMethod.GET != ctx.getRequest().method()) {
             return false;
         }
-        String uri = ctx.getRequestedURI();
-        if ("/help".equals(uri) || "/help/".equals(uri)) {
-            uri = "/help/" + indexTemplate;
-        }
+        String uri = getRequestedURI(ctx);
+        String helpSystemHomeURI = "/help/" + getHelpSystemLanguageDirectory(uri);
         if (uri.contains(".") && !uri.endsWith("html")) {
             // Dispatch static content...
             URL url = getClass().getResource(uri);
@@ -58,9 +65,38 @@ public class HelpDispatcher implements WebDispatcher {
             }
         } else {
             // Render help template...
+            ctx.setAttribute("helpSystemHomeURI", helpSystemHomeURI);
             ctx.respondWith().cached().nlsTemplate(uri);
         }
         ctx.enableTiming("/help/");
         return true;
+    }
+
+    private String getHelpSystemLanguageDirectory(String uri) {
+        String subUri = uri.substring("/help/".length()).split("/")[0];
+        return helpSystemLanguageDirectories.contains(subUri) ? subUri : "";
+    }
+
+    private String getRequestedURI(WebContext ctx) {
+        String uri = ctx.getRequestedURI();
+        if ("/help".equals(uri) || "/help/".equals(uri)) {
+            return buildHomeURI(null);
+        }
+        Matcher matcher = startPagePattern.matcher(uri);
+        if (matcher.matches()) {
+            String lang = matcher.group(1);
+            if (helpSystemLanguageDirectories.contains(lang)) {
+                return buildHomeURI(lang);
+            }
+        }
+        return uri;
+    }
+
+    private String buildHomeURI(String lang) {
+        String uri = "/help";
+        if (Strings.isFilled(lang)) {
+            uri = uri + "/" + lang;
+        }
+        return uri + "/" + indexTemplate;
     }
 }

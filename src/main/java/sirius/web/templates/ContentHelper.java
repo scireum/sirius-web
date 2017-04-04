@@ -8,9 +8,13 @@
 
 package sirius.web.templates;
 
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
 import java.util.Optional;
 
 /**
@@ -42,6 +46,44 @@ public class ContentHelper {
         return content.replace("\n", " <br> ");
     }
 
+    /**
+     * Removes all XML characters (&lt;, &gt;, &quot;, &#039;, &amp;) from the input and replaces it with the well known
+     * replacement characters.
+     *
+     * @param aText the text to replace
+     * @return a string which can safely output in XML or HTML. Returns an empty string if the input was <tt>null</tt>.
+     */
+    @Nonnull
+    public static String escapeXML(@Nullable Object aText) {
+        if (Strings.isEmpty(aText)) {
+            return "";
+        }
+
+        final StringBuilder result = new StringBuilder();
+        final StringCharacterIterator iterator = new StringCharacterIterator(aText.toString());
+        char character = iterator.current();
+        while (character != CharacterIterator.DONE) {
+            if (character == '<') {
+                result.append("&lt;");
+            } else if (character == '>') {
+                result.append("&gt;");
+            } else if (character == '\"') {
+                result.append("&quot;");
+            } else if (character == '\'') {
+                result.append("&#039;");
+            } else if (character == '&') {
+                result.append("&amp;");
+            } else {
+                // the char is not a special one
+                // add it to the result as is
+                result.append(character);
+            }
+            character = iterator.next();
+        }
+
+        return result.toString();
+    }
+
     @Part
     private static Resources resources;
 
@@ -56,10 +98,6 @@ public class ContentHelper {
     @Nonnull
     public String getResourceAsInlineString(String resource) {
         Optional<Resource> res = resources.resolve(resource);
-        if (!res.isPresent()) {
-            return "";
-        }
-
-        return res.get().getContentAsString().replaceAll("\\r?\\n", " ").replace("'", "\\'");
+        return res.map(r -> r.getContentAsString().replaceAll("\\r?\\n", " ").replace("'", "\\'")).orElse("");
     }
 }

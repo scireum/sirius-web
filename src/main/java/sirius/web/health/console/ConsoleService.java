@@ -11,7 +11,7 @@ package sirius.web.health.console;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.di.GlobalContext;
-import sirius.kernel.di.std.Context;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.console.Command;
@@ -34,7 +34,7 @@ import java.util.Map;
 @Permission(SystemController.PERMISSION_SYSTEM_CONSOLE)
 public class ConsoleService implements StructuredService {
 
-    @Context
+    @Part
     private GlobalContext ctx;
 
     @Override

@@ -16,7 +16,6 @@ import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.GlobalContext;
-import sirius.kernel.di.std.Context;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.nls.NLS;
@@ -43,7 +42,7 @@ public class ServiceDispatcher implements WebDispatcher {
         return PriorityCollector.DEFAULT_PRIORITY - 5;
     }
 
-    @Context
+    @Part
     private GlobalContext gc;
 
     @Part

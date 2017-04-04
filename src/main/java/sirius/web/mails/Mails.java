@@ -11,12 +11,18 @@ package sirius.web.mails;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.sun.mail.smtp.SMTPMessage;
 import com.typesafe.config.Config;
+import net.markenwerk.utils.mail.dkim.Canonicalization;
+import net.markenwerk.utils.mail.dkim.DkimMessage;
+import net.markenwerk.utils.mail.dkim.DkimSigner;
+import net.markenwerk.utils.mail.dkim.SigningAlgorithm;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Operation;
 import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Context;
+import sirius.kernel.commons.Files;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
@@ -32,6 +38,8 @@ import sirius.kernel.health.metrics.MetricProvider;
 import sirius.kernel.health.metrics.MetricsCollector;
 import sirius.kernel.nls.NLS;
 import sirius.web.http.MimeHelper;
+import sirius.web.templates.Resource;
+import sirius.web.templates.Resources;
 import sirius.web.templates.Templates;
 import sirius.web.templates.velocity.VelocityContentHandler;
 
@@ -47,8 +55,10 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.time.Duration;
 import java.util.Arrays;
@@ -57,6 +67,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Used to send mails using predefined templates.
@@ -102,21 +113,41 @@ public class Mails implements MetricProvider {
 
     @ConfigValue("mail.smtp.host")
     private String smtpHost;
+
     @ConfigValue("mail.smtp.port")
     private int smtpPort;
+
     @ConfigValue("mail.smtp.user")
     private String smtpUser;
+
     @ConfigValue("mail.smtp.password")
     private String smtpPassword;
+
     @ConfigValue("mail.smtp.sender")
     private String smtpSender;
+
     @ConfigValue("mail.smtp.senderName")
     private String smtpSenderName;
+
+    @ConfigValue("mail.smtp.dkim.keyFile")
+    private String dkimKeyFile;
+
+    @ConfigValue("mail.smtp.dkim.domains")
+    private List<String> dkimDomains;
+    private Set<String> dkimDomainSet;
+
+    @ConfigValue("mail.smtp.dkim.selector")
+    private String dkimSelector;
+
+    private Boolean dkimEnabled;
 
     private final SMTPConfiguration defaultConfig = new DefaultSMTPConfig();
 
     @ConfigValue("mail.mailer")
     private String mailer;
+
+    @Part
+    private Resources resources;
 
     @Part
     private Templates templates;
@@ -165,7 +196,7 @@ public class Mails implements MetricProvider {
                 new InternetAddress(address).validate();
             }
             return true;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             Exceptions.ignore(e);
             return false;
         }
@@ -273,9 +304,9 @@ public class Mails implements MetricProvider {
             if (langs == null) {
                 return this;
             }
-            for (String lang : langs) {
-                if (Strings.isFilled(lang)) {
-                    this.lang = lang;
+            for (String language : langs) {
+                if (Strings.isFilled(language)) {
+                    this.lang = language;
                     return this;
                 }
             }
@@ -457,12 +488,49 @@ public class Mails implements MetricProvider {
 
         /**
          * Adds an attachment to the email.
+         * <p>
+         * Use {@link Templates.Generator#generateAttachment(String)} to directly generate an attachment from a
+         * template.
          *
          * @param attachment the attachment to add to the email
          * @return the builder itself
          */
         public MailSender addAttachment(DataSource attachment) {
             attachments.add(attachment);
+            return this;
+        }
+
+        /**
+         * Adds a resource as attachment.
+         *
+         * @param resource  the resource to lookup using {@link Resources#resolve(String)}
+         * @param filename  the filename to use for the attachment
+         * @param contentId the content id to reference it within HTML content. &lt; and &gt; are automatically added.
+         *                  Note that most mail clients like to see a valid message id (xxx@domain.tld) here.
+         * @return the builder itself
+         */
+        public MailSender addResourceAsAttachment(@Nonnull String resource,
+                                                  @Nullable String filename,
+                                                  @Nullable String contentId) {
+            Resource res = resources.resolve(resource)
+                                    .orElseThrow(() -> Exceptions.handle()
+                                                                 .to(LOG)
+                                                                 .withSystemErrorMessage(
+                                                                         "Cannot resolve %s as mail attachment",
+                                                                         resource)
+                                                                 .handle());
+
+            if (Strings.isEmpty(filename)) {
+                filename = Files.getFilenameAndExtension(resource);
+            }
+
+            ResourceAttachment attachment =
+                    new ResourceAttachment(filename, MimeHelper.guessMimeType(filename), res, false);
+            if (Strings.isFilled(contentId)) {
+                attachment.addHeader("Content-ID", "<" + contentId + ">");
+            }
+            attachments.add(attachment);
+
             return this;
         }
 
@@ -544,7 +612,7 @@ public class Mails implements MetricProvider {
                 }
             } catch (HandledException e) {
                 throw e;
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 throw Exceptions.handle()
                                 .withSystemErrorMessage(
                                         "Cannot send mail to '%s (%s)' from '%s (%s)' with subject '%s': %s (%s)",
@@ -597,7 +665,7 @@ public class Mails implements MetricProvider {
                         new InternetAddress(senderEmail).validate();
                     }
                 }
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 throw Exceptions.handle()
                                 .to(LOG)
                                 .error(e)
@@ -647,7 +715,7 @@ public class Mails implements MetricProvider {
                 generateAttachments(ex);
             } catch (HandledException e) {
                 throw e;
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 throw Exceptions.handle()
                                 .withSystemErrorMessage(
                                         "Cannot send mail to '%s (%s)' from '%s (%s)' with subject '%s': %s (%s)",
@@ -696,7 +764,7 @@ public class Mails implements MetricProvider {
                     if (attachmentConfig.hasPath("alternative")) {
                         asAlternative = attachmentConfig.getBoolean("alternative");
                     }
-                    Attachment att = new Attachment(fileName, mimeType, out.toByteArray(), asAlternative);
+                    Attachment att = new BufferedAttachment(fileName, mimeType, out.toByteArray(), asAlternative);
                     if (attachmentConfig.hasPath("headers")) {
                         for (Map.Entry<String, com.typesafe.config.ConfigValue> e : attachmentConfig.getConfig("headers")
                                                                                                     .entrySet()) {
@@ -704,7 +772,7 @@ public class Mails implements MetricProvider {
                         }
                     }
                     addAttachment(att);
-                } catch (Throwable t) {
+                } catch (Exception t) {
                     Exceptions.handle()
                               .to(LOG)
                               .error(t)
@@ -742,7 +810,7 @@ public class Mails implements MetricProvider {
                                                     .asString(ex.get("html").asString()))
                                      .applyContext(context)
                                      .generate());
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 Exceptions.handle()
                           .to(LOG)
                           .error(e)
@@ -804,10 +872,8 @@ public class Mails implements MetricProvider {
                 mail.simulate = true;
             }
             determineTechnicalSender();
-            Operation op = Operation.create("mail",
-                                            () -> "Sending eMail: " + mail.subject + " to: " + mail.receiverEmail,
-                                            Duration.ofSeconds(30));
-            try {
+            try (Operation op = new Operation(() -> "Sending eMail: " + mail.subject + " to: " + mail.receiverEmail,
+                                              Duration.ofSeconds(30))) {
                 if (!mail.simulate) {
                     sendMail();
                 } else {
@@ -815,7 +881,6 @@ public class Mails implements MetricProvider {
                     success = true;
                 }
             } finally {
-                Operation.release(op);
                 if (logs.isEmpty()) {
                     if (!success) {
                         LOG.WARN("FAILED to send mail from: '%s' to '%s' with subject: '%s'",
@@ -855,28 +920,26 @@ public class Mails implements MetricProvider {
                 Session session = getMailSession(config);
                 Transport transport = getSMTPTransport(session, config);
                 try {
-                    try {
-                        SMTPMessage msg = createMessage(session);
-                        transport.sendMessage(msg, msg.getAllRecipients());
-                        messageId = msg.getMessageID();
-                        success = true;
-                    } catch (Throwable e) {
-                        throw Exceptions.handle()
-                                        .withSystemErrorMessage(
-                                                "Cannot send mail to %s from %s with subject '%s': %s (%s)",
-                                                mail.receiverEmail,
-                                                mail.senderEmail,
-                                                mail.subject)
-                                        .to(LOG)
-                                        .error(e)
-                                        .handle();
-                    }
+                    MimeMessage msg = signMessage(createMessage(session));
+
+                    transport.sendMessage(msg, msg.getAllRecipients());
+                    messageId = msg.getMessageID();
+                    success = true;
+                } catch (Exception e) {
+                    throw Exceptions.handle()
+                                    .withSystemErrorMessage("Cannot send mail to %s from %s with subject '%s': %s (%s)",
+                                                            mail.receiverEmail,
+                                                            mail.senderEmail,
+                                                            mail.subject)
+                                    .to(LOG)
+                                    .error(e)
+                                    .handle();
                 } finally {
                     transport.close();
                 }
             } catch (HandledException e) {
                 throw e;
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 throw Exceptions.handle()
                                 .withSystemErrorMessage(
                                         "Invalid mail configuration: %s (Host: %s, Port: %s, User: %s, Password used: %s)",
@@ -922,6 +985,54 @@ public class Mails implements MetricProvider {
             }
             msg.setSentDate(new Date());
             return msg;
+        }
+
+        private boolean isDkimDomain(String domain) {
+            if (dkimDomainSet == null) {
+                dkimDomainSet = Sets.newTreeSet(dkimDomains);
+            }
+
+            return dkimDomainSet.contains(domain);
+        }
+
+        private boolean isDkimEnabled() {
+            if (dkimEnabled == null) {
+                dkimEnabled = Strings.isFilled(dkimSelector)
+                              && Strings.isFilled(dkimKeyFile)
+                              && new File(dkimKeyFile).exists();
+            }
+
+            return dkimEnabled;
+        }
+
+        private MimeMessage signMessage(MimeMessage message) {
+            if (!isDkimEnabled()) {
+                return message;
+            }
+            String effectiveFrom = mail.senderEmail;
+            if (Strings.isEmpty(effectiveFrom)) {
+                effectiveFrom = technicalSender;
+            }
+
+            String domain = Strings.split(effectiveFrom, "@").getSecond();
+            if (!isDkimDomain(domain)) {
+                return message;
+            }
+
+            try {
+                DkimSigner dkimSigner = new DkimSigner(domain, dkimSelector, new File(dkimKeyFile));
+                dkimSigner.setIdentity(effectiveFrom);
+                dkimSigner.setHeaderCanonicalization(Canonicalization.SIMPLE);
+                dkimSigner.setBodyCanonicalization(Canonicalization.RELAXED);
+                dkimSigner.setSigningAlgorithm(SigningAlgorithm.SHA256_WITH_RSA);
+                dkimSigner.setLengthParam(true);
+                dkimSigner.setZParam(false);
+                return new DkimMessage(message, dkimSigner);
+            } catch (Exception e) {
+                Exceptions.handle().to(LOG).error(e).withNLSKey("Skipping DKIM signing due to: %s (%s)").handle();
+            }
+
+            return message;
         }
 
         private void setupSender(SMTPMessage msg) throws MessagingException, UnsupportedEncodingException {

@@ -15,14 +15,14 @@ import sirius.kernel.health.HandledException
 class MailsSpec extends BaseSpecification {
 
     @Part
-    static Mails mails;
+    static Mails mails
 
     def "Mails sends a simple mail"() {
         when:
-        ((MailsMock) mails).getSentMails().clear();
-        mails.createEmail().to("test@scireum.de", "Test").subject("Test eMail").textContent("This is a Test.").send();
+        ((MailsMock) mails).getSentMails().clear()
+        mails.createEmail().to("test@scireum.de", "Test").subject("Test eMail").textContent("This is a Test.").send()
         then:
-        MailsMock.MailSenderMock mail = ((MailsMock) mails).getLastMail();
+        MailsMock.MailSenderMock mail = ((MailsMock) mails).getLastMail()
         mail.getReceiverEmail() == "test@scireum.de"
         mail.getReceiverName() == "Test"
         mail.getSubject() == "Test eMail"
@@ -32,10 +32,10 @@ class MailsSpec extends BaseSpecification {
 
     def "Mails rejects an invalid receiver"() {
         when:
-        ((MailsMock) mails).getSentMails().clear();
-        mails.createEmail().to("test@", "Invalid").subject("Test eMail").textContent("This is a Test.").send();
+        ((MailsMock) mails).getSentMails().clear()
+        mails.createEmail().to("test@", "Invalid").subject("Test eMail").textContent("This is a Test.").send()
         then:
-        thrown(HandledException);
+        thrown(HandledException)
     }
 
 }

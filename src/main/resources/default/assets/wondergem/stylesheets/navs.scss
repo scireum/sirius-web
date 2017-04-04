@@ -88,6 +88,12 @@ $navbarLinkBackgroundActive:    darken($navbarLinkBackgroundHover, 5%);
   margin-right: 5px;
 }
 
+.nav-list > li > a:hover i,
+.nav-list > li > a:focus i,
+.nav-list > .active > a i {
+  color: $white;
+}
+
 // SUB NAV
 // --------
 

@@ -233,9 +233,9 @@ public class AssetsDispatcher implements WebDispatcher {
     private File getCacheDirFile() {
         if (cacheDirFile == null) {
             File tmpDir = new File(System.getProperty("java.io.tmpdir"),
-                                   Files.toSaneFileName(Product.getProduct().getName()).orElse("")
+                                   Files.toSaneFileName(Product.getProduct().getName()).orElse("sirius")
                                    + "_"
-                                   + Files.toSaneFileName(CallContext.getNodeName())
+                                   + Files.toSaneFileName(CallContext.getNodeName()).orElse("node")
                                    + "_"
                                    + cacheDir);
             tmpDir.mkdirs();

@@ -5,11 +5,17 @@
 *  Copyright by scireum GmbH
 *  http://www.scireum.de - info@scireum.de
 *@
-@args String span, String name, String labelKey, String helpKey, boolean optional, String serviceUri, String searchKey, String type, boolean strict, boolean forceFullWidth
+@args String span, String name, String labelKey, String helpKey, boolean optional, String serviceUri, String searchKey, String type, boolean strict, boolean forceFullWidth, boolean required
 
-<div class="col-md-@(span == null || span == "" ? 6 : span)  form-group">
-    @if (Strings.isFilled(labelKey)) {
-        <label>@i18n(labelKey)</label>
+<div class="col-md-@(span == null || span == "" ? 6 : span)  form-group @user.signalFieldError(name)">
+    @if (required) {
+        <label>
+            <span class="input-required">@i18n(labelKey)</span>
+        </label>
+    } else {
+        @if (Strings.isFilled(labelKey)) {
+            <label>@i18n(labelKey)</label>
+        }
     }
     <select name="@name" class="form-control @user.signalFieldError(name)"
             @if(Strings.isFilled(type)) {

@@ -11,9 +11,7 @@ package sirius.web.mails;
 import com.google.common.collect.Maps;
 
 import javax.activation.DataSource;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 import java.util.Set;
@@ -21,10 +19,9 @@ import java.util.Set;
 /**
  * Encapsulates all information required to add an attachment to a mail being sent.
  */
-public class Attachment implements DataSource {
+public abstract class Attachment implements DataSource {
 
     private String contentType;
-    private byte[] buffer;
     private boolean asAlternative;
     private String name;
     private Map<String, String> headers = Maps.newTreeMap();
@@ -34,17 +31,13 @@ public class Attachment implements DataSource {
      *
      * @param name          the name of the attached file
      * @param mimeType      the mime type of the file. Use {@link sirius.web.http.MimeHelper} to determine it at
-     *                      runtime
-     *                      if
-     *                      it is not know in advance
-     * @param byteArray     the contents of the template
+     *                      runtime if it is not know in advance
      * @param asAlternative determines if this attachment is an alternative to the text content of the mail
      *                      (<tt>true</tt>) or a real attachment (<tt>false</tt>)
      */
-    public Attachment(String name, String mimeType, byte[] byteArray, boolean asAlternative) {
+    public Attachment(String name, String mimeType, boolean asAlternative) {
         this.name = name;
-        contentType = mimeType;
-        buffer = byteArray;
+        this.contentType = mimeType;
         this.asAlternative = asAlternative;
     }
 
@@ -60,14 +53,20 @@ public class Attachment implements DataSource {
         return this;
     }
 
-    @Override
-    public String getContentType() {
-        return contentType;
+    /**
+     * Updates the content type of the attachment.
+     *
+     * @param contentType the new content type to use
+     * @return the attachment itself for fluent method calls
+     */
+    public Attachment withContentType(String contentType) {
+        this.contentType = contentType;
+        return this;
     }
 
     @Override
-    public InputStream getInputStream() throws IOException {
-        return new ByteArrayInputStream(buffer);
+    public String getContentType() {
+        return contentType;
     }
 
     @Override

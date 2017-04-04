@@ -72,6 +72,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -264,6 +265,11 @@ public class WebContext implements SubContext {
     protected long started = 0;
 
     /*
+     * Caches the content size as the "readableBytes" value changes once a stream is on it.
+     */
+    private Long contentSize;
+
+    /*
      * Name of the cookie used to store and load the client session
      */
     @ConfigValue("http.sessionCookieName")
@@ -332,6 +338,14 @@ public class WebContext implements SubContext {
 
     @Part
     private static SessionManager sessionManager;
+
+    @Part
+    private static SessionSecretComputer sessionSecretComputer;
+
+    /**
+     * Date format used by HTTP date headers
+     */
+    public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
 
     /**
      * Provides access to the underlying ChannelHandlerContext
@@ -474,8 +488,12 @@ public class WebContext implements SubContext {
                 if (data instanceof Attribute) {
                     return Value.of(((Attribute) data).getValue());
                 }
-            } catch (Throwable e) {
-                Exceptions.handle(WebServer.LOG, e);
+            } catch (Exception e) {
+                Exceptions.handle()
+                          .to(WebServer.LOG)
+                          .error(e)
+                          .withSystemErrorMessage("Failed to fetch parameter %s: %s (%s)", key)
+                          .handle();
             }
         }
         return Value.of(null);
@@ -517,7 +535,7 @@ public class WebContext implements SubContext {
                 if (data instanceof Attribute) {
                     return true;
                 }
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 Exceptions.handle(WebServer.LOG, e);
             }
         }
@@ -564,7 +582,7 @@ public class WebContext implements SubContext {
             if (data instanceof HttpData) {
                 return (HttpData) data;
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             Exceptions.handle(WebServer.LOG, e);
         }
         return null;
@@ -585,7 +603,7 @@ public class WebContext implements SubContext {
             if (data instanceof FileUpload) {
                 return (FileUpload) data;
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             Exceptions.handle(WebServer.LOG, e);
         }
         return null;
@@ -625,29 +643,44 @@ public class WebContext implements SubContext {
      * Loads and parses the client session (cookie)
      */
     private void initSession() {
-        session = Maps.newHashMap();
         String encodedSession = getCookieValue(sessionCookieName);
         if (Strings.isFilled(encodedSession)) {
-            Tuple<String, String> sessionInfo = Strings.split(encodedSession, ":");
-            if (checkSessionDataIntegrity(sessionInfo)) {
-                QueryStringDecoder qsd = new QueryStringDecoder(encodedSession);
-                for (Map.Entry<String, List<String>> entry : qsd.parameters().entrySet()) {
-                    if (TTL_SESSION_KEY.equals(entry.getKey())) {
-                        sessionCookieTTL = Value.of(Iterables.getFirst(entry.getValue(), null)).getLong();
-                    } else {
-                        session.put(entry.getKey(), Iterables.getFirst(entry.getValue(), null));
-                    }
-                }
-            } else {
-                WebServer.LOG.FINE("Resetting client session due to security breach: %s", encodedSession);
-            }
+            session = decodeSession(encodedSession);
+        } else {
+            session = new HashMap<>();
         }
     }
 
-    private boolean checkSessionDataIntegrity(Tuple<String, String> sessionInfo) {
+    private Map<String, String> decodeSession(String encodedSession) {
+        Tuple<String, String> sessionInfo = Strings.split(encodedSession, ":");
+        Map<String, String> decodedSession = Maps.newHashMap();
+        long decodedSessionTTL = -1;
+        QueryStringDecoder qsd = new QueryStringDecoder(encodedSession);
+        for (Map.Entry<String, List<String>> entry : qsd.parameters().entrySet()) {
+            if (TTL_SESSION_KEY.equals(entry.getKey())) {
+                decodedSessionTTL = Value.of(Iterables.getFirst(entry.getValue(), null)).getLong();
+            } else {
+                decodedSession.put(entry.getKey(), Iterables.getFirst(entry.getValue(), null));
+            }
+        }
+        if (checkSessionDataIntegrity(decodedSession, sessionInfo)) {
+            if (decodedSessionTTL > 0) {
+                sessionCookieTTL = decodedSessionTTL;
+            }
+            return decodedSession;
+        } else {
+            if (WebServer.LOG.isFINE()) {
+                WebServer.LOG.FINE("Resetting client session due to security breach: %s", encodedSession);
+            }
+            return new HashMap<>();
+        }
+    }
+
+    private boolean checkSessionDataIntegrity(Map<String, String> currentSession, Tuple<String, String> sessionInfo) {
         return Strings.areEqual(sessionInfo.getFirst(),
                                 Hashing.sha512()
-                                       .hashString(sessionInfo.getSecond() + getSessionSecret(), Charsets.UTF_8)
+                                       .hashString(sessionInfo.getSecond() + getSessionSecret(currentSession),
+                                                   Charsets.UTF_8)
                                        .toString());
     }
 
@@ -978,14 +1011,14 @@ public class WebContext implements SubContext {
                 if (data == null || data.isEmpty()) {
                     return Collections.emptyList();
                 }
-                List<String> result = new ArrayList<String>();
+                List<String> result = new ArrayList<>();
                 for (InterfaceHttpData dataItem : data) {
                     if (dataItem instanceof Attribute) {
                         result.add(((Attribute) dataItem).getValue());
                     }
                 }
                 return result;
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 Exceptions.handle(WebServer.LOG, e);
             }
         }
@@ -1046,7 +1079,7 @@ public class WebContext implements SubContext {
      * @param name the cookie to fetch
      * @return the contents of the cookie wrapped as <tt>Value</tt>
      */
-    @Nonnull
+    @Nullable
     public String getCookieValue(String name) {
         Cookie c = getCookie(name);
         if (c == null) {
@@ -1140,7 +1173,8 @@ public class WebContext implements SubContext {
                     encoder.addParam(TTL_SESSION_KEY, String.valueOf(sessionCookieTTL));
                 }
                 String value = encoder.toString();
-                String protection = Hashing.sha512().hashString(value + getSessionSecret(), Charsets.UTF_8).toString();
+                String protection =
+                        Hashing.sha512().hashString(value + getSessionSecret(session), Charsets.UTF_8).toString();
                 long ttl = determineSessionCookieTTL();
                 if (ttl == 0) {
                     setHTTPSessionCookie(sessionCookieName, protection + ":" + value);
@@ -1177,10 +1211,10 @@ public class WebContext implements SubContext {
      */
     private String parseAcceptLanguage() {
         double bestQ = 0;
-        String lang = CallContext.getCurrent().getLang();
+        String currentLang = CallContext.getCurrent().getLang();
         String header = getHeader(HttpHeaderNames.ACCEPT_LANGUAGE);
         if (Strings.isEmpty(header)) {
-            return lang;
+            return currentLang;
         }
         header = header.toLowerCase();
         for (String str : header.split(",")) {
@@ -1197,21 +1231,28 @@ public class WebContext implements SubContext {
             }
 
             //Parse the locale
-            Locale locale = null;
             String[] l = arr[0].split("_");
             if (l.length > 0 && q > bestQ && NLS.isSupportedLanguage(l[0])) {
-                lang = l[0];
+                currentLang = l[0];
                 bestQ = q;
             }
         }
 
-        return lang;
+        return currentLang;
     }
 
     /*
      * Secret used to compute the protection keys for client sessions
      */
-    private String getSessionSecret() {
+    private String getSessionSecret(Map<String, String> currentSession) {
+        if (sessionSecretComputer != null) {
+            return sessionSecretComputer.computeSecret(currentSession);
+        }
+
+        return getGlobalSessionSecret();
+    }
+
+    private static String getGlobalSessionSecret() {
         if (Strings.isEmpty(sessionSecret)) {
             sessionSecret = UUID.randomUUID().toString();
         }
@@ -1239,11 +1280,6 @@ public class WebContext implements SubContext {
     public boolean isResponseCommitted() {
         return responseCommitted;
     }
-
-    /**
-     * Date format used by HTTP date headers
-     */
-    public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
 
     /**
      * Returns the request header with the given name
@@ -1338,7 +1374,7 @@ public class WebContext implements SubContext {
                 for (InterfaceHttpData data : postDecoder.getBodyHttpDatas()) {
                     names.add(data.getName());
                 }
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 Exceptions.handle(WebServer.LOG, e);
             }
         }
@@ -1457,11 +1493,6 @@ public class WebContext implements SubContext {
         return content.getCharset();
     }
 
-    /*
-     * Caches the content size as the "readableBytes" value changes once a stream is on it.
-     */
-    private Long contentSize;
-
     /**
      * Returns the size in bytes of the body of the request.
      *
@@ -1556,7 +1587,7 @@ public class WebContext implements SubContext {
             }
         } catch (HandledException e) {
             throw e;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw Exceptions.handle()
                             .to(WebServer.LOG)
                             .error(e)
@@ -1596,7 +1627,7 @@ public class WebContext implements SubContext {
             }
         } catch (HandledException e) {
             throw e;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw Exceptions.handle()
                             .to(WebServer.LOG)
                             .error(e)
@@ -1663,7 +1694,7 @@ public class WebContext implements SubContext {
             }
         } catch (HandledException e) {
             throw e;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw Exceptions.handle()
                             .to(WebServer.LOG)
                             .error(e)
@@ -1678,24 +1709,29 @@ public class WebContext implements SubContext {
     void release() {
         if (contentHandler != null) {
             try {
-                contentHandler.cleanup();
+                ContentHandler copy = this.contentHandler;
+                contentHandler = null;
+                copy.cleanup();
             } catch (Exception e) {
                 Exceptions.handle(WebServer.LOG, e);
             }
-            contentHandler = null;
         }
         if (postDecoder != null) {
             try {
-                postDecoder.cleanFiles();
+                InterfaceHttpPostRequestDecoder copy = this.postDecoder;
+                postDecoder = null;
+                copy.cleanFiles();
             } catch (Exception e) {
                 Exceptions.handle(WebServer.LOG, e);
             }
-            postDecoder = null;
         }
         if (content != null) {
             // Delete manually if anything like a file or so was allocated
             try {
-                content.delete();
+                Attribute copy = this.content;
+                content = null;
+                contentAsFile = null;
+                copy.delete();
             } catch (Exception e) {
                 Exceptions.handle(WebServer.LOG, e);
             }
@@ -1706,8 +1742,6 @@ public class WebContext implements SubContext {
             } catch (Exception e) {
                 Exceptions.handle(WebServer.LOG, e);
             }
-            content = null;
-            contentAsFile = null;
         }
         if (filesToCleanup != null) {
             for (File file : filesToCleanup) {

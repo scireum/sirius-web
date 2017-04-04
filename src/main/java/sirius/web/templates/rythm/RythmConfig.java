@@ -13,7 +13,6 @@ import org.rythmengine.Rythm;
 import org.rythmengine.RythmEngine;
 import org.rythmengine.conf.RythmConfigurationKey;
 import sirius.kernel.Lifecycle;
-import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Files;
 import sirius.kernel.di.std.Register;
@@ -71,17 +70,18 @@ public class RythmConfig implements Lifecycle {
         // We always put Rythm in dev mode to support dynamic reloading of templates...
         config.put("rythm.engine.mode", "dev");
         File tmpDir = new File(System.getProperty("java.io.tmpdir"),
-                               Product.getProduct().getName().replaceAll("[^a-zA-Z0-9\\-]", "_")
+                               Files.toSaneFileName(Product.getProduct().getName()).orElse("sirius")
                                + "_"
-                               + Files.toSaneFileName(CallContext.getNodeName())
-                                                      + "_rythm");
+                               + Files.toSaneFileName(CallContext.getNodeName()).orElse("node")
+                               + "_rythm");
         tmpDir.mkdirs();
-        if (Sirius.isDev()) {
-            if (tmpDir.listFiles() != null) {
-                for (File file : tmpDir.listFiles()) {
-                    if (file.getName().endsWith(".java") || file.getName().endsWith(".rythm")) {
-                        file.delete();
-                    }
+
+        // Delete all templates on startup to force a clean recompile - otherwise *SOMETIMES* old
+        // templates might get used :-/
+        if (tmpDir.listFiles() != null) {
+            for (File file : tmpDir.listFiles()) {
+                if (file.getName().endsWith(".java") || file.getName().endsWith(".rythm")) {
+                    file.delete();
                 }
             }
         }

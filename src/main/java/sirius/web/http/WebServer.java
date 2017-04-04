@@ -33,7 +33,6 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.ConfigValue;
-import sirius.kernel.di.std.Context;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Average;
@@ -60,6 +59,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class WebServer implements Lifecycle, MetricProvider {
 
     /**
+     * Determines the priority of the start of the web server. This is exposed as public so that other life cycles
+     * can determine their own priority on this.
+     */
+    public static final int LIFECYCLE_PRIORITY = 500;
+
+    /**
      * Used to log all web / http relevant messages
      */
     public static final Log LOG = Log.get("web");
@@ -79,15 +84,6 @@ public class WebServer implements Lifecycle, MetricProvider {
     private static List<String> additionalPorts;
 
     /**
-     * Returns the port used by the web server
-     *
-     * @return the port served by the HTTP server
-     */
-    public static int getPort() {
-        return port;
-    }
-
-    /**
      * Config value of the HTTP bind address used (<tt>http.bindAddress</tt>). If the value is empty, we bind all
      * addresses. Otherwise this can be used to bind against a single IP address in order to setup multiple servers
      * on the same port.
@@ -99,7 +95,7 @@ public class WebServer implements Lifecycle, MetricProvider {
      * Config value of the max size for uploads which are kept entirely in memory (<tt>"http.uploadDiskThreshold</tt>).
      */
     @ConfigValue("http.uploadDiskThreshold")
-    private long uploadDiskThreshold;
+    private static long uploadDiskThreshold;
 
     /**
      * Config value of the min free space on disk (<tt>"http.minUploadFreespace</tt>). If the free space on disk drops
@@ -138,28 +134,9 @@ public class WebServer implements Lifecycle, MetricProvider {
     @Part
     private static SessionManager sessionManager;
 
-    /**
-     * Returns an ip filter which determines which IPs may connect to the web server.
-     *
-     * @return a range set describing all accepted ranges
-     */
-    protected static IPRange.RangeSet getIPFilter() {
-        if (filterRanges == null) {
-            try {
-                filterRanges = IPRange.paraseRangeSet(ipFilter);
-            } catch (Throwable e) {
-                Exceptions.handle()
-                          .to(LOG)
-                          .error(e)
-                          .withSystemErrorMessage(
-                                  "Error parsing config value: 'http.firewall.filterIPs': %s (%s). Defaulting to localhost!")
-                          .handle();
-                filterRanges = IPRange.LOCALHOST;
-            }
-        }
-
-        return filterRanges;
-    }
+    @ConfigValue("http.firewall.proxyIPs")
+    private static String proxyIPs;
+    private static IPRange.RangeSet proxyRanges;
 
     /**
      * Contains a list of IP ranges which are trusted. This rule will not change the processing of requests, it will
@@ -172,105 +149,17 @@ public class WebServer implements Lifecycle, MetricProvider {
     private static String trustedIPs;
     private static IPRange.RangeSet trustedRanges;
 
-    /**
-     * Returns all trusted IPs as {@link IPRange.RangeSet}
-     *
-     * @return a range set describing all trusted ranges
-     */
-    protected static IPRange.RangeSet getTrustedRanges() {
-        if (trustedRanges == null) {
-            try {
-                trustedRanges = IPRange.paraseRangeSet(trustedIPs);
-                // If no trust range is given, we trust nobody but good old LOCALHOST....This seems to be a better
-                // alternative than trusting everybody
-                if (trustedRanges.isEmpty()) {
-                    trustedRanges = IPRange.LOCALHOST;
-                }
-            } catch (Throwable e) {
-                Exceptions.handle()
-                          .to(LOG)
-                          .error(e)
-                          .withSystemErrorMessage("Error parsing config value: 'http.firewall.trustedIPs': %s (%s)")
-                          .handle();
-                trustedRanges = IPRange.LOCALHOST;
-            }
-        }
-
-        return trustedRanges;
-    }
-
-    @ConfigValue("http.firewall.proxyIPs")
-    private static String proxyIPs;
-    private static IPRange.RangeSet proxyRanges;
-
-    /**
-     * Returns all proxy IPs as {@link IPRange.RangeSet}
-     *
-     * @return a range set describing all proxy ranges. This is probably just a single IP addressed, however, using
-     * {@link IPRange.RangeSet} permit to name several, even sub nets. If a request comes from a proxy IP
-     * its X-Forwarded-For header is checked for the original IP.
-     */
-    protected static IPRange.RangeSet getProxyIPs() {
-        if (proxyRanges == null) {
-            try {
-                proxyRanges = IPRange.paraseRangeSet(proxyIPs);
-            } catch (Throwable e) {
-                Exceptions.handle()
-                          .to(LOG)
-                          .error(e)
-                          .withSystemErrorMessage("Error parsing config value: 'http.firewall.proxyIPs': %s (%s)")
-                          .handle();
-                proxyRanges = IPRange.NO_FILTER;
-            }
-        }
-
-        return proxyRanges;
-    }
-
-    @Context
+    @Part
     private GlobalContext ctx;
 
     private static HttpDataFactory httpDataFactory;
-    // Indicates that netty itself will compute the optimal number of threads in the event loop
+
+    /**
+     * Indicates that netty itself will compute the optimal number of threads in the event loop
+     */
     private static final int AUTOSELECT_EVENT_LOOP_SIZE = 0;
     private EventLoopGroup eventLoop;
 
-    /**
-     * Determines how the web server should participate in the microtiming framework.
-     */
-    public enum MicrotimingMode {
-        /**
-         * Use the remote ip as key - this can be used to group requests by remote ip
-         */
-        IP,
-        /**
-         * Use the requested uri as key - this can be used to group requests by uri
-         */
-        URI,
-        /**
-         * Use remote ip and uri as key - this can be used to lear which peer accesses which uris frequently
-         */
-        BOTH;
-
-        /*
-         * Computes the key used for microtiming based on the current mode
-         */
-        protected String getMicrotimingKey(WebContext context) {
-            switch (this) {
-                case IP:
-                    return context.getRemoteIP().toString();
-                case BOTH:
-                    return context.getRemoteIP().toString() + " <-- " + context.microtimingKey;
-            }
-
-            // URI is the default:
-            return context.microtimingKey;
-        }
-    }
-
-    /*
-     * Statistics
-     */
     protected static volatile long bytesIn = 0;
     protected static volatile long bytesOut = 0;
     protected static volatile long messagesIn = 0;
@@ -287,6 +176,123 @@ public class WebServer implements Lifecycle, MetricProvider {
     protected static Map<WebServerHandler, WebServerHandler> openConnections = Maps.newConcurrentMap();
     protected static Average responseTime = new Average();
     protected static volatile MicrotimingMode microtimingMode = MicrotimingMode.URI;
+
+    /**
+     * Returns the port used by the web server
+     *
+     * @return the port served by the HTTP server
+     */
+    public static int getPort() {
+        return port;
+    }
+
+    /**
+     * Returns an ip filter which determines which IPs may connect to the web server.
+     *
+     * @return a range set describing all accepted ranges
+     */
+    protected static IPRange.RangeSet getIPFilter() {
+        if (filterRanges == null) {
+            try {
+                filterRanges = IPRange.paraseRangeSet(ipFilter);
+            } catch (Exception e) {
+                Exceptions.handle()
+                          .to(LOG)
+                          .error(e)
+                          .withSystemErrorMessage(
+                                  "Error parsing config value: 'http.firewall.filterIPs': %s (%s). Defaulting to localhost!")
+                          .handle();
+                filterRanges = IPRange.LOCALHOST;
+            }
+        }
+
+        return filterRanges;
+    }
+
+    /**
+     * Returns all trusted IPs as {@link IPRange.RangeSet}
+     *
+     * @return a range set describing all trusted ranges
+     */
+    protected static IPRange.RangeSet getTrustedRanges() {
+        if (trustedRanges == null) {
+            try {
+                trustedRanges = IPRange.paraseRangeSet(trustedIPs);
+                // If no trust range is given, we trust nobody but good old LOCALHOST....This seems to be a better
+                // alternative than trusting everybody
+                if (trustedRanges.isEmpty()) {
+                    trustedRanges = IPRange.LOCALHOST;
+                }
+            } catch (Exception e) {
+                Exceptions.handle()
+                          .to(LOG)
+                          .error(e)
+                          .withSystemErrorMessage("Error parsing config value: 'http.firewall.trustedIPs': %s (%s)")
+                          .handle();
+                trustedRanges = IPRange.LOCALHOST;
+            }
+        }
+
+        return trustedRanges;
+    }
+
+    /**
+     * Returns all proxy IPs as {@link IPRange.RangeSet}
+     *
+     * @return a range set describing all proxy ranges. This is probably just a single IP addressed, however, using
+     * {@link IPRange.RangeSet} permit to name several, even sub nets. If a request comes from a proxy IP
+     * its X-Forwarded-For header is checked for the original IP.
+     */
+    protected static IPRange.RangeSet getProxyIPs() {
+        if (proxyRanges == null) {
+            try {
+                proxyRanges = IPRange.paraseRangeSet(proxyIPs);
+            } catch (Exception e) {
+                Exceptions.handle()
+                          .to(LOG)
+                          .error(e)
+                          .withSystemErrorMessage("Error parsing config value: 'http.firewall.proxyIPs': %s (%s)")
+                          .handle();
+                proxyRanges = IPRange.NO_FILTER;
+            }
+        }
+
+        return proxyRanges;
+    }
+
+    /**
+     * Determines how the web server should participate in the microtiming framework.
+     */
+    public enum MicrotimingMode {
+        /**
+         * Use the remote ip as key - this can be used to group requests by remote ip
+         */
+        IP,
+
+        /**
+         * Use the requested uri as key - this can be used to group requests by uri
+         */
+        URI,
+
+        /**
+         * Use remote ip and uri as key - this can be used to lear which peer accesses which uris frequently
+         */
+        BOTH;
+
+        /*
+         * Computes the key used for microtiming based on the current mode
+         */
+        protected String getMicrotimingKey(WebContext context) {
+            switch (this) {
+                case IP:
+                    return context.getRemoteIP().toString();
+                case BOTH:
+                    return context.getRemoteIP().toString() + " <-- " + context.microtimingKey;
+                default:
+                    return context.microtimingKey;
+            }
+        }
+    }
 
     /**
      * Returns the minimal value of free disk space accepted until an upload is aborted.
@@ -315,12 +321,6 @@ public class WebServer implements Lifecycle, MetricProvider {
         return httpDataFactory;
     }
 
-    /**
-     * Determines the priority of the start of the web server. This is exposed as public so that other life cycles
-     * can determine their own priority on this.
-     */
-    public static final int LIFECYCLE_PRIORITY = 500;
-
     @Override
     public int getPriority() {
         return LIFECYCLE_PRIORITY;
@@ -334,24 +334,23 @@ public class WebServer implements Lifecycle, MetricProvider {
         }
         reportSettings();
         configureNetty();
-        Operation.cover("web",
-                        () -> "WebServer.createHTTPChannel:" + port,
-                        Duration.ofSeconds(15),
-                        () -> createHTTPChannel(port));
+        try (Operation op = new Operation(() -> "WebServer.createHTTPChannel:" + port, Duration.ofSeconds(15))) {
+            createHTTPChannel(port);
+        }
         for (String additionalPort : additionalPorts) {
             Value additionalPortValue = Value.of(additionalPort);
             if (additionalPortValue.isNumeric()) {
-                Operation.cover("web",
-                                () -> "WebServer.createHTTPChannel:" + additionalPort,
-                                Duration.ofSeconds(15),
-                                () -> createHTTPChannel(additionalPortValue.asInt(-1)));
+                try (Operation op = new Operation(() -> "WebServer.createHTTPChannel:" + additionalPort,
+                                                  Duration.ofSeconds(15))) {
+                    createHTTPChannel(additionalPortValue.asInt(-1));
+                }
             }
         }
+
         if (ssl) {
-            Operation.cover("web",
-                            () -> "WebServer.createHTTPSChannel",
-                            Duration.ofSeconds(15),
-                            this::createHTTPSChannel);
+            try (Operation op = new Operation(() -> "WebServer.createHTTPSChannel", Duration.ofSeconds(15))) {
+                createHTTPSChannel();
+            }
         }
     }
 
@@ -399,14 +398,18 @@ public class WebServer implements Lifecycle, MetricProvider {
     }
 
     private void configureNetty() {
+        setupUploads();
+        try (Operation op = new Operation(() -> "WebServer.createEventLoop", Duration.ofSeconds(15))) {
+            eventLoop = createEventLoop(AUTOSELECT_EVENT_LOOP_SIZE, "netty-");
+        }
+    }
+
+    private static void setupUploads() {
         DiskFileUpload.deleteOnExitTemporaryFile = true;
         DiskFileUpload.baseDirectory = null;
         DiskAttribute.deleteOnExitTemporaryFile = true;
         DiskAttribute.baseDirectory = null;
         httpDataFactory = new SiriusHttpDataFactory(uploadDiskThreshold);
-        Operation.cover("web", () -> "WebServer.createEventLoop", Duration.ofSeconds(15), () -> {
-            eventLoop = createEventLoop(AUTOSELECT_EVENT_LOOP_SIZE, "netty-");
-        });
     }
 
     private static class PrefixThreadFactory implements ThreadFactory {
@@ -450,7 +453,7 @@ public class WebServer implements Lifecycle, MetricProvider {
             } else {
                 channel = bootstrap.bind(new InetSocketAddress(port)).sync().channel();
             }
-        } catch (Throwable t) {
+        } catch (Exception t) {
             Exceptions.handle()
                       .to(LOG)
                       .error(t)
@@ -468,7 +471,7 @@ public class WebServer implements Lifecycle, MetricProvider {
             } else {
                 sslChannel = bootstrap.bind(new InetSocketAddress(sslPort)).sync().channel();
             }
-        } catch (Throwable t) {
+        } catch (Exception t) {
             Exceptions.handle().to(LOG).error(t).withSystemErrorMessage("Cannot setup HTTPS: %s (%s)").handle();
         }
     }
@@ -477,24 +480,23 @@ public class WebServer implements Lifecycle, MetricProvider {
     public void stopped() {
         stopChannel(channel, "http");
         stopChannel(sslChannel, "https");
-        Operation.cover("web",
-                        () -> "eventLoop.shutdownGracefully",
-                        Duration.ofSeconds(15),
-                        eventLoop::shutdownGracefully);
-        Operation.cover("web", () -> "Response.closeAsyncClient", Duration.ofSeconds(15), Response::closeAsyncClient);
+        try (Operation op = new Operation(() -> "eventLoop.shutdownGracefully", Duration.ofSeconds(15))) {
+            eventLoop.shutdownGracefully();
+        }
+        try (Operation op = new Operation(() -> "Response.closeAsyncClient", Duration.ofSeconds(15))) {
+            Response.closeAsyncClient();
+        }
     }
 
     private void stopChannel(Channel channel, String name) {
-        Operation op = Operation.create("web", () -> "stopChannel(" + name + ")", Duration.ofSeconds(15));
-        try {
+        try (Operation op = new Operation(() -> "stopChannel(" + name + ")", Duration.ofSeconds(15))) {
             if (channel != null) {
                 channel.close().sync();
             }
         } catch (InterruptedException e) {
             Exceptions.ignore(e);
             LOG.SEVERE(Strings.apply("Interrupted while waiting for the %s channel to shut down", name));
-        } finally {
-            Operation.release(op);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -507,6 +509,7 @@ public class WebServer implements Lifecycle, MetricProvider {
         } catch (InterruptedException e) {
             Exceptions.ignore(e);
             LOG.SEVERE("Interrupted while waiting for the Worker Group to shut down");
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -668,7 +671,7 @@ public class WebServer implements Lifecycle, MetricProvider {
                                      clientErrors,
                                      "/min");
         collector.differentialMetric("http-server-errors",
-                                     "http-client-errors",
+                                     "http-server-errors",
                                      "HTTP Server Errors (5xx)",
                                      serverErrors,
                                      "/min");
@@ -711,8 +714,9 @@ public class WebServer implements Lifecycle, MetricProvider {
      *
      * @return a list of all currently open connections
      */
-    public static Collection<? extends ActiveHTTPConnection> getOpenConnections() {
-        return openConnections.values();
+    @SuppressWarnings("unchecked")
+    public static Collection<ActiveHTTPConnection> getOpenConnections() {
+        return (Collection<ActiveHTTPConnection>) (Collection<? extends ActiveHTTPConnection>) openConnections.values();
     }
 
     /**

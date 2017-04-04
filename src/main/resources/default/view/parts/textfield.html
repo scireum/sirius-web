@@ -20,4 +20,8 @@
     @if (Strings.isFilled(helpKey)) {
         <span class="help-block">@i18n(helpKey)</span>
     }
+
+    @if (user.hasError(name)) {
+        <span class="error-block help-block">@user.getFieldErrorMessage(name)</span>
+    }
 </div>

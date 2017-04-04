@@ -16,6 +16,7 @@ import sirius.kernel.di.std.Register;
 import sirius.web.http.MimeHelper;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
+import sirius.web.http.session.ServerSession;
 import sirius.web.security.UserContext;
 
 /**
@@ -28,6 +29,15 @@ import sirius.web.security.UserContext;
 @Register
 public class DefaultDispatcher implements WebDispatcher {
 
+    @ConfigValue("http.crossdomain.xml.enabled")
+    private boolean serveCrossdomain;
+
+    @ConfigValue("http.robots.txt.enabled")
+    private boolean serveRobots;
+
+    @ConfigValue("http.robots.txt.disallow")
+    private boolean robotsDisallowAll;
+
     @Override
     public int getPriority() {
         return 999;
@@ -37,15 +47,6 @@ public class DefaultDispatcher implements WebDispatcher {
     public boolean preDispatch(WebContext ctx) throws Exception {
         return false;
     }
-
-    @ConfigValue("http.crossdomain.xml.enabled")
-    private boolean serveCrossdomain;
-
-    @ConfigValue("http.robots.txt.enabled")
-    private boolean serveRobots;
-
-    @ConfigValue("http.robots.txt.disallow")
-    private boolean robotsDisallowAll;
 
     @Override
     public boolean dispatch(WebContext ctx) throws Exception {
@@ -75,13 +76,12 @@ public class DefaultDispatcher implements WebDispatcher {
                    .direct(HttpResponseStatus.OK, "User-agent: *\n" + "Disallow:\n");
             }
         } else if ("/reset".equals(ctx.getRequestedURI())) {
-            ctx.getServerSession().invalidate();
+            ctx.getServerSession(false).ifPresent(ServerSession::invalidate);
             ctx.clearSession();
             ctx.respondWith().redirectTemporarily(ctx.get("path").asString(WebContext.getContextPrefix() + "/"));
         } else {
             // Bind user to request if present for translations etc. to work correctly...
             UserContext.getCurrentUser();
-
             ctx.respondWith()
                .error(HttpResponseStatus.NOT_FOUND,
                       Strings.apply("No dispatcher found for: %s", ctx.getRequestedURI()));

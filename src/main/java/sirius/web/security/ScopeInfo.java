@@ -20,7 +20,7 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.ValueHolder;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.ConfigValueAnnotationProcessor;
-import sirius.kernel.di.std.Context;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.di.transformers.Composable;
 import sirius.kernel.di.transformers.Transformable;
@@ -48,11 +48,14 @@ import java.util.regex.Pattern;
  */
 public class ScopeInfo extends Composable {
 
+    private static final String DEFAULT_SCOPE_ID = "default";
+
     /**
      * If no distinct scope is recognized by the current <tt>ScopeDetector</tt> or if no detector is installed,
      * this scope is used.
      */
-    public static final ScopeInfo DEFAULT_SCOPE = new ScopeInfo("default", "default", "default", null, null, null);
+    public static final ScopeInfo DEFAULT_SCOPE =
+            new ScopeInfo(DEFAULT_SCOPE_ID, DEFAULT_SCOPE_ID, DEFAULT_SCOPE_ID, null, null, null);
 
     private String scopeId;
     private String scopeType;
@@ -63,6 +66,15 @@ public class ScopeInfo extends Composable {
     private Map<Class<?>, Object> helpersByType = Maps.newConcurrentMap();
     private Map<String, Object> helpersByName = Maps.newConcurrentMap();
     private Config config;
+
+    private static Config scopeDefaultConfig;
+    private static Map<String, String> scopeDefaultConfigFiles;
+
+    @PriorityParts(HelperFactory.class)
+    private static List<HelperFactory<?>> factories;
+
+    @Part
+    private static GlobalContext ctx;
 
     /**
      * Creates a new <tt>ScopeInfo</tt> with the given parameters.
@@ -159,8 +171,8 @@ public class ScopeInfo extends Composable {
     @Override
     public boolean is(@Nonnull Class<?> type) {
         Transformable userObject = getScopeObject(Transformable.class);
-        if (userObject != null) {
-            return userObject.is(type);
+        if (userObject != null && userObject.is(type)) {
+            return true;
         }
         return super.is(type);
     }
@@ -170,7 +182,10 @@ public class ScopeInfo extends Composable {
     public <A> Optional<A> tryAs(@Nonnull Class<A> adapterType) {
         Transformable userObject = getScopeObject(Transformable.class);
         if (userObject != null) {
-            return userObject.tryAs(adapterType);
+            Optional<A> result = userObject.tryAs(adapterType);
+            if (result.isPresent()) {
+                return result;
+            }
         }
         return super.tryAs(adapterType);
     }
@@ -217,12 +232,6 @@ public class ScopeInfo extends Composable {
         return (T) result;
     }
 
-    @PriorityParts(HelperFactory.class)
-    private static List<HelperFactory<?>> factories;
-
-    @Context
-    private static GlobalContext ctx;
-
     private Object makeHelperByType(Class<?> aClass) {
         for (HelperFactory<?> factory : factories) {
             if (aClass.equals(factory.getHelperType())) {
@@ -255,25 +264,44 @@ public class ScopeInfo extends Composable {
         fillConfig(result);
         helpersByType.put(factory.getHelperType(), result);
         helpersByName.put(factory.getName(), result);
+        fillFriends(result);
 
         return result;
     }
 
     private void fillConfig(Object result) {
-        Config config = UserContext.getConfig();
+        Config scopeConfig = getConfig();
         Reflection.getAllFields(result.getClass())
                   .stream()
                   .filter(f -> f.isAnnotationPresent(HelperConfig.class))
-                  .forEach(f -> {
-                      ConfigValueAnnotationProcessor.injectValueFromConfig(result,
-                                                                           f,
-                                                                           f.getAnnotation(HelperConfig.class).value(),
-                                                                           config);
-                  });
+                  .forEach(f -> ConfigValueAnnotationProcessor.injectValueFromConfig(result,
+                                                                                     f,
+                                                                                     f.getAnnotation(HelperConfig.class)
+                                                                                      .value(),
+                                                                                     scopeConfig));
     }
 
-    private static Config scopeDefaultConfig;
-    private static Map<String, String> scopeDefaultConfigFiles;
+    private void fillFriends(Object result) {
+        Reflection.getAllFields(result.getClass())
+                  .stream()
+                  .filter(f -> f.isAnnotationPresent(Helper.class))
+                  .forEach(f -> {
+                      try {
+                          f.setAccessible(true);
+                          f.set(result, makeHelperByType(f.getType()));
+                      } catch (Exception e) {
+                          Exceptions.handle()
+                                    .error(e)
+                                    .to(UserContext.LOG)
+                                    .withSystemErrorMessage("Cannot fill friend %s in %s of helper %s (%s): %s (%s)",
+                                                            f.getType().getName(),
+                                                            f.getName(),
+                                                            result,
+                                                            result.getClass().getName())
+                                    .handle();
+                      }
+                  });
+    }
 
     /**
      * Lists the names of all loaded default config files.
@@ -357,7 +385,8 @@ public class ScopeInfo extends Composable {
                     Config configInFile = ConfigFactory.load(Sirius.getSetup().getLoader(), configName);
                     configFiles.put("scope-settings.conf (" + conf + ")", configName);
                     configHolder.set(configInFile.withFallback(configHolder.get()));
-                } catch (Throwable e) {
+                } catch (Exception e) {
+                    Exceptions.ignore(e);
                     UserContext.LOG.WARN("Cannot load %s: %s", configName, e.getMessage());
                 }
             }
@@ -373,7 +402,8 @@ public class ScopeInfo extends Composable {
                 Config configInFile = ConfigFactory.load(Sirius.getSetup().getLoader(), value.group());
                 configFiles.put(value.group(1), value.group());
                 configHolder.set(configInFile.withFallback(configHolder.get()));
-            } catch (Throwable e) {
+            } catch (Exception e) {
+                Exceptions.ignore(e);
                 UserContext.LOG.WARN("Cannot load %s: %s", value.group(), e.getMessage());
             }
         });

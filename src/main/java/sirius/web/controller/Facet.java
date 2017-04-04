@@ -13,6 +13,7 @@ import sirius.kernel.cache.ValueComputer;
 import sirius.kernel.commons.Strings;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,7 +23,7 @@ public class Facet {
     protected Page<?> parent;
     private String name;
     private String title;
-    private String value;
+    private List<String> values;
     private final ValueComputer<String, String> translator;
     private List<FacetItem> items = Lists.newArrayList();
 
@@ -40,7 +41,10 @@ public class Facet {
                  @Nullable ValueComputer<String, String> translator) {
         this.name = field;
         this.title = title;
-        this.value = value;
+        this.values = new ArrayList<>();
+        if (value != null) {
+            this.values.add(value);
+        }
         this.translator = translator;
     }
 
@@ -87,7 +91,7 @@ public class Facet {
      * @return the selected filter value of this facet
      */
     public String getValue() {
-        return value;
+        return !values.isEmpty() ? values.get(0) : null;
     }
 
     /**
@@ -102,7 +106,10 @@ public class Facet {
         if (Strings.isFilled(key)) {
             String effectiveTitle = translator == null ? title : translator.compute(key);
             if (effectiveTitle != null) {
-                items.add(new FacetItem(key, effectiveTitle, count, Strings.areEqual(value, key)));
+                items.add(new FacetItem(key,
+                                        effectiveTitle,
+                                        count,
+                                        values.stream().anyMatch(value -> Strings.areEqual(value, key))));
             }
         }
         return this;
@@ -151,7 +158,20 @@ public class Facet {
      * @return the facet itself for fluent method calls
      */
     public Facet withValue(String value) {
-        this.value = value;
+        this.values.clear();
+        this.values.add(value);
+
+        return this;
+    }
+
+    /**
+     * Specifies the values used for this facet.
+     *
+     * @param values the active filter values of this facet
+     * @return the facet itself for fluent method calls
+     */
+    public Facet withValues(List<String> values) {
+        this.values = values;
 
         return this;
     }

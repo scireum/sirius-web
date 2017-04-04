@@ -11,12 +11,12 @@ package sirius.web.security;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
+import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.GlobalContext;
-import sirius.kernel.di.std.Context;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.extensions.Extension;
 import sirius.kernel.extensions.Extensions;
@@ -82,14 +82,15 @@ public class UserContext implements SubContext {
      * we cache the last user and scope here to speed up almost all cases
      * without the need for a map.
      */
-    private String spaceIdOfCachedUser = null;
+    private String scopeIdOfCachedUser = null;
     private UserInfo cachedUser = null;
 
     private ScopeInfo currentScope = null;
     private List<Message> msgList = Lists.newArrayList();
     private Map<String, String> fieldErrors = Maps.newHashMap();
+    private Map<String, String> fieldErrorMessages = Maps.newHashMap();
 
-    @Context
+    @Part
     private static GlobalContext context;
 
     /*
@@ -98,7 +99,7 @@ public class UserContext implements SubContext {
     private static UserManager getManager(ScopeInfo scope) {
         Extension ext = Extensions.getExtension("security.scopes", scope.getScopeType());
         return context.getPart(ext.get("manager").asString("public"), UserManagerFactory.class)
-                      .createManager(scope, ext);
+                .createManager(scope, ext);
     }
 
     /**
@@ -330,11 +331,11 @@ public class UserContext implements SubContext {
      * @return a list of messages to be shown to the user
      */
     public List<Message> getMessages() {
-        if (cluster.getClusterState() == MetricState.RED && getUser().hasPermission(PERMISSION_SYSTEM_NOTIFY_STATE)) {
+        if (cluster.getClusterState() == MetricState.RED && getUser().hasPermission(PERMISSION_SYSTEM_NOTIFY_STATE) && !Sirius.isStartedAsTest()) {
             Message systemStateWarning = Message.error(Strings.apply("System state is %s (Cluster state is %s)",
-                                                                     cluster.getNodeState(),
-                                                                     cluster.getClusterState()))
-                                                .withAction("system/state", "View System State");
+                    cluster.getNodeState(),
+                    cluster.getClusterState()))
+                    .withAction("system/state", "View System State");
             if (msgList.isEmpty()) {
                 return Collections.singletonList(systemStateWarning);
             } else {
@@ -358,23 +359,23 @@ public class UserContext implements SubContext {
     }
 
     /**
-     * Determines if there is an error for the given field
+     * Determines if there is an error or error message for the given field
      *
      * @param field the field to check for errors
      * @return <tt>true</tt> if an error was added for the field, <tt>false</tt> otherwise
      */
     public boolean hasError(String field) {
-        return fieldErrors.containsKey(field);
+        return fieldErrors.containsKey(field) || fieldErrorMessages.containsKey(field);
     }
 
     /**
-     * Returns "error" if an error was added for the given field.
+     * Returns "has-error" if an error was added for the given field.
      *
      * @param field the field to check
-     * @return "error" if an error was added for the given field, an empty string otherwise
+     * @return "has-error" if an error was added for the given field, an empty string otherwise
      */
     public String signalFieldError(String field) {
-        return hasError(field) ? "error" : "";
+        return hasError(field) ? "has-error" : "";
     }
 
     /**
@@ -416,6 +417,41 @@ public class UserContext implements SubContext {
     }
 
     /**
+     * Adds an error message for the given field
+     *
+     * @param field name of the form field
+     * @param errorMessage value to be added
+     */
+    public static void setErrorMessage(String field, String errorMessage) {
+        get().addFieldErrorMessage(field, errorMessage);
+    }
+
+    /**
+     * Adds an error message for the given field
+     *
+     * @param field name of the form field
+     * @param errorMessage value to be added
+     */
+    public void addFieldErrorMessage(String field, String errorMessage) {
+        fieldErrorMessages.put(field, errorMessage);
+    }
+
+
+    /**
+     * Returns an error message for the given field
+     *
+     * @param field name of the form field
+     * @return error message if existant else an empty string
+     */
+    public String getFieldErrorMessage(String field) {
+        if (fieldErrorMessages.containsKey(field)) {
+            return fieldErrorMessages.get(field);
+        }
+
+        return "";
+    }
+
+    /**
      * Returns the current user.
      * <p>
      * If no user is present yet, it tries to parse the current {@link WebContext} and retireve the user from the
@@ -439,16 +475,16 @@ public class UserContext implements SubContext {
      * Note that this method will only check the session ({@link UserManager#findUserForRequest(WebContext)}) and will
      * not try to perform a login via credentials as given in the current request.
      *
-     * @param scopeId the id of the scope to fethc the user for
+     * @param scope the scope to fetch the user for
      * @return the user found for the given scope or {@link UserInfo#NOBODY} if no user was found
      */
-    public UserInfo getUserForScope(String scopeId) {
-        if (cachedUser != null && Strings.areEqual(scopeId, spaceIdOfCachedUser)) {
+    public UserInfo getUserForScope(ScopeInfo scope) {
+        if (cachedUser != null && Strings.areEqual(scope.getScopeId(), scopeIdOfCachedUser)) {
             return cachedUser;
         }
 
-        cachedUser = getUserManagerForScope(scopeId).findUserForRequest(CallContext.getCurrent().get(WebContext.class));
-        spaceIdOfCachedUser = scopeId;
+        cachedUser = getUserManagerForScope(scope).findUserForRequest(CallContext.getCurrent().get(WebContext.class));
+        scopeIdOfCachedUser = scope.getScopeId();
         return cachedUser;
     }
 
@@ -489,17 +525,20 @@ public class UserContext implements SubContext {
      * @see #getCurrentScope()
      * @see ScopeDetector
      */
+    @Nonnull
     public UserManager getUserManager() {
-        return getUserManagerForScope(getScope().getScopeId());
+        return getUserManagerForScope(getScope());
     }
 
-    private UserManager getUserManagerForScope(String scopeId) {
-        UserManager manager = managers.get(scopeId);
-        if (manager == null) {
-            manager = getManager(currentScope);
-            managers.put(scopeId, manager);
-        }
-        return manager;
+    /**
+     * Returns the user manager responsible for the given scope.
+     *
+     * @param scope the scope to fetch the user manager for
+     * @return the user manager responsible for the given scope
+     */
+    @Nonnull
+    public UserManager getUserManagerForScope(ScopeInfo scope) {
+        return managers.computeIfAbsent(scope.getScopeId(), k -> getManager(scope));
     }
 
     /**

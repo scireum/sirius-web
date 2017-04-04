@@ -242,8 +242,14 @@
                 }
             },
             showMessage: function (message) {
-                clearMessages();
-                addError(message);
+                // We generally send a flag "error" which is true or false as
+                // part of the response. Sadly, fileUploader.js checks for this
+                // flag (expecting a string) and invokes showMessage is present.
+                // Therefore we have to filter this here :-/
+                if (message !== true) {
+                    clearMessages();
+                    addError(message);
+                }
             },
             messages: {
                 typeError: '@i18n("template.html.errInvalidExtension")',
@@ -301,8 +307,14 @@
                 }
             },
             showMessage: function (message) {
-                clearMessages();
-                addError(message);
+                // We generally send a flag "error" which is true or false as
+                // part of the response. Sadly, fileUploader.js checks for this
+                // flag (expecting a string) and invokes showMessage is present.
+                // Therefore we have to filter this here :-/
+                if (message !== true) {
+                    clearMessages();
+                    addError(message);
+                }
             },
             messages: {
                 typeError: '@i18n("template.html.errInvalidExtension")',
@@ -341,6 +353,22 @@
                     }
                 }, 'json');
     }
+
+    $(function () {
+        $('.submit-link').click(function () {
+            if (!$(this).hasClass("single-click-pending")) {
+                $('#editForm').submit();
+            }
+        });
+        $('.single-click-link').click(function (e) {
+            var a = $(this);
+            if (a.hasClass("single-click-pending")) {
+                e.preventDefault();
+                return false;
+            }
+            a.addClass("single-click-pending");
+        });
+    });
 
     @includeExtensions("view-template-script")
 </script>

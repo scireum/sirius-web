@@ -43,21 +43,21 @@ class WebServerSpec extends BaseSpecification {
     def "Invoke /system/ok 20000x"() {
         when:
         for (int i = 0; i < 10; i++) {
-            call("/system/ok", 1000, 16);
+            call("/system/ok", 1000, 16)
 
         }
-        Watch w = Watch.start();
-        Average avg = new Average();
+        Watch w = Watch.start()
+        Average avg = new Average()
         for (int i = 0; i < 20; i++) {
-            w.reset();
-            call("/system/ok", 1000, 16);
-            avg.addValue(w.elapsed(TimeUnit.MILLISECONDS, true));
+            w.reset()
+            call("/system/ok", 1000, 16)
+            avg.addValue(w.elapsed(TimeUnit.MILLISECONDS, true))
 
         }
         WebServer.LOG.INFO("Executing %s resulted in %1.2f RPS (%1.2f ms per 1000)",
                 "/system/ok",
                 1000 / (avg.getAvg() / 1000d),
-                avg.getAvg());
+                avg.getAvg())
         then:
         avg.getAvg() < 1000
     }
@@ -65,82 +65,82 @@ class WebServerSpec extends BaseSpecification {
     def "Invoke /system/info 20000x"() {
         when:
         for (int i = 0; i < 10; i++) {
-            call("/system/info", 1000, 32);
+            call("/system/info", 1000, 32)
         }
-        Watch w = Watch.start();
-        Average avg = new Average();
+        Watch w = Watch.start()
+        Average avg = new Average()
         for (int i = 0; i < 10; i++) {
-            w.reset();
-            call("/system/info", 1000, 32);
-            avg.addValue(w.elapsed(TimeUnit.MILLISECONDS, true));
+            w.reset()
+            call("/system/info", 1000, 32)
+            avg.addValue(w.elapsed(TimeUnit.MILLISECONDS, true))
 
         }
         WebServer.LOG.INFO("Executing %s resulted in %1.2f RPS (%1.2f ms per 1000)",
                 "/system/info",
                 1000 / (avg.getAvg() / 1000d),
-                avg.getAvg());
+                avg.getAvg())
         then:
         avg.getAvg() < 1000
     }
 
     def call(String uri, int count, int parallelism) {
-        ExecutorService exec = Executors.newFixedThreadPool(parallelism);
-        Watch w = Watch.start();
+        ExecutorService exec = Executors.newFixedThreadPool(parallelism)
+        Watch w = Watch.start()
         for (int i = 0; i < count; i++) {
             exec.execute({
-                URLConnection c = new URL("http://localhost:9999" + uri).openConnection();
-                c.connect();
-                ByteStreams.toByteArray(c.getInputStream());
-            });
+                URLConnection c = new URL("http://localhost:9999" + uri).openConnection()
+                c.connect()
+                ByteStreams.toByteArray(c.getInputStream())
+            })
         }
-        exec.shutdown();
-        exec.awaitTermination(1, TimeUnit.MINUTES);
-        return w.elapsedMillis();
+        exec.shutdown()
+        exec.awaitTermination(1, TimeUnit.MINUTES)
+        return w.elapsedMillis()
     }
 
     def callAndRead(String uri, Map outHeaders, Map expectedHeaders) {
-        URLConnection c = new URL("http://localhost:9999" + uri).openConnection();
-        outHeaders.each { k, v -> c.addRequestProperty(k, v); }
-        c.connect();
-        def result = new String(ByteStreams.toByteArray(c.getInputStream()), Charsets.UTF_8);
+        URLConnection c = new URL("http://localhost:9999" + uri).openConnection()
+        outHeaders.each { k, v -> c.addRequestProperty(k, v) }
+        c.connect()
+        def result = new String(ByteStreams.toByteArray(c.getInputStream()), Charsets.UTF_8)
         expectedHeaders.each { k, v ->
             if (!Strings.areEqual(c.getHeaderField(k), v)) {
-                throw new IllegalStateException("Header: " + k + " was " + c.getHeaderField(k) + " instead of " + v);
+                throw new IllegalStateException("Header: " + k + " was " + c.getHeaderField(k) + " instead of " + v)
             }
         }
 
-        return result;
+        return result
     }
 
     def "Invoke /assets/test.css to test"() {
         given:
-        def uri = "/assets/test.css";
-        def headers = ['accept-encoding': 'gzip'];
+        def uri = "/assets/test.css"
+        def headers = ['accept-encoding': 'gzip']
         // File is too small to be compressed!
         def expectedHeaders = ['content-encoding': null]
         when:
-        def data = callAndRead(uri, headers, expectedHeaders);
+        def data = callAndRead(uri, headers, expectedHeaders)
         then:
         "body { background-color: #000000; }" == data
     }
 
     def "Invoke /assets/test_large.css"() {
         given:
-        def uri = "/assets/test_large.css";
+        def uri = "/assets/test_large.css"
         def expectedHeaders = ['content-encoding': null]
         when:
-        def data = callAndRead(uri, null, expectedHeaders);
+        def data = callAndRead(uri, null, expectedHeaders)
         then:
         60314 == data.length()
     }
 
     def "Invoke /assets/test_large.css with GZIP"() {
         given:
-        def uri = "/assets/test_large.css";
-        def headers = ['accept-encoding': 'gzip'];
+        def uri = "/assets/test_large.css"
+        def headers = ['accept-encoding': 'gzip']
         def expectedHeaders = ['content-encoding': 'gzip']
         when:
-        def data = callAndRead(uri, headers, expectedHeaders);
+        def data = callAndRead(uri, headers, expectedHeaders)
         then:
         // URLConnection does not understand GZIP and therefore does not unzip... :-(
         1298 == data.length()
@@ -148,11 +148,11 @@ class WebServerSpec extends BaseSpecification {
 
     def "Invoke /test/resource to access a resource"() {
         given:
-        def uri = "/test/resource";
-        def headers = ['accept-encoding': 'gzip'];
+        def uri = "/test/resource"
+        def headers = ['accept-encoding': 'gzip']
         def expectedHeaders = ['content-encoding': 'gzip']
         when:
-        def data = callAndRead(uri, headers, expectedHeaders);
+        def data = callAndRead(uri, headers, expectedHeaders)
         then:
         // URLConnection does not understand GZIP and therefore does not unzip... :-(
         1298 == data.length()
@@ -160,11 +160,11 @@ class WebServerSpec extends BaseSpecification {
 
     def "Invoke /test/resource_uncompressable to access a non-compressable resource"() {
         given:
-        def uri = "/test/resource_uncompressable";
-        def headers = ['accept-encoding': 'gzip'];
+        def uri = "/test/resource_uncompressable"
+        def headers = ['accept-encoding': 'gzip']
         def expectedHeaders = ['content-encoding': null]
         when:
-        def data = callAndRead(uri, headers, expectedHeaders);
+        def data = callAndRead(uri, headers, expectedHeaders)
         then:
         60_314 == data.length()
     }
@@ -174,10 +174,10 @@ class WebServerSpec extends BaseSpecification {
      */
     def "Invoke /service/json/test"() {
         given:
-        def uri = "/service/json/test";
+        def uri = "/service/json/test"
         def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
         when:
-        def data = callAndRead(uri, null, expectedHeaders);
+        def data = callAndRead(uri, null, expectedHeaders)
         then:
         '{"test":true}' == data
     }
@@ -187,10 +187,10 @@ class WebServerSpec extends BaseSpecification {
      */
     def "Invoke /service/json/test_large"() {
         given:
-        def uri = "/service/json/test_large";
+        def uri = "/service/json/test_large"
         def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
         when:
-        def data = callAndRead(uri, null, expectedHeaders);
+        def data = callAndRead(uri, null, expectedHeaders)
         then:
         // Size should be contents of large test file plus json overhead and escaping....
         60543 == data.length()
@@ -203,14 +203,14 @@ class WebServerSpec extends BaseSpecification {
      */
     def "Invoke /service/xml/test_large_failure and expect a proper error"() {
         given:
-        def uri = "/service/xml/test_large_failure";
+        def uri = "/service/xml/test_large_failure"
         def expectedHeaders = ['content-type': 'text/xml;charset=UTF-8']
         when:
-        LogHelper.clearMessages();
+        LogHelper.clearMessages()
         and:
-        def data = callAndRead(uri, null, expectedHeaders);
+        def data = callAndRead(uri, null, expectedHeaders)
         then: "We expect a warning as the server was unable to send an error"
-        LogHelper.hasMessage(Level.WARN, "services", "Cannot send service error for.*");
+        LogHelper.hasMessage(Level.WARN, "services", "Cannot send service error for.*")
         and: "As the connection is closed due to an inconsistent state, an IO exception will occur on the client side"
         thrown(IOException)
     }
@@ -220,10 +220,10 @@ class WebServerSpec extends BaseSpecification {
      */
     def "Invoke /tunnel/test"() {
         given:
-        def uri = "/tunnel/test";
+        def uri = "/tunnel/test"
         def expectedHeaders = ['content-type': 'text/test']
         when:
-        def data = callAndRead(uri, null, expectedHeaders);
+        def data = callAndRead(uri, null, expectedHeaders)
         then:
         '{"test":true}' == data
     }
@@ -233,13 +233,39 @@ class WebServerSpec extends BaseSpecification {
      */
     def "Invoke /tunnel/test_large"() {
         given:
-        def uri = "/tunnel/test_large";
+        def uri = "/tunnel/test_large"
         def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
         when:
-        def data = callAndRead(uri, null, expectedHeaders);
+        def data = callAndRead(uri, null, expectedHeaders)
         then:
         // Size should be contents of large test file plus json overhead and escaping....
         60543 == data.length()
+    }
+
+    /**
+     * Call a controller which uses a fallback for a failed tunnel (404)
+     */
+    def "Invoke /tunnel/fallback_for_404 and expect the fallback to work"() {
+        given:
+        def uri = "/tunnel/fallback_for_404"
+        def expectedHeaders = ['content-type': 'text/test']
+        when:
+        def data = callAndRead(uri, null, expectedHeaders)
+        then:
+        '{"test":true}' == data
+    }
+
+    /**
+     * Call a controller which uses a fallback for a failed tunnel (connection error)
+     */
+    def "Invoke /tunnel/fallback_for_error and expect the fallback to work"() {
+        given:
+        def uri = "/tunnel/fallback_for_error"
+        def expectedHeaders = ['content-type': 'text/test']
+        when:
+        def data = callAndRead(uri, null, expectedHeaders)
+        then:
+        '{"test":true}' == data
     }
 
     /**
@@ -247,30 +273,30 @@ class WebServerSpec extends BaseSpecification {
      */
     def "Invoke /test/json testing built in JSON handling"() {
         given:
-        def uri = "/test/json?test=Hello_World";
+        def uri = "/test/json?test=Hello_World"
         def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
         when:
-        def data = callAndRead(uri, null, expectedHeaders);
+        def data = callAndRead(uri, null, expectedHeaders)
         then:
         JSON.parseObject(data).get("test") == 'Hello_World'
     }
 
     def "Invoke /test/json-param testing built in JSON handling"() {
         given:
-        def uri = "/test/json-param/Hello";
+        def uri = "/test/json-param/Hello"
         def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
         when:
-        def data = callAndRead(uri, null, expectedHeaders);
+        def data = callAndRead(uri, null, expectedHeaders)
         then:
         JSON.parseObject(data).get("test") == 'Hello'
     }
 
     def "Invoke /test/params/2/1 testing mixed parameter order"() {
         given:
-        def uri = "/test/params/2/1";
+        def uri = "/test/params/2/1"
         def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
         when:
-        def data = callAndRead(uri, null, expectedHeaders);
+        def data = callAndRead(uri, null, expectedHeaders)
         then:
         JSON.parseObject(data).get("param1") == '1'
         and:
@@ -282,21 +308,21 @@ class WebServerSpec extends BaseSpecification {
      */
     def "Invoke /test/presidpatch with POST"() {
         given:
-        def HttpURLConnection u = new URL("http://localhost:9999/test/predispatch").openConnection();
+        HttpURLConnection u = new URL("http://localhost:9999/test/predispatch").openConnection()
         and:
         def testByteArray = "Hello Service".getBytes()
         when:
-        u.setRequestMethod("POST");
-        u.setDoInput(true);
-        u.setDoOutput(true);
-        def out = u.getOutputStream();
+        u.setRequestMethod("POST")
+        u.setDoInput(true)
+        u.setDoOutput(true)
+        def out = u.getOutputStream()
         for (int i = 0; i < 1024; i++) {
-            out.write(testByteArray);
+            out.write(testByteArray)
         }
-        out.close();
-        def result = new String(ByteStreams.toByteArray(u.getInputStream()), Charsets.UTF_8);
+        out.close()
+        def result = new String(ByteStreams.toByteArray(u.getInputStream()), Charsets.UTF_8)
         then:
-        String.valueOf(testByteArray.length * 1024) == result;
+        String.valueOf(testByteArray.length * 1024) == result
     }
 
     /**
@@ -304,35 +330,35 @@ class WebServerSpec extends BaseSpecification {
      */
     def "Invoke /test/post with POST"() {
         given:
-        def HttpURLConnection u = new URL("http://localhost:9999/test/post").openConnection();
+        HttpURLConnection u = new URL("http://localhost:9999/test/post").openConnection()
         and:
-        def testString = "value=Hello";
+        def testString = "value=Hello"
         when:
-        u.setRequestMethod("POST");
+        u.setRequestMethod("POST")
         u.setRequestProperty("Content-Type",
-                "application/x-www-form-urlencoded");
+                "application/x-www-form-urlencoded")
 
-        u.setRequestProperty("Content-Length", Integer.toString(testString.getBytes().length));
-        u.setDoInput(true);
-        u.setDoOutput(true);
-        def out = u.getOutputStream();
-        out.write(testString.getBytes(Charsets.UTF_8));
-        out.close();
-        def result = new String(ByteStreams.toByteArray(u.getInputStream()), Charsets.UTF_8);
+        u.setRequestProperty("Content-Length", Integer.toString(testString.getBytes().length))
+        u.setDoInput(true)
+        u.setDoOutput(true)
+        def out = u.getOutputStream()
+        out.write(testString.getBytes(Charsets.UTF_8))
+        out.close()
+        def result = new String(ByteStreams.toByteArray(u.getInputStream()), Charsets.UTF_8)
         then:
-        "Hello" == result;
+        "Hello" == result
     }
 
     def "test that outputstreams work"() {
         given:
-        def HttpURLConnection u = new URL("http://localhost:9999/test/os").openConnection();
+        HttpURLConnection u = new URL("http://localhost:9999/test/os").openConnection()
         when:
-        u.setRequestMethod("GET");
-        u.setDoInput(true);
-        u.setDoOutput(false);
-        def arr = ByteStreams.toByteArray(u.getInputStream());
+        u.setRequestMethod("GET")
+        u.setDoInput(true)
+        u.setDoOutput(false)
+        def arr = ByteStreams.toByteArray(u.getInputStream())
         then:
-        9 * 8192 == arr.length;
+        9 * 8192 == arr.length
 
     }
 
@@ -341,23 +367,23 @@ class WebServerSpec extends BaseSpecification {
      */
     def "Invoke /test/post with empty POST"() {
         given:
-        def HttpURLConnection u = new URL("http://localhost:9999/test/post").openConnection();
+        HttpURLConnection u = new URL("http://localhost:9999/test/post").openConnection()
         and:
-        def testString = "";
+        def testString = ""
         when:
-        u.setRequestMethod("POST");
+        u.setRequestMethod("POST")
         u.setRequestProperty("Content-Type",
-                "application/x-www-form-urlencoded");
+                "application/x-www-form-urlencoded")
 
-        u.setRequestProperty("Content-Length", Integer.toString(testString.getBytes().length));
-        u.setDoInput(true);
-        u.setDoOutput(true);
-        def out = u.getOutputStream();
-        out.write(testString.getBytes(Charsets.UTF_8));
-        out.close();
-        def result = new String(ByteStreams.toByteArray(u.getInputStream()), Charsets.UTF_8);
+        u.setRequestProperty("Content-Length", Integer.toString(testString.getBytes().length))
+        u.setDoInput(true)
+        u.setDoOutput(true)
+        def out = u.getOutputStream()
+        out.write(testString.getBytes(Charsets.UTF_8))
+        out.close()
+        def result = new String(ByteStreams.toByteArray(u.getInputStream()), Charsets.UTF_8)
         then:
-        "" == result;
+        "" == result
     }
 
     /**
@@ -365,53 +391,53 @@ class WebServerSpec extends BaseSpecification {
      */
     def "Invoke /test/presidpatch with GET"() {
         given:
-        def HttpURLConnection u = new URL("http://localhost:9999/test/predispatch").openConnection();
+        HttpURLConnection u = new URL("http://localhost:9999/test/predispatch").openConnection()
         when:
-        u.setRequestMethod("GET");
+        u.setRequestMethod("GET")
         then:
-        u.getResponseCode() == 404;
+        u.getResponseCode() == 404
     }
 
     def "HTTP pipelining is supported correctly"() {
         given:
-        List<HttpResponse> responses = Lists.newArrayList();
+        List<HttpResponse> responses = Lists.newArrayList()
         when:
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
+        EventLoopGroup workerGroup = new NioEventLoopGroup()
         try {
-            Bootstrap b = new Bootstrap();
-            b.group(workerGroup);
-            b.channel(NioSocketChannel.class);
+            Bootstrap b = new Bootstrap()
+            b.group(workerGroup)
+            b.channel(NioSocketChannel.class)
             b.handler(new ChannelInitializer<SocketChannel>() {
                 @Override
-                public void initChannel(SocketChannel ch) throws Exception {
-                    ch.pipeline().addLast(new HttpClientCodec());
+                 void initChannel(SocketChannel ch) throws Exception {
+                    ch.pipeline().addLast(new HttpClientCodec())
                     ch.pipeline().addLast(new ChannelInboundHandlerAdapter() {
                         @Override
                         void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
                             if (msg instanceof HttpResponse) {
-                                responses.add(msg);
+                                responses.add(msg)
                             }
                             super.channelRead(ctx, msg)
                             if (responses.size() == 3) {
-                                ctx.channel().close();
+                                ctx.channel().close()
                             }
                         }
-                    });
+                    })
                 }
-            });
+            })
 
-            ChannelFuture f = b.connect("localhost", 9999).sync();
-            f.channel().writeAndFlush(new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/pipelining/1000"));
-            f.channel().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
-            f.channel().writeAndFlush(new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/pipelining/500"));
-            f.channel().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
-            f.channel().writeAndFlush(new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/pipelining/10"));
-            f.channel().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+            ChannelFuture f = b.connect("localhost", 9999).sync()
+            f.channel().writeAndFlush(new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/pipelining/1000"))
+            f.channel().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+            f.channel().writeAndFlush(new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/pipelining/500"))
+            f.channel().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+            f.channel().writeAndFlush(new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/pipelining/10"))
+            f.channel().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
 
             // Wait until the connection is closed.
-            f.channel().closeFuture().sync();
+            f.channel().closeFuture().sync()
         } finally {
-            workerGroup.shutdownGracefully();
+            workerGroup.shutdownGracefully()
         }
         then:
         responses.size() == 3
