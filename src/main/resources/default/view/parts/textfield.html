@@ -1,4 +1,4 @@
-@args String span, String name, String value, String label, String labelKey, String helpKey, String addonText, boolean required, boolean readonly, boolean adminOnly
+@args String span, String name, String value, String label, String labelKey, String helpKey, String addonText, boolean required, boolean readonly, boolean adminOnly, boolean autofocus
 <div class="col-md-@(span == null || span == "" ? 6 : span) form-group @user.signalFieldError(name)">
     <label>
         <span class="@if (required) { input-required } @if (adminOnly) { admin-link }">
@@ -11,11 +11,11 @@
     </label>
     @if (addonText) {
         <div class="input-group">
-            <input name="@name" type="text" value="@user.getFieldValue(name, value)" class="form-control input-block-level" @if (readonly) { readonly } />
+            <input name="@name" type="text" value="@user.getFieldValue(name, value)" class="form-control input-block-level" @if (readonly) { readonly } @if (autofocus) { autofocus } />
             <span class="input-group-addon">@raw() { @addonText }</span>
         </div>
     } else {
-        <input name="@name" type="text" value="@user.getFieldValue(name, value)" class="form-control input-block-level" @if (readonly) { readonly } />
+        <input name="@name" type="text" value="@user.getFieldValue(name, value)" class="form-control input-block-level" @if (readonly) { readonly } @if (autofocus) { autofocus } />
     }
     @if (Strings.isFilled(helpKey)) {
         <span class="help-block">@i18n(helpKey)</span>
