@@ -75,16 +75,7 @@ public class RythmConfig implements Lifecycle {
                                + Files.toSaneFileName(CallContext.getNodeName()).orElse("node")
                                + "_rythm");
         tmpDir.mkdirs();
-
-        // Delete all templates on startup to force a clean recompile - otherwise *SOMETIMES* old
-        // templates might get used :-/
-        if (tmpDir.listFiles() != null) {
-            for (File file : tmpDir.listFiles()) {
-                if (file.getName().endsWith(".java") || file.getName().endsWith(".rythm")) {
-                    file.delete();
-                }
-            }
-        }
+        deleteTempFiles(tmpDir);
         config.put("rythm.home.tmp.dir", tmpDir.getAbsolutePath());
         config.put("rythm.i18n.message.resolver.impl", I18nResourceResolver.class.getName());
         config.put(RythmConfigurationKey.RESOURCE_LOADER_IMPLS.getKey(), new SiriusResourceLoader());
@@ -92,6 +83,21 @@ public class RythmConfig implements Lifecycle {
         Rythm.init(config);
         Rythm.engine().registerFastTag(new IncludeExtensions());
         Rythm.engine().registerTransformer(EscapeStringTransformer.class);
+    }
+
+    private void deleteTempFiles(File tmpDir) {
+        // Delete all templates on startup to force a clean recompile - otherwise *SOMETIMES* old
+        // templates might get used :-/
+        if (tmpDir.listFiles() == null) {
+            return;
+        }
+        for (File file : tmpDir.listFiles()) {
+            if (file.getName().endsWith(".java") || file.getName().endsWith(".rythm")) {
+                if (!file.delete()) {
+                    LOG.WARN("Cannot delete: %s", file.getAbsolutePath());
+                }
+            }
+        }
     }
 
     @Override
@@ -108,7 +114,7 @@ public class RythmConfig implements Lifecycle {
                 schedulerField.setAccessible(true);
                 ((ThreadPoolExecutor) schedulerField.get(checker)).shutdown();
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             LOG.WARN("Cannot halt ThreadPoolExecutor of NonExistsTemplatesChecker (Rythm): " + e.getMessage() + " (" + e
                     .getClass()
                     .getSimpleName() + ")");
