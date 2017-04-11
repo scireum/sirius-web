@@ -392,7 +392,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             currentContext = setupContext(ctx, req);
 
             try {
-                if (checkIPFilter(ctx, req)) {
+                if (checkIfBlockedByIPFilter(ctx, req)) {
                     return;
                 }
 
@@ -468,7 +468,22 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         }
     }
 
-    private boolean checkIPFilter(ChannelHandlerContext ctx, HttpRequest req) {
+    /**
+     * Although the {@link LowLevelHandler} already checked the effective TCP remote IP,
+     * we now check again, as the parsed request might contain a X-Forwarded-For header,
+     * which contains the effective remote IP to verify.
+     *
+     * @param ctx the current channel
+     * @param req the current request
+     * @return <tt>true</tt> if the request was blocked, false otherwise
+     */
+    private boolean checkIfBlockedByIPFilter(ChannelHandlerContext ctx, HttpRequest req) {
+        // AS determine the remote IP is quite expensive, we only fetch and check it,
+        // if there is a filter at all
+        if (WebServer.getIPFilter().isEmpty()) {
+            return false;
+        }
+
         if (!WebServer.getIPFilter().accepts(currentContext.getRemoteIP())) {
             WebServer.blocks++;
             if (WebServer.blocks < 0) {
