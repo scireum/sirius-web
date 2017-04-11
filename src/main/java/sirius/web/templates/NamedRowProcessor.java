@@ -8,9 +8,8 @@
 
 package sirius.web.templates;
 
+import com.google.common.collect.ListMultimap;
 import sirius.kernel.commons.Value;
-
-import java.util.Map;
 
 /**
  * Invoked by a {@link SmartLineBasedProcessor} to handle one row.
@@ -28,5 +27,5 @@ public interface NamedRowProcessor {
      * @param lineNumber the line number which is currently being processed.
      * @param row        the data of the row / line to process
      */
-    void handleRow(int lineNumber, Map<String, Value> row);
+    void handleRow(int lineNumber, ListMultimap<String, Value> row);
 }

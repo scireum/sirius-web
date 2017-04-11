@@ -8,12 +8,15 @@
 
 package sirius.web.templates;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.ListMultimap;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
 import sirius.kernel.commons.Values;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,8 +28,9 @@ import java.util.Map;
  */
 public class SmartLineBasedProcessor implements RowProcessor {
 
-    private Map<String, String> columnAliases = Maps.newHashMap();
+    private Map<String, String> columnAliases = new HashMap<>();
     private List<String> columnMapping;
+    private List<String> originalColumns;
     private NamedRowProcessor processor;
 
     /**
@@ -70,12 +74,14 @@ public class SmartLineBasedProcessor implements RowProcessor {
     @Override
     public void handleRow(int lineNumber, Values row) {
         if (columnMapping == null) {
-            columnMapping = Lists.newArrayList();
+            columnMapping = new ArrayList<>(row.length());
+            originalColumns = new ArrayList<>(row.length());
             for (int i = 0; i < row.length(); i++) {
                 columnMapping.add(resolveColumnName(row.at(i).asString()));
+                originalColumns.add(row.at(i).asString());
             }
         } else {
-            Map<String, Value> data = Maps.newHashMap();
+            ListMultimap<String, Value> data = LinkedListMultimap.create(row.length());
             for (int i = 0; i < row.length(); i++) {
                 String columnName = columnMapping.get(i);
                 if (columnName != null) {
@@ -103,5 +109,17 @@ public class SmartLineBasedProcessor implements RowProcessor {
         }
 
         return null;
+    }
+
+    /**
+     * @return {@link Tuple}s of the original column names and their mapped column names. Contains <tt>null</tt>s before
+     * the first row has been read!
+     */
+    public List<Tuple<String, String>> getColumnMapping() {
+        List<Tuple<String, String>> result = new ArrayList<>(columnMapping.size());
+        for (int i = 0; i < columnMapping.size(); i++) {
+            result.add(Tuple.create(originalColumns.get(i), columnMapping.get(i)));
+        }
+        return result;
     }
 }
