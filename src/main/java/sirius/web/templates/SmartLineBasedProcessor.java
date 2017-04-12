@@ -8,8 +8,7 @@
 
 package sirius.web.templates;
 
-import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.ListMultimap;
+import com.google.common.collect.ImmutableListMultimap;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
@@ -80,20 +79,17 @@ public class SmartLineBasedProcessor implements RowProcessor {
                 columnMapping.add(resolveColumnName(row.at(i).asString()));
                 originalColumns.add(row.at(i).asString());
             }
+        } else if (processor == null) {
+            throw new IllegalStateException("No processor available.");
         } else {
-            ListMultimap<String, Value> data = LinkedListMultimap.create(row.length());
+            ImmutableListMultimap.Builder<String, Value> builder = ImmutableListMultimap.builder();
             for (int i = 0; i < row.length(); i++) {
                 String columnName = columnMapping.get(i);
                 if (columnName != null) {
-                    data.put(columnName, row.at(i));
+                    builder.put(columnName, row.at(i));
                 }
             }
-
-            if (processor == null) {
-                throw new IllegalStateException("No processor available.");
-            } else {
-                processor.handleRow(lineNumber - 1, data);
-            }
+            processor.handleRow(lineNumber - 1, builder.build());
         }
     }
 
