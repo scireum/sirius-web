@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Base class for various implementations of {@link sirius.web.security.UserManager}.
@@ -63,7 +64,7 @@ public abstract class GenericUserManager implements UserManager {
     /**
      * Defines the default grace period (max age of an sso timestamp) which is accepted by the system
      */
-    private static final long DEFAULT_SSO_GRACE_INTERVAL = 60 * 60 * 24;
+    private static final long DEFAULT_SSO_GRACE_INTERVAL = TimeUnit.HOURS.toSeconds(24);
     private static final String SUFFIX_USER_ID = "-user-id";
     private static final String SUFFIX_USER_NAME = "-user-name";
     private static final String SUFFIX_TENANT_ID = "-tenant-id";
@@ -282,7 +283,7 @@ public abstract class GenericUserManager implements UserManager {
         String user = ctx.getCookieValue(scope.getScopeId() + USER_COOKIE_SUFFIX);
         String token = ctx.getCookieValue(scope.getScopeId() + TOKEN_COOKIE_SUFFIX);
 
-        if (!Strings.isFilled(user) || !Strings.isFilled(token)) {
+        if (Strings.isEmpty(user) || Strings.isEmpty(token)) {
             return null;
         }
 
@@ -510,7 +511,7 @@ public abstract class GenericUserManager implements UserManager {
     @SuppressWarnings("unchecked")
     @Nullable
     protected Set<String> computeRoles(@Nullable WebContext ctx, String userId) {
-        if (ctx != null && sessionStorage == SESSION_STORAGE_TYPE_SERVER && ctx.getServerSession(false).isPresent()) {
+        if (ctx != null && SESSION_STORAGE_TYPE_SERVER.equals(sessionStorage) && ctx.getServerSession(false).isPresent()) {
             return ctx.getServerSession()
                       .getValue(scope.getScopeId() + SUFFIX_USER_ROLES)
                       .get(Set.class, Collections.emptySet());
