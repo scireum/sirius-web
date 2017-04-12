@@ -305,7 +305,8 @@ public class TestResponse extends Response {
     }
 
     @Override
-    protected void sendTemplateContent(String name, String content) {
+    protected void sendTemplateContent(HttpResponseStatus status, String name, String content) {
+        this.status = status;
         this.content = content.getBytes(Charsets.UTF_8);
         completeResponse();
     }

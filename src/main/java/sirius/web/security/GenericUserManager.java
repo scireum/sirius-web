@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Base class for various implementations of {@link sirius.web.security.UserManager}.
@@ -63,7 +64,14 @@ public abstract class GenericUserManager implements UserManager {
     /**
      * Defines the default grace period (max age of an sso timestamp) which is accepted by the system
      */
-    private static final long DEFAULT_SSO_GRACE_INTERVAL = 60 * 60 * 24;
+    private static final long DEFAULT_SSO_GRACE_INTERVAL = TimeUnit.HOURS.toSeconds(24);
+    private static final String SUFFIX_USER_ID = "-user-id";
+    private static final String SUFFIX_USER_NAME = "-user-name";
+    private static final String SUFFIX_TENANT_ID = "-tenant-id";
+    private static final String SUFFIX_TENANT_NAME = "-tenant-name";
+    private static final String SUFFIX_USER_EMAIL = "-user-email";
+    private static final String SUFFIX_USER_LANG = "-user-lang";
+    private static final String SUFFIX_USER_ROLES = "-user-roles";
 
     protected final ScopeInfo scope;
     protected final Extension config;
@@ -97,12 +105,6 @@ public abstract class GenericUserManager implements UserManager {
                                            .build();
     }
 
-    @Override
-    public abstract UserInfo findUserByName(@Nullable WebContext ctx, String user);
-
-    @Override
-    public abstract UserInfo findUserByCredentials(@Nullable WebContext ctx, String user, String password);
-
     /**
      * Resolves the given user info back into the original (underlying) user object.
      *
@@ -131,7 +133,7 @@ public abstract class GenericUserManager implements UserManager {
             return result;
         }
 
-        if (sessionStorage == SESSION_STORAGE_TYPE_SERVER) {
+        if (SESSION_STORAGE_TYPE_SERVER.equals(sessionStorage)) {
             result = loginViaCookie(ctx);
             if (result != null) {
                 recordUserLogin(ctx, result);
@@ -198,7 +200,7 @@ public abstract class GenericUserManager implements UserManager {
      * @param user the user that logged in
      */
     protected void updateLoginCookie(WebContext ctx, UserInfo user) {
-        if (sessionStorage == SESSION_STORAGE_TYPE_SERVER) {
+        if (SESSION_STORAGE_TYPE_SERVER.equals(sessionStorage)) {
             if (isKeepLogin(ctx)) {
                 ctx.setCookie(scope.getScopeId() + USER_COOKIE_SUFFIX,
                               user.getUserName().trim(),
@@ -212,7 +214,7 @@ public abstract class GenericUserManager implements UserManager {
                               timestamp + ":" + challenge,
                               loginCookieTTL.getSeconds());
             }
-        } else if (sessionStorage == SESSION_STORAGE_TYPE_CLIENT) {
+        } else if (SESSION_STORAGE_TYPE_CLIENT.equals(sessionStorage)) {
             ctx.setCustomSessionCookieTTL(isKeepLogin(ctx) ? loginCookieTTL : Duration.ZERO);
         }
     }
@@ -281,27 +283,30 @@ public abstract class GenericUserManager implements UserManager {
         String user = ctx.getCookieValue(scope.getScopeId() + USER_COOKIE_SUFFIX);
         String token = ctx.getCookieValue(scope.getScopeId() + TOKEN_COOKIE_SUFFIX);
 
-        if (Strings.isFilled(user) && Strings.isFilled(token)) {
-            ctx.hidePost();
-
-            UserInfo result = findUserByName(ctx, user);
-            if (result != null) {
-                // The cookie token is TIMESTAMP:MD5
-                Tuple<String, String> challengeResponse = Strings.split(token, ":");
-                // Verify age...
-                if (checkTokenTTL(Value.of(challengeResponse.getFirst()).asLong(0), loginCookieTTL.getSeconds())) {
-                    // Verify hash...
-                    if (checkTokenValidity(ctx, user, challengeResponse)) {
-                        log("Cookie-Login of %s succeeded with token: %s", user, token);
-                        return result;
-                    } else {
-                        log("Cookie-Login of %s failed due to invalid hash in token: %s", user, token);
-                    }
-                } else {
-                    log("Cookie-Login of %s failed due to outdated timestamp in token: %s", user, token);
-                }
-            }
+        if (Strings.isEmpty(user) || Strings.isEmpty(token)) {
+            return null;
         }
+
+        UserInfo result = findUserByName(ctx, user);
+        if (result == null) {
+            return null;
+        }
+
+        // The cookie token is TIMESTAMP:MD5
+        Tuple<String, String> challengeResponse = Strings.split(token, ":");
+        // Verify age...
+        if (checkTokenTTL(Value.of(challengeResponse.getFirst()).asLong(0), loginCookieTTL.getSeconds())) {
+            // Verify hash...
+            if (checkTokenValidity(ctx, user, challengeResponse)) {
+                log("Cookie-Login of %s succeeded with token: %s", user, token);
+                return result;
+            } else {
+                log("Cookie-Login of %s failed due to invalid hash in token: %s", user, token);
+            }
+        } else {
+            log("Cookie-Login of %s failed due to outdated timestamp in token: %s", user, token);
+        }
+
         return null;
     }
 
@@ -413,60 +418,79 @@ public abstract class GenericUserManager implements UserManager {
      * @return the user in the session or <tt>null</tt> if no user is attached
      */
     protected UserInfo findUserInSession(WebContext ctx) {
-        if (sessionStorage == SESSION_STORAGE_TYPE_SERVER) {
-            if (ctx.getServerSession(false).isPresent()) {
-                Value userId = ctx.getServerSession().getValue(scope.getScopeId() + "-user-id");
-                if (userId.isFilled() && isUserStillValid(userId.asString())) {
-                    Set<String> roles = computeRoles(ctx, userId.asString());
-                    if (roles != null) {
-                        return UserInfo.Builder.createUser(userId.asString())
-                                               .withUsername(ctx.getServerSession()
-                                                                .getValue(scope.getScopeId() + "-user-name")
-                                                                .asString())
-                                               .withTenantId(ctx.getServerSession()
-                                                                .getValue(scope.getScopeId() + "-tenant-id")
-                                                                .asString())
-                                               .withTenantName(ctx.getServerSession()
-                                                                  .getValue(scope.getScopeId() + "-tenant-name")
-                                                                  .asString())
-                                               .withEmail(ctx.getServerSession()
-                                                             .getValue(scope.getScopeId() + "-user-email")
-                                                             .asString())
-                                               .withLang(ctx.getServerSession()
-                                                            .getValue(scope.getScopeId() + "-user-lang")
-                                                            .asString())
-                                               .withPermissions(roles)
-                                               .withConfigSupplier(ui -> getUserConfig(getScopeConfig(), ui))
-                                               .withUserSupplier(this::getUserObject)
-                                               .build();
-                    }
-                }
-            }
-        } else if (sessionStorage == SESSION_STORAGE_TYPE_CLIENT) {
-            Value userId = ctx.getSessionValue(scope.getScopeId() + "-user-id");
-            if (userId.isFilled() && isUserStillValid(userId.asString())) {
-                Set<String> roles = computeRoles(ctx, userId.asString());
-                if (roles != null) {
-                    return UserInfo.Builder.createUser(userId.asString())
-                                           .withUsername(ctx.getSessionValue(scope.getScopeId() + "-user-name")
-                                                            .asString())
-                                           .withTenantId(ctx.getSessionValue(scope.getScopeId() + "-tenant-id")
-                                                            .asString())
-                                           .withTenantName(ctx.getSessionValue(scope.getScopeId() + "-tenant-name")
-                                                              .asString())
-                                           .withEmail(ctx.getSessionValue(scope.getScopeId() + "-user-email")
-                                                         .asString())
-                                           .withLang(ctx.getSessionValue(scope.getScopeId() + "-user-lang").asString())
-                                           .withPermissions(roles)
-                                           .withConfigSupplier(ui -> getUserConfig(getScopeConfig(), ui))
-                                           .withUserSupplier(this::getUserObject)
-                                           .build();
-                }
-            }
+        if (SESSION_STORAGE_TYPE_SERVER.equals(sessionStorage)) {
+            return findUserInServerSession(ctx);
+        }
+
+        if (SESSION_STORAGE_TYPE_CLIENT.equals(sessionStorage)) {
+            return findUserInClientSession(ctx);
         }
         return null;
     }
 
+    private UserInfo findUserInClientSession(WebContext ctx) {
+        Value userId = ctx.getSessionValue(scope.getScopeId() + SUFFIX_USER_ID);
+        if (!userId.isFilled() || !isUserStillValid(userId.asString())) {
+            return null;
+        }
+        Set<String> roles = computeRoles(ctx, userId.asString());
+        if (roles == null) {
+            return null;
+        }
+        return UserInfo.Builder.createUser(userId.asString())
+                               .withUsername(ctx.getSessionValue(scope.getScopeId() + SUFFIX_USER_NAME).asString())
+                               .withTenantId(ctx.getSessionValue(scope.getScopeId() + SUFFIX_TENANT_ID).asString())
+                               .withTenantName(ctx.getSessionValue(scope.getScopeId() + SUFFIX_TENANT_NAME).asString())
+                               .withEmail(ctx.getSessionValue(scope.getScopeId() + SUFFIX_USER_EMAIL).asString())
+                               .withLang(ctx.getSessionValue(scope.getScopeId() + SUFFIX_USER_LANG).asString())
+                               .withPermissions(roles)
+                               .withConfigSupplier(ui -> getUserConfig(getScopeConfig(), ui))
+                               .withUserSupplier(this::getUserObject)
+                               .build();
+    }
+
+    private UserInfo findUserInServerSession(WebContext ctx) {
+        if (!ctx.getServerSession(false).isPresent()) {
+            return null;
+        }
+        Value userId = ctx.getServerSession().getValue(scope.getScopeId() + SUFFIX_USER_ID);
+        if (!userId.isFilled() || !isUserStillValid(userId.asString())) {
+            return null;
+        }
+        Set<String> roles = computeRoles(ctx, userId.asString());
+        if (roles == null) {
+            return null;
+        }
+        return UserInfo.Builder.createUser(userId.asString())
+                               .withUsername(ctx.getServerSession()
+                                                .getValue(scope.getScopeId() + SUFFIX_USER_NAME)
+                                                .asString())
+                               .withTenantId(ctx.getServerSession()
+                                                .getValue(scope.getScopeId() + SUFFIX_TENANT_ID)
+                                                .asString())
+                               .withTenantName(ctx.getServerSession()
+                                                  .getValue(scope.getScopeId() + SUFFIX_TENANT_NAME)
+                                                  .asString())
+                               .withEmail(ctx.getServerSession()
+                                             .getValue(scope.getScopeId() + SUFFIX_USER_EMAIL)
+                                             .asString())
+                               .withLang(ctx.getServerSession()
+                                            .getValue(scope.getScopeId() + SUFFIX_USER_LANG)
+                                            .asString())
+                               .withPermissions(roles)
+                               .withConfigSupplier(ui -> getUserConfig(getScopeConfig(), ui))
+                               .withUserSupplier(this::getUserObject)
+                               .build();
+    }
+
+    /**
+     * Determines if the cached user object for the given ID is still valid.
+     * <p>
+     * The method has to check the session data by itself.
+     *
+     * @param userId the user id to check
+     * @return <tt>true</tt> if the user is still valid, false otherwise
+     */
     protected boolean isUserStillValid(String userId) {
         return true;
     }
@@ -487,9 +511,9 @@ public abstract class GenericUserManager implements UserManager {
     @SuppressWarnings("unchecked")
     @Nullable
     protected Set<String> computeRoles(@Nullable WebContext ctx, String userId) {
-        if (ctx != null && sessionStorage == SESSION_STORAGE_TYPE_SERVER && ctx.getServerSession(false).isPresent()) {
+        if (ctx != null && SESSION_STORAGE_TYPE_SERVER.equals(sessionStorage) && ctx.getServerSession(false).isPresent()) {
             return ctx.getServerSession()
-                      .getValue(scope.getScopeId() + "-user-roles")
+                      .getValue(scope.getScopeId() + SUFFIX_USER_ROLES)
                       .get(Set.class, Collections.emptySet());
         } else {
             return Collections.emptySet();
@@ -506,23 +530,23 @@ public abstract class GenericUserManager implements UserManager {
      */
     @Override
     public void attachToSession(@Nonnull UserInfo user, @Nonnull WebContext ctx) {
-        if (sessionStorage == SESSION_STORAGE_TYPE_SERVER) {
+        if (SESSION_STORAGE_TYPE_SERVER.equals(sessionStorage)) {
             ServerSession sess = ctx.getServerSession();
-            sess.putValue(scope.getScopeId() + "-tenant-id", user.getTenantId());
-            sess.putValue(scope.getScopeId() + "-tenant-name", user.getTenantName());
-            sess.putValue(scope.getScopeId() + "-user-id", user.getUserId());
-            sess.putValue(scope.getScopeId() + "-user-name", user.getUserName());
-            sess.putValue(scope.getScopeId() + "-user-email", user.getEmail());
-            sess.putValue(scope.getScopeId() + "-user-lang", user.getLang());
+            sess.putValue(scope.getScopeId() + SUFFIX_TENANT_ID, user.getTenantId());
+            sess.putValue(scope.getScopeId() + SUFFIX_TENANT_NAME, user.getTenantName());
+            sess.putValue(scope.getScopeId() + SUFFIX_USER_ID, user.getUserId());
+            sess.putValue(scope.getScopeId() + SUFFIX_USER_NAME, user.getUserName());
+            sess.putValue(scope.getScopeId() + SUFFIX_USER_EMAIL, user.getEmail());
+            sess.putValue(scope.getScopeId() + SUFFIX_USER_LANG, user.getLang());
             sess.putValue(ServerSession.USER, user.getUserName() + "(" + user.getEmail() + ")");
             sess.markAsUserSession();
-        } else if (sessionStorage == SESSION_STORAGE_TYPE_CLIENT) {
-            ctx.setSessionValue(scope.getScopeId() + "-tenant-id", user.getTenantId());
-            ctx.setSessionValue(scope.getScopeId() + "-tenant-name", user.getTenantName());
-            ctx.setSessionValue(scope.getScopeId() + "-user-id", user.getUserId());
-            ctx.setSessionValue(scope.getScopeId() + "-user-name", user.getUserName());
-            ctx.setSessionValue(scope.getScopeId() + "-user-email", user.getEmail());
-            ctx.setSessionValue(scope.getScopeId() + "-user-lang", user.getLang());
+        } else if (SESSION_STORAGE_TYPE_CLIENT.equals(sessionStorage)) {
+            ctx.setSessionValue(scope.getScopeId() + SUFFIX_TENANT_ID, user.getTenantId());
+            ctx.setSessionValue(scope.getScopeId() + SUFFIX_TENANT_NAME, user.getTenantName());
+            ctx.setSessionValue(scope.getScopeId() + SUFFIX_USER_ID, user.getUserId());
+            ctx.setSessionValue(scope.getScopeId() + SUFFIX_USER_NAME, user.getUserName());
+            ctx.setSessionValue(scope.getScopeId() + SUFFIX_USER_EMAIL, user.getEmail());
+            ctx.setSessionValue(scope.getScopeId() + SUFFIX_USER_LANG, user.getLang());
         }
         storeRolesForUser(user, ctx);
     }
@@ -538,9 +562,9 @@ public abstract class GenericUserManager implements UserManager {
      * @param ctx  the current request to store the roles in
      */
     protected void storeRolesForUser(UserInfo user, WebContext ctx) {
-        if (sessionStorage == SESSION_STORAGE_TYPE_SERVER) {
+        if (SESSION_STORAGE_TYPE_SERVER.equals(sessionStorage)) {
             Optional<ServerSession> sess = ctx.getServerSession(false);
-            sess.ifPresent(serverSession -> serverSession.putValue(scope.getScopeId() + "-user-roles",
+            sess.ifPresent(serverSession -> serverSession.putValue(scope.getScopeId() + SUFFIX_USER_ROLES,
                                                                    user.getPermissions()));
         }
     }
@@ -553,25 +577,25 @@ public abstract class GenericUserManager implements UserManager {
      */
     @Override
     public void detachFromSession(@Nonnull UserInfo user, @Nonnull WebContext ctx) {
-        if (sessionStorage == SESSION_STORAGE_TYPE_SERVER) {
+        if (SESSION_STORAGE_TYPE_SERVER.equals(sessionStorage)) {
             Optional<ServerSession> s = ctx.getServerSession(false);
             if (s.isPresent()) {
                 ServerSession sess = s.get();
-                sess.putValue(scope.getScopeId() + "-tenant-id", null);
-                sess.putValue(scope.getScopeId() + "-tenant-name", null);
-                sess.putValue(scope.getScopeId() + "-user-id", null);
-                sess.putValue(scope.getScopeId() + "-user-name", null);
-                sess.putValue(scope.getScopeId() + "-user-email", null);
-                sess.putValue(scope.getScopeId() + "-user-roles", null);
-                sess.putValue(scope.getScopeId() + "-user-lang", null);
+                sess.putValue(scope.getScopeId() + SUFFIX_TENANT_ID, null);
+                sess.putValue(scope.getScopeId() + SUFFIX_TENANT_NAME, null);
+                sess.putValue(scope.getScopeId() + SUFFIX_USER_ID, null);
+                sess.putValue(scope.getScopeId() + SUFFIX_USER_NAME, null);
+                sess.putValue(scope.getScopeId() + SUFFIX_USER_EMAIL, null);
+                sess.putValue(scope.getScopeId() + SUFFIX_USER_ROLES, null);
+                sess.putValue(scope.getScopeId() + SUFFIX_USER_LANG, null);
             }
-        } else if (sessionStorage == SESSION_STORAGE_TYPE_CLIENT) {
-            ctx.setSessionValue(scope.getScopeId() + "-tenant-id", null);
-            ctx.setSessionValue(scope.getScopeId() + "-tenant-name", null);
-            ctx.setSessionValue(scope.getScopeId() + "-user-id", null);
-            ctx.setSessionValue(scope.getScopeId() + "-user-name", null);
-            ctx.setSessionValue(scope.getScopeId() + "-user-email", null);
-            ctx.setSessionValue(scope.getScopeId() + "-user-lang", null);
+        } else if (SESSION_STORAGE_TYPE_CLIENT.equals(sessionStorage)) {
+            ctx.setSessionValue(scope.getScopeId() + SUFFIX_TENANT_ID, null);
+            ctx.setSessionValue(scope.getScopeId() + SUFFIX_TENANT_NAME, null);
+            ctx.setSessionValue(scope.getScopeId() + SUFFIX_USER_ID, null);
+            ctx.setSessionValue(scope.getScopeId() + SUFFIX_USER_NAME, null);
+            ctx.setSessionValue(scope.getScopeId() + SUFFIX_USER_EMAIL, null);
+            ctx.setSessionValue(scope.getScopeId() + SUFFIX_USER_LANG, null);
         }
 
         clearRolesForUser(user, ctx);
@@ -590,9 +614,9 @@ public abstract class GenericUserManager implements UserManager {
      * @param ctx  the request to remove role data from
      */
     protected void clearRolesForUser(UserInfo user, WebContext ctx) {
-        if (sessionStorage == SESSION_STORAGE_TYPE_SERVER) {
+        if (SESSION_STORAGE_TYPE_SERVER.equals(sessionStorage)) {
             Optional<ServerSession> sess = ctx.getServerSession(false);
-            sess.ifPresent(serverSession -> serverSession.putValue(scope.getScopeId() + "-user-roles", null));
+            sess.ifPresent(serverSession -> serverSession.putValue(scope.getScopeId() + SUFFIX_USER_ROLES, null));
         }
     }
 

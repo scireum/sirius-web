@@ -16,6 +16,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -89,6 +90,11 @@ import java.util.concurrent.atomic.AtomicLong;
  * This context can either be passed along as variable or be accessed using {@link CallContext#get(Class)}
  */
 public class WebContext implements SubContext {
+
+    private static final String UNKNOWN_FORWARDED_FOR_HOST = "unknown";
+    private static final String HEADER_X_FORWARDED_FOR = "X-Forwarded-For";
+    private static final String HEADER_X_FORWARDED_PROTO = "X-Forwarded-Proto";
+    private static final String PROTOCOL_HTTPS = "https";
 
     /**
      * Used to specify the source of a server session
@@ -469,34 +475,51 @@ public class WebContext implements SubContext {
         if (attribute != null && attribute.containsKey(key)) {
             return Value.of(attribute.get(key));
         }
+
         if (queryString == null) {
             decodeQueryString();
         }
+
         if (queryString.containsKey(key)) {
             List<String> val = getParameters(key);
             if (val.size() == 1) {
                 return Value.of(val.get(0));
             } else if (val.isEmpty()) {
-                return Value.of(null);
+                return Value.EMPTY;
             } else {
                 return Value.of(val);
             }
         }
+
         if (postDecoder != null) {
-            try {
-                InterfaceHttpData data = postDecoder.getBodyHttpData(key);
-                if (data instanceof Attribute) {
-                    return Value.of(((Attribute) data).getValue());
-                }
-            } catch (Exception e) {
-                Exceptions.handle()
-                          .to(WebServer.LOG)
-                          .error(e)
-                          .withSystemErrorMessage("Failed to fetch parameter %s: %s (%s)", key)
-                          .handle();
-            }
+            return fetchPostAttribute(key);
         }
-        return Value.of(null);
+
+        return Value.EMPTY;
+    }
+
+    private Value fetchPostAttribute(String key) {
+        try {
+            InterfaceHttpData data = postDecoder.getBodyHttpData(key);
+            if (data instanceof Attribute) {
+                Attribute attr = (Attribute) data;
+                ByteBuf byteBuf = attr.getByteBuf();
+
+                // If the request gets aborted prematurely, the underlying buffers might
+                // already be released. Therefore we have to check this here manually as
+                // the server might still try to process the request...
+                if (byteBuf != null) {
+                    return Value.of(byteBuf.toString(attr.getCharset()));
+                }
+            }
+        } catch (Exception e) {
+            Exceptions.handle()
+                      .to(WebServer.LOG)
+                      .error(e)
+                      .withSystemErrorMessage("Failed to fetch parameter %s: %s (%s)", key)
+                      .handle();
+        }
+        return Value.EMPTY;
     }
 
     /**
@@ -893,40 +916,56 @@ public class WebContext implements SubContext {
         if (remoteIp == null) {
             if (ctx == null || request == null) {
                 try {
-                    return InetAddress.getByName("127.0.0.1");
+                    return InetAddress.getLocalHost();
                 } catch (UnknownHostException e) {
                     throw Exceptions.handle(e);
                 }
             }
-            remoteIp = ((InetSocketAddress) ctx.channel().remoteAddress()).getAddress();
-            if (!WebServer.getProxyIPs().isEmpty()) {
-                if (WebServer.getProxyIPs().accepts(remoteIp)) {
-                    Value forwardedFor = Value.of(request.headers().get("X-Forwarded-For"));
-                    if (forwardedFor.isFilled()) {
-                        try {
-                            // A X-Forwarded-For might contain many IPs like 1.2.3.4, 5.6.7.8... We're only interested
-                            // in the last IP -> cut appropriately
-                            Tuple<String, String> splitIPs = Strings.splitAtLast(forwardedFor.asString(), ",");
-                            String forwardedForIp = Strings.isFilled(splitIPs.getSecond()) ?
-                                                    splitIPs.getSecond().trim() :
-                                                    splitIPs.getFirst().trim();
-                            remoteIp = InetAddress.getByName(forwardedForIp);
-                        } catch (Throwable e) {
-                            Exceptions.ignore(e);
-                            WebServer.LOG.WARN(Strings.apply(
-                                    "Cannot parse X-Forwarded-For address: %s, Remote-IP: %s, Request: %s, SSL: %s - %s (%s)",
-                                    forwardedFor,
-                                    remoteIp,
-                                    request.uri(),
-                                    NLS.toMachineString(isSSL()),
-                                    e.getMessage(),
-                                    e.getClass().getName()));
-                        }
-                    }
-                }
-            }
+            InetAddress ip = ((InetSocketAddress) ctx.channel().remoteAddress()).getAddress();
+            remoteIp = applyProxyIPs(ip);
         }
         return remoteIp;
+    }
+
+    private InetAddress applyProxyIPs(InetAddress ip) {
+        if (WebServer.getProxyIPs().isEmpty()) {
+            return ip;
+        }
+
+        if (!WebServer.getProxyIPs().accepts(remoteIp)) {
+            return ip;
+        }
+
+        Value forwardedFor = Value.of(request.headers().get(HEADER_X_FORWARDED_FOR));
+        if (!forwardedFor.isFilled()) {
+            return ip;
+        }
+
+        try {
+            // A X-Forwarded-For might contain many IPs like 1.2.3.4, 5.6.7.8... We're only interested
+            // in the last IP -> cut appropriately
+            Tuple<String, String> splitIPs = Strings.splitAtLast(forwardedFor.asString(), ",");
+            String forwardedForIp =
+                    Strings.isFilled(splitIPs.getSecond()) ? splitIPs.getSecond().trim() : splitIPs.getFirst().trim();
+
+            // Some reverse proxies like pound use this value if an invalid X-Forwarded-For is given
+            if (UNKNOWN_FORWARDED_FOR_HOST.equals(forwardedForIp)) {
+                return ip;
+            }
+
+            return InetAddress.getByName(forwardedForIp);
+        } catch (Exception e) {
+            Exceptions.ignore(e);
+            WebServer.LOG.WARN(Strings.apply(
+                    "Cannot parse X-Forwarded-For address: %s, Remote-IP: %s, Request: %s, SSL: %s - %s (%s)",
+                    forwardedFor,
+                    remoteIp,
+                    request.uri(),
+                    NLS.toMachineString(isSSL()),
+                    e.getMessage(),
+                    e.getClass().getName()));
+            return ip;
+        }
     }
 
     /**
@@ -937,10 +976,11 @@ public class WebContext implements SubContext {
      */
     public boolean isTrusted() {
         if (trusted == null) {
-            if (ctx == null) {
-                return true;
+            if (ctx == null || WebServer.getTrustedRanges().isEmpty()) {
+                trusted = true;
+            } else {
+                trusted = WebServer.getTrustedRanges().accepts(getRemoteIP());
             }
-            trusted = WebServer.getTrustedRanges().accepts(getRemoteIP());
         }
 
         return trusted;
@@ -956,7 +996,7 @@ public class WebContext implements SubContext {
         if (ssl == null) {
             // Otherwise, we might sit behind a SSL offloading proxy, therefore we check
             // for the header "X-Forwarded-Proto".
-            ssl = "https".equalsIgnoreCase(getHeaderValue("X-Forwarded-Proto").asString());
+            ssl = PROTOCOL_HTTPS.equalsIgnoreCase(getHeaderValue(HEADER_X_FORWARDED_PROTO).asString());
         }
 
         return ssl;
@@ -1005,24 +1045,39 @@ public class WebContext implements SubContext {
             }
             return result;
         }
-        if (postDecoder != null) {
-            try {
-                List<InterfaceHttpData> data = postDecoder.getBodyHttpDatas(key);
-                if (data == null || data.isEmpty()) {
-                    return Collections.emptyList();
+        return getPostParameters(key);
+    }
+
+    private List<String> getPostParameters(String key) {
+        if (postDecoder == null) {
+            return Collections.emptyList();
+        }
+        try {
+            return readPostParameters(key);
+        } catch (Exception e) {
+            Exceptions.handle(WebServer.LOG, e);
+            return Collections.emptyList();
+        }
+    }
+
+    private List<String> readPostParameters(String key) throws IOException {
+        List<InterfaceHttpData> data = postDecoder.getBodyHttpDatas(key);
+        if (data == null || data.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<String> result = new ArrayList<>();
+        for (InterfaceHttpData dataItem : data) {
+            if (dataItem instanceof Attribute) {
+                Attribute attr = (Attribute) dataItem;
+                ByteBuf buffer = attr.getByteBuf();
+                if (buffer != null) {
+                    result.add(buffer.toString(attr.getCharset()));
                 }
-                List<String> result = new ArrayList<>();
-                for (InterfaceHttpData dataItem : data) {
-                    if (dataItem instanceof Attribute) {
-                        result.add(((Attribute) dataItem).getValue());
-                    }
-                }
-                return result;
-            } catch (Exception e) {
-                Exceptions.handle(WebServer.LOG, e);
             }
         }
-        return Collections.emptyList();
+
+        return result;
     }
 
     /*
@@ -1063,12 +1118,16 @@ public class WebContext implements SubContext {
         if (cookiesIn == null) {
             cookiesIn = Maps.newHashMap();
             if (request != null) {
-                String cookieHeader = request.headers().get(HttpHeaderNames.COOKIE);
-                if (Strings.isFilled(cookieHeader)) {
-                    for (Cookie cookie : ServerCookieDecoder.LAX.decode(cookieHeader)) {
-                        this.cookiesIn.put(cookie.name(), cookie);
-                    }
-                }
+                parseCookieHeader();
+            }
+        }
+    }
+
+    private void parseCookieHeader() {
+        String cookieHeader = request.headers().get(HttpHeaderNames.COOKIE);
+        if (Strings.isFilled(cookieHeader)) {
+            for (Cookie cookie : ServerCookieDecoder.LAX.decode(cookieHeader)) {
+                this.cookiesIn.put(cookie.name(), cookie);
             }
         }
     }
@@ -1161,29 +1220,37 @@ public class WebContext implements SubContext {
         if (serverSession != null && serverSession.isNew()) {
             setHTTPSessionCookie(serverSessionCookieName, serverSession.getId());
         }
-        if (sessionModified) {
-            if (session.isEmpty()) {
-                deleteCookie(sessionCookieName);
-            } else {
-                QueryStringEncoder encoder = new QueryStringEncoder("");
-                for (Map.Entry<String, String> e : session.entrySet()) {
-                    encoder.addParam(e.getKey(), e.getValue());
-                }
-                if (sessionCookieTTL != null) {
-                    encoder.addParam(TTL_SESSION_KEY, String.valueOf(sessionCookieTTL));
-                }
-                String value = encoder.toString();
-                String protection =
-                        Hashing.sha512().hashString(value + getSessionSecret(session), Charsets.UTF_8).toString();
-                long ttl = determineSessionCookieTTL();
-                if (ttl == 0) {
-                    setHTTPSessionCookie(sessionCookieName, protection + ":" + value);
-                } else {
-                    setCookie(sessionCookieName, protection + ":" + value, ttl);
-                }
-            }
-        }
+        buildClientSessionCookie();
         return cookiesOut == null ? null : cookiesOut.values();
+    }
+
+    private void buildClientSessionCookie() {
+        if (!sessionModified) {
+            return;
+        }
+
+        if (session.isEmpty()) {
+            deleteCookie(sessionCookieName);
+            return;
+        }
+
+        QueryStringEncoder encoder = new QueryStringEncoder("");
+        for (Map.Entry<String, String> e : session.entrySet()) {
+            encoder.addParam(e.getKey(), e.getValue());
+        }
+        if (sessionCookieTTL != null) {
+            encoder.addParam(TTL_SESSION_KEY, String.valueOf(sessionCookieTTL));
+        }
+
+        String value = encoder.toString();
+        String protection = Hashing.sha512().hashString(value + getSessionSecret(session), Charsets.UTF_8).toString();
+
+        long ttl = determineSessionCookieTTL();
+        if (ttl == 0) {
+            setHTTPSessionCookie(sessionCookieName, protection + ":" + value);
+        } else {
+            setCookie(sessionCookieName, protection + ":" + value, ttl);
+        }
     }
 
     private long determineSessionCookieTTL() {
@@ -1344,7 +1411,7 @@ public class WebContext implements SubContext {
      */
     @Nullable
     public Tuple<String, String> tryBasicAuthentication(String realm) {
-        String header = getHeaderValue("Authorization").asString();
+        String header = getHeaderValue(HttpHeaderNames.AUTHORIZATION.toString()).asString();
         if (Strings.isFilled(header) && header.startsWith("Basic ")) {
             header = header.substring(6);
             String nameAndPassword = new String(Base64.getDecoder().decode(header), Charsets.UTF_8);
@@ -1428,7 +1495,7 @@ public class WebContext implements SubContext {
      * @return <tt>true</tt> if the method of the current request is POST, false otherwise
      */
     public boolean isPOST() {
-        return request.method() == HttpMethod.POST && !hidePost;
+        return HttpMethod.POST.equals(request.method()) && !hidePost;
     }
 
     /**
@@ -1647,16 +1714,21 @@ public class WebContext implements SubContext {
     public Charset getRequestEncoding() {
         try {
             Value contentType = getHeaderValue(HttpHeaderNames.CONTENT_TYPE);
-            if (contentType.isFilled()) {
-                for (String property : contentType.asString().split(";")) {
-                    Tuple<String, String> nameValue = Strings.split(property.trim(), "=");
-                    if ("charset".equals(nameValue.getFirst())) {
-                        return Charset.forName(nameValue.getSecond());
-                    }
-                }
-            }
+            return parseContentType(contentType);
         } catch (UnsupportedCharsetException e) {
             Exceptions.ignore(e);
+            return Charsets.UTF_8;
+        }
+    }
+
+    private Charset parseContentType(Value contentType) {
+        if (contentType.isFilled()) {
+            for (String property : contentType.asString().split(";")) {
+                Tuple<String, String> nameValue = Strings.split(property.trim(), "=");
+                if ("charset".equals(nameValue.getFirst())) {
+                    return Charset.forName(nameValue.getSecond());
+                }
+            }
         }
         return Charsets.UTF_8;
     }
@@ -1681,17 +1753,8 @@ public class WebContext implements SubContext {
         if (!hasContent()) {
             return false;
         }
-        try {
-            try (Reader r = new InputStreamReader(getContent())) {
-                // Trim whitespace and detect if the first readable character is a <
-                int c;
-                while ((c = r.read()) != -1) {
-                    if (!Character.isWhitespace(c)) {
-                        return c == '<';
-                    }
-                }
-                return false;
-            }
+        try (Reader r = new InputStreamReader(getContent())) {
+            return checkIfFirstCharIsXMLBrace(r);
         } catch (HandledException e) {
             throw e;
         } catch (Exception e) {
@@ -1703,57 +1766,100 @@ public class WebContext implements SubContext {
         }
     }
 
+    private boolean checkIfFirstCharIsXMLBrace(Reader r) throws IOException {
+        // Trim whitespace and detect if the first readable character is a <
+        int c;
+        while ((c = r.read()) != -1) {
+            if (!Character.isWhitespace(c)) {
+                return c == '<';
+            }
+        }
+        return false;
+    }
+
     /**
      * Releases all data associated with this request.
      */
     void release() {
-        if (contentHandler != null) {
-            try {
-                ContentHandler copy = this.contentHandler;
-                contentHandler = null;
-                copy.cleanup();
-            } catch (Exception e) {
-                Exceptions.handle(WebServer.LOG, e);
-            }
+        releaseContentHandler();
+        releasePostDecoder();
+        releaseContent();
+        cleanupFiles();
+    }
+
+    private void releaseContentHandler() {
+        if (contentHandler == null) {
+            return;
         }
-        if (postDecoder != null) {
-            try {
-                InterfaceHttpPostRequestDecoder copy = this.postDecoder;
-                postDecoder = null;
-                copy.cleanFiles();
-            } catch (Exception e) {
-                Exceptions.handle(WebServer.LOG, e);
-            }
+
+        try {
+            ContentHandler copy = this.contentHandler;
+            contentHandler = null;
+            copy.cleanup();
+        } catch (Exception e) {
+            Exceptions.handle(WebServer.LOG, e);
         }
-        if (content != null) {
-            // Delete manually if anything like a file or so was allocated
-            try {
-                Attribute copy = this.content;
-                content = null;
-                contentAsFile = null;
-                copy.delete();
-            } catch (Exception e) {
-                Exceptions.handle(WebServer.LOG, e);
-            }
-            // Also tell the factory to release all allocated data, as it keeps an internal reference to the request
-            // (...along with all its data!).
-            try {
-                WebServer.getHttpDataFactory().cleanRequestHttpData(request);
-            } catch (Exception e) {
-                Exceptions.handle(WebServer.LOG, e);
-            }
+    }
+
+    private void releasePostDecoder() {
+        if (postDecoder == null) {
+            return;
         }
-        if (filesToCleanup != null) {
-            for (File file : filesToCleanup) {
-                try {
-                    if (file != null && file.exists()) {
-                        file.delete();
-                    }
-                } catch (Exception e) {
-                    Exceptions.handle(WebServer.LOG, e);
+
+        try {
+            InterfaceHttpPostRequestDecoder copy = this.postDecoder;
+            postDecoder = null;
+            copy.cleanFiles();
+        } catch (Exception e) {
+            Exceptions.handle(WebServer.LOG, e);
+        }
+    }
+
+    private void releaseContent() {
+        if (content == null) {
+            return;
+        }
+
+        // Delete manually if anything like a file or so was allocated
+        try {
+            Attribute copy = this.content;
+            content = null;
+            contentAsFile = null;
+            copy.delete();
+        } catch (Exception e) {
+            Exceptions.handle(WebServer.LOG, e);
+        }
+
+        // Also tell the factory to release all allocated data, as it keeps an internal reference to the request
+        // (...along with all its data!).
+        try {
+            WebServer.getHttpDataFactory().cleanRequestHttpData(request);
+        } catch (Exception e) {
+            Exceptions.handle(WebServer.LOG, e);
+        }
+    }
+
+    private void cleanupFiles() {
+        if (filesToCleanup == null) {
+            return;
+        }
+
+        for (File file : filesToCleanup) {
+            saveDeleteFile(file);
+        }
+
+        filesToCleanup = null;
+    }
+
+    private void saveDeleteFile(File file) {
+        try {
+            if (file != null && file.exists()) {
+                if (!file.delete()) {
+                    WebServer.LOG.WARN("Cannot delete temporary file: %s", file.getAbsolutePath());
                 }
             }
-            filesToCleanup = null;
+        } catch (Exception e) {
+            Exceptions.handle(WebServer.LOG, e);
         }
     }
 
