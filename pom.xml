@@ -57,6 +57,13 @@
             <version>1.0</version>
         </dependency>
 
+        <!-- The version provided by rythm is outdated -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.31</version>
+        </dependency>
+
         <!-- Async http client used to tunnel http data from a backend server -->
         <dependency>
             <groupId>com.ning</groupId>

@@ -1,7 +1,7 @@
 <script type="text/javascript">
 
     function createConfirmForDangerousLinks(message) {
-        $("a.link-danger, a.button-danger-ask").on('click', function(event) {
+        $("a.link-danger, a.button-danger-ask").on('click', function (event) {
             try {
                 var clickedLink = event.currentTarget;
                 var modalElement = $("#danger-link-confirm");
@@ -16,7 +16,7 @@
                     keyboard: true
                 }).on("hide", function () {
                     modalElement.find(":submit").unbind("click");
-                }).on("shown", function() {
+                }).on("shown", function () {
                     modalElement.find(".btn-close").focus();
                 }).attr("tabindex", -1);
             } catch ($e) {
@@ -31,16 +31,30 @@
         $('.pick-a-color').colorpicker();
     }
 
+    var select2Translations = {
+        loadingMore: function () {
+            return '@i18n("template.html.select2.loading")';
+        },
+        searching: function () {
+            return '@i18n("template.html.select2.searching")';
+        },
+        noResults: function () {
+            return '@i18n("template.html.select2.noMatches")';
+        },
+        errorLoading: function () {
+            return '@i18n("template.html.select2.errorLoading")';
+        }
+    };
+
     function enableAutocomplete(field) {
         function createSubmitData(key, value) {
             var data = {};
             var fieldData = field.data();
-            for(f in fieldData) {
+            for (f in fieldData) {
                 if (fieldData.hasOwnProperty(f)) {
                     if (f != 'autocomplete'
-                            && f != 'optional'
-                            && f != 'select2')
-                    {
+                        && f != 'optional'
+                        && f != 'select2') {
                         data[f] = fieldData[f];
                     }
                 }
@@ -49,13 +63,12 @@
             return data;
         }
 
-
         if (field.data('optional')) {
             field.prepend('<option value=""></option>');
         }
 
         field.on('select2:open', function (e) {
-            $('.select2-search__field').each(function(e) {
+            $('.select2-search__field').each(function (e) {
                 var search = $(this);
                 if (search.parent().hasClass('select2-search--inline')) {
                     // Don't add placeholder and graphic to inline search fields
@@ -81,32 +94,22 @@
             templateResult: function (data, container, escapeMarkup) {
                 return data ? (data.hasOwnProperty('description') ? data.description : data.text) : undefined;
             },
-            language : {
-                loadingMore: function() {
-                    return '@i18n("template.html.select2.loading")';
-                },
-                searching: function () {
-                    return '@i18n("template.html.select2.searching")';
-                },
-                noResults: function () {
-                    return '@i18n("template.html.select2.noMatches")';
-                }
-            },
+            language: select2Translations,
             ajax: {
                 url: '@prefix/' + field.data('autocomplete'),
                 dataType: 'jsonp',
                 quietMillis: 100,
-                data: function(term, page) {
+                data: function (term, page) {
                     return createSubmitData('query', term.term);
                 },
                 processResults: function (data, page) {
-                    return { results: data.completions, more: false };
+                    return {results: data.completions, more: false};
                 }
             }
         });
     }
 
-    $(document).ready(function() {
+    $(document).ready(function () {
         createConfirmForDangerousLinks();
         instanciateColorPickers();
 
@@ -118,13 +121,13 @@
             todayHighlight: true
         });
 
-        $('select[data-autocomplete]').each(function(e) {
+        $('select[data-autocomplete]').each(function (e) {
             var field = $(this);
 
             enableAutocomplete(field);
         });
 
-        $('.select2-select').each(function(e) {
+        $('.select2-select').each(function (e) {
             var field = $(this);
 
             if (field.data('optional')) {
@@ -135,19 +138,9 @@
                 allowClear: field.data('optional'),
                 placeholder: '@i18n("template.html.select2.selection")',
                 minimumResultsForSearch: 10,
-                width : '100%',
-                language : {
-                    maximumSelected: function(args) {
-                        return '@i18n("template.html.select2.maximumSelected.prefix") ' + args.maximum + ' @i18n("template.html.select2.maximumSelected.suffix")';
-                    },
-                    searching: function () {
-                        return '@i18n("template.html.select2.searching")';
-                    },
-                    noResults: function () {
-                        return '@i18n("template.html.select2.noMatches")';
-                    }
-                },
-                escapeMarkup: function(m) {
+                width: '100%',
+                language: select2Translations,
+                escapeMarkup: function (m) {
                     // Do not escape HTML in the select options text
                     return m;
                 }
@@ -158,9 +151,9 @@
         invokeResizeHandler();
     });
 
-    if (console == null) {
-        console = {
-            log : function(msg) {}
+    if (typeof window.console === "undefined") {
+        window.console = {
+            log: function (msg) {}
         };
     }
 
@@ -173,14 +166,14 @@
                 var newHeight = $(window).height() - $('.footer').outerHeight() - $('#mainContainer').position().top;
                 $('#mainContainer').css('min-height', newHeight + 'px');
             }
-        } catch(e) {
+        } catch (e) {
             console.log(e);
         }
     }
 
     function addInfo(message, action, actionLabel) {
-        if (action != null) {
-            $('<div class="alert alert-info">'+message+' <a class="link link-info" href="'+action+'">'+actionLabel+'</a></div>').appendTo($('#messageBox'));
+        if (action) {
+            $('<div class="alert alert-info">' + message + ' <a class="link link-info" href="' + action + '">' + actionLabel + '</a></div>').appendTo($('#messageBox'));
         } else {
             $('<div class="alert alert-info"></div>').html(message).appendTo($('#messageBox'));
         }
@@ -199,7 +192,7 @@
         if (typeof yscroll !== 'undefined') {
             $(window).scrollTop(yscroll);
         }
-        setTimeout(function() {
+        setTimeout(function () {
             var yscroll = $(window).scrollTop();
             if (yscroll > 0) {
                 var params = getUrlParameters(decodeURIComponent(reloadUrl).replace(/\+/g, '%20'));
@@ -213,7 +206,7 @@
     function getUrlParameters(url) {
         var params = {}, param;
         var query = url.split('?')[1];
-        if (query != undefined) {
+        if (query !== undefined) {
             query = query.split('&');
             for (var i = 0; i < query.length; i++) {
                 param = query[i].split('=');
@@ -272,7 +265,7 @@
                     '</li>'
         });
         var maxWidth = $(container).width();
-        $('.img', container).css('max-width', maxWidth -  30 + 'px');
+        $('.img', container).css('max-width', maxWidth - 30 + 'px');
     }
 
     function fileUpload(url, target, params, allowedExtensions) {
@@ -341,8 +334,7 @@
     function updateField(url, field, value) {
         var data = {};
         data[field] = value;
-        $.post(
-                '@prefix/' + url,
+        $.post('@prefix/' + url,
                 data,
                 function(json) {
                     clearMessages();
