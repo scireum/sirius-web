@@ -89,7 +89,7 @@ public class SmartLineBasedProcessor implements RowProcessor {
                     builder.put(columnName, row.at(i));
                 }
             }
-            processor.handleRow(lineNumber - 1, builder.build());
+            processor.handleRow(lineNumber - 1, new MultimapSmartRow(builder.build()));
         }
     }
 

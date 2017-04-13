@@ -8,9 +8,6 @@
 
 package sirius.web.templates;
 
-import com.google.common.collect.ListMultimap;
-import sirius.kernel.commons.Value;
-
 /**
  * Invoked by a {@link SmartLineBasedProcessor} to handle one row.
  */
@@ -21,11 +18,9 @@ public interface NamedRowProcessor {
      * Note that an exception thrown here will completely abort the whole process. Therefore proper exception
      * handling is required.
      * <p>
-     * Note that row does not necessarily contain a value for every key, therefore use
-     * {@code row.getOrDefault(key, Value.EMPTY)} to safely obtain a non-null value.
      *
      * @param lineNumber the line number which is currently being processed.
-     * @param row        the data of the row / line to process
+     * @param row        the data of the row to process
      */
-    void handleRow(int lineNumber, ListMultimap<String, Value> row);
+    void handleRow(int lineNumber, SmartRow row);
 }
