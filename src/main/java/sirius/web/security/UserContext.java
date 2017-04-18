@@ -10,19 +10,17 @@ package sirius.web.security;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.typesafe.config.Config;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.commons.Value;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
-import sirius.kernel.extensions.Extension;
-import sirius.kernel.extensions.Extensions;
 import sirius.kernel.health.Log;
 import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.nls.NLS;
+import sirius.kernel.settings.ExtendedSettings;
+import sirius.kernel.settings.Extension;
 import sirius.web.controller.Message;
 import sirius.web.health.Cluster;
 import sirius.web.http.WebContext;
@@ -97,9 +95,9 @@ public class UserContext implements SubContext {
      * Determines which UserManager to use for a given scope
      */
     private static UserManager getManager(ScopeInfo scope) {
-        Extension ext = Extensions.getExtension("security.scopes", scope.getScopeType());
+        Extension ext = Sirius.getSettings().getExtension("security.scopes", scope.getScopeType());
         return context.getPart(ext.get("manager").asString("public"), UserManagerFactory.class)
-                .createManager(scope, ext);
+                      .createManager(scope, ext);
     }
 
     /**
@@ -127,36 +125,10 @@ public class UserContext implements SubContext {
      * This is boilerplate for {@code UserContext.getCurrentUser().getConfig()}.
      *
      * @return the config for the current user
-     * @see UserInfo#getConfig()
+     * @see UserInfo#getSettings()
      */
-    public static Config getConfig() {
-        return get().getUser().getConfig();
-    }
-
-    /**
-     * Returns the value present in the configuration for the current user and given config key.
-     * <p>
-     * This is boilerplate for {@code UserContext.getUser().getConfigValue(key)}.
-     *
-     * @param key the config key to fetch
-     * @return the value present for the key. If the value does not exist, an empty <tt>Value</tt> is returned.
-     */
-    @Nonnull
-    public static Value getConfigValue(@Nonnull String key) {
-        return get().getUser().getConfigValue(key);
-    }
-
-    /**
-     * Returns the string present in the configuration for the current user and given config key.
-     * <p>
-     * This is boilerplate for {@code UserContext.getUser().getConfigString(key)}.
-     *
-     * @param key the config key to fetch
-     * @return the string present for the key. If the value does not exist, an empty string is returned.
-     */
-    @Nonnull
-    public static String getConfigString(@Nonnull String key) {
-        return get().getUser().getConfigString(key);
+    public static ExtendedSettings getSettings() {
+        return get().getUser().getSettings();
     }
 
     /**
@@ -331,11 +303,13 @@ public class UserContext implements SubContext {
      * @return a list of messages to be shown to the user
      */
     public List<Message> getMessages() {
-        if (cluster.getClusterState() == MetricState.RED && getUser().hasPermission(PERMISSION_SYSTEM_NOTIFY_STATE) && !Sirius.isStartedAsTest()) {
+        if (cluster.getClusterState() == MetricState.RED
+            && getUser().hasPermission(PERMISSION_SYSTEM_NOTIFY_STATE)
+            && !Sirius.isStartedAsTest()) {
             Message systemStateWarning = Message.error(Strings.apply("System state is %s (Cluster state is %s)",
-                    cluster.getNodeState(),
-                    cluster.getClusterState()))
-                    .withAction("system/state", "View System State");
+                                                                     cluster.getNodeState(),
+                                                                     cluster.getClusterState()))
+                                                .withAction("system/state", "View System State");
             if (msgList.isEmpty()) {
                 return Collections.singletonList(systemStateWarning);
             } else {
@@ -419,7 +393,7 @@ public class UserContext implements SubContext {
     /**
      * Adds an error message for the given field
      *
-     * @param field name of the form field
+     * @param field        name of the form field
      * @param errorMessage value to be added
      */
     public static void setErrorMessage(String field, String errorMessage) {
@@ -429,13 +403,12 @@ public class UserContext implements SubContext {
     /**
      * Adds an error message for the given field
      *
-     * @param field name of the form field
+     * @param field        name of the form field
      * @param errorMessage value to be added
      */
     public void addFieldErrorMessage(String field, String errorMessage) {
         fieldErrorMessages.put(field, errorMessage);
     }
-
 
     /**
      * Returns an error message for the given field
@@ -506,7 +479,7 @@ public class UserContext implements SubContext {
      */
     public void attachUserToSession() {
         WebContext ctx = CallContext.getCurrent().get(WebContext.class);
-        if (ctx == null || !ctx.isValid()) {
+        if (!ctx.isValid()) {
             return;
         }
         if (!getUser().isLoggedIn()) {
@@ -548,7 +521,7 @@ public class UserContext implements SubContext {
      */
     public void detachUserFromSession() {
         WebContext ctx = CallContext.getCurrent().get(WebContext.class);
-        if (ctx == null || !ctx.isValid()) {
+        if (!ctx.isValid()) {
             return;
         }
         UserManager manager = getUserManager();

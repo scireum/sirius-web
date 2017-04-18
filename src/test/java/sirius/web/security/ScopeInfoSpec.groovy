@@ -23,7 +23,7 @@ class ScopeInfoSpec extends BaseSpecification {
 
     def "default config is read"() {
         when:
-        String value = UserContext.getConfig().getString("settings.test")
+        String value = UserContext.getSettings().getString("settings.test")
         then:
         value == "Hello"
     }

@@ -8,7 +8,6 @@
 
 package sirius.web.templates.velocity;
 
-import com.typesafe.config.ConfigValue;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
 import sirius.kernel.Sirius;
@@ -48,10 +47,8 @@ public class VelocityHelper {
             eng.setProperty(RuntimeConstants.RESOURCE_MANAGER_CACHE_CLASS, VelocityResourceCache.class.getName());
             eng.setProperty(RuntimeConstants.RESOURCE_LOADER, "sirius");
             StringBuilder libraryPath = new StringBuilder();
-            for (Map.Entry<String, ConfigValue> e : Sirius.getConfig()
-                                                          .getConfig("content.velocity-libraries")
-                                                          .entrySet()) {
-                libraryPath.append(e.getValue().unwrapped());
+            for (Map.Entry<String, String> e : Sirius.getSettings().getMap("content.velocity-libraries").entrySet()) {
+                libraryPath.append(e.getValue());
                 libraryPath.append(",");
             }
             eng.setProperty(RuntimeConstants.VM_LIBRARY, libraryPath.toString());
@@ -62,7 +59,7 @@ public class VelocityHelper {
             eng.init();
 
             return eng;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw Exceptions.handle(Templates.LOG, e);
         }
     }

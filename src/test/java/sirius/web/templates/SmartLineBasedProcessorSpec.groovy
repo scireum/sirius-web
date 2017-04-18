@@ -10,7 +10,6 @@ package sirius.web.templates
 
 import com.google.common.collect.Lists
 import sirius.kernel.BaseSpecification
-import sirius.kernel.commons.Value
 import sirius.kernel.di.std.Part
 
 class SmartLineBasedProcessorSpec extends BaseSpecification {
@@ -20,8 +19,8 @@ class SmartLineBasedProcessorSpec extends BaseSpecification {
 
     def "reading CSVs works with different column orders and aliases"() {
         given:
-        List<Map<String, Value>> contents1 = Lists.newArrayList()
-        List<Map<String, Value>> contents2 = Lists.newArrayList()
+        List<SmartRow> contents1 = Lists.newArrayList()
+        List<SmartRow> contents2 = Lists.newArrayList()
         SmartLineBasedProcessor proc1 = new SmartLineBasedProcessor()
                 .withColumn("item", "artikel")
                 .withColumn("quantity")
@@ -40,17 +39,17 @@ class SmartLineBasedProcessorSpec extends BaseSpecification {
         contents1.size() == 2
         contents2.size() == 2
         and:
-        contents1.get(0).get("item").asString() == 'A'
-        contents1.get(0).get("quantity").asInt(-1) == 1
+        contents1.get(0).getFirst("item").asString() == 'A'
+        contents1.get(0).getFirst("quantity").asInt(-1) == 1
         and:
-        contents2.get(0).get("item").asString() == 'A'
-        contents2.get(0).get("quantity").asInt(-1) == 1
+        contents2.get(0).getFirst("item").asString() == 'A'
+        contents2.get(0).getFirst("quantity").asInt(-1) == 1
         and:
-        contents1.get(1).get("item").asString() == 'B'
-        contents1.get(1).get("quantity").asInt(-1) == 2
+        contents1.get(1).getFirst("item").asString() == 'B'
+        contents1.get(1).getFirst("quantity").asInt(-1) == 2
         and:
-        contents2.get(1).get("item").asString() == 'B'
-        contents2.get(1).get("quantity").asInt(-1) == 2
+        contents2.get(1).getFirst("item").asString() == 'B'
+        contents2.get(1).getFirst("quantity").asInt(-1) == 2
     }
 
 

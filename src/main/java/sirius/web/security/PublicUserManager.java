@@ -9,7 +9,7 @@
 package sirius.web.security;
 
 import sirius.kernel.di.std.Register;
-import sirius.kernel.extensions.Extension;
+import sirius.kernel.settings.Extension;
 import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;

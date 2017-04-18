@@ -19,12 +19,13 @@ import sirius.kernel.commons.Reflection;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.ValueHolder;
 import sirius.kernel.di.GlobalContext;
-import sirius.kernel.di.std.ConfigValueAnnotationProcessor;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.di.transformers.Composable;
 import sirius.kernel.di.transformers.Transformable;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.settings.ExtendedSettings;
+import sirius.kernel.settings.Settings;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -65,7 +66,7 @@ public class ScopeInfo extends Composable {
     private Function<ScopeInfo, Object> scopeSupplier;
     private Map<Class<?>, Object> helpersByType = Maps.newConcurrentMap();
     private Map<String, Object> helpersByName = Maps.newConcurrentMap();
-    private Config config;
+    private ExtendedSettings settings;
 
     private static Config scopeDefaultConfig;
     private static Map<String, String> scopeDefaultConfigFiles;
@@ -270,15 +271,13 @@ public class ScopeInfo extends Composable {
     }
 
     private void fillConfig(Object result) {
-        Config scopeConfig = getConfig();
+        Settings scopeSettings = getSettings();
         Reflection.getAllFields(result.getClass())
                   .stream()
                   .filter(f -> f.isAnnotationPresent(HelperConfig.class))
-                  .forEach(f -> ConfigValueAnnotationProcessor.injectValueFromConfig(result,
-                                                                                     f,
-                                                                                     f.getAnnotation(HelperConfig.class)
-                                                                                      .value(),
-                                                                                     scopeConfig));
+                  .forEach(f -> scopeSettings.injectValueFromConfig(result,
+                                                                  f,
+                                                                  f.getAnnotation(HelperConfig.class).value()));
     }
 
     private void fillFriends(Object result) {
@@ -417,14 +416,15 @@ public class ScopeInfo extends Composable {
      *
      * @return the config the this scope
      */
-    public Config getConfig() {
-        if (config == null) {
-            config = getScopeDefaultConfig();
+    public ExtendedSettings getSettings() {
+        if (settings == null) {
             if (configSupplier != null) {
-                this.config = configSupplier.apply(this).withFallback(this.config);
+                settings = new ExtendedSettings(configSupplier.apply(this).withFallback(getScopeDefaultConfig()));
+            } else {
+                settings = new ExtendedSettings(getScopeDefaultConfig());
             }
         }
 
-        return config;
+        return settings;
     }
 }

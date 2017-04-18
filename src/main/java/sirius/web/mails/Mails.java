@@ -18,6 +18,7 @@ import net.markenwerk.utils.mail.dkim.Canonicalization;
 import net.markenwerk.utils.mail.dkim.DkimMessage;
 import net.markenwerk.utils.mail.dkim.DkimSigner;
 import net.markenwerk.utils.mail.dkim.SigningAlgorithm;
+import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Operation;
 import sirius.kernel.async.Tasks;
@@ -28,8 +29,6 @@ import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
-import sirius.kernel.extensions.Extension;
-import sirius.kernel.extensions.Extensions;
 import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
@@ -37,6 +36,7 @@ import sirius.kernel.health.Log;
 import sirius.kernel.health.metrics.MetricProvider;
 import sirius.kernel.health.metrics.MetricsCollector;
 import sirius.kernel.nls.NLS;
+import sirius.kernel.settings.Extension;
 import sirius.web.http.MimeHelper;
 import sirius.web.templates.Resource;
 import sirius.web.templates.Resources;
@@ -826,7 +826,7 @@ public class Mails implements MetricProvider {
         }
 
         private Extension findMailExtension() {
-            Extension ex = Extensions.getExtension("mail.templates", mailExtension);
+            Extension ex = Sirius.getSettings().getExtension("mail.templates", mailExtension);
             if (ex == null) {
                 throw Exceptions.handle()
                                 .withSystemErrorMessage(
