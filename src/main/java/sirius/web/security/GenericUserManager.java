@@ -116,13 +116,13 @@ public abstract class GenericUserManager implements UserManager {
     /**
      * Fetches the user specific configuration if available.
      *
-     * @param scopeConfig the config of the outside scope
-     * @param user        the user info which identifies the user to fetch the config for
-     * @return the config specific for this user. If no config is present, the <tt>scopeConfig</tt> can be returned.
+     * @param scopeSettings the config of the outside scope
+     * @param user          the user info which identifies the user to fetch the config for
+     * @return the config specific for this user. If no config is present, the <tt>scopeSettings</tt> can be returned.
      */
     @Nonnull
-    protected ExtendedSettings getUserConfig(@Nonnull ExtendedSettings scopeConfig, UserInfo user) {
-        return scopeConfig;
+    protected ExtendedSettings getUserSettings(@Nonnull ExtendedSettings scopeSettings, UserInfo user) {
+        return scopeSettings;
     }
 
     @Nonnull
@@ -444,7 +444,7 @@ public abstract class GenericUserManager implements UserManager {
                                .withEmail(ctx.getSessionValue(scope.getScopeId() + SUFFIX_USER_EMAIL).asString())
                                .withLang(ctx.getSessionValue(scope.getScopeId() + SUFFIX_USER_LANG).asString())
                                .withPermissions(roles)
-                               .withConfigSupplier(ui -> getUserConfig(getScopeConfig(), ui))
+                               .withSettingsSupplier(ui -> getUserSettings(getScopeSettings(), ui))
                                .withUserSupplier(this::getUserObject)
                                .build();
     }
@@ -478,7 +478,7 @@ public abstract class GenericUserManager implements UserManager {
                                             .getValue(scope.getScopeId() + SUFFIX_USER_LANG)
                                             .asString())
                                .withPermissions(roles)
-                               .withConfigSupplier(ui -> getUserConfig(getScopeConfig(), ui))
+                               .withSettingsSupplier(ui -> getUserSettings(getScopeSettings(), ui))
                                .withUserSupplier(this::getUserObject)
                                .build();
     }
@@ -495,8 +495,8 @@ public abstract class GenericUserManager implements UserManager {
         return true;
     }
 
-    protected ExtendedSettings getScopeConfig() {
-        return UserContext.getCurrentScope().getConfig();
+    protected ExtendedSettings getScopeSettings() {
+        return UserContext.getCurrentScope().getSettings();
     }
 
     /**
@@ -511,7 +511,8 @@ public abstract class GenericUserManager implements UserManager {
     @SuppressWarnings("unchecked")
     @Nullable
     protected Set<String> computeRoles(@Nullable WebContext ctx, String userId) {
-        if (ctx != null && SESSION_STORAGE_TYPE_SERVER.equals(sessionStorage) && ctx.getServerSession(false).isPresent()) {
+        if (ctx != null && SESSION_STORAGE_TYPE_SERVER.equals(sessionStorage) && ctx.getServerSession(false)
+                                                                                    .isPresent()) {
             return ctx.getServerSession()
                       .getValue(scope.getScopeId() + SUFFIX_USER_ROLES)
                       .get(Set.class, Collections.emptySet());

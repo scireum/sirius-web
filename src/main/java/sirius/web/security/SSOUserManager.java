@@ -76,7 +76,7 @@ public class SSOUserManager extends GenericUserManager {
         return UserInfo.Builder.createUser(user)
                                .withUsername(user)
                                .withPermissions(transformRoles(roles, ctx != null && ctx.isTrusted()))
-                               .withConfigSupplier(ui -> getUserConfig(getScopeConfig(), ui))
+                               .withSettingsSupplier(ui -> getUserSettings(getScopeSettings(), ui))
                                .build();
     }
 

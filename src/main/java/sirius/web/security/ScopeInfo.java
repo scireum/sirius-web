@@ -66,7 +66,7 @@ public class ScopeInfo extends Composable {
     private Function<ScopeInfo, Object> scopeSupplier;
     private Map<Class<?>, Object> helpersByType = Maps.newConcurrentMap();
     private Map<String, Object> helpersByName = Maps.newConcurrentMap();
-    private ExtendedSettings config;
+    private ExtendedSettings settings;
 
     private static Config scopeDefaultConfig;
     private static Map<String, String> scopeDefaultConfigFiles;
@@ -271,11 +271,11 @@ public class ScopeInfo extends Composable {
     }
 
     private void fillConfig(Object result) {
-        Settings scopeConfig = getConfig();
+        Settings scopeSettings = getSettings();
         Reflection.getAllFields(result.getClass())
                   .stream()
                   .filter(f -> f.isAnnotationPresent(HelperConfig.class))
-                  .forEach(f -> scopeConfig.injectValueFromConfig(result,
+                  .forEach(f -> scopeSettings.injectValueFromConfig(result,
                                                                   f,
                                                                   f.getAnnotation(HelperConfig.class).value()));
     }
@@ -416,15 +416,15 @@ public class ScopeInfo extends Composable {
      *
      * @return the config the this scope
      */
-    public ExtendedSettings getConfig() {
-        if (config == null) {
+    public ExtendedSettings getSettings() {
+        if (settings == null) {
             if (configSupplier != null) {
-                config = new ExtendedSettings(configSupplier.apply(this).withFallback(getScopeDefaultConfig()));
+                settings = new ExtendedSettings(configSupplier.apply(this).withFallback(getScopeDefaultConfig()));
             } else {
-                config = new ExtendedSettings(getScopeDefaultConfig());
+                settings = new ExtendedSettings(getScopeDefaultConfig());
             }
         }
 
-        return config;
+        return settings;
     }
 }

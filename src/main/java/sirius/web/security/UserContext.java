@@ -97,7 +97,7 @@ public class UserContext implements SubContext {
     private static UserManager getManager(ScopeInfo scope) {
         Extension ext = Sirius.getSettings().getExtension("security.scopes", scope.getScopeType());
         return context.getPart(ext.get("manager").asString("public"), UserManagerFactory.class)
-                .createManager(scope, ext);
+                      .createManager(scope, ext);
     }
 
     /**
@@ -125,10 +125,10 @@ public class UserContext implements SubContext {
      * This is boilerplate for {@code UserContext.getCurrentUser().getConfig()}.
      *
      * @return the config for the current user
-     * @see UserInfo#getConfig()
+     * @see UserInfo#getSettings()
      */
-    public static ExtendedSettings getConfig() {
-        return get().getUser().getConfig();
+    public static ExtendedSettings getSettings() {
+        return get().getUser().getSettings();
     }
 
     /**
@@ -303,11 +303,13 @@ public class UserContext implements SubContext {
      * @return a list of messages to be shown to the user
      */
     public List<Message> getMessages() {
-        if (cluster.getClusterState() == MetricState.RED && getUser().hasPermission(PERMISSION_SYSTEM_NOTIFY_STATE) && !Sirius.isStartedAsTest()) {
+        if (cluster.getClusterState() == MetricState.RED
+            && getUser().hasPermission(PERMISSION_SYSTEM_NOTIFY_STATE)
+            && !Sirius.isStartedAsTest()) {
             Message systemStateWarning = Message.error(Strings.apply("System state is %s (Cluster state is %s)",
-                    cluster.getNodeState(),
-                    cluster.getClusterState()))
-                    .withAction("system/state", "View System State");
+                                                                     cluster.getNodeState(),
+                                                                     cluster.getClusterState()))
+                                                .withAction("system/state", "View System State");
             if (msgList.isEmpty()) {
                 return Collections.singletonList(systemStateWarning);
             } else {
@@ -391,7 +393,7 @@ public class UserContext implements SubContext {
     /**
      * Adds an error message for the given field
      *
-     * @param field name of the form field
+     * @param field        name of the form field
      * @param errorMessage value to be added
      */
     public static void setErrorMessage(String field, String errorMessage) {
@@ -401,13 +403,12 @@ public class UserContext implements SubContext {
     /**
      * Adds an error message for the given field
      *
-     * @param field name of the form field
+     * @param field        name of the form field
      * @param errorMessage value to be added
      */
     public void addFieldErrorMessage(String field, String errorMessage) {
         fieldErrorMessages.put(field, errorMessage);
     }
-
 
     /**
      * Returns an error message for the given field
@@ -478,7 +479,7 @@ public class UserContext implements SubContext {
      */
     public void attachUserToSession() {
         WebContext ctx = CallContext.getCurrent().get(WebContext.class);
-        if (ctx == null || !ctx.isValid()) {
+        if (!ctx.isValid()) {
             return;
         }
         if (!getUser().isLoggedIn()) {
@@ -520,7 +521,7 @@ public class UserContext implements SubContext {
      */
     public void detachUserFromSession() {
         WebContext ctx = CallContext.getCurrent().get(WebContext.class);
-        if (ctx == null || !ctx.isValid()) {
+        if (!ctx.isValid()) {
             return;
         }
         UserManager manager = getUserManager();

@@ -47,7 +47,7 @@ public class UserInfo extends Composable {
     private String email;
     private String lang;
     private Set<String> permissions = null;
-    private Function<UserInfo, ExtendedSettings> configSupplier;
+    private Function<UserInfo, ExtendedSettings> settingsSupplier;
     private Function<UserInfo, Object> userSupplier;
 
     /**
@@ -155,12 +155,12 @@ public class UserInfo extends Composable {
         /**
          * Sets a config supplier which can provide an individual configuration for the current user.
          *
-         * @param configSupplier the function which fetches or computes the configuration for this user on demand.
+         * @param settingsSupplier the function which fetches or computes the configuration for this user on demand.
          * @return the builder itself for fluent method calls
          */
-        public Builder withConfigSupplier(Function<UserInfo, ExtendedSettings> configSupplier) {
+        public Builder withSettingsSupplier(Function<UserInfo, ExtendedSettings> settingsSupplier) {
             verifyState();
-            user.configSupplier = configSupplier;
+            user.settingsSupplier = settingsSupplier;
             return this;
         }
 
@@ -365,11 +365,11 @@ public class UserInfo extends Composable {
      *
      * @return the config object which contains all settings of the current scope, current tenant and user.
      */
-    public ExtendedSettings getConfig() {
-        if (configSupplier == null) {
-            return UserContext.getCurrentScope().getConfig();
+    public ExtendedSettings getSettings() {
+        if (settingsSupplier == null) {
+            return UserContext.getCurrentScope().getSettings();
         } else {
-            return configSupplier.apply(this);
+            return settingsSupplier.apply(this);
         }
     }
 
