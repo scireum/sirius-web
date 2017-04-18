@@ -14,6 +14,7 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
+import sirius.kernel.settings.ExtendedSettings;
 import sirius.web.http.WebContext;
 import sirius.web.security.UserContext;
 
@@ -39,6 +40,7 @@ public class BaseRythmExtension implements RythmExtension {
         names.accept("dateFormat", String.class);
         names.accept("timeFormat", String.class);
         names.accept("config", Config.class);
+        names.accept("settings", ExtendedSettings.class);
     }
 
     @Override
@@ -57,6 +59,7 @@ public class BaseRythmExtension implements RythmExtension {
         values.accept("lang", NLS.getCurrentLang());
         values.accept("dateFormat", NLS.get("RythmConfig.jsDateFormat"));
         values.accept("timeFormat", NLS.get("RythmConfig.jsTimeFormat"));
-        values.accept("config", Sirius.getConfig());
+        values.accept("config", Sirius.getSettings().getConfig());
+        values.accept("settings", Sirius.getSettings());
     }
 }

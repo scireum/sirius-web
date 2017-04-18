@@ -10,10 +10,10 @@ package sirius.web.security;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import sirius.kernel.Sirius;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.ConfigValue;
-import sirius.kernel.extensions.Extension;
-import sirius.kernel.extensions.Extensions;
+import sirius.kernel.settings.Extension;
 
 import java.lang.reflect.AnnotatedElement;
 import java.util.Collection;
@@ -45,7 +45,7 @@ public class Permissions {
         if (profilesCache == null) {
             Map<String, Set<String>> profiles = Maps.newHashMap();
 
-            for (Extension ext : Extensions.getExtensions("security.profiles")) {
+            for (Extension ext : Sirius.getSettings().getExtensions("security.profiles")) {
                 Set<String> permissions = Sets.newTreeSet();
                 for (Map.Entry<String, Object> permission : ext.getContext().entrySet()) {
                     if (Value.of(permission.getValue()).asBoolean()) {

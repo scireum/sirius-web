@@ -11,9 +11,9 @@ package sirius.web.security;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 import com.google.common.hash.Hashing;
+import sirius.kernel.Sirius;
 import sirius.kernel.di.std.Register;
-import sirius.kernel.extensions.Extension;
-import sirius.kernel.extensions.Extensions;
+import sirius.kernel.settings.Extension;
 import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
@@ -29,6 +29,11 @@ import java.util.Set;
  * Users can be defined in <tt>security.users</tt>.
  */
 public class ConfigUserManager extends GenericUserManager {
+
+    /*
+     * Local cache for computed roles (after application of profiles)
+     */
+    private Map<String, Set<String>> userRoles = Maps.newTreeMap();
 
     /**
      * Creates a new user manager for the given scope and configuration.
@@ -47,14 +52,9 @@ public class ConfigUserManager extends GenericUserManager {
         super(scope, config);
     }
 
-    /*
-     * Local cache for computed roles (after application of profiles)
-     */
-    private Map<String, Set<String>> userRoles = Maps.newTreeMap();
-
     @Override
-    public UserInfo findUserByName(@Nullable  WebContext ctx, String user) {
-        Extension e = Extensions.getExtension("security.users", user);
+    public UserInfo findUserByName(@Nullable WebContext ctx, String user) {
+        Extension e = Sirius.getSettings().getExtension("security.users", user);
         if (e != null) {
             return getUserInfo(ctx, user, e);
         }
@@ -63,8 +63,8 @@ public class ConfigUserManager extends GenericUserManager {
     }
 
     @Override
-    public UserInfo findUserByCredentials(@Nullable  WebContext ctx, String user, String password) {
-        Extension e = Extensions.getExtension("security.users", user);
+    public UserInfo findUserByCredentials(@Nullable WebContext ctx, String user, String password) {
+        Extension e = Sirius.getSettings().getExtension("security.users", user);
         if (e != null && e.get("passwordHash").isFilled()) {
             if (Hashing.md5()
                        .hashBytes((e.get("salt").asString() + password).getBytes(Charsets.UTF_8))
@@ -84,7 +84,7 @@ public class ConfigUserManager extends GenericUserManager {
 
     @Override
     protected Object getUserObject(UserInfo u) {
-        return Extensions.getExtension("security.users", u.getUserId());
+        return Sirius.getSettings().getExtension("security.users", u.getUserId());
     }
 
     private UserInfo getUserInfo(@Nullable WebContext ctx, String userId, Extension e) {
@@ -100,10 +100,10 @@ public class ConfigUserManager extends GenericUserManager {
 
     @SuppressWarnings("unchecked")
     @Override
-    protected Set<String> computeRoles(@Nullable  WebContext ctx, String userId) {
+    protected Set<String> computeRoles(@Nullable WebContext ctx, String userId) {
         Set<String> roles = userRoles.get(userId);
         if (roles == null) {
-            Extension e = Extensions.getExtension("security.users", userId);
+            Extension e = Sirius.getSettings().getExtension("security.users", userId);
             if (e != null) {
                 roles = transformRoles(e.get("permissions").get(List.class, Collections.emptyList()), ctx.isTrusted());
                 roles.add(UserInfo.PERMISSION_LOGGED_IN);

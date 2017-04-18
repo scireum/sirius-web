@@ -368,7 +368,7 @@ public class WebServer implements Lifecycle, MetricProvider {
             LOG.INFO("Starting SSL on port %d", sslPort);
         }
 
-        if (Sirius.isDev() && !Sirius.getConfig().hasPath("http.noLeakDetection")) {
+        if (Sirius.isDev() && !Sirius.getSettings().getConfig().hasPath("http.noLeakDetection")) {
             ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID);
             LOG.INFO("Enabling PARANOID resource leak detection...");
         }

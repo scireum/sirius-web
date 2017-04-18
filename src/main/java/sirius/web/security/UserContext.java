@@ -10,19 +10,17 @@ package sirius.web.security;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.typesafe.config.Config;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.commons.Value;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
-import sirius.kernel.extensions.Extension;
-import sirius.kernel.extensions.Extensions;
 import sirius.kernel.health.Log;
 import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.nls.NLS;
+import sirius.kernel.settings.ExtendedSettings;
+import sirius.kernel.settings.Extension;
 import sirius.web.controller.Message;
 import sirius.web.health.Cluster;
 import sirius.web.http.WebContext;
@@ -97,7 +95,7 @@ public class UserContext implements SubContext {
      * Determines which UserManager to use for a given scope
      */
     private static UserManager getManager(ScopeInfo scope) {
-        Extension ext = Extensions.getExtension("security.scopes", scope.getScopeType());
+        Extension ext = Sirius.getSettings().getExtension("security.scopes", scope.getScopeType());
         return context.getPart(ext.get("manager").asString("public"), UserManagerFactory.class)
                 .createManager(scope, ext);
     }
@@ -129,34 +127,8 @@ public class UserContext implements SubContext {
      * @return the config for the current user
      * @see UserInfo#getConfig()
      */
-    public static Config getConfig() {
+    public static ExtendedSettings getConfig() {
         return get().getUser().getConfig();
-    }
-
-    /**
-     * Returns the value present in the configuration for the current user and given config key.
-     * <p>
-     * This is boilerplate for {@code UserContext.getUser().getConfigValue(key)}.
-     *
-     * @param key the config key to fetch
-     * @return the value present for the key. If the value does not exist, an empty <tt>Value</tt> is returned.
-     */
-    @Nonnull
-    public static Value getConfigValue(@Nonnull String key) {
-        return get().getUser().getConfigValue(key);
-    }
-
-    /**
-     * Returns the string present in the configuration for the current user and given config key.
-     * <p>
-     * This is boilerplate for {@code UserContext.getUser().getConfigString(key)}.
-     *
-     * @param key the config key to fetch
-     * @return the string present for the key. If the value does not exist, an empty string is returned.
-     */
-    @Nonnull
-    public static String getConfigString(@Nonnull String key) {
-        return get().getUser().getConfigString(key);
     }
 
     /**

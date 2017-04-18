@@ -8,13 +8,11 @@
 
 package sirius.web.security;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigException;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.commons.Value;
 import sirius.kernel.di.transformers.Composable;
 import sirius.kernel.di.transformers.Transformable;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.settings.ExtendedSettings;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -49,7 +47,7 @@ public class UserInfo extends Composable {
     private String email;
     private String lang;
     private Set<String> permissions = null;
-    private Function<UserInfo, Config> configSupplier;
+    private Function<UserInfo, ExtendedSettings> configSupplier;
     private Function<UserInfo, Object> userSupplier;
 
     /**
@@ -160,7 +158,7 @@ public class UserInfo extends Composable {
          * @param configSupplier the function which fetches or computes the configuration for this user on demand.
          * @return the builder itself for fluent method calls
          */
-        public Builder withConfigSupplier(Function<UserInfo, Config> configSupplier) {
+        public Builder withConfigSupplier(Function<UserInfo, ExtendedSettings> configSupplier) {
             verifyState();
             user.configSupplier = configSupplier;
             return this;
@@ -367,7 +365,7 @@ public class UserInfo extends Composable {
      *
      * @return the config object which contains all settings of the current scope, current tenant and user.
      */
-    public Config getConfig() {
+    public ExtendedSettings getConfig() {
         if (configSupplier == null) {
             return UserContext.getCurrentScope().getConfig();
         } else {
@@ -375,34 +373,4 @@ public class UserInfo extends Composable {
         }
     }
 
-    /**
-     * Returns the value present for the given config key.
-     * <p>
-     * This is boilerplate for {@code Value.of(getConfig().getObject(key))}.
-     *
-     * @param key the config key to fetch
-     * @return the value present for the key. If the value does not exist, an empty <tt>Value</tt> is returned.
-     */
-    @Nonnull
-    public Value getConfigValue(@Nonnull String key) {
-        try {
-            return Value.of(getConfig().getAnyRef(key));
-        } catch (ConfigException e) {
-            Exceptions.handle(e);
-            return Value.EMPTY;
-        }
-    }
-
-    /**
-     * Returns the string present for the given config key.
-     * <p>
-     * This is boilerplate for {@code getConfigValue(key).asString()}.
-     *
-     * @param key the config key to fetch
-     * @return the string present for the key. If the value does not exist, an empty string is returned.
-     */
-    @Nonnull
-    public String getConfigString(@Nonnull String key) {
-        return getConfigValue(key).asString();
-    }
 }

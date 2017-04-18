@@ -12,14 +12,14 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.Sets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
-import com.typesafe.config.Config;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
-import sirius.kernel.extensions.Extension;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.nls.NLS;
+import sirius.kernel.settings.ExtendedSettings;
+import sirius.kernel.settings.Extension;
 import sirius.web.controller.Message;
 import sirius.web.http.WebContext;
 import sirius.web.http.session.ServerSession;
@@ -121,7 +121,7 @@ public abstract class GenericUserManager implements UserManager {
      * @return the config specific for this user. If no config is present, the <tt>scopeConfig</tt> can be returned.
      */
     @Nonnull
-    protected Config getUserConfig(@Nonnull Config scopeConfig, UserInfo user) {
+    protected ExtendedSettings getUserConfig(@Nonnull ExtendedSettings scopeConfig, UserInfo user) {
         return scopeConfig;
     }
 
@@ -495,7 +495,7 @@ public abstract class GenericUserManager implements UserManager {
         return true;
     }
 
-    protected Config getScopeConfig() {
+    protected ExtendedSettings getScopeConfig() {
         return UserContext.getCurrentScope().getConfig();
     }
 

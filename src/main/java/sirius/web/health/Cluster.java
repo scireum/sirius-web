@@ -113,7 +113,7 @@ public class Cluster implements EveryMinute, Lifecycle {
     public List<NodeInfo> getNodeInfos() {
         if (nodes == null) {
             List<NodeInfo> result = Lists.newArrayList();
-            for (String endpoint : Sirius.getConfig().getStringList("health.cluster.nodes")) {
+            for (String endpoint : Sirius.getSettings().getStringList("health.cluster.nodes")) {
                 NodeInfo info = new NodeInfo();
                 info.setEndpoint(endpoint);
                 result.add(info);

@@ -19,11 +19,10 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.di.std.Register;
-import sirius.kernel.extensions.Extension;
-import sirius.kernel.extensions.Extensions;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Log;
+import sirius.kernel.settings.Extension;
 import sirius.web.http.MimeHelper;
 import sirius.web.mails.Attachment;
 import sirius.web.mails.BufferedAttachment;
@@ -212,7 +211,7 @@ public class Templates {
                     }
                 } catch (HandledException e) {
                     throw e;
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     throw Exceptions.handle()
                                     .error(e)
                                     .to(LOG)
@@ -377,7 +376,7 @@ public class Templates {
                                     .withSystemErrorMessage("No template was given to evaluate.")
                                     .handle();
                 }
-                URL url = resources.resolve(templateName).map(r -> r.getUrl()).orElse(null);
+                URL url = resources.resolve(templateName).map(Resource::getUrl).orElse(null);
                 if (url == null) {
                     throw Exceptions.handle()
                                     .to(LOG)
@@ -412,7 +411,7 @@ public class Templates {
      * components. Think of a generic template containing a menu. Items can be added to this menu
      * using this mechanism.
      * <p>
-     * Internally the {@link Extensions} framework is used. Therefore all extensions
+     * Internally the {@link sirius.kernel.settings.ExtendedSettings} framework is used. Therefore all extensions
      * for the key X have to be defined in <tt>content.extensions.X</tt> like this:
      * <pre>
      *   content.extensions {
@@ -435,11 +434,11 @@ public class Templates {
      * @param key the name of the list of content extensions to retrieve
      * @return a list of templates registered for the given extension using the system config and the Extensions
      * framework
-     * @see Extensions
+     * @see sirius.kernel.settings.ExtendedSettings
      */
     public List<String> getExtensions(String key) {
         List<String> result = Lists.newArrayList();
-        for (Extension e : Extensions.getExtensions("content.extensions." + key)) {
+        for (Extension e : Sirius.getSettings().getExtensions("content.extensions." + key)) {
             if (Sirius.isFrameworkEnabled(e.get("framework").asString())) {
                 result.add(e.get("template").asString());
             }

@@ -10,8 +10,8 @@ package sirius.web.security;
 
 import com.google.common.collect.Sets;
 import sirius.kernel.di.std.Register;
-import sirius.kernel.extensions.Extension;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.settings.Extension;
 import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
@@ -36,6 +36,18 @@ import java.util.Set;
  * Uses an LDAP directory to authenticate users.
  */
 public class LDAPUserManager extends GenericUserManager {
+
+    private String authPrefix;
+    private String authSuffix;
+    private String searchPrefix;
+    private String searchSuffix;
+    private String server;
+    private boolean useSSL;
+    private String objectClass;
+    private String nameAttribute;
+    private String[] returnedAtts;
+    private String searchBase;
+    private final List<String> requiredRoles;
 
     /**
      * Used to create <tt>ldap</tt> user managers.
@@ -79,18 +91,6 @@ public class LDAPUserManager extends GenericUserManager {
         return null;
     }
 
-    private String authPrefix;
-    private String authSuffix;
-    private String searchPrefix;
-    private String searchSuffix;
-    private String server;
-    private boolean useSSL;
-    private String objectClass;
-    private String nameAttribute;
-    private String[] returnedAtts;
-    private String searchBase;
-    private final List<String> requiredRoles;
-
     @Override
     public UserInfo findUserByCredentials(@Nullable WebContext wc, String user, String password) {
         try {
@@ -119,7 +119,7 @@ public class LDAPUserManager extends GenericUserManager {
         } catch (AuthenticationException e) {
             log("Auth-Exception for %s: %s", user, e.getMessage());
             return null;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw Exceptions.handle(UserContext.LOG, e);
         }
     }

@@ -12,7 +12,7 @@ import com.google.common.collect.Sets;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.Register;
-import sirius.kernel.extensions.Extension;
+import sirius.kernel.settings.Extension;
 import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
