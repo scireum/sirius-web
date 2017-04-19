@@ -14,13 +14,10 @@ import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Log;
 import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.nls.NLS;
-import sirius.kernel.settings.ExtendedSettings;
-import sirius.kernel.settings.Extension;
 import sirius.web.controller.Message;
 import sirius.web.health.Cluster;
 import sirius.web.http.WebContext;
@@ -68,7 +65,6 @@ public class UserContext implements SubContext {
 
     @Part
     private static ScopeDetector detector;
-    private static Map<String, UserManager> managers = Maps.newConcurrentMap();
 
     @Part
     private static Cluster cluster;
@@ -87,18 +83,6 @@ public class UserContext implements SubContext {
     private List<Message> msgList = Lists.newArrayList();
     private Map<String, String> fieldErrors = Maps.newHashMap();
     private Map<String, String> fieldErrorMessages = Maps.newHashMap();
-
-    @Part
-    private static GlobalContext context;
-
-    /*
-     * Determines which UserManager to use for a given scope
-     */
-    private static UserManager getManager(ScopeInfo scope) {
-        Extension ext = Sirius.getSettings().getExtension("security.scopes", scope.getScopeType());
-        return context.getPart(ext.get("manager").asString("public"), UserManagerFactory.class)
-                      .createManager(scope, ext);
-    }
 
     /**
      * Retrieves the current <b>UserContext</b> from the {@link sirius.kernel.async.CallContext}.
@@ -127,7 +111,7 @@ public class UserContext implements SubContext {
      * @return the config for the current user
      * @see UserInfo#getSettings()
      */
-    public static ExtendedSettings getSettings() {
+    public static UserSettings getSettings() {
         return get().getUser().getSettings();
     }
 
@@ -456,7 +440,7 @@ public class UserContext implements SubContext {
             return cachedUser;
         }
 
-        cachedUser = getUserManagerForScope(scope).findUserForRequest(CallContext.getCurrent().get(WebContext.class));
+        cachedUser = scope.getUserManager().findUserForRequest(CallContext.getCurrent().get(WebContext.class));
         scopeIdOfCachedUser = scope.getScopeId();
         return cachedUser;
     }
@@ -500,18 +484,7 @@ public class UserContext implements SubContext {
      */
     @Nonnull
     public UserManager getUserManager() {
-        return getUserManagerForScope(getScope());
-    }
-
-    /**
-     * Returns the user manager responsible for the given scope.
-     *
-     * @param scope the scope to fetch the user manager for
-     * @return the user manager responsible for the given scope
-     */
-    @Nonnull
-    public UserManager getUserManagerForScope(ScopeInfo scope) {
-        return managers.computeIfAbsent(scope.getScopeId(), k -> getManager(scope));
+        return getScope().getUserManager();
     }
 
     /**

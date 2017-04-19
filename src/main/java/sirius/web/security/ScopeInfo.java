@@ -24,7 +24,7 @@ import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.di.transformers.Composable;
 import sirius.kernel.di.transformers.Transformable;
 import sirius.kernel.health.Exceptions;
-import sirius.kernel.settings.ExtendedSettings;
+import sirius.kernel.settings.Extension;
 import sirius.kernel.settings.Settings;
 
 import javax.annotation.Nonnull;
@@ -66,7 +66,8 @@ public class ScopeInfo extends Composable {
     private Function<ScopeInfo, Object> scopeSupplier;
     private Map<Class<?>, Object> helpersByType = Maps.newConcurrentMap();
     private Map<String, Object> helpersByName = Maps.newConcurrentMap();
-    private ExtendedSettings settings;
+    private UserSettings settings;
+    private UserManager userManager;
 
     private static Config scopeDefaultConfig;
     private static Map<String, String> scopeDefaultConfigFiles;
@@ -276,8 +277,8 @@ public class ScopeInfo extends Composable {
                   .stream()
                   .filter(f -> f.isAnnotationPresent(HelperConfig.class))
                   .forEach(f -> scopeSettings.injectValueFromConfig(result,
-                                                                  f,
-                                                                  f.getAnnotation(HelperConfig.class).value()));
+                                                                    f,
+                                                                    f.getAnnotation(HelperConfig.class).value()));
     }
 
     private void fillFriends(Object result) {
@@ -411,20 +412,35 @@ public class ScopeInfo extends Composable {
     /**
      * Returns the scope specific configuration.
      * <p>
-     * Applications should consider using {@link UserInfo#getConfig()} or {@link UserContext#getConfig()} as this
+     * Applications should consider using {@link UserInfo#getSettings()} or {@link UserContext#getSettings()} as this
      * also includes user specific settings.
      *
      * @return the config the this scope
      */
-    public ExtendedSettings getSettings() {
+    public UserSettings getSettings() {
         if (settings == null) {
             if (configSupplier != null) {
-                settings = new ExtendedSettings(configSupplier.apply(this).withFallback(getScopeDefaultConfig()));
+                settings = new UserSettings(configSupplier.apply(this).withFallback(getScopeDefaultConfig()));
             } else {
-                settings = new ExtendedSettings(getScopeDefaultConfig());
+                settings = new UserSettings(getScopeDefaultConfig());
             }
         }
 
         return settings;
+    }
+
+    /**
+     * Returns the {@link UserManager} responsible for this scope.
+     *
+     * @return the user manager of this scope
+     */
+    public UserManager getUserManager() {
+        if (userManager == null) {
+            Extension ext = Sirius.getSettings().getExtension("security.scopes", getScopeType());
+            userManager = ctx.getPart(ext.get("manager").asString("public"), UserManagerFactory.class)
+                             .createManager(this, ext);
+        }
+
+        return userManager;
     }
 }

@@ -18,7 +18,6 @@ import sirius.kernel.commons.Value;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.nls.NLS;
-import sirius.kernel.settings.ExtendedSettings;
 import sirius.kernel.settings.Extension;
 import sirius.web.controller.Message;
 import sirius.web.http.WebContext;
@@ -81,6 +80,7 @@ public abstract class GenericUserManager implements UserManager {
     protected boolean ssoEnabled;
     protected boolean keepLoginEnabled;
     protected String ssoSecret;
+    protected List<String> publicRoles;
     protected List<String> defaultRoles;
     protected List<String> trustedRoles;
     protected Duration loginCookieTTL;
@@ -96,13 +96,22 @@ public abstract class GenericUserManager implements UserManager {
         this.ssoEnabled = Strings.isFilled(ssoSecret) && config.get("ssoEnabled").asBoolean(false);
         this.ssoGraceInterval = config.get("ssoGraceInterval").asLong(DEFAULT_SSO_GRACE_INTERVAL);
         this.keepLoginEnabled = config.get("keepLoginEnabled").asBoolean(true);
+        this.publicRoles = config.get("publicRoles").get(List.class, Collections.emptyList());
         this.defaultRoles = config.get("defaultRoles").get(List.class, Collections.emptyList());
         this.trustedRoles = config.get("trustedRoles").get(List.class, Collections.emptyList());
         this.loginCookieTTL = config.get("loginCookieTTL").get(Duration.class, Duration.ofDays(90));
-        this.defaultUser = UserInfo.Builder.createUser("(nobody)")
-                                           .withUsername("(nobody)")
-                                           .withPermissions(Permissions.applyProfilesAndPublicRoles(Collections.emptySet()))
-                                           .build();
+        this.defaultUser = buildDefaultUser();
+    }
+
+    protected UserInfo buildDefaultUser() {
+        return UserInfo.Builder.createUser("(nobody)")
+                               .withUsername("(nobody)")
+                               .withPermissions(determineRolesOfDefaultUser())
+                               .build();
+    }
+
+    protected Set<String> determineRolesOfDefaultUser() {
+        return Permissions.applyProfilesAndPublicRoles(publicRoles);
     }
 
     /**
@@ -121,7 +130,7 @@ public abstract class GenericUserManager implements UserManager {
      * @return the config specific for this user. If no config is present, the <tt>scopeSettings</tt> can be returned.
      */
     @Nonnull
-    protected ExtendedSettings getUserSettings(@Nonnull ExtendedSettings scopeSettings, UserInfo user) {
+    protected UserSettings getUserSettings(@Nonnull UserSettings scopeSettings, UserInfo user) {
         return scopeSettings;
     }
 
@@ -495,7 +504,7 @@ public abstract class GenericUserManager implements UserManager {
         return true;
     }
 
-    protected ExtendedSettings getScopeSettings() {
+    protected UserSettings getScopeSettings() {
         return UserContext.getCurrentScope().getSettings();
     }
 

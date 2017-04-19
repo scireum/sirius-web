@@ -12,7 +12,6 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.di.transformers.Composable;
 import sirius.kernel.di.transformers.Transformable;
 import sirius.kernel.health.Exceptions;
-import sirius.kernel.settings.ExtendedSettings;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -40,6 +39,12 @@ public class UserInfo extends Composable {
      */
     public static final UserInfo NOBODY = Builder.createUser("ANONYMOUS").withUsername("(no user)").build();
 
+    /**
+     * Represents a special permission which is never granted - therefore {@link #hasPermission(String)} will always
+     * return false.
+     */
+    private static final String DISABLED = "disabled";
+
     private String tenantId;
     private String tenantName;
     private String userId;
@@ -47,7 +52,7 @@ public class UserInfo extends Composable {
     private String email;
     private String lang;
     private Set<String> permissions = null;
-    private Function<UserInfo, ExtendedSettings> settingsSupplier;
+    private Function<UserInfo, UserSettings> settingsSupplier;
     private Function<UserInfo, Object> userSupplier;
 
     /**
@@ -158,7 +163,7 @@ public class UserInfo extends Composable {
          * @param settingsSupplier the function which fetches or computes the configuration for this user on demand.
          * @return the builder itself for fluent method calls
          */
-        public Builder withSettingsSupplier(Function<UserInfo, ExtendedSettings> settingsSupplier) {
+        public Builder withSettingsSupplier(Function<UserInfo, UserSettings> settingsSupplier) {
             verifyState();
             user.settingsSupplier = settingsSupplier;
             return this;
@@ -267,7 +272,13 @@ public class UserInfo extends Composable {
     /**
      * Determines if the user has the given permission.
      * <p>
-     * If the permission starts with an "!", the check is inverted.
+     * Next to plain permission names, permissions can also negated using <tt>!permission</tt> and on top of that,
+     * whole
+     * logical expressions in DNF (disjuctive normal form)can be passed in.
+     * <p>
+     * Such a formula is a set of expressions where a <b>,</b> represents an <tt>or</tt> and a <b>+</b> represents an
+     * <tt>and</tt>. An example would be "logged-in,important-customer+!locked". This would translate to "the user has
+     * to be logged in or it has to be an important customer and not be locked".
      *
      * @param permission the permission to check
      * @return <tt>true</tt> if the user has the permission, <tt>false</tt> otherwise
@@ -276,6 +287,30 @@ public class UserInfo extends Composable {
         if (Strings.isEmpty(permission)) {
             return true;
         }
+
+        if (DISABLED.equals(permission)) {
+            return false;
+        }
+
+        for (String orClause : permission.split(",")) {
+            if (permissionsFullfilled(orClause)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean permissionsFullfilled(String permissions) {
+        for (String permission : permissions.split("\\+")) {
+            if (!permissionFullfilled(permission)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean permissionFullfilled(String permission) {
         if (permission.startsWith("!")) {
             return permissions == null || !permissions.contains(permission.substring(1));
         } else {
@@ -365,12 +400,11 @@ public class UserInfo extends Composable {
      *
      * @return the config object which contains all settings of the current scope, current tenant and user.
      */
-    public ExtendedSettings getSettings() {
+    public UserSettings getSettings() {
         if (settingsSupplier == null) {
             return UserContext.getCurrentScope().getSettings();
         } else {
             return settingsSupplier.apply(this);
         }
     }
-
 }
