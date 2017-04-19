@@ -41,7 +41,7 @@ public class UserInfo extends Composable {
 
     /**
      * Represents a special permission which is never granted - therefore {@link #hasPermission(String)} will always
-     * return true.
+     * return false.
      */
     private static final String DISABLED = "disabled";
 
@@ -278,7 +278,7 @@ public class UserInfo extends Composable {
      * <p>
      * Such a formula is a set of expressions where a <b>,</b> represents an <tt>or</tt> and a <b>+</b> represents an
      * <tt>and</tt>. An example would be "logged-in,important-customer+!locked". This would translate to "the user has
-     * to be logged in or it has to be and important customer and not be locked".
+     * to be logged in or it has to be an important customer and not be locked".
      *
      * @param permission the permission to check
      * @return <tt>true</tt> if the user has the permission, <tt>false</tt> otherwise
