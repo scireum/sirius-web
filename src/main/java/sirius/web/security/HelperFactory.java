@@ -20,7 +20,7 @@ import javax.annotation.Nonnull;
  * <p>
  * Variables can be annotated using {@link HelperConfig} and will be automatically filled with the value set in the
  * scope config. HOWEVER: Note that user specific overwrites of this config value cannot be applied. These values
- * have to be fetched using {@link UserContext#getConfigValue(String)} or {@link UserInfo#getConfigValue(String)}.
+ * have to be fetched using {@link UserContext#getSettings()}.
  *
  * @param <H> the type of helpers created by this factory
  */
