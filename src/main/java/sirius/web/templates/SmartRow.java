@@ -65,6 +65,7 @@ public interface SmartRow {
      * Retrieves a {@link Value} from this row
      *
      * @param name of the column
+     * @param n    the index of the column
      * @return the value of the <strong><tt>n</tt>-th</strong> column with the given <tt>name</tt> or
      * <tt>Value.EMPTY</tt> if no such column exists
      */
@@ -84,7 +85,7 @@ public interface SmartRow {
      * Retrieves a {@link Value} from this row
      *
      * @param name         the name of the column
-     * @param defaultValue returned if no column with the given name exists
+     * @param defaultValue returned if no column with the given name exists or the column contains an empty value
      * @return the value of the <strong>last</strong> column with the given <tt>name</tt> or <tt>defaultValue</tt> if no
      * such column exists
      */
@@ -93,7 +94,9 @@ public interface SmartRow {
     /**
      * Retrieves a {@link Value} from this row
      *
-     * @param name of the column
+     * @param name         of the column
+     * @param n            the index of the column
+     * @param defaultValue returned if no column with the given name exists or the column contains an empty value
      * @return the value of the <strong><tt>n</tt>-th</strong> column with the given <tt>name</tt> or
      * <tt>defaultValue</tt> if no such column exists
      */
@@ -102,7 +105,8 @@ public interface SmartRow {
     /**
      * Retrieves a {@link Value} from this row
      *
-     * @param name of the column
+     * @param name         of the column
+     * @param defaultValue returned if no column with the given name exists or the column contains an empty value
      * @return the value of the <strong>last</strong> column with the given <tt>name</tt> or <tt>defaultValue</tt> if no
      * such column exists
      */
@@ -116,6 +120,7 @@ public interface SmartRow {
      * @param name           of the column
      * @param valueExtractor casts the {@link Value} in this row to the target type of the field
      * @param field          the field to be filled (or any other {@link Consumer})
+     * @return <tt>true</tt> if the field was filled
      */
     <T> boolean fillFieldIfPresent(String name, Function<Value, T> valueExtractor, Consumer<T> field);
 
@@ -127,6 +132,7 @@ public interface SmartRow {
      * @param valueExtractor casts the {@link Value} in this row to the target type of the field
      * @param field          the field to be filled (or any other {@link Consumer})
      * @param defaultValue   will be used instead if the column does not exist
+     * @return <tt>true</tt> if the column exists
      */
     <T> boolean fillField(String name, Function<Value, T> valueExtractor, Consumer<T> field, T defaultValue);
 
@@ -136,8 +142,10 @@ public interface SmartRow {
      *
      * @param <T>            type of the field to be filled
      * @param name           of the column
+     * @param n              the index of the column
      * @param valueExtractor casts the {@link Value} in this row to the target type of the field
      * @param field          the field to be filled (or any other {@link Consumer})
+     * @return <tt>true</tt> if the field was filled
      */
     <T> boolean fillFieldIfPresent(String name, int n, Function<Value, T> valueExtractor, Consumer<T> field);
 
@@ -146,9 +154,11 @@ public interface SmartRow {
      *
      * @param <T>            type of the field to be filled
      * @param name           of the column
+     * @param n              the index of the column
      * @param valueExtractor casts the {@link Value} in this row to the target type of the field
      * @param field          the field to be filled (or any other {@link Consumer})
      * @param defaultValue   will be used instead if the column does not exist
+     * @return <tt>true</tt> if the column exists
      */
     <T> boolean fillField(String name, int n, Function<Value, T> valueExtractor, Consumer<T> field, T defaultValue);
 }
