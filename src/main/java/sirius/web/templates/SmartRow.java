@@ -8,6 +8,7 @@
 
 package sirius.web.templates;
 
+import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
 
 import javax.annotation.Nonnull;
@@ -21,6 +22,12 @@ import java.util.function.Function;
  * a row of a dataset that supports multiple same-named columns. Values of this columns can be retrieved by
  */
 public interface SmartRow {
+
+    /**
+     * @return {@link Tuple}s of the original column names and their mapped column names. Contains <tt>null</tt>s before
+     * the first row has been read!
+     */
+    List<Tuple<String, String>> getColumnMapping();
 
     /**
      * Checks if a given column is present in the complete dataset

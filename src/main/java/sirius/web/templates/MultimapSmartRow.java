@@ -9,6 +9,7 @@
 package sirius.web.templates;
 
 import com.google.common.collect.ListMultimap;
+import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
 
 import javax.annotation.Nonnull;
@@ -23,10 +24,17 @@ import java.util.function.Function;
  */
 class MultimapSmartRow implements SmartRow {
 
-    private ListMultimap<String, Value> data;
+    private final List<Tuple<String, String>> columnMapping;
+    private final ListMultimap<String, Value> data;
 
-    MultimapSmartRow(ListMultimap<String, Value> data) {
+    MultimapSmartRow(List<Tuple<String, String>> columnMapping, ListMultimap<String, Value> data) {
+        this.columnMapping = columnMapping;
         this.data = data;
+    }
+
+    @Override
+    public List<Tuple<String, String>> getColumnMapping() {
+        return columnMapping;
     }
 
     @Override
