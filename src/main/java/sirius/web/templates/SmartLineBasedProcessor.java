@@ -13,6 +13,7 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
 import sirius.kernel.commons.Values;
+import sirius.kernel.health.Exceptions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -82,6 +83,12 @@ public class SmartLineBasedProcessor implements RowProcessor {
         } else if (processor == null) {
             throw new IllegalStateException("No processor available.");
         } else {
+            if (row.length() > columnMapping.size()) {
+                throw Exceptions.handle()
+                                .withNLSKey("SmartLineBasedProcessor.tooManyCols")
+                                .set("cols", row.length())
+                                .handle();
+            }
             ImmutableListMultimap.Builder<String, Value> builder = ImmutableListMultimap.builder();
             for (int i = 0; i < row.length(); i++) {
                 String columnName = columnMapping.get(i);
@@ -89,7 +96,7 @@ public class SmartLineBasedProcessor implements RowProcessor {
                     builder.put(columnName, row.at(i));
                 }
             }
-            processor.handleRow(lineNumber - 1, new MultimapSmartRow(builder.build()));
+            processor.handleRow(lineNumber - 1, new MultimapSmartRow(getColumnMapping(), builder.build()));
         }
     }
 
