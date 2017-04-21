@@ -29,7 +29,7 @@ class MultimapSmartRow implements SmartRow {
 
     @Override
     public boolean contains(String name) {
-        return !data.get(name).isEmpty();
+        return !data.get(name.toLowerCase().trim()).isEmpty();
     }
 
     @Override
@@ -39,12 +39,12 @@ class MultimapSmartRow implements SmartRow {
 
     @Override
     public List<Value> getAll(String name) {
-        return data.get(name);
+        return data.get(name.toLowerCase().trim());
     }
 
     @Override
     public int size(String name) {
-        return data.get(name).size();
+        return data.get(name.toLowerCase().trim()).size();
     }
 
     @Override
