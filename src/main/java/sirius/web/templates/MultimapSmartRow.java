@@ -93,34 +93,44 @@ class MultimapSmartRow implements SmartRow {
     }
 
     @Override
-    public <T> void fillFieldIfPresent(String name, Function<Value, T> valueExtractor, Consumer<T> field) {
+    public <T> boolean fillFieldIfPresent(String name, Function<Value, T> valueExtractor, Consumer<T> field) {
         if (contains(name)) {
             field.accept(valueExtractor.apply(getLast(name)));
+            return true;
         }
+        return false;
     }
 
     @Override
-    public <T> void fillField(String name, Function<Value, T> valueExtractor, Consumer<T> field, T defaultValue) {
+    public <T> boolean fillField(String name, Function<Value, T> valueExtractor, Consumer<T> field, T defaultValue) {
         if (contains(name)) {
             field.accept(valueExtractor.apply(getLastOrDefault(name, defaultValue)));
+            return true;
         }
+        field.accept(defaultValue);
+        return false;
     }
 
     @Override
-    public <T> void fillFieldIfPresent(String name, int n, Function<Value, T> valueExtractor, Consumer<T> field) {
+    public <T> boolean fillFieldIfPresent(String name, int n, Function<Value, T> valueExtractor, Consumer<T> field) {
         if (size(name) > n) {
             field.accept(valueExtractor.apply(getNth(name, n)));
+            return true;
         }
+        return false;
     }
 
     @Override
-    public <T> void fillField(String name,
-                              int n,
-                              Function<Value, T> valueExtractor,
-                              Consumer<T> field,
-                              T defaultValue) {
+    public <T> boolean fillField(String name,
+                                 int n,
+                                 Function<Value, T> valueExtractor,
+                                 Consumer<T> field,
+                                 T defaultValue) {
         if (size(name) > n) {
             field.accept(valueExtractor.apply(getNthOrDefault(name, n, defaultValue)));
+            return true;
         }
+        field.accept(defaultValue);
+        return false;
     }
 }

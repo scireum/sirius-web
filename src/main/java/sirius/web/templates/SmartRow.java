@@ -112,43 +112,43 @@ public interface SmartRow {
      * Fills an object's field from the <strong>last</strong> {@link Value} of a given column, but only if the column
      * exists
      *
+     * @param <T>            type of the field to be filled
      * @param name           of the column
      * @param valueExtractor casts the {@link Value} in this row to the target type of the field
      * @param field          the field to be filled (or any other {@link Consumer})
-     * @param <T>            type of the field to be filled
      */
-    <T> void fillFieldIfPresent(String name, Function<Value, T> valueExtractor, Consumer<T> field);
+    <T> boolean fillFieldIfPresent(String name, Function<Value, T> valueExtractor, Consumer<T> field);
 
     /**
      * Fills an object's field from the <strong>last</strong> {@link Value} of a given column
      *
+     * @param <T>            type of the field to be filled
      * @param name           of the column
      * @param valueExtractor casts the {@link Value} in this row to the target type of the field
      * @param field          the field to be filled (or any other {@link Consumer})
      * @param defaultValue   will be used instead if the column does not exist
-     * @param <T>            type of the field to be filled
      */
-    <T> void fillField(String name, Function<Value, T> valueExtractor, Consumer<T> field, T defaultValue);
+    <T> boolean fillField(String name, Function<Value, T> valueExtractor, Consumer<T> field, T defaultValue);
 
     /**
      * Fills an object's field from the <strong><tt>n</tt>-th</strong> {@link Value} of a given column, but only if the
      * column exists
      *
+     * @param <T>            type of the field to be filled
      * @param name           of the column
      * @param valueExtractor casts the {@link Value} in this row to the target type of the field
      * @param field          the field to be filled (or any other {@link Consumer})
-     * @param <T>            type of the field to be filled
      */
-    <T> void fillFieldIfPresent(String name, int n, Function<Value, T> valueExtractor, Consumer<T> field);
+    <T> boolean fillFieldIfPresent(String name, int n, Function<Value, T> valueExtractor, Consumer<T> field);
 
     /**
      * Fills an object's field from the <strong><tt>n</tt>-th</strong> {@link Value} of a given column
      *
+     * @param <T>            type of the field to be filled
      * @param name           of the column
      * @param valueExtractor casts the {@link Value} in this row to the target type of the field
      * @param field          the field to be filled (or any other {@link Consumer})
      * @param defaultValue   will be used instead if the column does not exist
-     * @param <T>            type of the field to be filled
      */
-    <T> void fillField(String name, int n, Function<Value, T> valueExtractor, Consumer<T> field, T defaultValue);
+    <T> boolean fillField(String name, int n, Function<Value, T> valueExtractor, Consumer<T> field, T defaultValue);
 }
