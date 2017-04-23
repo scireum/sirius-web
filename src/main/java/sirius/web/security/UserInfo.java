@@ -45,6 +45,12 @@ public class UserInfo extends Composable {
      */
     private static final String DISABLED = "disabled";
 
+    /**
+     * Represents a special permission which is always granted - therefore {@link #hasPermission(String)} will always
+     * return true.
+     */
+    private static final String ENABLED = "enabled";
+
     private String tenantId;
     private String tenantName;
     private String userId;
@@ -290,6 +296,10 @@ public class UserInfo extends Composable {
 
         if (DISABLED.equals(permission)) {
             return false;
+        }
+
+        if (ENABLED.equals(permission)) {
+            return true;
         }
 
         for (String orClause : permission.split(",")) {
