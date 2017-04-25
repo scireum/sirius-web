@@ -30,14 +30,6 @@ public interface SmartRow {
     List<Tuple<String, String>> getColumnMapping();
 
     /**
-     * Checks if a given column is present in the complete dataset
-     *
-     * @param name of the column
-     * @return whether the dataset contains this column <tt>name</tt> (even if there is no value in this specific row)
-     */
-    boolean contains(@Nonnull String name);
-
-    /**
      * Retrieves the complete row
      *
      * @return the complete row
@@ -55,12 +47,24 @@ public interface SmartRow {
     List<Value> getAll(@Nonnull String name);
 
     /**
+     * Checks if a given column is present and filled in the complete dataset
+     *
+     * @param name of the column
+     * @return whether the dataset contains this column <tt>name</tt> (even if there is no value in this specific row)
+     */
+    default boolean contains(@Nonnull String name) {
+        return !getFirst(name).isEmptyString();
+    }
+
+    /**
      * Retrieves the number of columns with the given <tt>name</tt>
      *
      * @param name of the column
      * @return the number of columns with the given <tt>name</tt>
      */
-    int size(@Nonnull String name);
+    default int size(@Nonnull String name) {
+        return getAll().size();
+    }
 
     /**
      * Retrieves a {@link Value} from this row
@@ -71,7 +75,9 @@ public interface SmartRow {
      * column exists
      */
     @Nonnull
-    Value getFirst(@Nonnull String name);
+    default Value getFirst(@Nonnull String name) {
+        return getFirstOrDefault(name, null);
+    }
 
     /**
      * Retrieves a {@link Value} from this row
@@ -82,7 +88,9 @@ public interface SmartRow {
      * <tt>Value.EMPTY</tt> if no such column exists
      */
     @Nonnull
-    Value getNth(@Nonnull String name, int n);
+    default Value getNth(@Nonnull String name, int n) {
+        return getNthOrDefault(name, n, null);
+    }
 
     /**
      * Retrieves a {@link Value} from this row
@@ -93,7 +101,9 @@ public interface SmartRow {
      * column exists
      */
     @Nonnull
-    Value getLast(@Nonnull String name);
+    default Value getLast(@Nonnull String name) {
+        return getLastOrDefault(name, null);
+    }
 
     /**
      * Retrieves a {@link Value} from this row
