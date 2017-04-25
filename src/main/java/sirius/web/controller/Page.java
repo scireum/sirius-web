@@ -129,6 +129,15 @@ public class Page<E> {
     }
 
     /**
+     * Calculates the current page number
+     *
+     * @return number of the current page
+     */
+    public int getCurrentPageNumber() {
+        return (this.start / this.pageSize) + 1;
+    }
+
+    /**
      * Binds the page to the request.
      * <p>
      * This will read <tt>start</tt>, <tt>query</tt> and all facet values from the given request.
