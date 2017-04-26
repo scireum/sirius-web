@@ -38,11 +38,6 @@ class MultimapSmartRow implements SmartRow {
     }
 
     @Override
-    public boolean contains(@Nonnull String name) {
-        return !data.get(name.toLowerCase().trim()).isEmpty();
-    }
-
-    @Override
     @Nonnull
     public Collection<Value> getAll() {
         return data.values();
@@ -52,29 +47,6 @@ class MultimapSmartRow implements SmartRow {
     @Nonnull
     public List<Value> getAll(@Nonnull String name) {
         return data.get(name.toLowerCase().trim());
-    }
-
-    @Override
-    public int size(@Nonnull String name) {
-        return data.get(name.toLowerCase().trim()).size();
-    }
-
-    @Override
-    @Nonnull
-    public Value getFirst(@Nonnull String name) {
-        return getFirstOrDefault(name, null);
-    }
-
-    @Override
-    @Nonnull
-    public Value getNth(@Nonnull String name, int n) {
-        return getNthOrDefault(name, n, null);
-    }
-
-    @Override
-    @Nonnull
-    public Value getLast(@Nonnull String name) {
-        return getLastOrDefault(name, null);
     }
 
     @Override
