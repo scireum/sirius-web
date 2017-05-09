@@ -1,11 +1,21 @@
-@args String span, String name, boolean value, String labelKey, String helpKey, boolean readonly
+@args String span, String name, boolean value, String labelKey, String helpKey, boolean readonly, String label, String help
 <div class="col-md-@(span == null || span == "" ? 6 : span)">
     <div class="form-group checkbox">
         <label>
             <input type="checkbox" name="@name" value="true" @if (value) { checked="checked" } @if (readonly) { disabled="disabled" } />
-            @i18n(labelKey)
+            @if (Strings.isFilled(labelKey)) {
+                @i18n(labelKey)
+            } else {
+                @if (Strings.isFilled(label)) {
+                    @label
+                }
+            }
             @if (Strings.isFilled(helpKey)) {
                 <span class="help-block">@i18n(helpKey)</span>
+            } else {
+                @if (Strings.isFilled(help)) {
+                    <span class="help-block">@helpKey</span>
+                }
             }
         </label>
     </div>
