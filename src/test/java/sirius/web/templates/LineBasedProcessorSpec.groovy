@@ -11,12 +11,8 @@ package sirius.web.templates
 import com.google.common.collect.Lists
 import sirius.kernel.BaseSpecification
 import sirius.kernel.commons.Values
-import sirius.kernel.di.std.Part
 
 class LineBasedProcessorSpec extends BaseSpecification {
-
-    @Part
-    private static Resolver resolver
 
     def "readingExcel works including formulas"() {
         given:
