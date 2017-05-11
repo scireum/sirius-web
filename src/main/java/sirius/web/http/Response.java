@@ -10,12 +10,6 @@ package sirius.web.http;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Sets;
-import com.ning.http.client.AsyncHandler;
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.AsyncHttpClientConfig;
-import com.ning.http.client.FluentCaseInsensitiveStringsMap;
-import com.ning.http.client.HttpResponseBodyPart;
-import com.ning.http.client.HttpResponseHeaders;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
@@ -43,6 +37,13 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedFile;
 import io.netty.handler.stream.ChunkedStream;
 import io.netty.handler.stream.ChunkedWriteHandler;
+import org.asynchttpclient.AsyncHandler;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.BoundRequestBuilder;
+import org.asynchttpclient.DefaultAsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClientConfig;
+import org.asynchttpclient.HttpResponseBodyPart;
+import org.asynchttpclient.HttpResponseHeaders;
 import org.rythmengine.Rythm;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
@@ -72,7 +73,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -166,7 +166,7 @@ public class Response {
     @Part
     private static Resources resources;
 
-    protected static AsyncHttpClient asyncClient;
+    protected static DefaultAsyncHttpClient asyncClient;
 
     private static final Pattern RANGE_HEADER = Pattern.compile("bytes=(\\d+)?-(\\d+)?");
 
@@ -1282,10 +1282,13 @@ public class Response {
      */
     protected static AsyncHttpClient getAsyncClient() {
         if (asyncClient == null) {
-            asyncClient = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setAllowPoolingConnections(true)
-                                                                                 .setAllowPoolingSslConnections(true)
-                                                                                 .setRequestTimeout(-1)
-                                                                                 .build());
+            DefaultAsyncHttpClientConfig.Builder configBuilder = new DefaultAsyncHttpClientConfig.Builder();
+            configBuilder.setThreadPoolName("response-tunnelling")
+                         .setConnectTimeout(60000)
+                         .setFollowRedirect(true)
+                         .setRequestTimeout(-1)
+                         .setSslEngineFactory(new SiriusSslEngineFactory());
+            asyncClient = new DefaultAsyncHttpClient(configBuilder.build());
         }
         return asyncClient;
     }
@@ -1332,7 +1335,7 @@ public class Response {
      */
     public void tunnel(final String url, @Nullable Consumer<Integer> failureHandler) {
         try {
-            AsyncHttpClient.BoundRequestBuilder brb = getAsyncClient().prepareGet(url);
+            BoundRequestBuilder brb = getAsyncClient().prepareGet(url);
             // Support caching...
             long ifModifiedSince = wc.getDateHeader(HttpHeaderNames.IF_MODIFIED_SINCE);
             if (ifModifiedSince > 0) {
@@ -1372,7 +1375,7 @@ public class Response {
         }
 
         @Override
-        public STATE onStatusReceived(com.ning.http.client.HttpResponseStatus status) throws Exception {
+        public State onStatusReceived(org.asynchttpclient.HttpResponseStatus status) throws Exception {
             CallContext.setCurrent(cc);
 
             if (WebServer.LOG.isFINE()) {
@@ -1380,11 +1383,11 @@ public class Response {
             }
             if (status.getStatusCode() >= 200 && status.getStatusCode() < 300) {
                 responseCode = status.getStatusCode();
-                return STATE.CONTINUE;
+                return State.CONTINUE;
             }
             if (status.getStatusCode() == HttpResponseStatus.NOT_MODIFIED.code()) {
                 status(HttpResponseStatus.NOT_MODIFIED);
-                return STATE.ABORT;
+                return State.ABORT;
             }
             // Everything above 400 is an error and should be forwarded to the failure handler (if present)
             if (status.getStatusCode() >= 400 && failureHandler != null) {
@@ -1400,18 +1403,18 @@ public class Response {
                 // failureHandler is present...
                 error(HttpResponseStatus.valueOf(status.getStatusCode()));
             }
-            return STATE.ABORT;
+            return State.ABORT;
         }
 
         @Override
-        public STATE onHeadersReceived(HttpResponseHeaders httpHeaders) throws Exception {
+        public State onHeadersReceived(HttpResponseHeaders httpHeaders) throws Exception {
             CallContext.setCurrent(cc);
 
             if (wc.responseCommitted) {
                 if (WebServer.LOG.isFINE()) {
                     WebServer.LOG.FINE("Tunnel - BLOCKED HEADERS (already sent) for %s", wc.getRequestedURI());
                 }
-                return STATE.CONTINUE;
+                return State.CONTINUE;
             }
             if (WebServer.LOG.isFINE()) {
                 WebServer.LOG.FINE("Tunnel - HEADERS for %s", wc.getRequestedURI());
@@ -1419,7 +1422,7 @@ public class Response {
 
             long lastModified = forwardHeadersAndDetermineLastModified(httpHeaders);
             if (handleIfModifiedSince(lastModified)) {
-                return STATE.ABORT;
+                return State.ABORT;
             }
 
             if (!headers().contains(HttpHeaderNames.CONTENT_TYPE)) {
@@ -1431,21 +1434,21 @@ public class Response {
                 setContentDisposition(name, download);
             }
 
-            return STATE.CONTINUE;
+            return State.CONTINUE;
         }
 
         private long forwardHeadersAndDetermineLastModified(HttpResponseHeaders httpHeaders) {
-            FluentCaseInsensitiveStringsMap receivedHeaders = httpHeaders.getHeaders();
+            HttpHeaders receivedHeaders = httpHeaders.getHeaders();
 
             long lastModified = 0;
 
-            for (Map.Entry<String, List<String>> entry : receivedHeaders.entrySet()) {
+            for (Map.Entry<String, String> entry : receivedHeaders) {
                 if ((Sirius.isDev() || !entry.getKey().startsWith("x-"))
                     && !NON_TUNNELLED_HEADERS.contains(entry.getKey())) {
                     if (HttpHeaderNames.LAST_MODIFIED.contentEqualsIgnoreCase(entry.getKey())) {
                         lastModified = parseLastModified(entry);
                     } else {
-                        forwardHeaderValues(entry);
+                        addHeaderIfNotExists(entry.getKey(), entry.getValue());
                     }
                     if (HttpHeaderNames.CONTENT_LENGTH.contentEqualsIgnoreCase(entry.getKey())) {
                         contentLengthKnown = true;
@@ -1456,15 +1459,9 @@ public class Response {
             return lastModified;
         }
 
-        private void forwardHeaderValues(Map.Entry<String, List<String>> entry) {
-            for (String value : entry.getValue()) {
-                addHeaderIfNotExists(entry.getKey(), value);
-            }
-        }
-
-        private long parseLastModified(Map.Entry<String, List<String>> entry) {
+        private long parseLastModified(Map.Entry<String, String> entry) {
             try {
-                return getHTTPDateFormat().parse(entry.getValue().get(0)).getTime();
+                return getHTTPDateFormat().parse(entry.getValue()).getTime();
             } catch (Exception e) {
                 Exceptions.ignore(e);
                 return 0;
@@ -1472,7 +1469,7 @@ public class Response {
         }
 
         @Override
-        public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
+        public State onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
             try {
                 CallContext.setCurrent(cc);
 
@@ -1483,48 +1480,57 @@ public class Response {
                                        bodyPart.isLast());
                 }
                 if (!ctx.channel().isOpen()) {
-                    return STATE.ABORT;
+                    return State.ABORT;
                 }
 
                 ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
 
                 if (!wc.responseCommitted) {
-                    //Send a response first
                     if (bodyPart.isLast()) {
-                        HttpResponse response =
-                                createFullResponse(HttpResponseStatus.valueOf(responseCode), true, data);
-                        HttpUtil.setContentLength(response, bodyPart.getBodyByteBuffer().remaining());
-                        complete(commit(response));
-                        return STATE.CONTINUE;
-                    } else {
-                        if (contentLengthKnown) {
-                            commit(createResponse(HttpResponseStatus.valueOf(responseCode), true));
-                        } else {
-                            commit(createChunkedResponse(HttpResponseStatus.valueOf(responseCode), true));
-                        }
+                        commitAndCompleteResponse(bodyPart, data);
+                        return State.CONTINUE;
                     }
+                    commitResponse();
                 }
 
                 if (bodyPart.isLast()) {
-                    if (responseChunked) {
-                        ChannelFuture writeFuture = ctx.writeAndFlush(new DefaultLastHttpContent(data));
-                        complete(writeFuture);
-                    } else {
-                        ctx.channel().write(data);
-                        ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
-                        complete(writeFuture);
-                    }
+                    completeResponse(data);
                 } else {
                     Object msg = responseChunked ? new DefaultHttpContent(data) : data;
                     contentionAwareWrite(msg);
                 }
-                return STATE.CONTINUE;
+                return State.CONTINUE;
             } catch (HandledException e) {
                 Exceptions.ignore(e);
-                return STATE.ABORT;
+                return State.ABORT;
             } catch (Exception e) {
                 Exceptions.handle(e);
-                return STATE.ABORT;
+                return State.ABORT;
+            }
+        }
+
+        private void commitAndCompleteResponse(HttpResponseBodyPart bodyPart, ByteBuf data) {
+            HttpResponse response = createFullResponse(HttpResponseStatus.valueOf(responseCode), true, data);
+            HttpUtil.setContentLength(response, bodyPart.getBodyByteBuffer().remaining());
+            complete(commit(response));
+        }
+
+        private void completeResponse(ByteBuf data) {
+            if (responseChunked) {
+                ChannelFuture writeFuture = ctx.writeAndFlush(new DefaultLastHttpContent(data));
+                complete(writeFuture);
+            } else {
+                ctx.channel().write(data);
+                ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+                complete(writeFuture);
+            }
+        }
+
+        private void commitResponse() {
+            if (contentLengthKnown) {
+                commit(createResponse(HttpResponseStatus.valueOf(responseCode), true));
+            } else {
+                commit(createChunkedResponse(HttpResponseStatus.valueOf(responseCode), true));
             }
         }
 
@@ -1664,14 +1670,9 @@ public class Response {
                 }
                 return;
             }
-            if (!ctx.channel().isOpen()) {
-                open = false;
-                if (buffer != null) {
-                    buffer.release();
-                    buffer = null;
-                }
-                throw new ClosedChannelException();
-            }
+
+            failIfChannelIsNotOpen();
+
             if (!wc.responseCommitted) {
                 createResponse(last);
                 if (last) {
@@ -1680,16 +1681,32 @@ public class Response {
             }
 
             if (last) {
-                if (buffer != null) {
-                    complete(ctx.writeAndFlush(new DefaultLastHttpContent(buffer)));
-                } else {
-                    complete(ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT));
-                }
+                completeRequest();
             } else {
                 Object message = new DefaultHttpContent(buffer);
                 contentionAwareWrite(message);
             }
+
             buffer = null;
+        }
+
+        private void completeRequest() {
+            if (buffer != null) {
+                complete(ctx.writeAndFlush(new DefaultLastHttpContent(buffer)));
+            } else {
+                complete(ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT));
+            }
+        }
+
+        private void failIfChannelIsNotOpen() throws ClosedChannelException {
+            if (!ctx.channel().isOpen()) {
+                open = false;
+                if (buffer != null) {
+                    buffer.release();
+                    buffer = null;
+                }
+                throw new ClosedChannelException();
+            }
         }
 
         private void createResponse(boolean last) {
