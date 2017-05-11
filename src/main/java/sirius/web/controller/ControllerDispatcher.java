@@ -37,7 +37,7 @@ import java.util.List;
 /**
  * Dispatches incoming requests to the appropriate {@link Controller}.
  */
-@Register
+@Register(classes = {WebDispatcher.class, ControllerDispatcher.class})
 public class ControllerDispatcher implements WebDispatcher {
 
     protected static final Log LOG = Log.get("controller");
@@ -64,19 +64,11 @@ public class ControllerDispatcher implements WebDispatcher {
 
     @Override
     public boolean preDispatch(WebContext ctx) throws Exception {
-        if (routes == null) {
-            buildRouter();
-        }
-
         return route(ctx, true);
     }
 
     @Override
     public boolean dispatch(WebContext ctx) throws Exception {
-        if (routes == null) {
-            buildRouter();
-        }
-
         return route(ctx, false);
     }
 
@@ -85,7 +77,7 @@ public class ControllerDispatcher implements WebDispatcher {
         if (uri.endsWith("/") && !"/".equals(uri)) {
             uri = uri.substring(0, uri.length() - 1);
         }
-        for (final Route route : routes) {
+        for (final Route route : getRoutes()) {
             if (tryExecuteRoute(ctx, preDispatch, uri, route)) {
                 return true;
             }
@@ -96,7 +88,7 @@ public class ControllerDispatcher implements WebDispatcher {
     private boolean tryExecuteRoute(WebContext ctx, boolean preDispatch, String uri, Route route) {
         try {
             final List<Object> params = route.matches(ctx, uri, preDispatch);
-            if (params == null) {
+            if (params == Route.NO_MATCH) {
                 // Route did not match...
                 return false;
             }
@@ -124,7 +116,7 @@ public class ControllerDispatcher implements WebDispatcher {
                                                  "Request dropped - System overload!"))
                  .fork(() -> performRouteInOwnThread(ctx, route, params));
             return true;
-        } catch (final Throwable e) {
+        } catch (final Exception e) {
             tasks.executor("web-mvc")
                  .dropOnOverload(() -> ctx.respondWith()
                                           .error(HttpResponseStatus.INTERNAL_SERVER_ERROR,
@@ -140,7 +132,7 @@ public class ControllerDispatcher implements WebDispatcher {
 
             // Intercept call...
             for (Interceptor interceptor : interceptors) {
-                if (interceptor.before(ctx, route.isJSONCall(), route.getController(), route.getSuccessCallback())) {
+                if (interceptor.before(ctx, route.isJSONCall(), route.getController(), route.getMethod())) {
                     return;
                 }
             }
@@ -167,7 +159,7 @@ public class ControllerDispatcher implements WebDispatcher {
             // Especially a JSON call might re-throw this. As this simply states, the connection was
             // closed while writing JSON data, we can safely ignore it....
             Exceptions.ignore(ex);
-        } catch (Throwable ex) {
+        } catch (Exception ex) {
             handleFailure(ctx, route, ex);
         }
         ctx.enableTiming(route.toString());
@@ -183,7 +175,7 @@ public class ControllerDispatcher implements WebDispatcher {
         if (route.isJSONCall()) {
             executeJSONCall(ctx, route, params);
         } else {
-            route.getSuccessCallback().invoke(route.getController(), params.toArray());
+            route.getMethod().invoke(route.getController(), params.toArray());
         }
     }
 
@@ -193,7 +185,7 @@ public class ControllerDispatcher implements WebDispatcher {
         out.beginResult();
         out.property("success", true);
         out.property("error", false);
-        route.getSuccessCallback().invoke(route.getController(), params.toArray());
+        route.getMethod().invoke(route.getController(), params.toArray());
         out.endResult();
     }
 
@@ -203,7 +195,7 @@ public class ControllerDispatcher implements WebDispatcher {
                                                   ctx,
                                                   route.isJSONCall(),
                                                   route.getController(),
-                                                  route.getSuccessCallback())) {
+                                                  route.getMethod())) {
                 return;
             }
         }
@@ -230,8 +222,7 @@ public class ControllerDispatcher implements WebDispatcher {
         try {
             CallContext.getCurrent()
                        .addToMDC("controller",
-                                 route.getController().getClass().getName() + "." + route.getSuccessCallback()
-                                                                                         .getName());
+                                 route.getController().getClass().getName() + "." + route.getMethod().getName());
             if (route.isJSONCall()) {
                 if (ctx.isResponseCommitted()) {
                     // Force underlying request / response to be closed...
@@ -255,7 +246,7 @@ public class ControllerDispatcher implements WebDispatcher {
             } else {
                 route.getController().onError(ctx, Exceptions.handle(ControllerDispatcher.LOG, ex));
             }
-        } catch (Throwable t) {
+        } catch (Exception t) {
             ctx.respondWith()
                .error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(ControllerDispatcher.LOG, t));
         }
@@ -264,21 +255,81 @@ public class ControllerDispatcher implements WebDispatcher {
     /*
      * Compiles all available controllers and their methods into a route table
      */
-    private void buildRouter() {
+    private List<Route> buildRouter() {
         PriorityCollector<Route> collector = PriorityCollector.create();
-        for (final Controller controller : Injector.context().getParts(Controller.class)) {
-            for (final Method m : controller.getClass().getMethods()) {
-                if (m.isAnnotationPresent(Routed.class)) {
-                    Routed routed = m.getAnnotation(Routed.class);
-                    Route route = compileMethod(routed, controller, m);
-                    if (route != null) {
-                        collector.add(routed.priority(), route);
-                    }
+        for (Controller controller : Injector.context().getParts(Controller.class)) {
+            compileController(collector, controller);
+        }
+
+        List<Route> allRoutes = collector.getData();
+        optimizeRoutes(allRoutes);
+
+        return allRoutes;
+    }
+
+    private void optimizeRoutes(List<Route> routes) {
+        for (int i = 0; i < routes.size() - 1; i++) {
+            Route baseRoute = routes.get(i);
+            int priority = baseRoute.getMethod().getAnnotation(Routed.class).priority();
+            scanRoutesWithSamePriority(routes, baseRoute, i, priority);
+        }
+    }
+
+    private void scanRoutesWithSamePriority(List<Route> routes, Route baseRoute, int baseIndex, int basePriority) {
+        int index = baseIndex + 1;
+        while (index < routes.size()) {
+            Route secondRoute = routes.get(index);
+            if (secondRoute.getMethod().getAnnotation(Routed.class).priority() > basePriority) {
+                return;
+            }
+
+            if (secondRoute.getPattern().equals(baseRoute.getPattern())) {
+                if (secondRoute.getMethod().equals(baseRoute.getMethod())) {
+                    routes.remove(index);
+                    index--;
+                    LOG.FINE("Removing duplicate route entry for '%s' in controller '%s'. "
+                             + "This is probably a parent class to several controllers",
+                             baseRoute.getMethod().getName(),
+                             baseRoute.getMethod().getDeclaringClass().getName(),
+                             secondRoute.getMethod().getName(),
+                             secondRoute.getMethod().getDeclaringClass().getName());
+                } else {
+                    LOG.WARN("Route collision for '%s' in controller '%s' and '%s' in controller '%s'. "
+                             + "Please provide a priority to resolve this!",
+                             baseRoute.getMethod().getName(),
+                             baseRoute.getMethod().getDeclaringClass().getName(),
+                             secondRoute.getMethod().getName(),
+                             secondRoute.getMethod().getDeclaringClass().getName());
+                }
+            }
+
+            index++;
+        }
+    }
+
+    private void compileController(PriorityCollector<Route> collector, Controller controller) {
+        for (final Method m : controller.getClass().getMethods()) {
+            if (m.isAnnotationPresent(Routed.class)) {
+                Routed routed = m.getAnnotation(Routed.class);
+                Route route = compileMethod(routed, controller, m);
+                if (route != null) {
+                    collector.add(routed.priority(), route);
                 }
             }
         }
+    }
 
-        routes = collector.getData();
+    /**
+     * Returns a list of all {@link Route routes} known to the dispatcher.
+     *
+     * @return a list of all routes known to the dispatcher
+     */
+    public List<Route> getRoutes() {
+        if (routes == null) {
+            routes = buildRouter();
+        }
+
+        return routes;
     }
 
     /*
@@ -286,11 +337,8 @@ public class ControllerDispatcher implements WebDispatcher {
      */
     private Route compileMethod(Routed routed, final Controller controller, final Method m) {
         try {
-            final Route route = Route.compile(m, routed);
-            route.setController(controller);
-            route.setSuccessCallback(m);
-            return route;
-        } catch (Throwable e) {
+            return Route.compile(controller, m, routed);
+        } catch (Exception e) {
             LOG.WARN("Skipping '%s' in controller '%s' - Cannot compile route '%s': %s (%s)",
                      m.getName(),
                      controller.getClass().getName(),
