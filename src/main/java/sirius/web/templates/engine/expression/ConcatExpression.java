@@ -10,6 +10,8 @@ package sirius.web.templates.engine.expression;
 
 import sirius.web.templates.engine.RenderContext;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -17,7 +19,15 @@ import java.util.List;
  */
 public class ConcatExpression extends Expression {
 
-    private List<Expression> stringExpressions;
+    private List<Expression> stringExpressions = new ArrayList<>();
+
+    public ConcatExpression(Expression... expressions) {
+        stringExpressions.addAll(Arrays.asList(expressions));
+    }
+
+    public void add(Expression expr) {
+        stringExpressions.add(expr);
+    }
 
     @Override
     public Object eval(RenderContext ctx) {
@@ -34,5 +44,18 @@ public class ConcatExpression extends Expression {
     @Override
     public Class<?> getType() {
         return String.class;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Expression expr : stringExpressions) {
+            if (sb.length() > 0) {
+                sb.append(" + ");
+            }
+            sb.append(expr);
+        }
+
+        return sb.toString();
     }
 }

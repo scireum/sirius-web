@@ -29,4 +29,9 @@ public class ConstantNull extends Expression {
     public Class<?> getType() {
         return void.class;
     }
+
+    @Override
+    public String toString() {
+        return "null";
+    }
 }

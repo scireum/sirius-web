@@ -53,4 +53,20 @@ public class ConditionalEmitter implements Emitter {
     public void setWhenFalse(Emitter whenFalse) {
         this.whenFalse = whenFalse;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("@if (");
+        sb.append(conditionExpression);
+        sb.append(") {");
+        sb.append(whenTrue);
+        if (!ConstantEmitter.EMPTY.equals(whenFalse)) {
+            sb.append("} else {");
+            sb.append(whenFalse);
+        }
+        sb.append("}");
+
+        return sb.toString();
+    }
 }

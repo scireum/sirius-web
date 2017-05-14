@@ -33,4 +33,9 @@ public class ConstantBoolean extends Expression {
     public Class<?> getType() {
         return boolean.class;
     }
+
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
 }

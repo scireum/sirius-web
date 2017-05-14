@@ -58,7 +58,9 @@ public class MethodCall extends Expression {
     }
 
     public void setParameters(List<Expression> parameters) {
-        parameterExpressions = parameters.toArray(new Expression[parameters.size()]);
+        if (!parameters.isEmpty()) {
+            parameterExpressions = parameters.toArray(new Expression[parameters.size()]);
+        }
     }
 
     public void bindToMethod(String name) {
@@ -76,5 +78,19 @@ public class MethodCall extends Expression {
             //TODO
             throw Exceptions.handle(e);
         }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        if (parameterExpressions != null) {
+            for (Expression expr : parameterExpressions) {
+                if (sb.length() > 0) {
+                    sb.append(", ");
+                }
+                sb.append(expr);
+            }
+        }
+        return selfExpression + "." + method.getName() + "(" + sb + ")";
     }
 }

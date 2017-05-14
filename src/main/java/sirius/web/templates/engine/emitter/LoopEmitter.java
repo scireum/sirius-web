@@ -26,7 +26,7 @@ public class LoopEmitter implements Emitter {
             return;
         }
 
-        for(Object obj : (Iterable<?>)iterable) {
+        for (Object obj : (Iterable<?>) iterable) {
             context.push(obj);
             try {
                 loop.emit(context);
@@ -34,5 +34,17 @@ public class LoopEmitter implements Emitter {
                 context.pop();
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("@for (");
+        sb.append(iterableExpression);
+        sb.append(") {");
+        sb.append(loop);
+        sb.append("}");
+
+        return sb.toString();
     }
 }

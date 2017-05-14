@@ -32,4 +32,15 @@ public class CompositeEmitter implements Emitter {
     public void addChild(Emitter child) {
         children.add(child);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        if (children != null) {
+            for (Emitter expr : children) {
+                sb.append(expr);
+            }
+        }
+        return sb.toString();
+    }
 }

@@ -32,4 +32,9 @@ public class ReadLocal extends Expression {
     public Class<?> getType() {
         return type;
     }
+
+    @Override
+    public String toString() {
+        return "LOCAL<" + index + ">";
+    }
 }

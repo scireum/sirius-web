@@ -11,30 +11,21 @@ package sirius.web.templates.engine.expression;
 import sirius.web.templates.engine.RenderContext;
 
 /**
- * Created by aha on 11.05.17.
+ * Created by aha on 12.05.17.
  */
-public class ReadGlobal extends Expression {
+public class OperationAnd extends BooleanOperation {
 
-    private int index;
-    private Class<?> type;
-
-    public ReadGlobal(Class<?> type, int index) {
-        this.type = type;
-        this.index = index;
+    public OperationAnd(Expression leftExpression, Expression rightExpression) {
+        super(leftExpression, rightExpression);
     }
 
     @Override
     public Object eval(RenderContext ctx) {
-        return ctx.getGlobal(index);
-    }
-
-    @Override
-    public Class<?> getType() {
-        return type;
+        return eval(leftExpression, ctx) && eval(rightExpression, ctx);
     }
 
     @Override
     public String toString() {
-        return "GLOBAL<" + index + ">";
+        return leftExpression + " && " + rightExpression;
     }
 }

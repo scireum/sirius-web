@@ -34,4 +34,9 @@ public class ConstantInt extends Expression {
     public Class<?> getType() {
         return int.class;
     }
+
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
 }

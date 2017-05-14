@@ -32,4 +32,13 @@ public class ConstantString extends Expression {
     public Class<?> getType() {
         return String.class;
     }
+
+    @Override
+    public String toString() {
+        return value;
+    }
+
+    public String getValue() {
+        return value;
+    }
 }

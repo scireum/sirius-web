@@ -8,6 +8,7 @@
 
 package sirius.web.templates.engine.emitter;
 
+import sirius.kernel.commons.Strings;
 import sirius.web.templates.engine.RenderContext;
 
 /**
@@ -26,5 +27,10 @@ public class ConstantEmitter implements Emitter {
     @Override
     public void emit(RenderContext context) {
         context.output(value);
+    }
+
+    @Override
+    public String toString() {
+        return Strings.limit(value, 30);
     }
 }

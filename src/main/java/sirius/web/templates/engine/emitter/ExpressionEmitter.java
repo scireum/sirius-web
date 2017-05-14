@@ -32,4 +32,8 @@ public class ExpressionEmitter implements Emitter {
         }
     }
 
+    @Override
+    public String toString() {
+        return "@(" + expression + ")";
+    }
 }

@@ -15,11 +15,23 @@ import sirius.kernel.BaseSpecification
  */
 class CompilerSpec extends BaseSpecification {
 
+    //TODO automatic attributes
+    //INVOKE TAG / Arguments -> Template Stack mit Basepointer
+    //RuntimeErrors
+    //Static Method Calls
+    //Engine / Environment 1 per Scope
+    //Pragma / inline
+    // $ for i18n
+    // Smart Escaping
+    // Caching und co.
+
     def "parser works"() {
         when:
-        Compiler compiler = new Compiler(new StringReader("@if (false) {Hello W@'World'.substring(1)} else {hullo}!"), new CompilationContext())
+        CompilationContext cc = new CompilationContext()
+        Compiler compiler = new Compiler('<i:if test="@3<4">A<i:block name="else">B</i:block></i:if>', cc)
         and:
         Template template = compiler.compile()
+        println cc
         and:
         RenderContext ctx = new RenderContext()
         then:
