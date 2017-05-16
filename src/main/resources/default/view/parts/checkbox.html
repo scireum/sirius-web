@@ -6,16 +6,12 @@
             @if (Strings.isFilled(labelKey)) {
                 @i18n(labelKey)
             } else {
-                @if (Strings.isFilled(label)) {
-                    @label
-                }
+                @label
             }
             @if (Strings.isFilled(helpKey)) {
                 <span class="help-block">@i18n(helpKey)</span>
             } else {
-                @if (Strings.isFilled(help)) {
-                    <span class="help-block">@help</span>
-                }
+                <span class="help-block">@help</span>
             }
         </label>
     </div>
