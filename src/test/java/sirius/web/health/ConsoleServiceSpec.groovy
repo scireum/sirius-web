@@ -30,7 +30,7 @@ class ConsoleServiceSpec extends BaseSpecification {
         then:
         result.getStatus() == HttpResponseStatus.OK
         result.xmlContent().queryString("error/code") == null
-        result.xmlContent().queryString("result") != null
+        result.xmlContent().queryString("template") != null
     }
 
 }

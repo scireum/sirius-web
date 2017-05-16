@@ -1,0 +1,124 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+package sirius.web.templates.tagliatelle;
+
+import sirius.kernel.commons.Value;
+import sirius.kernel.di.std.Part;
+import sirius.web.templates.Resource;
+import sirius.web.templates.tagliatelle.emitter.Emitter;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+
+/**
+ * Created by aha on 10.05.17.
+ */
+public class Template {
+
+    protected String name;
+    protected Resource resource;
+    protected Emitter emitter;
+    protected List<TemplateArgument> arguments = new ArrayList<>();
+    protected Map<String, String> pragmas;
+
+    @Part
+    private static Engine engine;
+
+    private long compilationTimestamp = System.currentTimeMillis();
+
+    public Template(String name, Resource resource) {
+        this.name = name;
+        this.resource = resource;
+    }
+
+    public void addArgument(TemplateArgument arg) {
+        arguments.add(arg);
+    }
+
+    public void addPragma(String name, String value) {
+        if (pragmas == null) {
+            pragmas = new HashMap<>();
+        }
+
+        pragmas.put(name, value);
+    }
+
+    public Value getPragma(String name) {
+        if (pragmas == null) {
+            return Value.EMPTY;
+        }
+
+        return Value.of(pragmas.get(name));
+    }
+
+    public void render(Consumer<String> output, Object... args) {
+        LocalRenderContext ctx = engine.createRenderContext(output).createContext(this);
+        applyArguments(ctx, args);
+
+        render(ctx);
+    }
+
+    public void applyArguments(LocalRenderContext ctx, Object[] args) {
+        int index = 0;
+        for (TemplateArgument arg : arguments) {
+            Object argumentValue = null;
+            if (index < args.length) {
+                argumentValue = args[index];
+            } else {
+                if (arg.getDefaultValue() == null) {
+                    //TODO warn / fail!
+                    argumentValue = arg.getDefaultValue().eval(ctx);
+                }
+            }
+
+            if (!arg.getType().isAssignableFrom(argumentValue.getClass())) {
+                //TODO warn / fail
+            }
+
+            ctx.setLocal(index, argumentValue);
+            index++;
+        }
+    }
+
+    public void render(LocalRenderContext ctx) {
+        emitter.emit(ctx);
+    }
+
+    public long getCompilationTimestamp() {
+        return compilationTimestamp;
+    }
+
+    public int getNumberOfArguments() {
+        return arguments.size();
+    }
+
+    public List<TemplateArgument> getArguments() {
+        return arguments;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Resource getResource() {
+        return resource;
+    }
+
+    @Override
+    public String toString() {
+        if (resource == null) {
+            return name;
+        }
+        
+        return name + " (" + resource.getUrl() + ")";
+    }
+}

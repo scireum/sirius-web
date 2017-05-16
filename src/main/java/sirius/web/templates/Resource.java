@@ -15,8 +15,11 @@ import sirius.kernel.commons.RateLimit;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Objects;
@@ -32,14 +35,45 @@ import java.util.concurrent.TimeUnit;
  * @see sirius.web.security.UserContext#getCurrentScope()
  */
 public class Resource {
-    private String scopeId;
-    private String path;
-    private URL url;
-    private final boolean constant;
+    public static final String PROTOCOL_FILE = "file";
+    private final String scopeId;
+    private final String path;
+    private final URL url;
+    private final File file;
     private long lastModified = -1;
-    private boolean consideredConstant;
-    private RateLimit checkInterval = RateLimit.timeInterval(10, TimeUnit.SECONDS);
+    private final boolean consideredConstant;
+    private final RateLimit checkInterval = RateLimit.timeInterval(10, TimeUnit.SECONDS);
     private long minLastModified;
+
+    private Resource(String scopeId, String path, URL url, boolean constant) {
+        this.scopeId = scopeId;
+        this.path = path;
+        this.url = url;
+        this.file = determineFile(url);
+        this.consideredConstant = constant;
+        this.minLastModified = System.currentTimeMillis();
+
+        Objects.requireNonNull(scopeId);
+        Objects.requireNonNull(path);
+        Objects.requireNonNull(url);
+    }
+
+    private File determineFile(URL url) {
+        if (!PROTOCOL_FILE.equals(url.getProtocol())) {
+            return null;
+        }
+        try {
+            File localFile = new File(url.toURI());
+            if (localFile.exists()) {
+                return localFile;
+            } else {
+                return null;
+            }
+        } catch (URISyntaxException e) {
+            Exceptions.ignore(e);
+            return null;
+        }
+    }
 
     /**
      * Creates a new dynamic resource for the given scope, path and resulting url.
@@ -69,18 +103,6 @@ public class Resource {
      */
     public static Resource constantResource(String scopeId, String path, URL url) {
         return new Resource(scopeId, path, url, true);
-    }
-
-    private Resource(String scopeId, String path, URL url, boolean constant) {
-        this.scopeId = scopeId;
-        this.path = path;
-        this.url = url;
-        this.constant = constant;
-        this.minLastModified = System.currentTimeMillis();
-
-        Objects.requireNonNull(scopeId);
-        Objects.requireNonNull(path);
-        Objects.requireNonNull(url);
     }
 
     /**
@@ -117,6 +139,9 @@ public class Resource {
      */
     public InputStream openStream() {
         try {
+            if (file != null) {
+                return new FileInputStream(file);
+            }
             return getUrl().openConnection().getInputStream();
         } catch (IOException e) {
             throw Exceptions.handle(e);
@@ -162,22 +187,30 @@ public class Resource {
     public long getLastModified() {
         if (lastModified == -1 || ((!consideredConstant || Sirius.isDev()) && checkInterval.check())) {
             try {
-                URLConnection c = url.openConnection();
-                try {
-                    // Close the input stream since the stupid implementation of
-                    // SUN's FileURLConnection always keeps an InputStream open on
-                    // connect.
-                    c.getInputStream().close();
-                } catch (Throwable e) {
-                    Resources.LOG.WARN(e);
+                if (file != null) {
+                    lastModified = file.lastModified();
+                } else {
+                    determineLastModified();
                 }
-                lastModified = c.getLastModified();
             } catch (IOException e) {
                 Exceptions.handle(e);
                 lastModified = System.currentTimeMillis();
             }
         }
         return Math.max(lastModified, minLastModified);
+    }
+
+    private void determineLastModified() throws IOException {
+        URLConnection c = url.openConnection();
+        lastModified = c.getLastModified();
+        try {
+            // Close the input stream since the stupid implementation of
+            // SUN's FileURLConnection always keeps an InputStream open on
+            // connect.
+            c.getInputStream().close();
+        } catch (Exception e) {
+            Resources.LOG.WARN(e);
+        }
     }
 
     @Override

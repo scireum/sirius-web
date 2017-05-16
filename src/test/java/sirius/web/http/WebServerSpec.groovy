@@ -105,7 +105,7 @@ class WebServerSpec extends BaseSpecification {
     }
 
     /**
-     * Call a small service which result fits into a single response chunk...
+     * Call a small service which template fits into a single response chunk...
      */
     def "Invoke /service/json/test"() {
         given:
@@ -132,7 +132,7 @@ class WebServerSpec extends BaseSpecification {
     }
 
     /**
-     * Call a service which generates a small result and then fails.
+     * Call a service which generates a small template and then fails.
      * <p>
      * We expect an appropriate error in this case.
      */
