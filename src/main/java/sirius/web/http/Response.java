@@ -261,8 +261,13 @@ public class Response {
     }
 
     private void setupCors(DefaultHttpResponse response) {
-        if (WebContext.corsAllowAll && !response.headers().contains(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN)) {
-            response.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+        if (!WebContext.corsAllowAll || response.headers().contains(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN)) {
+            return;
+        }
+
+        String requestedOrigin = wc.getHeader(HttpHeaderNames.ORIGIN);
+        if (Strings.isFilled(requestedOrigin)) {
+            response.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, requestedOrigin);
         }
     }
 

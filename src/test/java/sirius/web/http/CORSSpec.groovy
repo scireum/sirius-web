@@ -25,7 +25,7 @@ class CORSSpec extends BaseSpecification {
 
         then:
         c.getInputStream().close()
-        c.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN.toString()) == "*"
+        c.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN.toString()) == "TEST"
     }
 
     def "expect a CORS preflight request to be answered correctly"() {
@@ -41,7 +41,7 @@ class CORSSpec extends BaseSpecification {
 
         then:
         c.getInputStream().close()
-        c.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN.toString()) == "*"
+        c.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN.toString()) == "TEST"
         c.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_METHODS.toString()).indexOf("GET") >= 0
         c.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_HEADERS.toString()).indexOf("X-Test") >= 0
     }
