@@ -1,6 +1,6 @@
 <w:test2>
     <i:block name="breadcrumbs">
-        <i:render name="breadcrumbs" />
+        <i:render name="breadcrumbs"/>
         B
     </i:block>
 </w:test2>
