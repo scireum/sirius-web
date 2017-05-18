@@ -45,7 +45,7 @@
         <dependency>
             <groupId>com.scireum</groupId>
             <artifactId>server-sass</artifactId>
-            <version>3.0</version>
+            <version>3.1</version>
         </dependency>
 
         <!-- Used as main template engine for HTML templates... -->
