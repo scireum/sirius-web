@@ -1,0 +1,31 @@
+@*
+*  Made with all the love in the world
+*  by scireum in Remshalden, Germany
+*
+*  Copyright by scireum GmbH
+*  http://www.scireum.de - info@scireum.de
+*@
+@args io.netty.handler.codec.http.HttpResponseStatus status, String message
+<html>
+    <head>
+        <title>Error - @status.code()</title>
+    </head>
+    <body>
+        <h1>@status.reasonPhrase()</h1>
+        <hr />
+        <pre>@message</pre>
+        <hr />
+        <p>
+            <b>Diagnostic:</b>
+            <ul>
+                <li><b>node:</b> @ctx.getNodeName()</li>
+                <li><b>duration:</b> @ctx.getWatch().duration()</li>
+                @for(sirius.kernel.commons.Tuple t : ctx.getMDC()) {
+                    <li>
+                        <b>@t.getFirst():</b> @t.getSecond()
+                    </li>
+                }
+            </ul>
+        </p>
+    </body>
+</html>

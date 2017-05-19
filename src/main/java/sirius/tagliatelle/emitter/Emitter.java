@@ -9,9 +9,9 @@
 package sirius.tagliatelle.emitter;
 
 import parsii.tokenizer.Position;
-import sirius.kernel.commons.Strings;
 import sirius.tagliatelle.LocalRenderContext;
 import sirius.tagliatelle.RenderException;
+import sirius.tagliatelle.expression.ExpressionVisitor;
 
 /**
  * Created by aha on 10.05.17.
@@ -28,15 +28,18 @@ public abstract class Emitter {
         context.updatePosition(startOfBlock);
         try {
             emitToContext(context);
-        } catch (RenderException ex) {
-            throw ex;
         } catch (Exception ex) {
-            throw new RenderException(Strings.apply("%s (%s)%n%nRender Stack%n-----------%n%s%n",
-                                                    ex.getMessage(),
-                                                    ex.getClass().getName(),
-                                                    context), ex);
+            throw RenderException.create(context, ex);
         }
     }
 
     protected abstract void emitToContext(LocalRenderContext context) throws Exception;
+
+    public abstract Emitter copy();
+
+    public abstract Emitter reduce();
+
+    public abstract Emitter visit(EmitterVisitor visitor);
+
+    public abstract void visitExpressions(ExpressionVisitor visitor);
 }

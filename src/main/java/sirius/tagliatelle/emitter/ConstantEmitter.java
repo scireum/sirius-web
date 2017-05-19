@@ -11,6 +11,7 @@ package sirius.tagliatelle.emitter;
 import com.google.common.base.Charsets;
 import parsii.tokenizer.Position;
 import sirius.tagliatelle.LocalRenderContext;
+import sirius.tagliatelle.expression.ExpressionVisitor;
 
 /**
  * Created by aha on 10.05.17.
@@ -24,6 +25,26 @@ public class ConstantEmitter extends Emitter {
 
     public ConstantEmitter(Position startOfBlock) {
         super(startOfBlock);
+    }
+
+    @Override
+    public Emitter copy() {
+        return this;
+    }
+
+    @Override
+    public Emitter reduce() {
+        return this;
+    }
+
+    @Override
+    public Emitter visit(EmitterVisitor visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public void visitExpressions(ExpressionVisitor visitor) {
+
     }
 
     public void append(String stringToAppend) {

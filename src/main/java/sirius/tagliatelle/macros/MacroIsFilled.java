@@ -21,6 +21,7 @@ import java.util.List;
  */
 @Register
 public class MacroIsFilled implements Macro {
+
     @Override
     public Class<?> getType() {
         return boolean.class;
@@ -30,6 +31,11 @@ public class MacroIsFilled implements Macro {
     public void verifyArguments(List<Expression> args) {
 //if (args.size() != 1 || x)
         //TODO
+    }
+
+    @Override
+    public boolean isConstant() {
+        return true;
     }
 
     @Override

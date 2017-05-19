@@ -45,13 +45,16 @@ public class Parser extends InputProcessor {
     }
 
     public Expression parse(boolean skipWhitespaces) {
-        return parseExpression(skipWhitespaces);
+        return parseExpression(skipWhitespaces).reduce();
     }
 
     private Expression parseExpression(boolean skipWhitespaces) {
         boolean oldSkipWhitespaces = canSkipWhitespace;
         canSkipWhitespace = skipWhitespaces;
         try {
+            if (!skipWhitespaces && reader.current().is('(')) {
+                return atom();
+            }
             return disjunction();
         } finally {
             skipUnexpectedWhitespace();
@@ -210,12 +213,13 @@ public class Parser extends InputProcessor {
         if (!isAtIdentifier()) {
             context.error(reader.current(), "Expected a method name.");
         }
+        Char position = reader.current();
         String methodName = readIdentifier();
         skipUnexpectedWhitespace();
         consumeExpectedCharacter('(');
         MethodCall call = new MethodCall(self);
         call.setParameters(parseParameterList());
-        call.bindToMethod(methodName);
+        call.bindToMethod(position, context, methodName);
         consumeExpectedCharacter(')');
 
         return call;

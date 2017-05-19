@@ -24,6 +24,23 @@ public abstract class BooleanOperation extends Expression {
         //TODO ensure boolean
     }
 
+    @Override
+    public Expression visit(ExpressionVisitor visitor) {
+        this.leftExpression = visitor.visit(leftExpression);
+        this.rightExpression = visitor.visit(rightExpression);
+
+        return visitor.visit(this);
+    }
+
+    @Override
+    public Expression reduce() {
+        this.leftExpression = leftExpression.reduce();
+        this.rightExpression = rightExpression.reduce();
+
+        return this;
+    }
+
+
     protected boolean eval(Expression expr, LocalRenderContext ctx) {
         return (boolean)expr.eval(ctx);
     }

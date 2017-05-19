@@ -66,7 +66,7 @@ public class HelpDispatcher implements WebDispatcher {
         } else {
             // Render help template...
             ctx.setAttribute("helpSystemHomeURI", helpSystemHomeURI);
-            ctx.respondWith().cached().nlsTemplate(uri);
+            ctx.respondWith().cached().template(uri);
         }
         ctx.enableTiming("/help/");
         return true;

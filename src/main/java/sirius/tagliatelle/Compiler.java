@@ -21,6 +21,7 @@ import sirius.tagliatelle.emitter.ExpressionEmitter;
 import sirius.tagliatelle.expression.ConstantNull;
 import sirius.tagliatelle.expression.ConstantString;
 import sirius.tagliatelle.expression.Expression;
+import sirius.tagliatelle.tags.DummyTagHandler;
 import sirius.tagliatelle.tags.TagHandler;
 
 import java.io.IOException;
@@ -41,17 +42,17 @@ public class Compiler extends InputProcessor {
         this.input = input;
     }
 
-    public void compile() throws CompileException {
+    public List<CompileError> compile() throws CompileException {
         if (reader == null) {
             throw new IllegalArgumentException("Reader is null - please do not re-use a Compiler instance.");
         }
 
-        context.getTemplate().emitter = parseBlock(null, null);
+        context.getTemplate().emitter = parseBlock(null, null).reduce();
         reader = null;
 
+        List<CompileError> compileErrors = new ArrayList<>();
         if (context.hasErrors() || context.hasWarnings()) {
             List<String> lines = getInputAsLines();
-            List<CompileError> compileErrors = new ArrayList<>();
             for (ParseError error : context.getErrors()) {
                 if (error.getPosition().getLine() >= 1 && error.getPosition().getLine() <= lines.size()) {
                     compileErrors.add(new CompileError(error, lines.get(error.getPosition().getLine() - 1)));
@@ -59,8 +60,12 @@ public class Compiler extends InputProcessor {
                     compileErrors.add(new CompileError(error, null));
                 }
             }
-            throw CompileException.create(compileErrors);
+            if (context.hasErrors()) {
+                throw CompileException.create(context.getTemplate(), compileErrors);
+            }
         }
+
+        return compileErrors;
     }
 
     private List<String> getInputAsLines() {
@@ -81,8 +86,13 @@ public class Compiler extends InputProcessor {
         while (!reader.current().isEndOfInput()) {
             staticText.append(consumeStaticBlock());
 
-            if ("}".equals(waitFor) && reader.current().is('}')) {
-                return block;
+            if (reader.current().is('}')) {
+                if ("}".equals(waitFor)) {
+                    return block;
+                } else {
+                    staticText.append(reader.consume().getStringValue());
+                    continue;
+                }
             }
 
             if (reader.current().is('<')) {
@@ -99,14 +109,24 @@ public class Compiler extends InputProcessor {
 
                 reader.consume();
                 String tagName = parseName();
-                TagHandler handler = context.findTagHandler(tagName);
-                if (handler != null) {
-                    handleTag(parentHandler, handler, tagName, block);
-                } else {
-                    staticText.append("<");
-                    staticText.append(tagName);
-                    continue;
+                try {
+                    TagHandler handler = context.findTagHandler(tagName);
+                    if (handler != null) {
+                        handleTag(parentHandler, handler, tagName, block);
+                        if (!reader.current().isEndOfInput()) {
+                            staticText = new ConstantEmitter(reader.current());
+                            block.addChild(staticText);
+                        }
+                        continue;
+                    }
+                } catch (CompileException e) {
+                    context.error(reader.current(), "Error compiling referenced tag: %s%n%s", tagName, e.getMessage());
+                    handleTag(parentHandler, new DummyTagHandler(), tagName, block);
                 }
+
+                staticText.append("<");
+                staticText.append(tagName);
+                continue;
             }
 
             if (reader.current().is('@')) {

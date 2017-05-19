@@ -13,6 +13,7 @@ import sirius.tagliatelle.LocalRenderContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by aha on 10.05.17.
@@ -27,6 +28,59 @@ public class ConcatExpression extends Expression {
 
     public void add(Expression expr) {
         stringExpressions.add(expr);
+    }
+
+    @Override
+    public Expression copy() {
+        ConcatExpression copy = new ConcatExpression();
+        for (Expression expr : stringExpressions) {
+            copy.stringExpressions.add(expr.copy());
+        }
+        return copy;
+    }
+
+    @Override
+    public Expression visit(ExpressionVisitor visitor) {
+        for (int i = 0; i < stringExpressions.size(); i++) {
+            stringExpressions.set(i, visitor.visit(stringExpressions.get(i)));
+        }
+        return visitor.visit(this);
+    }
+
+    @Override
+    public Expression reduce() {
+        StringBuilder sb = null;
+        List<Expression> expressions = stringExpressions.stream().map(Expression::reduce).collect(Collectors.toList());
+        stringExpressions.clear();
+        for (Expression expression : expressions) {
+            if (expression.isConstant()) {
+                if (sb == null) {
+                    sb = new StringBuilder();
+                }
+                sb.append(expression.eval(null));
+            } else {
+                if (sb != null) {
+                    stringExpressions.add(new ConstantString(sb.toString()));
+                    sb = null;
+                }
+                stringExpressions.add(expression);
+            }
+        }
+
+        if (sb != null) {
+            if (stringExpressions.isEmpty()) {
+                return new ConstantString(sb.toString());
+            }
+
+            stringExpressions.add(new ConstantString(sb.toString()));
+        }
+
+        return this;
+    }
+
+    @Override
+    public boolean isConstant() {
+        return false;
     }
 
     @Override

@@ -8,46 +8,53 @@
 
 package sirius.tagliatelle;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.Optional;
 
 /**
  * Created by aha on 16.05.17.
  */
-class GlobalRenderContext {
-    private Map<String, Template> templateCache;
-    private RenderStack stack = new RenderStack();
+public abstract class GlobalRenderContext {
+    protected Map<String, Template> templateCache;
+    protected RenderStack stack = new RenderStack();
     protected List<Object> globals;
     protected Engine engine;
-    protected Consumer<String> stringConsumer;
-    protected Consumer<byte[]> byteConsumer;
 
-    protected GlobalRenderContext(Engine engine, Consumer<String> stringConsumer, Consumer<byte[]> byteConsumer) {
-        this.stringConsumer = stringConsumer;
-        this.byteConsumer = byteConsumer;
+    protected GlobalRenderContext(Engine engine) {
         this.engine = engine;
         this.globals = engine.getEnvironment();
     }
 
-    public Template resolve(String templateName) throws CompileException {
+    public Optional<Template> resolve(String templateName) throws CompileException {
         if (templateCache != null) {
             Template result = templateCache.get(templateName);
             if (result != null) {
-                return result;
+                return Optional.of(result);
             }
         }
 
-        Template result = engine.resolve(templateName);
+        Optional<Template> result = engine.resolve(templateName);
+        if (!result.isPresent()) {
+            return result;
+        }
+
         if (templateCache == null) {
             templateCache = new HashMap<>();
         }
 
-        templateCache.put(templateName, result);
+        templateCache.put(templateName, result.get());
 
         return result;
     }
+
+    protected abstract boolean isAcceptingBytes();
+
+    protected abstract void outputString(String string) throws IOException;
+
+    protected abstract void outputBytes(byte[] bytes) throws RenderException, IOException;
 
     public LocalRenderContext createContext(Template template) {
         return new LocalRenderContext(template, this, stack.alloc(template.getNumberOfArguments()));

@@ -38,7 +38,7 @@ public class CompileError {
             sb.append("\n   ");
             sb.append(line);
             sb.append("\n   ");
-            for (int i = 0; i < error.getPosition().getPos() - 1; i++) {
+            for (int i = 0; i < error.getPosition().getPos() - 2; i++) {
                 sb.append(" ");
             }
             sb.append("^\n");

@@ -10,6 +10,7 @@ package sirius.tagliatelle.emitter;
 
 import parsii.tokenizer.Position;
 import sirius.tagliatelle.LocalRenderContext;
+import sirius.tagliatelle.expression.ExpressionVisitor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,15 +28,76 @@ public class CompositeEmitter extends Emitter {
 
     @Override
     protected void emitToContext(LocalRenderContext context) throws Exception {
-        if (children != null) {
-            for (Emitter expr : children) {
-                expr.emit(context);
-            }
+        for (Emitter expr : children) {
+            expr.emit(context);
         }
     }
 
     public void addChild(Emitter child) {
         children.add(child);
+    }
+
+    @Override
+    public Emitter copy() {
+        CompositeEmitter copy = new CompositeEmitter(startOfBlock);
+        for (Emitter expr : children) {
+            copy.children.add(expr.copy());
+        }
+
+        return copy;
+    }
+
+    @Override
+    public Emitter reduce() {
+        CompositeEmitter copy = new CompositeEmitter(startOfBlock);
+        ConstantEmitter lastChild = null;
+        for (Emitter expr : children) {
+            expr = expr.reduce();
+            if (expr instanceof ConstantEmitter) {
+                if (lastChild != null) {
+                    lastChild.append(expr.toString());
+                } else {
+                    copy.children.add(expr);
+                    lastChild = (ConstantEmitter) expr;
+                }
+            } else if (expr instanceof CompositeEmitter) {
+                for (Emitter inner : ((CompositeEmitter) expr).children) {
+                    if (inner instanceof ConstantEmitter) {
+                        if (lastChild != null) {
+                            lastChild.append(inner.toString());
+                        } else {
+                            copy.children.add(inner);
+                            lastChild = (ConstantEmitter) inner;
+                        }
+                    } else {
+                        copy.children.add(inner);
+                        lastChild = null;
+                    }
+                }
+            } else {
+                copy.children.add(expr);
+                lastChild = null;
+            }
+        }
+
+        return copy;
+//TODO
+    }
+
+    @Override
+    public Emitter visit(EmitterVisitor visitor) {
+        for (int i = 0; i < children.size(); i++) {
+            children.set(i, children.get(i).visit(visitor));
+        }
+
+        return visitor.visit(this);
+    }
+
+    @Override
+    public void visitExpressions(ExpressionVisitor visitor) {
+        for (Emitter expr : children) {
+            expr.visitExpressions(visitor);
+        }
     }
 
     @Override

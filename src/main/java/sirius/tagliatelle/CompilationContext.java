@@ -16,6 +16,7 @@ import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
 import sirius.tagliatelle.tags.InvokeTagHandler;
 import sirius.tagliatelle.tags.TagHandler;
+import sirius.tagliatelle.tags.TagHandlerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -141,25 +142,20 @@ public class CompilationContext {
         return sb.toString();
     }
 
-    public TagHandler findTagHandler(String tagName) {
+    public TagHandler findTagHandler(String tagName) throws CompileException {
         if (!tagName.contains(":")) {
             return null;
         }
 
         if (tagName.startsWith("i:")) {
-            TagHandler handler = ctx.getPart(tagName, TagHandler.class);
-            if (handler != null) {
-                return handler;
+            TagHandlerFactory factory = ctx.getPart(tagName, TagHandlerFactory.class);
+            if (factory != null) {
+                return factory.createHandler();
             }
         }
 
-        try {
-            Template childTemplate = engine.resolveTag(tagName);
-            return new InvokeTagHandler(childTemplate);
-        } catch (CompileException e) {
-            //TODO
-            return null;
-        }
+
+        return engine.resolveTag(tagName).map(InvokeTagHandler::new).orElse(null);
     }
 
     public Template getTemplate() {

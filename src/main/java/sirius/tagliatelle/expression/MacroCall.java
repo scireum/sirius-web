@@ -29,6 +29,64 @@ public class MacroCall extends Expression {
     private static GlobalContext ctx;
 
     @Override
+    public Expression visit(ExpressionVisitor visitor) {
+        for (int i = 0; i < parameterExpressions.length; i++) {
+            parameterExpressions[i] = visitor.visit(parameterExpressions[i]);
+        }
+
+        return visitor.visit(this);
+    }
+
+    @Override
+    public Expression reduce() {
+        boolean allConstant = true;
+        for (int i = 0; i < parameterExpressions.length; i++) {
+            parameterExpressions[i] = parameterExpressions[i].reduce();
+            if (!parameterExpressions[i].isConstant()) {
+                allConstant = false;
+            }
+        }
+
+        if (allConstant && macro.isConstant()) {
+            if (boolean.class.equals(macro.getType())) {
+                if ((boolean) macro.eval(null, parameterExpressions)) {
+                    return ConstantBoolean.TRUE;
+                } else {
+                    return ConstantBoolean.FALSE;
+                }
+            }
+
+            if (String.class.equals(macro.getType())) {
+                Object result = macro.eval(null, parameterExpressions);
+                if (result == null) {
+                    return ConstantNull.NULL;
+                }
+
+                return new ConstantString(result.toString());
+            }
+        }
+
+        return this;
+    }
+
+    @Override
+    public boolean isConstant() {
+        return false;
+    }
+
+    @Override
+    public Expression copy() {
+        MacroCall copy = new MacroCall();
+        copy.macro = macro;
+        copy.parameterExpressions = new Expression[parameterExpressions.length];
+        for (int i = 0; i < parameterExpressions.length; i++) {
+            copy.parameterExpressions[i] = parameterExpressions[i].copy();
+        }
+
+        return copy;
+    }
+
+    @Override
     public Object eval(LocalRenderContext ctx) {
         return macro.eval(ctx, parameterExpressions);
     }

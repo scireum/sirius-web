@@ -8,6 +8,7 @@
 
 package sirius.tagliatelle.tags;
 
+import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.tagliatelle.TagContext;
 import sirius.tagliatelle.TemplateArgument;
@@ -15,6 +16,7 @@ import sirius.tagliatelle.expression.ConstantNull;
 import sirius.tagliatelle.expression.ConstantString;
 import sirius.tagliatelle.expression.Expression;
 
+import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +25,21 @@ import java.util.Map;
  * Created by aha on 12.05.17.
  */
 public class TagArg extends TagHandler {
+
+    @Register
+    public static class Factory implements TagHandlerFactory {
+
+        @Nonnull
+        @Override
+        public String getName() {
+            return "i:arg";
+        }
+
+        @Override
+        public TagHandler createHandler() {
+            return new TagArg();
+        }
+    }
 
     private static final Map<String, Class<?>> builtInClasses;
 

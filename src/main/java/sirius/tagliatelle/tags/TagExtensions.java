@@ -8,16 +8,18 @@
 
 package sirius.tagliatelle.tags;
 
+import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
+import sirius.tagliatelle.Engine;
 import sirius.tagliatelle.TagContext;
-import sirius.tagliatelle.emitter.BlockEmitter;
+import sirius.web.templates.Templates;
 
 import javax.annotation.Nonnull;
 
 /**
  * Created by aha on 12.05.17.
  */
-public class TagRender extends TagHandler {
+public class TagExtensions extends TagHandler {
 
     @Register
     public static class Factory implements TagHandlerFactory {
@@ -25,23 +27,39 @@ public class TagRender extends TagHandler {
         @Nonnull
         @Override
         public String getName() {
-            return "i:render";
+            return "i:extensions";
         }
 
         @Override
         public TagHandler createHandler() {
-            return new TagRender();
+            return new TagExtensions();
         }
     }
 
+    @Part
+    private static Templates templates;
+
+    @Part
+    private static Engine engine;
+
     @Override
     public void apply(TagContext context) {
-        context.getBlock().addChild(new BlockEmitter(context.getStartOfTag(), getConstantAttribute("name").asString(), getBlock("body")));
+        String name =getConstantAttribute("name").asString();
+        for(String extension : templates.getExtensions(name)) {
+//            engine.resolve(extension)
+        }
+//        context.getContext()
+//               .getTemplate()
+//               .addPragma(, getConstantAttribute("value").asString());
     }
 
     @Override
     public Class<?> getExpectedAttributeType(String name) {
         if ("name".equals(name)) {
+            return String.class;
+        }
+
+        if ("value".equals(name)) {
             return String.class;
         }
 

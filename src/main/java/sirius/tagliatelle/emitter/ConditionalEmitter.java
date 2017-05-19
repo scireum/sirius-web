@@ -10,7 +10,9 @@ package sirius.tagliatelle.emitter;
 
 import parsii.tokenizer.Position;
 import sirius.tagliatelle.LocalRenderContext;
+import sirius.tagliatelle.expression.ConstantBoolean;
 import sirius.tagliatelle.expression.Expression;
+import sirius.tagliatelle.expression.ExpressionVisitor;
 
 /**
  * Created by aha on 10.05.17.
@@ -57,6 +59,46 @@ public class ConditionalEmitter extends Emitter {
 
     public void setWhenFalse(Emitter whenFalse) {
         this.whenFalse = whenFalse;
+    }
+
+    @Override
+    public Emitter copy() {
+        ConditionalEmitter copy = new ConditionalEmitter(startOfBlock);
+        copy.conditionExpression = conditionExpression.copy();
+        copy.whenTrue = whenTrue.copy();
+        copy.whenFalse = whenFalse.copy();
+
+        return copy;
+    }
+
+    @Override
+    public Emitter reduce() {
+        this.conditionExpression = conditionExpression.reduce();
+        this.whenTrue = whenTrue.reduce();
+        this.whenFalse = whenFalse.reduce();
+
+        if (ConstantBoolean.TRUE.equals(conditionExpression)) {
+            return whenTrue;
+        }
+
+        if (ConstantBoolean.FALSE.equals(conditionExpression)) {
+            return whenFalse;
+        }
+        return this;
+    }
+
+    @Override
+    public Emitter visit(EmitterVisitor visitor) {
+        this.whenTrue = whenTrue.visit(visitor);
+        this.whenFalse = whenFalse.visit(visitor);
+        return visitor.visit(this);
+    }
+
+    @Override
+    public void visitExpressions(ExpressionVisitor visitor) {
+        conditionExpression = conditionExpression.visit(visitor);
+        whenTrue.visitExpressions(visitor);
+        whenFalse.visitExpressions(visitor);
     }
 
     @Override

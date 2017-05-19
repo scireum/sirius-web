@@ -1,0 +1,8 @@
+<i:arg type="String" name="titleKey" default=""/>
+
+
+@if (isFilled(titleKey)) {
+<h1 class="legend">@i18n(titleKey)</h1>
+} else {
+<h1 class="legend"><i:render name="body" /></h1>
+}

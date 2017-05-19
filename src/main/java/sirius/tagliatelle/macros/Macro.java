@@ -25,4 +25,5 @@ public interface Macro extends Named {
 
     Object eval(LocalRenderContext ctx, Expression[] args);
 
+    boolean isConstant();
 }

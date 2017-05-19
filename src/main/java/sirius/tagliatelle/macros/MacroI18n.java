@@ -33,6 +33,11 @@ public class MacroI18n implements Macro {
     }
 
     @Override
+    public boolean isConstant() {
+        return false;
+    }
+
+    @Override
     public Object eval(LocalRenderContext ctx, Expression[] args) {
         return NLS.get((String) args[0].eval(ctx));
     }

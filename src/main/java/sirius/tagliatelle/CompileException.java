@@ -17,10 +17,12 @@ public class CompileException extends Exception {
 
     private static final long serialVersionUID = -8697032594602395681L;
 
+    private final Template template;
     private final transient List<CompileError> errors;
 
-    private CompileException(String message, List<CompileError> errors) {
+    private CompileException(String message, Template template, List<CompileError> errors) {
         super(message);
+        this.template = template;
         this.errors = errors;
     }
 
@@ -30,18 +32,17 @@ public class CompileException extends Exception {
      * @param errors the errors which occurred while processing the user input
      * @return a new ParseException which can be thrown
      */
-    public static CompileException create(List<CompileError> errors) {
-        if (errors.size() == 1) {
-            return new CompileException(errors.get(0).getError().getMessage(), errors);
-        } else if (errors.size() > 1) {
-            return new CompileException(String.format("%d errors occured. First: %s",
-                                                      errors.size(),
-                                                      errors.get(0).getError().getMessage()), errors);
-        } else {
-            return new CompileException("An unknown error occured", errors);
-        }
-    }
+    public static CompileException create(Template template, List<CompileError> errors) {
+        StringBuilder message = new StringBuilder();
+        message.append("Cannot compile: ")
+               .append(template.getName())
+               .append(" (")
+               .append(template.getResource().getUrl())
+               .append("):\n");
+        errors.forEach(message::append);
 
+        return new CompileException(message.toString(), template, errors);
+    }
 
     /**
      * Provides a list of all errors and warnings which occurred
@@ -52,16 +53,13 @@ public class CompileException extends Exception {
         return errors;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (CompileError error : errors) {
-            if (sb.length() > 0) {
-                sb.append("\n");
-            }
-            sb.append(error);
-        }
-
-        return sb.toString();
+    /**
+     * Returns the template for which the compilation failed.
+     *
+     * @return the template which was compiled
+     */
+    public Template getTemplate() {
+        return template;
     }
 }
+

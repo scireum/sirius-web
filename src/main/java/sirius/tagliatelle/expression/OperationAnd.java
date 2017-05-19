@@ -20,6 +20,30 @@ public class OperationAnd extends BooleanOperation {
     }
 
     @Override
+    public Expression reduce() {
+        super.reduce();
+
+        if (ConstantBoolean.TRUE.equals(leftExpression)) {
+            return rightExpression;
+        }
+        if (ConstantBoolean.FALSE.equals(leftExpression)) {
+            return ConstantBoolean.FALSE;
+        }
+
+        return this;
+    }
+
+    @Override
+    public boolean isConstant() {
+        return false;
+    }
+
+    @Override
+    public Expression copy() {
+        return new OperationAnd(leftExpression.copy(), rightExpression.copy());
+    }
+
+    @Override
     public Object eval(LocalRenderContext ctx) {
         return eval(leftExpression, ctx) && eval(rightExpression, ctx);
     }

@@ -10,6 +10,7 @@ package sirius.tagliatelle.emitter;
 
 import parsii.tokenizer.Position;
 import sirius.tagliatelle.LocalRenderContext;
+import sirius.tagliatelle.expression.ExpressionVisitor;
 
 /**
  * Created by aha on 16.05.17.
@@ -17,14 +18,57 @@ import sirius.tagliatelle.LocalRenderContext;
 public class BlockEmitter extends Emitter {
 
     private String name;
+    private Emitter alternative;
 
-    public BlockEmitter(Position startOfBlock, String name) {
+    public BlockEmitter(Position startOfBlock, String name, Emitter alternative) {
         super(startOfBlock);
         this.name = name;
+        this.alternative = alternative;
     }
 
     @Override
     protected void emitToContext(LocalRenderContext context) throws Exception {
-        context.emitBlock(name);
+        if (!context.emitBlock(name)) {
+            if (alternative != null) {
+                alternative.emit(context);
+            }
+        }
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public Emitter copy() {
+        return new BlockEmitter(startOfBlock, name, alternative == null ? null : alternative.copy());
+    }
+
+    @Override
+    public Emitter reduce() {
+        if (alternative != null) {
+            alternative.reduce();
+        }
+        return this;
+    }
+
+    @Override
+    public Emitter visit(EmitterVisitor visitor) {
+        if (alternative != null) {
+            this.alternative = visitor.visit(alternative);
+        }
+        return visitor.visit(this);
+    }
+
+
+    @Override
+    public void visitExpressions(ExpressionVisitor visitor) {
+        if (alternative != null) {
+            alternative.visitExpressions(visitor);
+        }
+    }
+
+    public Emitter getAlternative() {
+        return alternative;
     }
 }

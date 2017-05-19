@@ -9,12 +9,30 @@
 package sirius.tagliatelle.tags;
 
 import sirius.kernel.commons.Strings;
+import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.TagContext;
+
+import javax.annotation.Nonnull;
 
 /**
  * Created by aha on 12.05.17.
  */
 public class TagBlock extends TagHandler {
+
+    @Register
+    public static class Factory implements TagHandlerFactory {
+
+        @Nonnull
+        @Override
+        public String getName() {
+            return "i:block";
+        }
+
+        @Override
+        public TagHandler createHandler() {
+            return new TagBlock();
+        }
+    }
 
     @Override
     public void apply(TagContext context) {

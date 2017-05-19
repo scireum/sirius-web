@@ -8,7 +8,6 @@
 
 package sirius.tagliatelle;
 
-import com.google.common.base.Charsets;
 import sirius.kernel.Sirius;
 import sirius.kernel.cache.Cache;
 import sirius.kernel.cache.CacheManager;
@@ -23,13 +22,14 @@ import sirius.web.templates.Resource;
 import sirius.web.templates.Resources;
 import sirius.web.templates.Templates;
 
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 /**
  * Created by aha on 15.05.17.
@@ -79,12 +79,12 @@ public class Engine {
         return new CompilationContext(this, template);
     }
 
-    public GlobalRenderContext createRenderContext(Consumer<String> consumer) {
-        return new GlobalRenderContext(this, consumer, null);
+    public StringRenderContext createRenderContext() {
+        return new StringRenderContext(this);
     }
 
-    public GlobalRenderContext createRenderContextForBytes(Consumer<byte[]> consumer) {
-        return new GlobalRenderContext(this, string -> consumer.accept(string.getBytes(Charsets.UTF_8)), consumer);
+    public ByteRenderContext createRenderContext(OutputStream out) {
+        return new ByteRenderContext(this, out);
     }
 
     private void verifyGlobals(List<Object> result) {
@@ -105,15 +105,21 @@ public class Engine {
                                        global.getSecond());
                 }
             }
+            index++;
         }
     }
 
-    public Template resolve(String path) throws CompileException {
-        //TODO exception
-        Resource resource = resources.resolve(path).orElseThrow(() -> CompileException.create(null));
+    public Optional<Template> resolve(String path) throws CompileException {
+        Optional<Resource> optionalResource = resources.resolve(path);
+        if (!optionalResource.isPresent()) {
+            return Optional.empty();
+        }
+
+        Resource resource = optionalResource.get();
+
         Template result = compiledTemplates.get(resource);
         if (result != null && result.getCompilationTimestamp() >= resource.getLastModified()) {
-            return result;
+            return Optional.of(result);
         }
 
         CompilationContext compilationContext = createCompilationContext(path, resource);
@@ -121,16 +127,10 @@ public class Engine {
         new Compiler(compilationContext, resource.getContentAsString()).compile();
         compiledTemplates.put(resource, compilationContext.getTemplate());
 
-        return compilationContext.getTemplate();
+        return Optional.of(compilationContext.getTemplate());
     }
 
-    public Template compile(String name, String expression) throws CompileException {
-        CompilationContext compilationContext = createCompilationContext(name, null);
-        new Compiler(compilationContext, expression).compile();
-        return compilationContext.getTemplate();
-    }
-
-    public Template resolveTag(String qualifiedTagName) throws CompileException {
+    public Optional<Template> resolveTag(String qualifiedTagName) throws CompileException {
         Tuple<String, String> tagName = Strings.split(qualifiedTagName, ":");
         return resolve("/taglib/" + tagName.getFirst() + "/" + tagName.getSecond() + ".html.pasta");
     }

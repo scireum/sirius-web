@@ -28,11 +28,50 @@ public class OperationEquals extends Expression {
     }
 
     @Override
+    public Expression visit(ExpressionVisitor visitor) {
+        this.leftExpression = visitor.visit(leftExpression);
+        this.rightExpression = visitor.visit(rightExpression);
+        return visitor.visit(this);
+    }
+
+    @Override
+    public Expression reduce() {
+        this.leftExpression = leftExpression.reduce();
+        this.rightExpression = rightExpression.reduce();
+
+        if (leftExpression.isConstant() && rightExpression.isConstant()) {
+            boolean equal = Objects.equals(leftExpression.eval(null), rightExpression.eval(null));
+
+            if (invert) {
+                equal = !equal;
+            }
+
+            if (equal) {
+                return ConstantBoolean.TRUE;
+            } else {
+                return ConstantBoolean.FALSE;
+            }
+        }
+
+        return this;
+    }
+
+    @Override
+    public boolean isConstant() {
+        return false;
+    }
+
+    @Override
+    public Expression copy() {
+        return new OperationEquals(leftExpression.copy(), rightExpression.copy(), invert);
+    }
+
+    @Override
     public Object eval(LocalRenderContext ctx) {
         if (invert) {
-            return Objects.equals(leftExpression.eval(ctx), rightExpression.eval(ctx));
-        } else {
             return !Objects.equals(leftExpression.eval(ctx), rightExpression.eval(ctx));
+        } else {
+            return Objects.equals(leftExpression.eval(ctx), rightExpression.eval(ctx));
         }
     }
 

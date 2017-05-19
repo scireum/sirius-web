@@ -17,6 +17,13 @@ public abstract class Expression {
 
     public abstract Object eval(LocalRenderContext ctx);
 
-    public abstract Class<?> getType();
+    public abstract Expression visit(ExpressionVisitor visitor);
 
+    public abstract Expression reduce();
+
+    public abstract boolean isConstant();
+
+    public abstract Expression copy();
+
+    public abstract Class<?> getType();
 }

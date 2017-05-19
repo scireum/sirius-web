@@ -11,7 +11,9 @@ package sirius.tagliatelle;
 import parsii.tokenizer.Position;
 import sirius.tagliatelle.emitter.Emitter;
 
+import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Created by aha on 10.05.17.
@@ -51,18 +53,17 @@ public class LocalRenderContext {
         globalContext.release(this);
     }
 
-    public void output(String content) {
-        globalContext.stringConsumer.accept(content);
+    public void output(String content) throws IOException {
+        globalContext.outputString(content);
     }
 
     public boolean isAcceptingBytes() {
-        return globalContext.byteConsumer != null;
+        return globalContext.isAcceptingBytes();
     }
 
-    public void output(byte[] contentAsBytes) {
-        globalContext.byteConsumer.accept(contentAsBytes);
+    public void output(byte[] contentAsBytes) throws IOException, RenderException {
+        globalContext.outputBytes(contentAsBytes);
     }
-
 
     public void setLocal(int index, Object variable) {
         locals.writeLocal(index, variable);
@@ -80,21 +81,22 @@ public class LocalRenderContext {
         return locals;
     }
 
-    public Template resolve(String templateName) throws CompileException {
+    public Optional<Template> resolve(String templateName) throws CompileException {
         return globalContext.resolve(templateName);
     }
 
-    public void emitBlock(String name) throws RenderException {
+    public boolean emitBlock(String name) throws RenderException {
         if (blocks == null) {
-            return;
+            return false;
         }
         Emitter emitter = blocks.get(name);
         if (emitter == null) {
-            return;
+            return false;
         }
 
         LocalRenderContext subContext = createClosureContext(parent);
         emitter.emit(subContext);
+        return true;
     }
 
     public void setBlocks(Map<String, Emitter> blocks) {

@@ -26,6 +26,35 @@ public class IntOperation extends Expression {
     }
 
     @Override
+    public Expression visit(ExpressionVisitor visitor) {
+        this.leftExpression = visitor.visit(leftExpression);
+        this.rightExpression = visitor.visit(rightExpression);
+        return visitor.visit(this);
+    }
+
+    @Override
+    public Expression copy() {
+        return new IntOperation(operator, leftExpression.copy(), rightExpression.copy());
+    }
+
+    @Override
+    public Expression reduce() {
+        this.leftExpression = leftExpression.reduce();
+        this.rightExpression = rightExpression.reduce();
+
+        if (leftExpression instanceof ConstantInt && rightExpression instanceof ConstantInt) {
+            return new ConstantInt((int) eval(null));
+        }
+
+        return this;
+    }
+
+    @Override
+    public boolean isConstant() {
+        return false;
+    }
+
+    @Override
     public Object eval(LocalRenderContext ctx) {
         int left = (int) leftExpression.eval(ctx);
         int right = (int) rightExpression.eval(ctx);

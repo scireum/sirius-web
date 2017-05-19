@@ -24,6 +24,26 @@ public class ConstantString extends Expression {
     }
 
     @Override
+    public Expression visit(ExpressionVisitor visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public Expression reduce() {
+        return this;
+    }
+
+    @Override
+    public boolean isConstant() {
+        return true;
+    }
+
+    @Override
+    public Expression copy() {
+        return this;
+    }
+
+    @Override
     public Object eval(LocalRenderContext ctx) {
         return value;
     }

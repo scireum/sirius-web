@@ -8,7 +8,9 @@
 
 package sirius.tagliatelle.expression;
 
+import parsii.tokenizer.Char;
 import sirius.kernel.health.Exceptions;
+import sirius.tagliatelle.CompilationContext;
 import sirius.tagliatelle.LocalRenderContext;
 
 import java.lang.reflect.InvocationTargetException;
@@ -26,6 +28,45 @@ public class MethodCall extends Expression {
 
     public MethodCall(Expression self) {
         this.selfExpression = self;
+    }
+
+    @Override
+    public Expression visit(ExpressionVisitor visitor) {
+        this.selfExpression = visitor.visit(selfExpression);
+
+        for (int i = 0; i < parameterExpressions.length; i++) {
+            parameterExpressions[i] = visitor.visit(parameterExpressions[i]);
+        }
+
+        return visitor.visit(this);
+    }
+
+    @Override
+    public Expression reduce() {
+        this.selfExpression = selfExpression.reduce();
+
+        for (int i = 0; i < parameterExpressions.length; i++) {
+            parameterExpressions[i] = parameterExpressions[i].reduce();
+        }
+
+        return this;
+    }
+
+    @Override
+    public Expression copy() {
+        MethodCall copy = new MethodCall(selfExpression.copy());
+        copy.method = method;
+        copy.parameterExpressions = new Expression[parameterExpressions.length];
+        for (int i = 0; i < parameterExpressions.length; i++) {
+            copy.parameterExpressions[i] = parameterExpressions[i].copy();
+        }
+
+        return copy;
+    }
+
+    @Override
+    public boolean isConstant() {
+        return false;
     }
 
     @Override
@@ -63,7 +104,7 @@ public class MethodCall extends Expression {
         }
     }
 
-    public void bindToMethod(String name) {
+    public void bindToMethod(Char position, CompilationContext context, String name) {
         try {
             if (parameterExpressions == null) {
                 this.method = selfExpression.getType().getMethod(name);
@@ -75,8 +116,7 @@ public class MethodCall extends Expression {
             }
             this.method = selfExpression.getType().getMethod(name, parameterTypes);
         } catch (NoSuchMethodException e) {
-            //TODO
-            throw Exceptions.handle(e);
+            context.error(position, "%s doesn't have a method '%s'", selfExpression.getType(), e.getMessage());
         }
     }
 

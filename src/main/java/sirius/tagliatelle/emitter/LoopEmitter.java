@@ -11,6 +11,7 @@ package sirius.tagliatelle.emitter;
 import parsii.tokenizer.Position;
 import sirius.tagliatelle.LocalRenderContext;
 import sirius.tagliatelle.expression.Expression;
+import sirius.tagliatelle.expression.ExpressionVisitor;
 
 /**
  * Created by aha on 10.05.17.
@@ -22,6 +23,34 @@ public class LoopEmitter extends Emitter {
 
     public LoopEmitter(Position startOfBlock) {
         super(startOfBlock);
+    }
+
+    @Override
+    public Emitter copy() {
+        LoopEmitter copy = new LoopEmitter(startOfBlock);
+        copy.iterableExpression = iterableExpression.copy();
+        copy.loop = loop.copy();
+
+        return copy;
+    }
+
+    @Override
+    public Emitter reduce() {
+        this.loop.reduce();
+
+        return this;
+    }
+
+    @Override
+    public Emitter visit(EmitterVisitor visitor) {
+        this.loop = visitor.visit(loop);
+        return visitor.visit(this);
+    }
+
+    @Override
+    public void visitExpressions(ExpressionVisitor visitor) {
+        this.iterableExpression = iterableExpression.visit(visitor);
+        this.loop.visitExpressions(visitor);
     }
 
     @Override

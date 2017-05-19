@@ -20,6 +20,35 @@ public class OperationOr extends BooleanOperation {
     }
 
     @Override
+    public Expression reduce() {
+        super.reduce();
+
+        if (ConstantBoolean.TRUE.equals(leftExpression)) {
+            return ConstantBoolean.TRUE;
+        }
+
+        if (ConstantBoolean.TRUE.equals(rightExpression)) {
+            return ConstantBoolean.TRUE;
+        }
+
+        if (ConstantBoolean.FALSE.equals(leftExpression) && ConstantBoolean.FALSE.equals(rightExpression)) {
+            return ConstantBoolean.FALSE;
+        }
+
+        return this;
+    }
+
+    @Override
+    public boolean isConstant() {
+        return false;
+    }
+
+    @Override
+    public Expression copy() {
+        return new OperationOr(leftExpression.copy(), rightExpression.copy());
+    }
+
+    @Override
     public Object eval(LocalRenderContext ctx) {
         return eval(leftExpression, ctx) || eval(rightExpression, ctx);
     }

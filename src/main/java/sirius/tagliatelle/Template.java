@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 /**
  * Created by aha on 10.05.17.
@@ -59,11 +58,19 @@ public class Template {
         return Value.of(pragmas.get(name));
     }
 
-    public void render(Consumer<String> output, Object... args) throws RenderException {
-        LocalRenderContext ctx = engine.createRenderContext(output).createContext(this);
-        applyArguments(ctx, args);
+    public String renderToString(Object... args) throws RenderException {
+        StringRenderContext ctx = engine.createRenderContext();
+        applyArguments(ctx.createContext(this), args);
 
         render(ctx);
+
+        return ctx.getContent();
+    }
+
+    public void render(GlobalRenderContext ctx, Object... args) throws RenderException {
+        LocalRenderContext context = ctx.createContext(this);
+        applyArguments(context, args);
+        renderWithContext(context);
     }
 
     public void applyArguments(LocalRenderContext ctx, Object[] args) {
@@ -73,9 +80,11 @@ public class Template {
             if (index < args.length) {
                 argumentValue = args[index];
             } else {
-                if (arg.getDefaultValue() == null) {
-                    //TODO warn / fail!
+                if (arg.getDefaultValue() != null) {
                     argumentValue = arg.getDefaultValue().eval(ctx);
+                } else {
+                    //TODO warn / fail!
+
                 }
             }
 
@@ -88,7 +97,7 @@ public class Template {
         }
     }
 
-    public void render(LocalRenderContext ctx) throws RenderException {
+    public void renderWithContext(LocalRenderContext ctx) throws RenderException {
         emitter.emit(ctx);
     }
 
@@ -119,5 +128,13 @@ public class Template {
         }
 
         return name + " (" + resource.getUrl() + ")";
+    }
+
+    public String getFilename() {
+        return getName().substring(0, getName().length() - 6);
+    }
+
+    public Emitter getEmitter() {
+        return emitter;
     }
 }
