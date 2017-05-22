@@ -126,8 +126,10 @@ public class Crunchlog {
          */
         @CheckReturnValue
         public LogBuilder withURIAndUserAgent(WebContext ctx) {
-            context.set("uri", ctx);
-            context.set("userAgent", ctx.getHeader(HttpHeaderNames.USER_AGENT));
+            if (ctx != null) {
+                context.set("uri", ctx);
+                context.set("userAgent", ctx.getHeader(HttpHeaderNames.USER_AGENT));
+            }
             return this;
         }
 
