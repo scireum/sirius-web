@@ -10,9 +10,11 @@ package sirius.web.crunchlog;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Context;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.web.http.WebContext;
 import sirius.web.security.UserContext;
@@ -84,11 +86,11 @@ public class Crunchlog {
         public LogBuilder withUser() {
             UserInfo user = UserContext.getCurrentUser();
             if (user.isLoggedIn()) {
-                this.context.set("user", user.getUserId());
-                this.context.set("tenant", user.getTenantId());
+                set("user", user.getUserId());
+                set("tenant", user.getTenantId());
             } else {
-                this.context.set("user", null);
-                this.context.set("tenant", null);
+                set("user", null);
+                set("tenant", null);
             }
 
             return this;
@@ -101,7 +103,7 @@ public class Crunchlog {
          */
         @CheckReturnValue
         public LogBuilder withScope() {
-            this.context.set("scope", UserContext.getCurrentScope().getScopeId());
+            set("scope", UserContext.getCurrentScope().getScopeId());
 
             return this;
         }
@@ -114,7 +116,7 @@ public class Crunchlog {
          */
         @CheckReturnValue
         public LogBuilder withURI(WebContext ctx) {
-            context.set("uri", ctx);
+            set("uri", ctx);
             return this;
         }
 
@@ -126,8 +128,10 @@ public class Crunchlog {
          */
         @CheckReturnValue
         public LogBuilder withURIAndUserAgent(WebContext ctx) {
-            context.set("uri", ctx);
-            context.set("userAgent", ctx.getHeader(HttpHeaderNames.USER_AGENT));
+            if (ctx != null) {
+                set("uri", ctx);
+                set("userAgent", ctx.getHeader(HttpHeaderNames.USER_AGENT));
+            }
             return this;
         }
 
@@ -140,6 +144,10 @@ public class Crunchlog {
          */
         @CheckReturnValue
         public LogBuilder set(String key, Object value) {
+           if (context == null) {
+               throw new IllegalArgumentException("LogBuilder of Crunchlog was already submitted.");
+           }
+
             context.set(key, value);
             return this;
         }
@@ -148,13 +156,46 @@ public class Crunchlog {
          * Submits the constructed entry to the crunchlog.
          */
         public void submit() {
+            if (context == null) {
+                throw new IllegalArgumentException("LogBuilder of Crunchlog was already submitted.");
+            }
+
             Crunchlog.this.submit(context);
+            this.context = null;
         }
     }
 
+    /**
+     * Creates a new builder to create a log message using fluid method calls.
+     * <p>
+     * Consider using {@link #safeLog(String, Callback)} to perform logging in a critical section.
+     *
+     * @param event the event name to log
+     * @return a builder to create and submit a log message
+     */
     @CheckReturnValue
     public LogBuilder log(String event) {
         return new LogBuilder(event);
+    }
+
+    /**
+     * Implements a safe way of logging to the crunchlog.
+     * <p>
+     * As the crunchlog might be involved in critical operations, where a failure during logging must to abort the
+     * actual operation, this method creates (<b>and submits</b>) a {@link LogBuilder} while surrounding all calls
+     * with a try / catch block, which logs all errors, but does not throw an exception.
+     *
+     * @param event the event to log
+     * @param log   the consumer to actually apply the logging
+     */
+    public void safeLog(String event, Callback<LogBuilder> log) {
+        LogBuilder builder = log(event);
+        try {
+            log.invoke(builder);
+            builder.submit();
+        } catch (Exception e) {
+            Exceptions.handle(LOG, e);
+        }
     }
 
     /**
