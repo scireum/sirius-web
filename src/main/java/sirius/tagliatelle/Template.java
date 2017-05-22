@@ -29,6 +29,7 @@ public class Template {
     protected List<TemplateArgument> arguments = new ArrayList<>();
     protected Map<String, String> pragmas;
     private long compilationTimestamp = System.currentTimeMillis();
+    private int stackDepth;
 
     @Part
     private static Engine engine;
@@ -105,10 +106,6 @@ public class Template {
         return compilationTimestamp;
     }
 
-    public int getNumberOfArguments() {
-        return arguments.size();
-    }
-
     public List<TemplateArgument> getArguments() {
         return arguments;
     }
@@ -136,5 +133,13 @@ public class Template {
 
     public Emitter getEmitter() {
         return emitter;
+    }
+
+    public void setStackDepth(int stackDepth) {
+        this.stackDepth = stackDepth;
+    }
+
+    public int getStackDepth() {
+        return stackDepth;
     }
 }

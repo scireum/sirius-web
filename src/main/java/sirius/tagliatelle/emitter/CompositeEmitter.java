@@ -20,7 +20,7 @@ import java.util.List;
  */
 public class CompositeEmitter extends Emitter {
 
-    private List<Emitter> children = new ArrayList<>();
+    protected List<Emitter> children = new ArrayList<>();
 
     public CompositeEmitter(Position startOfBlock) {
         super(startOfBlock);
@@ -78,6 +78,10 @@ public class CompositeEmitter extends Emitter {
                 copy.children.add(expr);
                 lastChild = null;
             }
+        }
+
+        if (copy.children.size() == 1) {
+            return copy.children.get(0);
         }
 
         return copy;

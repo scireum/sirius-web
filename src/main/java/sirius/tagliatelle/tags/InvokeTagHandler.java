@@ -13,11 +13,15 @@ import sirius.tagliatelle.TagContext;
 import sirius.tagliatelle.Template;
 import sirius.tagliatelle.TemplateArgument;
 import sirius.tagliatelle.emitter.BlockEmitter;
+import sirius.tagliatelle.emitter.CompositeEmitter;
 import sirius.tagliatelle.emitter.ConstantEmitter;
 import sirius.tagliatelle.emitter.Emitter;
+import sirius.tagliatelle.emitter.InlineTemplateEmitter;
+import sirius.tagliatelle.emitter.PushLocalEmitter;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.expression.ReadLocal;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,8 +38,10 @@ public class InvokeTagHandler extends TagHandler {
 
     @Override
     public void apply(TagContext context) {
+
+        List<PushLocalEmitter> temps = new ArrayList<>();
         Emitter copy = template.getEmitter().copy();
-        if (template.getNumberOfArguments() > 0) {
+        if (!template.getArguments().isEmpty()) {
             List<Expression> defaultArgs = template.getArguments()
                                                    .stream()
                                                    .map(TemplateArgument::getDefaultValue)
@@ -49,6 +55,11 @@ public class InvokeTagHandler extends TagHandler {
                     if (value == null) {
                         //TODO error
                     }
+                }
+                if (!value.isConstant() && !(value instanceof ReadLocal)) {
+                    int temporaryIndex = context.getContext().push(null, arg.getType());
+                    temps.add(new PushLocalEmitter(context.getStartOfTag(), temporaryIndex, value));
+                    value = new ReadLocal(arg.getType(), temporaryIndex);
                 }
 
                 int currentIndex = index;
@@ -82,7 +93,11 @@ public class InvokeTagHandler extends TagHandler {
             if (e instanceof BlockEmitter) {
                 BlockEmitter blockEmitter = (BlockEmitter) e;
                 Emitter result = getBlock(blockEmitter.getName());
-                if (result == null) {
+                if (result != null) {
+                    result = new InlineTemplateEmitter(result.getStartOfBlock(),
+                                                       context.getContext().getTemplate(),
+                                                       result);
+                } else {
                     result = blockEmitter.getAlternative();
                 }
                 if (result == null) {
@@ -95,8 +110,12 @@ public class InvokeTagHandler extends TagHandler {
             return e;
         });
 
-        copy = copy.reduce();
-        context.getBlock().addChild(copy);
+        CompositeEmitter ce = new CompositeEmitter(copy.getStartOfBlock());
+        temps.forEach(ce::addChild);
+        temps.forEach(e -> context.getContext().pop());
+
+        ce.addChild(copy);
+        context.getBlock().addChild(new InlineTemplateEmitter(context.getStartOfTag(), template, ce.reduce()));
 //
 //
 //
@@ -111,7 +130,7 @@ public class InvokeTagHandler extends TagHandler {
 //            emitter.setArguments(args);
 //        }
 //        emitter.setBlocks(blocks);
-//        context.getBlock().addChild(emitter);
+        context.getBlock().addChild(context.getContext().invokeTemplate(context.getStartOfTag(),template,name -> getAttribute(name), blocks == null? Function));
     }
 
     @Override

@@ -49,6 +49,15 @@ public class LocalRenderContext {
         return ctx;
     }
 
+    public LocalRenderContext createInlineContext(Template template, LocalRenderContext enclosedContext) {
+        LocalRenderContext ctx =
+                new LocalRenderContext(template, globalContext, enclosedContext.locals);
+        ctx.parent = this;
+        ctx.blocks = enclosedContext.blocks;
+
+        return ctx;
+    }
+
     public void release() {
         globalContext.release(this);
     }

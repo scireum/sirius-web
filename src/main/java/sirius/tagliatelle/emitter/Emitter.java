@@ -33,6 +33,10 @@ public abstract class Emitter {
         }
     }
 
+    public Position getStartOfBlock() {
+        return startOfBlock;
+    }
+
     protected abstract void emitToContext(LocalRenderContext context) throws Exception;
 
     public abstract Emitter copy();

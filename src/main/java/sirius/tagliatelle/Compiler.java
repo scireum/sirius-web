@@ -48,6 +48,8 @@ public class Compiler extends InputProcessor {
         }
 
         context.getTemplate().emitter = parseBlock(null, null).reduce();
+
+        context.getTemplate().setStackDepth(context.getStackDepth());
         reader = null;
 
         List<CompileError> compileErrors = new ArrayList<>();

@@ -57,7 +57,7 @@ public abstract class GlobalRenderContext {
     protected abstract void outputBytes(byte[] bytes) throws RenderException, IOException;
 
     public LocalRenderContext createContext(Template template) {
-        return new LocalRenderContext(template, this, stack.alloc(template.getNumberOfArguments()));
+        return new LocalRenderContext(template, this, stack.alloc(template.getStackDepth()));
     }
 
     public void release(LocalRenderContext renderContext) {
