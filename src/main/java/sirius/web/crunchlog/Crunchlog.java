@@ -8,11 +8,17 @@
 
 package sirius.web.crunchlog;
 
+import io.netty.handler.codec.http.HttpHeaderNames;
+import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Context;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Log;
+import sirius.web.http.WebContext;
+import sirius.web.security.UserContext;
+import sirius.web.security.UserInfo;
 
+import javax.annotation.CheckReturnValue;
 import java.io.File;
 import java.util.function.Consumer;
 
@@ -55,6 +61,101 @@ public class Crunchlog {
 
     @Part
     private CrunchlogKernel crunchlogKernel;
+
+    /**
+     * Creates a new builder for a log entry in the crunchlog.
+     */
+    public class LogBuilder {
+
+        private Context context;
+
+        protected LogBuilder(String event) {
+            this.context = Context.create();
+            this.context.set("event", event);
+            this.context.set("name", CallContext.getNodeName());
+        }
+
+        /**
+         * Adds the id of the current user and tenant to the log entry.
+         *
+         * @return the builder itself for fluent method calls
+         */
+        @CheckReturnValue
+        public LogBuilder applyUser() {
+            UserInfo user = UserContext.getCurrentUser();
+            if (user.isLoggedIn()) {
+                this.context.set("user", user.getUserId());
+                this.context.set("tenant", user.getTenantId());
+            } else {
+                this.context.set("user", null);
+                this.context.set("tenant", null);
+            }
+
+            return this;
+        }
+
+        /**
+         * Adds the id of the current scope to the log entry.
+         *
+         * @return the builder itself for fluent method calls
+         */
+        @CheckReturnValue
+        public LogBuilder applyScope(WebContext ctx) {
+            this.context.set("scope", UserContext.getCurrentScope().getScopeId());
+
+            return this;
+        }
+
+        /**
+         * Adds the uri of the given request.
+         *
+         * @param ctx the request to log
+         * @return the builder itself for fluent method calls
+         */
+        @CheckReturnValue
+        public LogBuilder applyURI(WebContext ctx) {
+            context.set("uri", ctx);
+            return this;
+        }
+
+        /**
+         * Adds the uri and the user agent of the given request.
+         *
+         * @param ctx the request to log
+         * @return the builder itself for fluent method calls
+         */
+        @CheckReturnValue
+        public LogBuilder applyURIAndUserAgent(WebContext ctx) {
+            context.set("uri", ctx);
+            context.set("userAgent", ctx.getHeader(HttpHeaderNames.USER_AGENT));
+            return this;
+        }
+
+        /**
+         * Sets a given field and value in the log entry.
+         *
+         * @param key   the key of the value to log
+         * @param value the value to log
+         * @return the builder itself for fluent method calls
+         */
+        @CheckReturnValue
+        public LogBuilder set(String key, Object value) {
+            context.set(key, value);
+            return this;
+        }
+
+        /**
+         * Submits the constructed entry to the crunchlog.
+         */
+        public void submit() {
+            Crunchlog.this.submit(context);
+        }
+    }
+
+    @CheckReturnValue
+    public LogBuilder log(String event) {
+        return new LogBuilder(event);
+    }
 
     /**
      * Submits a record to the crunchlog which will be eventually persisted to disk.
