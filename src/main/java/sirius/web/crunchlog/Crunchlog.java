@@ -81,7 +81,7 @@ public class Crunchlog {
          * @return the builder itself for fluent method calls
          */
         @CheckReturnValue
-        public LogBuilder applyUser() {
+        public LogBuilder withUser() {
             UserInfo user = UserContext.getCurrentUser();
             if (user.isLoggedIn()) {
                 this.context.set("user", user.getUserId());
@@ -100,7 +100,7 @@ public class Crunchlog {
          * @return the builder itself for fluent method calls
          */
         @CheckReturnValue
-        public LogBuilder applyScope(WebContext ctx) {
+        public LogBuilder withScope() {
             this.context.set("scope", UserContext.getCurrentScope().getScopeId());
 
             return this;
@@ -113,7 +113,7 @@ public class Crunchlog {
          * @return the builder itself for fluent method calls
          */
         @CheckReturnValue
-        public LogBuilder applyURI(WebContext ctx) {
+        public LogBuilder withURI(WebContext ctx) {
             context.set("uri", ctx);
             return this;
         }
@@ -125,7 +125,7 @@ public class Crunchlog {
          * @return the builder itself for fluent method calls
          */
         @CheckReturnValue
-        public LogBuilder applyURIAndUserAgent(WebContext ctx) {
+        public LogBuilder withURIAndUserAgent(WebContext ctx) {
             context.set("uri", ctx);
             context.set("userAgent", ctx.getHeader(HttpHeaderNames.USER_AGENT));
             return this;
