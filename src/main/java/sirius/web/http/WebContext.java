@@ -1881,7 +1881,7 @@ public class WebContext implements SubContext {
 
     /**
      * Returns {@link UserAgent} for easy access to the user agent used for this request. Also it provides access to
-     * some assumtions based on the user agent e.g. which device was used.
+     * some assumptions based on the user agent e.g. which device was used.
      *
      * @return user agent wrapper object
      */
