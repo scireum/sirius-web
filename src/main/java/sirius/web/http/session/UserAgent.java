@@ -30,8 +30,6 @@ public class UserAgent {
     private static final String ANDROID_TABLET = "android";
     private String userAgentString;
 
-    private boolean userAgentParsed = false;
-
     private boolean phone = false;
     private boolean tablet = false;
     private boolean android = false;
@@ -39,10 +37,10 @@ public class UserAgent {
 
     public UserAgent(String userAgentString) {
         this.userAgentString = userAgentString;
+        parseUserAgent();
     }
 
     protected void parseUserAgent() {
-        userAgentParsed = true;
         if (Strings.isEmpty(userAgentString)) {
             return;
         }
@@ -85,9 +83,6 @@ public class UserAgent {
      * @return whether user agent hints to a phone
      */
     public boolean isPhone() {
-        if (!userAgentParsed) {
-            parseUserAgent();
-        }
         return phone;
     }
 
@@ -97,9 +92,6 @@ public class UserAgent {
      * @return whether user agent hints to a tablet
      */
     public boolean isTablet() {
-        if (!userAgentParsed) {
-            parseUserAgent();
-        }
         return tablet;
     }
 
@@ -113,9 +105,6 @@ public class UserAgent {
      * @return whether user agent hints to a Android device
      */
     public boolean isAndroid() {
-        if (!userAgentParsed) {
-            parseUserAgent();
-        }
         return android;
     }
 
@@ -125,9 +114,6 @@ public class UserAgent {
      * @return whether user agent hints to an iOS device
      */
     public boolean isIOS() {
-        if (!userAgentParsed) {
-            parseUserAgent();
-        }
         return iOS;
     }
 
