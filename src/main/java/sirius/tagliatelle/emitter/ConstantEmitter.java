@@ -8,10 +8,11 @@
 
 package sirius.tagliatelle.emitter;
 
-import com.google.common.base.Charsets;
 import parsii.tokenizer.Position;
-import sirius.tagliatelle.LocalRenderContext;
 import sirius.tagliatelle.expression.ExpressionVisitor;
+import sirius.tagliatelle.rendering.LocalRenderContext;
+
+import java.util.function.Function;
 
 /**
  * Created by aha on 10.05.17.
@@ -21,7 +22,6 @@ public class ConstantEmitter extends Emitter {
     public static final ConstantEmitter EMPTY = new ConstantEmitter(Position.UNKNOWN);
 
     private String value = "";
-    private byte[] valueAsBytes;
 
     public ConstantEmitter(Position startOfBlock) {
         super(startOfBlock);
@@ -43,25 +43,16 @@ public class ConstantEmitter extends Emitter {
     }
 
     @Override
-    public void visitExpressions(ExpressionVisitor visitor) {
-
+    public void visitExpressions(Function<Position, ExpressionVisitor> visitorSupplier) {
+        // No internal expressions
     }
 
     public void append(String stringToAppend) {
         value += stringToAppend;
-        valueAsBytes = null;
     }
 
     @Override
     protected void emitToContext(LocalRenderContext context) throws Exception {
-        if (context.isAcceptingBytes()) {
-            if (valueAsBytes == null) {
-                valueAsBytes = value.getBytes(Charsets.UTF_8);
-            }
-            context.output(valueAsBytes);
-            return;
-        }
-
         context.output(value);
     }
 

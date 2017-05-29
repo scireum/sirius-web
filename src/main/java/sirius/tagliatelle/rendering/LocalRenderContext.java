@@ -6,9 +6,12 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.tagliatelle;
+package sirius.tagliatelle.rendering;
 
 import parsii.tokenizer.Position;
+import sirius.tagliatelle.Template;
+import sirius.tagliatelle.compiler.CompileException;
+import sirius.tagliatelle.emitter.ConstantEmitter;
 import sirius.tagliatelle.emitter.Emitter;
 
 import java.io.IOException;
@@ -66,14 +69,6 @@ public class LocalRenderContext {
         globalContext.outputString(content);
     }
 
-    public boolean isAcceptingBytes() {
-        return globalContext.isAcceptingBytes();
-    }
-
-    public void output(byte[] contentAsBytes) throws IOException, RenderException {
-        globalContext.outputBytes(contentAsBytes);
-    }
-
     public void setLocal(int index, Object variable) {
         locals.writeLocal(index, variable);
     }
@@ -103,8 +98,13 @@ public class LocalRenderContext {
             return false;
         }
 
-        LocalRenderContext subContext = createClosureContext(parent);
-        emitter.emit(subContext);
+        if (emitter instanceof ConstantEmitter) {
+            emitter.emit(this);
+        } else {
+            LocalRenderContext subContext = createClosureContext(parent);
+            emitter.emit(subContext);
+        }
+
         return true;
     }
 
@@ -117,9 +117,10 @@ public class LocalRenderContext {
         StringBuilder sb = new StringBuilder();
         LocalRenderContext ctx = this;
         while (ctx != null) {
-            sb.append(String.format("%3d:%2d: %s\n", ctx.position.getLine(), ctx.position.getPos(), ctx.template));
+            sb.append(String.format("%3d:%2d: %s%n", ctx.position.getLine(), ctx.position.getPos(), ctx.template));
             ctx = ctx.parent;
         }
+
         return sb.toString();
     }
 

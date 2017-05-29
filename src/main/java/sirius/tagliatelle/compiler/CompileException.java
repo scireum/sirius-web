@@ -6,18 +6,23 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.tagliatelle;
+package sirius.tagliatelle.compiler;
+
+import sirius.tagliatelle.Template;
 
 import java.util.List;
 
 /**
- * Created by aha on 12.05.17.
+ * Thrown to indicate one or more {@link CompileError compilation errors}.
+ * <p>
+ * As the compiler is quite optimistic, it keeps compiling as long as possible instead of aborting for the first error.
+ * Therefore a list of errors is given here which is also appropriately formatted in the exception message.
  */
 public class CompileException extends Exception {
 
     private static final long serialVersionUID = -8697032594602395681L;
 
-    private final Template template;
+    private final transient Template template;
     private final transient List<CompileError> errors;
 
     private CompileException(String message, Template template, List<CompileError> errors) {
@@ -30,7 +35,7 @@ public class CompileException extends Exception {
      * Creates a new exception based on the list of errors.
      *
      * @param errors the errors which occurred while processing the user input
-     * @return a new ParseException which can be thrown
+     * @return a new CompileException which can be thrown
      */
     public static CompileException create(Template template, List<CompileError> errors) {
         StringBuilder message = new StringBuilder();

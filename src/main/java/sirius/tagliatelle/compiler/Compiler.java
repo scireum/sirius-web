@@ -6,12 +6,13 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.tagliatelle;
+package sirius.tagliatelle.compiler;
 
 import com.google.common.io.CharStreams;
 import parsii.tokenizer.Char;
 import parsii.tokenizer.LookaheadReader;
 import parsii.tokenizer.ParseError;
+import parsii.tokenizer.Position;
 import sirius.kernel.health.Exceptions;
 import sirius.tagliatelle.emitter.CompositeEmitter;
 import sirius.tagliatelle.emitter.ConditionalEmitter;
@@ -21,7 +22,8 @@ import sirius.tagliatelle.emitter.ExpressionEmitter;
 import sirius.tagliatelle.expression.ConstantNull;
 import sirius.tagliatelle.expression.ConstantString;
 import sirius.tagliatelle.expression.Expression;
-import sirius.tagliatelle.tags.DummyTagHandler;
+import sirius.tagliatelle.expression.MacroCall;
+import sirius.tagliatelle.tags.TagContext;
 import sirius.tagliatelle.tags.TagHandler;
 
 import java.io.IOException;
@@ -35,6 +37,10 @@ import java.util.List;
  */
 public class Compiler extends InputProcessor {
 
+    private enum CompilerState {
+        PROCEED, STOP, NEW_BLOCK
+    }
+
     private final String input;
 
     public Compiler(CompilationContext context, String input) {
@@ -47,27 +53,55 @@ public class Compiler extends InputProcessor {
             throw new IllegalArgumentException("Reader is null - please do not re-use a Compiler instance.");
         }
 
-        context.getTemplate().emitter = parseBlock(null, null).reduce();
+        Emitter emitter = parseBlock(null, null).reduce();
+        verifyMacros(emitter);
+        context.getTemplate().setEmitter(emitter);
 
         context.getTemplate().setStackDepth(context.getStackDepth());
         reader = null;
 
-        List<CompileError> compileErrors = new ArrayList<>();
-        if (context.hasErrors() || context.hasWarnings()) {
-            List<String> lines = getInputAsLines();
-            for (ParseError error : context.getErrors()) {
-                if (error.getPosition().getLine() >= 1 && error.getPosition().getLine() <= lines.size()) {
-                    compileErrors.add(new CompileError(error, lines.get(error.getPosition().getLine() - 1)));
-                } else {
-                    compileErrors.add(new CompileError(error, null));
-                }
-            }
-            if (context.hasErrors()) {
-                throw CompileException.create(context.getTemplate(), compileErrors);
+        return processCollectedErrrors();
+    }
+
+    private List<CompileError> processCollectedErrrors() throws CompileException {
+        if (context.getErrors().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<CompileError> compileErrors = new ArrayList<>(context.getErrors().size());
+        boolean errorFound = false;
+        List<String> lines = getInputAsLines();
+        for (ParseError error : context.getErrors()) {
+            errorFound |= error.getSeverity() == ParseError.Severity.ERROR;
+
+            if (error.getPosition().getLine() >= 1 && error.getPosition().getLine() <= lines.size()) {
+                compileErrors.add(new CompileError(error, lines.get(error.getPosition().getLine() - 1)));
+            } else {
+                compileErrors.add(new CompileError(error, null));
             }
         }
 
+        if (errorFound) {
+            throw CompileException.create(context.getTemplate(), compileErrors);
+        }
+
         return compileErrors;
+    }
+
+    private void verifyMacros(Emitter emitter) {
+        emitter.visitExpressions(p -> e -> verifyMacro(p, e));
+    }
+
+    private Expression verifyMacro(Position pos, Expression expr) {
+        if (expr instanceof MacroCall) {
+            try {
+                ((MacroCall) expr).verify();
+            } catch (IllegalArgumentException ex) {
+                context.error(pos, "Invalid parameters for macro: %s: %s", expr, ex.getMessage());
+            }
+        }
+
+        return expr;
     }
 
     private List<String> getInputAsLines() {
@@ -88,67 +122,63 @@ public class Compiler extends InputProcessor {
         while (!reader.current().isEndOfInput()) {
             staticText.append(consumeStaticBlock());
 
-            if (reader.current().is('}')) {
-                if ("}".equals(waitFor)) {
-                    return block;
-                } else {
-                    staticText.append(reader.consume().getStringValue());
-                    continue;
+            if (checkForEndOfBlock(waitFor, staticText)) {
+                return block;
+            }
+
+            if (processTag(parentHandler, block, staticText)) {
+                if (!reader.current().isEndOfInput()) {
+                    staticText = new ConstantEmitter(reader.current());
+                    block.addChild(staticText);
                 }
             }
 
-            if (reader.current().is('<')) {
-                if (waitFor != null && reader.next().is('/')) {
-                    if (isAtWaitFor(2, waitFor)) {
-                        while (!reader.current().isEndOfInput() && !reader.current().is('>')) {
-                            reader.consume();
-                        }
-
-                        consumeExpectedCharacter('>');
-                        return block;
-                    }
+            if (processExpression(block)) {
+                if (!reader.current().isEndOfInput()) {
+                    staticText = new ConstantEmitter(reader.current());
+                    block.addChild(staticText);
                 }
-
-                reader.consume();
-                String tagName = parseName();
-                try {
-                    TagHandler handler = context.findTagHandler(tagName);
-                    if (handler != null) {
-                        handleTag(parentHandler, handler, tagName, block);
-                        if (!reader.current().isEndOfInput()) {
-                            staticText = new ConstantEmitter(reader.current());
-                            block.addChild(staticText);
-                        }
-                        continue;
-                    }
-                } catch (CompileException e) {
-                    context.error(reader.current(), "Error compiling referenced tag: %s%n%s", tagName, e.getMessage());
-                    handleTag(parentHandler, new DummyTagHandler(), tagName, block);
-                }
-
-                staticText.append("<");
-                staticText.append(tagName);
-                continue;
-            }
-
-            if (reader.current().is('@')) {
-                reader.consume();
-                if (isAtIf()) {
-                    block.addChild(parseIf());
-                } else if (isAtFor()) {
-                    block.addChild(parseForLoop());
-                } else {
-                    block.addChild(new ExpressionEmitter(reader.current(), parseExpression(false)));
-                }
-            }
-
-            if (!reader.current().isEndOfInput()) {
-                staticText = new ConstantEmitter(reader.current());
-                block.addChild(staticText);
             }
         }
 
+        ensureBlockCompletion(waitFor, block);
+
         return block;
+    }
+
+    private void ensureBlockCompletion(String waitFor, CompositeEmitter block) {
+        if ("}".equals(waitFor)) {
+            context.error(block.getStartOfBlock(), "Missing closing } for this block");
+        } else if (waitFor != null) {
+            context.error(block.getStartOfBlock(), "Missing closing tag for this block");
+        }
+    }
+
+    private boolean checkForEndOfBlock(String waitFor, ConstantEmitter staticText) {
+        if (waitFor == null) {
+            return false;
+        }
+
+        if (reader.current().is('}')) {
+            if ("}".equals(waitFor)) {
+                return true;
+            }
+        }
+
+        if (reader.current().is('<') && reader.next().is('/')) {
+            if (isAtWaitFor(2, waitFor)) {
+                while (!reader.current().isEndOfInput() && !reader.current().is('>')) {
+                    reader.consume();
+                }
+
+                consumeExpectedCharacter('>');
+                return true;
+            }
+        }
+
+        staticText.append(reader.consume().getStringValue());
+
+        return false;
     }
 
     private boolean isAtWaitFor(int initialOffset, String waitFor) {
@@ -170,8 +200,59 @@ public class Compiler extends InputProcessor {
         return true;
     }
 
+    private boolean processTag(TagHandler parentHandler, CompositeEmitter block, ConstantEmitter staticText) {
+        if (!reader.current().is('<')) {
+            return false;
+        }
+
+        reader.consume();
+        String tagName = parseName();
+        TagHandler handler = context.findTagHandler(reader.current(), tagName);
+        if (handler != null) {
+            handleTag(parentHandler, handler, tagName, block);
+            return true;
+        }
+
+        staticText.append("<");
+        staticText.append(tagName);
+        return false;
+    }
+
+    private boolean processExpression(CompositeEmitter block) {
+        if (!reader.current().is('@')) {
+            return false;
+        }
+        reader.consume();
+        if (isAtIf()) {
+            block.addChild(parseIf());
+        } else if (isAtFor()) {
+            block.addChild(parseForLoop());
+        } else {
+            block.addChild(new ExpressionEmitter(reader.current(), parseExpression(false)));
+        }
+
+        return true;
+    }
+
     private void handleTag(TagHandler parentHandler, TagHandler handler, String tagName, CompositeEmitter block) {
         Char startOfTag = reader.current();
+        parseAttributes(handler, tagName);
+
+        boolean selfClosed = reader.current().is('/');
+        if (selfClosed) {
+            consumeExpectedCharacter('/');
+            skipUnexpectedWhitespace();
+            consumeExpectedCharacter('>');
+        } else {
+            consumeExpectedCharacter('>');
+            CompositeEmitter body = parseBlock(handler, tagName);
+            handler.addBlock("body", body);
+        }
+
+        handler.apply(new TagContext(startOfTag, context, parentHandler, block));
+    }
+
+    private void parseAttributes(TagHandler handler, String tagName) {
         while (true) {
             skipExpectedWhitespace();
             if (reader.current().isEndOfInput() || reader.current().is('>') || reader.current().is('/')) {
@@ -179,16 +260,9 @@ public class Compiler extends InputProcessor {
             }
             String name = parseName();
             Class<?> attributeType = handler.getExpectedAttributeType(name);
+            verifyAttributeNameAndType(handler, tagName, name, attributeType);
             if (attributeType == null) {
-                context.warning(reader.current(),
-                                "Unknown attribute. %s doesn't have an attribute '%s'.",
-                                tagName,
-                                name);
                 attributeType = String.class;
-            }
-
-            if (handler.getAttribute(name) != null) {
-                context.warning(reader.current(), "Duplicate attribute. A value for '%s' is already present.", name);
             }
 
             skipUnexpectedWhitespace();
@@ -197,6 +271,7 @@ public class Compiler extends InputProcessor {
             Char positionOfAttribute = reader.current();
             consumeExpectedCharacter('"');
             skipUnexpectedWhitespace();
+
             if (reader.current().is('"')) {
                 warnForInvalidExpressionType(positionOfAttribute,
                                              tagName,
@@ -219,19 +294,24 @@ public class Compiler extends InputProcessor {
             }
             consumeExpectedCharacter('"');
         }
+    }
 
-        boolean selfClosed = reader.current().is('/');
-        if (selfClosed) {
-            consumeExpectedCharacter('/');
-            skipUnexpectedWhitespace();
-            consumeExpectedCharacter('>');
-        } else {
-            consumeExpectedCharacter('>');
-            CompositeEmitter body = parseBlock(handler, tagName);
-            handler.addBlock("body", body);
+    private void verifyAttributeNameAndType(TagHandler handler,
+                                            String tagName,
+                                            String attributeName,
+                                            Class<?> attributeType) {
+        if (attributeType == null) {
+            context.warning(reader.current(),
+                            "Unknown attribute. %s doesn't have an attribute '%s'.",
+                            tagName,
+                            attributeName);
         }
 
-        handler.apply(new TagContext(startOfTag, context, parentHandler, block));
+        if (handler.getAttribute(attributeName) != null) {
+            context.warning(reader.current(),
+                            "Duplicate attribute. A value for '%s' is already present.",
+                            attributeName);
+        }
     }
 
     private void warnForInvalidExpressionType(Char positionOfAttribute,
@@ -321,15 +401,34 @@ public class Compiler extends InputProcessor {
     private String consumeStaticBlock() {
         StringBuilder sb = new StringBuilder();
         while (!reader.current().isEndOfInput()) {
-            if (reader.current().is('}')
-                || (reader.current().is('<') && !reader.next().isWhitepace())
-                || (reader.current().is('@') && !reader.next().is('@'))) {
-                break;
-            }
+            if (isAtEscapedAt()) {
+                sb.append(reader.consume().getValue());
+                reader.consume().getValue();
+            } else {
+                if (isAtPotentialEndOfStaticBlock()) {
+                    return sb.toString();
+                }
 
-            sb.append(reader.consume().getValue());
+                sb.append(reader.consume().getValue());
+            }
         }
 
         return sb.toString();
+    }
+
+    private boolean isAtEscapedAt() {
+        return reader.current().is('@') && reader.next().is('@');
+    }
+
+    private boolean isAtPotentialEndOfStaticBlock() {
+        if (reader.current().is('}')) {
+            return true;
+        }
+
+        if (reader.current().is('@')) {
+            return true;
+        }
+
+        return reader.current().is('<') && !reader.next().isWhitepace();
     }
 }

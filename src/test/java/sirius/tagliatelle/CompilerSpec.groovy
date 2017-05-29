@@ -10,6 +10,9 @@ package sirius.tagliatelle
 
 import sirius.kernel.BaseSpecification
 import sirius.kernel.di.std.Part
+import sirius.tagliatelle.compiler.CompilationContext
+import sirius.tagliatelle.compiler.Compiler
+import sirius.tagliatelle.rendering.LocalRenderContext
 
 import java.util.function.Consumer
 
@@ -19,11 +22,8 @@ import java.util.function.Consumer
 class CompilerSpec extends BaseSpecification {
 
     //TODO
-    // Einbauen
-    // Convenience
     // Protect against loops
     //Pragma / inline
-    // $ for i18n
     // Smart Escaping
     // Runtime-Mode (friendly, hard-crash, fail-safe)
     // Über pragma steuerbar
@@ -33,7 +33,7 @@ class CompilerSpec extends BaseSpecification {
 
     def "parser works"() {
         when:
-        CompilationContext cc = engine.createCompilationContext(path, resource);
+        CompilationContext cc = engine.createCompilationContext(path, resource, parentContext);
         Compiler compiler = new Compiler("test", null,'<w:test1><i:block name="breadcrumbs">A</i:block></w:test1>', cc)
         and:
         Template template = compiler.compile()

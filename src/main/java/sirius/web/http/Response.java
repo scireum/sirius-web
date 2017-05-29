@@ -46,9 +46,9 @@ import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Microtiming;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.XMLStructuredOutput;
-import sirius.tagliatelle.CompileException;
+import sirius.tagliatelle.compiler.CompileException;
 import sirius.tagliatelle.Engine;
-import sirius.tagliatelle.StringRenderContext;
+import sirius.tagliatelle.rendering.GlobalRenderContext;
 import sirius.tagliatelle.Template;
 import sirius.web.services.JSONStructuredOutput;
 import sirius.web.templates.Resource;
@@ -1020,9 +1020,9 @@ public class Response {
         wc.enableTiming(null);
         try {
             Object[] effectiveParams = fixParams(params);
-            StringRenderContext renderContext = engine.createRenderContext();
-                template.render(renderContext, effectiveParams);
-            sendTemplateContent(status,template.getFilename(), renderContext.getContent());
+            GlobalRenderContext renderContext = engine.createRenderContext();
+            template.render(renderContext, effectiveParams);
+            sendTemplateContent(status, template.getFilename(), renderContext.toString());
         } catch (Exception e) {
             handleTemplateError(template.getFilename(), e);
         }

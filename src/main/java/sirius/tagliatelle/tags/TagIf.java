@@ -8,7 +8,6 @@
 
 package sirius.tagliatelle.tags;
 
-import sirius.tagliatelle.TagContext;
 import sirius.tagliatelle.emitter.ConditionalEmitter;
 
 /**

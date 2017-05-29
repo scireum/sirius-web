@@ -9,9 +9,11 @@
 package sirius.tagliatelle.emitter;
 
 import parsii.tokenizer.Position;
-import sirius.tagliatelle.LocalRenderContext;
-import sirius.tagliatelle.RenderException;
+import sirius.tagliatelle.rendering.LocalRenderContext;
+import sirius.tagliatelle.rendering.RenderException;
 import sirius.tagliatelle.expression.ExpressionVisitor;
+
+import java.util.function.Function;
 
 /**
  * Created by aha on 10.05.17.
@@ -45,5 +47,5 @@ public abstract class Emitter {
 
     public abstract Emitter visit(EmitterVisitor visitor);
 
-    public abstract void visitExpressions(ExpressionVisitor visitor);
+    public abstract void visitExpressions(Function<Position, ExpressionVisitor> visitor);
 }

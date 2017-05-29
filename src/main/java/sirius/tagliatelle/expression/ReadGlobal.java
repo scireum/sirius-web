@@ -8,7 +8,7 @@
 
 package sirius.tagliatelle.expression;
 
-import sirius.tagliatelle.LocalRenderContext;
+import sirius.tagliatelle.rendering.LocalRenderContext;
 
 /**
  * Created by aha on 11.05.17.

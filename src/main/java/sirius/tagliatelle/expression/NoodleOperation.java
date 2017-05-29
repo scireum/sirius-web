@@ -8,20 +8,30 @@
 
 package sirius.tagliatelle.expression;
 
+import sirius.kernel.commons.Strings;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
 /**
- * Created by aha on 10.05.17.
+ * Created by aha on 24.05.17.
  */
-public abstract class BooleanOperation extends Expression {
+public class NoodleOperation extends Expression {
 
     protected Expression leftExpression;
     protected Expression rightExpression;
 
-    public BooleanOperation(Expression leftExpression, Expression rightExpression) {
+    public NoodleOperation(Expression leftExpression, Expression rightExpression) {
         this.leftExpression = leftExpression;
         this.rightExpression = rightExpression;
-        //TODO ensure boolean
+    }
+
+    @Override
+    public Object eval(LocalRenderContext ctx) {
+        Object leftValue = leftExpression.eval(ctx);
+        if (Strings.isFilled(leftValue)) {
+            return leftValue;
+        }
+
+        return rightExpression.eval(ctx);
     }
 
     @Override
@@ -37,16 +47,28 @@ public abstract class BooleanOperation extends Expression {
         this.leftExpression = leftExpression.reduce();
         this.rightExpression = rightExpression.reduce();
 
+        if (leftExpression.isConstant()) {
+            Object leftValue = leftExpression.eval(null);
+            if (Strings.isEmpty(leftValue)) {
+                return rightExpression;
+            }
+        }
+
         return this;
     }
 
+    @Override
+    public boolean isConstant() {
+        return false;
+    }
 
-    protected boolean eval(Expression expr, LocalRenderContext ctx) {
-        return (boolean)expr.eval(ctx);
+    @Override
+    public Expression copy() {
+        return new NoodleOperation(leftExpression.copy(), rightExpression.copy());
     }
 
     @Override
     public Class<?> getType() {
-        return boolean.class;
+        return leftExpression.getType();
     }
 }

@@ -16,16 +16,21 @@ import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.health.Log;
+import sirius.tagliatelle.compiler.CompilationContext;
+import sirius.tagliatelle.compiler.CompileException;
+import sirius.tagliatelle.compiler.Compiler;
+import sirius.tagliatelle.rendering.GlobalRenderContext;
 import sirius.web.security.ScopeInfo;
 import sirius.web.security.UserContext;
 import sirius.web.templates.Resource;
 import sirius.web.templates.Resources;
 import sirius.web.templates.Templates;
 
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,18 +42,33 @@ import java.util.concurrent.ConcurrentHashMap;
 @Register(classes = Engine.class)
 public class Engine {
 
+    public static final Log LOG = Log.get("tagliatelle");
+
+    private Map<String, Class<?>> aliases;
     private List<Tuple<String, Class<?>>> globalVariables;
     private Map<String, List<Object>> environments = new ConcurrentHashMap<>();
 
     @Parts(RenderContextExtender.class)
     private Collection<RenderContextExtender> contextExtenders;
 
+    @Parts(ClassAliasProvider.class)
+    private Collection<ClassAliasProvider> aliasProviders;
+
     @Part
     private Resources resources;
 
     private Cache<Resource, Template> compiledTemplates = CacheManager.createCache("tagliatelle-templates");
 
-    protected List<Object> getEnvironment() {
+    public Map<String, Class<?>> getClassAliases() {
+        if (aliases == null) {
+            Map<String, Class<?>> aliasMap = new HashMap<>();
+            aliasProviders.forEach(p -> p.collectAliases(aliasMap::put));
+            aliases = aliasMap;
+        }
+        return aliases;
+    }
+
+    public List<Object> getEnvironment() {
         ScopeInfo currentScope = UserContext.getCurrentScope();
         return Collections.unmodifiableList(environments.computeIfAbsent(currentScope.getScopeId(),
                                                                          id -> buildEnvironment()));
@@ -74,17 +94,13 @@ public class Engine {
         return globalVariables;
     }
 
-    public CompilationContext createCompilationContext(String path, Resource resource) {
+    public CompilationContext createCompilationContext(String path, Resource resource, CompilationContext parent) {
         Template template = new Template(path, resource);
-        return new CompilationContext(this, template);
+        return new CompilationContext(template, parent);
     }
 
-    public StringRenderContext createRenderContext() {
-        return new StringRenderContext(this);
-    }
-
-    public ByteRenderContext createRenderContext(OutputStream out) {
-        return new ByteRenderContext(this, out);
+    public GlobalRenderContext createRenderContext() {
+        return new GlobalRenderContext(this);
     }
 
     private void verifyGlobals(List<Object> result) {
@@ -110,6 +126,10 @@ public class Engine {
     }
 
     public Optional<Template> resolve(String path) throws CompileException {
+        return resolve(path, null);
+    }
+
+    public Optional<Template> resolve(String path, CompilationContext parentContext) throws CompileException {
         Optional<Resource> optionalResource = resources.resolve(path);
         if (!optionalResource.isPresent()) {
             return Optional.empty();
@@ -122,7 +142,7 @@ public class Engine {
             return Optional.of(result);
         }
 
-        CompilationContext compilationContext = createCompilationContext(path, resource);
+        CompilationContext compilationContext = createCompilationContext(path, resource, parentContext);
 
         new Compiler(compilationContext, resource.getContentAsString()).compile();
         compiledTemplates.put(resource, compilationContext.getTemplate());
@@ -130,8 +150,8 @@ public class Engine {
         return Optional.of(compilationContext.getTemplate());
     }
 
-    public Optional<Template> resolveTag(String qualifiedTagName) throws CompileException {
+    public String resolveTagName(String qualifiedTagName) {
         Tuple<String, String> tagName = Strings.split(qualifiedTagName, ":");
-        return resolve("/taglib/" + tagName.getFirst() + "/" + tagName.getSecond() + ".html.pasta");
+        return "/taglib/" + tagName.getFirst() + "/" + tagName.getSecond() + ".html.pasta";
     }
 }

@@ -6,9 +6,10 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.tagliatelle;
+package sirius.tagliatelle.rendering;
 
 import parsii.tokenizer.Position;
+import sirius.tagliatelle.Template;
 
 /**
  * Created by aha on 16.05.17.

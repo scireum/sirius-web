@@ -10,8 +10,8 @@ package sirius.tagliatelle.expression;
 
 import parsii.tokenizer.Char;
 import sirius.kernel.health.Exceptions;
-import sirius.tagliatelle.CompilationContext;
-import sirius.tagliatelle.LocalRenderContext;
+import sirius.tagliatelle.compiler.CompilationContext;
+import sirius.tagliatelle.rendering.LocalRenderContext;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

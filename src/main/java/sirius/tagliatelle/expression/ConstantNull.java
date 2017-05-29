@@ -8,12 +8,12 @@
 
 package sirius.tagliatelle.expression;
 
-import sirius.tagliatelle.LocalRenderContext;
+import sirius.tagliatelle.rendering.LocalRenderContext;
 
 /**
  * Created by aha on 10.05.17.
  */
-public class ConstantNull extends Expression {
+public class ConstantNull extends ConstantExpression {
 
     public static final ConstantNull NULL = new ConstantNull();
 
@@ -21,28 +21,8 @@ public class ConstantNull extends Expression {
     }
 
     @Override
-    public Expression copy() {
-        return this;
-    }
-
-    @Override
     public Object eval(LocalRenderContext ctx) {
         return null;
-    }
-
-    @Override
-    public Expression visit(ExpressionVisitor visitor) {
-        return visitor.visit(this);
-    }
-
-    @Override
-    public Expression reduce() {
-        return this;
-    }
-
-    @Override
-    public boolean isConstant() {
-        return true;
     }
 
     @Override

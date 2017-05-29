@@ -6,9 +6,12 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.tagliatelle;
+package sirius.tagliatelle.rendering;
 
-import java.io.IOException;
+import sirius.tagliatelle.Engine;
+import sirius.tagliatelle.Template;
+import sirius.tagliatelle.compiler.CompileException;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,13 +20,14 @@ import java.util.Optional;
 /**
  * Created by aha on 16.05.17.
  */
-public abstract class GlobalRenderContext {
+public class GlobalRenderContext {
     protected Map<String, Template> templateCache;
     protected RenderStack stack = new RenderStack();
     protected List<Object> globals;
     protected Engine engine;
+    protected StringBuilder buffer = new StringBuilder();
 
-    protected GlobalRenderContext(Engine engine) {
+    public GlobalRenderContext(Engine engine) {
         this.engine = engine;
         this.globals = engine.getEnvironment();
     }
@@ -50,11 +54,9 @@ public abstract class GlobalRenderContext {
         return result;
     }
 
-    protected abstract boolean isAcceptingBytes();
-
-    protected abstract void outputString(String string) throws IOException;
-
-    protected abstract void outputBytes(byte[] bytes) throws RenderException, IOException;
+    protected void outputString(String string) {
+        buffer.append(string);
+    }
 
     public LocalRenderContext createContext(Template template) {
         return new LocalRenderContext(template, this, stack.alloc(template.getStackDepth()));
@@ -62,5 +64,10 @@ public abstract class GlobalRenderContext {
 
     public void release(LocalRenderContext renderContext) {
         stack.free(renderContext.getLocals());
+    }
+
+    @Override
+    public String toString() {
+        return buffer.toString();
     }
 }

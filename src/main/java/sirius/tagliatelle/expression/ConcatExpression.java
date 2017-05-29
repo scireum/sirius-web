@@ -8,7 +8,7 @@
 
 package sirius.tagliatelle.expression;
 
-import sirius.tagliatelle.LocalRenderContext;
+import sirius.tagliatelle.rendering.LocalRenderContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;

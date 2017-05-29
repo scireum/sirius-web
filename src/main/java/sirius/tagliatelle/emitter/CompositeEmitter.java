@@ -9,11 +9,12 @@
 package sirius.tagliatelle.emitter;
 
 import parsii.tokenizer.Position;
-import sirius.tagliatelle.LocalRenderContext;
 import sirius.tagliatelle.expression.ExpressionVisitor;
+import sirius.tagliatelle.rendering.LocalRenderContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Created by aha on 10.05.17.
@@ -98,9 +99,9 @@ public class CompositeEmitter extends Emitter {
     }
 
     @Override
-    public void visitExpressions(ExpressionVisitor visitor) {
+    public void visitExpressions(Function<Position, ExpressionVisitor> visitorSupplier) {
         for (Emitter expr : children) {
-            expr.visitExpressions(visitor);
+            expr.visitExpressions(visitorSupplier);
         }
     }
 

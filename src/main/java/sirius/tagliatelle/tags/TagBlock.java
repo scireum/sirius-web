@@ -10,7 +10,6 @@ package sirius.tagliatelle.tags;
 
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
-import sirius.tagliatelle.TagContext;
 
 import javax.annotation.Nonnull;
 

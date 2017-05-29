@@ -10,6 +10,7 @@
     </i:block>
 
     <w:pageHeader>
+        @(true ? )
         @i18n('BasicController.404')
     </w:pageHeader>
     <div class="well">

@@ -6,10 +6,11 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.tagliatelle;
+package sirius.tagliatelle.rendering;
 
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.HandledException;
+import sirius.tagliatelle.compiler.CompileException;
 
 import java.io.FileNotFoundException;
 

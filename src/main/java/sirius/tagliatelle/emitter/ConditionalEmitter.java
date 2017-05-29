@@ -9,10 +9,12 @@
 package sirius.tagliatelle.emitter;
 
 import parsii.tokenizer.Position;
-import sirius.tagliatelle.LocalRenderContext;
 import sirius.tagliatelle.expression.ConstantBoolean;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.expression.ExpressionVisitor;
+import sirius.tagliatelle.rendering.LocalRenderContext;
+
+import java.util.function.Function;
 
 /**
  * Created by aha on 10.05.17.
@@ -95,10 +97,11 @@ public class ConditionalEmitter extends Emitter {
     }
 
     @Override
-    public void visitExpressions(ExpressionVisitor visitor) {
+    public void visitExpressions(Function<Position, ExpressionVisitor> visitorSupplier) {
+        ExpressionVisitor visitor = visitorSupplier.apply(getStartOfBlock());
         conditionExpression = conditionExpression.visit(visitor);
-        whenTrue.visitExpressions(visitor);
-        whenFalse.visitExpressions(visitor);
+        whenTrue.visitExpressions(visitorSupplier);
+        whenFalse.visitExpressions(visitorSupplier);
     }
 
     @Override

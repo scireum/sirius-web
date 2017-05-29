@@ -11,6 +11,9 @@ package sirius.tagliatelle;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Part;
 import sirius.tagliatelle.emitter.Emitter;
+import sirius.tagliatelle.rendering.GlobalRenderContext;
+import sirius.tagliatelle.rendering.LocalRenderContext;
+import sirius.tagliatelle.rendering.RenderException;
 import sirius.web.templates.Resource;
 
 import java.util.ArrayList;
@@ -60,12 +63,12 @@ public class Template {
     }
 
     public String renderToString(Object... args) throws RenderException {
-        StringRenderContext ctx = engine.createRenderContext();
+        GlobalRenderContext ctx = engine.createRenderContext();
         applyArguments(ctx.createContext(this), args);
 
         render(ctx);
 
-        return ctx.getContent();
+        return ctx.toString();
     }
 
     public void render(GlobalRenderContext ctx, Object... args) throws RenderException {
@@ -141,5 +144,9 @@ public class Template {
 
     public int getStackDepth() {
         return stackDepth;
+    }
+
+    public void setEmitter(Emitter emitter) {
+        this.emitter = emitter;
     }
 }

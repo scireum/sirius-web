@@ -10,10 +10,11 @@ package sirius.tagliatelle.expression;
 
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
-import sirius.tagliatelle.CompilationContext;
-import sirius.tagliatelle.LocalRenderContext;
+import sirius.tagliatelle.compiler.CompilationContext;
 import sirius.tagliatelle.macros.Macro;
+import sirius.tagliatelle.rendering.LocalRenderContext;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -118,5 +119,9 @@ public class MacroCall extends Expression {
             }
         }
         return macro.getName() + "(" + sb + ")";
+    }
+
+    public void verify() throws IllegalArgumentException {
+        macro.verifyArguments(Arrays.asList(parameterExpressions));
     }
 }

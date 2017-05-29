@@ -9,7 +9,7 @@
 package sirius.tagliatelle.macros;
 
 import sirius.kernel.di.std.Named;
-import sirius.tagliatelle.LocalRenderContext;
+import sirius.tagliatelle.rendering.LocalRenderContext;
 import sirius.tagliatelle.expression.Expression;
 
 import java.util.List;

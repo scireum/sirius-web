@@ -9,7 +9,6 @@
 package sirius.tagliatelle.tags;
 
 import sirius.kernel.commons.Value;
-import sirius.tagliatelle.TagContext;
 import sirius.tagliatelle.emitter.Emitter;
 import sirius.tagliatelle.expression.ConstantString;
 import sirius.tagliatelle.expression.Expression;

@@ -6,11 +6,11 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.tagliatelle;
+package sirius.tagliatelle.tags;
 
 import parsii.tokenizer.Char;
+import sirius.tagliatelle.compiler.CompilationContext;
 import sirius.tagliatelle.emitter.CompositeEmitter;
-import sirius.tagliatelle.tags.TagHandler;
 
 /**
  * Created by aha on 16.05.17.

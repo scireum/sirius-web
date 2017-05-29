@@ -9,8 +9,10 @@
 package sirius.tagliatelle.emitter;
 
 import parsii.tokenizer.Position;
-import sirius.tagliatelle.LocalRenderContext;
 import sirius.tagliatelle.expression.ExpressionVisitor;
+import sirius.tagliatelle.rendering.LocalRenderContext;
+
+import java.util.function.Function;
 
 /**
  * Created by aha on 16.05.17.
@@ -60,11 +62,10 @@ public class BlockEmitter extends Emitter {
         return visitor.visit(this);
     }
 
-
     @Override
-    public void visitExpressions(ExpressionVisitor visitor) {
+    public void visitExpressions(Function<Position, ExpressionVisitor> visitorSupplier) {
         if (alternative != null) {
-            alternative.visitExpressions(visitor);
+            alternative.visitExpressions(visitorSupplier);
         }
     }
 

@@ -10,7 +10,7 @@ package sirius.tagliatelle.macros;
 
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
-import sirius.tagliatelle.LocalRenderContext;
+import sirius.tagliatelle.rendering.LocalRenderContext;
 import sirius.tagliatelle.expression.Expression;
 
 import javax.annotation.Nonnull;

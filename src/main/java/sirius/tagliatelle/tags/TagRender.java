@@ -9,7 +9,6 @@
 package sirius.tagliatelle.tags;
 
 import sirius.kernel.di.std.Register;
-import sirius.tagliatelle.TagContext;
 import sirius.tagliatelle.emitter.BlockEmitter;
 
 import javax.annotation.Nonnull;

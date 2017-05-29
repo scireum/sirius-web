@@ -8,12 +8,12 @@
 
 package sirius.tagliatelle.expression;
 
-import sirius.tagliatelle.LocalRenderContext;
+import sirius.tagliatelle.rendering.LocalRenderContext;
 
 /**
  * Created by aha on 10.05.17.
  */
-public class ConstantString extends Expression {
+public class ConstantString extends ConstantExpression {
 
     public static final ConstantString EMPTY_STRING = new ConstantString("");
 
@@ -21,26 +21,6 @@ public class ConstantString extends Expression {
 
     public ConstantString(String value) {
         this.value = value;
-    }
-
-    @Override
-    public Expression visit(ExpressionVisitor visitor) {
-        return visitor.visit(this);
-    }
-
-    @Override
-    public Expression reduce() {
-        return this;
-    }
-
-    @Override
-    public boolean isConstant() {
-        return true;
-    }
-
-    @Override
-    public Expression copy() {
-        return this;
     }
 
     @Override

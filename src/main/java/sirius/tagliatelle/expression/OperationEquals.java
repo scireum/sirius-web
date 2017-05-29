@@ -8,7 +8,7 @@
 
 package sirius.tagliatelle.expression;
 
-import sirius.tagliatelle.LocalRenderContext;
+import sirius.tagliatelle.rendering.LocalRenderContext;
 
 import java.util.Objects;
 
@@ -29,8 +29,8 @@ public class OperationEquals extends Expression {
 
     @Override
     public Expression visit(ExpressionVisitor visitor) {
-        this.leftExpression = visitor.visit(leftExpression);
-        this.rightExpression = visitor.visit(rightExpression);
+        this.leftExpression = leftExpression.visit(visitor);
+        this.rightExpression = rightExpression.visit(visitor);
         return visitor.visit(this);
     }
 

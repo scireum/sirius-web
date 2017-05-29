@@ -9,15 +9,16 @@
 package sirius.tagliatelle.emitter;
 
 import parsii.tokenizer.Position;
-import sirius.tagliatelle.LocalRenderContext;
 import sirius.tagliatelle.Template;
 import sirius.tagliatelle.TemplateArgument;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.expression.ExpressionVisitor;
+import sirius.tagliatelle.rendering.LocalRenderContext;
 
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Created by aha on 16.05.17.
@@ -39,7 +40,8 @@ public class InvokeTemplateEmitter extends Emitter {
         InvokeTemplateEmitter copy = new InvokeTemplateEmitter(startOfBlock, templateName);
         copy.arguments = new Expression[arguments.length];
         for (int i = 0; i < arguments.length; i++) {
-            copy.arguments[i] = arguments[i].copy();
+            Expression arg = arguments[i];
+            copy.arguments[i] = arg != null ? arg.copy() : null;
         }
 
         if (blocks != null) {
@@ -55,7 +57,8 @@ public class InvokeTemplateEmitter extends Emitter {
     @Override
     public Emitter reduce() {
         for (int i = 0; i < arguments.length; i++) {
-            arguments[i] = arguments[i].reduce();
+            Expression arg = arguments[i];
+            arguments[i] = arg != null ? arg.reduce() : null;
         }
 
         if (blocks != null) {
@@ -75,13 +78,16 @@ public class InvokeTemplateEmitter extends Emitter {
     }
 
     @Override
-    public void visitExpressions(ExpressionVisitor visitor) {
+    public void visitExpressions(Function<Position, ExpressionVisitor> visitorSupplier) {
+        ExpressionVisitor visitor = visitorSupplier.apply(getStartOfBlock());
         for (int i = 0; i < arguments.length; i++) {
-            arguments[i] = visitor.visit(arguments[i]);
+            if (arguments[i] != null) {
+                arguments[i] = arguments[i].visit(visitor);
+            }
         }
 
         if (blocks != null) {
-            this.blocks.values().forEach(e -> e.visitExpressions(visitor));
+            this.blocks.values().forEach(e -> e.visitExpressions(visitorSupplier));
         }
     }
 
