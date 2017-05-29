@@ -57,6 +57,7 @@ public class TestRequest extends WebContext implements HttpRequest {
     private HttpHeaders testHeaders = new DefaultHttpHeaders();
     private String testUri;
     private HttpMethod testMethod;
+    private boolean preDispatch;
     private List<Cookie> testCookies = Lists.newArrayList();
     protected Promise<TestResponse> testResponsePromise = new Promise<>();
 
@@ -257,6 +258,19 @@ public class TestRequest extends WebContext implements HttpRequest {
     }
 
     /**
+     * Marks this request as preDispatchable, so that it will only match routes with
+     * {@link sirius.web.controller.Routed#preDispatchable() preDispatchable}<tt> == true</tt>
+     *
+     * @param contentLength total size of the request payload to use for the ContentLength-header
+     * @return the request itself for fluent method calls
+     */
+    public TestRequest setPreDispatch(long contentLength) {
+        this.preDispatch = true;
+        addHeader(HttpHeaderNames.CONTENT_LENGTH, contentLength);
+        return this;
+    }
+
+    /**
      * Executes the request (dispatches it).
      * <p>
      * Returns a promise which will be full filled, once the called code produces a response. Use
@@ -268,7 +282,10 @@ public class TestRequest extends WebContext implements HttpRequest {
         CallContext.getCurrent().set(WebContext.class, this);
         for (WebDispatcher dispatcher : WebServerHandler.getSortedDispatchers()) {
             try {
-                if (dispatcher.dispatch(this)) {
+                if (preDispatch && dispatcher.preDispatch(this)) {
+                    contentHandler.handle(this.content.getByteBuf(), true);
+                    return testResponsePromise;
+                } else if (!preDispatch && dispatcher.dispatch(this)) {
                     return testResponsePromise;
                 }
             } catch (Exception e) {
@@ -296,9 +313,7 @@ public class TestRequest extends WebContext implements HttpRequest {
                                 .handle();
             }
         } else {
-            throw Exceptions.handle()
-                            .withSystemErrorMessage("No response was created after 60s: %s", uri())
-                            .handle();
+            throw Exceptions.handle().withSystemErrorMessage("No response was created after 60s: %s", uri()).handle();
         }
     }
 
