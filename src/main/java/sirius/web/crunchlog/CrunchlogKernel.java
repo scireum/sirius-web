@@ -104,7 +104,7 @@ public class CrunchlogKernel extends BackgroundLoop implements Lifecycle, Metric
     @Override
     protected double maxCallFrequency() {
         // We collect data for 30s before writing to disk
-        return 1 / 2d;
+        return 1 / 30d;
     }
 
     @Override
