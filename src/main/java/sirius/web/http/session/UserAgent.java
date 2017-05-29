@@ -28,6 +28,10 @@ public class UserAgent {
     private static final String IPOD = "ipod";
     private static final Pattern ANDROID_PHONE_PATTERN = Pattern.compile("(?=.*\\bandroid\\b)(?=.*\\bmobile\\b)");
     private static final String ANDROID_TABLET = "android";
+    private static final String BLACKBERRY = "blackberry";
+    private static final String BLACKBERRY_10 = "bb10";
+    private static final String WINDOWS_PHONE = "windows phone";
+    private static final Pattern WINDOWS_TABLET_PATTERN = Pattern.compile("(?=.*\\baindows\\b)(?=.*\\barm\\b)");
     private String userAgentString;
 
     private boolean phone = false;
@@ -62,6 +66,16 @@ public class UserAgent {
         }
         if (lowerCaseUserAgent.contains(ANDROID_TABLET)) {
             android = true;
+            tablet = true;
+            return;
+        }
+        if (lowerCaseUserAgent.contains(BLACKBERRY)
+            || lowerCaseUserAgent.contains(BLACKBERRY_10)
+            || lowerCaseUserAgent.contains(WINDOWS_PHONE)) {
+            phone = true;
+            return;
+        }
+        if (WINDOWS_TABLET_PATTERN.matcher(lowerCaseUserAgent).find()) {
             tablet = true;
             return;
         }
