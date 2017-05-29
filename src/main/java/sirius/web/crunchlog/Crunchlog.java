@@ -116,7 +116,7 @@ public class Crunchlog {
          */
         @CheckReturnValue
         public LogBuilder withURI(WebContext ctx) {
-            set("uri", ctx);
+            set("uri", ctx.getRequestedURI());
             return this;
         }
 
@@ -129,7 +129,7 @@ public class Crunchlog {
         @CheckReturnValue
         public LogBuilder withURIAndUserAgent(WebContext ctx) {
             if (ctx != null) {
-                set("uri", ctx);
+                set("uri", ctx.getRequestedURI());
                 set("userAgent", ctx.getHeader(HttpHeaderNames.USER_AGENT));
             }
             return this;
