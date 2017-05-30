@@ -9,6 +9,7 @@
 package sirius.web.dispatch;
 
 import io.netty.handler.codec.http.HttpMethod;
+import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
@@ -52,7 +53,11 @@ public class HelpDispatcher implements WebDispatcher {
             return false;
         }
         String uri = getRequestedURI(ctx);
-        String helpSystemHomeURI = "/help/" + getHelpSystemLanguageDirectory(uri);
+        String lang = getHelpSystemLanguageDirectory(uri);
+        if (Strings.isFilled(lang)) {
+            CallContext.getCurrent().setLang(lang);
+        }
+        String helpSystemHomeURI = "/help/" + lang;
         if (uri.contains(".") && !uri.endsWith("html")) {
             // Dispatch static content...
             URL url = getClass().getResource(uri);
