@@ -1887,7 +1887,7 @@ public class WebContext implements SubContext {
      */
     public UserAgent getUserAgent() {
         if (userAgent == null) {
-            userAgent = new UserAgent(getHeader("User-Agent"));
+            userAgent = new UserAgent(getHeader(HttpHeaderNames.USER_AGENT));
         }
         return userAgent;
     }
