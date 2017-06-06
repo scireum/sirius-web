@@ -49,6 +49,7 @@ import sirius.kernel.xml.StructuredInput;
 import sirius.kernel.xml.XMLStructuredInput;
 import sirius.web.http.session.ServerSession;
 import sirius.web.http.session.SessionManager;
+import sirius.web.http.session.UserAgent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -274,6 +275,11 @@ public class WebContext implements SubContext {
      * Caches the content size as the "readableBytes" value changes once a stream is on it.
      */
     private Long contentSize;
+
+    /*
+     * Caches the user agent for this request.
+     */
+    protected UserAgent userAgent;
 
     /*
      * Name of the cookie used to store and load the client session
@@ -1871,6 +1877,19 @@ public class WebContext implements SubContext {
      */
     public String getDynamicAssetToken() {
         return Product.getProduct().getUniqueVersionString();
+    }
+
+    /**
+     * Returns {@link UserAgent} for easy access to the user agent used for this request. Also it provides access to
+     * some assumptions based on the user agent e.g. which device was used.
+     *
+     * @return user agent wrapper object
+     */
+    public UserAgent getUserAgent() {
+        if (userAgent == null) {
+            userAgent = new UserAgent(getHeader(HttpHeaderNames.USER_AGENT));
+        }
+        return userAgent;
     }
 
     @Override
