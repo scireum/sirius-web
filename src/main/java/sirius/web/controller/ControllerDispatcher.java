@@ -156,9 +156,8 @@ public class ControllerDispatcher implements WebDispatcher {
             }
 
             // If a user authenticated during this call...bind to session!
-            UserContext userCtx = UserContext.get();
-            if (userCtx.getUser().isLoggedIn()) {
-                userCtx.attachUserToSession();
+            if (user.isLoggedIn()) {
+                UserContext.get().attachUserToSession();
             }
 
             String missingPermission = route.checkAuth(user);
