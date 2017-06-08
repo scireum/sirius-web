@@ -111,13 +111,26 @@ public class TestRequest extends WebContext implements HttpRequest {
      * @param uri      the relative uri to call
      * @param resource the name of the resource to send
      * @return an instance used to further specify the request to send
+     * @see #PUT(String, InputStream)
      */
     public static TestRequest PUT(String uri, String resource) {
-        TestRequest result = new TestRequest();
-        result.testMethod = HttpMethod.PUT;
-        result.testUri = uri;
-        installContent(result, getResourceAsStream(resource));
-        return result;
+        return PUT(uri, getResourceAsStream(resource));
+    }
+
+    /**
+     * Creates a mock request simulating a PUT on the given uri while sending the given resource.
+     * <p>
+     * The resource will be resolved using {@link sirius.web.templates.Resources}
+     *
+     * @param uri         the relative uri to call
+     * @param resource    the name of the resource to send
+     * @param preDispatch whether to use a {@link sirius.web.controller.Route#preDispatchable preDispatchable}
+     *                    {@link sirius.web.controller.Route Route}
+     * @return an instance used to further specify the request to send
+     * @see #PUT(String, InputStream, boolean)
+     */
+    public static TestRequest PUT(String uri, String resource, boolean preDispatch) {
+        return PUT(uri, getResourceAsStream(resource), preDispatch);
     }
 
     protected static InputStream getResourceAsStream(String resource) {
@@ -142,11 +155,32 @@ public class TestRequest extends WebContext implements HttpRequest {
      * @param uri      the relative uri to call
      * @param resource the data to send to the server
      * @return an instance used to further specify the request to send
+     * @see #PUT(String, InputStream, boolean)
      */
     public static TestRequest PUT(String uri, InputStream resource) {
+        return PUT(uri, resource, false);
+    }
+
+    /**
+     * Creates a mock request simulating a PUT on the given uri while sending the given data.
+     *
+     * @param uri         the relative uri to call
+     * @param resource    the data to send to the server
+     * @param preDispatch whether to use a {@link sirius.web.controller.Route#preDispatchable preDispatchable}
+     *                    {@link sirius.web.controller.Route Route}
+     * @return an instance used to further specify the request to send
+     */
+    public static TestRequest PUT(String uri, InputStream resource, boolean preDispatch) {
         TestRequest result = new TestRequest();
         result.testMethod = HttpMethod.PUT;
         result.testUri = uri;
+        if (preDispatch) {
+            try {
+                result.setPreDispatch(resource.available());
+            } catch (IOException e) {
+                result.setPreDispatch(0);
+            }
+        }
         installContent(result, resource);
         return result;
     }
@@ -159,13 +193,26 @@ public class TestRequest extends WebContext implements HttpRequest {
      * @param uri      the relative uri to call
      * @param resource the name of the resource to send
      * @return an instance used to further specify the request to send
+     * @see #POST(String, InputStream)
      */
     public static TestRequest POST(String uri, String resource) {
-        TestRequest result = new TestRequest();
-        result.testMethod = HttpMethod.POST;
-        result.testUri = uri;
-        installContent(result, getResourceAsStream(resource));
-        return result;
+        return POST(uri, getResourceAsStream(resource));
+    }
+
+    /**
+     * Creates a mock request simulating a POST on the given uri while sending the given resource.
+     * <p>
+     * The resource will be resolved using {@link sirius.web.templates.Resources}
+     *
+     * @param uri         the relative uri to call
+     * @param resource    the name of the resource to send
+     * @param preDispatch whether to use a {@link sirius.web.controller.Route#preDispatchable preDispatchable}
+     *                    {@link sirius.web.controller.Route Route}
+     * @return an instance used to further specify the request to send
+     * @see #POST(String, InputStream, boolean)
+     */
+    public static TestRequest POST(String uri, String resource, boolean preDispatch) {
+        return POST(uri, getResourceAsStream(resource), preDispatch);
     }
 
     /**
@@ -174,11 +221,32 @@ public class TestRequest extends WebContext implements HttpRequest {
      * @param uri      the relative uri to call
      * @param resource the data to send to the server
      * @return an instance used to further specify the request to send
+     * @see #POST(String, InputStream, boolean)
      */
     public static TestRequest POST(String uri, InputStream resource) {
+        return POST(uri, resource, false);
+    }
+
+    /**
+     * Creates a mock request simulating a POST on the given uri while sending the given data.
+     *
+     * @param uri         the relative uri to call
+     * @param resource    the data to send to the server
+     * @param preDispatch whether to use a {@link sirius.web.controller.Route#preDispatchable preDispatchable}
+     *                    {@link sirius.web.controller.Route Route}
+     * @return an instance used to further specify the request to send
+     */
+    public static TestRequest POST(String uri, InputStream resource, boolean preDispatch) {
         TestRequest result = new TestRequest();
         result.testMethod = HttpMethod.POST;
         result.testUri = uri;
+        if (preDispatch) {
+            try {
+                result.setPreDispatch(resource.available());
+            } catch (IOException e) {
+                result.setPreDispatch(0);
+            }
+        }
         installContent(result, resource);
         return result;
     }
