@@ -175,11 +175,7 @@ public class TestRequest extends WebContext implements HttpRequest {
         result.testMethod = HttpMethod.PUT;
         result.testUri = uri;
         if (preDispatch) {
-            try {
-                result.setPreDispatch(resource.available());
-            } catch (IOException e) {
-                result.setPreDispatch(0);
-            }
+            result.setPreDispatch(resource);
         }
         installContent(result, resource);
         return result;
@@ -241,11 +237,7 @@ public class TestRequest extends WebContext implements HttpRequest {
         result.testMethod = HttpMethod.POST;
         result.testUri = uri;
         if (preDispatch) {
-            try {
-                result.setPreDispatch(resource.available());
-            } catch (IOException e) {
-                result.setPreDispatch(0);
-            }
+            result.setPreDispatch(resource);
         }
         installContent(result, resource);
         return result;
@@ -335,6 +327,23 @@ public class TestRequest extends WebContext implements HttpRequest {
     public TestRequest setPreDispatch(long contentLength) {
         this.preDispatch = true;
         addHeader(HttpHeaderNames.CONTENT_LENGTH, contentLength);
+        return this;
+    }
+
+    /**
+     * Marks this request as preDispatchable, so that it will only match routes with
+     * {@link sirius.web.controller.Routed#preDispatchable() preDispatchable}<tt> == true</tt>
+     *
+     * @param resource data stream to retrieve the total size of the request payload
+     * @return the request itself for fluent method calls
+     */
+    private TestRequest setPreDispatch(InputStream resource) {
+        try {
+            setPreDispatch(resource.available());
+        } catch (IOException e) {
+            Exceptions.createHandled().error(e).handle();
+            setPreDispatch(0);
+        }
         return this;
     }
 
