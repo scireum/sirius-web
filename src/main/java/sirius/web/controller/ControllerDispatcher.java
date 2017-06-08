@@ -155,6 +155,11 @@ public class ControllerDispatcher implements WebDispatcher {
                 return;
             }
 
+            // If a user authenticated during this call...bind to session!
+            if (user.isLoggedIn()) {
+                UserContext.get().attachUserToSession();
+            }
+
             String missingPermission = route.checkAuth(user);
             if (missingPermission != null) {
                 handlePermissionError(ctx, route, missingPermission);
@@ -174,12 +179,6 @@ public class ControllerDispatcher implements WebDispatcher {
     }
 
     private void executeRoute(WebContext ctx, Route route, List<Object> params) throws Exception {
-        // If a user authenticated during this call...bind to session!
-        UserContext userCtx = UserContext.get();
-        if (userCtx.getUser().isLoggedIn()) {
-            userCtx.attachUserToSession();
-        }
-
         if (route.isJSONCall()) {
             executeJSONCall(ctx, route, params);
         } else {
