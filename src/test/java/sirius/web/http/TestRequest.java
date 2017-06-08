@@ -117,22 +117,6 @@ public class TestRequest extends WebContext implements HttpRequest {
         return PUT(uri, getResourceAsStream(resource));
     }
 
-    /**
-     * Creates a mock request simulating a PUT on the given uri while sending the given resource.
-     * <p>
-     * The resource will be resolved using {@link sirius.web.templates.Resources}
-     *
-     * @param uri         the relative uri to call
-     * @param resource    the name of the resource to send
-     * @param preDispatch whether to use a {@link sirius.web.controller.Route#preDispatchable preDispatchable}
-     *                    {@link sirius.web.controller.Route Route}
-     * @return an instance used to further specify the request to send
-     * @see #PUT(String, InputStream, boolean)
-     */
-    public static TestRequest PUT(String uri, String resource, boolean preDispatch) {
-        return PUT(uri, getResourceAsStream(resource), preDispatch);
-    }
-
     protected static InputStream getResourceAsStream(String resource) {
         return resources.resolve(resource)
                         .orElseThrow(() -> new IllegalArgumentException("Unknown Resource: " + resource))
@@ -155,27 +139,15 @@ public class TestRequest extends WebContext implements HttpRequest {
      * @param uri      the relative uri to call
      * @param resource the data to send to the server
      * @return an instance used to further specify the request to send
-     * @see #PUT(String, InputStream, boolean)
      */
     public static TestRequest PUT(String uri, InputStream resource) {
-        return PUT(uri, resource, false);
-    }
-
-    /**
-     * Creates a mock request simulating a PUT on the given uri while sending the given data.
-     *
-     * @param uri         the relative uri to call
-     * @param resource    the data to send to the server
-     * @param preDispatch whether to use a {@link sirius.web.controller.Route#preDispatchable preDispatchable}
-     *                    {@link sirius.web.controller.Route Route}
-     * @return an instance used to further specify the request to send
-     */
-    public static TestRequest PUT(String uri, InputStream resource, boolean preDispatch) {
         TestRequest result = new TestRequest();
         result.testMethod = HttpMethod.PUT;
         result.testUri = uri;
-        if (preDispatch) {
-            result.setPreDispatch(resource);
+        try {
+            result.addHeader(HttpHeaderNames.CONTENT_LENGTH, resource.available());
+        } catch (IOException e) {
+            Exceptions.createHandled().error(e).handle();
         }
         installContent(result, resource);
         return result;
@@ -196,48 +168,20 @@ public class TestRequest extends WebContext implements HttpRequest {
     }
 
     /**
-     * Creates a mock request simulating a POST on the given uri while sending the given resource.
-     * <p>
-     * The resource will be resolved using {@link sirius.web.templates.Resources}
-     *
-     * @param uri         the relative uri to call
-     * @param resource    the name of the resource to send
-     * @param preDispatch whether to use a {@link sirius.web.controller.Route#preDispatchable preDispatchable}
-     *                    {@link sirius.web.controller.Route Route}
-     * @return an instance used to further specify the request to send
-     * @see #POST(String, InputStream, boolean)
-     */
-    public static TestRequest POST(String uri, String resource, boolean preDispatch) {
-        return POST(uri, getResourceAsStream(resource), preDispatch);
-    }
-
-    /**
      * Creates a mock request simulating a POST on the given uri while sending the given data.
      *
      * @param uri      the relative uri to call
      * @param resource the data to send to the server
      * @return an instance used to further specify the request to send
-     * @see #POST(String, InputStream, boolean)
      */
     public static TestRequest POST(String uri, InputStream resource) {
-        return POST(uri, resource, false);
-    }
-
-    /**
-     * Creates a mock request simulating a POST on the given uri while sending the given data.
-     *
-     * @param uri         the relative uri to call
-     * @param resource    the data to send to the server
-     * @param preDispatch whether to use a {@link sirius.web.controller.Route#preDispatchable preDispatchable}
-     *                    {@link sirius.web.controller.Route Route}
-     * @return an instance used to further specify the request to send
-     */
-    public static TestRequest POST(String uri, InputStream resource, boolean preDispatch) {
         TestRequest result = new TestRequest();
         result.testMethod = HttpMethod.POST;
         result.testUri = uri;
-        if (preDispatch) {
-            result.setPreDispatch(resource);
+        try {
+            result.addHeader(HttpHeaderNames.CONTENT_LENGTH, resource.available());
+        } catch (IOException e) {
+            Exceptions.createHandled().error(e).handle();
         }
         installContent(result, resource);
         return result;
@@ -321,29 +265,10 @@ public class TestRequest extends WebContext implements HttpRequest {
      * Marks this request as preDispatchable, so that it will only match routes with
      * {@link sirius.web.controller.Routed#preDispatchable() preDispatchable}<tt> == true</tt>
      *
-     * @param contentLength total size of the request payload to use for the ContentLength-header
      * @return the request itself for fluent method calls
      */
-    public TestRequest setPreDispatch(long contentLength) {
+    public TestRequest asPreDispatched() {
         this.preDispatch = true;
-        addHeader(HttpHeaderNames.CONTENT_LENGTH, contentLength);
-        return this;
-    }
-
-    /**
-     * Marks this request as preDispatchable, so that it will only match routes with
-     * {@link sirius.web.controller.Routed#preDispatchable() preDispatchable}<tt> == true</tt>
-     *
-     * @param resource data stream to retrieve the total size of the request payload
-     * @return the request itself for fluent method calls
-     */
-    private TestRequest setPreDispatch(InputStream resource) {
-        try {
-            setPreDispatch(resource.available());
-        } catch (IOException e) {
-            Exceptions.createHandled().error(e).handle();
-            setPreDispatch(0);
-        }
         return this;
     }
 
