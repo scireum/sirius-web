@@ -57,6 +57,7 @@ public class TestRequest extends WebContext implements HttpRequest {
     private HttpHeaders testHeaders = new DefaultHttpHeaders();
     private String testUri;
     private HttpMethod testMethod;
+    private boolean preDispatch;
     private List<Cookie> testCookies = Lists.newArrayList();
     protected Promise<TestResponse> testResponsePromise = new Promise<>();
 
@@ -110,13 +111,10 @@ public class TestRequest extends WebContext implements HttpRequest {
      * @param uri      the relative uri to call
      * @param resource the name of the resource to send
      * @return an instance used to further specify the request to send
+     * @see #PUT(String, InputStream)
      */
     public static TestRequest PUT(String uri, String resource) {
-        TestRequest result = new TestRequest();
-        result.testMethod = HttpMethod.PUT;
-        result.testUri = uri;
-        installContent(result, getResourceAsStream(resource));
-        return result;
+        return PUT(uri, getResourceAsStream(resource));
     }
 
     protected static InputStream getResourceAsStream(String resource) {
@@ -146,6 +144,11 @@ public class TestRequest extends WebContext implements HttpRequest {
         TestRequest result = new TestRequest();
         result.testMethod = HttpMethod.PUT;
         result.testUri = uri;
+        try {
+            result.addHeader(HttpHeaderNames.CONTENT_LENGTH, resource.available());
+        } catch (IOException e) {
+            Exceptions.createHandled().error(e).handle();
+        }
         installContent(result, resource);
         return result;
     }
@@ -158,13 +161,10 @@ public class TestRequest extends WebContext implements HttpRequest {
      * @param uri      the relative uri to call
      * @param resource the name of the resource to send
      * @return an instance used to further specify the request to send
+     * @see #POST(String, InputStream)
      */
     public static TestRequest POST(String uri, String resource) {
-        TestRequest result = new TestRequest();
-        result.testMethod = HttpMethod.POST;
-        result.testUri = uri;
-        installContent(result, getResourceAsStream(resource));
-        return result;
+        return POST(uri, getResourceAsStream(resource));
     }
 
     /**
@@ -178,6 +178,11 @@ public class TestRequest extends WebContext implements HttpRequest {
         TestRequest result = new TestRequest();
         result.testMethod = HttpMethod.POST;
         result.testUri = uri;
+        try {
+            result.addHeader(HttpHeaderNames.CONTENT_LENGTH, resource.available());
+        } catch (IOException e) {
+            Exceptions.createHandled().error(e).handle();
+        }
         installContent(result, resource);
         return result;
     }
@@ -257,6 +262,17 @@ public class TestRequest extends WebContext implements HttpRequest {
     }
 
     /**
+     * Marks this request as preDispatchable, so that it will only match routes with
+     * {@link sirius.web.controller.Routed#preDispatchable() preDispatchable}<tt> == true</tt>
+     *
+     * @return the request itself for fluent method calls
+     */
+    public TestRequest asPreDispatched() {
+        this.preDispatch = true;
+        return this;
+    }
+
+    /**
      * Executes the request (dispatches it).
      * <p>
      * Returns a promise which will be full filled, once the called code produces a response. Use
@@ -268,7 +284,10 @@ public class TestRequest extends WebContext implements HttpRequest {
         CallContext.getCurrent().set(WebContext.class, this);
         for (WebDispatcher dispatcher : WebServerHandler.getSortedDispatchers()) {
             try {
-                if (dispatcher.dispatch(this)) {
+                if (preDispatch && dispatcher.preDispatch(this)) {
+                    contentHandler.handle(this.content.getByteBuf(), true);
+                    return testResponsePromise;
+                } else if (!preDispatch && dispatcher.dispatch(this)) {
                     return testResponsePromise;
                 }
             } catch (Exception e) {
@@ -296,9 +315,7 @@ public class TestRequest extends WebContext implements HttpRequest {
                                 .handle();
             }
         } else {
-            throw Exceptions.handle()
-                            .withSystemErrorMessage("No response was created after 60s: %s", uri())
-                            .handle();
+            throw Exceptions.handle().withSystemErrorMessage("No response was created after 60s: %s", uri()).handle();
         }
     }
 
