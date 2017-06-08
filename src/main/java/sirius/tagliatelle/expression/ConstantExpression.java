@@ -9,9 +9,10 @@
 package sirius.tagliatelle.expression;
 
 /**
- * Created by aha on 24.05.17.
+ * Represents a constant expression.
  */
 public abstract class ConstantExpression extends Expression {
+
     @Override
     public Expression visit(ExpressionVisitor visitor) {
         return visitor.visit(this);

@@ -16,13 +16,21 @@ import sirius.tagliatelle.rendering.LocalRenderContext;
 import java.util.function.Function;
 
 /**
- * Created by aha on 10.05.17.
+ * Writes the result of an expression evaluation into a temporary / local variable.
  */
 public class PushLocalEmitter extends Emitter {
 
     private final int localIndex;
     private Expression expression;
 
+    /**
+     * Creates a new instance at the given position which writes the value of the given expression into the given local
+     * location.
+     *
+     * @param startOfBlock the position where the statement was created
+     * @param localIndex   the local index within the {@link LocalRenderContext} to store the value to
+     * @param expression   the expression to evaluate at runtime
+     */
     public PushLocalEmitter(Position startOfBlock, int localIndex, Expression expression) {
         super(startOfBlock);
         this.localIndex = localIndex;

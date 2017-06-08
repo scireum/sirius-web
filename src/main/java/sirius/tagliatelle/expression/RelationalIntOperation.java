@@ -11,7 +11,7 @@ package sirius.tagliatelle.expression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
 /**
- * Created by aha on 12.05.17.
+ * Represents a relational operation on integer values.
  */
 public class RelationalIntOperation extends Expression {
 
@@ -19,11 +19,17 @@ public class RelationalIntOperation extends Expression {
     protected Expression rightExpression;
     protected Operator operator;
 
+    /**
+     * Creates a new instance for the given operator and operands.
+     *
+     * @param operator        the operator to use
+     * @param leftExpression  the left operand
+     * @param rightExpression the right operand
+     */
     public RelationalIntOperation(Operator operator, Expression leftExpression, Expression rightExpression) {
         this.operator = operator;
         this.leftExpression = leftExpression;
         this.rightExpression = rightExpression;
-        //TODO ensure int
     }
 
     @Override
@@ -79,7 +85,6 @@ public class RelationalIntOperation extends Expression {
             case NE:
                 return left != right;
             default:
-                //TODO
                 throw new IllegalArgumentException(operator.toString());
         }
     }

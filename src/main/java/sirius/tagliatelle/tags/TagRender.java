@@ -10,11 +10,12 @@ package sirius.tagliatelle.tags;
 
 import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.emitter.BlockEmitter;
+import sirius.tagliatelle.emitter.CompositeEmitter;
 
 import javax.annotation.Nonnull;
 
 /**
- * Created by aha on 12.05.17.
+ * Handles <tt>i:render</tt> which emits the block with the given name.
  */
 public class TagRender extends TagHandler {
 
@@ -34,8 +35,10 @@ public class TagRender extends TagHandler {
     }
 
     @Override
-    public void apply(TagContext context) {
-        context.getBlock().addChild(new BlockEmitter(context.getStartOfTag(), getConstantAttribute("name").asString(), getBlock("body")));
+    public void apply(CompositeEmitter targetBlock) {
+        targetBlock.addChild(new BlockEmitter(getStartOfTag(),
+                                              getConstantAttribute("name").asString(),
+                                              getBlock("body")));
     }
 
     @Override

@@ -46,10 +46,10 @@ import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Microtiming;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.XMLStructuredOutput;
-import sirius.tagliatelle.compiler.CompileException;
 import sirius.tagliatelle.Engine;
-import sirius.tagliatelle.rendering.GlobalRenderContext;
 import sirius.tagliatelle.Template;
+import sirius.tagliatelle.compiler.CompileException;
+import sirius.tagliatelle.rendering.GlobalRenderContext;
 import sirius.web.services.JSONStructuredOutput;
 import sirius.web.templates.Resource;
 import sirius.web.templates.Resources;
@@ -1022,20 +1022,17 @@ public class Response {
             Object[] effectiveParams = fixParams(params);
             GlobalRenderContext renderContext = engine.createRenderContext();
             template.render(renderContext, effectiveParams);
-            sendTemplateContent(status, template.getFilename(), renderContext.toString());
+            sendTemplateContent(status, template.getEffectiveFileName(), renderContext.toString());
         } catch (Exception e) {
-            handleTemplateError(template.getFilename(), e);
+            handleTemplateError(template.getEffectiveFileName(), e);
         }
     }
 
     private void setupContentType(Template template) {
-        String fileName = template.getName();
-        if (fileName.endsWith(".html.pasta")) {
+        String fileName = template.getEffectiveFileName();
+        if (fileName.endsWith(".html")) {
             setHeader(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=UTF-8");
         } else {
-            if (fileName.endsWith(".pasta")) {
-                fileName = fileName.substring(0, fileName.length() - 6);
-            }
             setContentTypeHeader(fileName);
         }
     }

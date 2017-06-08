@@ -266,12 +266,12 @@ public class CompilationContext {
      * @return the resolved template or an empty optional to signal, that no matching template was found
      * @throws CompileException if case of a compilation error when compiling the referenced template
      */
-    public Optional<Template> resolveTemplate(Char position, String name) throws CompileException {
+    public Optional<Template> resolveTemplate(Position position, String name) throws CompileException {
         failOnRecursiveCompilation(position, name);
         return engine.resolve(name, this);
     }
 
-    private void failOnRecursiveCompilation(Char position, String name) throws CompileException {
+    private void failOnRecursiveCompilation(Position position, String name) throws CompileException {
         CompilationContext compilationContext = this;
         StringBuilder loop = new StringBuilder();
         while (compilationContext != null) {
@@ -370,14 +370,6 @@ public class CompilationContext {
 
         copy = copy.reduce();
 
-        // Within a constant emitter no render error can occur, therefore we don't need to update
-        // the render stack
-        if (copy instanceof ConstantEmitter) {
-            return copy;
-        }
-
-        // We cover the inlined block of template emitters in an inline emitter to update the render stack for
-        // accurate error messages when something goes wrong
         return new InlineTemplateEmitter(startOfTag, template, copy);
     }
 
@@ -528,9 +520,6 @@ public class CompilationContext {
     private Emitter replaceBlockReference(Function<String, Emitter> blocks, BlockEmitter blockEmitter) {
         Emitter result = blocks.apply(blockEmitter.getName());
         if (result != null) {
-            if (result instanceof ConstantEmitter) {
-                return result;
-            }
             return new InlineTemplateEmitter(result.getStartOfBlock(), getTemplate(), result);
         }
 

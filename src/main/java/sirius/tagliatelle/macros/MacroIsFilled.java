@@ -10,14 +10,14 @@ package sirius.tagliatelle.macros;
 
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
-import sirius.tagliatelle.rendering.LocalRenderContext;
 import sirius.tagliatelle.expression.Expression;
+import sirius.tagliatelle.rendering.LocalRenderContext;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
- * Created by aha on 16.05.17.
+ * Represents <tt>isFilled(Object)</tt> which is a call to {@link Strings#isFilled(Object)}.
  */
 @Register
 public class MacroIsFilled implements Macro {
@@ -29,8 +29,9 @@ public class MacroIsFilled implements Macro {
 
     @Override
     public void verifyArguments(List<Expression> args) {
-//if (args.size() != 1 || x)
-        //TODO
+        if (args.size() != 1) {
+            throw new IllegalArgumentException("Expected a single String as argument.");
+        }
     }
 
     @Override

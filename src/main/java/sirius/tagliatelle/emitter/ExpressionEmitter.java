@@ -16,12 +16,18 @@ import sirius.tagliatelle.rendering.LocalRenderContext;
 import java.util.function.Function;
 
 /**
- * Created by aha on 10.05.17.
+ * Emits the result of an evaluated expression.
  */
 public class ExpressionEmitter extends Emitter {
 
     private Expression expression;
 
+    /**
+     * Creates a new instance at the given position which the given expression.
+     *
+     * @param startOfBlock the position where the emitter was declared
+     * @param expression   the expression to declare at runtime
+     */
     public ExpressionEmitter(Position startOfBlock, Expression expression) {
         super(startOfBlock);
         this.expression = expression;
@@ -32,17 +38,18 @@ public class ExpressionEmitter extends Emitter {
         return new ExpressionEmitter(startOfBlock, expression.copy());
     }
 
+    /**
+     * Reduces the internal expression.
+     * <p>
+     * Note that we deliberately do not convert a constant expression into a {@link ConstantEmitter} as the escaper
+     * might be changed at runtime.
+     *
+     * @return always returns <tt>this</tt>
+     * @see sirius.tagliatelle.rendering.GlobalRenderContext#setEscaper(Function)
+     */
     @Override
     public Emitter reduce() {
         this.expression = expression.reduce();
-
-        if (expression.isConstant()) {
-            Object value = expression.eval(null);
-            ConstantEmitter result = new ConstantEmitter(startOfBlock);
-            result.append(value == null ? "" : value.toString());
-
-            return result;
-        }
 
         return this;
     }
@@ -61,10 +68,8 @@ public class ExpressionEmitter extends Emitter {
     @Override
     protected void emitToContext(LocalRenderContext context) throws Exception {
         Object value = expression.eval(context);
-        if (value == null) {
-            context.output("");
-        } else {
-            context.output(value.toString());
+        if (value != null) {
+            context.outputEscaped(value.toString());
         }
     }
 

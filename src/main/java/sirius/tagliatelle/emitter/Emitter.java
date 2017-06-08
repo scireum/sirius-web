@@ -9,24 +9,40 @@
 package sirius.tagliatelle.emitter;
 
 import parsii.tokenizer.Position;
+import sirius.tagliatelle.expression.ExpressionVisitor;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 import sirius.tagliatelle.rendering.RenderException;
-import sirius.tagliatelle.expression.ExpressionVisitor;
 
+import javax.annotation.Nonnull;
 import java.util.function.Function;
 
 /**
- * Created by aha on 10.05.17.
+ * Represents a part of a {@link sirius.tagliatelle.Template} which generates text output when the template is rendered.
  */
 public abstract class Emitter {
 
+    /**
+     * Contains the position in the source file where this emitter was created.
+     */
     protected Position startOfBlock;
 
-    public Emitter(Position startOfBlock) {
+    /**
+     * Contains a new emitter with the given position.
+     *
+     * @param startOfBlock the start position where the emitter was created
+     */
+    protected Emitter(@Nonnull Position startOfBlock) {
         this.startOfBlock = startOfBlock;
     }
 
-    public void emit(LocalRenderContext context) throws RenderException {
+    /**
+     * Procudes the text output into the given context.
+     *
+     * @param context the render context which provides access to the local and global environment and also the target
+     *                for the generated text
+     * @throws RenderException in case of any exception which occurs during rendering
+     */
+    public void emit(@Nonnull LocalRenderContext context) throws RenderException {
         context.updatePosition(startOfBlock);
         try {
             emitToContext(context);
@@ -35,17 +51,63 @@ public abstract class Emitter {
         }
     }
 
+    /**
+     * Actually produces the output while relying on the caller to properly handle any exception.
+     *
+     * @param context the render context which provides access to the local and global environment and also the target
+     *                for the generated text
+     * @throws Exception all thrown exceptions are caught and converted into a {@link RenderException}
+     */
+    protected abstract void emitToContext(@Nonnull LocalRenderContext context) throws Exception;
+
+    /**
+     * Returns the start position within the source file.
+     *
+     * @return the start of the definition which created this emitter
+     */
+    @Nonnull
     public Position getStartOfBlock() {
         return startOfBlock;
     }
 
-    protected abstract void emitToContext(LocalRenderContext context) throws Exception;
-
+    /**
+     * Creates a deep copy of this emitter.
+     * <p>
+     * When templates are inlined, the parameters are propagated and constant expressions and conditions are evaluated
+     * at compile time. This yields faster and more efficient templates. In order to perform these optimizations, we
+     * need a copy of the template and all its emitters which can safely be modified.
+     *
+     * @return a deep copy of this emitter, which can safely be modified without changing this emitter
+     */
+    @Nonnull
     public abstract Emitter copy();
 
+    /**
+     * Performs static optimizations at compile time.
+     * <p>
+     * Certain emitters an perform optimizations (evaluate constant expressions, combine constant outputs etc.) to
+     * create more efficient templates. This is especially important when a template is inlined, as this most probably
+     * provides a higher level of optimizations.
+     *
+     * @return a reduced version of this emitter of the emitter itself, if no further optimizations are possible
+     */
+    @Nonnull
     public abstract Emitter reduce();
 
-    public abstract Emitter visit(EmitterVisitor visitor);
+    /**
+     * Invokes the visitor on all sub emitters and on this emitter itself.
+     *
+     * @param visitor the visitor to invoke
+     * @return the resulting emitter returned by the visitor
+     */
+    @Nonnull
+    public abstract Emitter visit(@Nonnull EmitterVisitor visitor);
 
-    public abstract void visitExpressions(Function<Position, ExpressionVisitor> visitor);
+    /**
+     * Visits all expressions contained in this emitter or its children.
+     *
+     * @param visitor a function which generates an {@link ExpressionVisitor} while supplying the current position (for
+     *                improved error messages).
+     */
+    public abstract void visitExpressions(@Nonnull Function<Position, ExpressionVisitor> visitor);
 }

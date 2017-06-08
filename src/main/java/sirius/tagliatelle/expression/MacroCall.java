@@ -8,6 +8,7 @@
 
 package sirius.tagliatelle.expression;
 
+import parsii.tokenizer.Position;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
 import sirius.tagliatelle.compiler.CompilationContext;
@@ -15,32 +16,29 @@ import sirius.tagliatelle.macros.Macro;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
- * Created by aha on 10.05.17.
+ * Invokes a {@link Macro} at runtime.
  */
-public class MacroCall extends Expression {
+public class MacroCall extends Call {
 
-    public static final Expression[] NO_ARGS = {};
-    private Expression[] parameterExpressions = NO_ARGS;
     private Macro macro;
 
     @Part
     private static GlobalContext ctx;
 
     @Override
-    public Expression visit(ExpressionVisitor visitor) {
-        for (int i = 0; i < parameterExpressions.length; i++) {
-            parameterExpressions[i] = visitor.visit(parameterExpressions[i]);
-        }
+    public Expression copy() {
+        MacroCall copy = new MacroCall();
+        copy.macro = macro;
+        copyParametersTo(copy);
 
-        return visitor.visit(this);
+        return copy;
     }
 
     @Override
     public Expression reduce() {
-        boolean allConstant = true;
+        boolean allConstant = macro.isConstant();
         for (int i = 0; i < parameterExpressions.length; i++) {
             parameterExpressions[i] = parameterExpressions[i].reduce();
             if (!parameterExpressions[i].isConstant()) {
@@ -48,43 +46,39 @@ public class MacroCall extends Expression {
             }
         }
 
-        if (allConstant && macro.isConstant()) {
-            if (boolean.class.equals(macro.getType())) {
-                if ((boolean) macro.eval(null, parameterExpressions)) {
-                    return ConstantBoolean.TRUE;
-                } else {
-                    return ConstantBoolean.FALSE;
-                }
-            }
-
-            if (String.class.equals(macro.getType())) {
-                Object result = macro.eval(null, parameterExpressions);
-                if (result == null) {
-                    return ConstantNull.NULL;
-                }
-
-                return new ConstantString(result.toString());
-            }
+        if (allConstant) {
+            return evaluateConstantMacro();
         }
 
         return this;
     }
 
-    @Override
-    public boolean isConstant() {
-        return false;
-    }
-
-    @Override
-    public Expression copy() {
-        MacroCall copy = new MacroCall();
-        copy.macro = macro;
-        copy.parameterExpressions = new Expression[parameterExpressions.length];
-        for (int i = 0; i < parameterExpressions.length; i++) {
-            copy.parameterExpressions[i] = parameterExpressions[i].copy();
+    /**
+     * If the macro represents a constant function and all parameters are constant, the invocation might be replaced by
+     * the invocation result.
+     *
+     * @return if the invocation result is a string or boolean, we pre compute the value and create a respective
+     * expression for the result. Otherwise the call itself is returned.
+     */
+    private Expression evaluateConstantMacro() {
+        if (boolean.class.equals(macro.getType())) {
+            if ((boolean) macro.eval(null, parameterExpressions)) {
+                return ConstantBoolean.TRUE;
+            } else {
+                return ConstantBoolean.FALSE;
+            }
         }
 
-        return copy;
+        if (String.class.equals(macro.getType())) {
+            Object result = macro.eval(null, parameterExpressions);
+            if (result == null) {
+                return ConstantNull.NULL;
+            }
+
+            return new ConstantString(result.toString());
+        }
+
+        return this;
     }
 
     @Override
@@ -97,31 +91,21 @@ public class MacroCall extends Expression {
         return macro.getType();
     }
 
-    public void setParameters(List<Expression> parameters) {
-        if (parameters != null && !parameters.isEmpty()) {
-            this.parameterExpressions = parameters.toArray(new Expression[parameters.size()]);
+    public void bindToMethod(Position position, CompilationContext context, String methodName) {
+        this.macro = ctx.getPart(methodName, Macro.class);
+        if (macro == null) {
+            context.error(position, "Unknown macro: %s", methodName);
         }
-    }
-
-    public void bindToMethod(CompilationContext context, String methodName) {
-        this.macro = ctx.findPart(methodName, Macro.class);
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        if (parameterExpressions != null) {
-            for (Expression expr : parameterExpressions) {
-                if (sb.length() > 0) {
-                    sb.append(", ");
-                }
-                sb.append(expr);
-            }
-        }
-        return macro.getName() + "(" + sb + ")";
+        return macro.getName();
     }
 
-    public void verify() throws IllegalArgumentException {
-        macro.verifyArguments(Arrays.asList(parameterExpressions));
+    public void verify() {
+        if (macro != null) {
+            macro.verifyArguments(Arrays.asList(parameterExpressions));
+        }
     }
 }

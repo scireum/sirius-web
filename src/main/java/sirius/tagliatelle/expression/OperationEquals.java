@@ -13,7 +13,9 @@ import sirius.tagliatelle.rendering.LocalRenderContext;
 import java.util.Objects;
 
 /**
- * Created by aha on 12.05.17.
+ * Creates a <tt>==</tt> (in terms of {@link Object#equals(Object)}) operation.
+ * <p>
+ * Note that this can also be inverted to <tt>!=</tt>.
  */
 public class OperationEquals extends Expression {
 
@@ -21,6 +23,12 @@ public class OperationEquals extends Expression {
     protected Expression rightExpression;
     protected boolean invert;
 
+    /**
+     * Creates a new operation for the given operands.
+     * @param leftExpression the left operand
+     * @param rightExpression the right operand
+     * @param invert uses <tt>!=</tt> as operator if <tt>true</tt>, <tt>==</tt> otherwise.
+     */
     public OperationEquals(Expression leftExpression, Expression rightExpression, boolean invert) {
         this.leftExpression = leftExpression;
         this.rightExpression = rightExpression;

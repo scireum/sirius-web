@@ -11,10 +11,13 @@ package sirius.tagliatelle.expression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
 /**
- * Created by aha on 10.05.17.
+ * Represents <tt>null</tt> as expression.
  */
 public class ConstantNull extends ConstantExpression {
 
+    /**
+     * Represents <tt>null</tt> as expression
+     */
     public static final ConstantNull NULL = new ConstantNull();
 
     private ConstantNull() {

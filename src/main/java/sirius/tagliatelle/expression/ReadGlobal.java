@@ -11,13 +11,21 @@ package sirius.tagliatelle.expression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
 /**
- * Created by aha on 11.05.17.
+ * Performs a read in the environment list.
+ *
+ * @see LocalRenderContext#getGlobal
  */
 public class ReadGlobal extends Expression {
 
     private int index;
     private Class<?> type;
 
+    /**
+     * Creates a new instace which reads the given index in the environment list (aka global variable).
+     *
+     * @param type  the expected type of the value being read
+     * @param index the index to read
+     */
     public ReadGlobal(Class<?> type, int index) {
         this.type = type;
         this.index = index;

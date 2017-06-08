@@ -15,10 +15,11 @@ import java.util.List;
 import java.util.function.BiConsumer;
 
 /**
- * Created by aha on 23.05.17.
+ * Provides basic aliases for standard Java classes.
  */
 @Register
 public class SiriusClassAliasProvider implements ClassAliasProvider {
+
     @Override
     public void collectAliases(BiConsumer<String, Class<?>> consumer) {
         consumer.accept("String", String.class);

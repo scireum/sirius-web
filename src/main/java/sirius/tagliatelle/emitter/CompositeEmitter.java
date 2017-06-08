@@ -9,22 +9,39 @@
 package sirius.tagliatelle.emitter;
 
 import parsii.tokenizer.Position;
+import sirius.kernel.commons.Strings;
 import sirius.tagliatelle.expression.ExpressionVisitor;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
 /**
- * Created by aha on 10.05.17.
+ * Represents a composite emitter which consists of a list of child emitters.
  */
 public class CompositeEmitter extends Emitter {
 
     protected List<Emitter> children = new ArrayList<>();
 
+    /**
+     * Creates a new emitter at the given position.
+     *
+     * @param startOfBlock the start of the definition
+     */
     public CompositeEmitter(Position startOfBlock) {
         super(startOfBlock);
+    }
+
+    /**
+     * Adds a new child emitter and the end of the children list.
+     *
+     * @param child the emitter to add
+     */
+    public void addChild(@Nonnull Emitter child) {
+        children.add(child);
     }
 
     @Override
@@ -32,10 +49,6 @@ public class CompositeEmitter extends Emitter {
         for (Emitter expr : children) {
             expr.emit(context);
         }
-    }
-
-    public void addChild(Emitter child) {
-        children.add(child);
     }
 
     @Override
@@ -48,45 +61,72 @@ public class CompositeEmitter extends Emitter {
         return copy;
     }
 
+    /**
+     * Tries to optimize the list of child emitters.
+     * <p>
+     * Two actual optimizations are attempted:
+     * <ul>
+     * <ol>Adjacent {@link ConstantEmitter constant emitters} are joined into one.</ol>
+     * <ol>Composite children hab their children pulled up into the list of children to simplify the emitter tree.</ol>
+     * </ul>
+     * <p>
+     * Both of these optimizations are very efficient when a template is inlined into another one.
+     *
+     * @return the optimized emitter
+     */
     @Override
     public Emitter reduce() {
-        CompositeEmitter copy = new CompositeEmitter(startOfBlock);
-        ConstantEmitter lastChild = null;
-        for (Emitter expr : children) {
-            expr = expr.reduce();
-            if (expr instanceof ConstantEmitter) {
-                if (lastChild != null) {
-                    lastChild.append(expr.toString());
-                } else {
-                    copy.children.add(expr);
-                    lastChild = (ConstantEmitter) expr;
-                }
-            } else if (expr instanceof CompositeEmitter) {
-                for (Emitter inner : ((CompositeEmitter) expr).children) {
-                    if (inner instanceof ConstantEmitter) {
-                        if (lastChild != null) {
-                            lastChild.append(inner.toString());
-                        } else {
-                            copy.children.add(inner);
-                            lastChild = (ConstantEmitter) inner;
-                        }
-                    } else {
-                        copy.children.add(inner);
-                        lastChild = null;
-                    }
+        CompositeEmitter result = new CompositeEmitter(startOfBlock);
+        ConstantEmitter lastConstantChild = null;
+        for (Emitter child : children) {
+            child = child.reduce();
+            if (child instanceof CompositeEmitter) {
+                for (Emitter inner : ((CompositeEmitter) child).children) {
+                    lastConstantChild = processChild(result, inner, lastConstantChild);
                 }
             } else {
-                copy.children.add(expr);
-                lastChild = null;
+                lastConstantChild = processChild(result, child, lastConstantChild);
             }
         }
 
-        if (copy.children.size() == 1) {
-            return copy.children.get(0);
+        if (result.children.size() == 1) {
+            return result.children.get(0);
         }
 
-        return copy;
-//TODO
+        return result;
+    }
+
+    /**
+     * Process the given child while trying to combine adjacent constant text blocks.
+     *
+     * @param result            contains the resulting composite emitter to which the child should be appended
+     * @param child             the child to process
+     * @param lastConstantChild if the preceding emitter was a {@link ConstantEmitter}, it is passed in here to permit
+     *                          concatenation
+     * @return if the resulting emitter is a {@link ConstantEmitter} or if the given <tt>lastConstantChild</tt> was
+     * utilized, the effective instance is returned here. If the child being appended isn't constant, <tt>null</tt>
+     * should be returned.
+     */
+    @Nullable
+    private ConstantEmitter processChild(@Nonnull CompositeEmitter result,
+                                         @Nonnull Emitter child,
+                                         @Nullable ConstantEmitter lastConstantChild) {
+        if (child instanceof ConstantEmitter) {
+            if (Strings.isEmpty(((ConstantEmitter) child).getValue())) {
+                return lastConstantChild;
+            }
+
+            if (lastConstantChild != null) {
+                lastConstantChild.append(child.toString());
+                return lastConstantChild;
+            } else {
+                result.children.add(child);
+                return (ConstantEmitter) child;
+            }
+        } else {
+            result.children.add(child);
+            return null;
+        }
     }
 
     @Override

@@ -16,12 +16,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Created by aha on 10.05.17.
+ * Resprents a string concatenation operation.
  */
 public class ConcatExpression extends Expression {
 
     private List<Expression> stringExpressions = new ArrayList<>();
 
+    /**
+     * Creates a new string concatenation for the given expressions
+     *
+     * @param expressions the list of expressions to evaluate and concatenate.
+     */
     public ConcatExpression(Expression... expressions) {
         stringExpressions.addAll(Arrays.asList(expressions));
     }
@@ -47,6 +52,11 @@ public class ConcatExpression extends Expression {
         return visitor.visit(this);
     }
 
+    /**
+     * Tries to optimize the expression by pre-concatenating adjacent constant operands.
+     *
+     * @return an optimized (if possible) expression with a minimal number of constant operands
+     */
     @Override
     public Expression reduce() {
         StringBuilder sb = null;
@@ -57,7 +67,10 @@ public class ConcatExpression extends Expression {
                 if (sb == null) {
                     sb = new StringBuilder();
                 }
-                sb.append(expression.eval(null));
+                Object result = expression.eval(null);
+                if (result != null) {
+                    sb.append(result);
+                }
             } else {
                 if (sb != null) {
                     stringExpressions.add(new ConstantString(sb.toString()));

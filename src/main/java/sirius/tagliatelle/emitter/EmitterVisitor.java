@@ -8,9 +8,21 @@
 
 package sirius.tagliatelle.emitter;
 
+import javax.annotation.Nonnull;
+
 /**
- * Created by aha on 19.05.17.
+ * Provides a <b>visitor pattern</b> for {@link Emitter emitters}.
+ * <p>
+ * The visitor is invoked for each inner emitter and may either return the given emitter or replace it with a new one.
  */
 public interface EmitterVisitor {
-    Emitter visit(Emitter emitter);
+
+    /**
+     * Invoked for each emitter.
+     *
+     * @param emitter the emitter being visited
+     * @return the new emitter, or the given one if nothing is to be changed
+     */
+    @Nonnull
+    Emitter visit(@Nonnull Emitter emitter);
 }

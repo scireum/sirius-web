@@ -11,12 +11,13 @@ package sirius.tagliatelle.tags;
 import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.Template;
 import sirius.tagliatelle.compiler.CompileException;
+import sirius.tagliatelle.emitter.CompositeEmitter;
 import sirius.tagliatelle.expression.Expression;
 
 import javax.annotation.Nonnull;
 
 /**
- * Created by aha on 12.05.17.
+ * Handles <tt>i:invoke</tt> which invokes or inlines a given template.
  */
 public class TagInvoke extends TagHandler {
 
@@ -39,45 +40,41 @@ public class TagInvoke extends TagHandler {
     }
 
     @Override
-    public void apply(TagContext context) {
-        Template template = resolveTemplate(context, getConstantAttribute(ATTR_TEMPLATE).asString());
+    public void apply(CompositeEmitter targetBlock) {
+        Template template = resolveTemplate(getConstantAttribute(ATTR_TEMPLATE).asString());
         if (template != null) {
-            invokeTemplate(context, template);
+            invokeTemplate(template, targetBlock);
         }
     }
 
-    protected void invokeTemplate(TagContext context, Template template) {
+    protected void invokeTemplate(Template template, CompositeEmitter targetBlock) {
         if (template.getPragma(ATTR_INLINE).asBoolean() || getConstantAttribute(ATTR_INLINE).asBoolean()) {
-            context.getBlock()
-                   .addChild(context.getContext()
-                                    .inlineTemplate(context.getStartOfTag(),
-                                                    template,
-                                                    this::getAttribute,
-                                                    this::getBlock));
+            targetBlock.addChild(getCompilationContext().inlineTemplate(getStartOfTag(),
+                                                                        template,
+                                                                        this::getAttribute,
+                                                                        this::getBlock));
         } else {
-            context.getBlock()
-                   .addChild(context.getContext()
-                                    .invokeTemplate(context.getStartOfTag(), template, this::getAttribute, blocks));
+            targetBlock.addChild(getCompilationContext().invokeTemplate(getStartOfTag(),
+                                                                        template,
+                                                                        this::getAttribute,
+                                                                        blocks));
         }
     }
 
-    protected Template resolveTemplate(TagContext context, String templateName) {
+    protected Template resolveTemplate(String templateName) {
         try {
-            Template template =
-                    context.getContext().resolveTemplate(context.getStartOfTag(), templateName).orElse(null);
+            Template template = getCompilationContext().resolveTemplate(getStartOfTag(), templateName).orElse(null);
 
             if (template == null) {
-                context.getContext()
-                       .error(context.getStartOfTag(), "Cannot find the referenced template: %s", templateName);
+                getCompilationContext().error(getStartOfTag(), "Cannot find the referenced template: %s", templateName);
             }
 
             return template;
         } catch (CompileException e) {
-            context.getContext()
-                   .error(context.getStartOfTag(),
-                          "Error compiling referenced template: %s%n%s",
-                          templateName,
-                          e.getMessage());
+            getCompilationContext().error(getStartOfTag(),
+                                          "Error compiling referenced template: %s%n%s",
+                                          templateName,
+                                          e.getMessage());
 
             return null;
         }

@@ -11,7 +11,10 @@ package sirius.tagliatelle.expression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
 /**
- * Created by aha on 24.05.17.
+ * Represents a tenary operation liek {@code condition ? expr : expr}.
+ * <p>
+ * If the condition evaluates to <tt>true</tt> the first expression is evaluated and its result returned. Otherwise the
+ * second expression is evaluated and its result is returned.
  */
 public class TenaryOperation extends Expression {
 
@@ -19,6 +22,13 @@ public class TenaryOperation extends Expression {
     protected Expression leftExpression;
     protected Expression rightExpression;
 
+    /**
+     * Creates a new instance for the given condition and expressions.
+     *
+     * @param conditionExpression the expression to evaluate to determine which expression to evalaute and return
+     * @param leftExpression      the expression to evaluate and return if the condition is <tt>true</tt>
+     * @param rightExpression     the expression to evaluate and return if the condition is <tt>false</tt>
+     */
     public TenaryOperation(Expression conditionExpression, Expression leftExpression, Expression rightExpression) {
         this.conditionExpression = conditionExpression;
         this.leftExpression = leftExpression;

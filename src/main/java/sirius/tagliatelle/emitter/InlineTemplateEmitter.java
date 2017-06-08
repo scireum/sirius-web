@@ -16,13 +16,23 @@ import sirius.tagliatelle.rendering.LocalRenderContext;
 import java.util.function.Function;
 
 /**
- * Created by aha on 16.05.17.
+ * Represents an inlined sub emitter to keep the render stack consistent.
+ * <p>
+ * If a template is inlined, the emitters of the callee as well as blocks of the caller are mixed together. If an error
+ * occurs here, we still want to emulate a render stack which pretends that the template was only invoked, so that
+ * debugging is way easier. For this reason, this emitter is used to wrap inlined emitters.
  */
 public class InlineTemplateEmitter extends Emitter {
 
     private final Template template;
     protected Emitter body;
 
+    /**
+     * Creates a new instance at the given position, which references the given template and wraps the given body.
+     * @param startOfBlock the position where the inlining took place
+     * @param template the original template where the emitters of <tt>body</tt> were defined
+     * @param body the inner emitters to invoked within the artificial render stack
+     */
     public InlineTemplateEmitter(Position startOfBlock, Template template, Emitter body) {
         super(startOfBlock);
         this.template = template;
@@ -31,7 +41,7 @@ public class InlineTemplateEmitter extends Emitter {
 
     @Override
     protected void emitToContext(LocalRenderContext context) throws Exception {
-        LocalRenderContext inlineContext = context.createInlineContext(template, context);
+        LocalRenderContext inlineContext = context.createInlineContext(template);
         body.emitToContext(inlineContext);
     }
 
@@ -43,6 +53,13 @@ public class InlineTemplateEmitter extends Emitter {
     @Override
     public Emitter reduce() {
         this.body = body.reduce();
+        // When outputting a constant emitter, nothing can go wrong (TM), therefore we don't need
+        // to maintain the render stack but rather replace this be the constant emitter itself
+        // (which permits even more aggressive optimizations).
+        if (body instanceof ConstantEmitter) {
+            return body;
+        }
+
         return this;
     }
 

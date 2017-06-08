@@ -8,9 +8,19 @@
 
 package sirius.tagliatelle.expression;
 
+import javax.annotation.Nonnull;
+
 /**
- * Created by aha on 19.05.17.
+ * Visits each node of an expression AST with the possibility to change or replace it.
  */
 public interface ExpressionVisitor {
-    Expression visit(Expression expression);
+
+    /**
+     * Invoked for each node of an expression AST.
+     *
+     * @param expression the expression to visit
+     * @return either the given expression or a replacement node.
+     */
+    @Nonnull
+    Expression visit(@Nonnull Expression expression);
 }

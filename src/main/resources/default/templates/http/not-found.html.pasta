@@ -1,22 +1,16 @@
 <i:arg type="String" name="message"/>
-
 <w:page title="@i18n('BasicController.404')">
-    <i:block name="head">
-        <style>
-            .breadcrumb {
-                display: none;
-            }
-        </style>
-    </i:block>
+    <i:block name="breadcrumbBar" />
 
     <w:pageHeader>
-        @(true ? )
         @i18n('BasicController.404')
     </w:pageHeader>
+
     <div class="well">
         <pre style="font-size: small">@message</pre>
     </div>
-    <a href="@settings.getString('product.wondergemRoot')" class="btn">
+
+    <a href="@wondergemRoot" class="btn">
         <i class="fa fa-angle-double-left"></i> @i18n('BasicController.toDashboard')
     </a>
 </w:page>

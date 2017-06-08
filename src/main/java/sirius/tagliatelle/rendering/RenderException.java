@@ -15,7 +15,9 @@ import sirius.tagliatelle.compiler.CompileException;
 import java.io.FileNotFoundException;
 
 /**
- * Created by aha on 17.05.17.
+ * Thrown for any error or exception when rendering a template.
+ * <p>
+ * This contains the render stack (a stacktrace for templates) next to the original error and exception type as message.
  */
 public class RenderException extends Exception {
 
@@ -25,6 +27,13 @@ public class RenderException extends Exception {
         super(message, ex);
     }
 
+    /**
+     * Creates a new error for the given contexnt and root exception.
+     *
+     * @param context the context used to determine the render stack
+     * @param ex      the root exception
+     * @return a RenderException with an appropriate error messsage
+     */
     public static RenderException create(LocalRenderContext context, Exception ex) {
         if (ex instanceof RenderException) {
             return (RenderException) ex;
@@ -36,9 +45,8 @@ public class RenderException extends Exception {
         }
 
         if (ex instanceof FileNotFoundException) {
-            return new RenderException(Strings.apply("Cannot find the template: %s%s",
-                                                     ex.getMessage(),
-                                                     renderStack), ex);
+            return new RenderException(Strings.apply("Cannot find the template: %s%s", ex.getMessage(), renderStack),
+                                       ex);
         }
 
         return new RenderException(Strings.apply("A runtime error occurred: %s (%s)%s",

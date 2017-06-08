@@ -9,9 +9,10 @@
 package sirius.tagliatelle.expression;
 
 /**
- * Created by aha on 12.05.17.
+ * Represents operations supported by {@link IntOperation} or {@link RelationalIntOperation}.
  */
 public enum Operator {
+
     LT("<"),
 
     LT_EQ("<="),

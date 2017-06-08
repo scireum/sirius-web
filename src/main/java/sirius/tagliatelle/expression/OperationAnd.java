@@ -11,10 +11,16 @@ package sirius.tagliatelle.expression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
 /**
- * Created by aha on 12.05.17.
+ * Represents a boolean <tt>and</tt>.
  */
 public class OperationAnd extends BooleanOperation {
 
+    /**
+     * Creates a new <tt>and</tt> operation for the given operands.
+     *
+     * @param leftExpression  the left operand
+     * @param rightExpression the right operand
+     */
     public OperationAnd(Expression leftExpression, Expression rightExpression) {
         super(leftExpression, rightExpression);
     }

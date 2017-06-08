@@ -11,11 +11,18 @@ package sirius.tagliatelle.expression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
 /**
- * Created by aha on 10.05.17.
+ * Represents a constant boolean value.
  */
-public class ConstantBoolean extends Expression {
+public class ConstantBoolean extends ConstantExpression {
 
+    /**
+     * Represents {@link Boolean#TRUE}.
+     */
     public static final ConstantBoolean TRUE = new ConstantBoolean(true);
+
+    /**
+     * Represents {@link Boolean#FALSE}.
+     */
     public static final ConstantBoolean FALSE = new ConstantBoolean(false);
 
     private boolean value;
@@ -27,26 +34,6 @@ public class ConstantBoolean extends Expression {
     @Override
     public Object eval(LocalRenderContext ctx) {
         return value;
-    }
-
-    @Override
-    public Expression visit(ExpressionVisitor visitor) {
-        return visitor.visit(this);
-    }
-
-    @Override
-    public Expression reduce() {
-        return this;
-    }
-
-    @Override
-    public boolean isConstant() {
-        return true;
-    }
-
-    @Override
-    public Expression copy() {
-        return this;
     }
 
     @Override

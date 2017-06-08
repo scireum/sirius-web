@@ -10,7 +10,9 @@ package sirius.tagliatelle.compiler;
 
 import parsii.tokenizer.Char;
 import parsii.tokenizer.LookaheadReader;
+import parsii.tokenizer.Position;
 import sirius.kernel.commons.Tuple;
+import sirius.tagliatelle.Engine;
 import sirius.tagliatelle.expression.ConcatExpression;
 import sirius.tagliatelle.expression.ConstantBoolean;
 import sirius.tagliatelle.expression.ConstantInt;
@@ -90,7 +92,7 @@ class Parser extends InputProcessor {
 
             return parseExpression();
         } finally {
-            skipUnexpectedWhitespace();
+            skipWhitespaces();
             canSkipWhitespace = oldSkipWhitespaces;
         }
     }
@@ -118,7 +120,7 @@ class Parser extends InputProcessor {
      * @return the baseExpression if no '?' was found or an {@link TenaryOperation}
      */
     private Expression parseTenaryOperation(Expression baseExpression) {
-        skipExpectedWhitespace();
+        skipWhitespaces();
         if (!reader.current().is('?')) {
             return baseExpression;
         }
@@ -126,10 +128,10 @@ class Parser extends InputProcessor {
         reader.consume();
         Expression whenTrue = parseExpression();
         Expression whenFalse = ConstantNull.NULL;
-        skipExpectedWhitespace();
+        skipWhitespaces();
         if (reader.current().is(':')) {
             reader.consume();
-            skipExpectedWhitespace();
+            skipWhitespaces();
             whenFalse = parseExpression();
         }
 
@@ -146,11 +148,16 @@ class Parser extends InputProcessor {
         Expression result = conjunction();
 
         while (!reader.current().isEndOfInput()) {
-            skipExpectedWhitespace();
+            skipWhitespaces();
             if (reader.current().is('|')) {
                 if (reader.next().is('|')) {
+                    Position pos = reader.current();
                     reader.consume(2);
-                    result = new OperationOr(result, conjunction());
+                    Expression right = conjunction();
+                    assertType(pos, result, boolean.class);
+                    assertType(pos, right, boolean.class);
+
+                    result = new OperationOr(result, right);
                 } else {
                     reader.consume();
                     result = new NoodleOperation(result, conjunction());
@@ -172,16 +179,26 @@ class Parser extends InputProcessor {
         Expression result = relationalExpression();
 
         while (!reader.current().isEndOfInput()) {
-            skipExpectedWhitespace();
+            skipWhitespaces();
             if (reader.current().is('&') && reader.next().is('&')) {
+                Position pos = reader.current();
                 reader.consume(2);
-                result = new OperationAnd(result, relationalExpression());
+                Expression right = relationalExpression();
+                assertType(pos, result, boolean.class);
+                assertType(pos, right, boolean.class);
+                result = new OperationAnd(result, right);
             } else {
                 break;
             }
         }
 
         return result;
+    }
+
+    private void assertType(Position pos, Expression expression, Class<?> expectedType) {
+        if (!Engine.isAssignableTo(expression.getType(), expectedType)) {
+            context.error(pos, "Expected an expression of type %s but got %s", expectedType, expression.getType());
+        }
     }
 
     /**
@@ -191,7 +208,7 @@ class Parser extends InputProcessor {
      */
     private Expression relationalExpression() {
         Expression left = term();
-        skipExpectedWhitespace();
+        skipWhitespaces();
         if (reader.current().is('<') && !reader.next().is('/')) {
             return parseLessThan(left);
         }
@@ -222,22 +239,36 @@ class Parser extends InputProcessor {
     }
 
     private Expression parseGreaterThan(Expression left) {
+        Position pos = reader.current();
         reader.consume();
         if (reader.current().is('=')) {
             reader.consume();
-            return new RelationalIntOperation(Operator.GT_EQ, left, term());
+            Expression right = term();
+            assertType(pos, left, int.class);
+            assertType(pos, right, int.class);
+            return new RelationalIntOperation(Operator.GT_EQ, left, right);
         } else {
-            return new RelationalIntOperation(Operator.GT, left, term());
+            Expression right = term();
+            assertType(pos, left, int.class);
+            assertType(pos, right, int.class);
+            return new RelationalIntOperation(Operator.GT, left, right);
         }
     }
 
     private Expression parseLessThan(Expression left) {
+        Position pos = reader.current();
         reader.consume();
         if (reader.current().is('=')) {
             reader.consume();
-            return new RelationalIntOperation(Operator.LT_EQ, left, term());
+            Expression right = term();
+            assertType(pos, left, int.class);
+            assertType(pos, right, int.class);
+            return new RelationalIntOperation(Operator.LT_EQ, left, right);
         } else {
-            return new RelationalIntOperation(Operator.LT, left, term());
+            Expression right = term();
+            assertType(pos, left, int.class);
+            assertType(pos, right, int.class);
+            return new RelationalIntOperation(Operator.LT, left, right);
         }
     }
 
@@ -252,7 +283,7 @@ class Parser extends InputProcessor {
         Expression result = product();
 
         while (!reader.current().isEndOfInput()) {
-            skipExpectedWhitespace();
+            skipWhitespaces();
             if (reader.current().is('+')) {
                 Char operator = reader.consume();
                 Expression right = product();
@@ -270,8 +301,12 @@ class Parser extends InputProcessor {
                                   right.getType());
                 }
             } else if (reader.current().is('-')) {
+                Position pos = reader.current();
                 reader.consume();
-                result = new IntOperation(Operator.SUBTRACT, result, product());
+                Expression right = product();
+                assertType(pos, result, int.class);
+                assertType(pos, right, int.class);
+                result = new IntOperation(Operator.SUBTRACT, result, right);
             } else {
                 break;
             }
@@ -289,16 +324,28 @@ class Parser extends InputProcessor {
         Expression result = chain();
 
         while (!reader.current().isEndOfInput()) {
-            skipExpectedWhitespace();
+            skipWhitespaces();
             if (reader.current().is('*')) {
+                Position pos = reader.current();
                 reader.consume();
-                result = new IntOperation(Operator.MULTIPLY, result, chain());
+                Expression rightExpression = chain();
+                assertType(pos, result, int.class);
+                assertType(pos, rightExpression, int.class);
+                result = new IntOperation(Operator.MULTIPLY, result, rightExpression);
             } else if (reader.current().is('/')) {
+                Position pos = reader.current();
                 reader.consume();
-                result = new IntOperation(Operator.DIVIDE, result, chain());
+                Expression rightExpression = chain();
+                assertType(pos, result, int.class);
+                assertType(pos, rightExpression, int.class);
+                result = new IntOperation(Operator.DIVIDE, result, rightExpression);
             } else if (reader.current().is('%')) {
+                Position pos = reader.current();
                 reader.consume();
-                result = new IntOperation(Operator.MODULO, result, chain());
+                Expression rightExpression = chain();
+                assertType(pos, result, int.class);
+                assertType(pos, rightExpression, int.class);
+                result = new IntOperation(Operator.MODULO, result, rightExpression);
             } else {
                 break;
             }
@@ -315,7 +362,7 @@ class Parser extends InputProcessor {
     private Expression chain() {
         Expression root = atom();
         while (!reader.current().isEndOfInput()) {
-            skipUnexpectedWhitespace();
+            skipWhitespaces();
             if (reader.current().is('.')) {
                 reader.consume();
                 root = call(root);
@@ -334,13 +381,13 @@ class Parser extends InputProcessor {
      * @return the method call as expression
      */
     private Expression call(Expression self) {
-        skipUnexpectedWhitespace();
+        skipWhitespaces();
         if (!isAtIdentifier()) {
             context.error(reader.current(), "Expected a method name.");
         }
         Char position = reader.current();
         String methodName = readIdentifier();
-        skipUnexpectedWhitespace();
+        skipWhitespaces();
         consumeExpectedCharacter('(');
         MethodCall call = new MethodCall(self);
         call.setParameters(parseParameterList());
@@ -367,7 +414,7 @@ class Parser extends InputProcessor {
                 break;
             }
             consumeExpectedCharacter(',');
-            skipExpectedWhitespace();
+            skipWhitespaces();
         }
         return parameters;
     }
@@ -386,7 +433,7 @@ class Parser extends InputProcessor {
      * @return the atom as expression
      */
     private Expression atom() {
-        skipUnexpectedWhitespace();
+        skipWhitespaces();
         if (reader.current().is('(')) {
             reader.consume();
             Expression result = parseExpression(true);
@@ -397,7 +444,7 @@ class Parser extends InputProcessor {
         if (isAtIdentifier()) {
             Char pos = reader.current();
             String id = readIdentifier();
-            skipUnexpectedWhitespace();
+            skipWhitespaces();
 
             if (reader.current().is('(')) {
                 return staticCall(pos, id);
@@ -417,11 +464,11 @@ class Parser extends InputProcessor {
      * @return the parsed {@link MacroCall}
      */
     private Expression staticCall(Char pos, String methodName) {
-        skipUnexpectedWhitespace();
+        skipWhitespaces();
         consumeExpectedCharacter('(');
         MacroCall call = new MacroCall();
         call.setParameters(parseParameterList());
-        call.bindToMethod(context, methodName);
+        call.bindToMethod(pos, context, methodName);
         consumeExpectedCharacter(')');
 
         return call;
@@ -521,7 +568,7 @@ class Parser extends InputProcessor {
     private Expression string(char stopChar) {
         reader.consume();
         StringBuilder sb = new StringBuilder();
-        while (!reader.current().isEndOfInput() && !reader.current().is(stopChar)) {
+        while (!reader.current().isEndOfInput() && !reader.current().is(stopChar) && !reader.current().isNewLine()) {
             if (reader.current().is('\\')) {
                 reader.consume();
                 if (reader.current().is('n')) {
@@ -566,19 +613,11 @@ class Parser extends InputProcessor {
     }
 
     @Override
-    protected void skipExpectedWhitespace() {
+    public int skipWhitespaces() {
         if (!canSkipWhitespace) {
-            return;
+            return 0;
         }
 
-        super.skipExpectedWhitespace();
-    }
-
-    @Override
-    protected void skipUnexpectedWhitespace() {
-        if (!canSkipWhitespace) {
-            return;
-        }
-        super.skipUnexpectedWhitespace();
+        return super.skipWhitespaces();
     }
 }

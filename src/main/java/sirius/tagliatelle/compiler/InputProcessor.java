@@ -8,7 +8,6 @@
 
 package sirius.tagliatelle.compiler;
 
-import parsii.tokenizer.Char;
 import parsii.tokenizer.LookaheadReader;
 
 /**
@@ -34,7 +33,7 @@ class InputProcessor {
      *
      * @return the number of whitespaces which were skipped
      */
-    protected int skipWhitespaces() {
+    public int skipWhitespaces() {
         int whitespaceFound = 0;
         while (reader.current().isWhitepace()) {
             reader.consume();
@@ -45,41 +44,36 @@ class InputProcessor {
     }
 
     /**
-     * Skips one or more expected whitespaces.
-     * <p>
-     * Creates a warning if no or more than one whitsepace was skipped.
-     */
-    protected void skipExpectedWhitespace() {
-        Char current = reader.current();
-        if (skipWhitespaces() != 1) {
-            context.warning(current, "Consider using a whitespace here.");
-        }
-    }
-
-    /**
-     * Skips all unexpected whitespaces.
-     * <p>
-     * Creates a warning if whitsepaces were skippd.
-     */
-    protected void skipUnexpectedWhitespace() {
-        Char current = reader.current();
-        if (skipWhitespaces() > 0) {
-            context.warning(current, "Consider removing this unexpected whitespace here.");
-        }
-    }
-
-    /**
      * Consumes the expected character from the input.
      * <p>
      * If the input does not point to the given character, nothing will be consumed and en error created.
      *
      * @param expectedCharacter the expected character
      */
-    protected void consumeExpectedCharacter(char expectedCharacter) {
+    public void consumeExpectedCharacter(char expectedCharacter) {
         if (!reader.current().is(expectedCharacter)) {
             context.error(reader.current(), "A '%s' was expected here.", expectedCharacter);
         } else {
             reader.consume();
         }
+    }
+
+    public boolean isAtText(int offset, String text) {
+        for (int i = 0; i < text.length(); i++) {
+            if (!reader.next(offset + i).is(text.charAt(i))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public LookaheadReader getReader() {
+        return reader;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + ": " + reader + " - " + context.getTemplate();
     }
 }

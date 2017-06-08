@@ -9,11 +9,12 @@
 package sirius.tagliatelle.tags;
 
 import sirius.kernel.di.std.Register;
+import sirius.tagliatelle.emitter.CompositeEmitter;
 
 import javax.annotation.Nonnull;
 
 /**
- * Created by aha on 12.05.17.
+ * Handles <tt>i:pragma</tt> which defines a pragma (key / value pair) for a template.
  */
 public class TagPragma extends TagHandler {
 
@@ -33,10 +34,10 @@ public class TagPragma extends TagHandler {
     }
 
     @Override
-    public void apply(TagContext context) {
-        context.getContext()
-               .getTemplate()
-               .addPragma(getConstantAttribute("name").asString(), getConstantAttribute("value").asString());
+    public void apply(CompositeEmitter targetBlock) {
+        getCompilationContext().getTemplate()
+                               .addPragma(getConstantAttribute("name").asString(),
+                                          getConstantAttribute("value").asString());
     }
 
     @Override

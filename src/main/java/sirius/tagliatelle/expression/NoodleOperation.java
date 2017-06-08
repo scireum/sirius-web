@@ -12,7 +12,10 @@ import sirius.kernel.commons.Strings;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
 /**
- * Created by aha on 24.05.17.
+ * Represents the <tt>noodle operation</tt>.
+ * <p>
+ * A noodle operation looks like {@code exprA | exprB}. If the first expression evaluates to <tt>null</tt> or to ""
+ * the second expression is evaluated and its result returned. Otherwise the result of the first expression is returned.
  */
 public class NoodleOperation extends Expression {
 
@@ -51,6 +54,8 @@ public class NoodleOperation extends Expression {
             Object leftValue = leftExpression.eval(null);
             if (Strings.isEmpty(leftValue)) {
                 return rightExpression;
+            } else {
+                return leftExpression;
             }
         }
 

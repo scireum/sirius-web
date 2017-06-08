@@ -21,8 +21,6 @@ import sirius.tagliatelle.compiler.CompilationContext;
 import sirius.tagliatelle.compiler.CompileException;
 import sirius.tagliatelle.compiler.Compiler;
 import sirius.tagliatelle.rendering.GlobalRenderContext;
-import sirius.web.security.ScopeInfo;
-import sirius.web.security.UserContext;
 import sirius.web.templates.Resource;
 import sirius.web.templates.Resources;
 import sirius.web.templates.Templates;
@@ -34,11 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Created by aha on 15.05.17.
- */
 @Register(classes = Engine.class)
 public class Engine {
 
@@ -46,7 +40,6 @@ public class Engine {
 
     private Map<String, Class<?>> aliases;
     private List<Tuple<String, Class<?>>> globalVariables;
-    private Map<String, List<Object>> environments = new ConcurrentHashMap<>();
 
     @Parts(RenderContextExtender.class)
     private Collection<RenderContextExtender> contextExtenders;
@@ -69,17 +62,12 @@ public class Engine {
     }
 
     public List<Object> getEnvironment() {
-        ScopeInfo currentScope = UserContext.getCurrentScope();
-        return Collections.unmodifiableList(environments.computeIfAbsent(currentScope.getScopeId(),
-                                                                         id -> buildEnvironment()));
-    }
-
-    private List<Object> buildEnvironment() {
         List<Object> result = new ArrayList<>();
         contextExtenders.forEach(renderContextExtender -> renderContextExtender.collectParameterValues(result::add));
         if (Sirius.isDev()) {
             verifyGlobals(result);
         }
+
         return result;
     }
 
@@ -111,7 +99,7 @@ public class Engine {
                                    global.getFirst());
             } else {
                 Object value = result.get(index);
-                if (value != null && !global.getSecond().isAssignableFrom(value.getClass())) {
+                if (!isAssignable(value, global.getSecond())) {
                     Templates.LOG.WARN("An invalid global environment was created!"
                                        + " An invalid value (%s) of type %s was created for parameter %s."
                                        + " But %s is the expected type.",
@@ -123,6 +111,38 @@ public class Engine {
             }
             index++;
         }
+    }
+
+    public static boolean isAssignable(Object from, Class<?> to) {
+        if (from == null) {
+            return !to.isPrimitive();
+        }
+
+        return isAssignableTo(from.getClass(), to);
+    }
+
+    public static boolean isAssignableTo(Class<?> from, Class<?> to) {
+        if (to.isAssignableFrom(from)) {
+            return true;
+        }
+
+        if (from.isPrimitive()) {
+            return checkAutoboxing(from, to);
+        } else {
+            return checkAutoboxing(to, from);
+        }
+    }
+
+    private static boolean checkAutoboxing(Class<?> primitveType, Class<?> boxedType) {
+        if (primitveType == int.class || primitveType == long.class) {
+            return Integer.class.isAssignableFrom(boxedType);
+        }
+
+        if (primitveType == boolean.class) {
+            return Boolean.class.isAssignableFrom(boxedType);
+        }
+
+        return false;
     }
 
     public Optional<Template> resolve(String path) throws CompileException {

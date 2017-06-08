@@ -9,21 +9,49 @@
 package sirius.tagliatelle.macros;
 
 import sirius.kernel.di.std.Named;
-import sirius.tagliatelle.rendering.LocalRenderContext;
 import sirius.tagliatelle.expression.Expression;
+import sirius.tagliatelle.rendering.LocalRenderContext;
 
 import java.util.List;
 
 /**
- * Created by aha on 16.05.17.
+ * Represents a macro or constant function.
  */
 public interface Macro extends Named {
 
+    /**
+     * Returns the type of objects returned by this macro.
+     *
+     * @return the type of objects returned by this macro
+     */
     Class<?> getType();
 
+    /**
+     * Verifies the arguments.
+     * <p>
+     * This is used to verify the type and count of arguments at compile time. If one or more arguments are invalid an
+     * {@link IllegalArgumentException} can be thrown.
+     *
+     * @param args the expressions which will be passed in at runtime.
+     */
     void verifyArguments(List<Expression> args);
 
+    /**
+     * Evaluates the macro at runtime.
+     * <p>
+     * Note that the arguments are still expressions and have to be evaluated on demand.
+     *
+     * @param ctx  the rendering context
+     * @param args the arguments
+     * @return the result of the macro call
+     */
     Object eval(LocalRenderContext ctx, Expression[] args);
 
+    /**
+     * Determines if the function is "constant".
+     *
+     * @return <tt>true</tt> if the function will always yield the same output for the same input,<tt>false</tt>
+     * otherwise.
+     */
     boolean isConstant();
 }

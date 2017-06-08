@@ -9,6 +9,8 @@
 package sirius.tagliatelle.emitter;
 
 import parsii.tokenizer.Position;
+import sirius.kernel.commons.Strings;
+import sirius.tagliatelle.Engine;
 import sirius.tagliatelle.Template;
 import sirius.tagliatelle.TemplateArgument;
 import sirius.tagliatelle.expression.Expression;
@@ -21,7 +23,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * Created by aha on 16.05.17.
+ * Invokes and renders a sub template at runtime.
  */
 public class InvokeTemplateEmitter extends Emitter {
 
@@ -30,6 +32,12 @@ public class InvokeTemplateEmitter extends Emitter {
     private Expression[] arguments = NO_ARGS;
     private Map<String, Emitter> blocks = null;
 
+    /**
+     * Creates a new instance at the given position with the given target template.
+     *
+     * @param startOfBlock the position where the invocation was declared
+     * @param templateName the name of the template to invoke
+     */
     public InvokeTemplateEmitter(Position startOfBlock, String templateName) {
         super(startOfBlock);
         this.templateName = templateName;
@@ -38,10 +46,12 @@ public class InvokeTemplateEmitter extends Emitter {
     @Override
     public Emitter copy() {
         InvokeTemplateEmitter copy = new InvokeTemplateEmitter(startOfBlock, templateName);
-        copy.arguments = new Expression[arguments.length];
-        for (int i = 0; i < arguments.length; i++) {
-            Expression arg = arguments[i];
-            copy.arguments[i] = arg != null ? arg.copy() : null;
+        if (arguments != NO_ARGS) {
+            copy.arguments = new Expression[arguments.length];
+            for (int i = 0; i < arguments.length; i++) {
+                Expression arg = arguments[i];
+                copy.arguments[i] = arg != null ? arg.copy() : null;
+            }
         }
 
         if (blocks != null) {
@@ -64,7 +74,7 @@ public class InvokeTemplateEmitter extends Emitter {
         if (blocks != null) {
             Map<String, Emitter> copy = new HashMap<>();
             for (Map.Entry<String, Emitter> e : blocks.entrySet()) {
-                copy.put(e.getKey(), e.getValue().copy());
+                copy.put(e.getKey(), e.getValue().reduce());
             }
             this.blocks = copy;
         }
@@ -100,23 +110,7 @@ public class InvokeTemplateEmitter extends Emitter {
         try {
             int index = 0;
             for (TemplateArgument arg : template.getArguments()) {
-                Object argumentValue = null;
-                if (index < arguments.length && arguments[index] != null) {
-                    argumentValue = arguments[index].eval(context);
-                } else {
-                    if (arg.getDefaultValue() != null) {
-                        argumentValue = arg.getDefaultValue().eval(subContext);
-                    } else {
-                        //TODO warn / fail!
-
-                    }
-                }
-
-                if (!arg.getType().isAssignableFrom(argumentValue.getClass())) {
-                    //TODO warn / fail
-                }
-
-                subContext.setLocal(index, argumentValue);
+                applyArgument(context, template, subContext, index, arg);
                 index++;
             }
 
@@ -126,10 +120,62 @@ public class InvokeTemplateEmitter extends Emitter {
         }
     }
 
+    /**
+     * Evaluates the expression or its default expression and transfers the value to the given sub context.
+     *
+     * @param context    the context of the caller
+     * @param template   the template being called
+     * @param subContext the context of the callee
+     * @param index      the index of the parameter being transferred
+     * @param arg        the template argument being applied
+     */
+    private void applyArgument(LocalRenderContext context,
+                               Template template,
+                               LocalRenderContext subContext,
+                               int index,
+                               TemplateArgument arg) {
+        Object argumentValue;
+        if (index < arguments.length && arguments[index] != null) {
+            argumentValue = arguments[index].eval(context);
+        } else {
+            if (arg.getDefaultValue() != null) {
+                argumentValue = arg.getDefaultValue().eval(subContext);
+            } else {
+                throw new IllegalArgumentException(Strings.apply(
+                        "Neither a value nor a default value was provided for argument '%s' when calling '%s'",
+                        arg.getName(),
+                        template));
+            }
+        }
+
+        if (!Engine.isAssignable(argumentValue, arg.getType())) {
+            throw new IllegalArgumentException(Strings.apply(
+                    "An invalid argument was provided for '%s' when calling '%s'. Given: %s but expected was: %s",
+                    arg.getName(),
+                    template,
+                    argumentValue == null ? null : argumentValue.getClass(),
+                    arg.getType()));
+        }
+
+        subContext.setLocal(index, argumentValue);
+    }
+
+    /**
+     * Sets the argument expressions for the template invocation.
+     * <p>
+     * Note that the order must match the arguments of the template itself.
+     *
+     * @param args the expressions to evaluate and supply as arguments
+     */
     public void setArguments(Expression[] args) {
         this.arguments = args;
     }
 
+    /**
+     * Sets the blocks to be applied, which can be referenced by the invoked template.
+     *
+     * @param blocks the blocks passed to the templates
+     */
     public void setBlocks(Map<String, Emitter> blocks) {
         this.blocks = blocks;
     }

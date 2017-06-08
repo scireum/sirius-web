@@ -11,8 +11,16 @@ package sirius.tagliatelle;
 import java.util.function.BiConsumer;
 
 /**
- * Created by aha on 23.05.17.
+ * Provides a mapping if aliases to real java classes.
+ * <p>
+ * Implementations can be {@link sirius.kernel.di.std.Register registered} and then provide aliases for commonly used
+ * classes.
  */
 public interface ClassAliasProvider {
+    /**
+     * Collects all available aliases and their target classes
+     *
+     * @param consumer the consumer to supply with aliases
+     */
     void collectAliases(BiConsumer<String, Class<?>> consumer);
 }

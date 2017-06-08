@@ -10,6 +10,7 @@ package sirius.tagliatelle.tags;
 
 import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.TemplateArgument;
+import sirius.tagliatelle.emitter.CompositeEmitter;
 import sirius.tagliatelle.expression.ConstantNull;
 import sirius.tagliatelle.expression.ConstantString;
 import sirius.tagliatelle.expression.Expression;
@@ -17,7 +18,7 @@ import sirius.tagliatelle.expression.Expression;
 import javax.annotation.Nonnull;
 
 /**
- * Created by aha on 12.05.17.
+ * Handles <tt>i:arg</tt> which specifies a template argument.
  */
 public class TagArg extends TagHandler {
 
@@ -37,28 +38,25 @@ public class TagArg extends TagHandler {
     }
 
     @Override
-    public void apply(TagContext context) {
+    public void apply(CompositeEmitter targetBlock) {
         String name = getConstantAttribute("name").asString();
         String typeName = getConstantAttribute("type").asString();
-        Class<?> type = context.getContext().resolveClass(context.getStartOfTag(), typeName);
+        Class<?> type = getCompilationContext().resolveClass(getStartOfTag(), typeName);
         Expression defaultValue = getAttribute("default");
-        if (ConstantNull.NULL.equals(defaultValue)) {
+        if (ConstantNull.NULL.equals(defaultValue) && String.class.equals(type)) {
             defaultValue = ConstantString.EMPTY_STRING;
-        } else if (defaultValue == null) {
-            defaultValue = null;
         }
 
         if (defaultValue != null && !type.isAssignableFrom(defaultValue.getType())) {
-            context.getContext()
-                   .error(context.getStartOfTag(),
-                          "The default expression for '%s' ('%s') does not match its declared type %s",
-                          name,
-                          defaultValue,
-                          typeName);
+            getCompilationContext().error(getStartOfTag(),
+                                          "The default expression for '%s' ('%s') does not match its declared type %s",
+                                          name,
+                                          defaultValue,
+                                          typeName);
         }
 
-        context.getContext().push(context.getStartOfTag(), name, type);
-        context.getContext().getTemplate().addArgument(new TemplateArgument(type, name, defaultValue));
+        getCompilationContext().push(getStartOfTag(), name, type);
+        getCompilationContext().getTemplate().addArgument(new TemplateArgument(type, name, defaultValue));
     }
 
     @Override

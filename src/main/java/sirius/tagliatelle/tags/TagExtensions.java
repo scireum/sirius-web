@@ -12,12 +12,13 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.Engine;
 import sirius.tagliatelle.Template;
+import sirius.tagliatelle.emitter.CompositeEmitter;
 import sirius.web.templates.Templates;
 
 import javax.annotation.Nonnull;
 
 /**
- * Created by aha on 12.05.17.
+ * Handles <tt>i:extensions</tt> which invokes all extensions with the given name.
  */
 public class TagExtensions extends TagInvoke {
 
@@ -43,13 +44,13 @@ public class TagExtensions extends TagInvoke {
     private static Engine engine;
 
     @Override
-    public void apply(TagContext context) {
+    public void apply(CompositeEmitter targeBlock) {
         String name = getConstantAttribute("name").asString();
         for (String extension : templates.getExtensions(name)) {
-            Template template = resolveTemplate(context, extension);
+            Template template = resolveTemplate(extension);
 
             if (template != null) {
-                invokeTemplate(context, template);
+                invokeTemplate(template, targeBlock);
             }
         }
     }

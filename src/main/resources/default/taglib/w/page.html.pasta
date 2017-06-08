@@ -1,5 +1,6 @@
-<!DOCTYPE html>
 <i:arg type="String" name="title"/>
+<i:pragma name="inline" value="true"/>
+<!DOCTYPE html>
 <html lang="@lang">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
@@ -41,11 +42,32 @@
 
         <i:render name="aboveMessages"/>
 
-        <ol class="breadcrumb">
-            <li><a href="@settings.getString('product.wondergemRoot')"><span class="fa fa-home"></span></a></li>
-            <i:render name="breadcrumbs"/>
-        </ol>
+        <i:render name="breadcrumbBar">
+            <ol class="breadcrumb">
+                <li><a href="@wondergemRoot"><span class="fa fa-home"></span></a></li>
+                <i:render name="breadcrumbs"/>
+            </ol>
+        </i:render>
 
+        <i:render name="messages">
+            <div class="row">
+                <div class="col-md-12" id="messageBox">
+                    <i:for type="sirius.web.controller.Message" var="msg" items="user.getMessages()">
+                        <div class="alert @msg.getType()">
+                            <i:raw>@msg.getMessage()</i:raw>
+                            <i:if test="msg.getAction() != null">
+                                <i:if test="msg.isActionJavascript()">
+                                    <a onclick="@msg.getAction()" class="link link-info">@msg.getActionLabel()</a>
+                                    <i:else>
+                                        <a href="@msg.getAction()" class="link link-info">@msg.getActionLabel()</a>
+                                    </i:else>
+                                </i:if>
+                            </i:if>
+                        </div>
+                    </i:for>
+                </div>
+            </div>
+        </i:render>
 
         <i:render name="body"/>
     </div>

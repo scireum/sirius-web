@@ -13,17 +13,15 @@ import parsii.tokenizer.Char;
 import parsii.tokenizer.LookaheadReader;
 import parsii.tokenizer.ParseError;
 import parsii.tokenizer.Position;
+import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.health.Exceptions;
 import sirius.tagliatelle.emitter.CompositeEmitter;
-import sirius.tagliatelle.emitter.ConditionalEmitter;
 import sirius.tagliatelle.emitter.ConstantEmitter;
 import sirius.tagliatelle.emitter.Emitter;
-import sirius.tagliatelle.emitter.ExpressionEmitter;
 import sirius.tagliatelle.expression.ConstantNull;
 import sirius.tagliatelle.expression.ConstantString;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.expression.MacroCall;
-import sirius.tagliatelle.tags.TagContext;
 import sirius.tagliatelle.tags.TagHandler;
 
 import java.io.IOException;
@@ -37,11 +35,18 @@ import java.util.List;
  */
 public class Compiler extends InputProcessor {
 
+    public CompilationContext getContext() {
+        return context;
+    }
+
     private enum CompilerState {
         PROCEED, STOP, NEW_BLOCK
     }
 
     private final String input;
+
+    @PriorityParts(ExpressionHandler.class)
+    private static List<ExpressionHandler> expressionHandlers;
 
     public Compiler(CompilationContext context, String input) {
         super(new LookaheadReader(new StringReader(input)), context);
@@ -114,7 +119,7 @@ public class Compiler extends InputProcessor {
         return Collections.emptyList();
     }
 
-    private CompositeEmitter parseBlock(TagHandler parentHandler, String waitFor) {
+    public CompositeEmitter parseBlock(TagHandler parentHandler, String waitFor) {
         CompositeEmitter block = new CompositeEmitter(reader.current());
         ConstantEmitter staticText = new ConstantEmitter(reader.current());
         block.addChild(staticText);
@@ -126,14 +131,7 @@ public class Compiler extends InputProcessor {
                 return block;
             }
 
-            if (processTag(parentHandler, block, staticText)) {
-                if (!reader.current().isEndOfInput()) {
-                    staticText = new ConstantEmitter(reader.current());
-                    block.addChild(staticText);
-                }
-            }
-
-            if (processExpression(block)) {
+            if (processTag(parentHandler, block, staticText) || processExpression(block)) {
                 if (!reader.current().isEndOfInput()) {
                     staticText = new ConstantEmitter(reader.current());
                     block.addChild(staticText);
@@ -155,30 +153,35 @@ public class Compiler extends InputProcessor {
     }
 
     private boolean checkForEndOfBlock(String waitFor, ConstantEmitter staticText) {
-        if (waitFor == null) {
-            return false;
-        }
-
         if (reader.current().is('}')) {
             if ("}".equals(waitFor)) {
                 return true;
+            } else {
+                staticText.append(reader.consume().getStringValue());
             }
         }
 
-        if (reader.current().is('<') && reader.next().is('/')) {
+        if (waitFor != null && reader.current().is('<') && reader.next().is('/')) {
             if (isAtWaitFor(2, waitFor)) {
                 while (!reader.current().isEndOfInput() && !reader.current().is('>')) {
                     reader.consume();
                 }
 
-                consumeExpectedCharacter('>');
+                parseEndOfTag();
                 return true;
+            } else {
+                staticText.append(reader.consume().getStringValue());
             }
         }
 
-        staticText.append(reader.consume().getStringValue());
-
         return false;
+    }
+
+    private void parseEndOfTag() {
+        consumeExpectedCharacter('>');
+        if (reader.current().isNewLine()) {
+            reader.consume();
+        }
     }
 
     private boolean isAtWaitFor(int initialOffset, String waitFor) {
@@ -190,26 +193,20 @@ public class Compiler extends InputProcessor {
         return isAtText(offset, waitFor);
     }
 
-    private boolean isAtText(int offset, String text) {
-        for (int i = 0; i < text.length(); i++) {
-            if (!reader.next(offset + i).is(text.charAt(i))) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     private boolean processTag(TagHandler parentHandler, CompositeEmitter block, ConstantEmitter staticText) {
         if (!reader.current().is('<')) {
             return false;
         }
-
+        Position startOfTag = reader.current();
         reader.consume();
         String tagName = parseName();
         TagHandler handler = context.findTagHandler(reader.current(), tagName);
         if (handler != null) {
-            handleTag(parentHandler, handler, tagName, block);
+            handler.setStartOfTag(startOfTag);
+            handler.setParentHandler(parentHandler);
+            handler.setCompilationContext(context);
+            handler.setTagName(tagName);
+            handleTag(handler, block);
             return true;
         }
 
@@ -222,59 +219,62 @@ public class Compiler extends InputProcessor {
         if (!reader.current().is('@')) {
             return false;
         }
-        reader.consume();
-        if (isAtIf()) {
-            block.addChild(parseIf());
-        } else if (isAtFor()) {
-            block.addChild(parseForLoop());
-        } else {
-            block.addChild(new ExpressionEmitter(reader.current(), parseExpression(false)));
+
+        for (ExpressionHandler handler : expressionHandlers) {
+            if (handler.shouldProcess(this)) {
+                Emitter child = handler.process(this);
+                if (child != null) {
+                    block.addChild(child);
+                }
+                return true;
+            }
         }
 
-        return true;
+        return false;
     }
 
-    private void handleTag(TagHandler parentHandler, TagHandler handler, String tagName, CompositeEmitter block) {
-        Char startOfTag = reader.current();
-        parseAttributes(handler, tagName);
+    private void handleTag(TagHandler handler, CompositeEmitter block) {
+        parseAttributes(handler);
+
+        handler.beforeBody();
 
         boolean selfClosed = reader.current().is('/');
         if (selfClosed) {
             consumeExpectedCharacter('/');
-            skipUnexpectedWhitespace();
-            consumeExpectedCharacter('>');
+            skipWhitespaces();
+            parseEndOfTag();
         } else {
-            consumeExpectedCharacter('>');
-            CompositeEmitter body = parseBlock(handler, tagName);
+            parseEndOfTag();
+            CompositeEmitter body = parseBlock(handler, handler.getTagName());
             handler.addBlock("body", body);
         }
 
-        handler.apply(new TagContext(startOfTag, context, parentHandler, block));
+        handler.apply(block);
     }
 
-    private void parseAttributes(TagHandler handler, String tagName) {
+    private void parseAttributes(TagHandler handler) {
         while (true) {
-            skipExpectedWhitespace();
+            skipWhitespaces();
             if (reader.current().isEndOfInput() || reader.current().is('>') || reader.current().is('/')) {
                 break;
             }
             String name = parseName();
             Class<?> attributeType = handler.getExpectedAttributeType(name);
-            verifyAttributeNameAndType(handler, tagName, name, attributeType);
+            verifyAttributeNameAndType(handler, name, attributeType);
             if (attributeType == null) {
                 attributeType = String.class;
             }
 
-            skipUnexpectedWhitespace();
+            skipWhitespaces();
             consumeExpectedCharacter('=');
-            skipUnexpectedWhitespace();
+            skipWhitespaces();
             Char positionOfAttribute = reader.current();
             consumeExpectedCharacter('"');
-            skipUnexpectedWhitespace();
+            skipWhitespaces();
 
             if (reader.current().is('"')) {
                 warnForInvalidExpressionType(positionOfAttribute,
-                                             tagName,
+                                             handler.getTagName(),
                                              name,
                                              attributeType,
                                              ConstantNull.NULL.getType());
@@ -282,28 +282,37 @@ public class Compiler extends InputProcessor {
             } else if (reader.current().is('@')) {
                 reader.consume();
                 Expression expression = parseExpression(true);
-                warnForInvalidExpressionType(positionOfAttribute, tagName, name, attributeType, expression.getType());
+                warnForInvalidExpressionType(positionOfAttribute,
+                                             handler.getTagName(),
+                                             name,
+                                             attributeType,
+                                             expression.getType());
                 handler.setAttribute(name, expression);
             } else if (!String.class.equals(attributeType)) {
                 Expression expression = parseExpression(true);
-                warnForInvalidExpressionType(positionOfAttribute, tagName, name, attributeType, expression.getType());
+                warnForInvalidExpressionType(positionOfAttribute,
+                                             handler.getTagName(),
+                                             name,
+                                             attributeType,
+                                             expression.getType());
                 handler.setAttribute(name, expression);
             } else {
-                warnForInvalidExpressionType(positionOfAttribute, tagName, name, attributeType, String.class);
+                warnForInvalidExpressionType(positionOfAttribute,
+                                             handler.getTagName(),
+                                             name,
+                                             attributeType,
+                                             String.class);
                 handler.setAttribute(name, parseAttributeValue());
             }
             consumeExpectedCharacter('"');
         }
     }
 
-    private void verifyAttributeNameAndType(TagHandler handler,
-                                            String tagName,
-                                            String attributeName,
-                                            Class<?> attributeType) {
+    private void verifyAttributeNameAndType(TagHandler handler, String attributeName, Class<?> attributeType) {
         if (attributeType == null) {
             context.warning(reader.current(),
                             "Unknown attribute. %s doesn't have an attribute '%s'.",
-                            tagName,
+                            handler.getTagName(),
                             attributeName);
         }
 
@@ -350,53 +359,10 @@ public class Compiler extends InputProcessor {
         return sb.toString();
     }
 
-    private Emitter parseForLoop() {
-        return null;
-    }
-
-    private Emitter parseIf() {
-        ConditionalEmitter result = new ConditionalEmitter(reader.current());
-        reader.consume(2);
-        skipExpectedWhitespace();
-        consumeExpectedCharacter('(');
-        result.setConditionExpression(parseExpression(true));
-        skipUnexpectedWhitespace();
-        consumeExpectedCharacter(')');
-        skipExpectedWhitespace();
-        consumeExpectedCharacter('{');
-        result.setWhenTrue(parseBlock(null, "}"));
-        consumeExpectedCharacter('}');
-        if (isAtElse()) {
-            skipExpectedWhitespace();
-            reader.consume(4);
-            skipExpectedWhitespace();
-            consumeExpectedCharacter('{');
-            result.setWhenFalse(parseBlock(null, "}"));
-            consumeExpectedCharacter('}');
-        }
-
-        return result;
-    }
-
-    private Expression parseExpression(boolean skipWhitespaces) {
+    public Expression parseExpression(boolean skipWhitespaces) {
         return new Parser(reader, context).parse(skipWhitespaces);
     }
 
-    private boolean isAtFor() {
-        return isAtText(0, "for");
-    }
-
-    private boolean isAtIf() {
-        return isAtText(0, "if");
-    }
-
-    private boolean isAtElse() {
-        int offset = 0;
-        while (reader.next(offset).isWhitepace()) {
-            offset++;
-        }
-        return isAtText(offset, "else");
-    }
 
     private String consumeStaticBlock() {
         StringBuilder sb = new StringBuilder();

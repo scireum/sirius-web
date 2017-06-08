@@ -9,15 +9,22 @@
 package sirius.tagliatelle.expression;
 
 import sirius.tagliatelle.rendering.LocalRenderContext;
-
 /**
- * Created by aha on 11.05.17.
+ * Performs a read on the local stack.
+ *
+ * @see LocalRenderContext#getLocal(int)
  */
 public class ReadLocal extends Expression {
 
     private int index;
     private Class<?> type;
 
+    /**
+     * Creates a new instace which reads the given index in the local stack.
+     *
+     * @param type  the expected type of the value being read
+     * @param index the index to read
+     */
     public ReadLocal(Class<?> type, Integer index) {
         this.type = type;
         this.index = index;

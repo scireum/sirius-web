@@ -10,11 +10,14 @@ package sirius.tagliatelle.tags;
 
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
+import sirius.tagliatelle.emitter.CompositeEmitter;
+import sirius.tagliatelle.emitter.ConstantEmitter;
+import sirius.tagliatelle.emitter.Emitter;
 
 import javax.annotation.Nonnull;
 
 /**
- * Created by aha on 12.05.17.
+ * Handles <tt>i:block</tt> which specifies a template section passed into a tag invocation.
  */
 public class TagBlock extends TagHandler {
 
@@ -34,25 +37,22 @@ public class TagBlock extends TagHandler {
     }
 
     @Override
-    public void apply(TagContext context) {
-        if (context.getParentHandler() != null) {
+    public void apply(CompositeEmitter targetBlock) {
+        if (getParentHandler() != null) {
 
             String name = getConstantAttribute("name").asString();
             if (Strings.isEmpty(name)) {
-                context.getContext()
-                       .warning(context.getStartOfTag(), "The attribute name if i:block must be filled.", name);
+                getCompilationContext().error(getStartOfTag(), "The attribute name of i:block must be filled.", name);
             } else {
-                if (context.getParentHandler().getBlock(name) != null) {
-                    context.getContext()
-                           .warning(context.getStartOfTag(),
-                                    "Duplicate i:block. A block for '%s' is already present.",
-                                    name);
+                Emitter body = getBlock("body");
+                if (body != null) {
+                    getParentHandler().addBlock(name, body);
+                } else {
+                    getParentHandler().addBlock(name, ConstantEmitter.EMPTY);
                 }
-
-                context.getParentHandler().addBlock(name, getBlock("body"));
             }
         } else {
-            context.getContext().warning(context.getStartOfTag(), "Cannot define a block without a surrounding tag.");
+            getCompilationContext().error(getStartOfTag(), "Cannot define a block without a surrounding tag.");
         }
     }
 

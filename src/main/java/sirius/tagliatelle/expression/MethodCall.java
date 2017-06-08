@@ -9,23 +9,27 @@
 package sirius.tagliatelle.expression;
 
 import parsii.tokenizer.Char;
-import sirius.kernel.health.Exceptions;
+import sirius.kernel.commons.Strings;
+import sirius.tagliatelle.Engine;
 import sirius.tagliatelle.compiler.CompilationContext;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.List;
 
 /**
- * Created by aha on 10.05.17.
+ * Invokes a Java Method.
  */
-public class MethodCall extends Expression {
+public class MethodCall extends Call {
 
     private Method method;
     private Expression selfExpression;
-    private Expression[] parameterExpressions;
 
+    /**
+     * Creates a new instance and specifies the expression on which the method is invoked.
+     *
+     * @param self the expression on which the method is invoked.
+     */
     public MethodCall(Expression self) {
         this.selfExpression = self;
     }
@@ -34,11 +38,7 @@ public class MethodCall extends Expression {
     public Expression visit(ExpressionVisitor visitor) {
         this.selfExpression = visitor.visit(selfExpression);
 
-        for (int i = 0; i < parameterExpressions.length; i++) {
-            parameterExpressions[i] = visitor.visit(parameterExpressions[i]);
-        }
-
-        return visitor.visit(this);
+        return super.visit(visitor);
     }
 
     @Override
@@ -56,17 +56,9 @@ public class MethodCall extends Expression {
     public Expression copy() {
         MethodCall copy = new MethodCall(selfExpression.copy());
         copy.method = method;
-        copy.parameterExpressions = new Expression[parameterExpressions.length];
-        for (int i = 0; i < parameterExpressions.length; i++) {
-            copy.parameterExpressions[i] = parameterExpressions[i].copy();
-        }
+        copyParametersTo(copy);
 
         return copy;
-    }
-
-    @Override
-    public boolean isConstant() {
-        return false;
     }
 
     @Override
@@ -77,7 +69,7 @@ public class MethodCall extends Expression {
                 return null;
             }
 
-            if (parameterExpressions == null) {
+            if (parameterExpressions == NO_ARGS) {
                 return method.invoke(self);
             }
 
@@ -87,9 +79,10 @@ public class MethodCall extends Expression {
             }
 
             return method.invoke(self, params);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            //TODO
-            throw Exceptions.handle(e);
+        } catch (IllegalAccessException e) {
+            throw new ExpressionEvaluationException(e);
+        } catch (InvocationTargetException e) {
+            throw new ExpressionEvaluationException(e.getTargetException());
         }
     }
 
@@ -98,15 +91,16 @@ public class MethodCall extends Expression {
         return method.getReturnType();
     }
 
-    public void setParameters(List<Expression> parameters) {
-        if (!parameters.isEmpty()) {
-            parameterExpressions = parameters.toArray(new Expression[parameters.size()]);
-        }
-    }
-
+    /**
+     * Tries to find a matching method for the given name, type of "self" and parameter types.
+     *
+     * @param position the position where the invocation was declared
+     * @param context  the compilation context for error reporting
+     * @param name     the name of the method to find
+     */
     public void bindToMethod(Char position, CompilationContext context, String name) {
         try {
-            if (parameterExpressions == null) {
+            if (parameterExpressions == NO_ARGS) {
                 this.method = selfExpression.getType().getMethod(name);
                 return;
             }
@@ -114,10 +108,43 @@ public class MethodCall extends Expression {
             for (int i = 0; i < parameterExpressions.length; i++) {
                 parameterTypes[i] = parameterExpressions[i].getType();
             }
-            this.method = selfExpression.getType().getMethod(name, parameterTypes);
+
+            this.method = findMethod(selfExpression.getType(), name, parameterTypes);
         } catch (NoSuchMethodException e) {
             context.error(position, "%s doesn't have a method '%s'", selfExpression.getType(), e.getMessage());
         }
+    }
+
+    private Method findMethod(Class<?> type, String name, Class<?>[] parameterTypes) throws NoSuchMethodException {
+        for (Method m : type.getMethods()) {
+            if (signatureMatch(m, name, parameterTypes)) {
+                return m;
+            }
+        }
+
+        throw new NoSuchMethodException(name);
+    }
+
+    private boolean signatureMatch(Method method, String name, Class<?>[] parameterTypes) {
+        if (!Strings.areEqual(name, method.getName())) {
+            return false;
+        }
+
+        Class<?> varargType = null;
+        for (int i = 0; i < parameterTypes.length; i++) {
+            Class<?> parameterType = parameterTypes[i];
+            if (i == method.getParameterCount() - 1 && method.getParameterTypes()[i].isArray()) {
+                varargType = method.getParameterTypes()[i].getComponentType();
+            }
+            if (i >= method.getParameterCount() || !Engine.isAssignableTo(parameterType,
+                                                                          method.getParameterTypes()[i])) {
+                if (varargType == null || !Engine.isAssignableTo(parameterType, varargType)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     @Override

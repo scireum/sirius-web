@@ -8,19 +8,20 @@
 
 package sirius.tagliatelle.tags;
 
+import sirius.tagliatelle.emitter.CompositeEmitter;
 import sirius.tagliatelle.emitter.ConditionalEmitter;
 
 /**
- * Created by aha on 12.05.17.
+ * Handles <tt>i:if</tt> which emits its body if a condition is met.
  */
 public class TagIf extends TagHandler {
     @Override
-    public void apply(TagContext context) {
-        ConditionalEmitter result = new ConditionalEmitter(context.getStartOfTag());
+    public void apply(CompositeEmitter targetBlock) {
+        ConditionalEmitter result = new ConditionalEmitter(getStartOfTag());
         result.setConditionExpression(getAttribute("test"));
         result.setWhenTrue(getBlock("body"));
         result.setWhenFalse(getBlock("else"));
-        context.getBlock().addChild(result);
+        targetBlock.addChild(result);
     }
 
     @Override

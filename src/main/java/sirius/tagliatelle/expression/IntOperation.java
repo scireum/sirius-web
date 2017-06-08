@@ -11,18 +11,25 @@ package sirius.tagliatelle.expression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
 /**
- * Created by aha on 12.05.17.
+ * Represents an operation on integer values.
  */
 public class IntOperation extends Expression {
+
     protected Expression leftExpression;
     protected Expression rightExpression;
     protected Operator operator;
 
+    /**
+     * Creates a new operation with the given operator and operands.
+     *
+     * @param operator        the operator to apply
+     * @param leftExpression  the left operand
+     * @param rightExpression the right operand
+     */
     public IntOperation(Operator operator, Expression leftExpression, Expression rightExpression) {
         this.operator = operator;
         this.leftExpression = leftExpression;
         this.rightExpression = rightExpression;
-        //TODO ensure int
     }
 
     @Override
@@ -71,7 +78,6 @@ public class IntOperation extends Expression {
             case MODULO:
                 return left % right;
             default:
-                //TODO
                 throw new IllegalArgumentException(operator.toString());
         }
     }
