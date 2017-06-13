@@ -18,7 +18,7 @@ import javax.annotation.Nonnull;
  * Handles <tt>i:raw</tt> which sets the <tt>escaper</tt> to
  * {@link sirius.tagliatelle.rendering.GlobalRenderContext#escapeRAW(String)} while emitting its body.
  */
-public class TagRaw extends TagHandler {
+public class RawTag extends TagHandler {
 
     @Register
     public static class Factory implements TagHandlerFactory {
@@ -31,7 +31,7 @@ public class TagRaw extends TagHandler {
 
         @Override
         public TagHandler createHandler() {
-            return new TagRaw();
+            return new RawTag();
         }
     }
 

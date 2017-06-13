@@ -103,16 +103,16 @@ public class Tagliatelle {
     /**
      * Ensures, that all {@link RenderContextExtender} produce a sane and expected output.
      *
-     * @param env the environment to check
+     * @param environment the environment to check
      */
-    private void verifyGlobals(List<Object> env) {
+    private void verifyGlobals(List<Object> environment) {
         int index = 0;
         for (Tuple<String, Class<?>> global : globalVariables) {
-            if (env.size() <= index) {
+            if (environment.size() <= index) {
                 Templates.LOG.WARN("An invalid global environment was created! Missing a value for %s",
                                    global.getFirst());
             } else {
-                Object value = env.get(index);
+                Object value = environment.get(index);
                 if (!isAssignable(value, global.getSecond())) {
                     Templates.LOG.WARN("An invalid global environment was created!"
                                        + " An invalid value (%s) of type %s was created for parameter %s."
@@ -205,7 +205,7 @@ public class Tagliatelle {
     }
 
     /**
-     * Determines of the boxed type matches the primitive type.
+     * Determines if the boxed type matches the primitive type.
      *
      * @param primitveType the primitive type to check, e.g. <tt>int.class</tt>
      * @param boxedType    the boxed type to check, e.g. <tt>Integer.class</tt>
@@ -289,7 +289,7 @@ public class Tagliatelle {
     /**
      * Computes the effective path name for a tag.
      * <p>
-     * A template for a tag named <tt>&lt;prefix:tagName&gt;</tt> is expetec to reside in
+     * A template for a tag named <tt>&lt;prefix:tagName&gt;</tt> is expected to reside in
      * <tt>/taglib/prefix/tagName.html.pasta</tt>.
      *
      * @param qualifiedTagName the qualified tag name, e.g. <tt>prefix:tagName</tt>

@@ -85,7 +85,7 @@ public abstract class Emitter {
     /**
      * Performs static optimizations at compile time.
      * <p>
-     * Certain emitters an perform optimizations (evaluate constant expressions, combine constant outputs etc.) to
+     * Certain emitters can perform optimizations (evaluate constant expressions, combine constant outputs etc.) to
      * create more efficient templates. This is especially important when a template is inlined, as this most probably
      * provides a higher level of optimizations.
      *

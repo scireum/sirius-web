@@ -24,7 +24,7 @@ import java.util.List;
  * Represents <tt>i18n(String)</tt> which is essentially a call to {@link NLS#get(String)}.
  */
 @Register
-public class MacroI18n implements Macro {
+public class I18nMacro implements Macro {
     @Override
     public Class<?> getType() {
         return String.class;

@@ -34,7 +34,7 @@ public class InvokeTagHandler extends TagHandler {
 
     @Override
     public void apply(CompositeEmitter targetBlock) {
-        if (template.getPragma(TagInvoke.ATTR_INLINE).asBoolean()) {
+        if (template.getPragma(InvokeTag.ATTR_INLINE).asBoolean()) {
             targetBlock.addChild(getCompilationContext().inlineTemplate(getStartOfTag(),
                                                                         template,
                                                                         this::getAttribute,

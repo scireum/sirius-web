@@ -17,7 +17,7 @@ import java.util.Objects;
  * <p>
  * Note that this can also be inverted to <tt>!=</tt>.
  */
-public class OperationEquals extends Expression {
+public class EqualsOperation extends Expression {
 
     protected Expression leftExpression;
     protected Expression rightExpression;
@@ -29,7 +29,7 @@ public class OperationEquals extends Expression {
      * @param rightExpression the right operand
      * @param invert uses <tt>!=</tt> as operator if <tt>true</tt>, <tt>==</tt> otherwise.
      */
-    public OperationEquals(Expression leftExpression, Expression rightExpression, boolean invert) {
+    public EqualsOperation(Expression leftExpression, Expression rightExpression, boolean invert) {
         this.leftExpression = leftExpression;
         this.rightExpression = rightExpression;
         this.invert = invert;
@@ -71,7 +71,7 @@ public class OperationEquals extends Expression {
 
     @Override
     public Expression copy() {
-        return new OperationEquals(leftExpression.copy(), rightExpression.copy(), invert);
+        return new EqualsOperation(leftExpression.copy(), rightExpression.copy(), invert);
     }
 
     @Override

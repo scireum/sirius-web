@@ -13,7 +13,7 @@ import sirius.tagliatelle.rendering.LocalRenderContext;
 /**
  * Represents a boolean <tt>and</tt>.
  */
-public class OperationAnd extends BooleanOperation {
+public class AndOperation extends BooleanOperation {
 
     /**
      * Creates a new <tt>and</tt> operation for the given operands.
@@ -21,7 +21,7 @@ public class OperationAnd extends BooleanOperation {
      * @param leftExpression  the left operand
      * @param rightExpression the right operand
      */
-    public OperationAnd(Expression leftExpression, Expression rightExpression) {
+    public AndOperation(Expression leftExpression, Expression rightExpression) {
         super(leftExpression, rightExpression);
     }
 
@@ -46,7 +46,7 @@ public class OperationAnd extends BooleanOperation {
 
     @Override
     public Expression copy() {
-        return new OperationAnd(leftExpression.copy(), rightExpression.copy());
+        return new AndOperation(leftExpression.copy(), rightExpression.copy());
     }
 
     @Override

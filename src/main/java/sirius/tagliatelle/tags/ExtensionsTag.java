@@ -20,7 +20,7 @@ import javax.annotation.Nonnull;
 /**
  * Handles <tt>i:extensions</tt> which invokes all extensions with the given name.
  */
-public class TagExtensions extends TagInvoke {
+public class ExtensionsTag extends InvokeTag {
 
     @Register
     public static class Factory implements TagHandlerFactory {
@@ -33,7 +33,7 @@ public class TagExtensions extends TagInvoke {
 
         @Override
         public TagHandler createHandler() {
-            return new TagExtensions();
+            return new ExtensionsTag();
         }
     }
 

@@ -13,7 +13,7 @@ import sirius.tagliatelle.emitter.Emitter;
 import sirius.tagliatelle.emitter.RawEmitter;
 
 /**
- * Handles <tt>{@literal @}raw {}</tt>.
+ * Handles <tt>{@literal @}raw() {}</tt>.
  *
  * @see RawEmitter
  */
@@ -22,7 +22,7 @@ public class RawHandler extends ExpressionHandler {
 
     @Override
     public boolean shouldProcess(Compiler compiler) {
-        return compiler.isAtText(0, "@raw");
+        return compiler.isAtText(0, "@raw()");
     }
 
     @Override

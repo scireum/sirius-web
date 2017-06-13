@@ -17,7 +17,7 @@ import javax.annotation.Nonnull;
 /**
  * Handles <tt>i:else</tt> within an <tt>i:if</tt>.
  */
-public class TagElse extends TagHandler {
+public class ElseTag extends TagHandler {
 
     @Register
     public static class Factory implements TagHandlerFactory {
@@ -30,16 +30,17 @@ public class TagElse extends TagHandler {
 
         @Override
         public TagHandler createHandler() {
-            return new TagElse();
+            return new ElseTag();
         }
     }
 
     @Override
     public void apply(CompositeEmitter targetBlock) {
-        if (!(getParentHandler() instanceof TagIf)) {
+        if (!(getParentHandler() instanceof IfTag)) {
             getCompilationContext().error(getStartOfTag(), "i:else must be defined within i:if!");
             return;
         }
+
         Emitter body = getBlock("body");
         if (body != null) {
             getParentHandler().addBlock("else", body);

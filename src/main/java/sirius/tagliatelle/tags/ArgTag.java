@@ -20,7 +20,7 @@ import javax.annotation.Nonnull;
 /**
  * Handles <tt>i:arg</tt> which specifies a template argument.
  */
-public class TagArg extends TagHandler {
+public class ArgTag extends TagHandler {
 
     @Register
     public static class Factory implements TagHandlerFactory {
@@ -33,7 +33,7 @@ public class TagArg extends TagHandler {
 
         @Override
         public TagHandler createHandler() {
-            return new TagArg();
+            return new ArgTag();
         }
     }
 

@@ -13,6 +13,7 @@ import sirius.tagliatelle.expression.ConstantBoolean;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.expression.ExpressionVisitor;
 import sirius.tagliatelle.rendering.LocalRenderContext;
+import sirius.tagliatelle.tags.IfTag;
 
 import java.util.function.Function;
 
@@ -21,7 +22,7 @@ import java.util.function.Function;
  * <p>
  * A conditional block can either be defined via the built-in tag &lt;i:if&gt; or via an if statement.
  *
- * @see sirius.tagliatelle.tags.TagIf
+ * @see IfTag
  */
 public class ConditionalEmitter extends Emitter {
 

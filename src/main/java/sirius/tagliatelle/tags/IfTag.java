@@ -17,8 +17,7 @@ import javax.annotation.Nonnull;
 /**
  * Handles <tt>i:if</tt> which emits its body if a condition is met.
  */
-public class TagIf extends TagHandler {
-
+public class IfTag extends TagHandler {
     @Register
     public static class Factory implements TagHandlerFactory {
 
@@ -30,7 +29,7 @@ public class TagIf extends TagHandler {
 
         @Override
         public TagHandler createHandler() {
-            return new TagIf();
+            return new IfTag();
         }
     }
 

@@ -19,7 +19,7 @@ import javax.annotation.Nonnull;
 /**
  * Handles <tt>i:invoke</tt> which invokes or inlines a given template.
  */
-public class TagInvoke extends TagHandler {
+public class InvokeTag extends TagHandler {
 
     public static final String ATTR_TEMPLATE = "template";
     public static final String ATTR_INLINE = "inline";
@@ -35,7 +35,7 @@ public class TagInvoke extends TagHandler {
 
         @Override
         public TagHandler createHandler() {
-            return new TagInvoke();
+            return new InvokeTag();
         }
     }
 
