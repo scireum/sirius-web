@@ -47,7 +47,9 @@ public class MacroI18n implements Macro {
             Expression exp = args.get(0);
             if (exp instanceof ConstantString) {
                 String key = (String) exp.eval(null);
-                if (NLS.getTranslationEngine().getTranslations(key).noneMatch(t -> key.equals(t.getKey()))) {
+                if (Strings.isFilled(key) && NLS.getTranslationEngine()
+                                                .getTranslations(key)
+                                                .noneMatch(t -> key.equals(t.getKey()))) {
                     throw new IllegalArgumentException(Strings.apply("No translation found for key: %s", key));
                 }
             }

@@ -65,9 +65,13 @@ public class Compiler extends InputProcessor {
             throw new IllegalArgumentException("Reader is null - please do not re-use a Compiler instance.");
         }
 
-        Emitter emitter = parseBlock(null, null).reduce();
-        context.getTemplate().setEmitter(emitter);
-        verifyMacros();
+        try {
+            Emitter emitter = parseBlock(null, null).reduce();
+            context.getTemplate().setEmitter(emitter);
+            verifyMacros();
+        } catch (Exception e) {
+            context.error(Position.UNKNOWN, Exceptions.handle(e).getMessage());
+        }
 
         context.getTemplate().setStackDepth(context.getStackDepth());
         reader = null;

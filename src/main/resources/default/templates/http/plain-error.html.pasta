@@ -1,3 +1,4 @@
+<i:arg type="sirius.kernel.async.CallContext" name="ctx" />
 <i:arg type="String" name="message" />
 <html>
     <head>

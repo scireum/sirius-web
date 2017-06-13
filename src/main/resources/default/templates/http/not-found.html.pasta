@@ -1,3 +1,4 @@
+<i:arg type="sirius.kernel.async.CallContext" name="ctx" />
 <i:arg type="String" name="message" />
 <w:page title="@i18n('BasicController.404')">
     <i:block name="breadcrumbBar" />
@@ -8,17 +9,6 @@
 
     <div class="well">
         <pre style="font-size: small">@message</pre>
-
-        <h2>Diagnostic:</h2>
-        <ul>
-            <li><b>node:</b> @ctx.getNodeName()</li>
-            <li><b>duration:</b> @ctx.getWatch().duration()</li>
-            <i:for type="sirius.kernel.commons.Tuple" var="t" items="ctx.getMDC()">
-                <li>
-                    <b>@t.getFirst():</b> @t.getSecond()
-                </li>
-            </i:for>
-        </ul>
     </div>
 
     <a href="@wondergemRoot" class="btn">

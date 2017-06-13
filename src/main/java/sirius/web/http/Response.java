@@ -891,18 +891,22 @@ public class Response {
                 return;
             }
 
-            if (HttpResponseStatus.NOT_FOUND.equals(status)) {
-                template("/templates/http/not-found.html.pasta", message);
-            } else {
-                try {
-                    template("/templates/http/error.html.pasta", message);
-                } catch (HandledException e) {
-                    Exceptions.ignore(e);
-                    template("/templates/http/plain-error.html.pasta", message);
-                }
-            }
+            renderErrorTemplate(status, message);
         } catch (Exception e) {
             handleErrorInError(status, message, e);
+        }
+    }
+
+    private void renderErrorTemplate(HttpResponseStatus status, String message) {
+        try {
+            if (HttpResponseStatus.NOT_FOUND.equals(status)) {
+                template("/templates/http/not-found.html.pasta", CallContext.getCurrent(), message);
+            } else {
+                template("/templates/http/error.html.pasta", CallContext.getCurrent(), message);
+            }
+        } catch (HandledException e) {
+            Exceptions.ignore(e);
+            template("/templates/http/plain-error.html.pasta", CallContext.getCurrent(), message);
         }
     }
 
