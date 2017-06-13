@@ -158,6 +158,9 @@ public class MethodCall extends Call {
                 sb.append(expr);
             }
         }
+        if (method == null) {
+            return selfExpression + ".UNBOUND(" + sb + ")";
+        }
         return selfExpression + "." + method.getName() + "(" + sb + ")";
     }
 }

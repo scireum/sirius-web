@@ -15,6 +15,7 @@ import parsii.tokenizer.ParseError;
 import parsii.tokenizer.Position;
 import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.health.Exceptions;
+import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.emitter.CompositeEmitter;
 import sirius.tagliatelle.emitter.ConstantEmitter;
 import sirius.tagliatelle.emitter.Emitter;
@@ -65,6 +66,10 @@ public class Compiler extends InputProcessor {
             throw new IllegalArgumentException("Reader is null - please do not re-use a Compiler instance.");
         }
 
+        if (Tagliatelle.LOG.isFINE()) {
+            Tagliatelle.LOG.FINE("Compiling '%s'", context.getTemplate());
+        }
+
         try {
             Emitter emitter = parseBlock(null, null).reduce();
             context.getTemplate().setEmitter(emitter);
@@ -94,6 +99,10 @@ public class Compiler extends InputProcessor {
         boolean errorFound = false;
         List<String> lines = getInputAsLines();
         for (ParseError error : context.getErrors()) {
+            if (Tagliatelle.LOG.isFINE()) {
+                Tagliatelle.LOG.FINE("'%s': %s", context.getTemplate(), error);
+            }
+
             errorFound |= error.getSeverity() == ParseError.Severity.ERROR;
 
             if (error.getPosition().getLine() >= 1 && error.getPosition().getLine() <= lines.size()) {
