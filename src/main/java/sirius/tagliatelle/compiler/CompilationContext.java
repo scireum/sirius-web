@@ -152,7 +152,7 @@ public class CompilationContext {
     }
 
     /**
-     * Returns the maximal stack depth required when rendering this template.
+     * Returns the maximum stack depth required when rendering this template.
      *
      * @return the maximal required stack depth to render this template
      */
@@ -292,7 +292,7 @@ public class CompilationContext {
     /**
      * Generates an <tt>emitter</tt> which invokes the given template at runtime.
      * <p>
-     * Note that only the template name, not the template itself is stored, so that modifiactions of the referenced
+     * Note that only the template name, not the template itself is stored, so that modifications of the referenced
      * template will be detected and applied.
      *
      * @param position  the position where the invokation took place
@@ -344,7 +344,7 @@ public class CompilationContext {
      * for static templates, not for ones modified by the user.
      * <p>
      * Note however, that aggressive optimizations are enabled by this approach as all constant arguments are
-     * propagated to the referenced template. Also all emitter block passed to the template are resolved and propagated
+     * propagated to the referenced template. Also all emitter blocks passed to the template are resolved and propagated
      * during compilation.
      * <p>
      * As constant expressions and constant conditional emitters are optimized during the last phase of the compilation,
@@ -419,14 +419,14 @@ public class CompilationContext {
             return copy;
         }
 
-        CompositeEmitter ce = new CompositeEmitter(copy.getStartOfBlock());
+        CompositeEmitter result = new CompositeEmitter(copy.getStartOfBlock());
         temps.forEach(e -> {
-            ce.addChild(e);
+            result.addChild(e);
             pop(position);
         });
 
-        ce.addChild(copy);
-        return ce;
+        result.addChild(copy);
+        return result;
     }
 
     /**
@@ -492,8 +492,8 @@ public class CompilationContext {
      * As all positions where the blocks are used are known in advance, we directly replace the respective {@link
      * BlockEmitter} with the given blocks.
      * <p>
-     * For complext blocks, we wrap them in an {@link InvokeTemplateEmitter}, simple (constant) ones don't need this
-     * trick as we do not need to maintain the render stack as no render error can occure here.
+     * For complex blocks, we wrap them in an {@link InvokeTemplateEmitter}, simple (constant) ones don't need this
+     * trick as we do not need to maintain the render stack as no render error can occur here.
      *
      * @param blocks the map of blocks available
      * @param copy   the copied template content

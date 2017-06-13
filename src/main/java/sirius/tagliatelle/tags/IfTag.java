@@ -14,7 +14,7 @@ import sirius.tagliatelle.emitter.ConditionalEmitter;
 /**
  * Handles <tt>i:if</tt> which emits its body if a condition is met.
  */
-public class TagIf extends TagHandler {
+public class IfTag extends TagHandler {
     @Override
     public void apply(CompositeEmitter targetBlock) {
         ConditionalEmitter result = new ConditionalEmitter(getStartOfTag());

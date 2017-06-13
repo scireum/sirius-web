@@ -13,7 +13,7 @@ import sirius.tagliatelle.rendering.LocalRenderContext;
 /**
  * Represents a boolean <tt>or</tt>.
  */
-public class OperationOr extends BooleanOperation {
+public class OrOperation extends BooleanOperation {
 
     /**
      * Creates a new <tt>or</tt> operation for the given operands.
@@ -21,7 +21,7 @@ public class OperationOr extends BooleanOperation {
      * @param leftExpression  the left operand
      * @param rightExpression the right operand
      */
-    public OperationOr(Expression leftExpression, Expression rightExpression) {
+    public OrOperation(Expression leftExpression, Expression rightExpression) {
         super(leftExpression, rightExpression);
     }
 
@@ -51,7 +51,7 @@ public class OperationOr extends BooleanOperation {
 
     @Override
     public Expression copy() {
-        return new OperationOr(leftExpression.copy(), rightExpression.copy());
+        return new OrOperation(leftExpression.copy(), rightExpression.copy());
     }
 
     @Override

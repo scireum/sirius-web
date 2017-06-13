@@ -23,7 +23,7 @@ import java.util.function.Consumer;
 public interface RenderContextExtender {
 
     /**
-     * Collects the names and types of the golbals at compile time.
+     * Collects the names and types of the globals at compile time.
      *
      * @param parameterCollector the collector to be supplied with the variable name and type.
      */

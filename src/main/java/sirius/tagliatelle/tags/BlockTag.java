@@ -19,7 +19,7 @@ import javax.annotation.Nonnull;
 /**
  * Handles <tt>i:block</tt> which specifies a template section passed into a tag invocation.
  */
-public class TagBlock extends TagHandler {
+public class BlockTag extends TagHandler {
 
     @Register
     public static class Factory implements TagHandlerFactory {
@@ -32,7 +32,7 @@ public class TagBlock extends TagHandler {
 
         @Override
         public TagHandler createHandler() {
-            return new TagBlock();
+            return new BlockTag();
         }
     }
 

@@ -20,7 +20,7 @@ import java.util.List;
  * Represents <tt>isFilled(Object)</tt> which is a call to {@link Strings#isFilled(Object)}.
  */
 @Register
-public class MacroIsFilled implements Macro {
+public class IsFilledMacro implements Macro {
 
     @Override
     public Class<?> getType() {

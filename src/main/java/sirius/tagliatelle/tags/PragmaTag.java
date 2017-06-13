@@ -16,7 +16,7 @@ import javax.annotation.Nonnull;
 /**
  * Handles <tt>i:pragma</tt> which defines a pragma (key / value pair) for a template.
  */
-public class TagPragma extends TagHandler {
+public class PragmaTag extends TagHandler {
 
     @Register
     public static class Factory implements TagHandlerFactory {
@@ -29,7 +29,7 @@ public class TagPragma extends TagHandler {
 
         @Override
         public TagHandler createHandler() {
-            return new TagPragma();
+            return new PragmaTag();
         }
     }
 

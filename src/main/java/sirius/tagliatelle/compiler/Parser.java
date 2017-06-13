@@ -23,9 +23,9 @@ import sirius.tagliatelle.expression.IntOperation;
 import sirius.tagliatelle.expression.MacroCall;
 import sirius.tagliatelle.expression.MethodCall;
 import sirius.tagliatelle.expression.NoodleOperation;
-import sirius.tagliatelle.expression.OperationAnd;
-import sirius.tagliatelle.expression.OperationEquals;
-import sirius.tagliatelle.expression.OperationOr;
+import sirius.tagliatelle.expression.AndOperation;
+import sirius.tagliatelle.expression.EqualsOperation;
+import sirius.tagliatelle.expression.OrOperation;
 import sirius.tagliatelle.expression.Operator;
 import sirius.tagliatelle.expression.ReadGlobal;
 import sirius.tagliatelle.expression.ReadLocal;
@@ -139,7 +139,7 @@ class Parser extends InputProcessor {
     }
 
     /**
-     * Parses a {@link #conjunction()} and supports arbitrary many disjunctions ('||') or <b>the nooble operator</b>,
+     * Parses a {@link #conjunction()} and supports arbitrary many disjunctions ('||') or <b>the noodle operator</b>,
      * which is '|' and uses the first non null, non empty string value in the list.
      *
      * @return an expression which consists of zero to many disjunctions or noodle operations
@@ -157,7 +157,7 @@ class Parser extends InputProcessor {
                     assertType(pos, result, boolean.class);
                     assertType(pos, right, boolean.class);
 
-                    result = new OperationOr(result, right);
+                    result = new OrOperation(result, right);
                 } else {
                     reader.consume();
                     result = new NoodleOperation(result, conjunction());
@@ -186,7 +186,7 @@ class Parser extends InputProcessor {
                 Expression right = relationalExpression();
                 assertType(pos, result, boolean.class);
                 assertType(pos, right, boolean.class);
-                result = new OperationAnd(result, right);
+                result = new AndOperation(result, right);
             } else {
                 break;
             }
@@ -234,7 +234,7 @@ class Parser extends InputProcessor {
         if (left.getType() == int.class && right.getType() == int.class) {
             return new RelationalIntOperation(op, left, right);
         } else {
-            return new OperationEquals(left, right, op == Operator.NE);
+            return new EqualsOperation(left, right, op == Operator.NE);
         }
     }
 

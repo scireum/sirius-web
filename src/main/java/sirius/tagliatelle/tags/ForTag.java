@@ -18,7 +18,7 @@ import javax.annotation.Nonnull;
 /**
  * Handles <tt>i:for</tt> which emits its body for each item in an {@link Iterable}.
  */
-public class TagFor extends TagHandler {
+public class ForTag extends TagHandler {
 
     @Register
     public static class Factory implements TagHandlerFactory {
@@ -31,7 +31,7 @@ public class TagFor extends TagHandler {
 
         @Override
         public TagHandler createHandler() {
-            return new TagFor();
+            return new ForTag();
         }
     }
 
