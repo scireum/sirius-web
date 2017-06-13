@@ -205,7 +205,7 @@ public class Tagliatelle {
     }
 
     /**
-     * Determines of the boxed type matches the primitive type.
+     * Determines if the boxed type matches the primitive type.
      *
      * @param primitveType the primitive type to check, e.g. <tt>int.class</tt>
      * @param boxedType    the boxed type to check, e.g. <tt>Integer.class</tt>

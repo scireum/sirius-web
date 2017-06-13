@@ -55,7 +55,7 @@ public class Compiler extends InputProcessor {
     /**
      * Compiles the given source into the template in the given {@link CompilationContext}.
      * <p>
-     * Note that this can only invoked once per instance.
+     * Note that this can only be invoked once per instance.
      *
      * @return a list of warnings collected while compiling the source
      * @throws CompileException in case one or more {@link CompileError errors} occured.
@@ -258,7 +258,7 @@ public class Compiler extends InputProcessor {
     /**
      * Processes a tag.
      * <p>
-     * If the tag is built in (i:) or a one in a taglib, an appropriate {@link TagHandler} is created and invoked.
+     * If the tag is built-in (i:) or a one in a taglib, an appropriate {@link TagHandler} is created and invoked.
      * Otherwise the tag is parsed as static text.
      *
      * @param parentHandler the outer tag handler

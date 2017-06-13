@@ -355,7 +355,7 @@ class Parser extends InputProcessor {
     }
 
     /**
-     * Parses an {@link #atom()} which can be folloed by one or more method calls.
+     * Parses an {@link #atom()} which can be followed by one or more method calls.
      *
      * @return an expression which is either an atom or a method call chain
      */

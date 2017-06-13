@@ -13,7 +13,7 @@ import sirius.tagliatelle.expression.Expression;
 import javax.annotation.Nullable;
 
 /**
- * Represents a argument definition for a template.
+ * Represents an argument definition for a template.
  */
 public class TemplateArgument {
 
