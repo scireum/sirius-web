@@ -30,7 +30,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by aha on 18.05.17.
+ * Sends a file as static content.
  */
 class SendFile {
 

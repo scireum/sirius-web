@@ -9,6 +9,7 @@
 package sirius.web.dispatch;
 
 import io.netty.handler.codec.http.HttpMethod;
+import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
@@ -28,6 +29,7 @@ import java.util.regex.Pattern;
 @Register
 public class HelpDispatcher implements WebDispatcher {
 
+    public static final String HELP_PREFIX = "/help";
     private static Pattern startPagePattern = Pattern.compile("^/help/(..)/?$");
 
     @ConfigValue("help.indexTemplate")
@@ -48,11 +50,15 @@ public class HelpDispatcher implements WebDispatcher {
 
     @Override
     public boolean dispatch(WebContext ctx) throws Exception {
-        if (!ctx.getRequest().uri().startsWith("/help") || HttpMethod.GET != ctx.getRequest().method()) {
+        if (!ctx.getRequest().uri().startsWith(HELP_PREFIX) || !HttpMethod.GET.equals(ctx.getRequest().method())) {
             return false;
         }
         String uri = getRequestedURI(ctx);
-        String helpSystemHomeURI = "/help/" + getHelpSystemLanguageDirectory(uri);
+        String lang = getHelpSystemLanguageDirectory(uri);
+        if (Strings.isFilled(lang)) {
+            CallContext.getCurrent().setLang(lang);
+        }
+        String helpSystemHomeURI = HELP_PREFIX + "/" + lang;
         if (uri.contains(".") && !uri.endsWith("html")) {
             // Dispatch static content...
             URL url = getClass().getResource(uri);
@@ -68,7 +74,7 @@ public class HelpDispatcher implements WebDispatcher {
             ctx.setAttribute("helpSystemHomeURI", helpSystemHomeURI);
             ctx.respondWith().cached().template(uri);
         }
-        ctx.enableTiming("/help/");
+        ctx.enableTiming(helpSystemHomeURI);
         return true;
     }
 

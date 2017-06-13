@@ -25,7 +25,7 @@ import java.io.OutputStream;
 import java.nio.channels.ClosedChannelException;
 
 /**
- * Created by aha on 18.05.17.
+ * Provides an adapter from {@link OutputStream} to an underlying channel using a buffer.
  */
 class ChunkedOutputStream extends OutputStream {
     private Response response;

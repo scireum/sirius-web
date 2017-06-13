@@ -34,7 +34,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 /**
- * Created by aha on 18.05.17.
+ * Performs tunneling into a request by reading from another.
  */
 class TunnelHandler implements AsyncHandler<String> {
 
