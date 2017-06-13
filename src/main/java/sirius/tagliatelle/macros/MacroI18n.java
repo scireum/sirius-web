@@ -12,7 +12,7 @@ import sirius.kernel.Sirius;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.nls.NLS;
-import sirius.tagliatelle.Engine;
+import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.expression.ConstantString;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
@@ -39,7 +39,7 @@ public class MacroI18n implements Macro {
      */
     @Override
     public void verifyArguments(List<Expression> args) {
-        if (args.size() != 1 || !Engine.isAssignableTo(args.get(0).getType(), String.class)) {
+        if (args.size() != 1 || !Tagliatelle.isAssignableTo(args.get(0).getType(), String.class)) {
             throw new IllegalArgumentException("Expected a single String as argument.");
         }
 

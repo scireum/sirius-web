@@ -39,7 +39,7 @@ public class RenderException extends Exception {
             return (RenderException) ex;
         }
 
-        String renderStack = Strings.apply("%nRender Stack:%n------------%n%s%n", ex.getMessage(), context.toString());
+        String renderStack = Strings.apply("%nRender Stack:%n------------%n%s%n", context.toString());
         if (ex instanceof CompileException || ex instanceof HandledException) {
             return new RenderException(Strings.apply("%s%s", ex.getMessage(), renderStack), ex);
         }

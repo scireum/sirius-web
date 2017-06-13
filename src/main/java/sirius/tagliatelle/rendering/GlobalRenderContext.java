@@ -8,7 +8,7 @@
 
 package sirius.tagliatelle.rendering;
 
-import sirius.tagliatelle.Engine;
+import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.Template;
 import sirius.tagliatelle.compiler.CompileException;
 import sirius.web.templates.ContentHelper;
@@ -23,27 +23,26 @@ import java.util.function.Function;
 /**
  * Represents the global context which is created to render a template.
  *
- * @see Engine#createRenderContext()
+ * @see Tagliatelle#createRenderContext()
  */
 public class GlobalRenderContext {
 
+    private List<Object> globals;
     protected Map<String, Template> templateCache;
     protected StackAllocator stack = new StackAllocator();
-    protected List<Object> globals;
-    protected Engine engine;
+    protected Tagliatelle engine;
     protected StringBuilder buffer = new StringBuilder();
     protected Function<String, String> escaper = GlobalRenderContext::escapeRAW;
 
     /**
      * Creates a new render context.
      * <p>
-     * Use {@link Engine#createRenderContext()} to obtain an instance.
+     * Use {@link Tagliatelle#createRenderContext()} to obtain an instance.
      *
      * @param engine the global engine instance.
      */
-    public GlobalRenderContext(Engine engine) {
+    public GlobalRenderContext(Tagliatelle engine) {
         this.engine = engine;
-        this.globals = engine.getEnvironment();
     }
 
     /**
@@ -167,5 +166,17 @@ public class GlobalRenderContext {
     @Override
     public String toString() {
         return buffer.toString();
+    }
+
+    /**
+     * Provides access to the environment (global variables).
+     *
+     * @return the list of global variables
+     */
+    public List<Object> getGlobals() {
+        if (globals == null) {
+            this.globals = engine.createEnvironment();
+        }
+        return globals;
     }
 }

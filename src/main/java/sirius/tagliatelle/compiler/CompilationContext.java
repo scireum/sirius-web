@@ -16,7 +16,7 @@ import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
-import sirius.tagliatelle.Engine;
+import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.Template;
 import sirius.tagliatelle.TemplateArgument;
 import sirius.tagliatelle.emitter.BlockEmitter;
@@ -91,7 +91,7 @@ public class CompilationContext {
     private static GlobalContext ctx;
 
     @Part
-    private static Engine engine;
+    private static Tagliatelle engine;
 
     /**
      * Creates a new context for the given template and parent context.
@@ -539,7 +539,7 @@ public class CompilationContext {
      * @param position the position for error reporting
      * @param typeName the type name to resolve
      * @return a Java class for the given type name
-     * @see Engine#getClassAliases()
+     * @see Tagliatelle#getClassAliases()
      */
     public Class<?> resolveClass(Position position, String typeName) {
         Class<?> result = engine.getClassAliases().get(typeName);

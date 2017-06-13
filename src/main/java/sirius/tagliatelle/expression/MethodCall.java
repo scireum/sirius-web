@@ -10,7 +10,7 @@ package sirius.tagliatelle.expression;
 
 import parsii.tokenizer.Char;
 import sirius.kernel.commons.Strings;
-import sirius.tagliatelle.Engine;
+import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.compiler.CompilationContext;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
@@ -136,9 +136,9 @@ public class MethodCall extends Call {
             if (i == method.getParameterCount() - 1 && method.getParameterTypes()[i].isArray()) {
                 varargType = method.getParameterTypes()[i].getComponentType();
             }
-            if (i >= method.getParameterCount() || !Engine.isAssignableTo(parameterType,
-                                                                          method.getParameterTypes()[i])) {
-                if (varargType == null || !Engine.isAssignableTo(parameterType, varargType)) {
+            if (i >= method.getParameterCount() || !Tagliatelle.isAssignableTo(parameterType,
+                                                                               method.getParameterTypes()[i])) {
+                if (varargType == null || !Tagliatelle.isAssignableTo(parameterType, varargType)) {
                     return false;
                 }
             }

@@ -12,7 +12,7 @@ import parsii.tokenizer.Char;
 import parsii.tokenizer.LookaheadReader;
 import parsii.tokenizer.Position;
 import sirius.kernel.commons.Tuple;
-import sirius.tagliatelle.Engine;
+import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.expression.ConcatExpression;
 import sirius.tagliatelle.expression.ConstantBoolean;
 import sirius.tagliatelle.expression.ConstantInt;
@@ -196,7 +196,7 @@ class Parser extends InputProcessor {
     }
 
     private void assertType(Position pos, Expression expression, Class<?> expectedType) {
-        if (!Engine.isAssignableTo(expression.getType(), expectedType)) {
+        if (!Tagliatelle.isAssignableTo(expression.getType(), expectedType)) {
             context.error(pos, "Expected an expression of type %s but got %s", expectedType, expression.getType());
         }
     }

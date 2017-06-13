@@ -10,7 +10,7 @@ package sirius.tagliatelle.tags;
 
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
-import sirius.tagliatelle.Engine;
+import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.Template;
 import sirius.tagliatelle.emitter.CompositeEmitter;
 import sirius.web.templates.Templates;
@@ -41,7 +41,7 @@ public class TagExtensions extends TagInvoke {
     private static Templates templates;
 
     @Part
-    private static Engine engine;
+    private static Tagliatelle engine;
 
     @Override
     public void apply(CompositeEmitter targeBlock) {

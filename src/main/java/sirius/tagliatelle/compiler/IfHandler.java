@@ -13,7 +13,9 @@ import sirius.tagliatelle.emitter.ConditionalEmitter;
 import sirius.tagliatelle.emitter.Emitter;
 
 /**
- * Created by aha on 07.06.17.
+ * Handles <tt>{@literal @}if(expression) {} else {}</tt>.
+ *
+ * @see ConditionalEmitter
  */
 @Register(classes = ExpressionHandler.class)
 public class IfHandler extends ExpressionHandler {

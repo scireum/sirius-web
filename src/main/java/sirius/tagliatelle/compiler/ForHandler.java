@@ -14,7 +14,9 @@ import sirius.tagliatelle.emitter.Emitter;
 import sirius.tagliatelle.emitter.LoopEmitter;
 
 /**
- * Created by aha on 07.06.17.
+ * Handles <tt>{@literal @}for(Type variable : expression) {}</tt>.
+ *
+ * @see LoopEmitter
  */
 @Register(classes = ExpressionHandler.class)
 public class ForHandler extends ExpressionHandler {

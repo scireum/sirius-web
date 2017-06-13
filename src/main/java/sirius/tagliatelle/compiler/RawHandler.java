@@ -13,7 +13,9 @@ import sirius.tagliatelle.emitter.Emitter;
 import sirius.tagliatelle.emitter.RawEmitter;
 
 /**
- * Created by aha on 07.06.17.
+ * Handles <tt>{@literal @}raw {}</tt>.
+ *
+ * @see RawEmitter
  */
 @Register(classes = ExpressionHandler.class)
 public class RawHandler extends ExpressionHandler {

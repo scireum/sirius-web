@@ -10,7 +10,7 @@ package sirius.tagliatelle.emitter;
 
 import parsii.tokenizer.Position;
 import sirius.kernel.commons.Strings;
-import sirius.tagliatelle.Engine;
+import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.Template;
 import sirius.tagliatelle.TemplateArgument;
 import sirius.tagliatelle.expression.Expression;
@@ -148,7 +148,7 @@ public class InvokeTemplateEmitter extends Emitter {
             }
         }
 
-        if (!Engine.isAssignable(argumentValue, arg.getType())) {
+        if (!Tagliatelle.isAssignable(argumentValue, arg.getType())) {
             throw new IllegalArgumentException(Strings.apply(
                     "An invalid argument was provided for '%s' when calling '%s'. Given: %s but expected was: %s",
                     arg.getName(),

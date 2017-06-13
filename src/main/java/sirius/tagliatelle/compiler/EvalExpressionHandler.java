@@ -12,6 +12,9 @@ import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.emitter.Emitter;
 import sirius.tagliatelle.emitter.ExpressionEmitter;
 
+/**
+ * Parses an expression to be evaluated at runtime.
+ */
 @Register(classes = ExpressionHandler.class)
 public class EvalExpressionHandler extends ExpressionHandler {
 

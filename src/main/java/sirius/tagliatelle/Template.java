@@ -36,7 +36,7 @@ public class Template {
     private int stackDepth;
 
     @Part
-    private static Engine engine;
+    private static Tagliatelle engine;
 
     /**
      * Creates a new template with the given name (full path) and resource.
@@ -148,7 +148,7 @@ public class Template {
                 }
             }
 
-            if (!Engine.isAssignable(argumentValue, arg.getType())) {
+            if (!Tagliatelle.isAssignable(argumentValue, arg.getType())) {
                 throw RenderException.create(ctx,
                                              new IllegalArgumentException(Strings.apply(
                                                      "An invalid value was supplied for parameter '%s'. Expected was: %s, Given was: %s",

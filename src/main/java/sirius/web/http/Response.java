@@ -46,7 +46,7 @@ import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Microtiming;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.XMLStructuredOutput;
-import sirius.tagliatelle.Engine;
+import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.Template;
 import sirius.tagliatelle.compiler.CompileException;
 import sirius.tagliatelle.rendering.GlobalRenderContext;
@@ -157,7 +157,7 @@ public class Response {
     private static Resources resources;
 
     @Part
-    private static Engine engine;
+    private static Tagliatelle engine;
 
     protected static DefaultAsyncHttpClient asyncClient;
 

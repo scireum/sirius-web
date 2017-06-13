@@ -22,7 +22,12 @@ public class ConstantEmitter extends Emitter {
     /**
      * Represents an empty emitter which does not contribute the the output.
      */
-    public static final ConstantEmitter EMPTY = new ConstantEmitter(Position.UNKNOWN);
+    public static final ConstantEmitter EMPTY = new ConstantEmitter(Position.UNKNOWN) {
+        @Override
+        public ConstantEmitter append(String stringToAppend) {
+            throw new UnsupportedOperationException();
+        }
+    };
 
     private String value = "";
 

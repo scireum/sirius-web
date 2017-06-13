@@ -144,7 +144,7 @@ public class LocalRenderContext {
      * @return the value of the global variable
      */
     public Object getGlobal(int index) {
-        return globalContext.globals.get(index);
+        return globalContext.getGlobals().get(index);
     }
 
     /**

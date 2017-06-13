@@ -51,6 +51,15 @@ public class ExpressionEmitter extends Emitter {
     public Emitter reduce() {
         this.expression = expression.reduce();
 
+        if (this.expression.isConstant()) {
+            Object value = this.expression.eval(null);
+            if (value != null) {
+                return new ConstantEmitter(startOfBlock).append(value.toString());
+            } else {
+                return ConstantEmitter.EMPTY;
+            }
+        }
+
         return this;
     }
 
