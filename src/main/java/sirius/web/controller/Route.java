@@ -26,6 +26,7 @@ import sirius.web.services.JSONStructuredOutput;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -36,14 +37,17 @@ import java.util.regex.Pattern;
 /**
  * Represents a compiled routed as a result of parsing a {@link Controller} and its methods.
  */
-class Route {
+public class Route {
 
-    private static final Pattern EXPR = Pattern.compile("(:|#|\\$)\\{?(.+?)}?");
+    protected static final List<Object> NO_MATCH = new ArrayList<>();
 
+    private static final Pattern EXPR = Pattern.compile("([:#$])\\{?(.+?)}?");
+
+    private String label;
     private String format;
     private Pattern pattern;
     private List<Tuple<String, Object>> expressions = Lists.newArrayList();
-    private Method successCallback;
+    private Method method;
     private String uri;
     private Class<?>[] parameterTypes;
     private Controller controller;
@@ -54,20 +58,28 @@ class Route {
     /**
      * Compiles a method defined by a {@link Controller}
      *
-     * @param method the method wearing the Routed annotation
-     * @param routed the {@link Routed} annotation
+     * @param controller the controller owning the route
+     * @param method     the method wearing the {@link Routed} annotation
+     * @param routed     the {@link Routed} annotation
      * @return a compiled matcher handling matching URIs
      */
-    protected static Route compile(Method method, Routed routed) {
+    protected static Route compile(Controller controller, Method method, Routed routed) {
         Route result = new Route();
+        result.controller = controller;
+        result.method = method;
         result.uri = routed.value();
+        result.label = result.uri + " -> " + method.getDeclaringClass().getName() + "#" + method.getName();
         result.jsonCall = routed.jsonCall();
         result.preDispatchable = routed.preDispatchable();
         result.format = routed.value();
         result.permissions = Permissions.computePermissionsFromAnnotations(method);
         List<Class<?>> parameterTypes = Lists.newArrayList(Arrays.asList(method.getParameterTypes()));
 
-        String[] elements = routed.value().split("/");
+        if (!routed.value().startsWith("/")) {
+            throw new IllegalArgumentException("Route does not start with /");
+        }
+
+        String[] elements = routed.value().substring(1).split("/");
         StringBuilder finalPattern = new StringBuilder();
         int params = compileRouteURI(result, elements, finalPattern);
 
@@ -78,32 +90,46 @@ class Route {
         parameterTypes.remove(0);
 
         if (result.preDispatchable) {
-            if (parameterTypes.isEmpty() || !InputStreamHandler.class.equals(parameterTypes.get(parameterTypes.size()
-                                                                                                - 1))) {
-                throw new IllegalArgumentException(Strings.apply("Pre-Dispatchable method needs '%s' as last parameter",
-                                                                 InputStreamHandler.class.getName()));
-            }
+            failForInvalidPredispatchableMethod(parameterTypes);
             parameterTypes.remove(parameterTypes.size() - 1);
         }
         if (result.jsonCall) {
-            if (parameterTypes.isEmpty() || !JSONStructuredOutput.class.equals(parameterTypes.get(0))) {
-                throw new IllegalArgumentException(Strings.apply("JSON method needs '%s' as second parameter",
-                                                                 JSONStructuredOutput.class.getName()));
-            }
+            failForInvalidJSONMethod(parameterTypes);
             parameterTypes.remove(0);
         }
+        failForInvalidParameterCount(routed, parameterTypes, params);
+
+        if (finalPattern.length() == 0) {
+            finalPattern = new StringBuilder("/");
+        }
+
+        result.parameterTypes = parameterTypes.toArray(new Class[parameterTypes.size()]);
+        result.pattern = Pattern.compile(finalPattern.toString());
+        return result;
+    }
+
+    private static void failForInvalidParameterCount(Routed routed, List<Class<?>> parameterTypes, int params) {
         if (parameterTypes.size() != params) {
             throw new IllegalArgumentException(Strings.apply("Method has %d parameters, route '%s' has %d",
                                                              parameterTypes.size(),
                                                              routed.value(),
                                                              params));
         }
-        if (Strings.isEmpty(finalPattern.toString())) {
-            finalPattern = new StringBuilder("/");
+    }
+
+    private static void failForInvalidJSONMethod(List<Class<?>> parameterTypes) {
+        if (parameterTypes.isEmpty() || !JSONStructuredOutput.class.equals(parameterTypes.get(0))) {
+            throw new IllegalArgumentException(Strings.apply("JSON method needs '%s' as second parameter",
+                                                             JSONStructuredOutput.class.getName()));
         }
-        result.parameterTypes = parameterTypes.toArray(new Class[parameterTypes.size()]);
-        result.pattern = Pattern.compile(finalPattern.toString());
-        return result;
+    }
+
+    private static void failForInvalidPredispatchableMethod(List<Class<?>> parameterTypes) {
+        if (parameterTypes.isEmpty() || !InputStreamHandler.class.equals(parameterTypes.get(parameterTypes.size()
+                                                                                            - 1))) {
+            throw new IllegalArgumentException(Strings.apply("Pre-Dispatchable method needs '%s' as last parameter",
+                                                             InputStreamHandler.class.getName()));
+        }
     }
 
     /*
@@ -113,30 +139,31 @@ class Route {
     private static int compileRouteURI(Route result, String[] elements, StringBuilder finalPattern) {
         int params = 0;
         for (String element : elements) {
-            if (Strings.isFilled(element)) {
-                element = element.trim();
-                element = element.replace("\n", "").replace("\t", "");
-                Matcher m = EXPR.matcher(element);
-                if (m.matches()) {
-                    String key = m.group(1).intern();
-                    if (key == ":") {
-                        result.expressions.add(Tuple.create(":", Integer.parseInt(m.group(2))));
-                        params++;
-                    } else {
-                        result.expressions.add(Tuple.create(key, m.group(2)));
-                    }
-                    finalPattern.append("/([^/]+)");
-                } else if ("*".equals(element)) {
-                    finalPattern.append("/[^/]+");
-                } else if ("**".equals(element)) {
-                    finalPattern.append("/?(.*)");
-                    result.expressions.add(Tuple.create("**", params++));
+            if (element.contains(" ") || element.contains("\n") || element.contains("\t")) {
+                throw new IllegalArgumentException("A route must not contain whitespace characters!");
+            }
+
+            Matcher m = EXPR.matcher(element);
+            if (m.matches()) {
+                String key = m.group(1);
+                if (":".equals(key)) {
+                    result.expressions.add(Tuple.create(":", Integer.parseInt(m.group(2))));
+                    params++;
                 } else {
-                    finalPattern.append("/");
-                    finalPattern.append(Pattern.quote(element));
+                    result.expressions.add(Tuple.create(key, m.group(2)));
                 }
+                finalPattern.append("/([^/]+)");
+            } else if ("*".equals(element)) {
+                finalPattern.append("/[^/]+");
+            } else if ("**".equals(element)) {
+                finalPattern.append("/?(.*)");
+                result.expressions.add(Tuple.create("**", params++));
+            } else {
+                finalPattern.append("/");
+                finalPattern.append(Pattern.quote(element));
             }
         }
+
         return params;
     }
 
@@ -147,45 +174,51 @@ class Route {
      * @param requestedURI contains the request uri as string
      * @param preDispatch  determines if we're doing a pre-dispatch (looking for a controller which handles
      *                     incomplete requests like file uploads)
-     * @return <tt>null</tt> if the route does not match or a list of extracted object from the URI as defined by the
-     * template
+     * @return {@link #NO_MATCH} if the route does not match or a list of extracted object from the URI as defined by
+     * the template
      */
     protected List<Object> matches(WebContext ctx, String requestedURI, boolean preDispatch) {
         try {
             if (preDispatch != this.preDispatchable) {
-                return null;
+                return NO_MATCH;
             }
             Matcher m = pattern.matcher(requestedURI);
-            List<Object> result = Lists.newArrayListWithCapacity(parameterTypes.length);
             if (m.matches()) {
-                for (int i = 1; i <= m.groupCount(); i++) {
-                    Tuple<String, Object> expr = expressions.get(i - 1);
-                    String value = URLDecoder.decode(m.group(i), Charsets.UTF_8.name());
-                    if (expr.getFirst() == "$") {
-                        if (!NLS.get((String) expr.getSecond()).equalsIgnoreCase(value)) {
-                            return null;
-                        }
-                    } else if (expr.getFirst() == "#") {
-                        ctx.setAttribute((String) expr.getSecond(), value);
-                    } else if (expr.getFirst() == ":") {
-                        int idx = (Integer) expr.getSecond();
-                        Object effectiveValue = Value.of(value).coerce(parameterTypes[idx - 1], null);
-                        setAtPosition(result, idx, effectiveValue);
-                    } else if (expr.getFirst() == "**") {
-                        result.add(Arrays.asList(value.split("/")));
-                    }
+                List<Object> result = extractRouteParameters(ctx, m);
+                if (!result.equals(NO_MATCH)) {
+                    CallContext.getCurrent().addToMDC("route", format);
                 }
-                if (parameterTypes.length - 1 > result.size()
-                    && parameterTypes[parameterTypes.length - 1] == List.class) {
-                    result.add(Collections.emptyList());
-                }
-                CallContext.getCurrent().addToMDC("route", format);
                 return result;
             }
-            return null;
+            return NO_MATCH;
         } catch (UnsupportedEncodingException e) {
             throw Exceptions.handle(WebServer.LOG, e);
         }
+    }
+
+    private List<Object> extractRouteParameters(WebContext ctx, Matcher m) throws UnsupportedEncodingException {
+        List<Object> result = Lists.newArrayListWithCapacity(parameterTypes.length);
+        for (int i = 1; i <= m.groupCount(); i++) {
+            Tuple<String, Object> expr = expressions.get(i - 1);
+            String value = URLDecoder.decode(m.group(i), Charsets.UTF_8.name());
+            if ("$".equals(expr.getFirst())) {
+                if (!NLS.get((String) expr.getSecond()).equalsIgnoreCase(value)) {
+                    return NO_MATCH;
+                }
+            } else if ("#".equals(expr.getFirst())) {
+                ctx.setAttribute((String) expr.getSecond(), value);
+            } else if (":".equals(expr.getFirst())) {
+                int idx = (Integer) expr.getSecond();
+                Object effectiveValue = Value.of(value).coerce(parameterTypes[idx - 1], null);
+                setAtPosition(result, idx, effectiveValue);
+            } else if ("**".equals(expr.getFirst())) {
+                result.add(Arrays.asList(value.split("/")));
+            }
+        }
+        if (parameterTypes.length - 1 > result.size() && parameterTypes[parameterTypes.length - 1] == List.class) {
+            result.add(Collections.emptyList());
+        }
+        return result;
     }
 
     /*
@@ -224,7 +257,7 @@ class Route {
 
     @Override
     public String toString() {
-        return uri;
+        return label;
     }
 
     /**
@@ -233,26 +266,8 @@ class Route {
      *
      * @return the method to be invoke in order to route a request using this route
      */
-    protected Method getSuccessCallback() {
-        return successCallback;
-    }
-
-    /**
-     * Sets the method which is used to route a request by this route.
-     *
-     * @param successCallback the method to be used
-     */
-    protected void setSuccessCallback(Method successCallback) {
-        this.successCallback = successCallback;
-    }
-
-    /**
-     * Sets the controller which owns (defined) this route.
-     *
-     * @param controller the controller owning this rout
-     */
-    protected void setController(Controller controller) {
-        this.controller = controller;
+    protected Method getMethod() {
+        return method;
     }
 
     /**
@@ -260,7 +275,7 @@ class Route {
      *
      * @return the controller owning this route
      */
-    protected Controller getController() {
+    public Controller getController() {
         return controller;
     }
 
@@ -281,5 +296,14 @@ class Route {
      */
     protected boolean isJSONCall() {
         return jsonCall;
+    }
+
+    /**
+     * Returns a string representation of the internal matching pattern, to detect routes which match the same URLs.
+     *
+     * @return a string representation of the internal matching pattern
+     */
+    protected String getPattern() {
+        return pattern.toString();
     }
 }
