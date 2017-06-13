@@ -53,7 +53,6 @@ import sirius.tagliatelle.rendering.GlobalRenderContext;
 import sirius.web.services.JSONStructuredOutput;
 import sirius.web.templates.Resource;
 import sirius.web.templates.Resources;
-import sirius.web.templates.rythm.RythmConfig;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -895,7 +894,12 @@ public class Response {
             if (HttpResponseStatus.NOT_FOUND.equals(status)) {
                 template("/templates/http/not-found.html.pasta", message);
             } else {
-                template("/templates/http/error.html.pasta", message);
+                try {
+                    template("/templates/http/error.html.pasta", message);
+                } catch (HandledException e) {
+                    Exceptions.ignore(e);
+                    template("/templates/http/plain-error.html.pasta", message);
+                }
             }
         } catch (Exception e) {
             handleErrorInError(status, message, e);
@@ -1051,7 +1055,7 @@ public class Response {
 
     private void handleTemplateError(String name, Exception e) {
         throw Exceptions.handle()
-                        .to(RythmConfig.LOG)
+                        .to(Tagliatelle.LOG)
                         .error(e)
                         .withSystemErrorMessage("Failed to render the template '%s': %s (%s)", name)
                         .handle();
