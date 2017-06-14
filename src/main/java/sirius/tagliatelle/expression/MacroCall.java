@@ -38,6 +38,10 @@ public class MacroCall extends Call {
 
     @Override
     public Expression reduce() {
+        if (macro == null) {
+            return this;
+        }
+
         boolean allConstant = macro.isConstant();
         for (int i = 0; i < parameterExpressions.length; i++) {
             parameterExpressions[i] = parameterExpressions[i].reduce();
@@ -88,6 +92,10 @@ public class MacroCall extends Call {
 
     @Override
     public Class<?> getType() {
+        if (macro == null) {
+            return void.class;
+        }
+
         return macro.getType();
     }
 

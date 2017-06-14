@@ -10,12 +10,8 @@ package sirius.web.templates
 
 import com.google.common.collect.Lists
 import sirius.kernel.BaseSpecification
-import sirius.kernel.di.std.Part
 
 class SmartLineBasedProcessorSpec extends BaseSpecification {
-
-    @Part
-    private static Resolver resolver
 
     def "reading CSVs works with different column orders and aliases"() {
         given:

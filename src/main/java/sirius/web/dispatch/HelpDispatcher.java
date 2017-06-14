@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 @Register
 public class HelpDispatcher implements WebDispatcher {
 
+    public static final String HELP_PREFIX = "/help";
     private static Pattern startPagePattern = Pattern.compile("^/help/(..)/?$");
 
     @ConfigValue("help.indexTemplate")
@@ -49,7 +50,7 @@ public class HelpDispatcher implements WebDispatcher {
 
     @Override
     public boolean dispatch(WebContext ctx) throws Exception {
-        if (!ctx.getRequest().uri().startsWith("/help") || HttpMethod.GET != ctx.getRequest().method()) {
+        if (!ctx.getRequest().uri().startsWith(HELP_PREFIX) || !HttpMethod.GET.equals(ctx.getRequest().method())) {
             return false;
         }
         String uri = getRequestedURI(ctx);
@@ -57,7 +58,7 @@ public class HelpDispatcher implements WebDispatcher {
         if (Strings.isFilled(lang)) {
             CallContext.getCurrent().setLang(lang);
         }
-        String helpSystemHomeURI = "/help/" + lang;
+        String helpSystemHomeURI = HELP_PREFIX + "/" + lang;
         if (uri.contains(".") && !uri.endsWith("html")) {
             // Dispatch static content...
             URL url = getClass().getResource(uri);
@@ -71,9 +72,9 @@ public class HelpDispatcher implements WebDispatcher {
         } else {
             // Render help template...
             ctx.setAttribute("helpSystemHomeURI", helpSystemHomeURI);
-            ctx.respondWith().cached().nlsTemplate(uri);
+            ctx.respondWith().cached().template(uri);
         }
-        ctx.enableTiming("/help/");
+        ctx.enableTiming(helpSystemHomeURI);
         return true;
     }
 
