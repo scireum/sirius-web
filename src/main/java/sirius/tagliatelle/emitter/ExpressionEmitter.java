@@ -23,7 +23,7 @@ public class ExpressionEmitter extends Emitter {
     private Expression expression;
 
     /**
-     * Creates a new instance at the given position which the given expression.
+     * Creates a new instance at the given position with the given expression.
      *
      * @param startOfBlock the position where the emitter was declared
      * @param expression   the expression to declare at runtime

@@ -470,8 +470,8 @@ public class CompilationContext {
     /**
      * Creates a visitor which replaces a reference to the given argument with the given value.
      *
-     * @param currentIndex the argument (local( index to replace
-     * @param currentValue the relplacement expression
+     * @param currentIndex the argument (local) index to replace
+     * @param currentValue the replacement expression
      * @return a visitor performing the replacement task
      */
     private ExpressionVisitor createReplaceArgumentVisitor(int currentIndex, Expression currentValue) {

@@ -28,7 +28,7 @@ public class RenderException extends Exception {
     }
 
     /**
-     * Creates a new error for the given contexnt and root exception.
+     * Creates a new error for the given context and root exception.
      *
      * @param context the context used to determine the render stack
      * @param ex      the root exception

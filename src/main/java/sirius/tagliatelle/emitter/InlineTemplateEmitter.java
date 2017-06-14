@@ -31,7 +31,7 @@ public class InlineTemplateEmitter extends Emitter {
      * Creates a new instance at the given position, which references the given template and wraps the given body.
      * @param startOfBlock the position where the inlining took place
      * @param template the original template where the emitters of <tt>body</tt> were defined
-     * @param body the inner emitters to invoked within the artificial render stack
+     * @param body the inner emitters to be invoked within the artificial render stack
      */
     public InlineTemplateEmitter(Position startOfBlock, Template template, Emitter body) {
         super(startOfBlock);
@@ -54,7 +54,7 @@ public class InlineTemplateEmitter extends Emitter {
     public Emitter reduce() {
         this.body = body.reduce();
         // When outputting a constant emitter, nothing can go wrong (TM), therefore we don't need
-        // to maintain the render stack but rather replace this be the constant emitter itself
+        // to maintain the render stack but rather replace this with the constant emitter itself
         // (which permits even more aggressive optimizations).
         if (body instanceof ConstantEmitter) {
             return body;

@@ -208,7 +208,7 @@ public abstract class TagHandler {
      * Invoked once when all attributes are parsed but before the body is compiled.
      */
     public void beforeBody() {
-        // NOOP be default
+        // NOOP by default
     }
 
     /**

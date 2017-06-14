@@ -21,7 +21,7 @@ public class ReadGlobal extends Expression {
     private Class<?> type;
 
     /**
-     * Creates a new instace which reads the given index in the environment list (aka global variable).
+     * Creates a new instance which reads the given index in the environment list (aka global variable).
      *
      * @param type  the expected type of the value being read
      * @param index the index to read
