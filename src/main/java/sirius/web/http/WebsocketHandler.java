@@ -16,6 +16,7 @@ import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import sirius.kernel.health.Exceptions;
 
+import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 
@@ -40,7 +41,7 @@ public class WebsocketHandler extends ChannelDuplexHandler {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable e) throws Exception {
-        if (e instanceof ClosedChannelException || e instanceof IOException) {
+        if (e instanceof ClosedChannelException || e instanceof IOException || e instanceof SSLHandshakeException) {
             WebServer.LOG.FINE(e);
         } else {
             Exceptions.handle(WebServer.LOG, e);

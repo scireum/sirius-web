@@ -1,0 +1,23 @@
+<i:arg type="sirius.kernel.async.CallContext" name="ctx" />
+<i:arg type="String" name="message" />
+<html>
+    <head>
+        <title>Error</title>
+    </head>
+    <body>
+        <h1>An error occurred!</h1>
+        <hr />
+        <pre>@message</pre>
+        <hr />
+        <h2>Diagnostic:</h2>
+        <ul>
+            <li><b>node:</b> @ctx.getNodeName()</li>
+            <li><b>duration:</b> @ctx.getWatch().duration()</li>
+            <i:for type="sirius.kernel.commons.Tuple" var="t" items="ctx.getMDC()">
+                <li>
+                    <b>@t.getFirst():</b> @t.getSecond()
+                </li>
+            </i:for>
+        </ul>
+    </body>
+</html>

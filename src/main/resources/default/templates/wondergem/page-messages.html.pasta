@@ -1,0 +1,19 @@
+<div class="row">
+    <div class="col-md-12" id="messageBox">
+        <i:for type="sirius.web.controller.Message" var="msg" items="user.getMessages()">
+            <div class="alert @msg.getType()">
+                <i:raw>@msg.getMessage()</i:raw>
+                <i:if test="msg.getAction() != null">
+                    <i:if test="msg.isActionJavascript()">
+                        <a onclick="@msg.getAction()"
+                           class="link link-info">@msg.getActionLabel()</a>
+                        <i:else>
+                            <a href="@msg.getAction()"
+                               class="link link-info">@msg.getActionLabel()</a>
+                        </i:else>
+                    </i:if>
+                </i:if>
+            </div>
+        </i:for>
+    </div>
+</div>
