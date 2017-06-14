@@ -9,7 +9,7 @@
         <version>3.8.3</version>
     </parent>
     <artifactId>sirius-web</artifactId>
-    <version>8.9</version>
+    <version>9.0-SNAPSHOT</version>
     <name>SIRIUS web</name>
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
@@ -17,12 +17,12 @@
         <dependency>
             <groupId>com.scireum</groupId>
             <artifactId>sirius-kernel</artifactId>
-            <version>6.0</version>
+            <version>6.6</version>
         </dependency>
         <dependency>
             <groupId>com.scireum</groupId>
             <artifactId>sirius-kernel</artifactId>
-            <version>6.0</version>
+            <version>6.6</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
