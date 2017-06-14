@@ -24,10 +24,12 @@ import sirius.tagliatelle.expression.ConstantNull;
 import sirius.tagliatelle.expression.ConstantString;
 import sirius.tagliatelle.expression.EqualsOperation;
 import sirius.tagliatelle.expression.Expression;
+import sirius.tagliatelle.expression.InstanceCheck;
 import sirius.tagliatelle.expression.IntOperation;
 import sirius.tagliatelle.expression.MacroCall;
 import sirius.tagliatelle.expression.MethodCall;
 import sirius.tagliatelle.expression.NativeCast;
+import sirius.tagliatelle.expression.Negation;
 import sirius.tagliatelle.expression.NoodleOperation;
 import sirius.tagliatelle.expression.Operator;
 import sirius.tagliatelle.expression.OrOperation;
@@ -400,9 +402,9 @@ class Parser extends InputProcessor {
         consumeExpectedCharacter('(');
         List<Expression> parameters = parseParameterList();
         consumeExpectedCharacter(')');
-        Expression castExpression = tryCast(self, methodName, parameters);
-        if (castExpression != null) {
-            return castExpression;
+        Expression specialExpression = handleSpecialMethods(self, methodName, parameters);
+        if (specialExpression != null) {
+            return specialExpression;
         }
 
         MethodCall call = new MethodCall(self);
@@ -413,12 +415,14 @@ class Parser extends InputProcessor {
     }
 
     /**
-     * Checks if a method call can be interpreted as cast expression (<tt>.as(ClassLiteral)</tt>).
+     * Handles special methods like <tt>.is</tt> and <tt>.as</tt>
      * <p>
      * To make the syntax a bit more pleasing we to casts as ".as" operation instead of double brackets.
      * We also detect calls to {@link Transformable#as(Class)} and interpret them as sepcial cast (as they're quite
      * common). This special cast, will invoke the <tt>as</tt> method at runtime, but preserve the expected type
      * as compile time (which would otherwise be lost, as we do not support generics).
+     * <p>
+     * We also use <tt>.is</tt> instead of "instanceof" as it can be written without whitespaces...
      *
      * @param self       the expression to invoke a method on
      * @param methodName the name of the method to invoke
@@ -426,17 +430,24 @@ class Parser extends InputProcessor {
      * @return either a {@link NativeCast} or a {@link TransformerCast} or <tt>null</tt> if the call isn't a cast
      */
     @Nullable
-    private Expression tryCast(Expression self, String methodName, List<Expression> parameters) {
-        if (!"as".equals(methodName) || parameters.size() != 1 || !(parameters.get(0) instanceof ConstantClass)) {
-            return null;
+    private Expression handleSpecialMethods(Expression self, String methodName, List<Expression> parameters) {
+        if ("as".equals(methodName) && parameters.size() == 1 && (parameters.get(0) instanceof ConstantClass)) {
+            Class<?> type = (Class<?>) parameters.get(0).eval(null);
+            if (Transformable.class.isAssignableFrom(self.getType())) {
+                return new TransformerCast(self, type);
+            } else {
+                return new NativeCast(self, type);
+            }
         }
 
-        Class<?> type = (Class<?>) parameters.get(0).eval(null);
-        if (Transformable.class.isAssignableFrom(self.getType())) {
-            return new TransformerCast(self, type);
-        } else {
-            return new NativeCast(self, type);
+        if ("is".equals(methodName) && parameters.size() == 1 && (parameters.get(0) instanceof ConstantClass)) {
+            if (!Transformable.class.isAssignableFrom(self.getType())) {
+                Class<?> type = (Class<?>) parameters.get(0).eval(null);
+                return new InstanceCheck(self, type);
+            }
         }
+
+        return null;
     }
 
     /**
@@ -476,6 +487,14 @@ class Parser extends InputProcessor {
      */
     private Expression atom() {
         skipWhitespaces();
+        if (reader.current().is('!')) {
+            Position pos = reader.consume();
+            Expression target = chain();
+            if (target.getType() != boolean.class) {
+                context.error(pos, "Expected a boolean expression here!");
+            }
+            return new Negation(target);
+        }
         if (reader.current().is('(')) {
             reader.consume();
             Expression result = parseExpression(true);
