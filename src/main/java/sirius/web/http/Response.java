@@ -248,7 +248,10 @@ public class Response {
             return;
         }
 
-        response.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+        String requestedOrigin = wc.getHeader(HttpHeaderNames.ORIGIN);
+        if (Strings.isFilled(requestedOrigin)) {
+            response.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, requestedOrigin);
+        }
     }
 
     private void setupCookies(DefaultHttpResponse response) {
