@@ -20,7 +20,7 @@ public class ReadLocal extends Expression {
     private Class<?> type;
 
     /**
-     * Creates a new instace which reads the given index in the local stack.
+     * Creates a new instance which reads the given index in the local stack.
      *
      * @param type  the expected type of the value being read
      * @param index the index to read
