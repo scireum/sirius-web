@@ -17,7 +17,7 @@ import javax.annotation.Nonnull;
 /**
  * Handles <tt>i:render</tt> which emits the block with the given name.
  */
-public class TagRender extends TagHandler {
+public class RenderTag extends TagHandler {
 
     @Register
     public static class Factory implements TagHandlerFactory {
@@ -30,7 +30,7 @@ public class TagRender extends TagHandler {
 
         @Override
         public TagHandler createHandler() {
-            return new TagRender();
+            return new RenderTag();
         }
     }
 
