@@ -88,6 +88,10 @@ public class MethodCall extends Call {
 
     @Override
     public Class<?> getType() {
+        if (method == null) {
+            return void.class;
+        }
+
         return method.getReturnType();
     }
 
@@ -118,11 +122,31 @@ public class MethodCall extends Call {
     private Method findMethod(Class<?> type, String name, Class<?>[] parameterTypes) throws NoSuchMethodException {
         for (Method m : type.getMethods()) {
             if (signatureMatch(m, name, parameterTypes)) {
-                return m;
+                if (checkSandbox(m)) {
+                    return m;
+                }
             }
         }
 
         throw new NoSuchMethodException(name);
+    }
+
+    /**
+     * Ensures that no "evil" methods (reflection land) can be invoked via the template.
+     * <p>
+     * This way the "security" of a template can be controlled via its parameters. As static methods and <tt>new</tt>
+     * cannot be invoked, most if the critical stuff is blocked anyway.
+     *
+     * @param method the method to check
+     * @return <tt>true</tt> if the method my be invoked, <tt>false</tt> otherwise
+     */
+    private boolean checkSandbox(Method method) {
+        if (Class.class.equals(method.getDeclaringClass())) {
+            // Only getName may be invoked on a class object, no reflection stuff...
+            return "getName".equals(method.getName());
+        }
+
+        return true;
     }
 
     private boolean signatureMatch(Method method, String name, Class<?>[] parameterTypes) {
