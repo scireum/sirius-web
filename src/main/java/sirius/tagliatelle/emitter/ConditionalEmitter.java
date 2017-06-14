@@ -77,7 +77,9 @@ public class ConditionalEmitter extends Emitter {
      * @param whenFalse the block to emit when the condition is false
      */
     public void setWhenFalse(Emitter whenFalse) {
-        this.whenFalse = whenFalse;
+        if (whenFalse != null) {
+            this.whenFalse = whenFalse;
+        }
     }
 
     @Override

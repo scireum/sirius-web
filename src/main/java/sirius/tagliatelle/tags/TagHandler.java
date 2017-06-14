@@ -13,7 +13,6 @@ import sirius.kernel.commons.Value;
 import sirius.tagliatelle.compiler.CompilationContext;
 import sirius.tagliatelle.emitter.CompositeEmitter;
 import sirius.tagliatelle.emitter.Emitter;
-import sirius.tagliatelle.expression.ConstantString;
 import sirius.tagliatelle.expression.Expression;
 
 import javax.annotation.Nonnull;
@@ -99,12 +98,12 @@ public abstract class TagHandler {
         if (expr == null) {
             return Value.EMPTY;
         }
-        if (!(expr instanceof ConstantString)) {
-            compilationContext.error(startOfTag, "The value for attribute %s needs to be a constant string.", name);
+        if (!expr.isConstant()) {
+            compilationContext.error(startOfTag, "The value for attribute %s needs to be a constant.", name);
             return Value.EMPTY;
         }
 
-        return Value.of(((ConstantString) expr).getValue());
+        return Value.of(expr.eval(null));
     }
 
     /**

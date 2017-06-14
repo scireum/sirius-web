@@ -8,13 +8,31 @@
 
 package sirius.tagliatelle.tags;
 
+import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.emitter.CompositeEmitter;
 import sirius.tagliatelle.emitter.ConditionalEmitter;
+
+import javax.annotation.Nonnull;
 
 /**
  * Handles <tt>i:if</tt> which emits its body if a condition is met.
  */
 public class IfTag extends TagHandler {
+    @Register
+    public static class Factory implements TagHandlerFactory {
+
+        @Nonnull
+        @Override
+        public String getName() {
+            return "i:if";
+        }
+
+        @Override
+        public TagHandler createHandler() {
+            return new IfTag();
+        }
+    }
+
     @Override
     public void apply(CompositeEmitter targetBlock) {
         ConditionalEmitter result = new ConditionalEmitter(getStartOfTag());
