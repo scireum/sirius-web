@@ -1,6 +1,6 @@
 <i:arg type="String" name="titleKey" default="" />
 <i:pragma name="inline" value="true" />
-<i:pragma name="description" value="Provides a header fora Wondergem page"/>
+<i:pragma name="description" value="Provides a header for a Wondergem page"/>
 
 <i:if test="isFilled(titleKey)">
     <h1 class="legend">@i18n(titleKey)</h1>
