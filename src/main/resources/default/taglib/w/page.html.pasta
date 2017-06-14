@@ -1,6 +1,6 @@
 <i:arg type="String" name="title" />
 <i:pragma name="inline" value="true" />
-<i:pragma name="description" value="Provides the base layout for a Wondergem page"/>
+<i:pragma name="description" value="Provides the base layout for a Wondergem page" />
 <!DOCTYPE html>
 <html lang="@lang">
     <head>
@@ -31,49 +31,49 @@
         <script src="/assets/wondergem/featherlight/featherlight.js" type="text/javascript"></script>
         <script src="/assets/wondergem/magicsuggest/magicsuggest-min.js"></script>
 
+        <i:extensions name="template-page-head" />
+        <i:invoke template="/templates/wondergem/page-script.html.pasta" inline="true" />
         <i:render name="head" />
     </head>
     <body>
-        <i:render name="menu" />
+        <i:render name="menu">
+            <i:invoke template="/templates/wondergem/page-menu.html.pasta" inline="true" />
+        </i:render>
+
         <div class="wrap">
+            <i:if test="user.getCurrentScope().is(sirius.web.security.MaintenanceInfo.class)&&user.getCurrentScope().as(sirius.web.security.MaintenanceInfo.class).isLocked()">
+                <i:invoke template="/templates/wondergem/page-disaster.html.pasta" />
+                <i:else>
+                    <i:render name="header" />
 
-            <i:render name="header" />
+                    <div id="mainContainer" class="container">
 
-            <div id="mainContainer" class="container">
+                        <i:render name="aboveMessages" />
 
-                <i:render name="aboveMessages" />
+                        <i:render name="breadcrumbBar">
+                            <i:invoke template="/templates/wondergem/page-breadcrumbs.html.pasta" inline="true">
+                                <i:render name="breadcrumbs" />
+                            </i:invoke>
+                        </i:render>
 
-                <i:render name="breadcrumbBar">
-                    <ol class="breadcrumb">
-                        <li><a href="@wondergemRoot"><span class="fa fa-home"></span></a></li>
-                        <i:render name="breadcrumbs" />
-                    </ol>
-                </i:render>
+                        <i:render name="messages">
+                            <i:invoke template="/templates/wondergem/page-messages.html.pasta" inline="true" />
+                        </i:render>
 
-                <i:render name="messages">
-                    <div class="row">
-                        <div class="col-md-12" id="messageBox">
-                            <i:for type="sirius.web.controller.Message" var="msg" items="user.getMessages()">
-                                <div class="alert @msg.getType()">
-                                    <i:raw>@msg.getMessage()</i:raw>
-                                    <i:if test="msg.getAction() != null">
-                                        <i:if test="msg.isActionJavascript()">
-                                            <a onclick="@msg.getAction()"
-                                               class="link link-info">@msg.getActionLabel()</a>
-                                            <i:else>
-                                                <a href="@msg.getAction()"
-                                                   class="link link-info">@msg.getActionLabel()</a>
-                                            </i:else>
-                                        </i:if>
-                                    </i:if>
-                                </div>
-                            </i:for>
-                        </div>
+                        <i:render name="body" />
                     </div>
-                </i:render>
-
-                <i:render name="body" />
-            </div>
+                </i:else>
+            </i:if>
         </div>
+
+
+        <i:render name="footer">
+            <i:invoke template="/templates/wondergem/page-footer.html.pasta" inline="true" />
+        </i:render>
+
+        <i:render name="dialogs" />
+
+        <i:invoke template="/templates/wondergem/page-dialogs.html.pasta" inline="true" />
+        <i:extensions name="template-page-footer" />
     </body>
 </html>
