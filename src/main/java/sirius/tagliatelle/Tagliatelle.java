@@ -198,10 +198,21 @@ public class Tagliatelle {
         }
 
         if (from.isPrimitive()) {
+            if (to.isPrimitive()) {
+                return checkTypeConversion(from, to);
+            }
             return checkAutoboxing(from, to);
         } else {
             return checkAutoboxing(to, from);
         }
+    }
+
+    private static boolean checkTypeConversion(Class<?> from, Class<?> to) {
+        if (from == long.class && to == int.class) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
