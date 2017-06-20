@@ -19,7 +19,7 @@ public abstract class BooleanOperation extends Expression {
     protected Expression rightExpression;
 
     /**
-     * Creates a new operation for the given operaands.
+     * Creates a new operation for the given operands.
      *
      * @param leftExpression  the left operand which must be a boolean expression
      * @param rightExpression the right operand which must be a boolean expression

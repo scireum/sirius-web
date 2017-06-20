@@ -209,7 +209,7 @@ public class LocalRenderContext {
     /**
      * Specifies the blocks made available by the caller.
      *
-     * @param blocks the blocks passed to the tempalte being rendered
+     * @param blocks the blocks passed to the template being rendered
      */
     public void setBlocks(Map<String, Emitter> blocks) {
         this.blocks = blocks;
