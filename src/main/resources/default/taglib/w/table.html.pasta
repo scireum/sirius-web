@@ -1,0 +1,18 @@
+<i:arg type="java.lang.Object" name="data" />
+<i:arg type="boolean" name="colorized" default="false" />
+
+<i:pragma name="inline" value="true" />
+<i:pragma name="description" value="Renders table within a Wondergem template" />
+
+<i:if test="(data.is(Page.class) && !data.as(Page.class).getItems().isEmpty()) || (data.is(java.util.Collection.class) && !data.as(java.util.Collection.class).isEmpty())">
+    <table class="table table-striped @if (colorized) { table-colorized }">
+        <i:render name="body" />
+    </table>
+    <i:else>
+        <table class="table table-striped">
+            <tr>
+                <th class="align-center">@i18n("table.html.empty")</th>
+            </tr>
+        </table>
+    </i:else>
+</i:if>

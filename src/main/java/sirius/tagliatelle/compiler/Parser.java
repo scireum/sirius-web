@@ -12,26 +12,34 @@ import parsii.tokenizer.Char;
 import parsii.tokenizer.LookaheadReader;
 import parsii.tokenizer.Position;
 import sirius.kernel.commons.Tuple;
+import sirius.kernel.di.std.Part;
+import sirius.kernel.di.transformers.Transformable;
 import sirius.tagliatelle.Tagliatelle;
+import sirius.tagliatelle.expression.AndOperation;
 import sirius.tagliatelle.expression.ConcatExpression;
 import sirius.tagliatelle.expression.ConstantBoolean;
+import sirius.tagliatelle.expression.ConstantClass;
 import sirius.tagliatelle.expression.ConstantInt;
 import sirius.tagliatelle.expression.ConstantNull;
 import sirius.tagliatelle.expression.ConstantString;
+import sirius.tagliatelle.expression.EqualsOperation;
 import sirius.tagliatelle.expression.Expression;
+import sirius.tagliatelle.expression.InstanceCheck;
 import sirius.tagliatelle.expression.IntOperation;
 import sirius.tagliatelle.expression.MacroCall;
 import sirius.tagliatelle.expression.MethodCall;
+import sirius.tagliatelle.expression.NativeCast;
+import sirius.tagliatelle.expression.Negation;
 import sirius.tagliatelle.expression.NoodleOperation;
-import sirius.tagliatelle.expression.AndOperation;
-import sirius.tagliatelle.expression.EqualsOperation;
-import sirius.tagliatelle.expression.OrOperation;
 import sirius.tagliatelle.expression.Operator;
+import sirius.tagliatelle.expression.OrOperation;
 import sirius.tagliatelle.expression.ReadGlobal;
 import sirius.tagliatelle.expression.ReadLocal;
 import sirius.tagliatelle.expression.RelationalIntOperation;
 import sirius.tagliatelle.expression.TenaryOperation;
+import sirius.tagliatelle.expression.TransformerCast;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -55,6 +63,9 @@ class Parser extends InputProcessor {
      * Therefore we store the current mode of operation in this field.
      */
     private boolean canSkipWhitespace = false;
+
+    @Part
+    private static Tagliatelle engine;
 
     /**
      * Creates a new parser for the given input and context.
@@ -389,12 +400,54 @@ class Parser extends InputProcessor {
         String methodName = readIdentifier();
         skipWhitespaces();
         consumeExpectedCharacter('(');
-        MethodCall call = new MethodCall(self);
-        call.setParameters(parseParameterList());
-        call.bindToMethod(position, context, methodName);
+        List<Expression> parameters = parseParameterList();
         consumeExpectedCharacter(')');
+        Expression specialExpression = handleSpecialMethods(self, methodName, parameters);
+        if (specialExpression != null) {
+            return specialExpression;
+        }
+
+        MethodCall call = new MethodCall(self);
+        call.setParameters(parameters);
+        call.bindToMethod(position, context, methodName);
 
         return call;
+    }
+
+    /**
+     * Handles special methods like <tt>.is</tt> and <tt>.as</tt>
+     * <p>
+     * To make the syntax a bit more pleasing we do casts as ".as" operation instead of double brackets.
+     * We also detect calls to {@link Transformable#as(Class)} and interpret them as sepcial cast (as they're quite
+     * common). This special cast, will invoke the <tt>as</tt> method at runtime, but preserve the expected type
+     * as compile time (which would otherwise be lost, as we do not support generics).
+     * <p>
+     * We also use <tt>.is</tt> instead of "instanceof" as it can be written without whitespaces...
+     *
+     * @param self       the expression to invoke a method on
+     * @param methodName the name of the method to invoke
+     * @param parameters the parameters for the method
+     * @return either a {@link NativeCast} or a {@link TransformerCast} or <tt>null</tt> if the call isn't a cast
+     */
+    @Nullable
+    private Expression handleSpecialMethods(Expression self, String methodName, List<Expression> parameters) {
+        if ("as".equals(methodName) && parameters.size() == 1 && (parameters.get(0) instanceof ConstantClass)) {
+            Class<?> type = (Class<?>) parameters.get(0).eval(null);
+            if (Transformable.class.isAssignableFrom(self.getType())) {
+                return new TransformerCast(self, type);
+            } else {
+                return new NativeCast(self, type);
+            }
+        }
+
+        if ("is".equals(methodName) && parameters.size() == 1 && (parameters.get(0) instanceof ConstantClass)) {
+            if (!Transformable.class.isAssignableFrom(self.getType())) {
+                Class<?> type = (Class<?>) parameters.get(0).eval(null);
+                return new InstanceCheck(self, type);
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -434,6 +487,14 @@ class Parser extends InputProcessor {
      */
     private Expression atom() {
         skipWhitespaces();
+        if (reader.current().is('!')) {
+            Position pos = reader.consume();
+            Expression target = chain();
+            if (target.getType() != boolean.class) {
+                context.error(pos, "Expected a boolean expression here!");
+            }
+            return new Negation(target);
+        }
         if (reader.current().is('(')) {
             reader.consume();
             Expression result = parseExpression(true);
@@ -444,6 +505,13 @@ class Parser extends InputProcessor {
         if (isAtIdentifier()) {
             Char pos = reader.current();
             String id = readIdentifier();
+            if (reader.current().is('.')) {
+                Expression classLiteral = tryClassLiteral(id);
+                if (classLiteral != null) {
+                    return classLiteral;
+                }
+            }
+
             skipWhitespaces();
 
             if (reader.current().is('(')) {
@@ -454,6 +522,35 @@ class Parser extends InputProcessor {
         }
 
         return literal();
+    }
+
+    private Expression tryClassLiteral(String id) {
+        Position pos = reader.current();
+        StringBuilder sb = new StringBuilder(id);
+        int offset = 0;
+        while (true) {
+            Char current = reader.next(offset);
+            if (!(current.isLetter() || current.is('_') || current.is('.') || current.isDigit())) {
+                break;
+            }
+            sb.append(current.getValue());
+            offset++;
+        }
+
+        if (reader.current().is('(')) {
+            return null;
+        }
+
+        String literal = sb.toString();
+        if (!literal.endsWith(".class")) {
+            return null;
+        }
+
+        // Cut the .class to make it resolvable...
+        literal = literal.substring(0, literal.length() - 6);
+
+        reader.consume(offset);
+        return new ConstantClass(context.resolveClass(pos, literal));
     }
 
     /**

@@ -1,0 +1,2 @@
+<small><i:raw>@tagLine</i:raw></small>
+<small><a href="/help" target="_blank">@i18n("footer-menu.html.help")</a></small>

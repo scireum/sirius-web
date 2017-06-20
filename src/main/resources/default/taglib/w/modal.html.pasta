@@ -1,0 +1,21 @@
+<i:arg name="name" type="String" />
+<i:arg name="titleKey" type="String" default="" />
+<i:arg name="title" type="String" default="@i18n(titleKey)" />
+
+<i:pragma name="inline" value="true" />
+<i:pragma name="description" value="Renders a body for a modal dialog within a Wondergem template" />
+
+<div id="@name" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="@(name + ' Title')">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="@i18n('NLS.close')">&times;</button>
+                <i:if test="isFilled(title)">
+                    <h4 class="modal-title" id="@(name + ' Title')">@title</h4>
+                </i:if>
+            </div>
+
+            <i:render name="body" />
+        </div>
+    </div>
+</div>

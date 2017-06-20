@@ -1,0 +1,18 @@
+<i:arg type="String" name="name" default="'image-upload' + call.generateLocalId()" />
+<i:arg type="String" name="uploadUrl" />
+<i:arg type="String" name="imageUrl" default="" />
+<i:arg type="String" name="previewUrl" default="imageUrl" />
+<i:arg type="String" name="allowedExtensions" default="'[]'" />
+
+<i:pragma name="inline" value="true" />
+<i:pragma name="description" value="Renders a file upload within a Wondergem template" />
+
+<div class="@name"></div>
+<script type="text/javascript">
+    $('.@name').each(function (index) {
+        fileUpload('@uploadUrl',
+            this,
+            undefined,
+            @allowedExtensions);
+    });
+</script>

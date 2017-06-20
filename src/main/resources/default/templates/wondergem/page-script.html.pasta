@@ -1,0 +1,366 @@
+<script type="text/javascript">
+
+    function createConfirmForDangerousLinks(message) {
+        $("a.link-danger, a.button-danger-ask").on('click', function (event) {
+            try {
+                var clickedLink = event.currentTarget;
+                var modalElement = $("#danger-link-confirm");
+
+                var okayLink = $(clickedLink).attr('href');
+                var submitBtn = modalElement.find(":submit");
+                submitBtn.click(function () {
+                    window.location.href = okayLink;
+                });
+
+                modalElement.modal({
+                    keyboard: true
+                }).on("hide", function () {
+                    modalElement.find(":submit").unbind("click");
+                }).on("shown", function () {
+                    modalElement.find(".btn-close").focus();
+                }).attr("tabindex", -1);
+            } catch ($e) {
+                console.log($e);
+            }
+
+            return false;
+        });
+    }
+
+    function instanciateColorPickers() {
+        $('.pick-a-color').colorpicker();
+    }
+
+    var select2Translations = {
+        loadingMore: function () {
+            return '@i18n("template.html.select2.loading")';
+        },
+        searching: function () {
+            return '@i18n("template.html.select2.searching")';
+        },
+        noResults: function () {
+            return '@i18n("template.html.select2.noMatches")';
+        },
+        errorLoading: function () {
+            return '@i18n("template.html.select2.errorLoading")';
+        }
+    };
+
+    function enableAutocomplete(field) {
+        function createSubmitData(key, value) {
+            var data = {};
+            var fieldData = field.data();
+            for (f in fieldData) {
+                if (fieldData.hasOwnProperty(f)) {
+                    if (f != 'autocomplete'
+                        && f != 'optional'
+                        && f != 'select2') {
+                        data[f] = fieldData[f];
+                    }
+                }
+            }
+            data[key] = value;
+            return data;
+        }
+
+        if (field.data('optional')) {
+            field.prepend('<option value=""></option>');
+        }
+
+        field.on('select2:open', function (e) {
+            $('.select2-search__field').each(function (e) {
+                var search = $(this);
+                if (search.parent().hasClass('select2-search--inline')) {
+                    // Don't add placeholder and graphic to inline search fields
+                    return;
+                }
+                search.css({
+                    'background-image': 'url("/assets/wondergem/select2/chosen-sprite.png")',
+                    'background-repeat': 'no-repeat',
+                    'background-position': '100% -22px'
+                });
+                var placeholder = field.attr('data-searchtext');
+                if (typeof placeholder === 'undefined' || placeholder === '') {
+                    placeholder = '@i18n("template.html.placeholder")';
+                }
+                search.attr('placeholder', placeholder);
+            });
+        });
+
+        field.select2({
+            allowClear: field.data('optional'),
+            placeholder: '@i18n("template.html.select2.selection")',
+            minimumInputLength: 0,
+            templateResult: function (data, container, escapeMarkup) {
+                return data ? (data.hasOwnProperty('description') ? data.description : data.text) : undefined;
+            },
+            language: select2Translations,
+            ajax: {
+                url: field.data('autocomplete'),
+                dataType: 'jsonp',
+                quietMillis: 100,
+                data: function (term, page) {
+                    return createSubmitData('query', term.term);
+                },
+                processResults: function (data, page) {
+                    return {results: data.completions, more: false};
+                }
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        createConfirmForDangerousLinks();
+        instanciateColorPickers();
+
+        $('.date-picker').datepicker({
+            format: '@dateFormat',
+            todayBtn: true,
+            language: "@lang",
+            autoclose: true,
+            todayHighlight: true
+        });
+
+        $('select[data-autocomplete]').each(function (e) {
+            var field = $(this);
+
+            enableAutocomplete(field);
+        });
+
+        $('.select2-select').each(function (e) {
+            var field = $(this);
+
+            if (field.data('optional')) {
+                field.prepend('<option value=""></option>');
+            }
+
+            field.select2({
+                allowClear: field.data('optional'),
+                placeholder: '@i18n("template.html.select2.selection")',
+                minimumResultsForSearch: 10,
+                width: '100%',
+                language: select2Translations,
+                escapeMarkup: function (m) {
+                    // Do not escape HTML in the select options text
+                    return m;
+                }
+            });
+        });
+
+        $(window).resize(invokeResizeHandler);
+        invokeResizeHandler();
+    });
+
+    if (typeof window.console === "undefined") {
+        window.console = {
+            log: function (msg) {
+            }
+        };
+    }
+
+    function invokeResizeHandler() {
+        try {
+            if (typeof handleResize === 'function') {
+                // Invoke custom handler
+                handleResize();
+            } else {
+                var newHeight = $(window).height() - $('.footer').outerHeight() - $('#mainContainer').position().top;
+                $('#mainContainer').css('min-height', newHeight + 'px');
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    function addInfo(message, action, actionLabel) {
+        if (action) {
+            $('<div class="alert alert-info">' + message + ' <a class="link link-info" href="' + action + '">' + actionLabel + '</a></div>').appendTo($('#messageBox'));
+        } else {
+            $('<div class="alert alert-info"></div>').html(message).appendTo($('#messageBox'));
+        }
+    }
+
+    function addError(message) {
+        $('<div class="alert alert-danger"></div>').html(message).appendTo($('#messageBox'));
+    }
+
+    function clearMessages() {
+        $('#messageBox').html('');
+    }
+
+    function autoUpdate(reloadUrl) {
+        var yscroll = getUrlParameters(window.location.href)['yscroll'];
+        if (typeof yscroll !== 'undefined') {
+            $(window).scrollTop(yscroll);
+        }
+        setTimeout(function () {
+            var yscroll = $(window).scrollTop();
+            if (yscroll > 0) {
+                var params = getUrlParameters(decodeURIComponent(reloadUrl).replace(/\+/g, '%20'));
+                params['yscroll'] = yscroll;
+                reloadUrl = reloadUrl.split('?')[0] + '?' + $.param(params);
+            }
+            window.location.replace(reloadUrl);
+        }, 10000);
+    }
+
+    function getUrlParameters(url) {
+        var params = {}, param;
+        var query = url.split('?')[1];
+        if (query !== undefined) {
+            query = query.split('&');
+            for (var i = 0; i < query.length; i++) {
+                param = query[i].split('=');
+                params[param[0]] = param[1];
+            }
+        }
+        return params;
+    }
+
+    function imageUpload(url, target, defaultPreview, defaultImage, allowedExtensions) {
+        var container = target;
+        new qq.FileUploader({
+            element: target,
+            action: url,
+            debug: false,
+            onComplete: function (cmp_id, fileName, responseJSON) {
+                clearMessages();
+                if (responseJSON.error) {
+                    addError(responseJSON.message);
+                } else if (responseJSON.message) {
+                    addInfo(responseJSON.message);
+                }
+                if (responseJSON.previewUrl) {
+                    $('.img', container).attr('src', responseJSON.previewUrl);
+                    $('.lnk', container).attr('href', responseJSON.imageUrl);
+                }
+            },
+            showMessage: function (message) {
+                // We generally send a flag "error" which is true or false as
+                // part of the response. Sadly, fileUploader.js checks for this
+                // flag (expecting a string) and invokes showMessage is present.
+                // Therefore we have to filter this here :-/
+                if (message !== true) {
+                    clearMessages();
+                    addError(message);
+                }
+            },
+            messages: {
+                typeError: '@i18n("template.html.errInvalidExtension")',
+                sizeError: '@i18n("template.html.errTooLarge")',
+                minSizeError: '@i18n("template.html.errTooSmall")',
+                emptyError: '@i18n("template.html.errEmpty")'
+            },
+            allowedExtensions: allowedExtensions,
+            template: '<div class="qq-uploader">' +
+            '<div class="qq-upload-drop-area qq-image-area"><div><span style="display: inline-block"><a href="' + defaultImage + '" class="thumbnail lnk"><img class="img" src="' + defaultPreview + '" /></a></span></div><span>@i18n("template.html.uploadArea")</span></div>' +
+            '<div class="qq-upload-button btn btn-primary" style="display: block">@i18n("template.html.uploadBtn")</div>' +
+            '<ul class="qq-upload-list"></ul>' +
+            '</div>',
+            fileTemplate: '<li>' +
+            '<span class="qq-upload-file"></span>' +
+            '<span class="qq-upload-spinner"></span>' +
+            '<span class="qq-upload-size"></span>' +
+            '<a class="qq-upload-cancel" href="#">@i18n("NLS.cancel")</a>' +
+            '<span class="qq-upload-failed-text">@i18n("template.html.uploadFailed")</span>' +
+            '</li>'
+        });
+        var maxWidth = $(container).width();
+        $('.img', container).css('max-width', maxWidth - 30 + 'px');
+    }
+
+    function fileUpload(url, target, params, allowedExtensions) {
+        var container = target;
+
+        new qq.FileUploader({
+            element: target,
+            action: url,
+            params: params,
+            debug: false,
+            onComplete: function (cmp_id, fileName, responseJSON) {
+                clearMessages();
+                if (responseJSON.error) {
+                    addError(responseJSON.message);
+                } else if (responseJSON.message) {
+                    if (responseJSON.action) {
+                        addInfo(responseJSON.message, responseJSON.action, responseJSON.actionLabel);
+                    } else {
+                        addInfo(responseJSON.message);
+                    }
+                }
+                if (responseJSON.refresh) {
+                    setTimeout(function () {
+                        var editForm = $('#editForm');
+                        if (editForm.length) {
+                            $('#uploadedFile').val(responseJSON.fileId);
+                            editForm.submit();
+                        } else {
+                            window.location.reload();
+                        }
+                    }, 1250);
+                }
+            },
+            showMessage: function (message) {
+                // We generally send a flag "error" which is true or false as
+                // part of the response. Sadly, fileUploader.js checks for this
+                // flag (expecting a string) and invokes showMessage is present.
+                // Therefore we have to filter this here :-/
+                if (message !== true) {
+                    clearMessages();
+                    addError(message);
+                }
+            },
+            messages: {
+                typeError: '@i18n("template.html.errInvalidExtension")',
+                sizeError: '@i18n("template.html.errTooLarge")',
+                minSizeError: '@i18n("template.html.errTooSmall")',
+                emptyError: '@i18n("template.html.errEmpty")'
+            },
+            allowedExtensions: allowedExtensions,
+            template: '<div class="qq-uploader">' +
+            '<div class="qq-upload-drop-area"><span>@i18n("template.html.uploadArea")</span></div>' +
+            '<div class="qq-upload-button btn btn-primary" style="display: block">@i18n("template.html.uploadBtn")</div>' +
+            '<ul class="qq-upload-list"></ul>' +
+            '</div>',
+            fileTemplate: '<li>' +
+            '<span class="qq-upload-file"></span>' +
+            '<span class="qq-upload-spinner"></span>' +
+            '<span class="qq-upload-size"></span>' +
+            '<a class="qq-upload-cancel" href="#">@i18n("NLS.cancel")</a>' +
+            '<span class="qq-upload-failed-text">@i18n("template.html.uploadFailed")</span>' +
+            '</li>'
+        });
+    }
+
+    function updateField(url, field, value) {
+        var data = {};
+        data[field] = value;
+        $.post(url,
+            data,
+            function (json) {
+                clearMessages();
+                if (json.error) {
+                    addError(json.message);
+                } else {
+                    addInfo('@i18n("BasicController.changesSaved")');
+                }
+            }, 'json');
+    }
+
+    $(function () {
+        $('.submit-link').click(function () {
+            if (!$(this).hasClass("single-click-pending")) {
+                $('#editForm').submit();
+            }
+        });
+        $('.single-click-link').click(function (e) {
+            var a = $(this);
+            if (a.hasClass("single-click-pending")) {
+                e.preventDefault();
+                return false;
+            }
+            a.addClass("single-click-pending");
+        });
+    });
+
+</script>

@@ -408,7 +408,9 @@ public class CompilationContext {
             Expression value = determineArgumentExpression(position, arg, index.get(), arguments, defaultArgs, temps);
             ExpressionVisitor replaceArgumentVisitor = createReplaceArgumentVisitor(index.get(), value);
             for (int i = index.get() + 1; i < defaultArgs.size(); i++) {
-                defaultArgs.set(i, defaultArgs.get(i).visit(replaceArgumentVisitor));
+                if (defaultArgs.get(i) != null) {
+                    defaultArgs.set(i, defaultArgs.get(i).visit(replaceArgumentVisitor));
+                }
             }
             copy.visitExpressions(p -> replaceArgumentVisitor);
 

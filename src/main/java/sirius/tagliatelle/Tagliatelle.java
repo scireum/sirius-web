@@ -198,10 +198,21 @@ public class Tagliatelle {
         }
 
         if (from.isPrimitive()) {
+            if (to.isPrimitive()) {
+                return checkTypeConversion(from, to);
+            }
             return checkAutoboxing(from, to);
         } else {
             return checkAutoboxing(to, from);
         }
+    }
+
+    private static boolean checkTypeConversion(Class<?> from, Class<?> to) {
+        if (from == long.class && to == int.class) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -253,9 +264,29 @@ public class Tagliatelle {
 
         Resource resource = optionalResource.get();
 
+        if (Tagliatelle.LOG.isFINE()) {
+            Tagliatelle.LOG.FINE("Resolving template for '%s' ('%s)'...", path, resource.getUrl());
+        }
+
         Template result = compiledTemplates.get(resource);
-        if (result != null && result.getCompilationTimestamp() >= resource.getLastModified()) {
-            return Optional.of(result);
+        if (result != null) {
+            if (resource.getLastModified() <= result.getCompilationTimestamp()) {
+                if (Tagliatelle.LOG.isFINE()) {
+                    Tagliatelle.LOG.FINE("Resolved '%s' for '%s' from cache...", result, resource.getUrl());
+                }
+                return Optional.of(result);
+            }
+            if (Tagliatelle.LOG.isFINE()) {
+                Tagliatelle.LOG.FINE(
+                        "Resolved '%s' for '%s' from cache but the resource is newer than the compiled template (%s > %s, Delta: %s)....Recompiling!",
+                        result,
+                        path,
+                        resource.getLastModified(),
+                        result.getCompilationTimestamp(),
+                        resource.getLastModified() - result.getCompilationTimestamp());
+            }
+        } else if (Tagliatelle.LOG.isFINE()) {
+            Tagliatelle.LOG.FINE("Cannot resolve '%s' for '%s' from cache...", result, resource.getUrl());
         }
 
         CompilationContext compilationContext = createCompilationContext(path, resource, parentContext);
