@@ -417,7 +417,7 @@ class Parser extends InputProcessor {
     /**
      * Handles special methods like <tt>.is</tt> and <tt>.as</tt>
      * <p>
-     * To make the syntax a bit more pleasing we to casts as ".as" operation instead of double brackets.
+     * To make the syntax a bit more pleasing we do casts as ".as" operation instead of double brackets.
      * We also detect calls to {@link Transformable#as(Class)} and interpret them as sepcial cast (as they're quite
      * common). This special cast, will invoke the <tt>as</tt> method at runtime, but preserve the expected type
      * as compile time (which would otherwise be lost, as we do not support generics).
