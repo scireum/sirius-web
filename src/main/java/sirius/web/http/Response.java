@@ -248,7 +248,10 @@ public class Response {
             return;
         }
 
-        response.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+        String requestedOrigin = wc.getHeader(HttpHeaderNames.ORIGIN);
+        if (Strings.isFilled(requestedOrigin)) {
+            response.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, requestedOrigin);
+        }
     }
 
     private void setupCookies(DefaultHttpResponse response) {
@@ -1038,8 +1041,8 @@ public class Response {
 
     private void setupContentType(Template template) {
         String fileName = template.getEffectiveFileName();
-        if (fileName.endsWith(".html")) {
-            setHeader(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=UTF-8");
+        if (fileName.endsWith(FILETYPE_HTML)) {
+            setHeader(HttpHeaderNames.CONTENT_TYPE, CONTENT_TYPE_HTML);
         } else {
             setContentTypeHeader(fileName);
         }
@@ -1166,7 +1169,7 @@ public class Response {
             }
 
             // Tunnel it through...
-            brb.execute(new TunnelHandler(this, wc, url, failureHandler));
+            brb.execute(new TunnelHandler(this, url, failureHandler));
         } catch (Exception t) {
             internalServerError("Target-URL: " + url, t);
         }

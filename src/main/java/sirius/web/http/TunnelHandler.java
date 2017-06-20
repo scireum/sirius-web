@@ -54,9 +54,9 @@ class TunnelHandler implements AsyncHandler<String> {
     private boolean contentLengthKnown;
     private volatile boolean failed;
 
-    TunnelHandler(Response response, WebContext webContext, String url, Consumer<Integer> failureHandler) {
+    TunnelHandler(Response response, String url, Consumer<Integer> failureHandler) {
         this.response = response;
-        this.webContext = webContext;
+        this.webContext = response.wc;
         this.url = url;
         this.failureHandler = failureHandler;
         this.cc = CallContext.getCurrent();
