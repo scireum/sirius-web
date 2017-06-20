@@ -18,7 +18,7 @@ import sirius.tagliatelle.compiler.CompileException;
 import java.util.regex.Pattern;
 
 /**
- * Created by aha on 14.06.17.
+ * Compiles all templates during a test cycle to detect errors as early as possible.
  */
 @Register
 public class CompileAllTemplates implements Lifecycle {

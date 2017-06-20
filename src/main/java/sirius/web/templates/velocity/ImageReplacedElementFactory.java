@@ -52,7 +52,7 @@ class ImageReplacedElementFactory extends ITextReplacedElementFactory {
     private static final String PROTOCOL_HTTP = "http";
     private static final String BARCODE_TYPE_QR = "qr";
     private static final String BARCODE_TYPE_CODE128 = "code128";
-    private static final String BARCODE_TYPE_EAN = "ean";
+    private static final String BASRCODE_TYPE_EAN = "ean";
     @Part
     private static Resources resources;
 
@@ -156,7 +156,7 @@ class ImageReplacedElementFactory extends ITextReplacedElementFactory {
         Barcode code = null;
         if (BARCODE_TYPE_CODE128.equalsIgnoreCase(type)) {
             code = new Barcode128();
-        } else if (BARCODE_TYPE_EAN.equalsIgnoreCase(type)) {
+        } else if (BASRCODE_TYPE_EAN.equalsIgnoreCase(type)) {
             code = new BarcodeEAN();
         }
         code.setCode(src);
