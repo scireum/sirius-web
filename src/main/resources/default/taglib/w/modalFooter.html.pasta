@@ -1,0 +1,19 @@
+<i:arg type="String" name="submitKey" default="" />
+<i:arg type="String" name="dangerKey" default="" />
+<i:arg type="String" name="cancelKey" default="" />
+
+<i:pragma name="inline" value="true" />
+<i:pragma name="description" value="Renders a footer for a modal dialog within a Wondergem template" />
+
+<div class="modal-footer">
+    <i:render name="body" />
+    <i:if test="isFilled(submitKey)">
+        <button type="submit" class="btn btn-primary">@i18n(submitKey)</button>
+    </i:if>
+    <i:if test="isFilled(dangerKey)">
+        <button type="submit" class="btn btn-danger">@i18n(dangerKey)</button>
+    </i:if>
+    <i:if test="isFilled(cancelKey)">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">@i18n(cancelKey)</button>
+    </i:if>
+</div>

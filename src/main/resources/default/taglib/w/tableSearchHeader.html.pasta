@@ -1,6 +1,10 @@
 <i:arg name="page" type="Page" />
 <i:arg name="baseURL" type="String" />
-<i:arg name="hideSearchBox" type="boolean" defaultValue="false" />
+<i:arg name="hideSearchBox" type="boolean" default="false" />
+
+<i:pragma name="inline" value="true" />
+<i:pragma name="description" value="Renders a header above a table within a Wondergem template" />
+
 
 <div class="well">
     <i:if test="@!hideSearchBox">
@@ -12,8 +16,7 @@
                     </i:if>
                 </i:for>
                 <div class="input-group">
-                    <input type="text" name="query" class="form-control" value="@page.getQuery()" placeholder="@i18n("
-                           NLS.searchkey")" autofocus />
+                    <input type="text" name="query" class="form-control" value="@page.getQuery()" placeholder="@i18n("NLS.searchkey")" autofocus />
                     <span class="input-group-addon" onclick="$('#search').submit()"><i class="fa fa-search"></i></span>
                 </div>
             </form>
@@ -23,7 +26,7 @@
         <span>
             <i:render name="body" />
         </span>
-        <a class="btn btn-default" href="@prefix/@baseURL?@page.createQueryString()"><i class="fa fa-refresh"></i></a>
+        <a class="btn btn-default" href="@baseURL?@page.createQueryString()"><i class="fa fa-refresh"></i></a>
     </div>
     <span class="clearfix"></span>
 </div>

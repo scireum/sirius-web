@@ -1,0 +1,12 @@
+<i:arg name="labelKey" type="String" default="" />
+<i:arg name="label" type="String" default="@i18n(labelKey)" />
+
+<i:pragma name="inline" value="true" />
+<i:pragma name="description" value="Renders a heading for forms within a Wondergem template" />
+
+<i:if test="isFilled(label)">
+    <span class="legend">@label</span>
+    <i:else>
+        <span class="legend"><i:render name="body" /></span>
+    </i:else>
+</i:if>

@@ -1,0 +1,16 @@
+<i:arg name="backUrl" type="String" default="" />
+<i:arg name="singleClick" type="boolean" default="false" />
+
+<i:pragma name="inline" value="true" />
+<i:pragma name="description" value="Renders a footer bar for forms within a Wondergem template" />
+
+<div class="form-actions">
+    <a class="btn btn-primary submit-link @if (singleClick) { single-click-link }">
+        <i class="fa fa-check"></i> @i18n("NLS.save")
+    </a>
+    <i:if test="isFilled(backUrl)">
+        <a href="@backUrl" class="btn">@i18n("NLS.back")</a>
+    </i:if>
+
+    <i:render name="body" />
+</div>

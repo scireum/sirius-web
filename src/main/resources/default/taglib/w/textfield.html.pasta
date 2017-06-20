@@ -14,7 +14,7 @@
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders a text input field within a Wondergem template" />
 
-<div class="@span form-group @user.signalFieldError(name)">
+<div class="col-md-@span form-group @user.signalFieldError(name)">
     <i:if test="isFilled(label)">
         <label>
         <span class="@if (required) { input-required } @if (adminOnly) { admin-link }">

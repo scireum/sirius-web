@@ -1,0 +1,34 @@
+<i:arg type="Page" name="page" />
+<i:arg type="String" name="baseURL" />
+
+<i:pragma name="inline" value="true" />
+<i:pragma name="description" value="Renders a filter box within a Wondergem template" />
+
+<i:if test="page.hasFacets()">
+    <div class="well filter-box">
+        <ul class="nav nav-list">
+            <i:for type="sirius.web.controller.Facet" var="facet" items="page.getFacets()">
+                <i:if test="facet.hasItems()">
+                    <li class="nav-header">@facet.getTitle()</li>
+                    <i:for type="sirius.web.controller.FacetItem" var="item" items="facet.getItems()">
+                        <li @if (item.isActive()) { class="active" }>
+                            <a href="@baseURL?@facet.createToggleQueryString(item)" class="row">
+                                <span class="filter-title word-wrap">
+                                    <i @if (item.isActive()) { class="fa fa-check-square-o" } else { class="fa fa-square-o" }></i>
+                                    <span class="filter-title-inner">@item.getTitle()</span>
+                                </span>
+                                <i:if test="item.getCount() >= 0">
+                                    <span class="filter-counter-wrapper"><span class="pull-right badge">@item.getCount()</span></span>
+                                </i:if>
+                            </a>
+                        </li>
+                    </i:for>
+                </i:if>
+            </i:for>
+        </ul>
+    </div>
+    <i:else>
+        <p class="muted" style="padding: 0px 8px"><i>@i18n("Filterbox.noItems")</i></p>
+        <div class="clearfix">&nbsp;</div>
+    </i:else>
+</i:if>

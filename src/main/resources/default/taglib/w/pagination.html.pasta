@@ -1,0 +1,81 @@
+<i:arg type="Page" name="page" />
+<i:arg type="String" name="baseURL" />
+<i:arg type="String" name="type" default="" />
+
+<i:pragma name="inline" value="true" />
+<i:pragma name="description" value="Renders a pagination box below a table within a Wondergem template" />
+
+
+<i:if test="!page.getItems().isEmpty() || page.getStart() != 1">
+    <nav class="text-center">
+        <ul class="pagination">
+            <i:if test="page.hasLess()">
+                <i:if test="isFilled(type)">
+                    <li><a href="@baseURL?@page.createPrevPageQueryString()&pageType=@type">&#8592;</a></li>
+                    <i:else>
+                        <li><a href="@baseURL?@page.createPrevPageQueryString()">&#8592;</a></li>
+                    </i:else>
+                </i:if>
+                <i:else>
+                    <li class="disabled"><span>&#8592;</span></li>
+                </i:else>
+            </i:if>
+
+            <li>
+                <input type="text" class="jump-to" placeholder="@page.getRange()">
+                <script type="text/javascript">
+                    $(document).ready(function() {
+                        $("input:text.jump-to").keyup(function (e) {
+                            var startIndex = $(this).val();
+                            var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
+                            if (key == 13 && /^\d+$/.test(startIndex)) {
+                                var location = "@baseURL?@page.createQueryStringForConfigurableStart()" + startIndex;
+                                @if (isFilled(type)) {
+                                    location += "&pageType=@type";
+                                }
+                                window.location.replace(location);
+                            }
+                        });
+
+                        @if (page.hasLess()) {
+                            $(document).keyup(function (e) {
+                                if (e.shiftKey && (e.which === 37)) {
+                                @if (isFilled(type)) {
+                                        var location = '@baseURL?@page.createPrevPageQueryString()&pageType=@type';
+                                    } else {
+                                        var location = '@baseURL?@page.createPrevPageQueryString()';
+                                    }
+                                    window.location.replace(location);
+                                }
+                            });
+                        }
+                        @if (page.hasMore()) {
+                            $(document).keyup(function (e) {
+                                if (e.shiftKey && (e.which === 39)) {
+                                @if (isFilled(type)) {
+                                        var location = '@baseURL?@page.createNextPageQueryString()&pageType=@type';
+                                    } else {
+                                        var location = '@baseURL?@page.createNextPageQueryString()';
+                                    }
+                                    window.location.replace(location);
+                                }
+                            });
+                        }
+                    });
+                </script>
+            </li>
+
+            <i:if test="page.hasMore()">
+                <i:if test="isFilled(type)">
+                    <li><a href="@baseURL?@page.createNextPageQueryString()&pageType=@type">&#8594;</a></li>
+                    <i:else>
+                        <li><a href="@baseURL?@page.createNextPageQueryString()">&#8594;</a></li>
+                    </i:else>
+                </i:if>
+                <i:else>
+                    <li class="disabled"><span>&#8594;</span></li>
+                </i:else>
+            </i:if>
+        </ul>
+    </nav>
+</i:if>
