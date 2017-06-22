@@ -25,6 +25,7 @@ import sirius.web.templates.Resource;
 import sirius.web.templates.Resources;
 import sirius.web.templates.Templates;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -152,7 +153,9 @@ public class Tagliatelle {
      *                 is mainly used to detect and abort cyclic dependencies at compile time.
      * @return a new compilation context for the given resource
      */
-    public CompilationContext createCompilationContext(String path, Resource resource, CompilationContext parent) {
+    public CompilationContext createCompilationContext(@Nonnull String path,
+                                                       @Nullable Resource resource,
+                                                       @Nullable CompilationContext parent) {
         Template template = new Template(path, resource);
         return new CompilationContext(template, parent);
     }
