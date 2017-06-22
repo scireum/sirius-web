@@ -9,8 +9,8 @@
 package sirius.web.security;
 
 import com.google.common.collect.Sets;
+import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.settings.Extension;
 import sirius.web.http.WebContext;
@@ -57,11 +57,12 @@ public class SSOUserManager extends GenericUserManager {
     }
 
     @Override
-    protected String computeSSOHashInput(WebContext ctx, String user, Tuple<String, String> challengeResponse) {
-        if (ctx.get("roles").isFilled()) {
-            return super.computeSSOHashInput(ctx, user, challengeResponse) + ctx.get("roles").asString();
+    protected String computeSSOHashInput(String user, String timestamp) {
+        WebContext ctx = CallContext.getCurrent().get(WebContext.class);
+        if (ctx.isValid() && ctx.get("roles").isFilled()) {
+            return super.computeSSOHashInput(user, timestamp) + ctx.get("roles").asString();
         }
-        return super.computeSSOHashInput(ctx, user, challengeResponse);
+        return super.computeSSOHashInput(user, timestamp);
     }
 
     @Override

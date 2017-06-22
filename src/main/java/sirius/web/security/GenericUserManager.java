@@ -216,7 +216,7 @@ public abstract class GenericUserManager implements UserManager {
                               loginCookieTTL.getSeconds());
 
                 String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
-                String input = computeSSOHashInput(ctx, user.getUserName().trim(), new Tuple<>(timestamp, null));
+                String input = computeSSOHashInput(user.getUserName().trim(), timestamp);
                 String challenge = getSSOHashFunction().hashBytes(input.getBytes(Charsets.UTF_8)).toString();
 
                 ctx.setCookie(scope.getScopeId() + TOKEN_COOKIE_SUFFIX,
@@ -255,7 +255,7 @@ public abstract class GenericUserManager implements UserManager {
             return null;
         }
         if (checkTokenTTL(Value.of(challengeResponse.getFirst()).asLong(0), ssoGraceInterval)) {
-            if (checkTokenValidity(ctx, user, challengeResponse)) {
+            if (checkTokenValidity(user, challengeResponse)) {
                 log("SSO-Login of %s succeeded with token: %s", user, challengeResponse);
                 return result;
             } else {
@@ -306,7 +306,7 @@ public abstract class GenericUserManager implements UserManager {
         // Verify age...
         if (checkTokenTTL(Value.of(challengeResponse.getFirst()).asLong(0), loginCookieTTL.getSeconds())) {
             // Verify hash...
-            if (checkTokenValidity(ctx, user, challengeResponse)) {
+            if (checkTokenValidity(user, challengeResponse)) {
                 log("Cookie-Login of %s succeeded with token: %s", user, token);
                 return result;
             } else {
@@ -320,15 +320,28 @@ public abstract class GenericUserManager implements UserManager {
     }
 
     private boolean checkTokenTTL(long timestamp, long maxTtl) {
-        return timestamp > (System.currentTimeMillis() / 1000) - maxTtl;
+        return Math.abs(timestamp - (System.currentTimeMillis() / 1000)) < maxTtl;
     }
 
-    private boolean checkTokenValidity(WebContext ctx, String user, Tuple<String, String> challengeResponse) {
-        return getSSOHashFunction().hashBytes(computeSSOHashInput(ctx,
-                                                                  user,
-                                                                  challengeResponse).getBytes(Charsets.UTF_8))
+    private boolean checkTokenValidity(String user, Tuple<String, String> challengeResponse) {
+        return getSSOHashFunction().hashBytes(computeSSOHashInput(user,
+                                                                  challengeResponse.getFirst()).getBytes(Charsets.UTF_8))
                                    .toString()
                                    .equalsIgnoreCase(challengeResponse.getSecond());
+    }
+
+    /**
+     * Computes an auth token which can be used to perform an SSO Login.
+     * <p>
+     * If enabled, the computed token can be passed in using the <tt>token</tt> field.
+     *
+     * @param username the username to generate a token for
+     * @return a login token to be used for SSO
+     */
+    public String computeSSOToken(String username) {
+        String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
+        return timestamp + ":" + getSSOHashFunction().hashBytes(computeSSOHashInput(username, timestamp).getBytes(
+                Charsets.UTF_8)).toString();
     }
 
     /**
@@ -354,13 +367,12 @@ public abstract class GenericUserManager implements UserManager {
     /**
      * Computes the input for the hash function used to generate the auth hash.
      *
-     * @param ctx               the current request
-     * @param user              the name of the user
-     * @param challengeResponse the challenge and response pair provided by the client
+     * @param user      the name of the user
+     * @param timestamp the timestamp used as challenge
      * @return the input string used by the hash function
      */
-    protected String computeSSOHashInput(WebContext ctx, String user, Tuple<String, String> challengeResponse) {
-        return user + challengeResponse.getFirst() + ssoSecret;
+    protected String computeSSOHashInput(String user, String timestamp) {
+        return user + timestamp + ssoSecret;
     }
 
     /**
