@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 @Register
 public class HelpDispatcher implements WebDispatcher {
 
-    public static final String HELP_PREFIX = "/help";
+    private static final String HELP_PREFIX = "/help";
     private static Pattern startPagePattern = Pattern.compile("^/help/(..)/?$");
 
     @ConfigValue("help.indexTemplate")
@@ -94,13 +94,13 @@ public class HelpDispatcher implements WebDispatcher {
     }
 
     private String getHelpSystemLanguageDirectory(String uri) {
-        String subUri = uri.substring("/help/".length()).split("/")[0];
+        String subUri = uri.substring((HELP_PREFIX + "/").length()).split("/")[0];
         return helpSystemLanguageDirectories.contains(subUri) ? subUri : "";
     }
 
     private String getRequestedURI(WebContext ctx) {
         String uri = ctx.getRequestedURI();
-        if ("/help".equals(uri) || "/help/".equals(uri)) {
+        if (HELP_PREFIX.equals(uri) || (HELP_PREFIX + "/").equals(uri)) {
             return buildHomeURI(null);
         }
         Matcher matcher = startPagePattern.matcher(uri);
@@ -114,7 +114,7 @@ public class HelpDispatcher implements WebDispatcher {
     }
 
     private String buildHomeURI(String lang) {
-        String uri = "/help";
+        String uri = HELP_PREFIX;
         if (Strings.isFilled(lang)) {
             uri = uri + "/" + lang;
         }
