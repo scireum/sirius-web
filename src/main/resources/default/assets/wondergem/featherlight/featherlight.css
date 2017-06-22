@@ -1,8 +1,8 @@
 /**
  * Featherlight – ultra slim jQuery lightbox
- * Version 1.2.0 - http://noelboss.github.io/featherlight/
+ * Version 1.7.6 - http://noelboss.github.io/featherlight/
  *
- * Copyright 2015, Noël Raoul Bossart (http://www.noelboss.com)
+ * Copyright 2017, Noël Raoul Bossart (http://www.noelboss.com)
  * MIT Licensed.
 **/
 @media all {
@@ -12,7 +12,7 @@
 		/* dimensions: spanning the background from edge to edge */
 		position:fixed;
 		top: 0; right: 0; bottom: 0; left: 0;
-		z-index: 2;
+		z-index: 2147483647; /* z-index needs to be >= elements on the site. */
 
 		/* position: centering content */
 		text-align: center;
@@ -38,7 +38,6 @@
 		display: inline-block;
 		height: 100%;
 		vertical-align: middle;
-		margin-right: -0.25em;
 	}
 
 	.featherlight .featherlight-content {
@@ -54,9 +53,6 @@
 		overflow: auto;
 		padding: 25px 25px 0;
 		border-bottom: 25px solid transparent;
-
-		/* dimensions: handling small or empty content */
-		min-width:  30%;
 
 		/* dimensions: handling large content */
 		margin-left: 5%;
@@ -77,6 +73,13 @@
 		display: block;
 	}
 
+	/* don't show these though */
+	.featherlight script.featherlight-inner,
+	.featherlight link.featherlight-inner,
+	.featherlight style.featherlight-inner {
+		display: none;
+	}
+
 	.featherlight .featherlight-close-icon {
 		/* position: centering vertical and horizontal */
 		position: absolute;
@@ -91,12 +94,19 @@
 		/* styling */
 		cursor: pointer;
 		text-align: center;
-		font: Arial, sans-serif;
+		font-family: Arial, sans-serif;
 		background: #fff; /* Set the background in case it overlaps the content */
 		background: rgba(255, 255, 255, 0.3);
 		color: #000;
+		border: none;
+		padding: 0;
 	}
 
+	/* See http://stackoverflow.com/questions/16077341/how-to-reset-all-default-styles-of-the-html5-button-element */
+	.featherlight .featherlight-close-icon::-moz-focus-inner {
+		border: 0;
+		padding: 0;
+	}
 
 	.featherlight .featherlight-image {
 		/* styling */
@@ -108,11 +118,19 @@
 		/* removed the border for image croping since iframe is edge to edge */
 		border-bottom: 0;
 		padding: 0;
+		-webkit-overflow-scrolling: touch;
+		overflow-y: scroll;
 	}
 
 	.featherlight iframe {
 		/* styling */
 		border: none;
+	}
+
+	.featherlight * { /* See https://github.com/noelboss/featherlight/issues/42 */
+		-webkit-box-sizing: border-box;
+		-moz-box-sizing: border-box;
+		box-sizing: border-box;
 	}
 }
 
@@ -120,8 +138,8 @@
 @media only screen and (max-width: 1024px) {
 	.featherlight .featherlight-content {
 		/* dimensions: maximize lightbox with for small screens */
-		margin-left: 10px;
-		margin-right: 10px;
+		margin-left: 0;
+		margin-right: 0;
 		max-height: 98%;
 
 		padding: 10px 10px 0;
