@@ -13,7 +13,9 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
+import sirius.tagliatelle.Tagliatelle;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 
@@ -29,7 +31,7 @@ import java.util.regex.Pattern;
 @Register
 public class HelpDispatcher implements WebDispatcher {
 
-    public static final String HELP_PREFIX = "/help";
+    private static final String HELP_PREFIX = "/help";
     private static Pattern startPagePattern = Pattern.compile("^/help/(..)/?$");
 
     @ConfigValue("help.indexTemplate")
@@ -37,6 +39,9 @@ public class HelpDispatcher implements WebDispatcher {
 
     @ConfigValue("help.languages")
     private List<String> helpSystemLanguageDirectories;
+
+    @Part
+    private Tagliatelle tagliatelle;
 
     @Override
     public boolean preDispatch(WebContext ctx) throws Exception {
@@ -59,33 +64,39 @@ public class HelpDispatcher implements WebDispatcher {
             CallContext.getCurrent().setLang(lang);
         }
         String helpSystemHomeURI = HELP_PREFIX + "/" + lang;
-        if (uri.contains(".") && !uri.endsWith("html")) {
-            // Dispatch static content...
+        ctx.setAttribute("helpSystemHomeURI", helpSystemHomeURI);
+        if (uri.contains(".")) {
             URL url = getClass().getResource(uri);
             if (url == null) {
                 return false;
             } else if ("file".equals(url.getProtocol())) {
                 ctx.respondWith().file(new File(url.toURI()));
+            } else if (uri.endsWith("html") || uri.endsWith("pasta")) {
+                ctx.respondWith().cached().template(uri);
             } else {
                 ctx.respondWith().resource(url.openConnection());
             }
         } else {
-            // Render help template...
-            ctx.setAttribute("helpSystemHomeURI", helpSystemHomeURI);
-            ctx.respondWith().cached().template(uri);
+            //search for the matching template
+            StringBuilder sb = new StringBuilder(uri);
+            sb.append(".html");
+            if (tagliatelle.resolve(uri + ".html.pasta").isPresent()) {
+                sb.append(".pasta");
+            }
+            ctx.respondWith().cached().template(sb.toString());
         }
         ctx.enableTiming(helpSystemHomeURI);
         return true;
     }
 
     private String getHelpSystemLanguageDirectory(String uri) {
-        String subUri = uri.substring("/help/".length()).split("/")[0];
+        String subUri = uri.substring((HELP_PREFIX + "/").length()).split("/")[0];
         return helpSystemLanguageDirectories.contains(subUri) ? subUri : "";
     }
 
     private String getRequestedURI(WebContext ctx) {
         String uri = ctx.getRequestedURI();
-        if ("/help".equals(uri) || "/help/".equals(uri)) {
+        if (HELP_PREFIX.equals(uri) || (HELP_PREFIX + "/").equals(uri)) {
             return buildHomeURI(null);
         }
         Matcher matcher = startPagePattern.matcher(uri);
@@ -99,7 +110,7 @@ public class HelpDispatcher implements WebDispatcher {
     }
 
     private String buildHomeURI(String lang) {
-        String uri = "/help";
+        String uri = HELP_PREFIX;
         if (Strings.isFilled(lang)) {
             uri = uri + "/" + lang;
         }
