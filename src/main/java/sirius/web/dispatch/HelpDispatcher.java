@@ -16,14 +16,12 @@ import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.Tagliatelle;
-import sirius.tagliatelle.Template;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 
 import java.io.File;
 import java.net.URL;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -80,12 +78,10 @@ public class HelpDispatcher implements WebDispatcher {
             }
         } else {
             //search for the matching template
-            Optional<Template> pasta = tagliatelle.resolve(uri + ".pasta");
             StringBuilder sb = new StringBuilder(uri);
-            if (pasta.isPresent()) {
+            sb.append(".html");
+            if (tagliatelle.resolve(uri + ".html.pasta").isPresent()) {
                 sb.append(".pasta");
-            } else {
-                sb.append(".html");
             }
             ctx.respondWith().cached().template(sb.toString());
         }
