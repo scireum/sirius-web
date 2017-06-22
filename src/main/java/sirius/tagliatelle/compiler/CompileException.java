@@ -39,11 +39,11 @@ public class CompileException extends Exception {
      */
     public static CompileException create(Template template, List<CompileError> errors) {
         StringBuilder message = new StringBuilder();
-        message.append("Cannot compile: ")
-               .append(template.getName())
-               .append(" (")
-               .append(template.getResource().getUrl())
-               .append("):\n");
+        message.append("Cannot compile: ").append(template.getName());
+        if (template.getResource() != null) {
+            message.append(" (").append(template.getResource().getUrl()).append(")");
+        }
+        message.append("):\n");
         errors.forEach(message::append);
 
         return new CompileException(message.toString(), template, errors);

@@ -17,6 +17,7 @@ import sirius.tagliatelle.rendering.LocalRenderContext;
 import sirius.tagliatelle.rendering.RenderException;
 import sirius.web.templates.Resource;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +45,7 @@ public class Template {
      * @param name     the name of the template
      * @param resource the resource which is used as input for the compiler
      */
-    public Template(String name, Resource resource) {
+    public Template(String name, @Nullable Resource resource) {
         this.name = name;
         this.resource = resource;
     }
