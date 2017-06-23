@@ -9,26 +9,27 @@
 package sirius.web.http;
 
 import com.google.common.collect.Sets;
+import com.ning.http.client.AsyncHandler;
+import com.ning.http.client.FluentCaseInsensitiveStringsMap;
+import com.ning.http.client.HttpResponseBodyPart;
+import com.ning.http.client.HttpResponseHeaders;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.LastHttpContent;
-import org.asynchttpclient.AsyncHandler;
-import org.asynchttpclient.HttpResponseBodyPart;
-import org.asynchttpclient.HttpResponseHeaders;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 
 import java.nio.channels.ClosedChannelException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -63,7 +64,7 @@ class TunnelHandler implements AsyncHandler<String> {
     }
 
     @Override
-    public State onStatusReceived(org.asynchttpclient.HttpResponseStatus status) throws Exception {
+    public STATE onStatusReceived(com.ning.http.client.HttpResponseStatus status) throws Exception {
         CallContext.setCurrent(cc);
 
         if (WebServer.LOG.isFINE()) {
@@ -71,11 +72,11 @@ class TunnelHandler implements AsyncHandler<String> {
         }
         if (status.getStatusCode() >= 200 && status.getStatusCode() < 300) {
             responseCode = status.getStatusCode();
-            return State.CONTINUE;
+            return STATE.CONTINUE;
         }
         if (status.getStatusCode() == HttpResponseStatus.NOT_MODIFIED.code()) {
             response.status(HttpResponseStatus.NOT_MODIFIED);
-            return State.ABORT;
+            return STATE.ABORT;
         }
         // Everything above 400 is an error and should be forwarded to the failure handler (if present)
         if (status.getStatusCode() >= 400 && failureHandler != null) {
@@ -91,18 +92,18 @@ class TunnelHandler implements AsyncHandler<String> {
             // failureHandler is present...
             response.error(HttpResponseStatus.valueOf(status.getStatusCode()));
         }
-        return State.ABORT;
+        return STATE.ABORT;
     }
 
     @Override
-    public State onHeadersReceived(HttpResponseHeaders httpHeaders) throws Exception {
+    public STATE onHeadersReceived(HttpResponseHeaders httpHeaders) throws Exception {
         CallContext.setCurrent(cc);
 
         if (webContext.responseCommitted) {
             if (WebServer.LOG.isFINE()) {
                 WebServer.LOG.FINE("Tunnel - BLOCKED HEADERS (already sent) for %s", webContext.getRequestedURI());
             }
-            return State.CONTINUE;
+            return STATE.CONTINUE;
         }
         if (WebServer.LOG.isFINE()) {
             WebServer.LOG.FINE("Tunnel - HEADERS for %s", webContext.getRequestedURI());
@@ -110,7 +111,7 @@ class TunnelHandler implements AsyncHandler<String> {
 
         long lastModified = forwardHeadersAndDetermineLastModified(httpHeaders);
         if (response.handleIfModifiedSince(lastModified)) {
-            return State.ABORT;
+            return STATE.ABORT;
         }
 
         if (!response.headers().contains(HttpHeaderNames.CONTENT_TYPE)) {
@@ -124,21 +125,21 @@ class TunnelHandler implements AsyncHandler<String> {
             response.setContentDisposition(response.name, response.download);
         }
 
-        return State.CONTINUE;
+        return STATE.CONTINUE;
     }
 
     private long forwardHeadersAndDetermineLastModified(HttpResponseHeaders httpHeaders) {
-        HttpHeaders receivedHeaders = httpHeaders.getHeaders();
+        FluentCaseInsensitiveStringsMap receivedHeaders = httpHeaders.getHeaders();
 
         long lastModified = 0;
 
-        for (Map.Entry<String, String> entry : receivedHeaders) {
+        for (Map.Entry<String, List<String>> entry : receivedHeaders.entrySet()) {
             if ((Sirius.isDev() || !entry.getKey().startsWith("x-"))
                 && !NON_TUNNELLED_HEADERS.contains(entry.getKey())) {
                 if (HttpHeaderNames.LAST_MODIFIED.contentEqualsIgnoreCase(entry.getKey())) {
                     lastModified = parseLastModified(entry);
                 } else {
-                    response.addHeaderIfNotExists(entry.getKey(), entry.getValue());
+                    forwardHeaderValues(entry);
                 }
                 if (HttpHeaderNames.CONTENT_LENGTH.contentEqualsIgnoreCase(entry.getKey())) {
                     contentLengthKnown = true;
@@ -149,9 +150,15 @@ class TunnelHandler implements AsyncHandler<String> {
         return lastModified;
     }
 
-    private long parseLastModified(Map.Entry<String, String> entry) {
+    private void forwardHeaderValues(Map.Entry<String, List<String>> entry) {
+        for (String value : entry.getValue()) {
+            response.addHeaderIfNotExists(entry.getKey(), value);
+        }
+    }
+
+    private long parseLastModified(Map.Entry<String, List<String>> entry) {
         try {
-            return response.getHTTPDateFormat().parse(entry.getValue()).getTime();
+            return response.getHTTPDateFormat().parse(entry.getValue().get(0)).getTime();
         } catch (Exception e) {
             Exceptions.ignore(e);
             return 0;
@@ -159,7 +166,7 @@ class TunnelHandler implements AsyncHandler<String> {
     }
 
     @Override
-    public State onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
+    public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
         try {
             CallContext.setCurrent(cc);
 
@@ -170,7 +177,7 @@ class TunnelHandler implements AsyncHandler<String> {
                                    bodyPart.isLast());
             }
             if (!response.ctx.channel().isOpen()) {
-                return State.ABORT;
+                return STATE.ABORT;
             }
 
             ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
@@ -178,7 +185,7 @@ class TunnelHandler implements AsyncHandler<String> {
             if (!webContext.responseCommitted) {
                 if (bodyPart.isLast()) {
                     commitAndCompleteResponse(bodyPart, data);
-                    return State.CONTINUE;
+                    return STATE.CONTINUE;
                 }
                 commitResponse();
             }
@@ -189,13 +196,13 @@ class TunnelHandler implements AsyncHandler<String> {
                 Object msg = response.responseChunked ? new DefaultHttpContent(data) : data;
                 response.contentionAwareWrite(msg);
             }
-            return State.CONTINUE;
+            return STATE.CONTINUE;
         } catch (HandledException e) {
             Exceptions.ignore(e);
-            return State.ABORT;
+            return STATE.ABORT;
         } catch (Exception e) {
             Exceptions.handle(e);
-            return State.ABORT;
+            return STATE.ABORT;
         }
     }
 

@@ -9,6 +9,8 @@
 package sirius.web.http;
 
 import com.google.common.base.Charsets;
+import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.AsyncHttpClientConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
@@ -31,10 +33,6 @@ import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.handler.stream.ChunkedStream;
 import io.netty.handler.stream.ChunkedWriteHandler;
-import org.asynchttpclient.AsyncHttpClient;
-import org.asynchttpclient.BoundRequestBuilder;
-import org.asynchttpclient.DefaultAsyncHttpClient;
-import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.rythmengine.Rythm;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
@@ -158,7 +156,7 @@ public class Response {
     @Part
     private static Tagliatelle engine;
 
-    protected static DefaultAsyncHttpClient asyncClient;
+    protected static AsyncHttpClient asyncClient;
 
     /**
      * Creates a new response for the given request.
@@ -1098,13 +1096,10 @@ public class Response {
      */
     protected static AsyncHttpClient getAsyncClient() {
         if (asyncClient == null) {
-            DefaultAsyncHttpClientConfig.Builder configBuilder = new DefaultAsyncHttpClientConfig.Builder();
-            configBuilder.setThreadPoolName("response-tunnelling")
-                         .setConnectTimeout(60000)
-                         .setFollowRedirect(true)
-                         .setRequestTimeout(-1)
-                         .setSslEngineFactory(new SiriusSslEngineFactory());
-            asyncClient = new DefaultAsyncHttpClient(configBuilder.build());
+            asyncClient = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setAllowPoolingConnections(true)
+                                                                                 .setAllowPoolingSslConnections(true)
+                                                                                 .setRequestTimeout(-1)
+                                                                                 .build());
         }
         return asyncClient;
     }
@@ -1151,8 +1146,7 @@ public class Response {
      */
     public void tunnel(final String url, @Nullable Consumer<Integer> failureHandler) {
         try {
-            BoundRequestBuilder brb = getAsyncClient().prepareGet(url);
-            // Support caching...
+            AsyncHttpClient.BoundRequestBuilder brb = getAsyncClient().prepareGet(url);
             long ifModifiedSince = wc.getDateHeader(HttpHeaderNames.IF_MODIFIED_SINCE);
             if (ifModifiedSince > 0) {
                 brb.addHeader(HttpHeaderNames.IF_MODIFIED_SINCE.toString(),
