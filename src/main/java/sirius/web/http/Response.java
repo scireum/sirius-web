@@ -335,6 +335,7 @@ public class Response {
             WebServer.LOG.FINE("COMMITTING: " + wc.getRequestedURI());
         }
         wc.responseCommitted = true;
+        wc.releaseContentHandler();
         return flush ? ctx.writeAndFlush(response) : ctx.write(response);
     }
 
