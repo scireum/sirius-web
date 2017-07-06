@@ -111,24 +111,6 @@ public class Mails implements MetricProvider {
      */
     private static final String MAIL_SOCKET_TIMEOUT = "60000";
 
-    @ConfigValue("mail.smtp.host")
-    private String smtpHost;
-
-    @ConfigValue("mail.smtp.port")
-    private int smtpPort;
-
-    @ConfigValue("mail.smtp.user")
-    private String smtpUser;
-
-    @ConfigValue("mail.smtp.password")
-    private String smtpPassword;
-
-    @ConfigValue("mail.smtp.sender")
-    private String smtpSender;
-
-    @ConfigValue("mail.smtp.senderName")
-    private String smtpSenderName;
-
     @ConfigValue("mail.smtp.dkim.keyFile")
     private String dkimKeyFile;
 
@@ -140,8 +122,6 @@ public class Mails implements MetricProvider {
     private String dkimSelector;
 
     private Boolean dkimEnabled;
-
-    private final SMTPConfiguration defaultConfig = new DefaultSMTPConfig();
 
     @ConfigValue("mail.mailer")
     private String mailer;
@@ -215,47 +195,6 @@ public class Mails implements MetricProvider {
                             .withNLSKey("MailService.invalidAddress")
                             .set("address", Strings.isFilled(name) ? address + " (" + name + ")" : address)
                             .handle();
-        }
-    }
-
-    /**
-     * Used as bridge between the given parameters and JavaMail
-     */
-    protected class DefaultSMTPConfig implements SMTPConfiguration {
-
-        @Override
-        public String getMailHost() {
-            return smtpHost;
-        }
-
-        @Override
-        public String getMailPort() {
-            return String.valueOf(smtpPort);
-        }
-
-        @Override
-        public String getMailUser() {
-            return smtpUser;
-        }
-
-        @Override
-        public String getMailPassword() {
-            return smtpPassword;
-        }
-
-        @Override
-        public String getMailSender() {
-            return smtpSender;
-        }
-
-        @Override
-        public String getMailSenderName() {
-            return smtpSenderName;
-        }
-
-        @Override
-        public boolean isUseSenderAndEnvelopeFrom() {
-            return true;
         }
     }
 
@@ -596,7 +535,6 @@ public class Mails implements MetricProvider {
          * of invalid settings (bad mail address etc.).
          */
         public void send() {
-            SMTPConfiguration config = new DefaultSMTPConfig();
             String tmpLang = NLS.getCurrentLang();
             try {
                 try {
@@ -606,7 +544,7 @@ public class Mails implements MetricProvider {
                     fill();
                     sanitize();
                     check();
-                    sendMailAsync(config);
+                    sendMailAsync(new SMTPConfiguration());
                 } finally {
                     CallContext.getCurrent().setLang(tmpLang);
                 }
@@ -645,7 +583,7 @@ public class Mails implements MetricProvider {
                 } else {
                     new InternetAddress(receiverEmail).validate();
                 }
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 throw Exceptions.handle()
                                 .to(LOG)
                                 .error(e)
@@ -1047,7 +985,7 @@ public class Mails implements MetricProvider {
             if (config.isUseSenderAndEnvelopeFrom()) {
                 msg.setEnvelopeFrom(Strings.isFilled(config.getMailSender()) ?
                                     config.getMailSender() :
-                                    defaultConfig.getMailSender());
+                                    SMTPConfiguration.getDefaultSender());
             }
         }
 
@@ -1055,8 +993,8 @@ public class Mails implements MetricProvider {
             technicalSender = config.getMailSender();
             technicalSenderName = config.getMailSenderName();
             if (Strings.isEmpty(technicalSender)) {
-                technicalSender = defaultConfig.getMailSender();
-                technicalSenderName = defaultConfig.getMailSenderName();
+                technicalSender = SMTPConfiguration.getDefaultSender();
+                technicalSenderName = SMTPConfiguration.getDefaultSenderName();
             }
         }
 
