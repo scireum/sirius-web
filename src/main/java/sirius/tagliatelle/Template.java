@@ -109,9 +109,7 @@ public class Template {
      */
     public String renderToString(Object... args) throws RenderException {
         GlobalRenderContext ctx = engine.createRenderContext();
-        applyArguments(ctx.createContext(this), args);
-
-        render(ctx);
+        render(ctx, args);
 
         return ctx.toString();
     }
