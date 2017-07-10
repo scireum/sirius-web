@@ -52,9 +52,9 @@
             var fieldData = field.data();
             for (f in fieldData) {
                 if (fieldData.hasOwnProperty(f)) {
-                    if (f != 'autocomplete'
-                        && f != 'optional'
-                        && f != 'select2') {
+                    if (f !== 'autocomplete'
+                        && f !== 'optional'
+                        && f !== 'select2') {
                         data[f] = fieldData[f];
                     }
                 }
@@ -195,7 +195,7 @@
         setTimeout(function () {
             var yscroll = $(window).scrollTop();
             if (yscroll > 0) {
-                var params = getUrlParameters(decodeURIComponent(reloadUrl).replace(/\+/g, '%20'));
+                var params = getUrlParameters(decodeURIComponent(reloadUrl).replace(/\+/g, ' '));
                 params['yscroll'] = yscroll;
                 reloadUrl = reloadUrl.split('?')[0] + '?' + $.param(params);
             }
