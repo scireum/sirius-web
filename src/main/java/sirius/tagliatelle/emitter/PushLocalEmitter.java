@@ -70,4 +70,22 @@ public class PushLocalEmitter extends Emitter {
     public String toString() {
         return "LOCAL<" + localIndex + "> = @(" + expression + ")";
     }
+
+    /**
+     * Contains the stack index being written to.
+     *
+     * @return the target index to write to
+     */
+    public int getLocalIndex() {
+        return localIndex;
+    }
+
+    /**
+     * Contains the expression to evaluate and save to the stack location.
+     *
+     * @return the expression to evaluate
+     */
+    public Expression getExpression() {
+        return expression;
+    }
 }
