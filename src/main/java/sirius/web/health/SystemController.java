@@ -124,7 +124,7 @@ public class SystemController extends BasicController {
      */
     @Routed("/system/info")
     public void info(WebContext ctx) {
-        ctx.respondWith().template("/view/system/info.html");
+        ctx.respondWith().template("/templates/system/info.html.pasta");
     }
 
     /**
