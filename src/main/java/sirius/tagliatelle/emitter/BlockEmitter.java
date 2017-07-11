@@ -65,7 +65,7 @@ public class BlockEmitter extends Emitter {
     @Override
     public Emitter visit(EmitterVisitor visitor) {
         if (alternative != null) {
-            this.alternative = visitor.visit(alternative);
+            this.alternative = alternative.visit(visitor);
         }
         return visitor.visit(this);
     }
