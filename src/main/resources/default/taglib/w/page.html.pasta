@@ -1,4 +1,5 @@
-<i:arg type="String" name="title" />
+<i:arg type="String" name="titleKey" default="" />
+<i:arg type="String" name="title" default="@i18n(titleKey)" />
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Provides the base layout for a Wondergem page" />
 <!DOCTYPE html>
@@ -41,7 +42,7 @@
         </i:render>
 
         <div class="wrap">
-            <i:if test="user.getCurrentScope().is(sirius.web.security.MaintenanceInfo.class)&&user.getCurrentScope().as(sirius.web.security.MaintenanceInfo.class).isLocked()">
+            <i:if test="user.getCurrentScope().is(sirius.web.security.MaintenanceInfo.class) && user.getCurrentScope().as(sirius.web.security.MaintenanceInfo.class).isLocked()">
                 <i:invoke template="/templates/wondergem/page-disaster.html.pasta" />
                 <i:else>
                     <i:render name="header" />
