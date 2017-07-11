@@ -26,6 +26,7 @@ import sirius.kernel.settings.Extension;
 import sirius.web.http.MimeHelper;
 import sirius.web.mails.Attachment;
 import sirius.web.mails.BufferedAttachment;
+import sirius.web.mails.MailSender;
 
 import javax.activation.DataSource;
 import javax.annotation.Nonnull;
@@ -232,7 +233,7 @@ public class Templates {
          *
          * @param filename the filename of the attachment.
          * @return the attachment which can be passed to
-         * {@link sirius.web.mails.Mails.MailSender#addAttachment(DataSource)}.
+         * {@link MailSender#addAttachment(DataSource)}.
          */
         public Attachment generateAttachment(@Nonnull String filename) {
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
