@@ -35,7 +35,7 @@ class SystemControllerSpec extends BaseSpecification {
         then:
         result.getStatus() == HttpResponseStatus.OK
         result.getType() == TestResponse.ResponseType.TEMPLATE
-        result.getTemplateName() == "/view/system/console.html"
+        result.getTemplateName() == "/templates/system/console.html.pasta"
     }
 
     def "/system/state renders its template"() {
