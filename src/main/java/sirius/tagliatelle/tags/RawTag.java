@@ -10,6 +10,7 @@ package sirius.tagliatelle.tags;
 
 import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.emitter.CompositeEmitter;
+import sirius.tagliatelle.emitter.Emitter;
 import sirius.tagliatelle.emitter.RawEmitter;
 
 import javax.annotation.Nonnull;
@@ -37,6 +38,11 @@ public class RawTag extends TagHandler {
 
     @Override
     public void apply(CompositeEmitter targetBlock) {
-        targetBlock.addChild(new RawEmitter(getStartOfTag(), getBlock("body")));
+        Emitter body = getBlock("body");
+        if (body != null) {
+            targetBlock.addChild(new RawEmitter(getStartOfTag(), body));
+        } else {
+            compilationContext.error(getStartOfTag(), "A raw tag should have a body!");
+        }
     }
 }
