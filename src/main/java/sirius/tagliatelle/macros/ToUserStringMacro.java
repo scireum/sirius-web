@@ -21,7 +21,7 @@ public class ToUserStringMacro implements Macro {
     @Override
     public void verifyArguments(List<Expression> args) {
         if (args.size() != 1) {
-            throw new IllegalArgumentException("1 parameter expected");
+            throw new IllegalArgumentException("One parameter is expected");
         }
     }
 
@@ -32,7 +32,7 @@ public class ToUserStringMacro implements Macro {
 
     @Override
     public boolean isConstant() {
-        return true;
+        return false;
     }
 
     @Nonnull

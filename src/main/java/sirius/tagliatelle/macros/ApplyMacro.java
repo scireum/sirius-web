@@ -14,6 +14,8 @@ import java.util.List;
  * The first argument in the args array represents the format string, all other arguments are applied to it.
  * e.g. calling @apply("This is a ${1} and this a second ${2}", "formatted string", "formatted parameter") would produce the
  * string: "This is a formatted string and this is a second formatted parameter".
+ *
+ * @see sirius.kernel.commons.Strings#apply(String, Object...)
  */
 @Register
 public class ApplyMacro implements Macro {
@@ -25,7 +27,7 @@ public class ApplyMacro implements Macro {
     @Override
     public void verifyArguments(List<Expression> args) {
         if (args.isEmpty()) {
-            throw new IllegalArgumentException("At least 1 parameter expected");
+            throw new IllegalArgumentException("At least one parameter is expected");
         }
     }
 

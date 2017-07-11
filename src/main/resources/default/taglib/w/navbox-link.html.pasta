@@ -1,0 +1,20 @@
+<i:arg name="url" type="String" default=""/>
+<i:arg name="labelKey" type="String" default=""/>
+<i:arg name="isActive" type="boolean" default="false"/>
+<i:arg name="neededPermission" type="String" default=""/>
+<i:arg name="icon" type="String" default=""/>
+
+<i:pragma name="description" value="Renders navigation box link within a Wondergem template" />
+
+<i:if test="!isFilled(neededPermission) || user.getUser().hasPermission(neededPermission)">
+    <li @if(isActive) { class="active" }>
+        <a href="@url" class="link">
+            <i:if test="isFilled(icon)">
+                <i class="fa @icon"></i>
+            </i:if>
+            @i18n(labelKey)
+        </a>
+
+        <i:render name="body"/>
+    </li>
+</i:if>
