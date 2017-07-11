@@ -1,0 +1,51 @@
+<w:page title="Console">
+    <i:block name="head">
+        <script language="javascript" type="text/javascript" src="/assets/terminal/jquery.terminal-0.8.8.js"></script>
+        <link href="/assets/terminal/jquery.terminal.css" rel="stylesheet" />
+        <script>
+            $(document).ready(function ($) {
+                $('#term').terminal('/service/json/system/console', {
+                    prompt: function(output) {
+                        var now = new Date();
+                        output(now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds()+' - @(nodeName)> ');
+                    },
+                    greetings: '@product (@detailedVersion) - Type "help" for a list of available commands.'
+                });
+
+
+            });
+
+            function handleResize() {
+                $('#term').css('height', ($(window).height() - $('.footer').outerHeight() - $('#term').position().top)+'px');
+            }
+        </script>
+        <style>
+            body {
+                background: url('/assets/terminal/low_contrast_linen.png');
+            }
+
+            #term {
+                overflow-x: auto;
+                overflow-y: auto;
+                padding: 0;
+            }
+
+            .breadcrumb {
+                display: none;
+            }
+
+            .terminal, .terminal .terminal-output, .terminal .terminal-output div, .terminal .terminal-output div div,
+            .cmd, .terminal .cmd span, .terminal .cmd div
+            {
+                background-color: inherit;
+                color: #CCCCCC;
+                font-family: "Consolas", "Courier New", monospace;
+                font-size: 16px;
+            }
+        </style>
+    </i:block>
+    <i:block name="breadcrumbBar" />
+
+    <div id="term"></div>
+
+</w:page>
