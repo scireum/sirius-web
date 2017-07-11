@@ -165,13 +165,13 @@ class SendMailTask implements Runnable {
     }
 
     private void logToConsole() {
-        if (!success) {
-            Mails.LOG.WARN("FAILED to send mail from: '%s' to '%s' with subject: '%s'",
+        if (success) {
+            Mails.LOG.FINE("Sent mail from: '%s' to '%s' with subject: '%s'",
                            Strings.isEmpty(mail.senderEmail) ? technicalSender : mail.senderEmail,
                            mail.receiverEmail,
                            mail.subject);
         } else {
-            Mails.LOG.FINE("Sent mail from: '%s' to '%s' with subject: '%s'",
+            Mails.LOG.WARN("FAILED to send mail from: '%s' to '%s' with subject: '%s'",
                            Strings.isEmpty(mail.senderEmail) ? technicalSender : mail.senderEmail,
                            mail.receiverEmail,
                            mail.subject);

@@ -342,12 +342,12 @@ public class MailSender {
     /**
      * Adds an array of attachments to the email.
      *
-     * @param attachment the attachments to add
+     * @param attachmentsToAdd the attachments to add
      * @return the builder itself
      */
-    public MailSender addAttachments(DataSource... attachment) {
-        if (attachment != null) {
-            attachments.addAll(Arrays.asList(attachment));
+    public MailSender addAttachments(DataSource... attachmentsToAdd) {
+        if (attachmentsToAdd != null) {
+            attachments.addAll(Arrays.asList(attachmentsToAdd));
         }
         return this;
     }
@@ -561,9 +561,9 @@ public class MailSender {
         String mimeType = determineAttachmentMimeType(attachmentConfig, fileName);
         boolean asAlternative = determineIfAttachmentIsAlternative(attachmentConfig);
 
-        Attachment att = new BufferedAttachment(fileName, mimeType, contents, asAlternative);
-        applyAttachmentHeaders(attachmentConfig, att);
-        addAttachment(att);
+        Attachment attachment = new BufferedAttachment(fileName, mimeType, contents, asAlternative);
+        applyAttachmentHeaders(attachmentConfig, attachment);
+        addAttachment(attachment);
     }
 
     private void applyAttachmentHeaders(Config attachmentConfig, Attachment att) {
