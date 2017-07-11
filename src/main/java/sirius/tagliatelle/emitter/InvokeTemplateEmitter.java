@@ -84,6 +84,13 @@ public class InvokeTemplateEmitter extends Emitter {
 
     @Override
     public Emitter visit(EmitterVisitor visitor) {
+        if (blocks != null) {
+            Map<String, Emitter> copy = new HashMap<>();
+            for (Map.Entry<String, Emitter> e : blocks.entrySet()) {
+                copy.put(e.getKey(), e.getValue().visit(visitor));
+            }
+            this.blocks = copy;
+        }
         return visitor.visit(this);
     }
 

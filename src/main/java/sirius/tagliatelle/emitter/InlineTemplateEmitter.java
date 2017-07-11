@@ -24,14 +24,15 @@ import java.util.function.Function;
  */
 public class InlineTemplateEmitter extends Emitter {
 
-    private final Template template;
+    protected final Template template;
     protected Emitter body;
 
     /**
      * Creates a new instance at the given position, which references the given template and wraps the given body.
+     *
      * @param startOfBlock the position where the inlining took place
-     * @param template the original template where the emitters of <tt>body</tt> were defined
-     * @param body the inner emitters to be invoked within the artificial render stack
+     * @param template     the original template where the emitters of <tt>body</tt> were defined
+     * @param body         the inner emitters to be invoked within the artificial render stack
      */
     public InlineTemplateEmitter(Position startOfBlock, Template template, Emitter body) {
         super(startOfBlock);
@@ -79,4 +80,5 @@ public class InlineTemplateEmitter extends Emitter {
     public String toString() {
         return "INLINE: " + template.getName() + " { " + body + " }\n";
     }
+
 }

@@ -123,12 +123,14 @@ public class CompilationContext {
      * @param type     the type of the variable
      * @return the stack index of the variable
      */
-    public int push(Position position, String name, Class<?> type) {
-        if (globals.stream().map(Tuple::getFirst).anyMatch(otherName -> Strings.areEqual(name, otherName))) {
-            warning(position, "Argument or local variable hides a global: %s", name);
-        }
-        if (stack.stream().map(Tuple::getFirst).anyMatch(otherName -> Strings.areEqual(name, otherName))) {
-            warning(position, "Argument or local variable hides another one: %s", name);
+    public int push(Position position, @Nullable String name, Class<?> type) {
+        if (Strings.isFilled(name)) {
+            if (globals.stream().map(Tuple::getFirst).anyMatch(otherName -> Strings.areEqual(name, otherName))) {
+                warning(position, "Argument or local variable hides a global: %s", name);
+            }
+            if (stack.stream().map(Tuple::getFirst).anyMatch(otherName -> Strings.areEqual(name, otherName))) {
+                warning(position, "Argument or local variable hides another one: %s", name);
+            }
         }
         stack.add(Tuple.create(name, type));
         if (stack.size() > stackDepth) {
@@ -364,13 +366,45 @@ public class CompilationContext {
                                   Function<String, Emitter> blocks) {
 
         Emitter copy = template.getEmitter().copy();
-
+        // Transfer local (non argument) variables to the local stack.
+        // We have to do that before we process the arguments, as that might introduce even more local variables
+        // which already have a correct stack location.
+        Tuple<Emitter, Integer> locals = shiftLocals(copy);
+        copy = locals.getFirst();
         copy = propagateArgumentsForInline(startOfTag, template, arguments, copy);
         copy = propagateBlocksForInline(blocks, copy);
+
+        // Pop the locally transferred variables off the stack
+        for (int i = 0; i < locals.getSecond(); i++) {
+            pop(copy.getStartOfBlock());
+        }
 
         copy = copy.reduce();
 
         return new InlineTemplateEmitter(startOfTag, template, copy);
+    }
+
+    private Tuple<Emitter, Integer> shiftLocals(Emitter copy) {
+        AtomicInteger numberOfLocals = new AtomicInteger(0);
+        Emitter result = copy.visit(emitter -> {
+            if (emitter instanceof PushLocalEmitter) {
+                PushLocalEmitter pushLocal = (PushLocalEmitter) emitter;
+                Expression expression = pushLocal.getExpression();
+                int newStackLocation = push(emitter.getStartOfBlock(), null, expression.getType());
+                numberOfLocals.incrementAndGet();
+                updateLocalReads(copy, expression.getType(), pushLocal.getLocalIndex(), newStackLocation);
+                return new PushLocalEmitter(emitter.getStartOfBlock(), newStackLocation, expression);
+            } else {
+                return emitter;
+            }
+        });
+
+        return Tuple.create(result, numberOfLocals.get());
+    }
+
+    private void updateLocalReads(Emitter copy, Class<?> type, int oldStackLocation, int newStackLocation) {
+        copy.visitExpressions(pos -> createReplaceArgumentVisitor(oldStackLocation,
+                                                                  new ReadLocal(type, newStackLocation)));
     }
 
     /**

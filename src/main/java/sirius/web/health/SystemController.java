@@ -31,6 +31,15 @@ import sirius.web.security.Permission;
 @Register(classes = Controller.class)
 public class SystemController extends BasicController {
 
+    @Part
+    private Cluster cluster;
+
+    @Part
+    private Metrics metrics;
+
+    @Part
+    private GlobalContext context;
+
     /**
      * Describes the permission required to access the system console.
      */
@@ -44,17 +53,8 @@ public class SystemController extends BasicController {
     @Routed("/system/console")
     @Permission(PERMISSION_SYSTEM_CONSOLE)
     public void console(WebContext ctx) {
-        ctx.respondWith().cached().template("/view/system/console.html");
+        ctx.respondWith().cached().template("/templates/system/console.html.pasta");
     }
-
-    @Part
-    private Cluster cluster;
-
-    @Part
-    private Metrics metrics;
-
-    @Part
-    private GlobalContext context;
 
     /**
      * Simply responds with OK for <tt>/system/ok</tt>
