@@ -58,6 +58,15 @@ class StackAllocator {
         public void writeLocal(int index, Object value) {
             stack.stack[basePointer + index] = value;
         }
+
+        @Override
+        public String toString() {
+            if (stack == null) {
+                return "EMPTY STACK";
+            }
+
+            return "BP: " + basePointer + ", Size: " + size + " of: " + stack;
+        }
     }
 
     /**
@@ -106,5 +115,10 @@ class StackAllocator {
         }
 
         freeIndex -= view.size;
+    }
+
+    @Override
+    public String toString() {
+        return "Stack: Size: " + stack.length + ", Free Index: " + freeIndex;
     }
 }
