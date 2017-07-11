@@ -32,7 +32,7 @@ public class BlockEmitter extends Emitter {
      * @param startOfBlock the position where the block was defined
      * @param name         the name of the block to evaluate
      * @param alternative  the alternative to evaluate if no block is given
-     * @see sirius.tagliatelle.tags.TagBlock
+     * @see sirius.tagliatelle.tags.BlockTag
      */
     public BlockEmitter(Position startOfBlock, String name, Emitter alternative) {
         super(startOfBlock);
@@ -93,5 +93,10 @@ public class BlockEmitter extends Emitter {
      */
     public Emitter getAlternative() {
         return alternative;
+    }
+
+    @Override
+    public String toString() {
+        return "<i:render name=\"" + name+"\" />";
     }
 }
