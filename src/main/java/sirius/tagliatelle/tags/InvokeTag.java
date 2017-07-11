@@ -8,8 +8,10 @@
 
 package sirius.tagliatelle.tags;
 
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.Template;
+import sirius.tagliatelle.TemplateArgument;
 import sirius.tagliatelle.compiler.CompileException;
 import sirius.tagliatelle.emitter.CompositeEmitter;
 import sirius.tagliatelle.expression.Expression;
@@ -39,9 +41,15 @@ public class InvokeTag extends TagHandler {
         }
     }
 
+    private Template template;
+    private boolean templateResolved;
+
     @Override
     public void apply(CompositeEmitter targetBlock) {
-        Template template = resolveTemplate(getConstantAttribute(ATTR_TEMPLATE).asString());
+        if (!templateResolved) {
+            template = resolveTemplate(getConstantAttribute(ATTR_TEMPLATE).asString());
+        }
+
         if (template != null) {
             invokeTemplate(template, targetBlock);
         }
@@ -63,13 +71,13 @@ public class InvokeTag extends TagHandler {
 
     protected Template resolveTemplate(String templateName) {
         try {
-            Template template = getCompilationContext().resolveTemplate(getStartOfTag(), templateName).orElse(null);
+            Template result = getCompilationContext().resolveTemplate(getStartOfTag(), templateName).orElse(null);
 
-            if (template == null) {
+            if (result == null) {
                 getCompilationContext().error(getStartOfTag(), "Cannot find the referenced template: %s", templateName);
             }
 
-            return template;
+            return result;
         } catch (CompileException e) {
             getCompilationContext().error(getStartOfTag(),
                                           "Error compiling referenced template: %s%n%s",
@@ -89,6 +97,43 @@ public class InvokeTag extends TagHandler {
             return boolean.class;
         }
 
-        return Expression.class;
+        if (ensureThatTemplateIsPresent()) {
+            for (TemplateArgument arg : template.getArguments()) {
+                if (Strings.areEqual(arg.getName(), name)) {
+                    return arg.getType();
+                }
+            }
+            return super.getExpectedAttributeType(name);
+        } else {
+            // Accept anything, we don't want to report errors based on previous errors...
+            return Expression.class;
+        }
+    }
+
+    private boolean ensureThatTemplateIsPresent() {
+        if (template == null) {
+
+            if (templateResolved) {
+            // We already tried and failed...
+                return false;
+            }
+            templateResolved = true;
+
+            // If the "template" isn't the first attribute, we're screwed...complain to the user....
+            if (getConstantAttribute(ATTR_TEMPLATE).isEmptyString()) {
+                getCompilationContext().error(getStartOfTag(),
+                                              "Please provide the template parameter first, so that the given attributes can be checked");
+                return false;
+            }
+
+            // Try to resolve
+            template = resolveTemplate(getConstantAttribute(ATTR_TEMPLATE).asString());
+            // No template, no parameter checking, just give up, an error has been reported...
+            if (template == null) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

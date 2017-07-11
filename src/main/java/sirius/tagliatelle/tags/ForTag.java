@@ -11,7 +11,6 @@ package sirius.tagliatelle.tags;
 import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.emitter.CompositeEmitter;
 import sirius.tagliatelle.emitter.LoopEmitter;
-import sirius.tagliatelle.expression.Expression;
 
 import javax.annotation.Nonnull;
 
@@ -57,7 +56,7 @@ public class ForTag extends TagHandler {
     @Override
     public Class<?> getExpectedAttributeType(String name) {
         if ("items".equals(name)) {
-            return Expression.class;
+            return Iterable.class;
         }
         if ("type".equals(name)) {
             return String.class;
