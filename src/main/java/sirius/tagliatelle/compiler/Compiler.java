@@ -420,14 +420,14 @@ public class Compiler extends InputProcessor {
      */
     private void verifyAttributeNameAndType(TagHandler handler, String attributeName, Class<?> attributeType) {
         if (attributeType == null) {
-            context.warning(reader.current(),
+            context.error(reader.current(),
                             "Unknown attribute. %s doesn't have an attribute '%s'.",
                             handler.getTagName(),
                             attributeName);
         }
 
         if (handler.getAttribute(attributeName) != null) {
-            context.warning(reader.current(),
+            context.error(reader.current(),
                             "Duplicate attribute. A value for '%s' is already present.",
                             attributeName);
         }
