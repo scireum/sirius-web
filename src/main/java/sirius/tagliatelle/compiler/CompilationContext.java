@@ -123,12 +123,14 @@ public class CompilationContext {
      * @param type     the type of the variable
      * @return the stack index of the variable
      */
-    public int push(Position position, String name, Class<?> type) {
-        if (globals.stream().map(Tuple::getFirst).anyMatch(otherName -> Strings.areEqual(name, otherName))) {
-            warning(position, "Argument or local variable hides a global: %s", name);
-        }
-        if (stack.stream().map(Tuple::getFirst).anyMatch(otherName -> Strings.areEqual(name, otherName))) {
-            warning(position, "Argument or local variable hides another one: %s", name);
+    public int push(Position position, @Nullable String name, Class<?> type) {
+        if (Strings.isFilled(name)) {
+            if (globals.stream().map(Tuple::getFirst).anyMatch(otherName -> Strings.areEqual(name, otherName))) {
+                warning(position, "Argument or local variable hides a global: %s", name);
+            }
+            if (stack.stream().map(Tuple::getFirst).anyMatch(otherName -> Strings.areEqual(name, otherName))) {
+                warning(position, "Argument or local variable hides another one: %s", name);
+            }
         }
         stack.add(Tuple.create(name, type));
         if (stack.size() > stackDepth) {
