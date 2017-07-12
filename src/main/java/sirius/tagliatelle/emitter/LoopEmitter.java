@@ -66,6 +66,7 @@ public class LoopEmitter extends Emitter {
         LoopEmitter copy = new LoopEmitter(startOfBlock);
         copy.iterableExpression = iterableExpression.copy();
         copy.loop = loop.copy();
+        copy.localIndex = localIndex;
 
         return copy;
     }
