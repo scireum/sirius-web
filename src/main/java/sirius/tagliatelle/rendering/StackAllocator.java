@@ -46,6 +46,9 @@ class StackAllocator {
          * @return the value stored at the local location
          */
         public Object readLocal(int index) {
+            if (index < 0 || index >= size) {
+                throw new ArrayIndexOutOfBoundsException(index);
+            }
             return stack.stack[basePointer + index];
         }
 
@@ -56,6 +59,9 @@ class StackAllocator {
          * @param value the value to store at the local location
          */
         public void writeLocal(int index, Object value) {
+            if (index < 0 || index >= size) {
+                throw new ArrayIndexOutOfBoundsException(index);
+            }
             stack.stack[basePointer + index] = value;
         }
 
