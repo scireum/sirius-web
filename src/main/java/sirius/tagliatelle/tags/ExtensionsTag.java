@@ -13,6 +13,7 @@ import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.Template;
 import sirius.tagliatelle.emitter.CompositeEmitter;
+import sirius.tagliatelle.expression.Expression;
 import sirius.web.templates.Templates;
 
 import javax.annotation.Nonnull;
@@ -21,6 +22,8 @@ import javax.annotation.Nonnull;
  * Handles <tt>i:extensions</tt> which invokes all extensions with the given name.
  */
 public class ExtensionsTag extends InvokeTag {
+
+    public static final String ATTR_NAME = "name";
 
     @Register
     public static class Factory implements TagHandlerFactory {
@@ -45,7 +48,7 @@ public class ExtensionsTag extends InvokeTag {
 
     @Override
     public void apply(CompositeEmitter targeBlock) {
-        String name = getConstantAttribute("name").asString();
+        String name = getConstantAttribute(ATTR_NAME).asString();
         for (String extension : templates.getExtensions(name)) {
             Template template = resolveTemplate(extension);
 
@@ -57,7 +60,7 @@ public class ExtensionsTag extends InvokeTag {
 
     @Override
     public Class<?> getExpectedAttributeType(String name) {
-        if ("name".equals(name)) {
+        if (ATTR_NAME.equals(name)) {
             return String.class;
         }
 
@@ -65,6 +68,6 @@ public class ExtensionsTag extends InvokeTag {
             return boolean.class;
         }
 
-        return super.getExpectedAttributeType(name);
+        return Expression.class;
     }
 }
