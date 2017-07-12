@@ -22,13 +22,22 @@
         </span>
         </label>
     </i:if>
-    <div class="input-group">
-        <input name="@name" type="text" value="user.getFieldValue(name, value)" class="form-control input-block-level"
-               @if (readonly) { readonly } @if (autofocus) { autofocus } />
-        <i:if test="isFilled(addonText)">
-            <span class="input-group-addon"><i:raw value="@addonText" /></span>
-        </i:if>
-    </div>
+    <i:if test="isFilled(addonText)">
+        <div class="input-group">
+            <input name="@name" type="text" value="@user.getFieldValue(name, value)"
+                   class="form-control input-block-level"
+                   @if (readonly) { readonly } @if (autofocus) { autofocus }/>
+
+
+            <span class="input-group-addon"><i:raw>@addonText</i:raw></span>
+        </div>
+
+        <i:else>
+            <input name="@name" type="text" value="@user.getFieldValue(name, value)"
+                   class="form-control input-block-level"
+                   @if (readonly) { readonly } @if (autofocus) { autofocus }/>
+        </i:else>
+    </i:if>
 
     <i:if test="isFilled(help)">
         <span class="help-block">@help</span>
