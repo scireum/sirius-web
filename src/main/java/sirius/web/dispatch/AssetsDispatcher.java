@@ -29,9 +29,9 @@ import sirius.kernel.info.Product;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 import sirius.web.security.UserContext;
-import sirius.web.templates.Resolver;
-import sirius.web.templates.Resource;
-import sirius.web.templates.Resources;
+import sirius.web.resources.Resolver;
+import sirius.web.resources.Resource;
+import sirius.web.resources.Resources;
 import sirius.web.templates.Templates;
 
 import java.io.File;

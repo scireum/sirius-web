@@ -49,8 +49,8 @@ import sirius.tagliatelle.Template;
 import sirius.tagliatelle.compiler.CompileException;
 import sirius.tagliatelle.rendering.GlobalRenderContext;
 import sirius.web.services.JSONStructuredOutput;
-import sirius.web.templates.Resource;
-import sirius.web.templates.Resources;
+import sirius.web.resources.Resource;
+import sirius.web.resources.Resources;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -765,8 +765,8 @@ public class Response {
     }
 
     /**
-     * Tries to resolve the given name into a {@link sirius.web.templates.Resource} using
-     * the {@link sirius.web.templates.Resources} lookup framework.
+     * Tries to resolve the given name into a {@link Resource} using
+     * the {@link Resources} lookup framework.
      * <p>
      * Sends the resource found or a 404 NOT_FOUND otherwise.
      *

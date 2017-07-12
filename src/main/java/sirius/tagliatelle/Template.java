@@ -15,7 +15,7 @@ import sirius.tagliatelle.emitter.Emitter;
 import sirius.tagliatelle.rendering.GlobalRenderContext;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 import sirius.tagliatelle.rendering.RenderException;
-import sirius.web.templates.Resource;
+import sirius.web.resources.Resource;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;

@@ -23,10 +23,11 @@ import sirius.kernel.health.HandledException;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.settings.Extension;
 import sirius.web.http.MimeHelper;
-import sirius.web.templates.Resource;
-import sirius.web.templates.Resources;
+import sirius.web.resources.Resource;
+import sirius.web.resources.Resources;
+import sirius.web.templates.Generator;
 import sirius.web.templates.Templates;
-import sirius.web.templates.velocity.VelocityContentHandler;
+import sirius.web.templates.TagliatelleContentHandler;
 
 import javax.activation.DataSource;
 import javax.annotation.Nonnull;
@@ -297,7 +298,7 @@ public class MailSender {
     /**
      * Adds an attachment to the email.
      * <p>
-     * Use {@link Templates.Generator#generateAttachment(String)} to directly generate an attachment from a
+     * Use {@link Generator#generateAttachment(String)} to directly generate an attachment from a
      * template.
      *
      * @param attachment the attachment to add to the email
@@ -595,7 +596,7 @@ public class MailSender {
         String fileName = attachmentConfig.getString("id");
         if (attachmentConfig.hasPath("fileName")) {
             fileName = templates.generator()
-                                .direct(attachmentConfig.getString("fileName"), VelocityContentHandler.VM)
+                                .direct(attachmentConfig.getString("fileName"), TagliatelleContentHandler.VM)
                                 .applyContext(context)
                                 .generate();
         } else {
@@ -608,7 +609,7 @@ public class MailSender {
     }
 
     private byte[] generateAttachmentContents(Config attachmentConfig, String template) throws IOException {
-        Templates.Generator attachment = templates.generator();
+        Generator attachment = templates.generator();
         if (attachmentConfig.hasPath("encoding")) {
             attachment.encoding(attachmentConfig.getString("encoding"));
         }
@@ -630,7 +631,7 @@ public class MailSender {
     private void fillSubject(Extension ex) {
         subject(templates.generator()
                          .direct(ex.get("subject_" + NLS.getCurrentLang())
-                                   .asString(ex.get("subject").asString("$subject")), VelocityContentHandler.VM)
+                                   .asString(ex.get("subject").asString("$subject")), TagliatelleContentHandler.VM)
                          .applyContext(context)
                          .generate());
     }

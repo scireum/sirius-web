@@ -18,7 +18,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.health.metrics.MetricProvider;
 import sirius.kernel.health.metrics.MetricsCollector;
-import sirius.web.templates.Resources;
+import sirius.web.resources.Resources;
 import sirius.web.templates.Templates;
 
 import javax.annotation.Nullable;

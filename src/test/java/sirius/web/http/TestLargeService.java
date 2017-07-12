@@ -13,7 +13,7 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.xml.StructuredOutput;
 import sirius.web.services.ServiceCall;
 import sirius.web.services.StructuredService;
-import sirius.web.templates.Resources;
+import sirius.web.resources.Resources;
 
 @Register(name = "test_large")
 public class TestLargeService implements StructuredService {

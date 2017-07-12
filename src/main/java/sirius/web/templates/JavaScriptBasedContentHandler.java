@@ -46,7 +46,7 @@ public abstract class JavaScriptBasedContentHandler implements ContentHandler {
      * @param generator the generator used to obtain the parameters etc.
      * @throws java.lang.Exception re-throws all exceptions
      */
-    protected void execute(Templates.Generator generator) throws Exception {
+    protected void execute(Generator generator) throws Exception {
         ScriptEngine engine = getEngine();
         ScriptingContext ctx = new ScriptingContext();
         generator.getContext().applyTo(ctx);

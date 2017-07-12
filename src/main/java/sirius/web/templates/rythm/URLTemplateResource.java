@@ -11,15 +11,16 @@ package sirius.web.templates.rythm;
 import org.rythmengine.resource.TemplateResourceBase;
 import sirius.kernel.commons.RateLimit;
 import sirius.kernel.di.std.Part;
-import sirius.web.templates.Resource;
-import sirius.web.templates.Resources;
+import sirius.web.resources.Resource;
+import sirius.web.resources.Resources;
+import sirius.web.resources.Resolver;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Used as {@link org.rythmengine.resource.ITemplateResource} implementation created by our
- * {@link sirius.web.templates.Resolver} framework.
+ * {@link Resolver} framework.
  */
 class URLTemplateResource extends TemplateResourceBase {
 

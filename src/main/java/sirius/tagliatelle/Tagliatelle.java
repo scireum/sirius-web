@@ -8,7 +8,6 @@
 
 package sirius.tagliatelle;
 
-import sirius.kernel.Sirius;
 import sirius.kernel.cache.Cache;
 import sirius.kernel.cache.CacheManager;
 import sirius.kernel.commons.Strings;
@@ -21,8 +20,8 @@ import sirius.tagliatelle.compiler.CompilationContext;
 import sirius.tagliatelle.compiler.CompileException;
 import sirius.tagliatelle.compiler.Compiler;
 import sirius.tagliatelle.rendering.GlobalRenderContext;
-import sirius.web.templates.Resource;
-import sirius.web.templates.Resources;
+import sirius.web.resources.Resource;
+import sirius.web.resources.Resources;
 import sirius.web.templates.Templates;
 
 import javax.annotation.Nonnull;
@@ -53,24 +52,21 @@ public class Tagliatelle {
      */
     private Map<String, Class<?>> aliases;
 
-    /**
-     * Contains all types of global variables collected via {@link RenderContextExtender context extenders}.
-     */
-    private List<Tuple<String, Class<?>>> globalVariables;
-
-    @Parts(RenderContextExtender.class)
-    private Collection<RenderContextExtender> contextExtenders;
-
     @Parts(ClassAliasProvider.class)
     private Collection<ClassAliasProvider> aliasProviders;
 
     @Part
     private Resources resources;
 
+    @Part
+    private Templates templates;
+
     /**
      * Keeps compiled templates around to improve the speed of rendering.
      */
     private Cache<Resource, Template> compiledTemplates = CacheManager.createCache("tagliatelle-templates");
+
+    private List<Tuple<String, Class<?>>> globalVariables;
 
     /**
      * Provides all known class aliases.
@@ -92,40 +88,7 @@ public class Tagliatelle {
      * @return a new list of global variables
      */
     public List<Object> createEnvironment() {
-        List<Object> result = new ArrayList<>();
-        contextExtenders.forEach(renderContextExtender -> renderContextExtender.collectParameterValues(result::add));
-        if (Sirius.isDev()) {
-            verifyGlobals(result);
-        }
-
-        return result;
-    }
-
-    /**
-     * Ensures, that all {@link RenderContextExtender} produce a sane and expected output.
-     *
-     * @param environment the environment to check
-     */
-    private void verifyGlobals(List<Object> environment) {
-        int index = 0;
-        for (Tuple<String, Class<?>> global : globalVariables) {
-            if (environment.size() <= index) {
-                Templates.LOG.WARN("An invalid global environment was created! Missing a value for %s",
-                                   global.getFirst());
-            } else {
-                Object value = environment.get(index);
-                if (!isAssignable(value, global.getSecond())) {
-                    Templates.LOG.WARN("An invalid global environment was created!"
-                                       + " An invalid value (%s) of type %s was created for parameter %s."
-                                       + " But %s is the expected type.",
-                                       value,
-                                       value.getClass(),
-                                       global.getFirst(),
-                                       global.getSecond());
-                }
-            }
-            index++;
-        }
+        return new ArrayList<>(templates.createGlobalContext().values());
     }
 
     /**
@@ -135,10 +98,9 @@ public class Tagliatelle {
      */
     public List<Tuple<String, Class<?>>> getGlobalVariables() {
         if (globalVariables == null) {
-            List<Tuple<String, Class<?>>> result = new ArrayList<>();
-            contextExtenders.forEach(renderContextExtender -> renderContextExtender.collectParameterTypes((n, t) -> result
-                    .add(Tuple.create(n, t))));
-            globalVariables = Collections.unmodifiableList(result);
+            List<Tuple<String, Class<?>>> globals = new ArrayList<>();
+            templates.createGlobalContext().forEach((key, value) -> globals.add(Tuple.create(key, value.getClass())));
+            globalVariables = Collections.unmodifiableList(globals);
         }
 
         return globalVariables;
@@ -211,11 +173,7 @@ public class Tagliatelle {
     }
 
     private static boolean checkTypeConversion(Class<?> from, Class<?> to) {
-        if (from == long.class && to == int.class) {
-            return true;
-        }
-
-        return false;
+        return from == long.class && to == int.class;
     }
 
     /**

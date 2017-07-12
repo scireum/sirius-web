@@ -11,7 +11,6 @@ package sirius.web.templates
 import sirius.kernel.BaseSpecification
 import sirius.kernel.commons.Context
 import sirius.kernel.di.std.Part
-import sirius.web.templates.velocity.VelocityContentHandler
 
 class TemplatesSpec extends BaseSpecification {
 
@@ -22,7 +21,7 @@ class TemplatesSpec extends BaseSpecification {
         when:
         def result = templates.generator()
                 .applyContext(Context.create().set("hello", "World"))
-                .direct('$hello', VelocityContentHandler.VM)
+                .direct('$hello', TagliatelleContentHandler.VM)
                 .generate()
         then:
         result == "World"

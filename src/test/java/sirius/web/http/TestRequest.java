@@ -35,7 +35,7 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
-import sirius.web.templates.Resources;
+import sirius.web.resources.Resources;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -106,7 +106,7 @@ public class TestRequest extends WebContext implements HttpRequest {
     /**
      * Creates a mock request simulating a PUT on the given uri while sending the given resource.
      * <p>
-     * The resource will be resolved using {@link sirius.web.templates.Resources}
+     * The resource will be resolved using {@link Resources}
      *
      * @param uri      the relative uri to call
      * @param resource the name of the resource to send
@@ -156,7 +156,7 @@ public class TestRequest extends WebContext implements HttpRequest {
     /**
      * Creates a mock request simulating a POST on the given uri while sending the given resource.
      * <p>
-     * The resource will be resolved using {@link sirius.web.templates.Resources}
+     * The resource will be resolved using {@link Resources}
      *
      * @param uri      the relative uri to call
      * @param resource the name of the resource to send
