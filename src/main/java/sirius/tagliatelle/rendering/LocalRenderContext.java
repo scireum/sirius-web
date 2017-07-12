@@ -211,7 +211,8 @@ public class LocalRenderContext {
     /**
      * Specifies the blocks made available by the caller.
      *
-     * @param blocks the blocks passed to the template being rendered
+     * @param context the context being enclosed along with the blocks to be restored later to access local variables
+     * @param blocks  the blocks passed to the template being rendered
      */
     public void setBlocks(LocalRenderContext context, Map<String, Emitter> blocks) {
         this.enclosedContext = context;
