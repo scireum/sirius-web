@@ -1,6 +1,5 @@
 <i:arg name="span" type="int" default="6" />
 <i:arg name="name" type="String" />
-<i:arg name="value" type="String" />
 <i:arg name="labelKey" type="String" default="" />
 <i:arg name="label" type="String" default="@i18n(labelKey)" />
 <i:arg name="helpKey" type="String" default="" />
@@ -8,6 +7,7 @@
 <i:arg name="required" type="boolean" default="false" />
 <i:arg name="readonly" type="boolean" default="false" />
 <i:arg name="adminOnly" type="boolean" default="false" />
+<i:arg name="value" type="String" default=""/>
 
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders a date picker within a Wondergem template" />
@@ -23,7 +23,7 @@
     <div class="input-group">
         <input name="@name"
                type="text"
-               value="user.getFieldValue(name, value)"
+               value="@user.getFieldValue(name, value)"
                class="form-control input-block-level date-picker"
                @if (readonly) { readonly } />
     </div>
