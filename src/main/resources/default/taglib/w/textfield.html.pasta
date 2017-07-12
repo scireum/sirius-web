@@ -1,6 +1,6 @@
 <i:arg name="span" type="int" default="6" />
 <i:arg name="name" type="String" />
-<i:arg name="value" type="String" />
+<i:arg name="value" type="String" default=""/>
 <i:arg name="labelKey" type="String" default="" />
 <i:arg name="label" type="String" default="@i18n(labelKey)" />
 <i:arg name="helpKey" type="String" default="" />
