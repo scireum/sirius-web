@@ -8,7 +8,6 @@
 
 package sirius.tagliatelle.expression;
 
-import sirius.kernel.di.transformers.Transformable;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
 /**
@@ -65,7 +64,7 @@ public class NativeCast extends Expression {
             if (!type.isAssignableFrom(self.getClass())) {
                 throw new ClassCastException(self.getClass().getName());
             }
-            return ((Transformable) self).as(type);
+            return self;
         } catch (ClassCastException e) {
             throw new ExpressionEvaluationException(e);
         }
