@@ -8,41 +8,62 @@
 
 package sirius.web.templates;
 
-import com.google.common.base.Charsets;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
-import sirius.web.templates.velocity.VelocityHelper;
+import sirius.tagliatelle.Tagliatelle;
+import sirius.tagliatelle.Template;
+import sirius.tagliatelle.compiler.CompileException;
+import sirius.tagliatelle.compiler.Compiler;
 
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
-
-@Register(name = TagliatelleContentHandler.VM)
+/**
+ * Generates text output by evaluating a given Tagliatelle code.
+ * <p>
+ * This handler expects Tagliatelle as template language. The name of this handler is <b>pasta</b> the expected file
+ * extension is <b>.pasta</b>
+ */
+@Register(name = TagliatelleContentHandler.PASTA)
 public class TagliatelleContentHandler implements ContentHandler {
 
     /**
      * Contains the name (type) of this handler
      */
-    public static final String VM = "vm";
+    public static final String PASTA = "pasta";
+
+    @Part
+    private Tagliatelle tagliatelle;
+
+    protected Template getTemplate(Generator generator) throws CompileException {
+        if (Strings.isFilled(generator.getTemplateCode())) {
+            Compiler compiler = new Compiler(tagliatelle.createCompilationContext("inline", null, null),
+                                             generator.getTemplateCode());
+            compiler.compile();
+            return compiler.getContext().getTemplate();
+        } else {
+            return tagliatelle.resolve(generator.getTemplateName()).orElse(null);
+        }
+    }
 
     @Override
     public boolean generate(Generator generator, OutputStream out) throws Exception {
-        if (!VM.equals(generator.getHandlerType())
+        if (!PASTA.equals(generator.getHandlerType())
             && !Strings.isFilled(generator.getTemplateCode())
-            && !generator.isTemplateEndsWith("." + VM)) {
+            && !generator.isTemplateEndsWith("." + PASTA)) {
             return false;
         }
 
-        ScriptingContext ctx = new ScriptingContext();
-        generator.getContext().applyTo(ctx);
-
-        OutputStreamWriter writer = new OutputStreamWriter(out, generator.getEncoding());
-        if (Strings.isFilled(generator.getTemplateCode())) {
-            VelocityHelper.getEngine().evaluate(ctx, writer, "velocity", generator.getTemplateCode());
-        } else {
-            VelocityHelper.getEngine().mergeTemplate(generator.getTemplateName(), Charsets.UTF_8.name(), ctx, writer);
+        Template template = getTemplate(generator);
+        if (template == null) {
+            return false;
         }
-        writer.close();
+
+        String content = template.renderWithParams(generator.getContext());
+        try (OutputStreamWriter writer = new OutputStreamWriter(out, generator.getEncoding())) {
+            writer.write(content);
+        }
 
         return true;
     }

@@ -596,7 +596,7 @@ public class MailSender {
         String fileName = attachmentConfig.getString("id");
         if (attachmentConfig.hasPath("fileName")) {
             fileName = templates.generator()
-                                .direct(attachmentConfig.getString("fileName"), TagliatelleContentHandler.VM)
+                                .direct(attachmentConfig.getString("fileName"), TagliatelleContentHandler.PASTA)
                                 .applyContext(context)
                                 .generate();
         } else {
@@ -631,7 +631,7 @@ public class MailSender {
     private void fillSubject(Extension ex) {
         subject(templates.generator()
                          .direct(ex.get("subject_" + NLS.getCurrentLang())
-                                   .asString(ex.get("subject").asString("$subject")), TagliatelleContentHandler.VM)
+                                   .asString(ex.get("subject").asString("$subject")), TagliatelleContentHandler.PASTA)
                          .applyContext(context)
                          .generate());
     }

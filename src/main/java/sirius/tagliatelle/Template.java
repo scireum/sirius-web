@@ -8,6 +8,7 @@
 
 package sirius.tagliatelle;
 
+import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Part;
@@ -109,6 +110,25 @@ public class Template {
      */
     public String renderToString(Object... args) throws RenderException {
         GlobalRenderContext ctx = engine.createRenderContext();
+        render(ctx, args);
+
+        return ctx.toString();
+    }
+
+    /**
+     * Invokes the template and renders it into a string using the given arguments.
+     *
+     * @param context the arguments to supply
+     * @return the result of the emitters contained in the template
+     * @throws RenderException in case of an error when creating the output
+     */
+    public String renderWithParams(Context context) throws RenderException {
+        GlobalRenderContext ctx = engine.createRenderContext();
+        Object[] args = new Object[getArguments().size()];
+        for (int i = 0; i < getArguments().size(); i++) {
+            args[i] = context.get(getArguments().get(i).getName());
+        }
+
         render(ctx, args);
 
         return ctx.toString();
