@@ -1,0 +1,19 @@
+<i:arg type="String" name="titleKey" default="" />
+<i:arg type="String" name="title" default="@i18n(titleKey)" />
+<i:arg type="String" name="permission" default="" />
+
+<i:pragma name="inline" value="true" />
+<i:pragma name="description" value="Renders menu dropdown within a Wondergem template" />
+
+<w:permission permission="@permission">
+    <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+            @title
+            <b class="caret"></b>
+        </a>
+
+        <ul class="dropdown-menu">
+            <i:render name="body" />
+        </ul>
+    </li>
+</w:permission>
