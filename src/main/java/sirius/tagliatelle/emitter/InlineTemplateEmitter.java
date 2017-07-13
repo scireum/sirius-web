@@ -65,10 +65,10 @@ public class InlineTemplateEmitter extends Emitter {
     }
 
     @Override
-    public Emitter visit(EmitterVisitor visitor) {
-        this.body.visit(visitor);
+    public Emitter propagateVisitor(EmitterVisitor visitor) {
+        this.body.propagateVisitor(visitor);
 
-        return visitor.visit(this);
+        return visitor.visitThis(this);
     }
 
     @Override

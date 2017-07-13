@@ -36,9 +36,9 @@ public class TransformerCast extends Expression {
     }
 
     @Override
-    public Expression visit(ExpressionVisitor visitor) {
-        this.selfExpression = visitor.visit(selfExpression);
-        return visitor.visit(this);
+    public Expression propagateVisitor(ExpressionVisitor visitor) {
+        this.selfExpression = selfExpression.propagateVisitor(visitor);
+        return visitor.visitThis(this);
     }
 
     @Override

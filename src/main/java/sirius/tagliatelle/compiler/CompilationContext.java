@@ -386,7 +386,7 @@ public class CompilationContext {
 
     private Tuple<Emitter, Integer> shiftLocals(Emitter copy) {
         AtomicInteger numberOfLocals = new AtomicInteger(0);
-        Emitter result = copy.visit(emitter -> {
+        Emitter result = copy.propagateVisitor(emitter -> {
             if (emitter instanceof PushLocalEmitter) {
                 PushLocalEmitter pushLocal = (PushLocalEmitter) emitter;
                 Expression expression = pushLocal.getExpression();
@@ -443,7 +443,7 @@ public class CompilationContext {
             ExpressionVisitor replaceArgumentVisitor = createReplaceArgumentVisitor(index.get(), value);
             for (int i = index.get() + 1; i < defaultArgs.size(); i++) {
                 if (defaultArgs.get(i) != null) {
-                    defaultArgs.set(i, defaultArgs.get(i).visit(replaceArgumentVisitor));
+                    defaultArgs.set(i, defaultArgs.get(i).propagateVisitor(replaceArgumentVisitor));
                 }
             }
             copy.visitExpressions(p -> replaceArgumentVisitor);
@@ -536,7 +536,7 @@ public class CompilationContext {
      * @return the template contant where all block references haven been replaced
      */
     private Emitter propagateBlocksForInline(Function<String, Emitter> blocks, Emitter copy) {
-        return copy.visit(e -> {
+        return copy.propagateVisitor(e -> {
             if (e instanceof BlockEmitter) {
                 BlockEmitter blockEmitter = (BlockEmitter) e;
                 return replaceBlockReference(blocks, blockEmitter);

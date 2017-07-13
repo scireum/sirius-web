@@ -24,5 +24,5 @@ public interface EmitterVisitor {
      * @return the new emitter, or the given one if nothing is to be changed
      */
     @Nonnull
-    Emitter visit(@Nonnull Emitter emitter);
+    Emitter visitThis(@Nonnull Emitter emitter);
 }
