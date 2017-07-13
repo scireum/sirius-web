@@ -38,7 +38,7 @@ public class ApplyMacro implements Macro {
     }
 
     @Override
-    public boolean isConstant() {
+    public boolean isConstant(Expression[] args) {
         return true;
     }
 

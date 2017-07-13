@@ -42,7 +42,7 @@ public class MacroCall extends Call {
             return this;
         }
 
-        boolean allConstant = macro.isConstant();
+        boolean allConstant = macro.isConstant(parameterExpressions);
         for (int i = 0; i < parameterExpressions.length; i++) {
             parameterExpressions[i] = parameterExpressions[i].reduce();
             if (!parameterExpressions[i].isConstant()) {
@@ -51,10 +51,25 @@ public class MacroCall extends Call {
         }
 
         if (allConstant) {
-            return evaluateConstantMacro();
+            return reduceConstantMacro();
         }
 
         return this;
+    }
+
+    @Override
+    public boolean isConstant() {
+        if (!macro.isConstant(parameterExpressions)) {
+            return false;
+        }
+
+        for (int i = 0; i < parameterExpressions.length; i++) {
+            if (!parameterExpressions[i].isConstant()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -64,7 +79,7 @@ public class MacroCall extends Call {
      * @return if the invocation result is a string or boolean, we pre compute the value and create a respective
      * expression for the result. Otherwise the call itself is returned.
      */
-    private Expression evaluateConstantMacro() {
+    private Expression reduceConstantMacro() {
         if (boolean.class.equals(macro.getType())) {
             if ((boolean) macro.eval(null, parameterExpressions)) {
                 return ConstantBoolean.TRUE;
