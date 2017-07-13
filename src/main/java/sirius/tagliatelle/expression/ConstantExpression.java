@@ -14,8 +14,8 @@ package sirius.tagliatelle.expression;
 public abstract class ConstantExpression extends Expression {
 
     @Override
-    public Expression visit(ExpressionVisitor visitor) {
-        return visitor.visit(this);
+    public Expression propagateVisitor(ExpressionVisitor visitor) {
+        return visitor.visitThis(this);
     }
 
     @Override

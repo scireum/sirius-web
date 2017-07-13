@@ -16,10 +16,10 @@
 
         <div class="collapse navbar-collapse" id="main-menu">
             <ul class="nav navbar-nav">
-                <i:extensions name="template-page-menu-left" />
+                <i:extensions name="templates-page-menu-left" />
             </ul>
             <ul class="nav navbar-nav pull-right">
-                <i:extensions name="template-page-menu-right" />
+                <i:extensions name="templates-page-menu-right" />
             </ul>
         </div>
     </div>

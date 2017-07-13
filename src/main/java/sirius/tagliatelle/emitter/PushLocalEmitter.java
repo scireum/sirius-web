@@ -50,14 +50,14 @@ public class PushLocalEmitter extends Emitter {
     }
 
     @Override
-    public Emitter visit(EmitterVisitor visitor) {
-        return visitor.visit(this);
+    public Emitter propagateVisitor(EmitterVisitor visitor) {
+        return visitor.visitThis(this);
     }
 
     @Override
     public void visitExpressions(Function<Position, ExpressionVisitor> visitorSupplier) {
         ExpressionVisitor visitor = visitorSupplier.apply(getStartOfBlock());
-        this.expression = expression.visit(visitor);
+        this.expression = expression.propagateVisitor(visitor);
     }
 
     @Override

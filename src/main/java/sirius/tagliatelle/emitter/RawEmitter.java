@@ -59,11 +59,11 @@ public class RawEmitter extends Emitter {
     }
 
     @Override
-    public Emitter visit(EmitterVisitor visitor) {
+    public Emitter propagateVisitor(EmitterVisitor visitor) {
         if (body != null) {
-            this.body = visitor.visit(body);
+            this.body = body.propagateVisitor(visitor);
         }
-        return visitor.visit(this);
+        return visitor.visitThis(this);
     }
 
     @Override

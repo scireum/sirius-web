@@ -46,12 +46,12 @@ public class TenaryOperation extends Expression {
     }
 
     @Override
-    public Expression visit(ExpressionVisitor visitor) {
-        this.conditionExpression = visitor.visit(conditionExpression);
-        this.leftExpression = visitor.visit(leftExpression);
-        this.rightExpression = visitor.visit(rightExpression);
+    public Expression propagateVisitor(ExpressionVisitor visitor) {
+        this.conditionExpression = conditionExpression.propagateVisitor(visitor);
+        this.leftExpression = leftExpression.propagateVisitor(visitor);
+        this.rightExpression = rightExpression.propagateVisitor(visitor);
 
-        return visitor.visit(this);
+        return visitor.visitThis(this);
     }
 
     @Override

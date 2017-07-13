@@ -47,13 +47,13 @@ public class ExtensionsTag extends InvokeTag {
     private static Tagliatelle engine;
 
     @Override
-    public void apply(CompositeEmitter targeBlock) {
+    public void apply(CompositeEmitter targetBlock) {
         String name = getConstantAttribute(ATTR_NAME).asString();
         for (String extension : templates.getExtensions(name)) {
             Template template = resolveTemplate(extension);
 
             if (template != null) {
-                invokeTemplate(template, targeBlock);
+                invokeTemplate(template, targetBlock);
             }
         }
     }
