@@ -114,11 +114,11 @@ class Parser extends InputProcessor {
      * @return the parsed expression
      */
     private Expression parseExpression() {
-        Expression result = disjunction();
         if (canSkipWhitespace) {
-            result = parseTenaryOperation(result);
+            return parseTenaryOperation(disjunction());
+        } else {
+            return chain();
         }
-        return result;
     }
 
     /**
