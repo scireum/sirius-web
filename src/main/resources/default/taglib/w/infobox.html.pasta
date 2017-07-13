@@ -5,7 +5,7 @@
 <i:pragma name="description" value="Provides an info box to output name/value pairs in a sidebar" />
 
 <div class="well">
-    <i:if test="isFilled(title(">
+    <i:if test="isFilled(title)">
         <span class="legend">@title</span>
     </i:if>
 
