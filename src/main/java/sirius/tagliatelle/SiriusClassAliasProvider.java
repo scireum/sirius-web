@@ -8,6 +8,7 @@
 
 package sirius.tagliatelle;
 
+import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.Register;
 import sirius.web.controller.Page;
 
@@ -27,5 +28,6 @@ public class SiriusClassAliasProvider implements ClassAliasProvider {
         consumer.accept("boolean", boolean.class);
         consumer.accept("List", List.class);
         consumer.accept("Page", Page.class);
+        consumer.accept("Tuple", Tuple.class);
     }
 }
