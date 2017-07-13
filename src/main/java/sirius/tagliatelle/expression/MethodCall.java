@@ -79,7 +79,7 @@ public class MethodCall extends Call {
             }
 
             return method.invoke(self, params);
-        } catch (IllegalAccessException e) {
+        } catch (IllegalArgumentException | IllegalAccessException e) {
             throw new ExpressionEvaluationException(e);
         } catch (InvocationTargetException e) {
             throw new ExpressionEvaluationException(e.getTargetException());
