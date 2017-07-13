@@ -48,9 +48,9 @@ import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.Template;
 import sirius.tagliatelle.compiler.CompileException;
 import sirius.tagliatelle.rendering.GlobalRenderContext;
-import sirius.web.services.JSONStructuredOutput;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
+import sirius.web.services.JSONStructuredOutput;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -901,13 +901,13 @@ public class Response {
     private void renderErrorTemplate(HttpResponseStatus status, String message) {
         try {
             if (HttpResponseStatus.NOT_FOUND.equals(status)) {
-                template(status,"/templates/http/not-found.html.pasta", CallContext.getCurrent(), message);
+                template(status, "/templates/http/not-found.html.pasta", CallContext.getCurrent(), message);
             } else {
-                template(status,"/templates/http/error.html.pasta", CallContext.getCurrent(), message);
+                template(status, "/templates/http/error.html.pasta", CallContext.getCurrent(), message);
             }
         } catch (HandledException e) {
             Exceptions.ignore(e);
-            template(status,"/templates/http/plain-error.html.pasta", CallContext.getCurrent(), message);
+            template(status, "/templates/http/plain-error.html.pasta", CallContext.getCurrent(), message);
         }
     }
 
@@ -993,7 +993,7 @@ public class Response {
     }
 
     /**
-     * Renders the given Rythm template and sends the output as response.
+     * Renders the given template and sends the output as response.
      * <p>
      * By default caching will be disabled. If the file ends with .html, <tt>text/html; charset=UTF-8</tt> will be set
      * as content type. Otherwise the content type will be guessed from the filename.
@@ -1025,7 +1025,18 @@ public class Response {
         }
     }
 
-    private void template(HttpResponseStatus status, Template template, Object... params) {
+    /**
+     * Renders the given Rythm template and sends the output as response.
+     * <p>
+     * By default caching will be disabled. If the file ends with .html, <tt>text/html; charset=UTF-8</tt> will be set
+     * as content type. Otherwise the content type will be guessed from the filename.
+     *
+     * @param status   the HTTP status to send. {@link HttpResponseStatus#OK} would be appropriate in most cases.
+     * @param template the template to render
+     * @param params   contains the parameters sent to the template
+     * @see #template(HttpResponseStatus, String, Object...)
+     */
+    public void template(HttpResponseStatus status, Template template, Object... params) {
         wc.enableTiming(null);
         try {
             Object[] effectiveParams = fixParams(params);

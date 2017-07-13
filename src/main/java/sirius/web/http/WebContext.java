@@ -313,12 +313,6 @@ public class WebContext implements SubContext {
     private static String serverSessionCookieName;
 
     /*
-     * Context prefix (constant path prefix) used for this server
-     */
-    @ConfigValue("http.contextPrefix")
-    private static String contextPrefix;
-
-    /*
      * Input size limit for structured data (as this is loaded into heap)
      */
     @ConfigValue("http.maxStructuredInputSize")
@@ -1471,17 +1465,6 @@ public class WebContext implements SubContext {
         }
 
         return request.uri().substring(uri.length() + 1);
-    }
-
-    /**
-     * Returns the context prefix (constant path prefix).
-     * <p>
-     * Can be used to let the app behave like it would be hosted in a sub directory.
-     *
-     * @return the content prefix or "" if no prefix is set
-     */
-    public static String getContextPrefix() {
-        return contextPrefix;
     }
 
     /**

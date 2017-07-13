@@ -78,7 +78,7 @@ public class DefaultDispatcher implements WebDispatcher {
         } else if ("/reset".equals(ctx.getRequestedURI())) {
             ctx.getServerSession(false).ifPresent(ServerSession::invalidate);
             ctx.clearSession();
-            ctx.respondWith().redirectTemporarily(ctx.get("path").asString(WebContext.getContextPrefix() + "/"));
+            ctx.respondWith().redirectTemporarily(ctx.get("path").asString("/"));
         } else {
             // Bind user to request if present for translations etc. to work correctly...
             UserContext.getCurrentUser();

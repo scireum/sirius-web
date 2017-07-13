@@ -26,8 +26,8 @@ import sirius.web.http.MimeHelper;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 import sirius.web.templates.Generator;
-import sirius.web.templates.Templates;
 import sirius.web.templates.TagliatelleContentHandler;
+import sirius.web.templates.Templates;
 
 import javax.activation.DataSource;
 import javax.annotation.Nonnull;

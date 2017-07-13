@@ -21,7 +21,7 @@ class TemplatesSpec extends BaseSpecification {
         when:
         def result = templates.generator()
                 .applyContext(Context.create().set("hello", "World"))
-                .direct('$hello', TagliatelleContentHandler.VM)
+                .direct('@hello', TagliatelleContentHandler.VM)
                 .generate()
         then:
         result == "World"
@@ -29,7 +29,7 @@ class TemplatesSpec extends BaseSpecification {
 
     def "template lookup works"() {
         when:
-        def result = templates.generator().useTemplate("helloWorld.vm")
+        def result = templates.generator().useTemplate("helloWorld.pasta")
                 .applyContext(Context.create().set("hello", "World"))
                 .generate()
         then:
@@ -38,7 +38,7 @@ class TemplatesSpec extends BaseSpecification {
 
     def "compund template names work"() {
         when:
-        def result = templates.generator().useTemplate("helloWorld.js.vm")
+        def result = templates.generator().useTemplate("helloWorld.js.pasta")
                 .applyContext(Context.create().set("hello", "World"))
                 .generate()
         then:

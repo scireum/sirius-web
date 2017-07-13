@@ -12,7 +12,6 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.serversass.Generator;
 import org.serversass.Output;
-import org.serversass.ast.Value;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Files;
@@ -21,27 +20,26 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
-import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.info.Product;
+import sirius.tagliatelle.Tagliatelle;
+import sirius.tagliatelle.Template;
+import sirius.tagliatelle.compiler.CompileException;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
-import sirius.web.security.UserContext;
-import sirius.web.resources.Resolver;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
+import sirius.web.security.UserContext;
 import sirius.web.templates.Templates;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -55,6 +53,18 @@ import java.util.Optional;
 @Register
 public class AssetsDispatcher implements WebDispatcher {
 
+    @ConfigValue("http.generated-directory")
+    private String cacheDir;
+    private File cacheDirFile;
+
+    @Part
+    private Resources resources;
+
+    @Part
+    private Tagliatelle tagliatelle;
+
+    private static final Log SASS_LOG = Log.get("sass");
+
     @Override
     public int getPriority() {
         return PriorityCollector.DEFAULT_PRIORITY - 10;
@@ -65,32 +75,26 @@ public class AssetsDispatcher implements WebDispatcher {
         return false;
     }
 
-    @ConfigValue("http.generated-directory")
-    private String cacheDir;
-    private File cacheDirFile;
-
-    @PriorityParts(Resolver.class)
-    private List<Resolver> resolvers;
-
     @Override
     public boolean dispatch(WebContext ctx) throws Exception {
-        if (!ctx.getRequest().uri().startsWith("/assets") || HttpMethod.GET != ctx.getRequest().method()) {
+        if (!ctx.getRequest().uri().startsWith("/assets") || !HttpMethod.GET.equals(ctx.getRequest().method())) {
             return false;
         }
-        // The real dispatching is put into its own method to support inlining of this check by the JIT
-        return doDispatch(ctx);
+
+        String uri = getEffectiveURI(ctx);
+
+        if (tryStaticResource(ctx, uri)) {
+            return true;
+        }
+
+        if (trySASS(ctx, uri)) {
+            return true;
+        }
+
+        return tryTagliatelle(ctx, uri);
     }
 
-    /*
-     * Actually tries to dispatch the incoming request which starts with /assets....
-     */
-    private boolean doDispatch(WebContext ctx) throws URISyntaxException, IOException {
-        String uri = ctx.getRequestedURI();
-        if (uri.startsWith("/assets/dynamic")) {
-            uri = uri.substring(16);
-            Tuple<String, String> pair = Strings.split(uri, "/");
-            uri = "/assets/" + pair.getSecond();
-        }
+    private boolean tryStaticResource(WebContext ctx, String uri) throws URISyntaxException, IOException {
         Optional<Resource> res = resources.resolve(uri);
         if (res.isPresent()) {
             ctx.enableTiming("/assets/");
@@ -102,33 +106,57 @@ public class AssetsDispatcher implements WebDispatcher {
             }
             return true;
         }
-
-        String scopeId = UserContext.getCurrentScope().getScopeId();
-
-        // If the file is not found not is a .css file, check if we need to generate it via a .scss file
-        if (uri.endsWith(".css")) {
-            ctx.enableTiming("/assets/*.css");
-            String scssUri = uri.substring(0, uri.length() - 4) + ".scss";
-            if (resources.resolve(scssUri).isPresent()) {
-                handleSASS(ctx, uri, scssUri, scopeId);
-                return true;
-            }
-        }
-        // If the file is non existent, check if we can generate it by using a velocity template
-        if (resources.resolve(uri + ".vm").isPresent()) {
-            ctx.enableTiming("/assets/*.vm");
-            handleVM(ctx, uri, scopeId);
-            return true;
-        }
         return false;
     }
 
-    private static final Log SASS_LOG = Log.get("sass");
+    private String getEffectiveURI(WebContext ctx) {
+        String uri = ctx.getRequestedURI();
+        if (uri.startsWith("/assets/dynamic")) {
+            uri = uri.substring(16);
+            Tuple<String, String> pair = Strings.split(uri, "/");
+            uri = "/assets/" + pair.getSecond();
+        }
+
+        return uri;
+    }
+
+    private boolean tryTagliatelle(WebContext ctx, String uri) {
+        try {
+            Optional<Template> template = tagliatelle.resolve(uri + ".pasta");
+            if (template.isPresent()) {
+                ctx.respondWith().template(HttpResponseStatus.OK, template.get());
+                return true;
+            }
+        } catch (CompileException e) {
+            ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(Templates.LOG, e));
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean trySASS(WebContext ctx, String uri) {
+        if (!uri.endsWith(".css")) {
+            return false;
+        }
+
+        String scopeId = UserContext.getCurrentScope().getScopeId();
+
+        String scssUri = uri.substring(0, uri.length() - 4) + ".scss";
+        if (resources.resolve(scssUri).isPresent()) {
+            ctx.enableTiming("/assets/*.css");
+            handleSASS(ctx, uri, scssUri, scopeId);
+            return true;
+        }
+
+        return false;
+    }
 
     /*
      * Subclass of generator which takes care of proper logging
      */
     private class SIRIUSGenerator extends Generator {
+
         @Override
         public void debug(String message) {
             SASS_LOG.FINE(message);
@@ -147,50 +175,36 @@ public class AssetsDispatcher implements WebDispatcher {
             }
             return null;
         }
-
-        SIRIUSGenerator() {
-            scope.set("prefix", new Value(WebContext.getContextPrefix()));
-        }
     }
-
-    @Part
-    private Resources resources;
-    @Part
-    private Templates templates;
 
     /*
-     * Helper interface to factor the content generation by velocity and SASS out of the
-     * actual handling of the cache file etc.
+     * Uses server-sass to compile a SASS file (.scss) into a .css file
      */
-    private interface DynamicGenerator {
-        /**
-         * Creates the desired output into the given cache file
-         *
-         * @param output the file used to cache the generated contents
-         * @throws IOException in case of an IO error
-         */
-        void generate(File output) throws IOException;
-    }
-
-    private void handleByGeneratingFile(WebContext ctx,
-                                        String uri,
-                                        String resourceName,
-                                        String scopeId,
-                                        DynamicGenerator generator) {
+    private void handleSASS(WebContext ctx, String uri, String scssUri, String scopeId) {
         String cacheKey = scopeId + "-" + Files.toSaneFileName(uri.substring(1)).orElse("");
         File file = new File(getCacheDirFile(), cacheKey);
 
-        Optional<Resource> resource = resources.resolve(resourceName);
+        Optional<Resource> resource = resources.resolve(scssUri);
         if (!resource.isPresent()) {
             return;
         }
+
         Resource resolved = resource.get();
         if (Sirius.isStartedAsTest() || !file.exists() || file.lastModified() < resolved.getLastModified()) {
             try {
-                Resources.LOG.FINE("Compiling: " + resourceName);
-                generator.generate(file);
-            } catch (Throwable t) {
-                file.delete();
+                Resources.LOG.FINE("Compiling: " + scssUri);
+                SIRIUSGenerator gen = new SIRIUSGenerator();
+                gen.importStylesheet(scssUri);
+                gen.compile();
+                try (FileWriter writer = new FileWriter(file, false)) {
+                    // Let the content compressor take care of minifying the CSS
+                    Output out = new Output(writer, false);
+                    gen.generate(out);
+                }
+            } catch (Exception t) {
+                if (!file.delete()) {
+                    Templates.LOG.WARN("Cannot delete temporary file: %s", file.getAbsolutePath());
+                }
                 ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(Templates.LOG, t));
                 return;
             }
@@ -198,33 +212,6 @@ public class AssetsDispatcher implements WebDispatcher {
 
         ctx.respondWith().
                 named(uri.substring(uri.lastIndexOf("/") + 1)).file(file);
-    }
-
-    /*
-     * Uses Velocity (via the content generator) to generate the desired file
-     */
-    private void handleVM(WebContext ctx, String uri, String scopeId) {
-        handleByGeneratingFile(ctx, uri, uri + ".vm", scopeId, file -> {
-            try (FileOutputStream out = new FileOutputStream(file, false)) {
-                templates.generator().useTemplate(uri + ".vm").generateTo(out);
-            }
-        });
-    }
-
-    /*
-     * Uses server-sass to compile a SASS file (.scss) into a .css file
-     */
-    private void handleSASS(WebContext ctx, String uri, String scssUri, String scopeId) {
-        handleByGeneratingFile(ctx, uri, scssUri, scopeId, file -> {
-            SIRIUSGenerator gen = new SIRIUSGenerator();
-            gen.importStylesheet(scssUri);
-            gen.compile();
-            try (FileWriter writer = new FileWriter(file, false)) {
-                // Let the content compressor take care of minifying the CSS
-                Output out = new Output(writer, false);
-                gen.generate(out);
-            }
-        });
     }
 
     /*

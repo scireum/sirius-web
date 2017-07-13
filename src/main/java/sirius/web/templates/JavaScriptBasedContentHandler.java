@@ -11,9 +11,12 @@ package sirius.web.templates;
 import com.google.common.base.Charsets;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
+import sirius.kernel.di.std.Part;
 
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import javax.script.SimpleScriptContext;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
@@ -28,6 +31,9 @@ public abstract class JavaScriptBasedContentHandler implements ContentHandler {
      */
     @ConfigValue("content.script-engine")
     protected String scriptEngine;
+
+    @Part
+    private Templates templates;
 
     private final ScriptEngineManager manager = new ScriptEngineManager();
 
@@ -48,8 +54,11 @@ public abstract class JavaScriptBasedContentHandler implements ContentHandler {
      */
     protected void execute(Generator generator) throws Exception {
         ScriptEngine engine = getEngine();
-        ScriptingContext ctx = new ScriptingContext();
+
+        SimpleScriptContext ctx = new SimpleScriptContext();
+        templates.createGlobalContext().forEach((k, v) -> ctx.setAttribute(k, v, ScriptContext.ENGINE_SCOPE));
         generator.getContext().applyTo(ctx);
+
         if (Strings.isFilled(generator.getTemplateCode())) {
             engine.eval(generator.getTemplateCode(), ctx);
         } else {
