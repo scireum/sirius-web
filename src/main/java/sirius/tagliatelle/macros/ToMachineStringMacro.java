@@ -31,7 +31,7 @@ public class ToMachineStringMacro implements Macro {
     }
 
     @Override
-    public boolean isConstant() {
+    public boolean isConstant(Expression[] args) {
         return true;
     }
 

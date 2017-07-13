@@ -57,8 +57,8 @@ public class I18nMacro implements Macro {
     }
 
     @Override
-    public boolean isConstant() {
-        return false;
+    public boolean isConstant(Expression[] args) {
+        return args.length == 1 && args[0].isConstant() && Strings.isEmpty(args[0].eval(null));
     }
 
     @Override
