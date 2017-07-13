@@ -9,6 +9,7 @@
 package sirius.tagliatelle.tags;
 
 import sirius.kernel.di.std.Register;
+import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.TemplateArgument;
 import sirius.tagliatelle.emitter.CompositeEmitter;
 import sirius.tagliatelle.expression.ConstantNull;
@@ -47,7 +48,7 @@ public class ArgTag extends TagHandler {
             defaultValue = ConstantString.EMPTY_STRING;
         }
 
-        if (defaultValue != null && !type.isAssignableFrom(defaultValue.getType())) {
+        if (!isValidDefaultValue(type, defaultValue)) {
             getCompilationContext().error(getStartOfTag(),
                                           "The default expression for '%s' ('%s') does not match its declared type %s",
                                           name,
@@ -57,6 +58,18 @@ public class ArgTag extends TagHandler {
 
         getCompilationContext().push(getStartOfTag(), name, type);
         getCompilationContext().getTemplate().addArgument(new TemplateArgument(type, name, defaultValue));
+    }
+
+    private boolean isValidDefaultValue(Class<?> type, Expression defaultValue) {
+        if (defaultValue == null) {
+            return true;
+        }
+
+        if (ConstantNull.NULL.equals(defaultValue)) {
+            return !type.isPrimitive();
+        }
+
+        return Tagliatelle.isAssignableTo(defaultValue.getType(), type);
     }
 
     @Override

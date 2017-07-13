@@ -25,6 +25,7 @@ import sirius.tagliatelle.emitter.ConstantEmitter;
 import sirius.tagliatelle.emitter.Emitter;
 import sirius.tagliatelle.emitter.InlineTemplateEmitter;
 import sirius.tagliatelle.emitter.InvokeTemplateEmitter;
+import sirius.tagliatelle.emitter.LoopEmitter;
 import sirius.tagliatelle.emitter.PushLocalEmitter;
 import sirius.tagliatelle.expression.ConstantNull;
 import sirius.tagliatelle.expression.Expression;
@@ -52,6 +53,8 @@ import java.util.stream.Collectors;
  * arguments and local variables).
  */
 public class CompilationContext {
+
+    private static final int INLINE_LOCALS_SHIFT_OFFSET = 1000000;
 
     /**
      * Contains the context of the template which was being compiled and triggered the compilation of this template.
@@ -364,15 +367,21 @@ public class CompilationContext {
                                   Template template,
                                   Function<String, Expression> arguments,
                                   Function<String, Emitter> blocks) {
-
         Emitter copy = template.getEmitter().copy();
-        // Transfer local (non argument) variables to the local stack.
-        // We have to do that before we process the arguments, as that might introduce even more local variables
-        // which already have a correct stack location.
+
+        // In case the template being inlined has any local variables, we need to map them to our new stack.
+        // However, since we also have to inline the argument calls, we first reserve a stack position for
+        // each local, but move the ReadLocal for that to an intermediate position (see updateLocalReads).
         Tuple<Emitter, Integer> locals = shiftLocals(copy);
         copy = locals.getFirst();
+
+        // We then inline arguments and create intermediate locals, if necessary...
         copy = propagateArgumentsForInline(startOfTag, template, arguments, copy);
         copy = propagateBlocksForInline(blocks, copy);
+
+        // Now that arguments have been inlined, and references to them have been rewritten, we can savely
+        // update all ReadLocals to point to their mapped stack location.
+        lowerLocalReads(copy);
 
         // Pop the locally transferred variables off the stack
         for (int i = 0; i < locals.getSecond(); i++) {
@@ -392,8 +401,15 @@ public class CompilationContext {
                 Expression expression = pushLocal.getExpression();
                 int newStackLocation = push(emitter.getStartOfBlock(), null, expression.getType());
                 numberOfLocals.incrementAndGet();
-                updateLocalReads(copy, expression.getType(), pushLocal.getLocalIndex(), newStackLocation);
+                updateLocalReads(copy, pushLocal.getLocalIndex(), newStackLocation);
                 return new PushLocalEmitter(emitter.getStartOfBlock(), newStackLocation, expression);
+            } else if (emitter instanceof LoopEmitter) {
+                LoopEmitter loop = (LoopEmitter) emitter;
+                int newStackLocation = push(emitter.getStartOfBlock(), null, loop.getIterableExpression().getType());
+                updateLocalReads(copy, loop.getLocalIndex(), newStackLocation);
+                loop.setLocalIndex(newStackLocation);
+                pop(emitter.getStartOfBlock());
+                return loop;
             } else {
                 return emitter;
             }
@@ -402,9 +418,43 @@ public class CompilationContext {
         return Tuple.create(result, numberOfLocals.get());
     }
 
-    private void updateLocalReads(Emitter copy, Class<?> type, int oldStackLocation, int newStackLocation) {
-        copy.visitExpressions(pos -> createReplaceArgumentVisitor(oldStackLocation,
-                                                                  new ReadLocal(type, newStackLocation)));
+    /**
+     * Updates all {@link ReadLocal read locals} which access the old stack location to access the new stack location.
+     * <p>
+     * However, in case we inline a template with several arguments, into one with hasn't any, the new stack location
+     * would interfere with the with the old, but not updated yet, stack location of one of the arguments.
+     * <p>
+     * Therefore we shift the local reads to an intermediate high position, which is lowered once the arguments have
+     * been processed.
+     *
+     * @param copy             the emitter tree to process
+     * @param oldStackLocation the old location to replace
+     * @param newStackLocation the location on the new stack
+     */
+    private void updateLocalReads(Emitter copy, int oldStackLocation, int newStackLocation) {
+        copy.visitExpressions(pos -> expr -> {
+            if (expr instanceof ReadLocal && ((ReadLocal) expr).getIndex() == oldStackLocation) {
+                return new ReadLocal(expr.getType(), newStackLocation + INLINE_LOCALS_SHIFT_OFFSET);
+            } else {
+                return expr;
+            }
+        });
+    }
+
+    /**
+     * Updates all read locals, which have been placed in a high location to their intended stack location by
+     * subtracting the intermediate offset.
+     *
+     * @param copy             the emitter tree to process
+     */
+    private void lowerLocalReads(Emitter copy) {
+        copy.visitExpressions(pos -> expr -> {
+            if (expr instanceof ReadLocal && ((ReadLocal) expr).getIndex() >= INLINE_LOCALS_SHIFT_OFFSET) {
+                return new ReadLocal(expr.getType(), ((ReadLocal) expr).getIndex() - INLINE_LOCALS_SHIFT_OFFSET);
+            } else {
+                return expr;
+            }
+        });
     }
 
     /**
@@ -495,6 +545,7 @@ public class CompilationContext {
                 value = ConstantNull.NULL;
             }
         }
+
         if (!value.isConstant() && !(value instanceof ReadLocal)) {
             int temporaryIndex = push(position, null, arg.getType());
             temps.add(new PushLocalEmitter(position, temporaryIndex, value));

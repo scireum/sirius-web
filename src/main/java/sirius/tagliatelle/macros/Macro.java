@@ -48,10 +48,11 @@ public interface Macro extends Named {
     Object eval(LocalRenderContext ctx, Expression[] args);
 
     /**
-     * Determines if the function is "constant".
+     * Determines if the macro is "constant" for the given parameter expressions.
      *
-     * @return <tt>true</tt> if the function will always yield the same output for the same input,<tt>false</tt>
+     * @param args the arguments of the macro
+     * @return <tt>true</tt> if the function will always yield the same output for the same input, <tt>false</tt>
      * otherwise.
      */
-    boolean isConstant();
+    boolean isConstant(Expression[] args);
 }

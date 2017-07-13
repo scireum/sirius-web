@@ -120,6 +120,15 @@ public class LoopEmitter extends Emitter {
         }
     }
 
+    /**
+     * Returns the expression which yields the items to iterate through.
+     *
+     * @return the expression to iterate through
+     */
+    public Expression getIterableExpression() {
+        return iterableExpression;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -130,5 +139,14 @@ public class LoopEmitter extends Emitter {
         sb.append("}");
 
         return sb.toString();
+    }
+
+    /**
+     * Returns  the stack location to use for the loop variable.
+     *
+     * @return the stack location used for the stack variable
+     */
+    public int getLocalIndex() {
+        return localIndex;
     }
 }
