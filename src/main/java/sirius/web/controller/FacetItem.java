@@ -73,7 +73,7 @@ public class FacetItem {
      *
      * @return the number of matches
      */
-    public long getCount() {
+    public int getCount() {
         return count;
     }
 
