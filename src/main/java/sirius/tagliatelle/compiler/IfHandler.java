@@ -22,7 +22,7 @@ public class IfHandler extends ExpressionHandler {
 
     @Override
     public boolean shouldProcess(Compiler compiler) {
-        return compiler.isAtText(0, "@if");
+        return compiler.isAtText(0, "@if") && compiler.getReader().next(3).is(' ', '(');
     }
 
     @Override

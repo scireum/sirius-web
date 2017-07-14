@@ -22,7 +22,7 @@ public class RawHandler extends ExpressionHandler {
 
     @Override
     public boolean shouldProcess(Compiler compiler) {
-        return compiler.isAtText(0, "@raw");
+        return compiler.isAtText(0, "@raw") && compiler.getReader().next(4).is(' ', '(');
     }
 
     @Override
