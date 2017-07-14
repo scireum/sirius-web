@@ -11,6 +11,7 @@ package sirius.tagliatelle.compiler;
 import parsii.tokenizer.Char;
 import parsii.tokenizer.LookaheadReader;
 import parsii.tokenizer.Position;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.transformers.Transformable;
@@ -19,6 +20,7 @@ import sirius.tagliatelle.expression.AndOperation;
 import sirius.tagliatelle.expression.ConcatExpression;
 import sirius.tagliatelle.expression.ConstantBoolean;
 import sirius.tagliatelle.expression.ConstantClass;
+import sirius.tagliatelle.expression.ConstantEnum;
 import sirius.tagliatelle.expression.ConstantInt;
 import sirius.tagliatelle.expression.ConstantNull;
 import sirius.tagliatelle.expression.ConstantString;
@@ -506,7 +508,7 @@ class Parser extends InputProcessor {
             Char pos = reader.current();
             String id = readIdentifier();
             if (reader.current().is('.')) {
-                Expression classLiteral = tryClassLiteral(id);
+                Expression classLiteral = tryClassOrEnumLiteral(id);
                 if (classLiteral != null) {
                     return classLiteral;
                 }
@@ -524,7 +526,7 @@ class Parser extends InputProcessor {
         return literal();
     }
 
-    private Expression tryClassLiteral(String id) {
+    private Expression tryClassOrEnumLiteral(String id) {
         Position pos = reader.current();
         StringBuilder sb = new StringBuilder(id);
         int offset = 0;
@@ -537,13 +539,13 @@ class Parser extends InputProcessor {
             offset++;
         }
 
-        if (reader.current().is('(')) {
+        if (reader.next(offset).is('(')) {
             return null;
         }
 
         String literal = sb.toString();
         if (!literal.endsWith(".class")) {
-            return null;
+            return tryEnumLiteral(pos, literal, offset);
         }
 
         // Cut the .class to make it resolvable...
@@ -551,6 +553,23 @@ class Parser extends InputProcessor {
 
         reader.consume(offset);
         return new ConstantClass(context.resolveClass(pos, literal));
+    }
+
+    private Expression tryEnumLiteral(Position pos, String literal, int offset) {
+        Tuple<String, String> typeNameName = Strings.splitAtLast(literal, ".");
+        Class<?> enumType = context.tryResolveClass(typeNameName.getFirst()).orElse(null);
+        if (enumType == null) {
+            return null;
+        }
+
+        for(Object o : enumType.getEnumConstants()) {
+            if (Strings.areEqual(((Enum<?>)o).name(), typeNameName.getSecond())) {
+                reader.consume(offset);
+                return new ConstantEnum(enumType, o);
+            }
+        }
+
+        return null;
     }
 
     /**

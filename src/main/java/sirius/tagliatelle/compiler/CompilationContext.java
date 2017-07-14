@@ -662,7 +662,7 @@ public class CompilationContext {
     }
 
     /**
-     * Tries to resolve a string (name) into a java class.
+     * Resolve a string (name) into a java class and reports an error if no matching class was found.
      * <p>
      * Next to the classic <tt>Class.forName</tt> this also supports aliases like <tt>String</tt> for
      * <tt>java.lang.String</tt>.
@@ -673,17 +673,36 @@ public class CompilationContext {
      * @see Tagliatelle#getClassAliases()
      */
     public Class<?> resolveClass(Position position, String typeName) {
+        Class<?> result = tryResolveClass(typeName).orElse(null);
+        if (result == null) {
+            error(position, "Cannot resolve '%s' to a Java class", typeName);
+            result = void.class;
+        }
+        return result;
+    }
+
+    /**
+     * Tries to resolve a string (name) into a java class.
+     * <p>
+     * Next to the classic <tt>Class.forName</tt> this also supports aliases like <tt>String</tt> for
+     * <tt>java.lang.String</tt>.
+     *
+     * @param typeName the type name to resolve
+     * @return a Java class for the given type name wrapped as optional or an empty optional, if no matching class was
+     * found.
+     * @see Tagliatelle#getClassAliases()
+     */
+    public Optional<Class<?>> tryResolveClass(String typeName) {
         Class<?> result = engine.getClassAliases().get(typeName);
         if (result != null) {
-            return result;
+            return Optional.of(result);
         }
 
         try {
-            return Class.forName(typeName);
+            return Optional.of(Class.forName(typeName));
         } catch (ClassNotFoundException e) {
             Exceptions.ignore(e);
-            error(position, "Cannot resolve '%s' to a Java class", typeName);
-            return void.class;
+            return Optional.empty();
         }
     }
 
