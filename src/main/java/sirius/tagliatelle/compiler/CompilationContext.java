@@ -11,6 +11,7 @@ package sirius.tagliatelle.compiler;
 import parsii.tokenizer.Char;
 import parsii.tokenizer.ParseError;
 import parsii.tokenizer.Position;
+import sirius.kernel.Sirius;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.GlobalContext;
@@ -42,7 +43,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -119,6 +119,21 @@ public class CompilationContext {
     }
 
     /**
+     * Allocates a stack position for an argument or local variable.
+     * <p>
+     * For known and resolveable variables, this is automatically handled by {@link #push(Position, String, Class)}.
+     * <p>
+     * However, when a template is inlined into another, we also have to transfer locals to a new stack location and
+     * might also create new intermediate locals for now inlined arguments (because we must not evaluate non-constant
+     * expressions more thant once).
+     *
+     * @return the stack location to use
+     */
+    public int stackAlloc() {
+        return stackDepth++;
+    }
+
+    /**
      * Pushes a local variable on the stack, so that it can be resolved later.
      *
      * @param position the position where the local is defined - mainly used for error reporting
@@ -126,7 +141,7 @@ public class CompilationContext {
      * @param type     the type of the variable
      * @return the stack index of the variable
      */
-    public int push(Position position, @Nullable String name, @Nullable Class<?> type) {
+    public int push(Position position, String name, Class<?> type) {
         if (Strings.isFilled(name)) {
             if (globals.stream().map(Tuple::getFirst).anyMatch(otherName -> Strings.areEqual(name, otherName))) {
                 warning(position, "Argument or local variable hides a global: %s", name);
@@ -136,15 +151,15 @@ public class CompilationContext {
             }
         }
         stack.add(Tuple.create(name, type));
-        if (stack.size() > stackDepth) {
-            stackDepth = stack.size();
-        }
 
-        return stack.size() - 1;
+        return stackAlloc();
     }
 
     /**
      * Pops a local off the stack.
+     * <p>
+     * Note that this will only reduce the visibility of the variable but not free up the technical stack location. We
+     * only used each stack location once, to greatly simplify inlining.
      *
      * @param position the position which caused the pop - mainly used for error reporting
      */
@@ -369,15 +384,44 @@ public class CompilationContext {
                                   Function<String, Emitter> blocks) {
         Emitter copy = template.getEmitter().copy();
 
+        // Move all existing locals out of the way...
         copy.visitExpressions(pos -> this::shiftLocalReads);
-        copy = propagateArgumentsForInline(startOfTag, template, arguments, copy);
-        copy = transferLocals(copy);
+
+        // Order is important here, as transfer arguments might introduce new local variables,
+        // we first process the existing variables and then process the arguments. This might seem
+        // counter intuitive at first, but as each stack location is only used once, it doesn't really
+        // matter if pre process upper ones before lower ones (arguments are usually the first on the stack).
+        copy = transferArguments(startOfTag, template, arguments, transferLocals(copy));
+
+        if (Sirius.isDev() || Sirius.isStartedAsTest()) {
+            ensureValidReadLocals(copy);
+        }
 
         copy = propagateBlocksForInline(blocks, copy);
 
         copy = copy.reduce();
 
         return new InlineTemplateEmitter(startOfTag, template, copy);
+    }
+
+    /**
+     * Checks for leftover local reads which were shifted, but never down shifted.
+     * <p>
+     * This is essentially a circuit breaker which detects invalid templates which could be created by a bug within the
+     * inlining code.
+     * <p>
+     * This is left active in test or developement systems to fail as soon as possible and therefore aid in debugging.
+     *
+     * @param copy the emitter to check
+     */
+    private void ensureValidReadLocals(Emitter copy) {
+        copy.visitExpressions(pos -> expr -> {
+            if (expr instanceof ReadLocal && ((ReadLocal) expr).getIndex() >= INLINE_LOCALS_SHIFT_OFFSET) {
+                throw new IllegalStateException(Strings.apply("Invalid local read detected: %s (%s)", expr, pos));
+            }
+
+            return expr;
+        });
     }
 
     /**
@@ -399,8 +443,6 @@ public class CompilationContext {
     }
 
     /**
-     * Propagates all arguments into the locations where these are referenced.
-     * <p>
      * Basically this method scans for all argument references ({@link ReadLocal} and replaces them with the given
      * expression. This is also done for the default arguments (or copies of them actually), as these themself can be
      * expressions that reference previous arguments.
@@ -415,30 +457,33 @@ public class CompilationContext {
      * @param template  the template being inlined
      * @param arguments the argument expression supplied
      * @param copy      the copied contents of the template being inline
-     * @return an emitter where all argument references have been replaced by the argument expressions
      */
-    private Emitter propagateArgumentsForInline(Position position,
-                                                Template template,
-                                                Function<String, Expression> arguments,
-                                                Emitter copy) {
+    private Emitter transferArguments(Position position,
+                                      Template template,
+                                      Function<String, Expression> arguments,
+                                      Emitter copy) {
+        List<PushLocalEmitter> temps = new ArrayList<>();
         List<Expression> defaultArgs = template.getArguments()
                                                .stream()
                                                .map(TemplateArgument::getDefaultValue)
-                                               .map(e -> e == null ? null : shiftLocalReads(e.copy()))
+                                               .map(e -> e == null ?
+                                                         null :
+                                                         e.copy().propagateVisitor(this::shiftLocalReads))
                                                .collect(Collectors.toList());
-        List<PushLocalEmitter> temps = new ArrayList<>();
 
-        AtomicInteger index = new AtomicInteger(0);
+        int index = 0;
         for (TemplateArgument arg : template.getArguments()) {
-            Expression value = determineArgumentExpression(position, arg, index.get(), arguments, defaultArgs, temps);
-            ExpressionVisitor replaceArgumentVisitor = createReplaceArgumentVisitor(index.get(), value);
-            for (int i = index.get() + 1; i < defaultArgs.size(); i++) {
+            Expression value = determineArgumentExpression(position, arg, index, arguments, defaultArgs, temps);
+            ExpressionVisitor replaceArgumentVisitor = createReplaceArgumentVisitor(index, value);
+            for (int i = index + 1; i < defaultArgs.size(); i++) {
                 if (defaultArgs.get(i) != null) {
                     defaultArgs.set(i, defaultArgs.get(i).propagateVisitor(replaceArgumentVisitor));
                 }
             }
 
-            index.incrementAndGet();
+            copy.visitExpressions(pos -> replaceArgumentVisitor);
+
+            index++;
         }
 
         if (temps.isEmpty()) {
@@ -446,12 +491,9 @@ public class CompilationContext {
         }
 
         CompositeEmitter result = new CompositeEmitter(copy.getStartOfBlock());
-        temps.forEach(e -> {
-            result.addChild(e);
-            pop(position);
-        });
-
+        temps.forEach(result::addChild);
         result.addChild(copy);
+
         return result;
     }
 
@@ -486,12 +528,16 @@ public class CompilationContext {
             }
         }
 
-        if (!value.isConstant() && !(value instanceof ReadLocal)) {
-            int temporaryIndex = push(position, null, arg.getType());
-            temps.add(new PushLocalEmitter(position, temporaryIndex, value));
-            value = new ReadLocal(arg.getType(), temporaryIndex);
+        // Constant expressions and local reads can safely invoked several times, therefore
+        // we can replace each access with the expression itself...
+        if (value instanceof ReadLocal || value.isConstant()) {
+            return value;
         }
-        return value;
+
+        // .. for all other, we declare a local variable and read that...
+        int temporaryIndex = stackAlloc();
+        temps.add(new PushLocalEmitter(position, temporaryIndex, value));
+        return new ReadLocal(arg.getType(), temporaryIndex);
     }
 
     /**
@@ -525,25 +571,16 @@ public class CompilationContext {
      * @return the processed emitters
      */
     private Emitter transferLocals(Emitter copy) {
-        AtomicInteger numberOfLocals = new AtomicInteger(0);
-        Emitter result = copy.propagateVisitor(emitter -> {
+        return copy.propagateVisitor(emitter -> {
             if (emitter instanceof PushEmitter) {
                 PushEmitter pushEmitter = (PushEmitter) emitter;
-                int newStackLocation = push(emitter.getStartOfBlock(), null, null);
-                numberOfLocals.incrementAndGet();
+                int newStackLocation = stackAlloc();
                 updateLocalReads(copy, pushEmitter.getLocalIndex(), newStackLocation);
                 pushEmitter.setLocalIndex(newStackLocation);
             }
 
             return emitter;
         });
-
-        // Pop the locally transferred variables off the stack
-        while (numberOfLocals.getAndDecrement() > 0) {
-            pop(copy.getStartOfBlock());
-        }
-
-        return result;
     }
 
     /**
