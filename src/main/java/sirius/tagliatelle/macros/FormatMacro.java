@@ -8,6 +8,7 @@
 
 package sirius.tagliatelle.macros;
 
+import sirius.kernel.di.std.Register;
 import sirius.kernel.nls.Formatter;
 import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.expression.Expression;
@@ -19,6 +20,7 @@ import java.util.List;
 /**
  * Permits to create a new {@link Formatter} via a <tt>{@literal @}format(pattern)</tt>.
  */
+@Register
 public class FormatMacro implements Macro {
 
     @Override

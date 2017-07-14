@@ -1,7 +1,7 @@
 package sirius.tagliatelle.macros;
 
-import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
+import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 

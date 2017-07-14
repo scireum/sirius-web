@@ -9,6 +9,7 @@
 package sirius.tagliatelle.macros;
 
 import sirius.kernel.di.std.Part;
+import sirius.kernel.di.std.Register;
 import sirius.kernel.nls.Formatter;
 import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.expression.Expression;
@@ -25,6 +26,7 @@ import java.util.Optional;
  * <p>
  * This means that the macro will return the whole contents of the file and escape all line breakes and ' within.
  */
+@Register
 public class InlineResourceMacro implements Macro {
 
     @Part
