@@ -54,6 +54,12 @@ import java.util.stream.Collectors;
  */
 public class CompilationContext {
 
+    private static class StackLocation {
+        int stackIndex;
+        Class<?> type;
+        String name;
+    }
+
     private static final int INLINE_LOCALS_SHIFT_OFFSET = 1000000;
 
     /**
@@ -78,7 +84,7 @@ public class CompilationContext {
     /**
      * Contains a mapping of the name to the type for all known arguments and local variables.
      */
-    private List<Tuple<String, Class<?>>> stack = new ArrayList<>();
+    private List<StackLocation> stack = new ArrayList<>();
 
     /**
      * Contains a mapping of the name to he type for all globals in the environment.
@@ -146,13 +152,21 @@ public class CompilationContext {
             if (globals.stream().map(Tuple::getFirst).anyMatch(otherName -> Strings.areEqual(name, otherName))) {
                 warning(position, "Argument or local variable hides a global: %s", name);
             }
-            if (stack.stream().map(Tuple::getFirst).anyMatch(otherName -> Strings.areEqual(name, otherName))) {
+            if (stack.stream()
+                     .map(stackLocation -> stackLocation.name)
+                     .anyMatch(otherName -> Strings.areEqual(name, otherName))) {
                 warning(position, "Argument or local variable hides another one: %s", name);
             }
         }
-        stack.add(Tuple.create(name, type));
 
-        return stackAlloc();
+        StackLocation location = new StackLocation();
+        location.name = name;
+        location.type = type;
+        location.stackIndex = stackAlloc();
+
+        stack.add(location);
+
+        return location.stackIndex;
     }
 
     /**
@@ -188,9 +202,9 @@ public class CompilationContext {
      */
     public Optional<Tuple<Class<?>, Integer>> findLocal(String variableName) {
         for (int i = stack.size() - 1; i >= 0; i--) {
-            Tuple<String, Class<?>> localVariable = stack.get(i);
-            if (Strings.areEqual(variableName, localVariable.getFirst())) {
-                return Optional.of(Tuple.create(localVariable.getSecond(), i));
+            StackLocation localVariable = stack.get(i);
+            if (Strings.areEqual(variableName, localVariable.name)) {
+                return Optional.of(Tuple.create(localVariable.type, localVariable.stackIndex));
             }
         }
 
@@ -692,11 +706,13 @@ public class CompilationContext {
 
         if (!stack.isEmpty()) {
             sb.append("Stack\n-----\n");
-            for (Tuple<String, Class<?>> var : stack) {
-                sb.append(var.getFirst());
+            for (StackLocation var : stack) {
+                sb.append(var.name);
                 sb.append(": ");
-                sb.append(var.getSecond());
-                sb.append("\n");
+                sb.append(var.type);
+                sb.append(" (");
+                sb.append(var.stackIndex);
+                sb.append(")\n");
             }
             sb.append("\n");
         }
