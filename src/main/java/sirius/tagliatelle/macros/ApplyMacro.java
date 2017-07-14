@@ -1,5 +1,6 @@
 package sirius.tagliatelle.macros;
 
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.expression.Expression;
@@ -29,8 +30,12 @@ public class ApplyMacro implements Macro {
 
     @Override
     public Object eval(LocalRenderContext ctx, Expression[] args) {
-        String result = (String) args[0].eval(ctx);
-        return result.replace("\n", " <br> ");
+        Object[] parameters = new Object[args.length - 1];
+        for (int i = 1; i < args.length; i++) {
+            parameters[i - 1] = args[i].eval(ctx);
+        }
+
+        return Strings.apply((String) args[0].eval(ctx), parameters);
     }
 
     @Override
