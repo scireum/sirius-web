@@ -18,9 +18,8 @@ import java.util.function.Function;
 /**
  * Writes the result of an expression evaluation into a temporary / local variable.
  */
-public class PushLocalEmitter extends Emitter {
+public class PushLocalEmitter extends PushEmitter {
 
-    private final int localIndex;
     private Expression expression;
 
     /**
@@ -69,15 +68,6 @@ public class PushLocalEmitter extends Emitter {
     @Override
     public String toString() {
         return "LOCAL<" + localIndex + "> = @(" + expression + ")";
-    }
-
-    /**
-     * Contains the stack index being written to.
-     *
-     * @return the target index to write to
-     */
-    public int getLocalIndex() {
-        return localIndex;
     }
 
     /**

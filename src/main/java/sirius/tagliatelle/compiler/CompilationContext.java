@@ -25,7 +25,7 @@ import sirius.tagliatelle.emitter.ConstantEmitter;
 import sirius.tagliatelle.emitter.Emitter;
 import sirius.tagliatelle.emitter.InlineTemplateEmitter;
 import sirius.tagliatelle.emitter.InvokeTemplateEmitter;
-import sirius.tagliatelle.emitter.LoopEmitter;
+import sirius.tagliatelle.emitter.PushEmitter;
 import sirius.tagliatelle.emitter.PushLocalEmitter;
 import sirius.tagliatelle.expression.ConstantNull;
 import sirius.tagliatelle.expression.Expression;
@@ -126,7 +126,7 @@ public class CompilationContext {
      * @param type     the type of the variable
      * @return the stack index of the variable
      */
-    public int push(Position position, @Nullable String name, Class<?> type) {
+    public int push(Position position, @Nullable String name, @Nullable Class<?> type) {
         if (Strings.isFilled(name)) {
             if (globals.stream().map(Tuple::getFirst).anyMatch(otherName -> Strings.areEqual(name, otherName))) {
                 warning(position, "Argument or local variable hides a global: %s", name);
@@ -369,92 +369,33 @@ public class CompilationContext {
                                   Function<String, Emitter> blocks) {
         Emitter copy = template.getEmitter().copy();
 
-        // In case the template being inlined has any local variables, we need to map them to our new stack.
-        // However, since we also have to inline the argument calls, we first reserve a stack position for
-        // each local, but move the ReadLocal for that to an intermediate position (see updateLocalReads).
-        Tuple<Emitter, Integer> locals = shiftLocals(copy);
-        copy = locals.getFirst();
-
-        // We then inline arguments and create intermediate locals, if necessary...
+        copy.visitExpressions(pos -> this::shiftLocalReads);
         copy = propagateArgumentsForInline(startOfTag, template, arguments, copy);
+        copy = transferLocals(copy);
+
         copy = propagateBlocksForInline(blocks, copy);
-
-        // Now that arguments have been inlined, and references to them have been rewritten, we can savely
-        // update all ReadLocals to point to their mapped stack location.
-        lowerLocalReads(copy);
-
-        // Pop the locally transferred variables off the stack
-        for (int i = 0; i < locals.getSecond(); i++) {
-            pop(copy.getStartOfBlock());
-        }
 
         copy = copy.reduce();
 
         return new InlineTemplateEmitter(startOfTag, template, copy);
     }
 
-    private Tuple<Emitter, Integer> shiftLocals(Emitter copy) {
-        AtomicInteger numberOfLocals = new AtomicInteger(0);
-        Emitter result = copy.propagateVisitor(emitter -> {
-            if (emitter instanceof PushLocalEmitter) {
-                PushLocalEmitter pushLocal = (PushLocalEmitter) emitter;
-                Expression expression = pushLocal.getExpression();
-                int newStackLocation = push(emitter.getStartOfBlock(), null, expression.getType());
-                numberOfLocals.incrementAndGet();
-                updateLocalReads(copy, pushLocal.getLocalIndex(), newStackLocation);
-                return new PushLocalEmitter(emitter.getStartOfBlock(), newStackLocation, expression);
-            } else if (emitter instanceof LoopEmitter) {
-                LoopEmitter loop = (LoopEmitter) emitter;
-                int newStackLocation = push(emitter.getStartOfBlock(), null, loop.getIterableExpression().getType());
-                updateLocalReads(copy, loop.getLocalIndex(), newStackLocation);
-                loop.setLocalIndex(newStackLocation);
-                pop(emitter.getStartOfBlock());
-                return loop;
-            } else {
-                return emitter;
-            }
-        });
-
-        return Tuple.create(result, numberOfLocals.get());
-    }
-
     /**
-     * Updates all {@link ReadLocal read locals} which access the old stack location to access the new stack location.
+     * As we have to map locals and arguments from the template being inlined to the stack of the caller,
+     * we have to re-assign all stack locations.
      * <p>
-     * However, in case we inline a template with several arguments, into one with hasn't any, the new stack location
-     * would interfere with the with the old, but not updated yet, stack location of one of the arguments.
-     * <p>
-     * Therefore we shift the local reads to an intermediate high position, which is lowered once the arguments have
-     * been processed.
+     * However, during the process stack locations might collide, therefore we shift all stack locations
+     * by a large number and down shift them one by another once they are processed.
      *
-     * @param copy             the emitter tree to process
-     * @param oldStackLocation the old location to replace
-     * @param newStackLocation the location on the new stack
+     * @param expr the expression to process
+     * @return the updated expression
      */
-    private void updateLocalReads(Emitter copy, int oldStackLocation, int newStackLocation) {
-        copy.visitExpressions(pos -> expr -> {
-            if (expr instanceof ReadLocal && ((ReadLocal) expr).getIndex() == oldStackLocation) {
-                return new ReadLocal(expr.getType(), newStackLocation + INLINE_LOCALS_SHIFT_OFFSET);
-            } else {
-                return expr;
-            }
-        });
-    }
-
-    /**
-     * Updates all read locals, which have been placed in a high location to their intended stack location by
-     * subtracting the intermediate offset.
-     *
-     * @param copy             the emitter tree to process
-     */
-    private void lowerLocalReads(Emitter copy) {
-        copy.visitExpressions(pos -> expr -> {
-            if (expr instanceof ReadLocal && ((ReadLocal) expr).getIndex() >= INLINE_LOCALS_SHIFT_OFFSET) {
-                return new ReadLocal(expr.getType(), ((ReadLocal) expr).getIndex() - INLINE_LOCALS_SHIFT_OFFSET);
-            } else {
-                return expr;
-            }
-        });
+    private Expression shiftLocalReads(Expression expr) {
+        if (expr instanceof ReadLocal) {
+            return new ReadLocal(expr.getType(), ((ReadLocal) expr).getIndex() + INLINE_LOCALS_SHIFT_OFFSET);
+        } else {
+            return expr;
+        }
     }
 
     /**
@@ -483,7 +424,7 @@ public class CompilationContext {
         List<Expression> defaultArgs = template.getArguments()
                                                .stream()
                                                .map(TemplateArgument::getDefaultValue)
-                                               .map(e -> e == null ? null : e.copy())
+                                               .map(e -> e == null ? null : shiftLocalReads(e.copy()))
                                                .collect(Collectors.toList());
         List<PushLocalEmitter> temps = new ArrayList<>();
 
@@ -496,7 +437,6 @@ public class CompilationContext {
                     defaultArgs.set(i, defaultArgs.get(i).propagateVisitor(replaceArgumentVisitor));
                 }
             }
-            copy.visitExpressions(p -> replaceArgumentVisitor);
 
             index.incrementAndGet();
         }
@@ -556,6 +496,8 @@ public class CompilationContext {
 
     /**
      * Creates a visitor which replaces a reference to the given argument with the given value.
+     * <p>
+     * This also takes care of the stack locations created by {@link #shiftLocalReads(Expression)}.
      *
      * @param currentIndex the argument (local) index to replace
      * @param currentValue the replacement expression
@@ -564,13 +506,64 @@ public class CompilationContext {
     private ExpressionVisitor createReplaceArgumentVisitor(int currentIndex, Expression currentValue) {
         return e -> {
             if (e instanceof ReadLocal) {
-                if (((ReadLocal) e).getIndex() == currentIndex) {
+                if (((ReadLocal) e).getIndex() == currentIndex + INLINE_LOCALS_SHIFT_OFFSET) {
                     return currentValue;
                 }
             }
 
             return e;
         };
+    }
+
+    /**
+     * Moves local variables from the template stack to the callers stack.
+     * <p>
+     * This will essentially find all {@link PushEmitter push emitters} and assign a new stack location and update all
+     * matching local reads.
+     *
+     * @param copy the emitters to process
+     * @return the processed emitters
+     */
+    private Emitter transferLocals(Emitter copy) {
+        AtomicInteger numberOfLocals = new AtomicInteger(0);
+        Emitter result = copy.propagateVisitor(emitter -> {
+            if (emitter instanceof PushEmitter) {
+                PushEmitter pushEmitter = (PushEmitter) emitter;
+                int newStackLocation = push(emitter.getStartOfBlock(), null, null);
+                numberOfLocals.incrementAndGet();
+                updateLocalReads(copy, pushEmitter.getLocalIndex(), newStackLocation);
+                pushEmitter.setLocalIndex(newStackLocation);
+            }
+
+            return emitter;
+        });
+
+        // Pop the locally transferred variables off the stack
+        while (numberOfLocals.getAndDecrement() > 0) {
+            pop(copy.getStartOfBlock());
+        }
+
+        return result;
+    }
+
+    /**
+     * Updates all {@link ReadLocal read locals} which access the old stack location to access the new stack location.
+     * <p>
+     * This also takes care of the artificial stack locations created by {@link #shiftLocalReads(Expression)}.
+     *
+     * @param copy             the emitter tree to process
+     * @param oldStackLocation the old location to replace
+     * @param newStackLocation the location on the new stack
+     */
+    private void updateLocalReads(Emitter copy, int oldStackLocation, int newStackLocation) {
+        copy.visitExpressions(pos -> expr -> {
+            if (expr instanceof ReadLocal
+                && ((ReadLocal) expr).getIndex() == oldStackLocation + INLINE_LOCALS_SHIFT_OFFSET) {
+                return new ReadLocal(expr.getType(), newStackLocation);
+            } else {
+                return expr;
+            }
+        });
     }
 
     /**
