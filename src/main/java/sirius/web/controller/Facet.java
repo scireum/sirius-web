@@ -102,7 +102,7 @@ public class Facet {
      * @param count the number of matched for this item
      * @return the facet itself for fluent method calls
      */
-    public Facet addItem(String key, String title, long count) {
+    public Facet addItem(String key, String title, int count) {
         if (Strings.isFilled(key)) {
             String effectiveTitle = translator == null ? title : translator.compute(key);
             if (effectiveTitle != null) {
