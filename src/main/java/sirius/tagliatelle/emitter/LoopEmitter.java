@@ -19,10 +19,9 @@ import java.util.function.Function;
 /**
  * Loops over a given {@link Iterable} and invokes the given block for each item within.
  */
-public class LoopEmitter extends Emitter {
+public class LoopEmitter extends PushEmitter {
 
     private Expression iterableExpression;
-    private int localIndex = -1;
     private Emitter loop;
 
     /**
@@ -50,15 +49,6 @@ public class LoopEmitter extends Emitter {
      */
     public void setLoop(Emitter loop) {
         this.loop = loop;
-    }
-
-    /**
-     * Specifies the stack / local index of the loop variable.
-     *
-     * @param localIndex the local index within the {@link LocalRenderContext} to use for the loop variable
-     */
-    public void setLocalIndex(int localIndex) {
-        this.localIndex = localIndex;
     }
 
     @Override
@@ -141,12 +131,4 @@ public class LoopEmitter extends Emitter {
         return sb.toString();
     }
 
-    /**
-     * Returns  the stack location to use for the loop variable.
-     *
-     * @return the stack location used for the stack variable
-     */
-    public int getLocalIndex() {
-        return localIndex;
-    }
 }

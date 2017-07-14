@@ -29,5 +29,6 @@ public class SiriusClassAliasProvider implements ClassAliasProvider {
         consumer.accept("List", List.class);
         consumer.accept("Page", Page.class);
         consumer.accept("Tuple", Tuple.class);
+        consumer.accept("Object", Object.class);
     }
 }
