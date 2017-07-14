@@ -22,7 +22,7 @@ public class ApplyMacro implements Macro {
 
     @Override
     public void verifyArguments(List<Expression> args) {
-        if (args.size() != 1 || !Tagliatelle.isAssignableTo(args.get(0).getType(), String.class)) {
+        if (args.isEmpty() || !Tagliatelle.isAssignableTo(args.get(0).getType(), String.class)) {
             throw new IllegalArgumentException("Expected at least a String as first argument.");
         }
     }
