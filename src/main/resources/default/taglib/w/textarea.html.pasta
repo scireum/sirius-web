@@ -21,9 +21,7 @@
         </span>
         </label>
     </i:if>
-    <div class="input-group">
-        <textarea name="@name" rows="@rows" class="form-control input-block-level" @if (readonly) { readonly }>@user.getFieldValue(name, value)</textarea>
-    </div>
+    <textarea name="@name" rows="@rows" class="form-control input-block-level" @if (readonly) { readonly }>@user.getFieldValue(name, value)</textarea>
 
     <i:if test="isFilled(help)">
         <span class="help-block">@help</span>
