@@ -10,7 +10,6 @@ package sirius.tagliatelle.macros;
 
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
-import sirius.kernel.nls.Formatter;
 import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
@@ -34,7 +33,7 @@ public class InlineResourceMacro implements Macro {
 
     @Override
     public Class<?> getType() {
-        return Formatter.class;
+        return String.class;
     }
 
     @Override
