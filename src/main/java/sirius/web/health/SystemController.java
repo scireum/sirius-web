@@ -9,6 +9,7 @@
 package sirius.web.health;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import sirius.kernel.Sirius;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
@@ -149,6 +150,11 @@ public class SystemController extends BasicController {
     @Routed("/system/state")
     @Permission(PERMISSION_SYSTEM_STATE)
     public void state(WebContext ctx) {
-        ctx.respondWith().template("/view/system/state.html", cluster, metrics, ctx.get("all").asBoolean(false));
+        ctx.respondWith()
+           .template("templates/system/state.html.pasta",
+                     cluster,
+                     metrics,
+                     ctx.get("all").asBoolean(false),
+                     NLS.convertDuration(Sirius.getUptimeInMilliseconds(), true, false));
     }
 }

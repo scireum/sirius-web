@@ -65,10 +65,6 @@ public class ArgTag extends TagHandler {
             return true;
         }
 
-        if (ConstantNull.NULL.equals(defaultValue)) {
-            return !type.isPrimitive();
-        }
-
         return Tagliatelle.isAssignableTo(defaultValue.getType(), type);
     }
 
