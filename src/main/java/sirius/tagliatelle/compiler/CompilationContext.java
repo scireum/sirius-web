@@ -357,7 +357,7 @@ public class CompilationContext {
         int index = 0;
         for (TemplateArgument arg : template.getArguments()) {
             args[index] = arguments.apply(arg.getName());
-            if (args[index] != null && !arg.getType().isAssignableFrom(args[index].getType())) {
+            if (args[index] != null && !Tagliatelle.isAssignableTo(args[index].getType(), arg.getType())) {
                 error(position,
                       "Incompatible attribute types. '%s' expects %s for '%s', but %s was given.",
                       template.getName(),

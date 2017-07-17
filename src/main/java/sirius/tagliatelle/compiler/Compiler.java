@@ -451,7 +451,7 @@ public class Compiler extends InputProcessor {
             return;
         }
 
-        if (!expectedType.isAssignableFrom(actualType)) {
+        if (!Tagliatelle.isAssignableTo(actualType, expectedType)) {
             context.error(positionOfAttribute,
                           "Incompatible attribute types. %s expects %s for '%s', but %s was given.",
                           tagName,

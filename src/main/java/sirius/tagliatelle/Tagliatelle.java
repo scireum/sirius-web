@@ -200,6 +200,11 @@ public class Tagliatelle {
             return true;
         }
 
+        // Null if represented as void.class and can be assigned to any non-primitive type.
+        if (from == void.class) {
+            return !to.isPrimitive();
+        }
+
         if (from.isPrimitive()) {
             if (to.isPrimitive()) {
                 return checkTypeConversion(from, to);
