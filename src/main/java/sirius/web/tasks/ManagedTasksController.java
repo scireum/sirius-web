@@ -48,7 +48,7 @@ public class ManagedTasksController extends BasicController {
     @LoginRequired
     @Routed("/system/tasks")
     public void tasks(WebContext ctx) {
-        ctx.respondWith().template("view/system/tasks.html");
+        ctx.respondWith().template("templates/system/tasks.html.pasta");
     }
 
     /**
@@ -86,7 +86,7 @@ public class ManagedTasksController extends BasicController {
     @Routed("/system/task/:1")
     @LoginRequired
     public void task(WebContext ctx, String taskId) {
-        ctx.respondWith().template("view/system/task.html", taskId);
+        ctx.respondWith().template("templates/system/task.html.pasta", taskId);
     }
 
     /**
@@ -164,7 +164,7 @@ public class ManagedTasksController extends BasicController {
     @Permission(PERMISSION_SYSTEM_SCRIPTING)
     @Routed("/system/scripting")
     public void scripting(WebContext ctx) {
-        ctx.respondWith().template("view/system/scripting.html");
+        ctx.respondWith().template("templates/system/scripting.html.pasta");
     }
 
     @Part
