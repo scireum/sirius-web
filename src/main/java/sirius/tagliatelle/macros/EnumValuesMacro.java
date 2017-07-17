@@ -35,8 +35,9 @@ public class EnumValuesMacro implements Macro {
             if (type.isEnum()) {
                 return;
             }
-            throw new IllegalArgumentException("Expected an enum class as parameter.");
         }
+
+        throw new IllegalArgumentException("Expected an enum class as parameter.");
     }
 
     @Override
