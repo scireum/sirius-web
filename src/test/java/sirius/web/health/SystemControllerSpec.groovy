@@ -47,7 +47,7 @@ class SystemControllerSpec extends BaseSpecification {
         then:
         result.getStatus() == HttpResponseStatus.OK
         result.getType() == TestResponse.ResponseType.TEMPLATE
-        result.getTemplateName() == "/view/system/state.html"
+        result.getTemplateName() == "templates/system/state.html.pasta"
         Value.indexOf(0, result.getTemplateParameters()).get() == Injector.context().getPart(Cluster.class)
     }
 
