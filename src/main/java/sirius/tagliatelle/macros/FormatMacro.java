@@ -50,4 +50,9 @@ public class FormatMacro implements Macro {
     public String getName() {
         return "format";
     }
+
+    @Override
+    public String getDescription() {
+        return "Creates a new Formatter object for the given pattern.";
+    }
 }

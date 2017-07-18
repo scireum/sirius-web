@@ -48,4 +48,9 @@ public class ApplyMacro implements Macro {
     public String getName() {
         return "apply";
     }
+
+    @Override
+    public String getDescription() {
+        return "Generates a string based on the pattern and the additionally given parameters.";
+    }
 }

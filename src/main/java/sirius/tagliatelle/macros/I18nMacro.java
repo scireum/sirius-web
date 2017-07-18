@@ -72,4 +72,9 @@ public class I18nMacro implements Macro {
     public String getName() {
         return "i18n";
     }
+
+    @Override
+    public String getDescription() {
+        return "Returns the translation for the given key in the currently active language.";
+    }
 }

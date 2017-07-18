@@ -14,9 +14,12 @@ import sirius.tagliatelle.Template;
 import sirius.tagliatelle.TemplateArgument;
 import sirius.tagliatelle.compiler.CompileException;
 import sirius.tagliatelle.emitter.CompositeEmitter;
+import sirius.tagliatelle.expression.ConstantBoolean;
 import sirius.tagliatelle.expression.Expression;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Handles <tt>i:invoke</tt> which invokes or inlines a given template.
@@ -38,6 +41,23 @@ public class InvokeTag extends TagHandler {
         @Override
         public TagHandler createHandler() {
             return new InvokeTag();
+        }
+
+        @Override
+        public List<TemplateArgument> reportArguments() {
+            return Arrays.asList(new TemplateArgument(String.class,
+                                                      "template",
+                                                      "Contains the path of the template to render.",
+                                                      null),
+                                 new TemplateArgument(boolean.class,
+                                                      "inline",
+                                                      "Determines if the invocation should be actually inlined int othe calling template.",
+                                                      ConstantBoolean.FALSE));
+        }
+
+        @Override
+        public String getDescription() {
+            return "Invokes a template. Note that all template arguments also have to be passed as tag attributes.";
         }
     }
 
@@ -114,7 +134,7 @@ public class InvokeTag extends TagHandler {
         if (template == null) {
 
             if (templateResolved) {
-            // We already tried and failed...
+                // We already tried and failed...
                 return false;
             }
             templateResolved = true;

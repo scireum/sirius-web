@@ -9,15 +9,22 @@
 package sirius.tagliatelle.tags;
 
 import sirius.kernel.di.std.Register;
+import sirius.tagliatelle.TemplateArgument;
 import sirius.tagliatelle.emitter.CompositeEmitter;
 import sirius.tagliatelle.emitter.LoopEmitter;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Handles <tt>i:for</tt> which emits its body for each item in an {@link Iterable}.
  */
 public class ForTag extends TagHandler {
+
+    public static final String PARAM_ITEMS = "items";
+    public static final String PARAM_VAR = "var";
+    public static final String PARAM_TYPE = "type";
 
     @Register
     public static class Factory implements TagHandlerFactory {
@@ -32,20 +39,42 @@ public class ForTag extends TagHandler {
         public TagHandler createHandler() {
             return new ForTag();
         }
+
+        @Override
+        public List<TemplateArgument> reportArguments() {
+            return Arrays.asList(new TemplateArgument(String.class,
+                                                      PARAM_TYPE,
+                                                      "Contains the type name of the items being looped over.",
+                                                      null),
+                                 new TemplateArgument(String.class,
+                                                      PARAM_VAR,
+                                                      "Contains the variable name used within the loop.",
+                                                      null),
+                                 new TemplateArgument(Iterable.class,
+                                                      PARAM_ITEMS,
+                                                      "Contains the collection of items to loop over.",
+                                                      null));
+        }
+
+        @Override
+        public String getDescription() {
+            return "Represents a loop, which invokes its body for each item in the given collection.";
+        }
     }
 
     private int localIndex;
 
     @Override
     public void beforeBody() {
-        Class<?> type = getCompilationContext().resolveClass(getStartOfTag(), getConstantAttribute("type").asString());
-        localIndex = getCompilationContext().push(getStartOfTag(), getConstantAttribute("var").asString(), type);
+        Class<?> type =
+                getCompilationContext().resolveClass(getStartOfTag(), getConstantAttribute(PARAM_TYPE).asString());
+        localIndex = getCompilationContext().push(getStartOfTag(), getConstantAttribute(PARAM_VAR).asString(), type);
     }
 
     @Override
     public void apply(CompositeEmitter targetBlock) {
         LoopEmitter result = new LoopEmitter(getStartOfTag());
-        result.setIterableExpression(getAttribute("items"));
+        result.setIterableExpression(getAttribute(PARAM_ITEMS));
         result.setLoop(getBlock("body"));
         result.setLocalIndex(localIndex);
         result.verify(getCompilationContext());
@@ -55,13 +84,13 @@ public class ForTag extends TagHandler {
 
     @Override
     public Class<?> getExpectedAttributeType(String name) {
-        if ("items".equals(name)) {
+        if (PARAM_ITEMS.equals(name)) {
             return Iterable.class;
         }
-        if ("type".equals(name)) {
+        if (PARAM_TYPE.equals(name)) {
             return String.class;
         }
-        if ("var".equals(name)) {
+        if (PARAM_VAR.equals(name)) {
             return String.class;
         }
 

@@ -56,4 +56,9 @@ public class EnumValuesMacro implements Macro {
     public String getName() {
         return "enumValues";
     }
+
+    @Override
+    public String getDescription() {
+        return "Returns a list of all enum constants of the given enum class.";
+    }
 }

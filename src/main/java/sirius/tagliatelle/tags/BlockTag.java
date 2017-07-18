@@ -10,16 +10,21 @@ package sirius.tagliatelle.tags;
 
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
+import sirius.tagliatelle.TemplateArgument;
 import sirius.tagliatelle.emitter.CompositeEmitter;
 import sirius.tagliatelle.emitter.ConstantEmitter;
 import sirius.tagliatelle.emitter.Emitter;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Handles <tt>i:block</tt> which specifies a template section passed into a tag invocation.
  */
 public class BlockTag extends TagHandler {
+
+    public static final String PARAM_NAME = "name";
 
     @Register
     public static class Factory implements TagHandlerFactory {
@@ -34,13 +39,25 @@ public class BlockTag extends TagHandler {
         public TagHandler createHandler() {
             return new BlockTag();
         }
+
+        @Override
+        public List<TemplateArgument> reportArguments() {
+            return Collections.singletonList(new TemplateArgument(String.class, PARAM_NAME,
+                                                                  "Contains the name of the provided block",
+                                                                  null));
+        }
+
+        @Override
+        public String getDescription() {
+            return "Declares a block which is passed within a template or tag invocation.";
+        }
     }
 
     @Override
     public void apply(CompositeEmitter targetBlock) {
         if (getParentHandler() != null) {
 
-            String name = getConstantAttribute("name").asString();
+            String name = getConstantAttribute(PARAM_NAME).asString();
             if (Strings.isEmpty(name)) {
                 getCompilationContext().error(getStartOfTag(), "The attribute name of i:block must be filled.", name);
             } else {
@@ -58,7 +75,7 @@ public class BlockTag extends TagHandler {
 
     @Override
     public Class<?> getExpectedAttributeType(String name) {
-        if ("name".equals(name)) {
+        if (PARAM_NAME.equals(name)) {
             return String.class;
         }
 

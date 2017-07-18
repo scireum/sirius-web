@@ -40,4 +40,9 @@ public class ToMachineStringMacro implements Macro {
     public String getName() {
         return "toMachineString";
     }
+
+    @Override
+    public String getDescription() {
+        return "Formats the given parameter as a machine processable string.";
+    }
 }

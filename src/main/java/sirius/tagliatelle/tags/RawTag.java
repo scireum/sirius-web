@@ -9,11 +9,14 @@
 package sirius.tagliatelle.tags;
 
 import sirius.kernel.di.std.Register;
+import sirius.tagliatelle.TemplateArgument;
 import sirius.tagliatelle.emitter.CompositeEmitter;
 import sirius.tagliatelle.emitter.Emitter;
 import sirius.tagliatelle.emitter.RawEmitter;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Handles <tt>i:raw</tt> which sets the <tt>escaper</tt> to
@@ -33,6 +36,16 @@ public class RawTag extends TagHandler {
         @Override
         public TagHandler createHandler() {
             return new RawTag();
+        }
+
+        @Override
+        public List<TemplateArgument> reportArguments() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public String getDescription() {
+            return "Disables all output filtering (e.g. HTML escaping) and outputs all strings as given.";
         }
     }
 
