@@ -40,4 +40,9 @@ public class ToUserStringMacro implements Macro {
     public String getName() {
         return "toUserString";
     }
+
+    @Override
+    public String getDescription() {
+        return "Formats the given parameter as a user readable string.";
+    }
 }

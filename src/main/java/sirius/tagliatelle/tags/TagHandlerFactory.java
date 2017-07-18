@@ -9,6 +9,9 @@
 package sirius.tagliatelle.tags;
 
 import sirius.kernel.di.std.Named;
+import sirius.tagliatelle.TemplateArgument;
+
+import java.util.List;
 
 /**
  * Can be {@link sirius.kernel.di.std.Register registered} to provide instances which handle tags with the given name.
@@ -21,4 +24,20 @@ public interface TagHandlerFactory extends Named {
      * @return a new tag handler to process a tag
      */
     TagHandler createHandler();
+
+    /**
+     * Returns arguments expected by this tag handler.
+     * <p>
+     * Used for documentation purposes.
+     *
+     * @return a list of parameters expected by this tag.
+     */
+    List<TemplateArgument> reportArguments();
+
+    /**
+     * Returns a short description of what the tag does.
+     *
+     * @return a short description of the tag
+     */
+    String getDescription();
 }

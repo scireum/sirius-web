@@ -49,4 +49,9 @@ public class IsFilledMacro implements Macro {
     public String getName() {
         return "isFilled";
     }
+
+    @Override
+    public String getDescription() {
+        return "Returns true, if a non empty string is given as parameter, false otherwise.";
+    }
 }

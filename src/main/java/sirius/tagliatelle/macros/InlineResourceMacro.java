@@ -45,7 +45,12 @@ public class InlineResourceMacro implements Macro {
 
     @Override
     public Object eval(LocalRenderContext ctx, Expression[] args) {
-        Optional<Resource> res = resources.resolve((String) args[0].eval(ctx));
+        String path = (String) args[0].eval(ctx);
+        if (!path.startsWith("/assets")) {
+            throw new IllegalArgumentException("Only assets can be inlined for security reasons.");
+        }
+
+        Optional<Resource> res = resources.resolve(path);
         return res.map(r -> r.getContentAsString().replaceAll("\\r?\\n", " ").replace("'", "\\'")).orElse("");
     }
 
@@ -58,5 +63,10 @@ public class InlineResourceMacro implements Macro {
     @Override
     public String getName() {
         return "inlineJavaScriptResource";
+    }
+
+    @Override
+    public String getDescription() {
+        return "Returns the contents of the given asset as escaped JavaScript string.";
     }
 }

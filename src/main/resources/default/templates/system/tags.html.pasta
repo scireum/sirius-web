@@ -1,0 +1,88 @@
+<i:arg type="java.util.Collection" name="macros"/>
+<i:arg type="java.util.Collection" name="globals"/>
+<i:arg type="java.util.Collection" name="builtIns"/>
+<i:arg type="java.util.Collection" name="tagLibs"/>
+<i:arg type="sirius.kernel.commons.MultiMap" name="tagLibTags"/>
+
+<w:page title="Tagliatelle">
+
+    <i:block name="breadcrumbs">
+        <li><a href="/system/tags">Tagliatelle</a></li>
+    </i:block>
+
+    <w:pageHeader>Tagliatelle</w:pageHeader>
+    <div class="row">
+        <div class="col-md-6">
+            <w:heading label="Macros"/>
+            <table class="table table-striped">
+                <tr>
+                    <td>
+                        Name
+                    </td>
+                    <td class="align-right">
+                        Description
+                    </td>
+                </tr>
+                <i:for type="sirius.tagliatelle.macros.Macro" var="macro" items="macros">
+                    <tr>
+                        <td>
+                            @macro.getName()
+                        </td>
+                        <td>
+                            <small>@macro.getDescription()</small>
+                        </td>
+                    </tr>
+                </i:for>
+            </table>
+        </div>
+        <div class="col-md-6">
+            <w:heading label="Global Variables"/>
+            <table class="table table-striped">
+                <tr>
+                    <td>
+                        Name
+                    </td>
+                    <td>
+                        <small>Type</small>
+                    </td>
+                </tr>
+                <i:for type="Tuple" var="variable" items="globals">
+                    <tr>
+                        <td>
+                            @variable.getFirst()
+                        </td>
+                        <td>
+                            <small>@variable.getSecond()</small>
+                        </td>
+                    </tr>
+                </i:for>
+            </table>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-md-4">
+                    <w:navbox label="Built-Ins">
+                        <i:for type="String" var="tag" items="builtIns">
+                            <w:navboxLink label="@apply('i:%s', tag)"
+                                          url="@apply('/system/tag/i/%s', tag)"/>
+                        </i:for>
+                    </w:navbox>
+                </div>
+                <i:for type="Tuple" var="tagLib" items="tagLibs">
+                    <div class="col-md-4">
+                        <w:navbox label="@tagLib.getSecond().as(String.class)">
+                            <i:for type="String" var="tag" items="tagLibTags.get(tagLib.getFirst())">
+                                <w:navboxLink label="@apply('%s:%s', tagLib.getFirst(), tag)"
+                                              url="@apply('/system/tag/%s/%s', tagLib.getFirst(), tag)"/>
+                            </i:for>
+                        </w:navbox>
+                    </div>
+                </i:for>
+            </div>
+        </div>
+    </div>
+
+</w:page>

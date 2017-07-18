@@ -16,7 +16,7 @@
 <i:arg name="forceFullWidth" type="boolean" default="false" />
 
 <i:pragma name="inline" value="true" />
-<i:pragma name="description" value="Renders an autocomplete for multiple value within a Wondergem template" />
+<i:pragma name="description" value="Renders an autocomplete for multiple values within a Wondergem template" />
 
 <div class="col-md-@span form-group @user.signalFieldError(name)">
     <i:if test="isFilled(label)">

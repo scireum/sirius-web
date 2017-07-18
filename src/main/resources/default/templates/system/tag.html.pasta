@@ -1,0 +1,63 @@
+<i:arg type="String" name="tagLib"/>
+<i:arg type="String" name="tag"/>
+<i:arg type="List" name="arguments"/>
+<i:arg type="String" name="description"/>
+<i:arg type="String" name="source"/>
+
+<w:page title="@apply('%s:%s', tagLib, tag)">
+    <i:block name="head">
+        <script src="/assets/wondergem/ace/ace.js" type="text/javascript"></script>
+    </i:block>
+
+    <i:block name="breadcrumbs">
+        <li><a href="/system/tags">Tagliatelle</a></li>
+        <li><a href="/system/tag/%s/%s">@apply('%s:%s', tagLib, tag)</a></li>
+    </i:block>
+
+    <w:pageHeader>@apply('%s:%s', tagLib, tag)</w:pageHeader>
+    <i:if test="isFilled(description)">
+        <div class="well">
+            <pre style="font-size: small">@description</pre>
+        </div>
+    </i:if>
+    <i:if test="!arguments.isEmpty()">
+        <w:heading label="Arguments" />
+        <table class="table table-striped">
+            <tr>
+                <td>
+                    Name
+                </td>
+                <td>
+                    Description
+                </td>
+            </tr>
+            <i:for type="sirius.tagliatelle.TemplateArgument" var="arg" items="arguments">
+                <tr>
+                    <td @if (arg.getDefaultValue() == null) { style="font-weight: bold" }>
+                        @arg.getName() <small>(@arg.getType().getName())</small>
+                    </td>
+                    <td>
+                        @arg.getDescription()
+                    </td>
+                </tr>
+            </i:for>
+        </table>
+    </i:if>
+
+    <i:if test="isFilled(source)">
+        <w:heading label="Source Code" />
+        <div id="editor" style="height: 250px">@source</div>
+        <script type="text/javascript">
+            var editor = ace.edit("editor");
+            editor.setTheme("ace/theme/idle_fingers");
+            editor.setReadOnly(true);
+            editor.session.setMode("ace/mode/html")
+            editor.session.setOption("useWorker", false);
+        </script>
+    </i:if>
+
+    <div class="form-actions">
+        <a href="/system/tags" class="btn">@i18n("NLS.back")</a>
+    </div>
+
+</w:page>

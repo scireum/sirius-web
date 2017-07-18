@@ -55,4 +55,11 @@ public interface Macro extends Named {
      * otherwise.
      */
     boolean isConstant(Expression[] args);
+
+    /**
+     * Provides a short description of what the macro does for documentation purposes.
+     *
+     * @return a short description of the macro
+     */
+    String getDescription();
 }
