@@ -1,7 +1,12 @@
 <i:arg type="String" name="url" />
 <i:arg type="boolean" name="adminOnly" default="false"/>
+<i:arg type="Page" name="page" default=""/>
 
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders a delete/dangerous link within a Wondergem template" />
 
-<i class="fa fa-trash"></i> <a class="link link-danger @if (adminOnly) {admin-link}" href="@url">@i18n("NLS.delete")</a>
+<i class="fa fa-trash"></i>
+<a class="link link-danger @if (adminOnly) {admin-link}"
+   href="@if(page != null) {@url?@page.createQueryString()} else {@url}">
+    @i18n("NLS.delete")
+</a>
