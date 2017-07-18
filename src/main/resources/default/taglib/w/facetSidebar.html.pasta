@@ -1,5 +1,5 @@
 <i:arg type="Page" name="page" />
-<i:arg type="String" name="baseURL" />
+<i:arg type="String" name="baseUrl" />
 
 <i:pragma name="inline" value="true" />
 <i:pragma name="description"
@@ -8,7 +8,7 @@
 <div class="row">
     <i:if test="page.hasFacets()">
         <div class="col-md-3">
-            <w:filterbox page="@page" baseURL="@baseURL" />
+            <w:filterbox page="@page" baseUrl="@baseUrl" />
         </div>
     </i:if>
 

@@ -1,12 +1,13 @@
-<i:arg type="String" name="headerKey" default="" />
+<i:arg type="String" name="labelKey" default="" />
+<i:arg type="String" name="label" default="@i18n(labelKey)" />
 
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders navigation box within a Wondergem template" />
 
 <div class="well nav-box">
     <ul class="nav nav-list sub-nav">
-        <i:if test="isFilled(headerKey)">
-            <li class="nav-header">@i18n(headerKey)</li>
+        <i:if test="isFilled(label)">
+            <li class="nav-header">@label</li>
         </i:if>
         <i:render name="body" />
     </ul>
