@@ -24,6 +24,11 @@
                 <script type="text/javascript">
                     $(document).ready(function() {
                         $("input:text.jump-to").keyup(function (e) {
+                            // api-users can define a shouldDoPageJump method, where they can controll whether to
+                            // actually change pages on user input
+                            if (window.shouldDoPageJump && !shouldDoPageJump()) {
+                                return;
+                            }
                             var startIndex = $(this).val();
                             var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
                             if (key == 13 && /^\d+$/.test(startIndex)) {
@@ -37,6 +42,11 @@
     
                         @if (page.hasLess()) {
                             $(document).keyup(function (e) {
+                                // api-users can define a shouldDoPageJump method, where they can controll whether to
+                                // actually change pages on user input
+                                if (window.shouldDoPageJump && !shouldDoPageJump()) {
+                                    return;
+                                }
                                 if (e.shiftKey && (e.which === 37)) {
                                     @if (Strings.isFilled(type)) {
                                         var location = '@prefix/@baseURL?@page.createPrevPageQueryString()&pageType=@type';
@@ -49,6 +59,11 @@
                         }
                         @if (page.hasMore()) {
                             $(document).keyup(function (e) {
+                                // api-users can define a shouldDoPageJump method, where they can controll whether to
+                                // actually change pages on user input
+                                if (window.shouldDoPageJump && !shouldDoPageJump()) {
+                                    return;
+                                }
                                 if (e.shiftKey && (e.which === 39)) {
                                     @if (Strings.isFilled(type)) {
                                         var location = '@prefix/@baseURL?@page.createNextPageQueryString()&pageType=@type';
