@@ -3,7 +3,7 @@
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Provides a header for a Wondergem page"/>
 
-<i:if test="isFilled(titleKey)">
+<i:if test="isFilled(title)">
     <h1 class="legend">@title</h1>
     <i:else>
         <h1 class="legend">
