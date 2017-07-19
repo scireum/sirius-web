@@ -218,7 +218,7 @@ public class Tagliatelle {
     }
 
     private static boolean checkTypeConversion(Class<?> from, Class<?> to) {
-        if (from == long.class && to == int.class) {
+        if (from == long.class && to == int.class || from == int.class && to == long.class) {
             return true;
         }
 
@@ -234,11 +234,11 @@ public class Tagliatelle {
      */
     private static boolean checkAutoboxing(Class<?> primitveType, Class<?> boxedType) {
         if (primitveType == int.class || primitveType == long.class) {
-            return Integer.class.isAssignableFrom(boxedType);
+            return boxedType.isAssignableFrom(Integer.class);
         }
 
         if (primitveType == boolean.class) {
-            return Boolean.class.isAssignableFrom(boxedType);
+            return boxedType.isAssignableFrom(Boolean.class);
         }
 
         return false;
