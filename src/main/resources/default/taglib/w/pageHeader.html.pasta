@@ -1,9 +1,11 @@
 <i:arg type="String" name="titleKey" default="" />
+<i:arg type="String" name="title" default="@i18n(titleKey)" />
+
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Provides a header for a Wondergem page"/>
 
-<i:if test="isFilled(titleKey)">
-    <h1 class="legend">@i18n(titleKey)</h1>
+<i:if test="isFilled(title)">
+    <h1 class="legend">@title</h1>
     <i:else>
         <h1 class="legend">
             <i:render name="body" />
