@@ -22,7 +22,7 @@
     </i:if>
     <input name="@name"
            type="text"
-           value="user.getFieldValue(name, value)"
+           value="@user.getFieldValue(name, value)"
            class="form-control input-block-level date-picker"
            @if (readonly) { readonly } />
 
