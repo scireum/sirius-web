@@ -10,6 +10,7 @@ package sirius.tagliatelle;
 
 import sirius.kernel.Sirius;
 import sirius.kernel.cache.Cache;
+import sirius.kernel.cache.CacheEntry;
 import sirius.kernel.cache.CacheManager;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
@@ -34,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Provides statically compiled and optimized templates to generate HTML, XML and text files.
@@ -317,5 +319,17 @@ public class Tagliatelle {
     public String resolveTagName(String qualifiedTagName) {
         Tuple<String, String> tagName = Strings.split(qualifiedTagName, ":");
         return "/taglib/" + tagName.getFirst() + "/" + tagName.getSecond() + ".html.pasta";
+    }
+
+    /**
+     * Provides a list of all currently compiled templates.
+     * <p>
+     * Note that this directly accesses an inner cache. Therefore some templates which were rendered some time ago,
+     * might have been dropped out of the cache and will therefore not occur in this list.
+     *
+     * @return a list of all compiled templates
+     */
+    public List<Template> getCompiledTemplates() {
+        return compiledTemplates.getContents().stream().map(CacheEntry::getValue).collect(Collectors.toList());
     }
 }
