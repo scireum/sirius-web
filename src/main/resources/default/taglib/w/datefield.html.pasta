@@ -20,13 +20,11 @@
         </span>
         </label>
     </i:if>
-    <div class="input-group">
-        <input name="@name"
-               type="text"
-               value="user.getFieldValue(name, value)"
-               class="form-control input-block-level date-picker"
-               @if (readonly) { readonly } />
-    </div>
+    <input name="@name"
+           type="text"
+           value="user.getFieldValue(name, value)"
+           class="form-control input-block-level date-picker"
+           @if (readonly) { readonly } />
 
     <i:if test="isFilled(help)">
         <span class="help-block">@help</span>
