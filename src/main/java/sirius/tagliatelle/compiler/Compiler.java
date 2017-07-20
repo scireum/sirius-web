@@ -13,8 +13,10 @@ import parsii.tokenizer.Char;
 import parsii.tokenizer.LookaheadReader;
 import parsii.tokenizer.ParseError;
 import parsii.tokenizer.Position;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.health.HandledException;
 import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.emitter.CompositeEmitter;
 import sirius.tagliatelle.emitter.ConstantEmitter;
@@ -286,19 +288,29 @@ public class Compiler extends InputProcessor {
         Position startOfTag = reader.current();
         reader.consume();
         String tagName = parseName();
-        TagHandler handler = context.findTagHandler(reader.current(), tagName);
-        if (handler != null) {
-            handler.setStartOfTag(startOfTag);
-            handler.setParentHandler(parentHandler);
-            handler.setCompilationContext(context);
-            handler.setTagName(tagName);
-            handleTag(handler, block);
-            return true;
-        }
+        try {
+            TagHandler handler = context.findTagHandler(reader.current(), tagName);
+            if (handler != null) {
+                handler.setStartOfTag(startOfTag);
+                handler.setParentHandler(parentHandler);
+                handler.setCompilationContext(context);
+                handler.setTagName(tagName);
+                handleTag(handler, block);
+                return true;
+            }
 
-        staticText.append("<");
-        staticText.append(tagName);
-        return false;
+            staticText.append("<");
+            staticText.append(tagName);
+            return false;
+        } catch (Exception e) {
+            HandledException ex = Exceptions.handle(Tagliatelle.LOG, e);
+            context.error(startOfTag,
+                          Strings.apply("An error occured while processing %s: %s (%s)",
+                                        tagName,
+                                        ex.getMessage(),
+                                        e.getClass().getName()));
+            return false;
+        }
     }
 
     /**
@@ -421,15 +433,13 @@ public class Compiler extends InputProcessor {
     private void verifyAttributeNameAndType(TagHandler handler, String attributeName, Class<?> attributeType) {
         if (attributeType == null) {
             context.error(reader.current(),
-                            "Unknown attribute. %s doesn't have an attribute '%s'.",
-                            handler.getTagName(),
-                            attributeName);
+                          "Unknown attribute. %s doesn't have an attribute '%s'.",
+                          handler.getTagName(),
+                          attributeName);
         }
 
         if (handler.getAttribute(attributeName) != null) {
-            context.error(reader.current(),
-                            "Duplicate attribute. A value for '%s' is already present.",
-                            attributeName);
+            context.error(reader.current(), "Duplicate attribute. A value for '%s' is already present.", attributeName);
         }
     }
 
