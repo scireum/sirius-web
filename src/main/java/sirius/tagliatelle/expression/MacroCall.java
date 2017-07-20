@@ -59,7 +59,7 @@ public class MacroCall extends Call {
 
     @Override
     public boolean isConstant() {
-        if (!macro.isConstant(parameterExpressions)) {
+        if (macro == null || !macro.isConstant(parameterExpressions)) {
             return false;
         }
 
