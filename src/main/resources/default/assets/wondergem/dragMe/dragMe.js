@@ -14,11 +14,12 @@
         var _div = this;
         var _touchTarget = $(options.touchTarget) || _div;
         var _container = $(options.container || 'body');
+        var _window = $(window);
         _touchTarget.off('mousedown.dragMe').on('mousedown.dragMe', function (e) {
             var offset = $(this).offset();
             var x = e.pageX - offset.left;
             var y = e.pageY - offset.top;
-            $(window).on('mousemove.dragMe', function (event) {
+            _window.on('mousemove.dragMe', function (event) {
                 var containerOffset = _container.offset();
                 var maxBottom = containerOffset.top + _container.outerHeight() - _div.outerHeight();
                 var maxRight = containerOffset.left + _container.outerWidth() - _div.outerWidth();
@@ -32,8 +33,8 @@
                 });
             });
         });
-        $(window).on('mouseup.dragMe', function (e) {
-            $(window).off('mousemove.dragMe');
+        _window.on('mouseup.dragMe', function (e) {
+            _window.off('mousemove.dragMe');
         });
     }
 }(jQuery));
