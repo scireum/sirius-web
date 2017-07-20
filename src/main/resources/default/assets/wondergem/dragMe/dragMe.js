@@ -1,11 +1,20 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
 (function ($) {
     $.fn.dragMe = function (options) {
         if (typeof options === 'undefined') {
             options = {};
         }
         var _div = this;
+        var _touchTarget = $(options.touchTarget) || _div;
         var _container = $(options.container || 'body');
-        _div.off('mousedown.dragMe').on('mousedown.dragMe', function (e) {
+        _touchTarget.off('mousedown.dragMe').on('mousedown.dragMe', function (e) {
             var offset = $(this).offset();
             var x = e.pageX - offset.left;
             var y = e.pageY - offset.top;
@@ -17,7 +26,7 @@
                 var left = Math.min(Math.max(containerOffset.left, event.clientX - x), maxRight);
                 _div.css({
                     position: 'absolute',
-                    margin: 0,
+                    margin: '',
                     top: top + 'px',
                     left: left + 'px'
                 });
