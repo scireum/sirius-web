@@ -545,7 +545,7 @@ class Parser extends InputProcessor {
 
         String literal = sb.toString();
         if (!literal.endsWith(".class")) {
-            return tryEnumLiteral(pos, literal, offset);
+            return tryEnumLiteral(literal, offset);
         }
 
         // Cut the .class to make it resolvable...
@@ -555,10 +555,10 @@ class Parser extends InputProcessor {
         return new ConstantClass(context.resolveClass(pos, literal));
     }
 
-    private Expression tryEnumLiteral(Position pos, String literal, int offset) {
+    private Expression tryEnumLiteral(String literal, int offset) {
         Tuple<String, String> typeNameName = Strings.splitAtLast(literal, ".");
         Class<?> enumType = context.tryResolveClass(typeNameName.getFirst()).orElse(null);
-        if (enumType == null) {
+        if (enumType == null || enumType.getEnumConstants() == null) {
             return null;
         }
 
