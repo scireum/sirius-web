@@ -306,9 +306,10 @@ public class Tagliatelle {
     public static void ensureProperTemplatePath(String path) {
         String effectiveUri = path.startsWith("/") ? path : "/" + path;
 
-        if (!effectiveUri.startsWith("/templates") && !effectiveUri.startsWith("/assets")) {
+        if (!effectiveUri.startsWith("/templates") && !effectiveUri.startsWith("/assets") && !effectiveUri.startsWith(
+                "/taglib")) {
             throw new IllegalArgumentException(
-                    "Tagliatelle templates must reside in /templates or /assets. Invalid path: " + path);
+                    "Tagliatelle templates must reside in /templates, /taglib or /assets. Invalid path: " + path);
         }
     }
 
