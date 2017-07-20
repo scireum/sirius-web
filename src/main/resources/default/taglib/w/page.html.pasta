@@ -32,7 +32,7 @@
         <script src="/assets/wondergem/featherlight/featherlight.js" type="text/javascript"></script>
         <script src="/assets/wondergem/magicsuggest/magicsuggest-min.js"></script>
 
-        <i:extensions name="template-page-head" />
+        <i:extensions name="templates-page-head" />
         <i:invoke template="/templates/wondergem/page-script.html.pasta" inline="true" />
         <i:render name="head" />
     </head>
@@ -75,6 +75,6 @@
         <i:render name="dialogs" />
 
         <i:invoke template="/templates/wondergem/page-dialogs.html.pasta" inline="true" />
-        <i:extensions name="template-page-footer" />
+        <i:extensions name="templates-page-footer" />
     </body>
 </html>
