@@ -11,7 +11,6 @@ package sirius.web.templates
 import sirius.kernel.BaseSpecification
 import sirius.kernel.commons.Context
 import sirius.kernel.di.std.Part
-import sirius.web.templates.velocity.VelocityContentHandler
 
 class TemplatesSpec extends BaseSpecification {
 
@@ -22,7 +21,7 @@ class TemplatesSpec extends BaseSpecification {
         when:
         def result = templates.generator()
                 .applyContext(Context.create().set("hello", "World"))
-                .direct('$hello', VelocityContentHandler.VM)
+                .direct('<i:arg type="String" name="hello" />@hello', TagliatelleContentHandler.PASTA)
                 .generate()
         then:
         result == "World"
@@ -30,7 +29,7 @@ class TemplatesSpec extends BaseSpecification {
 
     def "template lookup works"() {
         when:
-        def result = templates.generator().useTemplate("helloWorld.vm")
+        def result = templates.generator().useTemplate("templates/helloWorld.pasta")
                 .applyContext(Context.create().set("hello", "World"))
                 .generate()
         then:
@@ -39,7 +38,7 @@ class TemplatesSpec extends BaseSpecification {
 
     def "compund template names work"() {
         when:
-        def result = templates.generator().useTemplate("helloWorld.js.vm")
+        def result = templates.generator().useTemplate("templates/helloWorld.js.pasta")
                 .applyContext(Context.create().set("hello", "World"))
                 .generate()
         then:

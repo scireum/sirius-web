@@ -6,23 +6,21 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.web.templates;
-
-import sirius.kernel.commons.Values;
+package sirius.web.data;
 
 /**
- * Invoked by a {@link LineBasedProcessor} to handle one row.
+ * Invoked by a {@link SmartLineBasedProcessor} to handle one row.
  */
-public interface RowProcessor {
+public interface NamedRowProcessor {
     /**
      * Called the handle a row of an input file.
      * <p>
      * Note that an exception thrown here will completely abort the whole process. Therefore proper exception
      * handling is required.
-     * </p>
+     * <p>
      *
      * @param lineNumber the line number which is currently being processed.
-     * @param row        the data of the row / line to process
+     * @param row        the data of the row to process
      */
-    void handleRow(int lineNumber, Values row);
+    void handleRow(int lineNumber, SmartRow row);
 }

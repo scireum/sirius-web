@@ -50,7 +50,7 @@ public class BaseRythmExtension implements RythmExtension {
 
         values.accept("ctx", ctx);
         values.accept("user", ctx.get(UserContext.class));
-        values.accept("prefix", WebContext.getContextPrefix());
+        values.accept("prefix", "");
         values.accept("product", Product.getProduct().getName());
         values.accept("year", LocalDate.now().getYear());
         values.accept("detailedVersion", Product.getProduct().getDetails());

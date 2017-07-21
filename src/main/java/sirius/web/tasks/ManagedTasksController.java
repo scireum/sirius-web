@@ -40,6 +40,12 @@ public class ManagedTasksController extends BasicController {
      */
     public static final String PERMISSION_SYSTEM_SCRIPTING = "permission-system-scripting";
 
+    @Part
+    private ManagedTasks managedTasks;
+
+    @Part
+    private Templates templates;
+
     /**
      * Lists all active tasks
      *
@@ -167,12 +173,6 @@ public class ManagedTasksController extends BasicController {
         ctx.respondWith().template("templates/system/scripting.html.pasta");
     }
 
-    @Part
-    private ManagedTasks managedTasks;
-
-    @Part
-    private Templates templates;
-
     /**
      * Executes the given script.
      *
@@ -186,6 +186,7 @@ public class ManagedTasksController extends BasicController {
         String scriptSource = CharStreams.toString(new InputStreamReader(ctx.getContent(), Charsets.UTF_8));
         ManagedTask mt = managedTasks.createManagedTaskSetup("Custom Script").execute(jobCtx -> {
             Context params = Context.create();
+            params.putAll(templates.createGlobalSystemScriptingContext());
             params.set("task", jobCtx);
             templates.generator()
                      .applyContext(params)

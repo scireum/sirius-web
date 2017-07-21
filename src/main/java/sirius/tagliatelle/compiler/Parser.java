@@ -300,7 +300,7 @@ class Parser extends InputProcessor {
             if (reader.current().is('+')) {
                 Char operator = reader.consume();
                 Expression right = product();
-                if (result.getType() == int.class && right.getType() == int.class) {
+                if (Tagliatelle.isAssignableTo(result.getType(), int.class) && Tagliatelle.isAssignableTo(right.getType(), int.class)) {
                     result = new IntOperation(Operator.ADD, result, right);
                 } else if (result instanceof ConcatExpression) {
                     ((ConcatExpression) result).add(right);

@@ -12,7 +12,7 @@ import org.rythmengine.resource.ITemplateResource;
 import org.rythmengine.resource.ResourceLoaderBase;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
-import sirius.web.templates.Resources;
+import sirius.web.resources.Resources;
 
 import java.util.regex.Pattern;
 

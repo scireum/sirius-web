@@ -6,16 +6,16 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.web.tools;
+package sirius.web.util;
 
 import sirius.kernel.di.std.Register;
 import sirius.kernel.nls.NLS;
 import sirius.web.controller.BasicController;
 import sirius.web.controller.Controller;
 import sirius.web.controller.Routed;
+import sirius.web.data.ExcelExport;
 import sirius.web.http.WebContext;
 import sirius.web.security.Permission;
-import sirius.web.templates.ExcelExport;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -6,7 +6,7 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.web.templates;
+package sirius.web.resources;
 
 import sirius.kernel.di.std.Priorized;
 
@@ -25,7 +25,7 @@ public interface Resolver extends Priorized {
      *
      * @param scopeId  the id of the currently active scope
      * @param resource the resource to resolve. This will always start with a "/"
-     * @return a {@link sirius.web.templates.Resource} pointing to the data to use or <tt>null</tt> if this resolver
+     * @return a {@link Resource} pointing to the data to use or <tt>null</tt> if this resolver
      * cannot resolve the given resource
      */
     Resource resolve(@Nonnull String scopeId, @Nonnull String resource);

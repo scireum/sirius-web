@@ -6,7 +6,7 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.web.templates.velocity;
+package sirius.web.templates;
 
 import com.google.zxing.Writer;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -32,8 +32,8 @@ import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.web.security.UserContext;
-import sirius.web.templates.Resource;
-import sirius.web.templates.Resources;
+import sirius.web.resources.Resource;
+import sirius.web.resources.Resources;
 
 import java.awt.Color;
 import java.io.IOException;

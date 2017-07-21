@@ -6,9 +6,8 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.web.templates;
+package sirius.web.resources;
 
-import sirius.kernel.di.std.Priorized;
 import sirius.kernel.di.std.Register;
 
 import java.net.URL;
@@ -34,6 +33,6 @@ public class ClasspathResolver implements Resolver {
 
     @Override
     public int getPriority() {
-        return Priorized.DEFAULT_PRIORITY;
+        return DEFAULT_PRIORITY;
     }
 }

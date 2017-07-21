@@ -6,7 +6,7 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.web.templates;
+package sirius.web.resources;
 
 import sirius.kernel.Sirius;
 import sirius.kernel.cache.Cache;

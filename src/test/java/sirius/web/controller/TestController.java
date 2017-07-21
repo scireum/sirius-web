@@ -16,7 +16,7 @@ import sirius.kernel.health.HandledException;
 import sirius.web.http.InputStreamHandler;
 import sirius.web.http.WebContext;
 import sirius.web.services.JSONStructuredOutput;
-import sirius.web.templates.Resources;
+import sirius.web.resources.Resources;
 
 import java.io.IOException;
 import java.io.OutputStream;

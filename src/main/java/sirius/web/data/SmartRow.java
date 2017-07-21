@@ -6,7 +6,7 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.web.templates;
+package sirius.web.data;
 
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
@@ -19,7 +19,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * a row of a dataset that supports multiple same-named columns. Values of this columns can be retrieved by
+ * A row of a dataset that supports multiple same-named columns. Values of this columns can be retrieved by
  */
 public interface SmartRow {
 

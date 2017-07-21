@@ -6,7 +6,7 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.web.templates;
+package sirius.web.data;
 
 import com.google.common.collect.ListMultimap;
 import sirius.kernel.commons.Tuple;
@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * A {@link sirius.web.templates.SmartRow} that stores its row data in a {@link ListMultimap}
+ * A {@link SmartRow} that stores its row data in a {@link ListMultimap}
  */
 class MultimapSmartRow implements SmartRow {
 

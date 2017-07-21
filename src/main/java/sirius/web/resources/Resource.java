@@ -6,7 +6,7 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.web.templates;
+package sirius.web.resources;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
@@ -28,10 +28,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * Wraps an resolved URL as resource.
  * <p>
- * Used as result of a {@link sirius.web.templates.Resolver}. Next to the resolved URL it also stores the original
+ * Used as result of a {@link Resolver}. Next to the resolved URL it also stores the original
  * scope and path which was used to resolve the url.
  *
- * @see sirius.web.templates.Resolver
+ * @see Resolver
  * @see sirius.web.security.UserContext#getCurrentScope()
  */
 public class Resource {

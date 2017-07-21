@@ -6,7 +6,7 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.web.templates;
+package sirius.web.data;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;

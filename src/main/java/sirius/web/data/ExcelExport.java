@@ -6,7 +6,7 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.web.templates;
+package sirius.web.data;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.poi.hssf.usermodel.HSSFCell;
