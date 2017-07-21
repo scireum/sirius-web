@@ -1,0 +1,19 @@
+<i:arg type="String" name="labelKey" default="" />
+<i:arg type="String" name="label" default="@i18n(labelKey)" />
+<i:arg type="Object" name="value" />
+
+<i:pragma name="inline" value="true" />
+<i:pragma name="description" value="Provides a line (key / value pair) within an infobox" />
+
+<i:if test="isFilled(value)">
+    <div class="row info-line">
+        <div class="col-md-4 name">
+            @label
+        </div>
+        <div class="col-md-8 value word-wrap">
+            <div>
+                @toUserString(value)
+            </div>
+        </div>
+    </div>
+</i:if>

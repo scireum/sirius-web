@@ -903,7 +903,11 @@ public class Response {
             if (HttpResponseStatus.NOT_FOUND.equals(status)) {
                 template(status, "/templates/http/not-found.html.pasta", CallContext.getCurrent(), message);
             } else {
-                template(status, "/templates/http/error.html.pasta", CallContext.getCurrent(), message);
+                String effectiveMessage = message;
+                if (Strings.isEmpty(effectiveMessage)) {
+                    effectiveMessage = status.toString();
+                }
+                template(status, "/templates/http/error.html.pasta", CallContext.getCurrent(), effectiveMessage);
             }
         } catch (HandledException e) {
             Exceptions.ignore(e);

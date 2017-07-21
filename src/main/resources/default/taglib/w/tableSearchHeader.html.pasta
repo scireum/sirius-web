@@ -1,5 +1,5 @@
 <i:arg name="page" type="Page" />
-<i:arg name="baseURL" type="String" />
+<i:arg name="baseUrl" type="String" />
 <i:arg name="hideSearchBox" type="boolean" default="false" />
 
 <i:pragma name="inline" value="true" />
@@ -9,7 +9,7 @@
 <div class="well">
     <i:if test="@!hideSearchBox">
         <div class="pull-left">
-            <form class="form-inline" action="@baseURL" method="get" id="search">
+            <form class="form-inline" action="@baseUrl" method="get" id="search">
                 <i:for type="sirius.web.controller.Facet" var="facet" items="page.getFacets()">
                     <i:if test="facet.getValue() != null">
                         <input type="hidden" name="@facet.getName()" value="@facet.getValue()" />
@@ -26,7 +26,7 @@
         <span>
             <i:render name="body" />
         </span>
-        <a class="btn btn-default" href="@baseURL?@page.createQueryString()"><i class="fa fa-refresh"></i></a>
+        <a class="btn btn-default" href="@baseUrl?@page.createQueryString()"><i class="fa fa-refresh"></i></a>
     </div>
     <span class="clearfix"></span>
 </div>

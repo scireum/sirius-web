@@ -6,7 +6,7 @@
 
 <div class="well help-box">
     <i:if test="isFilled(help)">
-        @help
+        <i:raw>@help</i:raw>
     </i:if>
 
     <i:render name="body" />

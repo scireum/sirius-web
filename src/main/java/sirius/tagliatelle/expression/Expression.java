@@ -29,7 +29,7 @@ public abstract class Expression {
      * @param visitor the visitor to invoke for all child nodes and on the node itself
      * @return the result of the invocation of the given visitor on this node
      */
-    public abstract Expression visit(ExpressionVisitor visitor);
+    public abstract Expression propagateVisitor(ExpressionVisitor visitor);
 
     /**
      * Reduces and optimizes the expression if possible.

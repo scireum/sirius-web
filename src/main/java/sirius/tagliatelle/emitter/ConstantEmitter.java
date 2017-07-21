@@ -59,8 +59,8 @@ public class ConstantEmitter extends Emitter {
     }
 
     @Override
-    public Emitter visit(EmitterVisitor visitor) {
-        return visitor.visit(this);
+    public Emitter propagateVisitor(EmitterVisitor visitor) {
+        return visitor.visitThis(this);
     }
 
     @Override

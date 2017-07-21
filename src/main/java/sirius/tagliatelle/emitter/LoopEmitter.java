@@ -19,10 +19,9 @@ import java.util.function.Function;
 /**
  * Loops over a given {@link Iterable} and invokes the given block for each item within.
  */
-public class LoopEmitter extends Emitter {
+public class LoopEmitter extends PushEmitter {
 
     private Expression iterableExpression;
-    private int localIndex = -1;
     private Emitter loop;
 
     /**
@@ -50,15 +49,6 @@ public class LoopEmitter extends Emitter {
      */
     public void setLoop(Emitter loop) {
         this.loop = loop;
-    }
-
-    /**
-     * Specifies the stack / local index of the loop variable.
-     *
-     * @param localIndex the local index within the {@link LocalRenderContext} to use for the loop variable
-     */
-    public void setLocalIndex(int localIndex) {
-        this.localIndex = localIndex;
     }
 
     @Override
@@ -91,15 +81,15 @@ public class LoopEmitter extends Emitter {
     }
 
     @Override
-    public Emitter visit(EmitterVisitor visitor) {
-        this.loop = visitor.visit(loop);
-        return visitor.visit(this);
+    public Emitter propagateVisitor(EmitterVisitor visitor) {
+        this.loop = loop.propagateVisitor(visitor);
+        return visitor.visitThis(this);
     }
 
     @Override
     public void visitExpressions(Function<Position, ExpressionVisitor> visitorSupplier) {
         ExpressionVisitor visitor = visitorSupplier.apply(getStartOfBlock());
-        this.iterableExpression = iterableExpression.visit(visitor);
+        this.iterableExpression = iterableExpression.propagateVisitor(visitor);
         this.loop.visitExpressions(visitorSupplier);
     }
 
@@ -120,6 +110,15 @@ public class LoopEmitter extends Emitter {
         }
     }
 
+    /**
+     * Returns the expression which yields the items to iterate through.
+     *
+     * @return the expression to iterate through
+     */
+    public Expression getIterableExpression() {
+        return iterableExpression;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -131,4 +130,5 @@ public class LoopEmitter extends Emitter {
 
         return sb.toString();
     }
+
 }

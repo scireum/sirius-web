@@ -101,7 +101,7 @@ public abstract class Emitter {
      * @return the resulting emitter returned by the visitor
      */
     @Nonnull
-    public abstract Emitter visit(@Nonnull EmitterVisitor visitor);
+    public abstract Emitter propagateVisitor(@Nonnull EmitterVisitor visitor);
 
     /**
      * Visits all expressions contained in this emitter or its children.

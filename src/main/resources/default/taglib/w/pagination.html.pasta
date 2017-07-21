@@ -1,5 +1,5 @@
 <i:arg type="Page" name="page" />
-<i:arg type="String" name="baseURL" />
+<i:arg type="String" name="baseUrl" />
 <i:arg type="String" name="type" default="" />
 
 <i:pragma name="inline" value="true" />
@@ -11,9 +11,9 @@
         <ul class="pagination">
             <i:if test="page.hasLess()">
                 <i:if test="isFilled(type)">
-                    <li><a href="@baseURL?@page.createPrevPageQueryString()&pageType=@type">&#8592;</a></li>
+                    <li><a href="@baseUrl?@page.createPrevPageQueryString()&pageType=@type">&#8592;</a></li>
                     <i:else>
-                        <li><a href="@baseURL?@page.createPrevPageQueryString()">&#8592;</a></li>
+                        <li><a href="@baseUrl?@page.createPrevPageQueryString()">&#8592;</a></li>
                     </i:else>
                 </i:if>
                 <i:else>
@@ -29,7 +29,7 @@
                             var startIndex = $(this).val();
                             var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
                             if (key == 13 && /^\d+$/.test(startIndex)) {
-                                var location = "@baseURL?@page.createQueryStringForConfigurableStart()" + startIndex;
+                                var location = "@baseUrl?@page.createQueryStringForConfigurableStart()" + startIndex;
                                 @if (isFilled(type)) {
                                     location += "&pageType=@type";
                                 }
@@ -41,9 +41,9 @@
                             $(document).keyup(function (e) {
                                 if (e.shiftKey && (e.which === 37)) {
                                 @if (isFilled(type)) {
-                                        var location = '@baseURL?@page.createPrevPageQueryString()&pageType=@type';
+                                        var location = '@baseUrl?@page.createPrevPageQueryString()&pageType=@type';
                                     } else {
-                                        var location = '@baseURL?@page.createPrevPageQueryString()';
+                                        var location = '@baseUrl?@page.createPrevPageQueryString()';
                                     }
                                     window.location.replace(location);
                                 }
@@ -53,9 +53,9 @@
                             $(document).keyup(function (e) {
                                 if (e.shiftKey && (e.which === 39)) {
                                 @if (isFilled(type)) {
-                                        var location = '@baseURL?@page.createNextPageQueryString()&pageType=@type';
+                                        var location = '@baseUrl?@page.createNextPageQueryString()&pageType=@type';
                                     } else {
-                                        var location = '@baseURL?@page.createNextPageQueryString()';
+                                        var location = '@baseUrl?@page.createNextPageQueryString()';
                                     }
                                     window.location.replace(location);
                                 }
@@ -67,9 +67,9 @@
 
             <i:if test="page.hasMore()">
                 <i:if test="isFilled(type)">
-                    <li><a href="@baseURL?@page.createNextPageQueryString()&pageType=@type">&#8594;</a></li>
+                    <li><a href="@baseUrl?@page.createNextPageQueryString()&pageType=@type">&#8594;</a></li>
                     <i:else>
-                        <li><a href="@baseURL?@page.createNextPageQueryString()">&#8594;</a></li>
+                        <li><a href="@baseUrl?@page.createNextPageQueryString()">&#8594;</a></li>
                     </i:else>
                 </i:if>
                 <i:else>

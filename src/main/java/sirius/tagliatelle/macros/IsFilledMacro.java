@@ -35,7 +35,7 @@ public class IsFilledMacro implements Macro {
     }
 
     @Override
-    public boolean isConstant() {
+    public boolean isConstant(Expression[] args) {
         return true;
     }
 
@@ -48,5 +48,10 @@ public class IsFilledMacro implements Macro {
     @Override
     public String getName() {
         return "isFilled";
+    }
+
+    @Override
+    public String getDescription() {
+        return "Returns true, if a non empty string is given as parameter, false otherwise.";
     }
 }

@@ -65,12 +65,14 @@ public class Resources {
      */
     @Nonnull
     public Optional<Resource> resolve(@Nonnull String scopeId, @Nonnull String uri) {
-        String lookupKey = scopeId + "://" + uri;
+        String effectiveUri = uri.startsWith("/") ? uri : "/" + uri;
+
+        String lookupKey = scopeId + "://" + effectiveUri;
         Optional<Resource> result = resolverCache.get(lookupKey);
         if (result != null) {
             if (Sirius.isDev()) {
                 // In dev environments, we always perform a lookup in case something changed
-                Optional<Resource> currentResult = resolveURI(scopeId, uri);
+                Optional<Resource> currentResult = resolveURI(scopeId, effectiveUri);
                 if (!result.isPresent()) {
                     return currentResult;
                 }
@@ -81,7 +83,7 @@ public class Resources {
             }
             return result;
         }
-        result = resolveURI(scopeId, uri);
+        result = resolveURI(scopeId, effectiveUri);
         resolverCache.put(lookupKey, result);
         return result;
     }
@@ -96,7 +98,9 @@ public class Resources {
      * @param uri     the local name of the uri to flush
      */
     public void flushCache(@Nonnull String scopeId, @Nonnull String uri) {
-        String lookupKey = scopeId + "://" + uri;
+        String effectiveUri = uri.startsWith("/") ? uri : "/" + uri;
+
+        String lookupKey = scopeId + "://" + effectiveUri;
         resolverCache.remove(lookupKey);
     }
 
@@ -104,9 +108,6 @@ public class Resources {
      * Calls all available resolvers to pick the right content for the given scope and uri (without using a cache)
      */
     private Optional<Resource> resolveURI(String scopeId, String uri) {
-        if (!uri.startsWith("/")) {
-            uri = "/" + uri;
-        }
         for (Resolver res : resolvers) {
             Resource r = res.resolve(scopeId, uri);
             if (r != null) {

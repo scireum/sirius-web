@@ -31,7 +31,7 @@ public class ToUserStringMacro implements Macro {
     }
 
     @Override
-    public boolean isConstant() {
+    public boolean isConstant(Expression[] args) {
         return false;
     }
 
@@ -39,5 +39,10 @@ public class ToUserStringMacro implements Macro {
     @Override
     public String getName() {
         return "toUserString";
+    }
+
+    @Override
+    public String getDescription() {
+        return "Formats the given parameter as a user readable string.";
     }
 }

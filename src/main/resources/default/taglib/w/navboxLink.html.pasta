@@ -1,10 +1,12 @@
 <i:arg name="url" type="String" default=""/>
 <i:arg name="labelKey" type="String" default=""/>
+<i:arg name="label" type="String" default="@i18n(labelKey)"/>
 <i:arg name="active" type="boolean" default="false"/>
 <i:arg name="permission" type="String" default=""/>
 <i:arg name="icon" type="String" default=""/>
 
 <i:pragma name="description" value="Renders navigation box link within a Wondergem template" />
+<i:pragma name="inline" value="true" />
 
 <i:if test="user.getUser().hasPermission(permission)">
     <li @if(active) { class="active" }>
@@ -12,7 +14,7 @@
             <i:if test="isFilled(icon)">
                 <i class="fa @icon"></i>
             </i:if>
-            @i18n(labelKey)
+            @label
         </a>
 
         <i:render name="body"/>

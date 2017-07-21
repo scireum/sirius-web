@@ -17,20 +17,26 @@ import javax.annotation.Nullable;
  */
 public class TemplateArgument {
 
-    private Class<?> type;
-    private String name;
-    private Expression defaultValue;
+    private final String description;
+    private final Class<?> type;
+    private final String name;
+    private final Expression defaultValue;
 
     /**
      * Creates a new argument with the given type, name and default expression.
      *
      * @param type         the type of the argument
      * @param name         the name of the argument
+     * @param description  a description of the argument
      * @param defaultValue the expression which yields the default value if no argument is supplied.
      */
-    public TemplateArgument(Class<?> type, String name, @Nullable Expression defaultValue) {
+    public TemplateArgument(Class<?> type,
+                            String name,
+                            @Nullable String description,
+                            @Nullable Expression defaultValue) {
         this.type = type;
         this.name = name;
+        this.description = description;
         this.defaultValue = defaultValue;
     }
 
@@ -59,5 +65,14 @@ public class TemplateArgument {
      */
     public Expression getDefaultValue() {
         return defaultValue;
+    }
+
+    /**
+     * Returns the description of the argument.
+     *
+     * @return a short description of the argument
+     */
+    public String getDescription() {
+        return description;
     }
 }

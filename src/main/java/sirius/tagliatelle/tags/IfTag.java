@@ -9,10 +9,13 @@
 package sirius.tagliatelle.tags;
 
 import sirius.kernel.di.std.Register;
+import sirius.tagliatelle.TemplateArgument;
 import sirius.tagliatelle.emitter.CompositeEmitter;
 import sirius.tagliatelle.emitter.ConditionalEmitter;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Handles <tt>i:if</tt> which emits its body if a condition is met.
@@ -30,6 +33,19 @@ public class IfTag extends TagHandler {
         @Override
         public TagHandler createHandler() {
             return new IfTag();
+        }
+
+        @Override
+        public List<TemplateArgument> reportArguments() {
+            return Collections.singletonList(new TemplateArgument(boolean.class,
+                                                                  "test",
+                                                                  "Contains the condition to check.",
+                                                                  null));
+        }
+
+        @Override
+        public String getDescription() {
+            return "Emits its body only if the given condition evaluates to true. Use an inner i:else to emit if the condition is false.";
         }
     }
 

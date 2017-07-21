@@ -8,9 +8,7 @@
     </w:pageHeader>
 
     <div class="well">
-        <pre style="font-size: small">
-            @message
-        </pre>
+        <pre style="font-size: small">@message</pre>
 
         <h2>Diagnostic:</h2>
         <ul>

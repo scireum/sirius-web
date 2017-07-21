@@ -1,6 +1,10 @@
-@args sirius.web.health.Cluster cluster, sirius.kernel.health.metrics.Metrics metrics, boolean all
-@extends(view.wondergem.template.html, title: ("[" + cluster.getClusterState() + "/" + cluster.getNodeState() + "] " + product + " - Status"))
-@section(head) {
+<i:arg type="sirius.web.health.Cluster" name="cluster" />
+<i:arg type="sirius.kernel.health.metrics.Metrics" name="metrics" />
+<i:arg type="boolean" name="all" />
+<i:arg type="String" name="uptime" />
+
+<w:page title="@apply('[%s/%s] %s - Status', cluster.getClusterState(), cluster.getNodeState(), product)">
+    <i:block name="head">
         <style>
             .GRAY {
                 color: #555555;
@@ -15,60 +19,62 @@
                 color: rgb(209, 170, 0);
             }
         </style>
-}
+    </i:block>
 
-@section(breadcrumbs) {
-    <li><a href="@prefix/system/state">System State</a></li>
-}
+    <i:block name="breadcrumbs">
+        <li><a href="/system/state">System State</a></li>
+    </i:block>
 
-@pageHeader() {
-    <span class="@cluster.getNodeState()">System State</span> <small>@ctx.getNodeName()</small>
-    <div class="pull-right">
-        @if (all) {
-            <a href="@prefix/system/state" class="btn btn-primary"><i class="fa fa-minus"></i> Less</a>
-            <a class="btn btn-default" href="@prefix/system/state?all=true"><i class="fa fa-refresh"></i></a>
-        } else {
-            <a href="@prefix/system/state?all=true" class="btn btn-primary"><i class="fa fa-plus"></i> More</a>
-            <a class="btn btn-default" href="@prefix/system/state"><i class="fa fa-refresh"></i></a>
-        }
-    </div>
-    <div class="clearfix"></div>
-}
+    <w:pageHeader>
+        <span class="@cluster.getNodeState()">System State</span> <small>@nodeName</small>
+        <div class="pull-right">
+            @if (all) {
+            <a href="/system/state" class="btn btn-primary"><i class="fa fa-minus"></i> Less</a>
+            <a class="btn btn-default" href="/system/state?all=true"><i class="fa fa-refresh"></i></a>
+            } else {
+            <a href="/system/state?all=true" class="btn btn-primary"><i class="fa fa-plus"></i> More</a>
+            <a class="btn btn-default" href="/system/state"><i class="fa fa-refresh"></i></a>
+            }
+        </div>
+        <div class="clearfix"></div>
+    </w:pageHeader>
 
-<table class="table table-striped">
-    <tr>
-        <td style="overflow: hidden">
-            Uptime
-        </td>
-        <td class="align-right" style="overflow: hidden">
-            @NLS.convertDuration(sirius.kernel.Sirius.getUptimeInMilliseconds(), true, false)
-        </td>
-    </tr>
-    @for(sirius.kernel.health.metrics.Metric m : metrics.getMetrics()) {
-        @if (all || m.getState() != sirius.kernel.health.metrics.MetricState.GRAY) {
-            <tr class="@m.getState()">
-                <td style="overflow: hidden">
-                    @m.getName()
-                </td>
-                <td class="align-right" style="overflow: hidden">
-                    @m.getValueAsString()
-                </td>
-            </tr>
-        }
-    }
-</table>
+    <table class="table table-striped">
+        <tr>
+            <td style="overflow: hidden">
+                Uptime
+            </td>
+            <td class="align-right" style="overflow: hidden">
+                @uptime
+            </td>
+        </tr>
 
-@if (!cluster.getNodeInfos().isEmpty()) {
-    @heading() {
-        <span class="@cluster.getClusterState()">Cluster</span>
-    }
+        <i:for type="sirius.kernel.health.metrics.Metric" var="m" items="metrics.getMetrics()">
+            <i:if test="all || m.getState() != sirius.kernel.health.metrics.MetricState.GRAY">
+                <tr class="@m.getState()">
+                    <td style="overflow: hidden">
+                        @m.getName()
+                    </td>
+                    <td class="align-right" style="overflow: hidden">
+                        @m.getValueAsString()
+                    </td>
+                </tr>
+            </i:if>
+        </i:for>
+    </table>
 
-    @for(sirius.web.health.NodeInfo info : cluster.getNodeInfos()) {
-        @{ final sirius.web.health.NodeInfo finalInfo = info; }
-        @subHeading() {
-            <span class="@finalInfo.getNodeState()">@finalInfo.getName()</span>
-            <small>@finalInfo.getEndpoint()</small>
-        }
+    <i:if test="!cluster.getNodeInfos().isEmpty()">
+        <w:heading>
+            <span class="@cluster.getClusterState()">Cluster</span>
+        </w:heading>
+    </i:if>
+
+    <i:for type="sirius.web.health.NodeInfo" var="info" items="cluster.getNodeInfos()">
+        <w:subHeading>
+            <span class="@info.getNodeState()">@info.getName()</span>
+            <small>@info.getEndpoint()</small>
+        </w:subHeading>
+
         <table class="table table-striped">
             <tr>
                 <td style="overflow: hidden">
@@ -78,7 +84,8 @@
                     @info.getUptime()
                 </td>
             </tr>
-            @if (info.getPingFailures() > 0) {
+
+            <i:if test="info.getPingFailures() > 0">
                 <tr class="RED">
                     <td style="overflow: hidden">
                         Ping Failures
@@ -87,10 +94,11 @@
                         @info.getPingFailures()
                     </td>
                 </tr>
-            }
 
-            @for(sirius.kernel.health.metrics.Metric m : info.getMetrics()) {
-                @if (all || m.getState() != sirius.kernel.health.metrics.MetricState.GRAY) {
+            </i:if>
+
+            <i:for type="sirius.kernel.health.metrics.Metric" var="m" items="info.getMetrics()">
+                <i:if test="all || m.getState() != sirius.kernel.health.metrics.MetricState.GRAY">
                     <tr class="@m.getState()">
                         <td style="overflow: hidden">
                             @m.getName()
@@ -99,8 +107,9 @@
                             @m.getValueAsString()
                         </td>
                     </tr>
-                }
-            }
+                </i:if>
+            </i:for>
         </table>
-    }
-}
+
+    </i:for>
+</w:page>

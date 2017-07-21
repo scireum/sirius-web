@@ -35,10 +35,10 @@ public class MethodCall extends Call {
     }
 
     @Override
-    public Expression visit(ExpressionVisitor visitor) {
-        this.selfExpression = visitor.visit(selfExpression);
+    public Expression propagateVisitor(ExpressionVisitor visitor) {
+        this.selfExpression = selfExpression.propagateVisitor(visitor);
 
-        return super.visit(visitor);
+        return super.propagateVisitor(visitor);
     }
 
     @Override
@@ -79,7 +79,7 @@ public class MethodCall extends Call {
             }
 
             return method.invoke(self, params);
-        } catch (IllegalAccessException e) {
+        } catch (IllegalArgumentException | IllegalAccessException e) {
             throw new ExpressionEvaluationException(e);
         } catch (InvocationTargetException e) {
             throw new ExpressionEvaluationException(e.getTargetException());

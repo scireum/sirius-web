@@ -31,7 +31,7 @@ public class ToMachineStringMacro implements Macro {
     }
 
     @Override
-    public boolean isConstant() {
+    public boolean isConstant(Expression[] args) {
         return true;
     }
 
@@ -39,5 +39,10 @@ public class ToMachineStringMacro implements Macro {
     @Override
     public String getName() {
         return "toMachineString";
+    }
+
+    @Override
+    public String getDescription() {
+        return "Formats the given parameter as a machine processable string.";
     }
 }

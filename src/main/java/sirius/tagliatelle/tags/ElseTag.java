@@ -9,10 +9,13 @@
 package sirius.tagliatelle.tags;
 
 import sirius.kernel.di.std.Register;
+import sirius.tagliatelle.TemplateArgument;
 import sirius.tagliatelle.emitter.CompositeEmitter;
 import sirius.tagliatelle.emitter.Emitter;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Handles <tt>i:else</tt> within an <tt>i:if</tt>.
@@ -31,6 +34,16 @@ public class ElseTag extends TagHandler {
         @Override
         public TagHandler createHandler() {
             return new ElseTag();
+        }
+
+        @Override
+        public List<TemplateArgument> reportArguments() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public String getDescription() {
+            return "Provides an else part for an i:if tag.";
         }
     }
 

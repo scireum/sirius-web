@@ -117,16 +117,16 @@ public class ConditionalEmitter extends Emitter {
     }
 
     @Override
-    public Emitter visit(EmitterVisitor visitor) {
-        this.whenTrue = whenTrue.visit(visitor);
-        this.whenFalse = whenFalse.visit(visitor);
-        return visitor.visit(this);
+    public Emitter propagateVisitor(EmitterVisitor visitor) {
+        this.whenTrue = whenTrue.propagateVisitor(visitor);
+        this.whenFalse = whenFalse.propagateVisitor(visitor);
+        return visitor.visitThis(this);
     }
 
     @Override
     public void visitExpressions(Function<Position, ExpressionVisitor> visitorSupplier) {
         ExpressionVisitor visitor = visitorSupplier.apply(getStartOfBlock());
-        conditionExpression = conditionExpression.visit(visitor);
+        conditionExpression = conditionExpression.propagateVisitor(visitor);
         whenTrue.visitExpressions(visitorSupplier);
         whenFalse.visitExpressions(visitorSupplier);
     }

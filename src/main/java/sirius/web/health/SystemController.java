@@ -9,21 +9,30 @@
 package sirius.web.health;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import sirius.kernel.Sirius;
+import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.health.Microtiming;
 import sirius.kernel.health.metrics.Metric;
 import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.health.metrics.Metrics;
 import sirius.kernel.nls.NLS;
 import sirius.web.controller.BasicController;
 import sirius.web.controller.Controller;
+import sirius.web.controller.Page;
 import sirius.web.controller.Routed;
 import sirius.web.http.WebContext;
 import sirius.web.http.session.ServerSession;
 import sirius.web.security.Permission;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Contains the default admin GUI.
@@ -44,6 +53,11 @@ public class SystemController extends BasicController {
      * Describes the permission required to access the system console.
      */
     public static final String PERMISSION_SYSTEM_CONSOLE = "permission-system-console";
+
+    /**
+     * Describes the permission required to access the system console.
+     */
+    public static final String PERMISSION_SYSTEM_TIMING = "permission-system-timing";
 
     /**
      * Describes the permission required to view the system state.
@@ -149,6 +163,66 @@ public class SystemController extends BasicController {
     @Routed("/system/state")
     @Permission(PERMISSION_SYSTEM_STATE)
     public void state(WebContext ctx) {
-        ctx.respondWith().template("/view/system/state.html", cluster, metrics, ctx.get("all").asBoolean(false));
+        ctx.respondWith()
+           .template("templates/system/state.html.pasta",
+                     cluster,
+                     metrics,
+                     ctx.get("all").asBoolean(false),
+                     NLS.convertDuration(Sirius.getUptimeInMilliseconds(), true, false));
+    }
+
+    @Routed("/system/timing")
+    @Permission(PERMISSION_SYSTEM_TIMING)
+    public void timing(WebContext ctx) {
+        if (ctx.hasParameter("enable")) {
+            Microtiming.setEnabled(true);
+        }
+        if (ctx.hasParameter("disable")) {
+            Microtiming.setEnabled(false);
+        }
+
+        String periodSinceReset = getPeriodSinceLastReset();
+
+        Page<String> page = new Page<>();
+        page.bindToRequest(ctx);
+
+        List<Tuple<String, Collection<Tuple<String, String>>>> timings = computeTimingInfos(page);
+
+        ctx.respondWith()
+           .template("templates/system/timing.html.pasta", Microtiming.isEnabled(), timings, page, periodSinceReset);
+    }
+
+    private List<Tuple<String, Collection<Tuple<String, String>>>> computeTimingInfos(Page<String> page) {
+        MultiMap<String, Tuple<String, String>> timingMap = MultiMap.createOrdered();
+        String query = Strings.isFilled(page.getQuery()) ? page.getQuery().toLowerCase() : null;
+        for (Microtiming.Timing timing : Microtiming.getTimings()) {
+            if (matchesQuery(query, timing)) {
+                timingMap.put(timing.getCategory(),
+                              Tuple.create(timing.getKey(),
+                                           NLS.toUserString(timing.getAvg().getCount())
+                                           + " ("
+                                           + NLS.toUserString(timing.getAvg().getAvg() / 1000)
+                                           + " ms)"));
+            }
+        }
+
+        return timingMap.getUnderlyingMap()
+                        .entrySet()
+                        .stream()
+                        .map(e -> Tuple.create(e.getKey(), e.getValue()))
+                        .collect(Collectors.toList());
+    }
+
+    private boolean matchesQuery(String query, Microtiming.Timing timing) {
+        return query == null || timing.getKey().toLowerCase().contains(query) || timing.getCategory()
+                                                                                    .toLowerCase()
+                                                                                    .contains(query);
+    }
+
+    private String getPeriodSinceLastReset() {
+        if (Microtiming.isEnabled()) {
+            return NLS.convertDuration(System.currentTimeMillis() - Microtiming.getLastReset(), true, true);
+        }
+        return "";
     }
 }

@@ -14,7 +14,7 @@ package sirius.web.controller;
 public class FacetItem {
     private String key;
     private String title;
-    private long count;
+    private int count;
     private boolean active;
 
     /**
@@ -25,7 +25,7 @@ public class FacetItem {
      * @param count  the number of matches found
      * @param active determines if this item is an active filter setting
      */
-    public FacetItem(String key, String title, long count, boolean active) {
+    public FacetItem(String key, String title, int count, boolean active) {
         this.key = key;
         this.title = title;
         this.count = count;
@@ -73,7 +73,7 @@ public class FacetItem {
      *
      * @return the number of matches
      */
-    public long getCount() {
+    public int getCount() {
         return count;
     }
 
@@ -82,7 +82,7 @@ public class FacetItem {
      *
      * @param count the new number of matches
      */
-    public void setCount(long count) {
+    public void setCount(int count) {
         this.count = count;
     }
 

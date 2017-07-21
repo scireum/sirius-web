@@ -1,33 +1,32 @@
-@extends(view.wondergem.template.html, title: (NLS.get("ManagedTask.plural")))
+<w:page titleKey="ManagedTask.plural">
+    <i:block name="breadcrumbs">
+        <li><a href="/system/tasks">@i18n("ManagedTask.plural")</a></li>
+    </i:block>
 
-@section(breadcrumbs) {
-<li><a href="/system/tasks">@i18n("ManagedTask.plural")</a></li>
-}
+    <w:pageHeader titleKey="ManagedTask.plural" />
 
-@pageHeader("ManagedTask.plural")
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th class="col-md-6">@i18n("ManagedTask.name")<br>
+                <small class=muted">@i18n("ManagedTask.message")</small>
+            </th>
+            <th>@i18n("ManagedTask.state")</th>
+            <th>@i18n("ManagedTask.user")</th>
+            <th class="align-right">@i18n("ManagedTask.scheduled")<br>@i18n("ManagedTask.started")</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody id="output">
 
-<table class="table table-striped">
-    <thead>
-    <tr>
-        <th class="col-md-6">@i18n("ManagedTask.name")<br>
-            <small class=muted">@i18n("ManagedTask.message")</small>
-        </th>
-        <th>@i18n("ManagedTask.state")</th>
-        <th>@i18n("ManagedTask.user")</th>
-        <th class="align-right">@i18n("ManagedTask.scheduled")<br>@i18n("ManagedTask.started")</th>
-        <th></th>
-    </tr>
-    </thead>
-    <tbody id="output">
+        </tbody>
+    </table>
 
-    </tbody>
-</table>
+    <script type="text/javascript">
+        var timer = null;
 
-<script type="text/javascript">
-    var timer = null;
-
-    function updateState() {
-        $.getJSON('@prefix/system/api/tasks',
+        function updateState() {
+            $.getJSON('/system/api/tasks',
                 {},
                 function (data) {
                     $('#output').html('');
@@ -36,7 +35,7 @@
                         for (i = 0; i < data.tasks.length; i++) {
                             var row = $('<tr></tr>');
                             var task = data.tasks[i];
-                            row.append($('<td></td>').html('<a href="@prefix/system/task/' + task.id + '" class="link">' + task.name + '</a><br><small class=muted">' + task.message + '</small>'));
+                            row.append($('<td></td>').html('<a href="/system/task/' + task.id + '" class="link">' + task.name + '</a><br><small class=muted">' + task.message + '</small>'));
                             row.append($('<td></td>').html('<span class="label ' + task.stateClass + '">' + task.stateName + '</span>'));
                             row.append($('<td></td>').html(task.user));
                             row.append($('<td></td>').html(task.scheduled + '<br>' + task.started).addClass('align-right'));
@@ -53,22 +52,24 @@
                     }
                     timer = setTimeout(updateState, 2000);
                 }
-        );
-    }
+            );
+        }
 
-    function cancelTask() {
-        var taskId = $(this).data("task");
-        if (taskId != null) {
-            $.getJSON('@prefix/system/task/' + taskId + '/api/cancel',
+        function cancelTask() {
+            var taskId = $(this).data("task");
+            if (taskId != null) {
+                $.getJSON('/system/task/' + taskId + '/api/cancel',
                     {},
                     function (data) {
                         clearTimeout(timer);
                         timer = setTimeout(updateState, 500);
                     }
-            );
+                );
+            }
         }
-    }
 
-    updateState();
+        updateState();
 
-</script>
+    </script>
+
+</w:page>

@@ -1,0 +1,19 @@
+<i:arg type="Page" name="page" />
+<i:arg type="String" name="baseUrl" />
+
+<i:pragma name="inline" value="true" />
+<i:pragma name="description"
+          value="Takes care of the box sizing of a filterbox and the filtered content within a Wondergem template" />
+
+<div class="row">
+    <i:if test="page.hasFacets()">
+        <div class="col-md-3">
+            <w:filterbox page="@page" baseUrl="@baseUrl" />
+        </div>
+    </i:if>
+
+
+    <div class="@if (page.hasFacets()) { col-md-9 } else { col-md-12 }">
+        <i:render name="body" />
+    </div>
+</div>

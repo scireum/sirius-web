@@ -8,15 +8,20 @@
 
 package sirius.tagliatelle;
 
+import parsii.tokenizer.ParseError;
+import parsii.tokenizer.Position;
 import sirius.kernel.cache.Cache;
+import sirius.kernel.cache.CacheEntry;
 import sirius.kernel.cache.CacheManager;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
+import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Log;
 import sirius.tagliatelle.compiler.CompilationContext;
+import sirius.tagliatelle.compiler.CompileError;
 import sirius.tagliatelle.compiler.CompileException;
 import sirius.tagliatelle.compiler.Compiler;
 import sirius.tagliatelle.rendering.GlobalRenderContext;
@@ -33,6 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Provides statically compiled and optimized templates to generate HTML, XML and text files.
@@ -46,6 +52,7 @@ public class Tagliatelle {
      * Logs everything related to resolving, compiling and rendering tagliatelle templates.
      */
     public static final Log LOG = Log.get("tagliatelle");
+    public static final String PRAGMA_ALIAS = "alias";
 
     /**
      * Contains all aliases collected via {@link ClassAliasProvider alias providers}.
@@ -162,6 +169,11 @@ public class Tagliatelle {
             return true;
         }
 
+        // Null if represented as void.class and can be assigned to any non-primitive type.
+        if (from == void.class) {
+            return !to.isPrimitive();
+        }
+
         if (from.isPrimitive()) {
             if (to.isPrimitive()) {
                 return checkTypeConversion(from, to);
@@ -173,7 +185,11 @@ public class Tagliatelle {
     }
 
     private static boolean checkTypeConversion(Class<?> from, Class<?> to) {
-        return from == long.class && to == int.class;
+        if (from == long.class && to == int.class || from == int.class && to == long.class) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -185,11 +201,11 @@ public class Tagliatelle {
      */
     private static boolean checkAutoboxing(Class<?> primitveType, Class<?> boxedType) {
         if (primitveType == int.class || primitveType == long.class) {
-            return Integer.class.isAssignableFrom(boxedType);
+            return boxedType.isAssignableFrom(Integer.class);
         }
 
         if (primitveType == boolean.class) {
-            return Boolean.class.isAssignableFrom(boxedType);
+            return boxedType.isAssignableFrom(Boolean.class);
         }
 
         return false;
@@ -218,6 +234,7 @@ public class Tagliatelle {
      * @throws CompileException in case of one or more compilation errors in the template
      */
     public Optional<Template> resolve(String path, @Nullable CompilationContext parentContext) throws CompileException {
+        ensureProperTemplatePath(path);
         Optional<Resource> optionalResource = resources.resolve(path);
         if (!optionalResource.isPresent()) {
             return Optional.empty();
@@ -229,13 +246,49 @@ public class Tagliatelle {
             Tagliatelle.LOG.FINE("Resolving template for '%s' ('%s)'...", path, resource.getUrl());
         }
 
+        Template template = resolveFromCache(path, resource);
+        if (template != null) {
+            return Optional.of(template);
+        }
+
+        template = compileTemplate(path, resource, parentContext);
+        compiledTemplates.put(resource, template);
+
+        return Optional.of(template);
+    }
+
+    /**
+     * For security reasons we only include or invoke templates and resources in either /assets or /templates.
+     * <p>
+     * Otherwise one could customize a template and try to include a configuration file or class file and therefore
+     * obtain private data.
+     *
+     * @param path the path to check
+     */
+    public static void ensureProperTemplatePath(String path) {
+        String effectiveUri = path.startsWith("/") ? path : "/" + path;
+
+        if (!effectiveUri.startsWith("/templates") && !effectiveUri.startsWith("/assets") && !effectiveUri.startsWith(
+                "/taglib")) {
+            throw new IllegalArgumentException(
+                    "Tagliatelle templates must reside in /templates, /taglib or /assets. Invalid path: " + path);
+        }
+    }
+
+    private CompileException createGeneralCompileError(Template template, String message) {
+        ParseError parseError = ParseError.error(Position.UNKNOWN, message);
+        CompileError compileError = new CompileError(parseError, null);
+        return CompileException.create(template, Collections.singletonList(compileError));
+    }
+
+    private Template resolveFromCache(String path, Resource resource) {
         Template result = compiledTemplates.get(resource);
         if (result != null) {
             if (resource.getLastModified() <= result.getCompilationTimestamp()) {
                 if (Tagliatelle.LOG.isFINE()) {
                     Tagliatelle.LOG.FINE("Resolved '%s' for '%s' from cache...", result, resource.getUrl());
                 }
-                return Optional.of(result);
+                return result;
             }
             if (Tagliatelle.LOG.isFINE()) {
                 Tagliatelle.LOG.FINE(
@@ -249,13 +302,29 @@ public class Tagliatelle {
         } else if (Tagliatelle.LOG.isFINE()) {
             Tagliatelle.LOG.FINE("Cannot resolve '%s' for '%s' from cache...", result, resource.getUrl());
         }
+        return null;
+    }
 
+    private Template compileTemplate(String path, Resource resource, @Nullable CompilationContext parentContext)
+            throws CompileException {
         CompilationContext compilationContext = createCompilationContext(path, resource, parentContext);
-
         new Compiler(compilationContext, resource.getContentAsString()).compile();
-        compiledTemplates.put(resource, compilationContext.getTemplate());
+        return handleAliasing(compilationContext.getTemplate(), compilationContext);
+    }
 
-        return Optional.of(compilationContext.getTemplate());
+    private Template handleAliasing(Template template, CompilationContext compilationContext) throws CompileException {
+        Value alias = template.getPragma(PRAGMA_ALIAS);
+        if (alias.isFilled()) {
+            String aliasPath = alias.asString();
+            if (aliasPath.contains(":")) {
+                aliasPath = resolveTagName(aliasPath);
+            }
+            return resolve(aliasPath, compilationContext).orElseThrow(() -> createGeneralCompileError(template,
+                                                                                                      "Cannot resolve alias: "
+                                                                                                      + alias.asString()));
+        }
+
+        return template;
     }
 
     /**
@@ -270,5 +339,17 @@ public class Tagliatelle {
     public String resolveTagName(String qualifiedTagName) {
         Tuple<String, String> tagName = Strings.split(qualifiedTagName, ":");
         return "/taglib/" + tagName.getFirst() + "/" + tagName.getSecond() + ".html.pasta";
+    }
+
+    /**
+     * Provides a list of all currently compiled templates.
+     * <p>
+     * Note that this directly accesses an inner cache. Therefore some templates which were rendered some time ago,
+     * might have been dropped out of the cache and will therefore not occur in this list.
+     *
+     * @return a list of all compiled templates
+     */
+    public List<Template> getCompiledTemplates() {
+        return compiledTemplates.getContents().stream().map(CacheEntry::getValue).collect(Collectors.toList());
     }
 }
