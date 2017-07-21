@@ -1,6 +1,6 @@
 <i:arg type="sirius.kernel.async.CallContext" name="ctx" />
 <i:arg type="String" name="message"/>
-<w:page title="@i18n('BasicController.404')">
+<w:page title="@i18n('BasicController.error')">
     <i:block name="breadcrumbBar" />
 
     <w:pageHeader>
