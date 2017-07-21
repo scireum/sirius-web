@@ -82,10 +82,28 @@ public class Templates {
         return new Generator();
     }
 
+    /**
+     * Collects all global variables to be used when rendering templates or executing user scripts.
+     * @return a map of all globals used for templates.
+     */
     public Map<String, Object> createGlobalContext() {
         Map<String, Object> result = new LinkedHashMap<>();
         for(GlobalContextExtender extender : extenders) {
-            extender.collect(result::put);
+            extender.collectTemplate(result::put);
+        }
+
+        return result;
+    }
+
+    /**
+     * Collects all global variables to be used when executing system scripts.
+     * @return a map of all globals used for scripting.
+     */
+    public Map<String, Object> createGlobalSystemScriptingContext() {
+        Map<String, Object> result = new LinkedHashMap<>();
+        for(GlobalContextExtender extender : extenders) {
+            extender.collectTemplate(result::put);
+            extender.collectScripting(result::put);
         }
 
         return result;

@@ -36,7 +36,7 @@ public class DefaultGlobalContextExtender implements GlobalContextExtender {
     private String detailedVersion;
 
     @Override
-    public void collect(BiConsumer<String, Object> parameterCollector) {
+    public void collectTemplate(BiConsumer<String, Object> parameterCollector) {
         CallContext ctx = CallContext.getCurrent();
         parameterCollector.accept("user", ctx.get(UserContext.class));
         parameterCollector.accept("product", Product.getProduct().getName());
@@ -54,6 +54,10 @@ public class DefaultGlobalContextExtender implements GlobalContextExtender {
         parameterCollector.accept("timeFormat", NLS.get("RythmConfig.jsTimeFormat"));
     }
 
+    @Override
+    public void collectScripting(BiConsumer<String, Object> globalParameterCollector) {
+        // Nothing provided
+    }
 
     private String getDetailedVersion() {
         if (detailedVersion == null) {

@@ -10,10 +10,8 @@ package sirius.web.controller
 
 import org.serversass.Generator
 import org.serversass.Output
-import org.serversass.ast.Value
 import sirius.kernel.BaseSpecification
 import sirius.kernel.di.std.Part
-import sirius.web.http.WebContext
 import sirius.web.resources.Resource
 import sirius.web.resources.Resources
 
@@ -43,7 +41,6 @@ class ApplicationSCSSSpec extends BaseSpecification {
         }
 
         TestGenerator() {
-            scope.set("prefix", new Value(WebContext.getContextPrefix()))
         }
     }
 

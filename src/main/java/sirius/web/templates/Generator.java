@@ -132,7 +132,7 @@ public class Generator {
      *
      * @param templateCode the template code to evaluate
      * @param handlerType  String reference for the handler to be used
-     *                     (i.e. {@link TagliatelleContentHandler#VM})
+     *                     (i.e. {@link TagliatelleContentHandler#PASTA})
      * @return the generator itself for fluent API calls
      */
     public Generator direct(String templateCode, String handlerType) {
