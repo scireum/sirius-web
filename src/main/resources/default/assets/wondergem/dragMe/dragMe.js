@@ -16,6 +16,9 @@
         var _container = $(options.container || 'body');
         var _window = $(window);
         _touchTarget.off('mousedown.dragMe').on('mousedown.dragMe', function (e) {
+            if (e.which !== 1) {
+                return;
+            }
             var offset = $(this).offset();
             //mouse position relative to div
             var x = e.pageX - offset.left;
@@ -37,7 +40,9 @@
             });
         });
         _window.on('mouseup.dragMe', function (e) {
-            _window.off('mousemove.dragMe');
+            if (e.which === 1) {
+                _window.off('mousemove.dragMe');
+            }
         });
     }
 }(jQuery));
