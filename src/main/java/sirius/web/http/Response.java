@@ -887,7 +887,7 @@ public class Response {
             if (!ctx.channel().isWritable()) {
                 return;
             }
-            if (HttpMethod.HEAD.equals(wc.getRequest().method())) {
+            if (HttpMethod.HEAD.equals(wc.getRequest().method()) || HttpResponseStatus.NOT_MODIFIED.equals(status)) {
                 status(status);
                 return;
             }
