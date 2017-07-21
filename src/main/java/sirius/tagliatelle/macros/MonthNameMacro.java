@@ -1,5 +1,6 @@
 package sirius.tagliatelle.macros;
 
+import sirius.kernel.di.std.Register;
 import sirius.kernel.nls.NLS;
 import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.expression.Expression;
@@ -11,6 +12,7 @@ import java.util.List;
 /**
  * Represents <tt>monthName(int)</tt> which is a call to {@link NLS#getMonthName(int)}.
  */
+@Register
 public class MonthNameMacro implements Macro {
     @Override
     public Class<?> getType() {
