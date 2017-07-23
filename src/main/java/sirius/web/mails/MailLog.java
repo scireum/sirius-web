@@ -26,7 +26,6 @@ public interface MailLog {
      * @param subject       subject line of the mail
      * @param text          text part of the mail
      * @param html          html part of the mail
-     * @param mailExtension the id of the mail extension used to generate the mail
      */
     void logSentMail(boolean success,
                      String messageId,
@@ -36,6 +35,5 @@ public interface MailLog {
                      String receiverName,
                      String subject,
                      String text,
-                     String html,
-                     String mailExtension);
+                     String html);
 }
