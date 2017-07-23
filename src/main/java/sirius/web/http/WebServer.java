@@ -113,6 +113,13 @@ public class WebServer implements Lifecycle, MetricProvider {
     private static long maxUploadSize;
 
     /**
+     * Config value of the maximal tolerated response time. (<tt>http.maxResponseTime</tt>). Requests which are
+     * not marked as <tt>long running</tt> but take longer, will be logged.
+     */
+    @ConfigValue("http.maxResponseTime")
+    private static long maxResponseTime;
+
+    /**
      * Contains a list of IP ranges which are permitted to access this server. Access from unauthorized IPs will be
      * blocked at the lowest level possible (probably no connection will be accepted). The format accepted by this
      * field is defined by {@link IPRange#paraseRangeSet(String)}.
@@ -310,6 +317,15 @@ public class WebServer implements Lifecycle, MetricProvider {
      */
     protected static long getMaxUploadSize() {
         return maxUploadSize;
+    }
+
+    /**
+     * Returns the maximal tolerated response time in millis.
+     *
+     * @return the maximal response time in millis
+     */
+    protected static long getMaxResponseTime() {
+        return maxResponseTime;
     }
 
     /**
