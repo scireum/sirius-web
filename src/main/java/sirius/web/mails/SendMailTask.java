@@ -156,8 +156,7 @@ class SendMailTask implements Runnable {
                                 mail.receiverName,
                                 mail.subject,
                                 mail.text,
-                                mail.html,
-                                mail.mailExtension);
+                                mail.html);
             } catch (Exception e) {
                 Exceptions.handle(Mails.LOG, e);
             }

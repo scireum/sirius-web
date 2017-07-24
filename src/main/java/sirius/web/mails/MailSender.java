@@ -10,8 +10,6 @@ package sirius.web.mails;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.typesafe.config.Config;
-import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Context;
@@ -21,20 +19,16 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.nls.NLS;
-import sirius.kernel.settings.Extension;
 import sirius.web.http.MimeHelper;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 import sirius.web.templates.Generator;
-import sirius.web.templates.TagliatelleContentHandler;
 import sirius.web.templates.Templates;
 
 import javax.activation.DataSource;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.mail.internet.InternetAddress;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -51,14 +45,11 @@ public class MailSender {
     protected String receiverEmail;
     protected String receiverName;
     protected String subject;
-    protected String mailExtension;
     protected Context context;
-    protected boolean includeHTMLPart = true;
     protected String text;
     protected String html;
     protected List<DataSource> attachments = Lists.newArrayList();
     protected String bounceToken;
-    protected String lang;
     protected Map<String, String> headers = Maps.newTreeMap();
 
     @Part
@@ -75,25 +66,6 @@ public class MailSender {
 
     protected MailSender() {
 
-    }
-
-    /**
-     * Sets the language used to perform {@link sirius.kernel.nls.NLS} lookups when rendering templates.
-     *
-     * @param langs an array of languages. The first non empty value is used.
-     * @return the builder itself
-     */
-    public MailSender setLang(String... langs) {
-        if (langs == null) {
-            return this;
-        }
-        for (String language : langs) {
-            if (Strings.isFilled(language)) {
-                this.lang = language;
-                return this;
-            }
-        }
-        return this;
     }
 
     /**
@@ -190,90 +162,6 @@ public class MailSender {
     }
 
     /**
-     * Specifies the mail template to use.
-     * <p>
-     * The template is used to fill the subject like as well as the text and HTML part. The <b>mailExtension</b>
-     * named here has to be defined in the system config in the mails/template section:
-     * <pre>
-     * {@code
-     * mail {
-     *  templates {
-     *      my-template {
-     *          # optional - set "subject" parameter in the given context instead"
-     *          subject = "Velocity expression to describe the subject"
-     *
-     *          # optional - Language dependent subjects
-     *          subject_de = "..."
-     *          subject_en = "..."
-     *
-     *          text = "mail/path-to-the-text-template.vm"
-     *          # optional
-     *          html = "mail/path-to-the-html-template.vm"
-     *
-     *          # optional: Language dependent templates:
-     *          text_de = "..."
-     *          html_de = "..."
-     *          text_en = "..."
-     *          html_en = "..."
-     *
-     *           # optional (Add headers to the mail)
-     *          headers {
-     *            name = value
-     *          }
-     *
-     *          # optional
-     *          attachments {
-     *              test-pdf {
-     *                  template = "mail/test.pdf.vm"
-     *                  # optional - evaluated by velocity...
-     *                  fileName = "test.pdf"
-     *                  # optional
-     *                  encoding = "UTF-8"
-     *                  # optional
-     *                  contentType = "text/plain"
-     *                  # optional (treat this attachment as alternative to the body part rather than as
-     *                  # "real" attachment)
-     *                  alternative = true
-     *
-     *                  # optional (Add headers to the body part)
-     *                  headers {
-     *                      name = value
-     *                  }
-     *
-     *              }
-     *          }
-     *      }
-     *  }
-     * }
-     * }
-     * </pre>
-     * <p>
-     * The given subject line is evaluates by velocity and my therefore either reference variables or use
-     * macros like #nls('nls-key'). The given <b>context</b> can be used to pass variables to the templates.
-     *
-     * @param mailExtension the name of the mail extension to use
-     * @param context       the context used to pass in variables used by the templates
-     * @return the builder itself
-     */
-    public MailSender useMailTemplate(String mailExtension, @Nonnull Context context) {
-        this.mailExtension = mailExtension;
-        this.context = context;
-        return this;
-    }
-
-    /**
-     * Determines whether the HTML part should be included in the email or not. Some email clients have trouble
-     * rendering HTML therefore it can be suppressed so that only text emails are sent.
-     *
-     * @param includeHTMLPart the flag indicating whether the HTML part should be included (default) or not.
-     * @return the builder itself
-     */
-    public MailSender includeHTMLPart(boolean includeHTMLPart) {
-        this.includeHTMLPart = includeHTMLPart;
-        return this;
-    }
-
-    /**
      * Sets the text content of the email.
      *
      * @param text the text content of the email
@@ -285,6 +173,17 @@ public class MailSender {
     }
 
     /**
+     * Renders the given template and uses it as text part.
+     *
+     * @param template the name of the template to render
+     * @param context  the context passed to the renderer
+     * @return the builder itself
+     */
+    public MailSender textTemplate(String template, Context context) {
+        return textContent(templates.generator().useTemplate(template).applyContext(context).generate());
+    }
+
+    /**
      * Sets the HTML content of the email.
      *
      * @param html the HTML content of the email
@@ -293,6 +192,17 @@ public class MailSender {
     public MailSender htmlContent(String html) {
         this.html = html;
         return this;
+    }
+
+    /**
+     * Renders the given template and uses it as HTML part.
+     *
+     * @param template the name of the template to render
+     * @param context  the context passed to the renderer
+     * @return the builder itself
+     */
+    public MailSender htmlTemplate(String template, Context context) {
+        return htmlContent(templates.generator().useTemplate(template).applyContext(context).generate());
     }
 
     /**
@@ -311,6 +221,9 @@ public class MailSender {
 
     /**
      * Adds a resource as attachment.
+     * <p>
+     * This only adds a static file as attachment. Use {@link #addAttachment(DataSource)} and {@link
+     * Generator#generateAttachment(String)} to evaluate a template.
      *
      * @param resource  the resource to lookup using {@link Resources#resolve(String)}
      * @param filename  the filename to use for the attachment
@@ -405,10 +318,6 @@ public class MailSender {
         String tmpLang = NLS.getCurrentLang();
         try {
             try {
-                if (lang != null) {
-                    CallContext.getCurrent().setLang(lang);
-                }
-                fill();
                 sanitize();
                 check();
                 sendMailAsync(new SMTPConfiguration());
@@ -494,180 +403,5 @@ public class MailSender {
         if (Strings.isFilled(receiverName)) {
             receiverName = receiverName.trim();
         }
-        if (!includeHTMLPart) {
-            html = null;
-        }
-    }
-
-    private void fill() {
-        if (Strings.isEmpty(mailExtension)) {
-            return;
-        }
-        Extension ex = findMailExtension();
-        context.put("template", mailExtension);
-        try {
-            fillSubject(ex);
-            fillTextContent(ex);
-            htmlContent(null);
-            if (ex.get("html").isFilled()) {
-                fillHtmlContent(ex);
-            }
-            if (ex.getConfig(CONFIG_KEY_HEADERS) != null) {
-                for (Map.Entry<String, com.typesafe.config.ConfigValue> e : ex.getConfig(CONFIG_KEY_HEADERS)
-                                                                              .entrySet()) {
-                    headers.put(e.getKey(), NLS.toMachineString(e.getValue().unwrapped()));
-                }
-            }
-            generateAttachments(ex);
-        } catch (HandledException e) {
-            throw e;
-        } catch (Exception e) {
-            throw Exceptions.handle()
-                            .withSystemErrorMessage(
-                                    "Cannot send mail to '%s (%s)' from '%s (%s)' with subject '%s': %s (%s)",
-                                    receiverEmail,
-                                    receiverName,
-                                    senderEmail,
-                                    senderName,
-                                    subject)
-                            .to(Mails.LOG)
-                            .error(e)
-                            .handle();
-        }
-    }
-
-    private void generateAttachments(Extension ex) {
-        for (Config attachmentConfig : ex.getConfigs("attachments")) {
-            String template = attachmentConfig.getString("template");
-            try {
-                generateAttachment(attachmentConfig, template);
-            } catch (Exception t) {
-                Exceptions.handle()
-                          .to(Mails.LOG)
-                          .error(t)
-                          .withSystemErrorMessage("Cannot generate attachment using template %s (%s) "
-                                                  + "when sending a mail from '%s' to '%s': %s (%s)",
-                                                  mailExtension,
-                                                  template,
-                                                  senderEmail,
-                                                  receiverEmail)
-                          .handle();
-            }
-        }
-    }
-
-    private void generateAttachment(Config attachmentConfig, String template) throws IOException {
-        byte[] contents = generateAttachmentContents(attachmentConfig, template);
-        String fileName = determineAttachmentFilename(attachmentConfig);
-        String mimeType = determineAttachmentMimeType(attachmentConfig, fileName);
-        boolean asAlternative = determineIfAttachmentIsAlternative(attachmentConfig);
-
-        Attachment attachment = new BufferedAttachment(fileName, mimeType, contents, asAlternative);
-        applyAttachmentHeaders(attachmentConfig, attachment);
-        addAttachment(attachment);
-    }
-
-    private void applyAttachmentHeaders(Config attachmentConfig, Attachment att) {
-        if (attachmentConfig.hasPath(CONFIG_KEY_HEADERS)) {
-            for (Map.Entry<String, com.typesafe.config.ConfigValue> e : attachmentConfig.getConfig(CONFIG_KEY_HEADERS)
-                                                                                        .entrySet()) {
-                att.addHeader(e.getKey(), NLS.toMachineString(e.getValue().unwrapped()));
-            }
-        }
-    }
-
-    private boolean determineIfAttachmentIsAlternative(Config attachmentConfig) {
-        boolean asAlternative = false;
-        if (attachmentConfig.hasPath("alternative")) {
-            asAlternative = attachmentConfig.getBoolean("alternative");
-        }
-        return asAlternative;
-    }
-
-    private String determineAttachmentMimeType(Config attachmentConfig, String fileName) {
-        String mimeType = MimeHelper.guessMimeType(fileName);
-        if (attachmentConfig.hasPath("contentType")) {
-            mimeType = attachmentConfig.getString("contentType");
-        }
-        return mimeType;
-    }
-
-    private String determineAttachmentFilename(Config attachmentConfig) {
-        String fileName = attachmentConfig.getString("id");
-        if (attachmentConfig.hasPath("fileName")) {
-            fileName = templates.generator()
-                                .direct(attachmentConfig.getString("fileName"), TagliatelleContentHandler.PASTA)
-                                .applyContext(context)
-                                .generate();
-        } else {
-            int idx = fileName.lastIndexOf("-");
-            if (idx >= 0) {
-                fileName = fileName.substring(0, idx) + "." + fileName.substring(idx + 1);
-            }
-        }
-        return fileName;
-    }
-
-    private byte[] generateAttachmentContents(Config attachmentConfig, String template) throws IOException {
-        Generator attachment = templates.generator();
-        if (attachmentConfig.hasPath("encoding")) {
-            attachment.encoding(attachmentConfig.getString("encoding"));
-        }
-        attachment.useTemplate(template);
-        attachment.applyContext(context);
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        attachment.generateTo(out);
-        out.flush();
-        return out.toByteArray();
-    }
-
-    private void fillTextContent(Extension ex) {
-        textContent(templates.generator()
-                             .useTemplate(ex.get("text_" + NLS.getCurrentLang()).asString(ex.get("text").asString()))
-                             .applyContext(context)
-                             .generate());
-    }
-
-    private void fillSubject(Extension ex) {
-        subject(templates.generator()
-                         .direct(ex.get("subject_" + NLS.getCurrentLang())
-                                   .asString(ex.get("subject").asString("$subject")), TagliatelleContentHandler.PASTA)
-                         .applyContext(context)
-                         .generate());
-    }
-
-    private void fillHtmlContent(Extension ex) {
-        try {
-            htmlContent(templates.generator()
-                                 .useTemplate(ex.get("html_" + NLS.getCurrentLang())
-                                                .asString(ex.get("html").asString()))
-                                 .applyContext(context)
-                                 .generate());
-        } catch (Exception e) {
-            Exceptions.handle()
-                      .to(Mails.LOG)
-                      .error(e)
-                      .withSystemErrorMessage("Cannot generate HTML content using template %s (%s) "
-                                              + "when sending a mail from '%s' to '%s': %s (%s)",
-                                              mailExtension,
-                                              ex.get("html_" + NLS.getCurrentLang())
-                                                .asString(ex.get("html").asString()),
-                                              senderEmail,
-                                              receiverEmail)
-                      .handle();
-        }
-    }
-
-    private Extension findMailExtension() {
-        Extension ex = Sirius.getSettings().getExtension("mail.templates", mailExtension);
-        if (ex == null) {
-            throw Exceptions.handle()
-                            .withSystemErrorMessage("Unknown mail extension: %s. Cannot send mail from: '%s' to '%s'",
-                                                    mailExtension,
-                                                    senderEmail,
-                                                    receiverEmail)
-                            .handle();
-        }
-        return ex;
     }
 }
