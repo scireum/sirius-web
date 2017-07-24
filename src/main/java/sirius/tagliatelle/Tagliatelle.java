@@ -266,7 +266,7 @@ public class Tagliatelle {
      * @param path the path to check
      */
     public static void ensureProperTemplatePath(String path) {
-        if (path.endsWith(".pasta")) {
+        if (!path.endsWith(".pasta")) {
             throw new IllegalArgumentException("Tagliatelle templates must end with '.pasta'. Invalid path: " + path);
         }
     }
