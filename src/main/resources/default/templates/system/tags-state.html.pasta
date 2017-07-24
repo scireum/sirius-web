@@ -1,0 +1,46 @@
+<i:arg type="List" name="templates"/>
+
+<w:page title="Tagliatelle - State">
+
+    <i:block name="breadcrumbs">
+        <li><a href="/system/tags">Tagliatelle</a></li>
+        <li><a href="/system/tags">State</a></li>
+    </i:block>
+
+    <w:pageHeader>
+        Tagliatelle - State
+        <span class="pull-right"><a href="/system/tags/state" class="btn"><i class="fa fa-refresh"></i> @i18n("NLS.refresh")</a></span>
+    </w:pageHeader>
+
+    <table class="table table-striped">
+        <tr>
+            <td>Name</td>
+            <td class="align-right">
+                Compiled<br>
+                Last Changed
+            </td>
+            <td class="align-right">
+                Complexity<br>
+                <small class="muted">Emitters (Expressions)</small>
+            </td>
+            <td class="align-right">Invocations</td>
+            <td class="align-right">Avg. Rendertime</td>
+        </tr>
+        <i:for type="sirius.tagliatelle.Template" var="template" items="templates">
+            <tr>
+                <td>
+                    @template.getName()<br>
+                    <small class="muted">@template.getResource().getUrl()</small>
+                </td>
+                <td class="align-right">
+                    @toUserString(template.getCompilationTime())<br>
+                    @toUserString(template.getResourceLastChanged())
+                </td>
+                <td class="align-right">@template.getComplexity()</td>
+                <td class="align-right">@template.getNumInvocations()</td>
+                <td class="align-right">@toUserString(template.getAverageRenderTime()) ms</td>
+            </tr>
+        </i:for>
+    </table>
+
+</w:page>

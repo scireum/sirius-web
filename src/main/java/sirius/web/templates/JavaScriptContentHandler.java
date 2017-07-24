@@ -31,7 +31,7 @@ public class JavaScriptContentHandler extends JavaScriptBasedContentHandler {
     public static final String JS = "js";
 
     @Override
-    public boolean generate(Templates.Generator generator, OutputStream out) throws Exception {
+    public boolean generate(Generator generator, OutputStream out) throws Exception {
         if (!JS.equals(generator.getHandlerType()) && !generator.isTemplateFileExtension("js")) {
             return false;
         }

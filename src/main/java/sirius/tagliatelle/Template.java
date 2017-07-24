@@ -8,20 +8,28 @@
 
 package sirius.tagliatelle;
 
+import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
+import sirius.kernel.commons.Watch;
 import sirius.kernel.di.std.Part;
+import sirius.kernel.health.Average;
+import sirius.tagliatelle.emitter.ConstantEmitter;
 import sirius.tagliatelle.emitter.Emitter;
 import sirius.tagliatelle.rendering.GlobalRenderContext;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 import sirius.tagliatelle.rendering.RenderException;
-import sirius.web.templates.Resource;
+import sirius.web.resources.Resource;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Represents a compiled template which can be rendered.
@@ -35,6 +43,9 @@ public class Template {
     protected Map<String, String> pragmas;
     private long compilationTimestamp = System.currentTimeMillis();
     private int stackDepth;
+    private Average renderTime = new Average();
+    private Integer emitterCount;
+    private Integer expressionCount;
 
     @Part
     private static Tagliatelle engine;
@@ -109,9 +120,26 @@ public class Template {
      */
     public String renderToString(Object... args) throws RenderException {
         GlobalRenderContext ctx = engine.createRenderContext();
-        applyArguments(ctx.createContext(this), args);
+        render(ctx, args);
 
-        render(ctx);
+        return ctx.toString();
+    }
+
+    /**
+     * Invokes the template and renders it into a string using the given arguments.
+     *
+     * @param context the arguments to supply
+     * @return the result of the emitters contained in the template
+     * @throws RenderException in case of an error when creating the output
+     */
+    public String renderWithParams(Context context) throws RenderException {
+        GlobalRenderContext ctx = engine.createRenderContext();
+        Object[] args = new Object[getArguments().size()];
+        for (int i = 0; i < getArguments().size(); i++) {
+            args[i] = context.get(getArguments().get(i).getName());
+        }
+
+        render(ctx, args);
 
         return ctx.toString();
     }
@@ -170,7 +198,18 @@ public class Template {
      * @throws RenderException in case of an error when creating the output
      */
     public void renderWithContext(LocalRenderContext ctx) throws RenderException {
+        Watch w = Watch.start();
         emitter.emit(ctx);
+        renderTime.addValue(w.elapsedMillis());
+    }
+
+    /**
+     * Determines if the contents of this template are completely constant.
+     *
+     * @return <tt>true</tt> if the contents are completely constant, <tt>false</tt> otherwise
+     */
+    public boolean isConstant() {
+        return emitter instanceof ConstantEmitter;
     }
 
     /**
@@ -207,6 +246,73 @@ public class Template {
      */
     public Resource getResource() {
         return resource;
+    }
+
+    /**
+     * Returns the compilation timestamp as {@link LocalDateTime}.
+     *
+     * @return the timestamp when the template was compiled
+     */
+    public LocalDateTime getCompilationTime() {
+        return Instant.ofEpochMilli(compilationTimestamp).atZone(ZoneId.systemDefault()).toLocalDateTime();
+    }
+
+    /**
+     * Returns the timestamp when the underlying resource was last changed as {@link LocalDateTime}.
+     *
+     * @return the timestamp when the underlying resource was last changed
+     */
+    public LocalDateTime getResourceLastChanged() {
+        if (resource == null) {
+            return LocalDateTime.now();
+        }
+
+        return Instant.ofEpochMilli(getResource().getLastModified()).atZone(ZoneId.systemDefault()).toLocalDateTime();
+    }
+
+    /**
+     * Returns how many times the template was rendered since its compilation.
+     *
+     * @return the number of invokations of this template
+     */
+    public int getNumInvocations() {
+        return (int) renderTime.getCount();
+    }
+
+    /**
+     * Returns the average time it took to render the template.
+     *
+     * @return the average rendering time in milliseconds
+     */
+    public double getAverageRenderTime() {
+        return renderTime.getAvg();
+    }
+
+    /**
+     * Returns the complexity of the template.
+     * <p>
+     * The complexity is simply the number of emitters and number of expressions in a template.
+     *
+     * @return the complexity as string
+     */
+    public String getComplexity() {
+        if (emitterCount == null) {
+            AtomicInteger emitters = new AtomicInteger(0);
+            AtomicInteger expressions = new AtomicInteger(0);
+            emitter.propagateVisitor(e -> {
+                emitters.incrementAndGet();
+                return e;
+            });
+            emitter.visitExpressions(pos -> e -> {
+                expressions.incrementAndGet();
+                return e;
+            });
+
+            emitterCount = emitters.get();
+            expressionCount = expressions.get();
+        }
+
+        return emitterCount + " (" + expressionCount + ")";
     }
 
     @Override

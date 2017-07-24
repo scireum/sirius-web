@@ -35,6 +35,7 @@ public class LocalRenderContext {
     private GlobalRenderContext globalContext;
     private LocalRenderContext parent;
     private Map<String, Emitter> blocks;
+    private LocalRenderContext enclosedContext;
 
     /**
      * Creates a new context.
@@ -69,15 +70,15 @@ public class LocalRenderContext {
      * Creates a closure context which can be put on the render stack as child, to provide access to the variables
      * of the enclosed context and to maintain a valid renderstack.
      *
-     * @param enclosedContext the enclosed context
      * @return a new closure context which can be used as child of this context but references the template an locals of
      * the enclosed context
      */
-    public LocalRenderContext createClosureContext(LocalRenderContext enclosedContext) {
+    public LocalRenderContext createClosureContext() {
         LocalRenderContext ctx =
                 new LocalRenderContext(enclosedContext.template, globalContext, enclosedContext.locals);
-        ctx.parent = this;
+        ctx.parent = parent;
         ctx.blocks = enclosedContext.blocks;
+        ctx.enclosedContext = enclosedContext.enclosedContext;
 
         return ctx;
     }
@@ -93,6 +94,7 @@ public class LocalRenderContext {
     public LocalRenderContext createInlineContext(Template template) {
         LocalRenderContext ctx = new LocalRenderContext(template, globalContext, locals);
         ctx.parent = this;
+        ctx.enclosedContext = enclosedContext;
         ctx.blocks = blocks;
 
         return ctx;
@@ -199,7 +201,7 @@ public class LocalRenderContext {
         if (emitter instanceof ConstantEmitter) {
             emitter.emit(this);
         } else {
-            LocalRenderContext subContext = createClosureContext(parent);
+            LocalRenderContext subContext = createClosureContext();
             emitter.emit(subContext);
         }
 
@@ -209,9 +211,11 @@ public class LocalRenderContext {
     /**
      * Specifies the blocks made available by the caller.
      *
-     * @param blocks the blocks passed to the template being rendered
+     * @param context the context being enclosed along with the blocks to be restored later to access local variables
+     * @param blocks  the blocks passed to the template being rendered
      */
-    public void setBlocks(Map<String, Emitter> blocks) {
+    public void setBlocks(LocalRenderContext context, Map<String, Emitter> blocks) {
+        this.enclosedContext = context;
         this.blocks = blocks;
     }
 

@@ -11,6 +11,7 @@ package sirius.tagliatelle.compiler;
 import parsii.tokenizer.Char;
 import parsii.tokenizer.ParseError;
 import parsii.tokenizer.Position;
+import sirius.kernel.Sirius;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.GlobalContext;
@@ -25,6 +26,7 @@ import sirius.tagliatelle.emitter.ConstantEmitter;
 import sirius.tagliatelle.emitter.Emitter;
 import sirius.tagliatelle.emitter.InlineTemplateEmitter;
 import sirius.tagliatelle.emitter.InvokeTemplateEmitter;
+import sirius.tagliatelle.emitter.PushEmitter;
 import sirius.tagliatelle.emitter.PushLocalEmitter;
 import sirius.tagliatelle.expression.ConstantNull;
 import sirius.tagliatelle.expression.Expression;
@@ -41,7 +43,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -52,6 +53,14 @@ import java.util.stream.Collectors;
  * arguments and local variables).
  */
 public class CompilationContext {
+
+    private static class StackLocation {
+        int stackIndex;
+        Class<?> type;
+        String name;
+    }
+
+    private static final int INLINE_LOCALS_SHIFT_OFFSET = 1000000;
 
     /**
      * Contains the context of the template which was being compiled and triggered the compilation of this template.
@@ -75,7 +84,7 @@ public class CompilationContext {
     /**
      * Contains a mapping of the name to the type for all known arguments and local variables.
      */
-    private List<Tuple<String, Class<?>>> stack = new ArrayList<>();
+    private List<StackLocation> stack = new ArrayList<>();
 
     /**
      * Contains a mapping of the name to he type for all globals in the environment.
@@ -116,6 +125,21 @@ public class CompilationContext {
     }
 
     /**
+     * Allocates a stack position for an argument or local variable.
+     * <p>
+     * For known and resolveable variables, this is automatically handled by {@link #push(Position, String, Class)}.
+     * <p>
+     * However, when a template is inlined into another, we also have to transfer locals to a new stack location and
+     * might also create new intermediate locals for now inlined arguments (because we must not evaluate non-constant
+     * expressions more thant once).
+     *
+     * @return the stack location to use
+     */
+    public int stackAlloc() {
+        return stackDepth++;
+    }
+
+    /**
      * Pushes a local variable on the stack, so that it can be resolved later.
      *
      * @param position the position where the local is defined - mainly used for error reporting
@@ -124,22 +148,32 @@ public class CompilationContext {
      * @return the stack index of the variable
      */
     public int push(Position position, String name, Class<?> type) {
-        if (globals.stream().map(Tuple::getFirst).anyMatch(otherName -> Strings.areEqual(name, otherName))) {
-            warning(position, "Argument or local variable hides a global: %s", name);
-        }
-        if (stack.stream().map(Tuple::getFirst).anyMatch(otherName -> Strings.areEqual(name, otherName))) {
-            warning(position, "Argument or local variable hides another one: %s", name);
-        }
-        stack.add(Tuple.create(name, type));
-        if (stack.size() > stackDepth) {
-            stackDepth = stack.size();
+        if (Strings.isFilled(name)) {
+            if (globals.stream().map(Tuple::getFirst).anyMatch(otherName -> Strings.areEqual(name, otherName))) {
+                warning(position, "Argument or local variable hides a global: %s", name);
+            }
+            if (stack.stream()
+                     .map(stackLocation -> stackLocation.name)
+                     .anyMatch(otherName -> Strings.areEqual(name, otherName))) {
+                warning(position, "Argument or local variable hides another one: %s", name);
+            }
         }
 
-        return stack.size() - 1;
+        StackLocation location = new StackLocation();
+        location.name = name;
+        location.type = type;
+        location.stackIndex = stackAlloc();
+
+        stack.add(location);
+
+        return location.stackIndex;
     }
 
     /**
      * Pops a local off the stack.
+     * <p>
+     * Note that this will only reduce the visibility of the variable but not free up the technical stack location. We
+     * only used each stack location once, to greatly simplify inlining.
      *
      * @param position the position which caused the pop - mainly used for error reporting
      */
@@ -168,9 +202,9 @@ public class CompilationContext {
      */
     public Optional<Tuple<Class<?>, Integer>> findLocal(String variableName) {
         for (int i = stack.size() - 1; i >= 0; i--) {
-            Tuple<String, Class<?>> localVariable = stack.get(i);
-            if (Strings.areEqual(variableName, localVariable.getFirst())) {
-                return Optional.of(Tuple.create(localVariable.getSecond(), i));
+            StackLocation localVariable = stack.get(i);
+            if (Strings.areEqual(variableName, localVariable.name)) {
+                return Optional.of(Tuple.create(localVariable.type, localVariable.stackIndex));
             }
         }
 
@@ -323,7 +357,7 @@ public class CompilationContext {
         int index = 0;
         for (TemplateArgument arg : template.getArguments()) {
             args[index] = arguments.apply(arg.getName());
-            if (args[index] != null && !arg.getType().isAssignableFrom(args[index].getType())) {
+            if (args[index] != null && !Tagliatelle.isAssignableTo(args[index].getType(), arg.getType())) {
                 error(position,
                       "Incompatible attribute types. '%s' expects %s for '%s', but %s was given.",
                       template.getName(),
@@ -362,10 +396,21 @@ public class CompilationContext {
                                   Template template,
                                   Function<String, Expression> arguments,
                                   Function<String, Emitter> blocks) {
-
         Emitter copy = template.getEmitter().copy();
 
-        copy = propagateArgumentsForInline(startOfTag, template, arguments, copy);
+        // Move all existing locals out of the way...
+        copy.visitExpressions(pos -> this::shiftLocalReads);
+
+        // Order is important here, as transfer arguments might introduce new local variables,
+        // we first process the existing variables and then process the arguments. This might seem
+        // counter intuitive at first, but as each stack location is only used once, it doesn't really
+        // matter if pre process upper ones before lower ones (arguments are usually the first on the stack).
+        copy = transferArguments(startOfTag, template, arguments, transferLocals(copy));
+
+        if (Sirius.isDev() || Sirius.isStartedAsTest()) {
+            ensureValidReadLocals(copy);
+        }
+
         copy = propagateBlocksForInline(blocks, copy);
 
         copy = copy.reduce();
@@ -374,8 +419,44 @@ public class CompilationContext {
     }
 
     /**
-     * Propagates all arguments into the locations where these are referenced.
+     * Checks for leftover local reads which were shifted, but never down shifted.
      * <p>
+     * This is essentially a circuit breaker which detects invalid templates which could be created by a bug within the
+     * inlining code.
+     * <p>
+     * This is left active in test or developement systems to fail as soon as possible and therefore aid in debugging.
+     *
+     * @param copy the emitter to check
+     */
+    private void ensureValidReadLocals(Emitter copy) {
+        copy.visitExpressions(pos -> expr -> {
+            if (expr instanceof ReadLocal && ((ReadLocal) expr).getIndex() >= INLINE_LOCALS_SHIFT_OFFSET) {
+                throw new IllegalStateException(Strings.apply("Invalid local read detected: %s (%s)", expr, pos));
+            }
+
+            return expr;
+        });
+    }
+
+    /**
+     * As we have to map locals and arguments from the template being inlined to the stack of the caller,
+     * we have to re-assign all stack locations.
+     * <p>
+     * However, during the process stack locations might collide, therefore we shift all stack locations
+     * by a large number and down shift them one by another once they are processed.
+     *
+     * @param expr the expression to process
+     * @return the updated expression
+     */
+    private Expression shiftLocalReads(Expression expr) {
+        if (expr instanceof ReadLocal) {
+            return new ReadLocal(expr.getType(), ((ReadLocal) expr).getIndex() + INLINE_LOCALS_SHIFT_OFFSET);
+        } else {
+            return expr;
+        }
+    }
+
+    /**
      * Basically this method scans for all argument references ({@link ReadLocal} and replaces them with the given
      * expression. This is also done for the default arguments (or copies of them actually), as these themself can be
      * expressions that reference previous arguments.
@@ -390,31 +471,33 @@ public class CompilationContext {
      * @param template  the template being inlined
      * @param arguments the argument expression supplied
      * @param copy      the copied contents of the template being inline
-     * @return an emitter where all argument references have been replaced by the argument expressions
      */
-    private Emitter propagateArgumentsForInline(Position position,
-                                                Template template,
-                                                Function<String, Expression> arguments,
-                                                Emitter copy) {
+    private Emitter transferArguments(Position position,
+                                      Template template,
+                                      Function<String, Expression> arguments,
+                                      Emitter copy) {
+        List<PushLocalEmitter> temps = new ArrayList<>();
         List<Expression> defaultArgs = template.getArguments()
                                                .stream()
                                                .map(TemplateArgument::getDefaultValue)
-                                               .map(e -> e == null ? null : e.copy())
+                                               .map(e -> e == null ?
+                                                         null :
+                                                         e.copy().propagateVisitor(this::shiftLocalReads))
                                                .collect(Collectors.toList());
-        List<PushLocalEmitter> temps = new ArrayList<>();
 
-        AtomicInteger index = new AtomicInteger(0);
+        int index = 0;
         for (TemplateArgument arg : template.getArguments()) {
-            Expression value = determineArgumentExpression(position, arg, index.get(), arguments, defaultArgs, temps);
-            ExpressionVisitor replaceArgumentVisitor = createReplaceArgumentVisitor(index.get(), value);
-            for (int i = index.get() + 1; i < defaultArgs.size(); i++) {
+            Expression value = determineArgumentExpression(position, arg, index, arguments, defaultArgs, temps);
+            ExpressionVisitor replaceArgumentVisitor = createReplaceArgumentVisitor(index, value);
+            for (int i = index + 1; i < defaultArgs.size(); i++) {
                 if (defaultArgs.get(i) != null) {
-                    defaultArgs.set(i, defaultArgs.get(i).visit(replaceArgumentVisitor));
+                    defaultArgs.set(i, defaultArgs.get(i).propagateVisitor(replaceArgumentVisitor));
                 }
             }
-            copy.visitExpressions(p -> replaceArgumentVisitor);
 
-            index.incrementAndGet();
+            copy.visitExpressions(pos -> replaceArgumentVisitor);
+
+            index++;
         }
 
         if (temps.isEmpty()) {
@@ -422,12 +505,9 @@ public class CompilationContext {
         }
 
         CompositeEmitter result = new CompositeEmitter(copy.getStartOfBlock());
-        temps.forEach(e -> {
-            result.addChild(e);
-            pop(position);
-        });
-
+        temps.forEach(result::addChild);
         result.addChild(copy);
+
         return result;
     }
 
@@ -461,16 +541,23 @@ public class CompilationContext {
                 value = ConstantNull.NULL;
             }
         }
-        if (!value.isConstant() && !(value instanceof ReadLocal)) {
-            int temporaryIndex = push(position, null, arg.getType());
-            temps.add(new PushLocalEmitter(position, temporaryIndex, value));
-            value = new ReadLocal(arg.getType(), temporaryIndex);
+
+        // Constant expressions and local reads can safely invoked several times, therefore
+        // we can replace each access with the expression itself...
+        if (value instanceof ReadLocal || value.isConstant()) {
+            return value;
         }
-        return value;
+
+        // .. for all other, we declare a local variable and read that...
+        int temporaryIndex = stackAlloc();
+        temps.add(new PushLocalEmitter(position, temporaryIndex, value));
+        return new ReadLocal(arg.getType(), temporaryIndex);
     }
 
     /**
      * Creates a visitor which replaces a reference to the given argument with the given value.
+     * <p>
+     * This also takes care of the stack locations created by {@link #shiftLocalReads(Expression)}.
      *
      * @param currentIndex the argument (local) index to replace
      * @param currentValue the replacement expression
@@ -479,13 +566,55 @@ public class CompilationContext {
     private ExpressionVisitor createReplaceArgumentVisitor(int currentIndex, Expression currentValue) {
         return e -> {
             if (e instanceof ReadLocal) {
-                if (((ReadLocal) e).getIndex() == currentIndex) {
+                if (((ReadLocal) e).getIndex() == currentIndex + INLINE_LOCALS_SHIFT_OFFSET) {
                     return currentValue;
                 }
             }
 
             return e;
         };
+    }
+
+    /**
+     * Moves local variables from the template stack to the callers stack.
+     * <p>
+     * This will essentially find all {@link PushEmitter push emitters} and assign a new stack location and update all
+     * matching local reads.
+     *
+     * @param copy the emitters to process
+     * @return the processed emitters
+     */
+    private Emitter transferLocals(Emitter copy) {
+        return copy.propagateVisitor(emitter -> {
+            if (emitter instanceof PushEmitter) {
+                PushEmitter pushEmitter = (PushEmitter) emitter;
+                int newStackLocation = stackAlloc();
+                updateLocalReads(copy, pushEmitter.getLocalIndex(), newStackLocation);
+                pushEmitter.setLocalIndex(newStackLocation);
+            }
+
+            return emitter;
+        });
+    }
+
+    /**
+     * Updates all {@link ReadLocal read locals} which access the old stack location to access the new stack location.
+     * <p>
+     * This also takes care of the artificial stack locations created by {@link #shiftLocalReads(Expression)}.
+     *
+     * @param copy             the emitter tree to process
+     * @param oldStackLocation the old location to replace
+     * @param newStackLocation the location on the new stack
+     */
+    private void updateLocalReads(Emitter copy, int oldStackLocation, int newStackLocation) {
+        copy.visitExpressions(pos -> expr -> {
+            if (expr instanceof ReadLocal
+                && ((ReadLocal) expr).getIndex() == oldStackLocation + INLINE_LOCALS_SHIFT_OFFSET) {
+                return new ReadLocal(expr.getType(), newStackLocation);
+            } else {
+                return expr;
+            }
+        });
     }
 
     /**
@@ -502,7 +631,7 @@ public class CompilationContext {
      * @return the template contant where all block references haven been replaced
      */
     private Emitter propagateBlocksForInline(Function<String, Emitter> blocks, Emitter copy) {
-        return copy.visit(e -> {
+        return copy.propagateVisitor(e -> {
             if (e instanceof BlockEmitter) {
                 BlockEmitter blockEmitter = (BlockEmitter) e;
                 return replaceBlockReference(blocks, blockEmitter);
@@ -533,7 +662,7 @@ public class CompilationContext {
     }
 
     /**
-     * Tries to resolve a string (name) into a java class.
+     * Resolve a string (name) into a java class and reports an error if no matching class was found.
      * <p>
      * Next to the classic <tt>Class.forName</tt> this also supports aliases like <tt>String</tt> for
      * <tt>java.lang.String</tt>.
@@ -544,17 +673,36 @@ public class CompilationContext {
      * @see Tagliatelle#getClassAliases()
      */
     public Class<?> resolveClass(Position position, String typeName) {
+        Class<?> result = tryResolveClass(typeName).orElse(null);
+        if (result == null) {
+            error(position, "Cannot resolve '%s' to a Java class", typeName);
+            result = void.class;
+        }
+        return result;
+    }
+
+    /**
+     * Tries to resolve a string (name) into a java class.
+     * <p>
+     * Next to the classic <tt>Class.forName</tt> this also supports aliases like <tt>String</tt> for
+     * <tt>java.lang.String</tt>.
+     *
+     * @param typeName the type name to resolve
+     * @return a Java class for the given type name wrapped as optional or an empty optional, if no matching class was
+     * found.
+     * @see Tagliatelle#getClassAliases()
+     */
+    public Optional<Class<?>> tryResolveClass(String typeName) {
         Class<?> result = engine.getClassAliases().get(typeName);
         if (result != null) {
-            return result;
+            return Optional.of(result);
         }
 
         try {
-            return Class.forName(typeName);
+            return Optional.of(Class.forName(typeName));
         } catch (ClassNotFoundException e) {
             Exceptions.ignore(e);
-            error(position, "Cannot resolve '%s' to a Java class", typeName);
-            return void.class;
+            return Optional.empty();
         }
     }
 
@@ -577,11 +725,13 @@ public class CompilationContext {
 
         if (!stack.isEmpty()) {
             sb.append("Stack\n-----\n");
-            for (Tuple<String, Class<?>> var : stack) {
-                sb.append(var.getFirst());
+            for (StackLocation var : stack) {
+                sb.append(var.name);
                 sb.append(": ");
-                sb.append(var.getSecond());
-                sb.append("\n");
+                sb.append(var.type);
+                sb.append(" (");
+                sb.append(var.stackIndex);
+                sb.append(")\n");
             }
             sb.append("\n");
         }

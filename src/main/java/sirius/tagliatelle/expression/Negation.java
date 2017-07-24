@@ -36,9 +36,9 @@ public class Negation extends Expression {
     }
 
     @Override
-    public Expression visit(ExpressionVisitor visitor) {
-        this.expression = visitor.visit(expression);
-        return visitor.visit(this);
+    public Expression propagateVisitor(ExpressionVisitor visitor) {
+        this.expression = expression.propagateVisitor(visitor);
+        return visitor.visitThis(this);
     }
 
     @Override

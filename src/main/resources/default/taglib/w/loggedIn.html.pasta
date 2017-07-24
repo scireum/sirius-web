@@ -1,0 +1,6 @@
+<i:pragma name="inline" value="true" />
+<i:pragma name="description" value="Checks if the current user is logged in within a Wondergem template" />
+
+<i:if test="user.getUser().isLoggedIn()">
+    <i:render name="body" />
+</i:if>

@@ -1,6 +1,6 @@
 <i:arg type="sirius.kernel.async.CallContext" name="ctx" />
 <i:arg type="String" name="message"/>
-<w:page title="@i18n('BasicController.404')">
+<w:page title="@i18n('BasicController.error')">
     <i:block name="breadcrumbBar" />
 
     <w:pageHeader>
@@ -8,9 +8,7 @@
     </w:pageHeader>
 
     <div class="well">
-        <pre style="font-size: small">
-            @message
-        </pre>
+        <pre style="font-size: small">@message</pre>
 
         <h2>Diagnostic:</h2>
         <ul>

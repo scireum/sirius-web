@@ -63,16 +63,8 @@ public class MailsMock extends Mails {
             return subject;
         }
 
-        public String getMailExtension() {
-            return mailExtension;
-        }
-
         public Context getContext() {
             return context;
-        }
-
-        public boolean isIncludeHTMLPart() {
-            return includeHTMLPart;
         }
 
         public String getText() {
@@ -89,10 +81,6 @@ public class MailsMock extends Mails {
 
         public String getBounceToken() {
             return bounceToken;
-        }
-
-        public String getLang() {
-            return lang;
         }
 
         public Map<String, String> getHeaders() {

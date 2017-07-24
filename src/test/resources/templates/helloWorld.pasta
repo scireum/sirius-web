@@ -1,0 +1,2 @@
+<i:arg type="String" name="hello" />
+Hello @hello

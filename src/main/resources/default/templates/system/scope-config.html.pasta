@@ -1,0 +1,43 @@
+<i:arg type="String" name="name" />
+<i:arg type="List" name="files" />
+<i:arg type="String" name="contents" />
+
+<w:page titleKey="ScopeDefaultConfigController.config">
+    <i:block name="head">
+        <script src="/assets/wondergem/ace/ace.js" type="text/javascript"></script>
+    </i:block>
+
+     <i:block name="breadcrumbs">
+         <li>
+             <a href="/scope-config">@i18n("ScopeDefaultConfigController.config")</a>
+         </li>
+         <li>
+             <a href="/scope-config/@name">@name</a>
+         </li>
+    </i:block>
+
+    <w:pageHeader titleKey="ScopeDefaultConfigController.config" />
+
+    <div class="row">
+        <div class="col-md-3">
+            <w:navbox>
+                <li class="nav-header">@i18n("ScopeDefaultConfigController.files")</li>
+                <i:for type="String" var="file" items="files">
+                    <li class="@if(name == file) { active }">
+                        <a href="/system/scope-config/@file" class="link">
+                            @file
+                        </a>
+                    </li>
+                </i:for>
+            </w:navbox>
+        </div>
+        <div class="col-md-9">
+            <div id="editor" style="height: 450px">@contents</div>
+            <script type="text/javascript">
+                var editor = ace.edit("editor");
+                editor.setTheme("ace/theme/idle_fingers");
+                editor.setReadOnly(true);
+            </script>
+        </div>
+    </div>
+</w:page>

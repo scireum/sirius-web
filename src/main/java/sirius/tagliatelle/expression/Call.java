@@ -23,12 +23,12 @@ public abstract class Call extends Expression {
     protected Expression[] parameterExpressions = NO_ARGS;
 
     @Override
-    public Expression visit(ExpressionVisitor visitor) {
+    public Expression propagateVisitor(ExpressionVisitor visitor) {
         for (int i = 0; i < parameterExpressions.length; i++) {
-            parameterExpressions[i] = visitor.visit(parameterExpressions[i]);
+            parameterExpressions[i] = parameterExpressions[i].propagateVisitor(visitor);
         }
 
-        return visitor.visit(this);
+        return visitor.visitThis(this);
     }
 
     @Override

@@ -18,9 +18,8 @@ import java.util.function.Function;
 /**
  * Writes the result of an expression evaluation into a temporary / local variable.
  */
-public class PushLocalEmitter extends Emitter {
+public class PushLocalEmitter extends PushEmitter {
 
-    private final int localIndex;
     private Expression expression;
 
     /**
@@ -50,14 +49,14 @@ public class PushLocalEmitter extends Emitter {
     }
 
     @Override
-    public Emitter visit(EmitterVisitor visitor) {
-        return visitor.visit(this);
+    public Emitter propagateVisitor(EmitterVisitor visitor) {
+        return visitor.visitThis(this);
     }
 
     @Override
     public void visitExpressions(Function<Position, ExpressionVisitor> visitorSupplier) {
         ExpressionVisitor visitor = visitorSupplier.apply(getStartOfBlock());
-        this.expression = expression.visit(visitor);
+        this.expression = expression.propagateVisitor(visitor);
     }
 
     @Override
@@ -69,5 +68,14 @@ public class PushLocalEmitter extends Emitter {
     @Override
     public String toString() {
         return "LOCAL<" + localIndex + "> = @(" + expression + ")";
+    }
+
+    /**
+     * Contains the expression to evaluate and save to the stack location.
+     *
+     * @return the expression to evaluate
+     */
+    public Expression getExpression() {
+        return expression;
     }
 }

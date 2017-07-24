@@ -48,9 +48,9 @@ import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.Template;
 import sirius.tagliatelle.compiler.CompileException;
 import sirius.tagliatelle.rendering.GlobalRenderContext;
+import sirius.web.resources.Resource;
+import sirius.web.resources.Resources;
 import sirius.web.services.JSONStructuredOutput;
-import sirius.web.templates.Resource;
-import sirius.web.templates.Resources;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -365,12 +365,27 @@ public class Response {
             }
         }
         wc.release();
+        updateResponseTimeMetrics(callContext);
+        handleKeepalive(keepalive, future);
+    }
+
+    private void updateResponseTimeMetrics(CallContext callContext) {
         if (wc.microtimingKey != null && Microtiming.isEnabled()) {
             callContext.getWatch().submitMicroTiming("HTTP", WebServer.microtimingMode.getMicrotimingKey(wc));
         }
         if (!wc.isLongCall() && wc.started > 0) {
-            WebServer.responseTime.addValue(System.currentTimeMillis() - wc.started);
+            long responseTimeMillis = System.currentTimeMillis() - wc.started;
+            WebServer.responseTime.addValue(responseTimeMillis);
+            if (responseTimeMillis > WebServer.getMaxResponseTime() && WebServer.getMaxResponseTime() > 0) {
+                WebServer.LOG.WARN("Long running request: %s (%s)%nMDC:%n%s%n",
+                                   wc.getRequestedURI(),
+                                   NLS.convertDuration(responseTimeMillis, true, true),
+                                   CallContext.getCurrent());
+            }
         }
+    }
+
+    private void handleKeepalive(boolean keepalive, ChannelFuture future) {
         if (!keepalive) {
             if (WebServer.LOG.isFINE()) {
                 WebServer.LOG.FINE("CLOSING: " + wc.getRequestedURI());
@@ -403,11 +418,14 @@ public class Response {
         complete(future, false);
     }
 
-    /*
+    /**
      * Determines if the given modified date is past the If-Modified-Since header of the request. If not the
      * request is auto-completed with a 304 status (NOT_MODIFIED)
+     *
+     * @param lastModifiedInMillis the modification date of the resource being delivered
+     * @return <tt>true</tt> if the request was answered via a 304, <tt>false</tt> otherwise
      */
-    protected boolean handleIfModifiedSince(long lastModifiedInMillis) {
+    public boolean handleIfModifiedSince(long lastModifiedInMillis) {
         long ifModifiedSinceDateSeconds = wc.getDateHeader(HttpHeaderNames.IF_MODIFIED_SINCE) / 1000;
         if (ifModifiedSinceDateSeconds > 0 && lastModifiedInMillis > 0) {
             if (ifModifiedSinceDateSeconds >= lastModifiedInMillis / 1000) {
@@ -766,8 +784,8 @@ public class Response {
     }
 
     /**
-     * Tries to resolve the given name into a {@link sirius.web.templates.Resource} using
-     * the {@link sirius.web.templates.Resources} lookup framework.
+     * Tries to resolve the given name into a {@link Resource} using
+     * the {@link Resources} lookup framework.
      * <p>
      * Sends the resource found or a 404 NOT_FOUND otherwise.
      *
@@ -888,7 +906,7 @@ public class Response {
             if (!ctx.channel().isWritable()) {
                 return;
             }
-            if (HttpMethod.HEAD.equals(wc.getRequest().method())) {
+            if (HttpMethod.HEAD.equals(wc.getRequest().method()) || HttpResponseStatus.NOT_MODIFIED.equals(status)) {
                 status(status);
                 return;
             }
@@ -902,13 +920,17 @@ public class Response {
     private void renderErrorTemplate(HttpResponseStatus status, String message) {
         try {
             if (HttpResponseStatus.NOT_FOUND.equals(status)) {
-                template(status,"/templates/http/not-found.html.pasta", CallContext.getCurrent(), message);
+                template(status, "/templates/http/not-found.html.pasta", CallContext.getCurrent(), message);
             } else {
-                template(status,"/templates/http/error.html.pasta", CallContext.getCurrent(), message);
+                String effectiveMessage = message;
+                if (Strings.isEmpty(effectiveMessage)) {
+                    effectiveMessage = status.toString();
+                }
+                template(status, "/templates/http/error.html.pasta", CallContext.getCurrent(), effectiveMessage);
             }
         } catch (HandledException e) {
             Exceptions.ignore(e);
-            template(status,"/templates/http/plain-error.html.pasta", CallContext.getCurrent(), message);
+            template(status, "/templates/http/plain-error.html.pasta", CallContext.getCurrent(), message);
         }
     }
 
@@ -994,7 +1016,7 @@ public class Response {
     }
 
     /**
-     * Renders the given Rythm template and sends the output as response.
+     * Renders the given template and sends the output as response.
      * <p>
      * By default caching will be disabled. If the file ends with .html, <tt>text/html; charset=UTF-8</tt> will be set
      * as content type. Otherwise the content type will be guessed from the filename.
@@ -1026,7 +1048,18 @@ public class Response {
         }
     }
 
-    private void template(HttpResponseStatus status, Template template, Object... params) {
+    /**
+     * Renders the given Rythm template and sends the output as response.
+     * <p>
+     * By default caching will be disabled. If the file ends with .html, <tt>text/html; charset=UTF-8</tt> will be set
+     * as content type. Otherwise the content type will be guessed from the filename.
+     *
+     * @param status   the HTTP status to send. {@link HttpResponseStatus#OK} would be appropriate in most cases.
+     * @param template the template to render
+     * @param params   contains the parameters sent to the template
+     * @see #template(HttpResponseStatus, String, Object...)
+     */
+    public void template(HttpResponseStatus status, Template template, Object... params) {
         wc.enableTiming(null);
         try {
             Object[] effectiveParams = fixParams(params);
@@ -1074,9 +1107,7 @@ public class Response {
             } else {
                 setContentTypeHeader(name);
             }
-            setDateAndCacheHeaders(System.currentTimeMillis(),
-                                   cacheSeconds == null || Sirius.isDev() ? 0 : cacheSeconds,
-                                   isPrivate);
+            setDateAndCacheHeaders(System.currentTimeMillis(), cacheSeconds == null ? 0 : cacheSeconds, isPrivate);
             ByteBuf channelBuffer = wrapUTF8String(content);
             HttpResponse response = createFullResponse(status, true, channelBuffer);
             complete(commit(response));

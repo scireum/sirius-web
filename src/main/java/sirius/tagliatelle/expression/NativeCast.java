@@ -8,7 +8,6 @@
 
 package sirius.tagliatelle.expression;
 
-import sirius.kernel.di.transformers.Transformable;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
 /**
@@ -33,9 +32,9 @@ public class NativeCast extends Expression {
     }
 
     @Override
-    public Expression visit(ExpressionVisitor visitor) {
-        this.selfExpression = visitor.visit(selfExpression);
-        return visitor.visit(this);
+    public Expression propagateVisitor(ExpressionVisitor visitor) {
+        this.selfExpression = selfExpression.propagateVisitor(visitor);
+        return visitor.visitThis(this);
     }
 
     @Override
@@ -65,7 +64,7 @@ public class NativeCast extends Expression {
             if (!type.isAssignableFrom(self.getClass())) {
                 throw new ClassCastException(self.getClass().getName());
             }
-            return ((Transformable) self).as(type);
+            return self;
         } catch (ClassCastException e) {
             throw new ExpressionEvaluationException(e);
         }

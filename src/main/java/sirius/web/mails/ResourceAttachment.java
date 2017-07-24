@@ -8,7 +8,7 @@
 
 package sirius.web.mails;
 
-import sirius.web.templates.Resource;
+import sirius.web.resources.Resource;
 
 import java.io.IOException;
 import java.io.InputStream;

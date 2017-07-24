@@ -17,12 +17,12 @@
         <dependency>
             <groupId>com.scireum</groupId>
             <artifactId>sirius-kernel</artifactId>
-            <version>6.6</version>
+            <version>6.11</version>
         </dependency>
         <dependency>
             <groupId>com.scireum</groupId>
             <artifactId>sirius-kernel</artifactId>
-            <version>6.6</version>
+            <version>6.11</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
@@ -45,7 +45,7 @@
         <dependency>
             <groupId>com.scireum</groupId>
             <artifactId>server-sass</artifactId>
-            <version>3.1</version>
+            <version>3.3</version>
         </dependency>
 
         <!-- Used as main template engine for HTML templates... -->
@@ -101,27 +101,6 @@
             <groupId>net.markenwerk</groupId>
             <artifactId>utils-mail-dkim</artifactId>
             <version>1.1.7</version>
-        </dependency>
-
-        <!-- Velocity and xhtml renderer are mainly used to generate mails and attachments -->
-        <dependency>
-            <groupId>org.apache.velocity</groupId>
-            <artifactId>velocity</artifactId>
-            <version>1.7</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-collections</groupId>
-                    <artifactId>commons-collections</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <!-- Velocity pulls commons-collections-3.2.1 which has a remote code execution vulnerability
-             COLLECTIONS-580 / VELOCITY-869
-             As long as 1.7.1 is not released, we force the correct version of collections here -->
-        <dependency>
-            <groupId>commons-collections</groupId>
-            <artifactId>commons-collections</artifactId>
-            <version>3.2.2</version>
         </dependency>
 
         <dependency>

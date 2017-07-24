@@ -1,0 +1,142 @@
+<w:page title="System Info">
+    <i:block name="breadcrumbs">
+        <li><a href="/system/info">System Info</a></li>
+    </i:block>
+
+    <div class="container">
+        <h1>Base</h1>
+        <div class="">
+            <table class="table table-bordered">
+                <tr>
+                    <td>Node Name</td>
+                    <td style="text-align: right">
+                        @nodeName
+                    </td>
+                </tr>
+                <tr>
+                    <td>Remote IP</td>
+                    <td style="text-align: right">
+                        @call.getRemoteIP().getHostAddress()
+                    </td>
+                </tr>
+                <tr>
+                    <td>Trusted IP</td>
+                    <td style="text-align: right">
+                        @call.isTrusted()
+                    </td>
+                </tr>
+                <tr>
+                    <td>Language</td>
+                    <td style="text-align: right">
+                        @call.getLang()
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <h1>Headers</h1>
+        <div class="">
+            <table class="table table-bordered">
+                <i:for type="String" var="name" items="call.getRequest().headers().names()">
+                    <tr>
+                        <td>@name</td>
+                        <td style="text-align: right">
+                            <i:for type="String" var="value" items="call.getRequest().headers().getAll(name)">
+                                <div style="word-wrap: break-word; word-break: break-all">@value</div>
+                            </i:for>
+                        </td>
+                    </tr>
+                </i:for>
+            </table>
+        </div>
+
+        <i:if test="!call.getCookies().isEmpty()">
+            <h1>Cookies</h1>
+            <div class="">
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Name</th>
+                        <th style="text-align: right">
+                            Value
+                        </th>
+                        <th>Secure</th>
+                        <th>HTTP only</th>
+                    </tr>
+                    <i:for type="io.netty.handler.codec.http.cookie.Cookie" var="cookie" items="call.getCookies()">
+                        <tr>
+                            <td>@cookie.name()</td>
+                            <td style="text-align: right; word-wrap: break-word; word-break: break-all">
+                                @cookie.value()
+                            </td>
+                            <td>@cookie.isSecure()</td>
+                            <td>@cookie.isHttpOnly()</td>
+                        </tr>
+                    </i:for>
+                </table>
+            </div>
+        </i:if>
+
+        <i:if test="!call.getSessionKeys().isEmpty()">
+            <h1>Client Session</h1>
+            <div class="">
+                <table class="table table-bordered">
+                    <i:for type="String" var="name" items="call.getSessionKeys()">
+                        <tr>
+                            <td>@name</td>
+                            <td style="text-align: right">
+                                @call.getSessionValue(name)
+                            </td>
+                        </tr>
+                    </i:for>
+                </table>
+            </div>
+        </i:if>
+
+        <i:if test="call.getServerSession(false).isPresent()">
+            <h1>Server Session</h1>
+            <div class="">
+                <table class="table table-bordered">
+                    <tr>
+                        <td>Session-ID</td>
+                        <td style="text-align: right">
+                            @call.getServerSession().getId()
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Created At</td>
+                        <td style="text-align: right">
+                            call.getServerSession().getCreationTime())
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Max Inactivity</td>
+                        <td style="text-align: right">
+                            call.getServerSession().getMaxInactiveInterval() s
+                        </td>
+                    </tr>
+                    <i:for type="String" var="name" items="call.getServerSession().getKeys()">
+                        <tr>
+                            <td>@name</td>
+                            <td style="text-align: right">
+                                @call.getServerSession().getValue(name)
+                            </td>
+                        </tr>
+                    </i:for>
+                </table>
+            </div>
+        </i:if>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="well">
+                    <div class="pull-right">
+                        <a class="btn" href="javascript:window.print();">Print</a>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</w:page>
+

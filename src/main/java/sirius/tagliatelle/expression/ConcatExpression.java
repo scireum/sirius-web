@@ -45,11 +45,11 @@ public class ConcatExpression extends Expression {
     }
 
     @Override
-    public Expression visit(ExpressionVisitor visitor) {
+    public Expression propagateVisitor(ExpressionVisitor visitor) {
         for (int i = 0; i < stringExpressions.size(); i++) {
-            stringExpressions.set(i, visitor.visit(stringExpressions.get(i)));
+            stringExpressions.set(i, stringExpressions.get(i).propagateVisitor(visitor));
         }
-        return visitor.visit(this);
+        return visitor.visitThis(this);
     }
 
     /**

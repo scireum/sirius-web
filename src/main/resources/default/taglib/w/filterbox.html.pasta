@@ -1,5 +1,5 @@
 <i:arg type="Page" name="page" />
-<i:arg type="String" name="baseURL" />
+<i:arg type="String" name="baseUrl" />
 
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders a filter box within a Wondergem template" />
@@ -12,7 +12,7 @@
                     <li class="nav-header">@facet.getTitle()</li>
                     <i:for type="sirius.web.controller.FacetItem" var="item" items="facet.getItems()">
                         <li @if (item.isActive()) { class="active" }>
-                            <a href="@baseURL?@facet.createToggleQueryString(item)" class="row">
+                            <a href="@baseUrl?@facet.createToggleQueryString(item)" class="row">
                                 <span class="filter-title word-wrap">
                                     <i @if (item.isActive()) { class="fa fa-check-square-o" } else { class="fa fa-square-o" }></i>
                                     <span class="filter-title-inner">@item.getTitle()</span>

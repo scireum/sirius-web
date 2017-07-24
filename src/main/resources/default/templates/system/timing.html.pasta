@@ -1,0 +1,49 @@
+<i:arg type="boolean" name="enabled"/>
+<i:arg type="List" name="timings"/>
+<i:arg type="Page" name="page"/>
+<i:arg type="String" name="periodSinceReset"/>
+
+<w:page title="Microtiming">
+
+    <i:block name="breadcrumbs">
+        <li><a href="/system/timing">Microtiming</a></li>
+    </i:block>
+
+    <w:pageHeader>
+        Microtiming
+        <small class="pull-right" style="padding-top: 12px">@periodSinceReset</small>
+    </w:pageHeader>
+
+    <w:tableSearchHeader baseUrl="/system/timing" page="page">
+        @if (enabled) {
+            <a href="/system/timing?disable=true" class="btn btn-primary"><i class="fa fa-minus"></i> Disable</a>
+        } else {
+            <a href="/system/timing?enable=true" class="btn btn-primary"><i class="fa fa-plus"></i> Enable</a>
+        }
+    </w:tableSearchHeader>
+
+    <i:for type="Tuple" var="category" items="timings">
+        <w:heading label="@category.getFirst().toString()"/>
+        <table class="table table-striped">
+            <tr>
+                <th style="overflow: hidden">
+                    Key
+                </th>
+                <th class="align-right" style="overflow: hidden">
+                    Calls (Duration)
+                </th>
+            </tr>
+
+            <i:for type="Tuple" var="timing" items="category.getSecond().as(java.util.Collection.class)">
+                <tr>
+                    <td style="overflow: hidden">
+                        <small>@timing.getFirst()</small>
+                    </td>
+                    <td class="align-right">
+                        @timing.getSecond()
+                    </td>
+                </tr>
+            </i:for>
+        </table>
+    </i:for>
+</w:page>

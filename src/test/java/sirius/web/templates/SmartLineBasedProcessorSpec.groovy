@@ -10,6 +10,10 @@ package sirius.web.templates
 
 import com.google.common.collect.Lists
 import sirius.kernel.BaseSpecification
+import sirius.web.data.LineBasedProcessor
+import sirius.web.data.NamedRowProcessor
+import sirius.web.data.SmartLineBasedProcessor
+import sirius.web.data.SmartRow
 
 class SmartLineBasedProcessorSpec extends BaseSpecification {
 

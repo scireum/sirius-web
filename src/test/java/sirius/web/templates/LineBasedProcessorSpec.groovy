@@ -11,6 +11,8 @@ package sirius.web.templates
 import com.google.common.collect.Lists
 import sirius.kernel.BaseSpecification
 import sirius.kernel.commons.Values
+import sirius.web.data.LineBasedProcessor
+import sirius.web.data.RowProcessor
 
 class LineBasedProcessorSpec extends BaseSpecification {
 

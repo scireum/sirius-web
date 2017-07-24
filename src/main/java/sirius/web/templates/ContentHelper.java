@@ -10,6 +10,8 @@ package sirius.web.templates;
 
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
+import sirius.web.resources.Resource;
+import sirius.web.resources.Resources;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

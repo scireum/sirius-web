@@ -8,21 +8,25 @@
 
 package sirius.tagliatelle;
 
-import sirius.kernel.Sirius;
+import parsii.tokenizer.ParseError;
+import parsii.tokenizer.Position;
 import sirius.kernel.cache.Cache;
+import sirius.kernel.cache.CacheEntry;
 import sirius.kernel.cache.CacheManager;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
+import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Log;
 import sirius.tagliatelle.compiler.CompilationContext;
+import sirius.tagliatelle.compiler.CompileError;
 import sirius.tagliatelle.compiler.CompileException;
 import sirius.tagliatelle.compiler.Compiler;
 import sirius.tagliatelle.rendering.GlobalRenderContext;
-import sirius.web.templates.Resource;
-import sirius.web.templates.Resources;
+import sirius.web.resources.Resource;
+import sirius.web.resources.Resources;
 import sirius.web.templates.Templates;
 
 import javax.annotation.Nonnull;
@@ -34,6 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Provides statically compiled and optimized templates to generate HTML, XML and text files.
@@ -47,19 +52,12 @@ public class Tagliatelle {
      * Logs everything related to resolving, compiling and rendering tagliatelle templates.
      */
     public static final Log LOG = Log.get("tagliatelle");
+    public static final String PRAGMA_ALIAS = "alias";
 
     /**
      * Contains all aliases collected via {@link ClassAliasProvider alias providers}.
      */
     private Map<String, Class<?>> aliases;
-
-    /**
-     * Contains all types of global variables collected via {@link RenderContextExtender context extenders}.
-     */
-    private List<Tuple<String, Class<?>>> globalVariables;
-
-    @Parts(RenderContextExtender.class)
-    private Collection<RenderContextExtender> contextExtenders;
 
     @Parts(ClassAliasProvider.class)
     private Collection<ClassAliasProvider> aliasProviders;
@@ -67,10 +65,15 @@ public class Tagliatelle {
     @Part
     private Resources resources;
 
+    @Part
+    private Templates templates;
+
     /**
      * Keeps compiled templates around to improve the speed of rendering.
      */
     private Cache<Resource, Template> compiledTemplates = CacheManager.createCache("tagliatelle-templates");
+
+    private List<Tuple<String, Class<?>>> globalVariables;
 
     /**
      * Provides all known class aliases.
@@ -92,40 +95,7 @@ public class Tagliatelle {
      * @return a new list of global variables
      */
     public List<Object> createEnvironment() {
-        List<Object> result = new ArrayList<>();
-        contextExtenders.forEach(renderContextExtender -> renderContextExtender.collectParameterValues(result::add));
-        if (Sirius.isDev()) {
-            verifyGlobals(result);
-        }
-
-        return result;
-    }
-
-    /**
-     * Ensures, that all {@link RenderContextExtender} produce a sane and expected output.
-     *
-     * @param environment the environment to check
-     */
-    private void verifyGlobals(List<Object> environment) {
-        int index = 0;
-        for (Tuple<String, Class<?>> global : globalVariables) {
-            if (environment.size() <= index) {
-                Templates.LOG.WARN("An invalid global environment was created! Missing a value for %s",
-                                   global.getFirst());
-            } else {
-                Object value = environment.get(index);
-                if (!isAssignable(value, global.getSecond())) {
-                    Templates.LOG.WARN("An invalid global environment was created!"
-                                       + " An invalid value (%s) of type %s was created for parameter %s."
-                                       + " But %s is the expected type.",
-                                       value,
-                                       value.getClass(),
-                                       global.getFirst(),
-                                       global.getSecond());
-                }
-            }
-            index++;
-        }
+        return new ArrayList<>(templates.createGlobalContext().values());
     }
 
     /**
@@ -135,10 +105,9 @@ public class Tagliatelle {
      */
     public List<Tuple<String, Class<?>>> getGlobalVariables() {
         if (globalVariables == null) {
-            List<Tuple<String, Class<?>>> result = new ArrayList<>();
-            contextExtenders.forEach(renderContextExtender -> renderContextExtender.collectParameterTypes((n, t) -> result
-                    .add(Tuple.create(n, t))));
-            globalVariables = Collections.unmodifiableList(result);
+            List<Tuple<String, Class<?>>> globals = new ArrayList<>();
+            templates.createGlobalContext().forEach((key, value) -> globals.add(Tuple.create(key, value.getClass())));
+            globalVariables = Collections.unmodifiableList(globals);
         }
 
         return globalVariables;
@@ -200,6 +169,11 @@ public class Tagliatelle {
             return true;
         }
 
+        // Null if represented as void.class and can be assigned to any non-primitive type.
+        if (from == void.class) {
+            return !to.isPrimitive();
+        }
+
         if (from.isPrimitive()) {
             if (to.isPrimitive()) {
                 return checkTypeConversion(from, to);
@@ -211,7 +185,7 @@ public class Tagliatelle {
     }
 
     private static boolean checkTypeConversion(Class<?> from, Class<?> to) {
-        if (from == long.class && to == int.class) {
+        if (from == long.class && to == int.class || from == int.class && to == long.class) {
             return true;
         }
 
@@ -227,11 +201,11 @@ public class Tagliatelle {
      */
     private static boolean checkAutoboxing(Class<?> primitveType, Class<?> boxedType) {
         if (primitveType == int.class || primitveType == long.class) {
-            return Integer.class.isAssignableFrom(boxedType);
+            return boxedType.isAssignableFrom(Integer.class);
         }
 
         if (primitveType == boolean.class) {
-            return Boolean.class.isAssignableFrom(boxedType);
+            return boxedType.isAssignableFrom(Boolean.class);
         }
 
         return false;
@@ -260,6 +234,7 @@ public class Tagliatelle {
      * @throws CompileException in case of one or more compilation errors in the template
      */
     public Optional<Template> resolve(String path, @Nullable CompilationContext parentContext) throws CompileException {
+        ensureProperTemplatePath(path);
         Optional<Resource> optionalResource = resources.resolve(path);
         if (!optionalResource.isPresent()) {
             return Optional.empty();
@@ -271,13 +246,49 @@ public class Tagliatelle {
             Tagliatelle.LOG.FINE("Resolving template for '%s' ('%s)'...", path, resource.getUrl());
         }
 
+        Template template = resolveFromCache(path, resource);
+        if (template != null) {
+            return Optional.of(template);
+        }
+
+        template = compileTemplate(path, resource, parentContext);
+        compiledTemplates.put(resource, template);
+
+        return Optional.of(template);
+    }
+
+    /**
+     * For security reasons we only include or invoke templates and resources in either /assets or /templates.
+     * <p>
+     * Otherwise one could customize a template and try to include a configuration file or class file and therefore
+     * obtain private data.
+     *
+     * @param path the path to check
+     */
+    public static void ensureProperTemplatePath(String path) {
+        String effectiveUri = path.startsWith("/") ? path : "/" + path;
+
+        if (!effectiveUri.startsWith("/templates") && !effectiveUri.startsWith("/assets") && !effectiveUri.startsWith(
+                "/taglib")) {
+            throw new IllegalArgumentException(
+                    "Tagliatelle templates must reside in /templates, /taglib or /assets. Invalid path: " + path);
+        }
+    }
+
+    private CompileException createGeneralCompileError(Template template, String message) {
+        ParseError parseError = ParseError.error(Position.UNKNOWN, message);
+        CompileError compileError = new CompileError(parseError, null);
+        return CompileException.create(template, Collections.singletonList(compileError));
+    }
+
+    private Template resolveFromCache(String path, Resource resource) {
         Template result = compiledTemplates.get(resource);
         if (result != null) {
             if (resource.getLastModified() <= result.getCompilationTimestamp()) {
                 if (Tagliatelle.LOG.isFINE()) {
                     Tagliatelle.LOG.FINE("Resolved '%s' for '%s' from cache...", result, resource.getUrl());
                 }
-                return Optional.of(result);
+                return result;
             }
             if (Tagliatelle.LOG.isFINE()) {
                 Tagliatelle.LOG.FINE(
@@ -291,13 +302,29 @@ public class Tagliatelle {
         } else if (Tagliatelle.LOG.isFINE()) {
             Tagliatelle.LOG.FINE("Cannot resolve '%s' for '%s' from cache...", result, resource.getUrl());
         }
+        return null;
+    }
 
+    private Template compileTemplate(String path, Resource resource, @Nullable CompilationContext parentContext)
+            throws CompileException {
         CompilationContext compilationContext = createCompilationContext(path, resource, parentContext);
-
         new Compiler(compilationContext, resource.getContentAsString()).compile();
-        compiledTemplates.put(resource, compilationContext.getTemplate());
+        return handleAliasing(compilationContext.getTemplate(), compilationContext);
+    }
 
-        return Optional.of(compilationContext.getTemplate());
+    private Template handleAliasing(Template template, CompilationContext compilationContext) throws CompileException {
+        Value alias = template.getPragma(PRAGMA_ALIAS);
+        if (alias.isFilled()) {
+            String aliasPath = alias.asString();
+            if (aliasPath.contains(":")) {
+                aliasPath = resolveTagName(aliasPath);
+            }
+            return resolve(aliasPath, compilationContext).orElseThrow(() -> createGeneralCompileError(template,
+                                                                                                      "Cannot resolve alias: "
+                                                                                                      + alias.asString()));
+        }
+
+        return template;
     }
 
     /**
@@ -312,5 +339,17 @@ public class Tagliatelle {
     public String resolveTagName(String qualifiedTagName) {
         Tuple<String, String> tagName = Strings.split(qualifiedTagName, ":");
         return "/taglib/" + tagName.getFirst() + "/" + tagName.getSecond() + ".html.pasta";
+    }
+
+    /**
+     * Provides a list of all currently compiled templates.
+     * <p>
+     * Note that this directly accesses an inner cache. Therefore some templates which were rendered some time ago,
+     * might have been dropped out of the cache and will therefore not occur in this list.
+     *
+     * @return a list of all compiled templates
+     */
+    public List<Template> getCompiledTemplates() {
+        return compiledTemplates.getContents().stream().map(CacheEntry::getValue).collect(Collectors.toList());
     }
 }

@@ -22,5 +22,5 @@ public interface ExpressionVisitor {
      * @return either the given expression or a replacement node.
      */
     @Nonnull
-    Expression visit(@Nonnull Expression expression);
+    Expression visitThis(@Nonnull Expression expression);
 }

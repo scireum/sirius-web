@@ -83,8 +83,15 @@ public class InvokeTemplateEmitter extends Emitter {
     }
 
     @Override
-    public Emitter visit(EmitterVisitor visitor) {
-        return visitor.visit(this);
+    public Emitter propagateVisitor(EmitterVisitor visitor) {
+        if (blocks != null) {
+            Map<String, Emitter> copy = new HashMap<>();
+            for (Map.Entry<String, Emitter> e : blocks.entrySet()) {
+                copy.put(e.getKey(), e.getValue().propagateVisitor(visitor));
+            }
+            this.blocks = copy;
+        }
+        return visitor.visitThis(this);
     }
 
     @Override
@@ -92,7 +99,7 @@ public class InvokeTemplateEmitter extends Emitter {
         ExpressionVisitor visitor = visitorSupplier.apply(getStartOfBlock());
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i] != null) {
-                arguments[i] = arguments[i].visit(visitor);
+                arguments[i] = arguments[i].propagateVisitor(visitor);
             }
         }
 
@@ -105,7 +112,7 @@ public class InvokeTemplateEmitter extends Emitter {
     protected void emitToContext(LocalRenderContext context) throws Exception {
         Template template = context.resolve(templateName).orElseThrow(() -> new FileNotFoundException(templateName));
         LocalRenderContext subContext = context.createChildContext(template);
-        subContext.setBlocks(blocks);
+        subContext.setBlocks(context, blocks);
 
         try {
             int index = 0;

@@ -19,7 +19,6 @@ import sirius.kernel.Lifecycle;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Tasks;
-import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
@@ -88,9 +87,6 @@ public class Cluster implements EveryMinute, Lifecycle {
 
     @ConfigValue("health.cluster.priority")
     private int priority;
-
-    @ConfigValue("health.cluster.alerts.mail")
-    private List<String> alertReceivers;
 
     @Part
     private Metrics metrics;
@@ -332,16 +328,6 @@ public class Cluster implements EveryMinute, Lifecycle {
 
     private void alertClusterFailure(boolean firstAlert) {
         if (firstAlert) {
-            Context ctx = Context.create()
-                                 .set("app", Product.getProduct().toString())
-                                 .set("node", CallContext.getNodeName())
-                                 .set("nodeState", nodeState.name())
-                                 .set("clusterState", clusterState.name())
-                                 .set("metrics", metrics)
-                                 .set("nodes", nodes);
-            for (String receiver : alertReceivers) {
-                ms.createEmail().useMailTemplate("system-alert", ctx).toEmail(receiver).send();
-            }
             LOG.WARN("NodeState: %s, ClusterState: %s", nodeState, clusterState);
         }
     }
