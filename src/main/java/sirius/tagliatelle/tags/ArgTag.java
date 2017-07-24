@@ -114,6 +114,10 @@ public class ArgTag extends TagHandler {
             return String.class;
         }
 
+        if (PARAM_DESCRIPTION.equals(name)) {
+            return String.class;
+        }
+
         if (PARAM_DEFAULT.equals(name)) {
             try {
                 return getCompilationContext().resolveClass(getStartOfTag(),
