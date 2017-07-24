@@ -9,6 +9,7 @@
 package sirius.tagliatelle.tags;
 
 import sirius.kernel.di.std.Register;
+import sirius.kernel.health.Exceptions;
 import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.TemplateArgument;
 import sirius.tagliatelle.emitter.CompositeEmitter;
@@ -29,6 +30,8 @@ public class ArgTag extends TagHandler {
     public static final String PARAM_DESCRIPTION = "description";
     public static final String PARAM_TYPE = "type";
     public static final String PARAM_DEFAULT = "default";
+
+    private Class<?> expectedType = Expression.class;
 
     @Register
     public static class Factory implements TagHandlerFactory {
@@ -112,7 +115,15 @@ public class ArgTag extends TagHandler {
         }
 
         if (PARAM_DEFAULT.equals(name)) {
-            return Expression.class;
+            try {
+                return getCompilationContext().resolveClass(getStartOfTag(),
+                                                            getConstantAttribute(PARAM_TYPE).asString());
+            } catch (Exception e) {
+                // In case no or an unknown type is given, we simply return Expression.class which suits all arguments.
+                // An error has already or will be reported by the framework anyway..
+                Exceptions.ignore(e);
+                return Expression.class;
+            }
         }
 
         return super.getExpectedAttributeType(name);
