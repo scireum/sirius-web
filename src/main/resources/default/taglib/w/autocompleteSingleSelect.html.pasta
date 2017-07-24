@@ -27,7 +27,7 @@
         </label>
     </i:if>
 
-    <select name="@name" id="@id" class="form-control @user.signalFieldError(name)"
+    <select name="@name" @if(isFilled(id)) { id="@id" } class="form-control @user.signalFieldError(name)"
             @if (isFilled(type)) { data-type="@type" }
             @if (isFilled(searchKey)) { data-searchtext="@i18n(searchKey)" }
             @if (strict) { data-strict="true" }

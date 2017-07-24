@@ -26,7 +26,7 @@
     </i:if>
     <i:if test="isFilled(addonText)">
         <div class="input-group">
-            <input name="@name" id="@id" type="@type" value="@user.getFieldValue(name, value)"
+            <input name="@name" @if(isFilled(id)) { id="@id" } type="@type" value="@user.getFieldValue(name, value)"
                    class="form-control input-block-level"
                    @if (readonly) { readonly } @if (autofocus) { autofocus }/>
 
@@ -34,7 +34,7 @@
         </div>
 
         <i:else>
-            <input name="@name" id="@id" type="@type" value="@user.getFieldValue(name, value)"
+            <input name="@name" @if(isFilled(id)) { id="@id" } type="@type" value="@user.getFieldValue(name, value)"
                    class="form-control input-block-level"
                    @if (readonly) { readonly } @if (autofocus) { autofocus }/>
         </i:else>

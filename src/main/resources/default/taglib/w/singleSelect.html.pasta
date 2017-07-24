@@ -24,7 +24,7 @@
     </i:if>
 
     <select name="@name"
-            id="@id"
+            @if(isFilled(id)) { id="@id" }
             class="select2-select form-control @user.signalFieldError(name)"
             @if (optional) { data-optional="true" }
             @if(forceFullWidth) { style="width: 100%;" }>

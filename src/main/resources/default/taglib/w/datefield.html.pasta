@@ -22,7 +22,7 @@
         </label>
     </i:if>
     <input name="@name"
-           id="@id"
+           @if(isFilled(id)) { id="@id" }
            type="text"
            value="@user.getFieldValue(name, value)"
            class="form-control input-block-level date-picker"
