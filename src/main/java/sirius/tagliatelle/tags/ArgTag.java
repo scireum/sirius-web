@@ -119,7 +119,8 @@ public class ArgTag extends TagHandler {
                 return getCompilationContext().resolveClass(getStartOfTag(),
                                                             getConstantAttribute(PARAM_TYPE).asString());
             } catch (Exception e) {
-                // In case no or an unknow type is given, we simply return Expression.class which suits all arguments.
+                // In case no or an unknown type is given, we simply return Expression.class which suits all arguments.
+                // An error has already or will be reported by the framework anyway..
                 Exceptions.ignore(e);
                 return Expression.class;
             }
