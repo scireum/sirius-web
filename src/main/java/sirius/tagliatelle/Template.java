@@ -14,6 +14,7 @@ import sirius.kernel.commons.Value;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Average;
+import sirius.tagliatelle.emitter.ConstantEmitter;
 import sirius.tagliatelle.emitter.Emitter;
 import sirius.tagliatelle.rendering.GlobalRenderContext;
 import sirius.tagliatelle.rendering.LocalRenderContext;
@@ -200,6 +201,15 @@ public class Template {
         Watch w = Watch.start();
         emitter.emit(ctx);
         renderTime.addValue(w.elapsedMillis());
+    }
+
+    /**
+     * Determines if the contents of this template are completely constant.
+     *
+     * @return <tt>true</tt> if the contents are completely constant, <tt>false</tt> otherwise
+     */
+    public boolean isConstant() {
+        return emitter instanceof ConstantEmitter;
     }
 
     /**

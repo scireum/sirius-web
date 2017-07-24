@@ -27,6 +27,7 @@ import sirius.kernel.info.Product;
 import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.Template;
 import sirius.tagliatelle.compiler.CompileException;
+import sirius.web.http.Response;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 import sirius.web.resources.Resource;
@@ -124,7 +125,12 @@ public class AssetsDispatcher implements WebDispatcher {
         try {
             Optional<Template> template = tagliatelle.resolve(uri + ".pasta");
             if (template.isPresent()) {
-                ctx.respondWith().template(HttpResponseStatus.OK, template.get());
+                Response response = ctx.respondWith().cached();
+                if (template.get().isConstant() && response.handleIfModifiedSince(template.get()
+                                                                                          .getCompilationTimestamp())) {
+                } else {
+                    response.template(HttpResponseStatus.OK, template.get());
+                }
                 return true;
             }
         } catch (CompileException e) {

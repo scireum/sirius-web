@@ -1,0 +1,17 @@
+<i:include name="/assets/wondergem/bootstrap/css/bootstrap.min.css" />
+
+<i:include name="/assets/wondergem/font-awesome/css/font-awesome.css" />
+
+<i:include name="/assets/wondergem/fileupload/fileuploader.css" />
+
+<i:include name="/assets/wondergem/select2/select2.min.css" />
+
+<i:include name="/assets/wondergem/datepicker/css/datepicker.css" />
+
+<i:include name="/assets/wondergem/bootstrap/css/bootstrap.min.css" />
+
+<i:include name="/assets/wondergem/colorpicker/css/bootstrap-colorpicker.min.css" />
+
+<i:include name="/assets/wondergem/featherlight/featherlight.css" />
+
+<i:include name="/assets/wondergem/magicsuggest/magicsuggest-min.css" />
