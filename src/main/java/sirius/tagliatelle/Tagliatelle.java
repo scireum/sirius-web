@@ -258,7 +258,7 @@ public class Tagliatelle {
     }
 
     /**
-     * For security reasons we only include or invoke templates and resources in either /assets or /templates.
+     * For security reasons we only invoke templates that end with .pasta.
      * <p>
      * Otherwise one could customize a template and try to include a configuration file or class file and therefore
      * obtain private data.
@@ -266,12 +266,8 @@ public class Tagliatelle {
      * @param path the path to check
      */
     public static void ensureProperTemplatePath(String path) {
-        String effectiveUri = path.startsWith("/") ? path : "/" + path;
-
-        if (!effectiveUri.startsWith("/templates") && !effectiveUri.startsWith("/assets") && !effectiveUri.startsWith(
-                "/taglib")) {
-            throw new IllegalArgumentException(
-                    "Tagliatelle templates must reside in /templates, /taglib or /assets. Invalid path: " + path);
+        if (path.endsWith(".pasta")) {
+            throw new IllegalArgumentException("Tagliatelle templates must end with '.pasta'. Invalid path: " + path);
         }
     }
 

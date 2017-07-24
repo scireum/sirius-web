@@ -10,7 +10,6 @@ package sirius.tagliatelle.tags;
 
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
-import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.TemplateArgument;
 import sirius.tagliatelle.emitter.CompositeEmitter;
 import sirius.tagliatelle.emitter.ConstantEmitter;
@@ -63,7 +62,10 @@ public class IncludeTag extends TagHandler {
     @Override
     public void apply(CompositeEmitter targetBlock) {
         String resourcePath = getConstantAttribute(ATTR_NAME).asString();
-        Tagliatelle.ensureProperTemplatePath(resourcePath);
+        if (!resourcePath.startsWith("/assets") && !resourcePath.startsWith("assets/")) {
+            throw new IllegalArgumentException("For security reasons only assets can be included. Invalid path: "
+                                               + resourcePath);
+        }
 
         Optional<Resource> resource = resources.resolve(resourcePath);
         if (!resource.isPresent()) {
