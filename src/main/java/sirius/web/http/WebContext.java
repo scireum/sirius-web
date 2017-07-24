@@ -1776,7 +1776,17 @@ public class WebContext implements SubContext {
         cleanupFiles();
     }
 
-    private void releaseContentHandler() {
+    /**
+     * Releases the content handler for a pre-dispatched request.
+     * <p>
+     * If the handler didn't yet read all input, all available data is drained and trashed, so that
+     * the response can be sent (otherwise netty might internally hang, as it waits for the request
+     * to be completely read before a (premature) response (e.g. an error message) is sent.
+     * <p>
+     * If no content handler is present, or if it has already been released, nothing will happen, especially nothing
+     * nasty.
+     */
+    void releaseContentHandler() {
         if (contentHandler == null) {
             return;
         }
