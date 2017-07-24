@@ -3,6 +3,6 @@
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders an editor form within a Wondergem template" />
 
-<form action="@url" method="post" id="editForm">
+<form action="@url" method="post" id="editForm" class="edit-form">
     <i:render name="body" />
 </form>
