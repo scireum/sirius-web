@@ -1,4 +1,5 @@
 <i:arg name="span" type="int" default="6" />
+<i:arg name="smallSpan" type="int" default="12" description="Defines the span for mobile devices" />
 <i:arg name="name" type="String" />
 <i:arg name="labelKey" type="String" default="" />
 <i:arg name="label" type="String" default="@i18n(labelKey)" />
@@ -14,7 +15,7 @@
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders a mutliselect dropdown field within a Wondergem template" />
 
-<div class="col-md-@span form-group @user.signalFieldError(name)">
+<div class="col-xs-@smallSpan col-md-@span form-group @user.signalFieldError(name)">
     <i:if test="isFilled(label)">
         <label>
             <span class="@if (required) { input-required } @if (adminOnly) { admin-link }">

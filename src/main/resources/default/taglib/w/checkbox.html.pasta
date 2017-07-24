@@ -1,4 +1,5 @@
 <i:arg name="span" type="int" default="6" />
+<i:arg name="smallSpan" type="int" default="12" description="Defines the span for mobile devices" />
 <i:arg name="name" type="String" />
 <i:arg name="value" type="boolean" />
 <i:arg name="labelKey" type="String" default="" />
@@ -13,7 +14,7 @@
 <i:pragma name="description" value="Renders a checkbox within a Wondergem template" />
 
 
-<div class="col-md-@span">
+<div class="col-xs-@smallSpan col-md-@span">
     <div class="form-group checkbox @user.signalFieldError(name)">
         <label>
             <input type="checkbox" name="@name" value="true" @if (value) { checked="checked" } @if (readonly) { disabled="disabled" } />
