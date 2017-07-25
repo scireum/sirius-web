@@ -63,7 +63,7 @@
             return data;
         }
 
-        if (field.data('optional')) {
+        if (field.data('optional') && field.is(":empty")) {
             field.prepend('<option value=""></option>');
         }
 
@@ -85,6 +85,12 @@
                 }
                 search.attr('placeholder', placeholder);
             });
+        });
+
+        field.on('select2:unselect', function(e) {
+            $(this).html('<option value=""></option>');
+            e.preventDefault();
+            e.preventBubble();
         });
 
         field.select2({
