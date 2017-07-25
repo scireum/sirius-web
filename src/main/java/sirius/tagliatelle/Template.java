@@ -134,12 +134,21 @@ public class Template {
      */
     public String renderWithParams(Context context) throws RenderException {
         GlobalRenderContext ctx = engine.createRenderContext();
-        Object[] args = new Object[getArguments().size()];
-        for (int i = 0; i < getArguments().size(); i++) {
-            args[i] = context.get(getArguments().get(i).getName());
+        setupEscaper(ctx);
+        LocalRenderContext renderContext = ctx.createContext(this);
+
+        int index = 0;
+        for (TemplateArgument arg : getArguments()) {
+            Object argumentValue = (context.containsKey(arg.getName())) ?
+                                   context.get(arg.getName()) :
+                                   getDefaultValue(renderContext, arg);
+            verifyArgument(renderContext, arg, argumentValue);
+            renderContext.setLocal(index, argumentValue);
+
+            index++;
         }
 
-        render(ctx, args);
+        renderWithContext(renderContext);
 
         return ctx.toString();
     }
@@ -152,42 +161,49 @@ public class Template {
      * @throws RenderException in case of an error when creating the output
      */
     public void render(GlobalRenderContext ctx, Object... args) throws RenderException {
-        if (getEffectiveFileName().endsWith(".html") || getEffectiveFileName().endsWith(".xml")) {
-            ctx.setEscaper(GlobalRenderContext::escapeXML);
-        }
+        setupEscaper(ctx);
         LocalRenderContext context = ctx.createContext(this);
         applyArguments(context, args);
         renderWithContext(context);
     }
 
+    public void setupEscaper(GlobalRenderContext ctx) {
+        if (getEffectiveFileName().endsWith(".html") || getEffectiveFileName().endsWith(".xml")) {
+            ctx.setEscaper(GlobalRenderContext::escapeXML);
+        }
+    }
+
     private void applyArguments(LocalRenderContext ctx, Object[] args) throws RenderException {
         int index = 0;
-        for (TemplateArgument arg : arguments) {
-            Object argumentValue;
-            if (index < args.length) {
-                argumentValue = args[index];
-            } else {
-                if (arg.getDefaultValue() != null) {
-                    argumentValue = arg.getDefaultValue().eval(ctx);
-                } else {
-                    throw RenderException.create(ctx,
-                                                 new IllegalArgumentException(Strings.apply(
-                                                         "The required parameter '%s' must not be empty.",
-                                                         arg.getName())));
-                }
-            }
-
-            if (!Tagliatelle.isAssignable(argumentValue, arg.getType())) {
-                throw RenderException.create(ctx,
-                                             new IllegalArgumentException(Strings.apply(
-                                                     "An invalid value was supplied for parameter '%s'. Expected was: %s, Given was: %s",
-                                                     arg.getName(),
-                                                     arg.getType(),
-                                                     argumentValue == null ? "null" : argumentValue.getClass())));
-            }
-
+        for (TemplateArgument arg : getArguments()) {
+            Object argumentValue = (index < args.length) ? args[index] : getDefaultValue(ctx, arg);
+            verifyArgument(ctx, arg, argumentValue);
             ctx.setLocal(index, argumentValue);
+
             index++;
+        }
+    }
+
+    private Object getDefaultValue(LocalRenderContext ctx, TemplateArgument arg) throws RenderException {
+        if (arg.getDefaultValue() != null) {
+            return arg.getDefaultValue().eval(ctx);
+        } else {
+            throw RenderException.create(ctx,
+                                         new IllegalArgumentException(Strings.apply(
+                                                 "The required parameter '%s' must not be empty.",
+                                                 arg.getName())));
+        }
+    }
+
+    private void verifyArgument(LocalRenderContext ctx, TemplateArgument arg, Object argumentValue)
+            throws RenderException {
+        if (!Tagliatelle.isAssignable(argumentValue, arg.getType())) {
+            throw RenderException.create(ctx,
+                                         new IllegalArgumentException(Strings.apply(
+                                                 "An invalid value was supplied for parameter '%s'. Expected was: %s, Given was: %s",
+                                                 arg.getName(),
+                                                 arg.getType(),
+                                                 argumentValue == null ? "null" : argumentValue.getClass())));
         }
     }
 
