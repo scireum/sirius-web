@@ -9,10 +9,10 @@
 
      <i:block name="breadcrumbs">
          <li>
-             <a href="/scope-config">@i18n("ScopeDefaultConfigController.config")</a>
+             <a href="/system/scope-config">@i18n("ScopeDefaultConfigController.config")</a>
          </li>
          <li>
-             <a href="/scope-config/@name">@name</a>
+             <a href="/system/scope-config/@name">@name</a>
          </li>
     </i:block>
 
