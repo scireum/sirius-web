@@ -22,6 +22,7 @@ import java.time.Instant;
  */
 @Register
 public class SessionCommand implements Command {
+
     @Part
     private SessionManager manager;
 

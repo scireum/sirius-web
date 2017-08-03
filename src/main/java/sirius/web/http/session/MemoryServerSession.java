@@ -35,15 +35,6 @@ import java.util.UUID;
  */
 class MemoryServerSession implements ServerSession {
 
-    /**
-     * Creates a new session attached to the given storage.
-     *
-     * @param sessionStorage the storage which keeps a map of all known session IDs
-     */
-    MemoryServerSession(SessionManager.MemorySessionStorage sessionStorage) {
-        this.sessionStorage = sessionStorage;
-    }
-
     private SessionManager.MemorySessionStorage sessionStorage;
     private boolean userAttached = false;
     private long created = System.currentTimeMillis();
@@ -61,6 +52,15 @@ class MemoryServerSession implements ServerSession {
 
     @ConfigValue("http.serverUserSessionLifetime")
     private static Duration userSessionLifetime;
+
+    /**
+     * Creates a new session attached to the given storage.
+     *
+     * @param sessionStorage the storage which keeps a map of all known session IDs
+     */
+    MemoryServerSession(SessionManager.MemorySessionStorage sessionStorage) {
+        this.sessionStorage = sessionStorage;
+    }
 
     @Override
     public long getCreationTime() {
