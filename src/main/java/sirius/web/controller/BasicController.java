@@ -140,7 +140,7 @@ public class BasicController implements Controller {
             // Force underlying request / response to be closed...
             ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
         } else {
-            ctx.respondWith().template("view/wondergem/error.html", error.getMessage());
+            ctx.respondWith().template("templates/wondergem/error.html.pasta", error.getMessage());
         }
     }
 
