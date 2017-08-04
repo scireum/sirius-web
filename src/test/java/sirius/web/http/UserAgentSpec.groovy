@@ -24,6 +24,19 @@ class UserAgentSpec extends BaseSpecification {
         r.getUserAgent().isDesktop() == false
     }
 
+    def "UserAgent detects mobile Chrome on Android tablet"() {
+        when:
+        TestRequest r = TestRequest.GET("/test")
+        r.request.headers().add("User-Agent", "Mozilla/5.0 (Linux; Android 4.4.2; SM-T230 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.125 Safari/537.36")
+        then:
+        r.getUserAgent().isAndroid() == true
+        r.getUserAgent().isIOS() == false
+        r.getUserAgent().isMobile() == true
+        r.getUserAgent().isPhone() == false
+        r.getUserAgent().isTablet() == true
+        r.getUserAgent().isDesktop() == false
+    }
+
     def "UserAgent detects iPhone"() {
         when:
         TestRequest r = TestRequest.GET("/test")

@@ -10,8 +10,6 @@ package sirius.web.http.session;
 
 import sirius.kernel.commons.Strings;
 
-import java.util.regex.Pattern;
-
 /**
  * Provides information about user agent and used device for given user agent.
  * <p>
@@ -26,12 +24,14 @@ public class UserAgent {
     private static final String IPHONE = "iphone";
     private static final String IPAD = "ipad";
     private static final String IPOD = "ipod";
-    private static final Pattern ANDROID_PHONE_PATTERN = Pattern.compile("(?=.*\\bandroid\\b)(?=.*\\bmobile\\b)");
-    private static final String ANDROID_TABLET = "android";
+    private static final String PHONE = "phone";
+    private static final String MOBILE = "mobile";
+    private static final String ANDROID = "android";
     private static final String BLACKBERRY = "blackberry";
     private static final String BLACKBERRY_10 = "bb10";
-    private static final String WINDOWS_PHONE = "windows phone";
-    private static final Pattern WINDOWS_TABLET_PATTERN = Pattern.compile("(?=.*\\baindows\\b)(?=.*\\barm\\b)");
+    private static final String WINDOWS = "windows";
+    private static final String ARM = "arm";
+    
     private String userAgentString;
 
     private boolean phone = false;
@@ -39,6 +39,11 @@ public class UserAgent {
     private boolean android = false;
     private boolean iOS = false;
 
+    /**
+     * Creates a new instance based on the given user agent string.
+     *
+     * @param userAgentString the header value indicating the user angent, which is a fancy word for browser.
+     */
     public UserAgent(String userAgentString) {
         this.userAgentString = userAgentString;
         parseUserAgent();
@@ -49,36 +54,63 @@ public class UserAgent {
             return;
         }
         String lowerCaseUserAgent = userAgentString.toLowerCase();
+
+        if (isAppleDevice(lowerCaseUserAgent)) {
+            return;
+        }
+
+        if (isAndroidDevice(lowerCaseUserAgent)) {
+            return;
+        }
+
+        if (isWindowsDevice(lowerCaseUserAgent)) {
+            return;
+        }
+
+        if (lowerCaseUserAgent.contains(BLACKBERRY) || lowerCaseUserAgent.contains(BLACKBERRY_10)) {
+            phone = true;
+        }
+    }
+
+    private boolean isWindowsDevice(String lowerCaseUserAgent) {
+        if (lowerCaseUserAgent.contains(WINDOWS)) {
+            if (lowerCaseUserAgent.contains(PHONE)) {
+                phone = true;
+            }
+            if (lowerCaseUserAgent.contains(ARM)) {
+                tablet = true;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isAndroidDevice(String lowerCaseUserAgent) {
+        if (lowerCaseUserAgent.contains(ANDROID)) {
+            android = true;
+            if (lowerCaseUserAgent.contains(MOBILE)) {
+                phone = true;
+            } else {
+                tablet = true;
+            }
+
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isAppleDevice(String lowerCaseUserAgent) {
         if (lowerCaseUserAgent.contains(IPHONE) || lowerCaseUserAgent.contains(IPOD)) {
             iOS = true;
             phone = true;
-            return;
+            return true;
         }
         if (lowerCaseUserAgent.contains(IPAD)) {
             iOS = true;
             tablet = true;
-            return;
+            return true;
         }
-        if (ANDROID_PHONE_PATTERN.matcher(lowerCaseUserAgent).find()) {
-            android = true;
-            phone = true;
-            return;
-        }
-        if (lowerCaseUserAgent.contains(ANDROID_TABLET)) {
-            android = true;
-            tablet = true;
-            return;
-        }
-        if (lowerCaseUserAgent.contains(BLACKBERRY)
-            || lowerCaseUserAgent.contains(BLACKBERRY_10)
-            || lowerCaseUserAgent.contains(WINDOWS_PHONE)) {
-            phone = true;
-            return;
-        }
-        if (WINDOWS_TABLET_PATTERN.matcher(lowerCaseUserAgent).find()) {
-            tablet = true;
-            return;
-        }
+        return false;
     }
 
     /**
@@ -94,7 +126,7 @@ public class UserAgent {
     /**
      * Determines whether the user agent hints to a phone.
      *
-     * @return whether user agent hints to a phone
+     * @return whether the user agent hints to a phone
      */
     public boolean isPhone() {
         return phone;
@@ -103,12 +135,17 @@ public class UserAgent {
     /**
      * Determines whether the user agent hints to a tablet.
      *
-     * @return whether user agent hints to a tablet
+     * @return whether the user agent hints to a tablet
      */
     public boolean isTablet() {
         return tablet;
     }
 
+    /**
+     * Determines whether the user agent hits to a desktop device.
+     *
+     * @return whether the user agent hints a desktop device
+     */
     public boolean isDesktop() {
         return !isMobile();
     }
@@ -116,7 +153,7 @@ public class UserAgent {
     /**
      * Determines whether the user agent hints to an Android device.
      *
-     * @return whether user agent hints to a Android device
+     * @return whether the user agent hints to a Android device
      */
     public boolean isAndroid() {
         return android;
@@ -125,7 +162,7 @@ public class UserAgent {
     /**
      * Determines whether the user agent hints to an iOS device.
      *
-     * @return whether user agent hints to an iOS device
+     * @return whether the user agent hints to an iOS device
      */
     public boolean isIOS() {
         return iOS;
