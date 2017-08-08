@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -218,6 +219,25 @@ public class AssetsDispatcher implements WebDispatcher {
 
         ctx.respondWith().
                 named(uri.substring(uri.lastIndexOf("/") + 1)).file(file);
+    }
+
+    /**
+     * Flushes all cached and pre-computed scss / css files.
+     * <p>
+     * This can be used in environments where the scss files change due to included files. This isn't detected by the
+     * framework, as we only check the main file.
+     */
+    public void flushCompiledSCSS() {
+        try {
+            Arrays.stream(getCacheDirFile().listFiles())
+                  .filter(f -> f.getName().endsWith(".css"))
+                  .forEach(File::delete);
+        } catch (NullPointerException e) {
+            // Happens if the directy does not exist....
+            Exceptions.ignore(e);
+        } catch (Exception e) {
+            Exceptions.handle(e);
+        }
     }
 
     /*
