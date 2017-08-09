@@ -52,7 +52,7 @@ import java.util.Optional;
  * <p>
  * This dispatcher tries to support caching as well as zero-copy delivery of static files if possible.
  */
-@Register
+@Register(classes = {AssetsDispatcher.class, WebDispatcher.class})
 public class AssetsDispatcher implements WebDispatcher {
 
     @ConfigValue("http.generated-directory")
