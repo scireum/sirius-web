@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -51,7 +52,7 @@ import java.util.Optional;
  * <p>
  * This dispatcher tries to support caching as well as zero-copy delivery of static files if possible.
  */
-@Register
+@Register(classes = {AssetsDispatcher.class, WebDispatcher.class})
 public class AssetsDispatcher implements WebDispatcher {
 
     @ConfigValue("http.generated-directory")
@@ -126,11 +127,10 @@ public class AssetsDispatcher implements WebDispatcher {
             Optional<Template> template = tagliatelle.resolve(uri + ".pasta");
             if (template.isPresent()) {
                 Response response = ctx.respondWith().cached();
-                if (template.get().isConstant() && response.handleIfModifiedSince(template.get()
-                                                                                          .getCompilationTimestamp())) {
-                } else {
+                if (!handleUnmodified(template.get(), response)) {
                     response.template(HttpResponseStatus.OK, template.get());
                 }
+
                 return true;
             }
         } catch (CompileException e) {
@@ -139,6 +139,14 @@ public class AssetsDispatcher implements WebDispatcher {
         }
 
         return false;
+    }
+
+    private boolean handleUnmodified(Template template, Response response) {
+        if (!template.isConstant()) {
+            return false;
+        }
+
+        return response.handleIfModifiedSince(template.getCompilationTimestamp());
     }
 
     private boolean trySASS(WebContext ctx, String uri) {
@@ -218,6 +226,25 @@ public class AssetsDispatcher implements WebDispatcher {
 
         ctx.respondWith().
                 named(uri.substring(uri.lastIndexOf("/") + 1)).file(file);
+    }
+
+    /**
+     * Flushes all cached and pre-computed scss / css files.
+     * <p>
+     * This can be used in environments where the scss files change due to included files. This isn't detected by the
+     * framework, as we only check the main file.
+     */
+    public void flushCompiledSCSS() {
+        try {
+            Arrays.stream(getCacheDirFile().listFiles())
+                  .filter(f -> f.getName().endsWith(".css"))
+                  .forEach(File::delete);
+        } catch (NullPointerException e) {
+            // Happens if the directy does not exist....
+            Exceptions.ignore(e);
+        } catch (Exception e) {
+            Exceptions.handle(e);
+        }
     }
 
     /*

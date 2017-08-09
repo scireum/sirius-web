@@ -13,6 +13,7 @@ import com.google.common.collect.Lists;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -23,12 +24,14 @@ import sirius.kernel.commons.CSVReader;
 import sirius.kernel.commons.Doubles;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Values;
-import sirius.kernel.commons.Watch;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -88,7 +91,6 @@ public abstract class LineBasedProcessor {
             int current = 0;
             TaskContext tc = TaskContext.get();
             while (iter.hasNext() && tc.isActive()) {
-                Watch w = Watch.start();
                 current++;
                 Row row = iter.next();
                 short first = 0;
@@ -117,6 +119,13 @@ public abstract class LineBasedProcessor {
             }
 
             if (cellType == HSSFCell.CELL_TYPE_NUMERIC) {
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    Date dateCellValue = cell.getDateCellValue();
+                    if (dateCellValue == null) {
+                        return null;
+                    }
+                    return LocalDateTime.ofInstant(dateCellValue.toInstant(), ZoneId.systemDefault());
+                }
                 double val = cell.getNumericCellValue();
                 if (Doubles.isZero(Doubles.frac(val))) {
                     return Math.round(val);
