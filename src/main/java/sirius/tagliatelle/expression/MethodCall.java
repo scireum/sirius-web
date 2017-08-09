@@ -168,6 +168,23 @@ public class MethodCall extends Call {
             }
         }
 
+        return ensureEnoughParameters(method, parameterTypes, varargType);
+    }
+
+    private boolean ensureEnoughParameters(Method method, Class<?>[] parameterTypes, Class<?> varargType) {
+        // The method accepts all given parameters, now ensure, that we also provide enough parameters for the method...
+        if (varargType == null) {
+            // No varargs -> parameters must match exactly...
+            if (method.getParameterTypes().length != parameterTypes.length) {
+                return false;
+            }
+        } else {
+            // Varary -> we can at most skip the last parameter...
+            if (parameterTypes.length < method.getParameterTypes().length - 1) {
+                return false;
+            }
+        }
+
         return true;
     }
 
