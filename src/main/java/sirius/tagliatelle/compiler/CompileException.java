@@ -9,6 +9,7 @@
 package sirius.tagliatelle.compiler;
 
 import sirius.tagliatelle.Template;
+import sirius.web.services.JSONStructuredOutput;
 
 import java.util.List;
 
@@ -65,6 +66,24 @@ public class CompileException extends Exception {
      */
     public Template getTemplate() {
         return template;
+    }
+
+    /**
+     * Reports all collected errors as JSON, which can be processed by the ACE editor.
+     *
+     * @param out the JSON output to write to
+     */
+    public void reportAsJSON(JSONStructuredOutput out) {
+        out.beginArray("problems");
+        for (CompileError error : getErrors()) {
+            out.beginObject("problem");
+            out.property("row", error.getError().getPosition().getLine() - 1);
+            out.property("column", error.getError().getPosition().getPos());
+            out.property("text", error.getError().getMessage());
+            out.property("type", "error");
+            out.endObject();
+        }
+        out.endArray();
     }
 }
 
