@@ -52,7 +52,7 @@ import java.util.Optional;
  * <p>
  * This dispatcher tries to support caching as well as zero-copy delivery of static files if possible.
  */
-@Register
+@Register(classes = {AssetsDispatcher.class, WebDispatcher.class})
 public class AssetsDispatcher implements WebDispatcher {
 
     @ConfigValue("http.generated-directory")
@@ -127,11 +127,10 @@ public class AssetsDispatcher implements WebDispatcher {
             Optional<Template> template = tagliatelle.resolve(uri + ".pasta");
             if (template.isPresent()) {
                 Response response = ctx.respondWith().cached();
-                if (template.get().isConstant() && response.handleIfModifiedSince(template.get()
-                                                                                          .getCompilationTimestamp())) {
-                } else {
+                if (!handleUnmodified(template.get(), response)) {
                     response.template(HttpResponseStatus.OK, template.get());
                 }
+
                 return true;
             }
         } catch (CompileException e) {
@@ -140,6 +139,14 @@ public class AssetsDispatcher implements WebDispatcher {
         }
 
         return false;
+    }
+
+    private boolean handleUnmodified(Template template, Response response) {
+        if (!template.isConstant()) {
+            return false;
+        }
+
+        return response.handleIfModifiedSince(template.getCompilationTimestamp());
     }
 
     private boolean trySASS(WebContext ctx, String uri) {
