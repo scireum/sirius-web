@@ -15,7 +15,6 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.console.Command;
-import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.StructuredOutput;
 import sirius.web.health.SystemController;
 import sirius.web.security.Permission;
@@ -24,8 +23,6 @@ import sirius.web.services.StructuredService;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Provides the glue logic between the system console UI and the {@link Command}s.
@@ -43,27 +40,23 @@ public class ConsoleService implements StructuredService {
         out.beginResult();
         try {
             Watch w = Watch.start();
-            Map<String, Object> map = call.getContext().getJSONContent();
-            String command = (String) map.get("method");
-            List<Object> params = (List<Object>) map.get("params");
-            String[] strParams = new String[params.size()];
-            int i = 0;
-            for (Object val : params) {
-                strParams[i++] = NLS.toMachineString(val);
-            }
-            Command cmd = ctx.getPart(command, Command.class);
+            String[] command = call.require("command").asString().split(" ");
+            String[] parameters = new String[command.length - 1];
+            System.arraycopy(command, 1, parameters, 0, command.length - 1);
+
+            Command cmd = ctx.getPart(command[0], Command.class);
             StringWriter buffer = new StringWriter();
             final PrintWriter pw = new PrintWriter(buffer);
             pw.println();
             if (cmd == null) {
                 pw.println(Strings.apply("Unknown command: %s", command));
             } else {
-                cmd.execute(new CommandOutput(pw), strParams);
+                cmd.execute(new CommandOutput(pw), parameters);
                 pw.println(w.duration());
             }
             pw.println();
             out.property("result", buffer.toString());
-        } catch (Throwable t) {
+        } catch (Exception t) {
             Exception e = Exceptions.handle(t);
             out.beginObject("error");
             out.property("code", t.getClass().getName());
