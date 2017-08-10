@@ -1,10 +1,19 @@
 <w:page title="Console">
     <i:block name="head">
-        <script language="javascript" type="text/javascript" src="/assets/terminal/jquery.terminal-0.8.8.js"></script>
-        <link href="/assets/terminal/jquery.terminal.css" rel="stylesheet" />
+        <script language="javascript" type="text/javascript" src="/assets/terminal/jquery.terminal-1.6.0.min.js"></script>
+        <link href="/assets/terminal/jquery.terminal-1.6.0.min.css" rel="stylesheet" />
         <script>
             $(document).ready(function ($) {
-                $('#term').terminal('/service/json/system/console', {
+                $('#term').terminal(function(command, term) {
+                    term.pause();
+                    $.post('/service/json/system/console', {command: command}).then(function(response) {
+                        if (response.error) {
+                            term.error(response.error.message).resume();
+                        } else {
+                            term.echo(response.result).resume();
+                        }
+                    });
+                }, {
                     prompt: function(output) {
                         var now = new Date();
                         output(now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds()+' - @(nodeName)> ');
