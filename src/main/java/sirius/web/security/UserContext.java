@@ -293,7 +293,7 @@ public class UserContext implements SubContext {
             Message systemStateWarning = Message.error(Strings.apply("System state is %s (Cluster state is %s)",
                                                                      cluster.getNodeState(),
                                                                      cluster.getClusterState()))
-                                                .withAction("system/state", "View System State");
+                                                .withAction("/system/state", "View System State");
             if (msgList.isEmpty()) {
                 return Collections.singletonList(systemStateWarning);
             } else {
