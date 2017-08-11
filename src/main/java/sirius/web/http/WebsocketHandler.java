@@ -41,7 +41,9 @@ public class WebsocketHandler extends ChannelDuplexHandler {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable e) throws Exception {
-        if (e instanceof ClosedChannelException || e instanceof IOException || e instanceof SSLHandshakeException) {
+        if (e instanceof SSLHandshakeException) {
+            SSLWebServerInitializer.LOG.FINE(e);
+        } else if (e instanceof ClosedChannelException || e instanceof IOException) {
             WebServer.LOG.FINE(e);
         } else {
             Exceptions.handle(WebServer.LOG, e);

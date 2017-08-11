@@ -145,10 +145,9 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             uri = currentContext.getRequest().uri();
         }
 
-        if (e instanceof ClosedChannelException
-            || e instanceof IOException
-            || e instanceof SSLHandshakeException
-            || e instanceof DecoderException) {
+        if (e instanceof SSLHandshakeException) {
+            SSLWebServerInitializer.LOG.FINE(e);
+        } else if (e instanceof ClosedChannelException || e instanceof IOException || e instanceof DecoderException) {
             WebServer.LOG.FINE("Received an error for url: %s - %s", uri, NLS.toUserString(e));
         } else {
             Exceptions.handle()
