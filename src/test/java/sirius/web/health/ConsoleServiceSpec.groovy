@@ -9,10 +9,9 @@
 
 package sirius.web.health
 
-import com.alibaba.fastjson.JSONObject
-import com.google.common.collect.Lists
 import io.netty.handler.codec.http.HttpResponseStatus
 import sirius.kernel.BaseSpecification
+import sirius.kernel.commons.Context
 import sirius.web.http.TestRequest
 import sirius.web.security.UserContext
 import sirius.web.security.UserInfo
@@ -23,10 +22,7 @@ class ConsoleServiceSpec extends BaseSpecification {
         when:
         UserContext.get().setCurrentUser(UserInfo.Builder.createUser("test")
                 .withPermissions(Collections.singleton(SystemController.PERMISSION_SYSTEM_CONSOLE)).build())
-        JSONObject data = new JSONObject()
-        data.put("method", "help")
-        data.put("params", Lists.newArrayList())
-        def result = TestRequest.POST("/service/xml/system/console", data).executeAndBlock()
+        def result = TestRequest.POST("/service/xml/system/console", Context.create().set("command", "help")).executeAndBlock()
         then:
         result.getStatus() == HttpResponseStatus.OK
         result.xmlContent().queryString("error/code") == null

@@ -40,11 +40,15 @@ public class ConsoleService implements StructuredService {
         out.beginResult();
         try {
             Watch w = Watch.start();
-            String[] command = call.require("command").asString().split(" ");
-            String[] parameters = new String[command.length - 1];
-            System.arraycopy(command, 1, parameters, 0, command.length - 1);
+            String[] commandData = call.require("command").asString().split(" ");
+            if (commandData.length == 0) {
+                throw Exceptions.createHandled().withSystemErrorMessage("Please enter a command!").handle();
+            }
+            String command = commandData.length > 0 ? commandData[0] : "";
+            String[] parameters = new String[commandData.length - 1];
+            System.arraycopy(commandData, 1, parameters, 0, commandData.length - 1);
 
-            Command cmd = ctx.getPart(command[0], Command.class);
+            Command cmd = ctx.getPart(command, Command.class);
             StringWriter buffer = new StringWriter();
             final PrintWriter pw = new PrintWriter(buffer);
             pw.println();
