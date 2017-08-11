@@ -10,7 +10,9 @@ package sirius.web.http;
 
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.ssl.SslHandler;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
+import sirius.kernel.health.Log;
 
 import javax.net.ssl.ExtendedSSLSession;
 import javax.net.ssl.KeyManager;
@@ -56,6 +58,8 @@ class SSLWebServerInitializer extends WebServerInitializer {
     @ConfigValue("http.ssl.ciphers")
     private static List<String> ciphers;
 
+    public static final Log LOG = Log.get("ssl");
+
     /**
      * Adds support for SNI for the SSL engine.
      */
@@ -83,7 +87,15 @@ class SSLWebServerInitializer extends WebServerInitializer {
 
         @Override
         public String[] getServerAliases(String keyType, Principal[] issuers) {
-            return keyManager.getServerAliases(keyType, issuers);
+            String[] serverAliases = keyManager.getServerAliases(keyType, issuers);
+            if (LOG.isFINE()) {
+                if (serverAliases == null) {
+                    LOG.FINE("Server aliases are null...");
+                } else {
+                    LOG.FINE("Server aliases are: %s", Strings.join(", ", serverAliases));
+                }
+            }
+            return serverAliases;
         }
 
         @Override
@@ -102,23 +114,53 @@ class SSLWebServerInitializer extends WebServerInitializer {
                     break;
                 }
             }
+
+            if (hostname != null && LOG.isFINE()) {
+                LOG.FINE(
+                        "Choosing %s as SNI hostname, searching for certificate and key (SSL chooseEngineServerAlias)...",
+                        hostname);
+            }
+
             // If we got given a hostname over SNI, check if we have a cert and key for that hostname. If so, we use it.
             // Otherwise, we fall back to the default certificate.
             if (hostname != null && (getCertificateChain(hostname) != null && getPrivateKey(hostname) != null)) {
+                if (LOG.isFINE()) {
+                    LOG.FINE("Using '%s' as hostname (SSL chooseEngineServerAlias)...", hostname);
+                }
                 return hostname;
             } else {
+                if (LOG.isFINE()) {
+                    LOG.FINE("Using the default alias '%s' as hostname (SSL chooseEngineServerAlias)...", hostname);
+                }
                 return defaultAlias;
             }
         }
 
         @Override
         public X509Certificate[] getCertificateChain(String alias) {
-            return keyManager.getCertificateChain(alias);
+            X509Certificate[] certificateChain = keyManager.getCertificateChain(alias);
+            if (certificateChain == null) {
+                LOG.WARN("No certificate chain found for: %s", alias);
+            } else {
+                if (LOG.isFINE()) {
+                    LOG.FINE("Certificate chain for %s has %d entries...", alias, certificateChain.length);
+                }
+            }
+            return certificateChain;
         }
 
         @Override
         public PrivateKey getPrivateKey(String alias) {
-            return keyManager.getPrivateKey(alias);
+            PrivateKey privateKey = keyManager.getPrivateKey(alias);
+            if (privateKey == null) {
+                LOG.WARN("No private key found for: %s", alias);
+            } else {
+                if (LOG.isFINE()) {
+                    LOG.FINE("Private key for %s is: %s", alias, privateKey);
+                }
+            }
+
+            return privateKey;
         }
     }
 
