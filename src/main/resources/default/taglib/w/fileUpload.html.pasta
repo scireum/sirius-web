@@ -12,11 +12,9 @@
     $(document).ready(function() {
         $('.@name').each(function (index) {
             fileUpload('@uploadUrl',
-                this,
-                undefined,
-            @allowedExtensions
-            )
-            ;
+                       this,
+                       undefined,
+                       @allowedExtensions);
         });
     });
 </script>
