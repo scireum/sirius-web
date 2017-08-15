@@ -9,10 +9,12 @@
 
 <div class="@name"></div>
 <script type="text/javascript">
-    $('.@name').each(function (index) {
-        fileUpload('@uploadUrl',
-            this,
-            undefined,
-            @allowedExtensions);
+    $(document).ready(function() {
+        $('.@name').each(function (index) {
+            fileUpload('@uploadUrl',
+                       this,
+                       undefined,
+                       @allowedExtensions);
+        });
     });
 </script>
