@@ -50,6 +50,7 @@ public class MailSender {
     protected String html;
     protected List<DataSource> attachments = Lists.newArrayList();
     protected String bounceToken;
+    protected String lang;
     protected Map<String, String> headers = Maps.newTreeMap();
 
     @Part
@@ -307,6 +308,25 @@ public class MailSender {
     }
 
     /**
+     * Sets the language used to perform {@link sirius.kernel.nls.NLS} lookups when rendering templates.
+     *
+     * @param langs an array of languages. The first non empty value is used.
+     * @return the builder itself
+     */
+    public MailSender setLang(String... langs) {
+        if (langs == null) {
+            return this;
+        }
+        for (String language : langs) {
+            if (Strings.isFilled(language)) {
+                this.lang = language;
+                return this;
+            }
+        }
+        return this;
+    }
+
+    /**
      * Sends the mail using the given settings.
      * <p>
      * Once all settings are validated, the mail is send in a separate thread so this method will
@@ -317,6 +337,9 @@ public class MailSender {
         String tmpLang = NLS.getCurrentLang();
         try {
             try {
+                if (lang != null) {
+                    CallContext.getCurrent().setLang(lang);
+                }
                 sanitize();
                 check();
                 sendMailAsync(new SMTPConfiguration());
