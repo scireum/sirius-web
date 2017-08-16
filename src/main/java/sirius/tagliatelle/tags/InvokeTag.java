@@ -26,9 +26,12 @@ import java.util.List;
  */
 public class InvokeTag extends TagHandler {
 
-    public static final String ATTR_TEMPLATE = "template";
-    public static final String ATTR_INLINE = "inline";
+    private static final String ATTR_TEMPLATE = "template";
+    protected static final String ATTR_INLINE = "inline";
 
+    /**
+     * Creates new tags of the given type (name).
+     */
     @Register
     public static class Factory implements TagHandlerFactory {
 
@@ -51,7 +54,8 @@ public class InvokeTag extends TagHandler {
                                                       null),
                                  new TemplateArgument(boolean.class,
                                                       "inline",
-                                                      "Determines if the invocation should be actually inlined int othe calling template.",
+                                                      "Determines if the invocation should be actually "
+                                                      + "inlined int othe calling template.",
                                                       ConstantBoolean.FALSE));
         }
 
@@ -142,7 +146,8 @@ public class InvokeTag extends TagHandler {
             // If the "template" isn't the first attribute, we're screwed...complain to the user....
             if (getConstantAttribute(ATTR_TEMPLATE).isEmptyString()) {
                 getCompilationContext().error(getStartOfTag(),
-                                              "Please provide the template parameter first, so that the given attributes can be checked");
+                                              "Please provide the template parameter first, "
+                                              + "so that the given attributes can be checked");
                 return false;
             }
 

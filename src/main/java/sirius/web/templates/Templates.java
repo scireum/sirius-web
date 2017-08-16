@@ -48,8 +48,6 @@ import java.util.Map;
 @Register(classes = Templates.class)
 public class Templates {
 
-
-
     /*
      * Logger used by the content generator framework
      */
@@ -84,11 +82,12 @@ public class Templates {
 
     /**
      * Collects all global variables to be used when rendering templates or executing user scripts.
+     *
      * @return a map of all globals used for templates.
      */
     public Map<String, Object> createGlobalContext() {
         Map<String, Object> result = new LinkedHashMap<>();
-        for(GlobalContextExtender extender : extenders) {
+        for (GlobalContextExtender extender : extenders) {
             extender.collectTemplate(result::put);
         }
 
@@ -97,11 +96,12 @@ public class Templates {
 
     /**
      * Collects all global variables to be used when executing system scripts.
+     *
      * @return a map of all globals used for scripting.
      */
     public Map<String, Object> createGlobalSystemScriptingContext() {
         Map<String, Object> result = new LinkedHashMap<>();
-        for(GlobalContextExtender extender : extenders) {
+        for (GlobalContextExtender extender : extenders) {
             extender.collectTemplate(result::put);
             extender.collectScripting(result::put);
         }

@@ -52,7 +52,7 @@ public class TestResponse extends Response {
     /**
      * Returns the call context which was active during the call.
      * <p>
-     * Used e.g. by {@link sirius.web.security.UserContextHelper} to fetch the inner <tt>UserContext</tt> to check for
+     * Used e.g. by <tt>UserContextHelper</tt> to fetch the inner <tt>UserContext</tt> to check for
      * errors.
      *
      * @return the <tt>CallContext</tt> which was active while handling (responding to) the request.

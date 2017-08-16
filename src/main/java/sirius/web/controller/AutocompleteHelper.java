@@ -22,14 +22,14 @@ import java.util.function.Consumer;
  */
 public class AutocompleteHelper {
 
-    private AutocompleteHelper() {
-    }
-
     /**
      * Can be used with {@link sirius.kernel.nls.NLS#get(String)} to obtain a "(new)" text to be used
      * in the "description" field
      */
     public static final String NEW_ENTRY_NLS_KEY = "AutocompleteHelper.newHit";
+
+    private AutocompleteHelper() {
+    }
 
     /**
      * Represents a suggestion or completion of a given keyword

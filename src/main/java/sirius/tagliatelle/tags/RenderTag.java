@@ -22,8 +22,11 @@ import java.util.List;
  */
 public class RenderTag extends TagHandler {
 
-    public static final String PARAM_NAME = "name";
+    protected static final String PARAM_NAME = "name";
 
+    /**
+     * Creates new tags of the given type (name).
+     */
     @Register
     public static class Factory implements TagHandlerFactory {
 

@@ -26,11 +26,14 @@ import java.util.Optional;
  */
 public class IncludeTag extends TagHandler {
 
-    public static final String ATTR_NAME = "name";
+    private static final String ATTR_NAME = "name";
 
     @Part
     private static Resources resources;
 
+    /**
+     * Creates new tags of the given type (name).
+     */
     @Register
     public static class Factory implements TagHandlerFactory {
 

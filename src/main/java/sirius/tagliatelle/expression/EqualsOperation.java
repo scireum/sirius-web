@@ -25,9 +25,10 @@ public class EqualsOperation extends Expression {
 
     /**
      * Creates a new operation for the given operands.
-     * @param leftExpression the left operand
+     *
+     * @param leftExpression  the left operand
      * @param rightExpression the right operand
-     * @param invert uses <tt>!=</tt> as operator if <tt>true</tt>, <tt>==</tt> otherwise.
+     * @param invert          uses <tt>!=</tt> as operator if <tt>true</tt>, <tt>==</tt> otherwise.
      */
     public EqualsOperation(Expression leftExpression, Expression rightExpression, boolean invert) {
         this.leftExpression = leftExpression;

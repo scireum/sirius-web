@@ -23,7 +23,7 @@ public class ForHandler extends ExpressionHandler {
 
     @Override
     public boolean shouldProcess(Compiler compiler) {
-        return compiler.isAtText(0, "@for") && compiler.getReader().next(4).is(' ','(');
+        return compiler.isAtText(0, "@for") && compiler.getReader().next(4).is(' ', '(');
     }
 
     @Override

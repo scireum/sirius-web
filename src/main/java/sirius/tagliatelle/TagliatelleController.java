@@ -80,6 +80,11 @@ public class TagliatelleController implements Controller {
                          .collect(Collectors.toList());
     }
 
+    /**
+     * Renders a list of all known tags.
+     *
+     * @param ctx the request to process
+     */
     @Routed("/system/tags")
     @Permission(PERMISSION_SYSTEM_TAGS)
     public void overview(WebContext ctx) {
@@ -96,6 +101,14 @@ public class TagliatelleController implements Controller {
         ctx.respondWith().template("templates/system/tags.html.pasta", macros, globals, builtIns, tagLibs, tagLibTags);
     }
 
+    /**
+     * Renders details for the given tag.
+     *
+     * @param tagLib the library which contains the tag
+     * @param tag    the name of the tag
+     * @param ctx    the request to process
+     * @throws Exception in case of an error while rendering the page
+     */
     @Routed("/system/tag/:1/:2")
     @Permission(PERMISSION_SYSTEM_TAGS)
     public void tagInfo(WebContext ctx, String tagLib, String tag) throws Exception {

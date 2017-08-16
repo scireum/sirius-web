@@ -24,8 +24,11 @@ import java.util.List;
  */
 public class BlockTag extends TagHandler {
 
-    public static final String PARAM_NAME = "name";
+    private static final String PARAM_NAME = "name";
 
+    /**
+     * Creates new tags of the given type (name).
+     */
     @Register
     public static class Factory implements TagHandlerFactory {
 

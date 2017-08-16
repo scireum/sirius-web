@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  * @see sirius.web.security.UserContext#getCurrentScope()
  */
 public class Resource {
-    public static final String PROTOCOL_FILE = "file";
+    private static final String PROTOCOL_FILE = "file";
     private final String scopeId;
     private final String path;
     private final URL url;

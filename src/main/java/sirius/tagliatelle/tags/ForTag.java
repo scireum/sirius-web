@@ -22,10 +22,13 @@ import java.util.List;
  */
 public class ForTag extends TagHandler {
 
-    public static final String PARAM_ITEMS = "items";
-    public static final String PARAM_VAR = "var";
-    public static final String PARAM_TYPE = "type";
+    protected static final String PARAM_ITEMS = "items";
+    protected static final String PARAM_VAR = "var";
+    protected static final String PARAM_TYPE = "type";
 
+    /**
+     * Creates new tags of the given type (name).
+     */
     @Register
     public static class Factory implements TagHandlerFactory {
 

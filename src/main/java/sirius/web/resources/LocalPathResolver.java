@@ -73,27 +73,28 @@ public class LocalPathResolver implements Resolver {
      * Determines if the system is ready - this requires the base dir to exist.
      */
     private boolean isReady() {
-        if (baseDirFound == null || (!baseDirFound && checkLimit.check())) {
-            synchronized (this) {
-                if (Strings.isEmpty(localResourcePath)) {
-                    baseDirFound = false;
-                } else {
-                    getBaseDir();
-                    if (!baseDir.exists()) {
-                        if (DEFAULT_BASE_DIR.equals(localResourcePath)) {
-                            // If we're using the default lookup path, only report once, that it does not exist
-                            // as it is not necessary at all.
-                            if (baseDirFound == null) {
-                                Resources.LOG.INFO(CHECK_MSG, localResourcePath, baseDir.getAbsolutePath());
-                            }
-                        } else {
-                            Resources.LOG.WARN(CHECK_MSG, localResourcePath, baseDir.getAbsolutePath());
-                        }
-                    }
-                    baseDirFound = baseDir.exists();
-                }
+        if (baseDirFound != null) {
+            if (baseDirFound) {
+                return true;
+            } else if (!checkLimit.check()) {
+                return false;
             }
         }
+
+        synchronized (this) {
+            if (Strings.isEmpty(localResourcePath)) {
+                baseDirFound = false;
+            } else {
+                getBaseDir();
+                if (!baseDir.exists()) {
+                    if (!DEFAULT_BASE_DIR.equals(localResourcePath)) {
+                        Resources.LOG.WARN(CHECK_MSG, localResourcePath, baseDir.getAbsolutePath());
+                    }
+                }
+                baseDirFound = baseDir.exists();
+            }
+        }
+
         return baseDirFound;
     }
 }

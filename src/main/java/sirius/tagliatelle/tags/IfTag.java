@@ -21,6 +21,10 @@ import java.util.List;
  * Handles <tt>i:if</tt> which emits its body if a condition is met.
  */
 public class IfTag extends TagHandler {
+
+    /**
+     * Creates new tags of the given type (name).
+     */
     @Register
     public static class Factory implements TagHandlerFactory {
 
@@ -45,7 +49,8 @@ public class IfTag extends TagHandler {
 
         @Override
         public String getDescription() {
-            return "Emits its body only if the given condition evaluates to true. Use an inner i:else to emit if the condition is false.";
+            return "Emits its body only if the given condition evaluates to true. "
+                   + "Use an inner i:else to emit if the condition is false.";
         }
     }
 

@@ -22,6 +22,12 @@ public class NoodleOperation extends Expression {
     protected Expression leftExpression;
     protected Expression rightExpression;
 
+    /**
+     * Creates a new operation for the given operands.
+     *
+     * @param leftExpression  the left operand
+     * @param rightExpression the right operand
+     */
     public NoodleOperation(Expression leftExpression, Expression rightExpression) {
         this.leftExpression = leftExpression;
         this.rightExpression = rightExpression;

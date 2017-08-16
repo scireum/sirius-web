@@ -26,13 +26,14 @@ import java.util.List;
  */
 public class ArgTag extends TagHandler {
 
-    public static final String PARAM_NAME = "name";
-    public static final String PARAM_DESCRIPTION = "description";
-    public static final String PARAM_TYPE = "type";
-    public static final String PARAM_DEFAULT = "default";
+    private static final String PARAM_NAME = "name";
+    private static final String PARAM_DESCRIPTION = "description";
+    private static final String PARAM_TYPE = "type";
+    private static final String PARAM_DEFAULT = "default";
 
-    private Class<?> expectedType = Expression.class;
-
+    /**
+     * Creates new tags of the given type (name).
+     */
     @Register
     public static class Factory implements TagHandlerFactory {
 

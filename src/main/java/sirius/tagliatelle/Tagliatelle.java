@@ -52,7 +52,7 @@ public class Tagliatelle {
      * Logs everything related to resolving, compiling and rendering tagliatelle templates.
      */
     public static final Log LOG = Log.get("tagliatelle");
-    public static final String PRAGMA_ALIAS = "alias";
+    protected static final String PRAGMA_ALIAS = "alias";
 
     /**
      * Contains all aliases collected via {@link ClassAliasProvider alias providers}.
@@ -288,7 +288,8 @@ public class Tagliatelle {
             }
             if (Tagliatelle.LOG.isFINE()) {
                 Tagliatelle.LOG.FINE(
-                        "Resolved '%s' for '%s' from cache but the resource is newer than the compiled template (%s > %s, Delta: %s)....Recompiling!",
+                        "Resolved '%s' for '%s' from cache but the resource is newer than the compiled template "
+                        + "(%s > %s, Delta: %s)....Recompiling!",
                         result,
                         path,
                         resource.getLastModified(),

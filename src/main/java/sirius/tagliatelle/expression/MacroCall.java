@@ -114,10 +114,17 @@ public class MacroCall extends Call {
         return macro.getType();
     }
 
-    public void bindToMethod(Position position, CompilationContext context, String methodName) {
-        this.macro = ctx.getPart(methodName, Macro.class);
+    /**
+     * Actually tells the macro to try to resolve an appropriate {@link Macro} to invoke.
+     *
+     * @param position   the current position, used for error reports
+     * @param context    the compilation context
+     * @param macroName the name of the macro
+     */
+    public void bind(Position position, CompilationContext context, String macroName) {
+        this.macro = ctx.getPart(macroName, Macro.class);
         if (macro == null) {
-            context.error(position, "Unknown macro: %s", methodName);
+            context.error(position, "Unknown macro: %s", macroName);
         }
     }
 
@@ -126,6 +133,11 @@ public class MacroCall extends Call {
         return macro.getName();
     }
 
+    /**
+     * Permits the marco to verify its parameters.
+     * <p>
+     * If one or more arguments are invalid an {@link IllegalArgumentException} can be thrown.
+     */
     public void verify() {
         if (macro != null) {
             macro.verifyArguments(Arrays.asList(parameterExpressions));

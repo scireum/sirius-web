@@ -97,6 +97,6 @@ public class BlockEmitter extends Emitter {
 
     @Override
     public String toString() {
-        return "<i:render name=\"" + name+"\" />";
+        return "<i:render name=\"" + name + "\" />";
     }
 }

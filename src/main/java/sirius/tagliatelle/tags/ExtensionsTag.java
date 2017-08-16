@@ -26,8 +26,11 @@ import java.util.List;
  */
 public class ExtensionsTag extends InvokeTag {
 
-    public static final String ATTR_NAME = "name";
+    private static final String ATTR_NAME = "name";
 
+    /**
+     * Creates new tags of the given type (name).
+     */
     @Register
     public static class Factory implements TagHandlerFactory {
 

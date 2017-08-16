@@ -102,20 +102,22 @@ public class SmartLineBasedProcessor implements RowProcessor {
 
     private String resolveColumnName(String columnLabel) {
         if (Strings.isFilled(columnLabel)) {
-            columnLabel = columnLabel.trim().toLowerCase();
-            String effectiveName = columnAliases.get(columnLabel);
+            String effectiveLabel = columnLabel.trim().toLowerCase();
+            String effectiveName = columnAliases.get(effectiveLabel);
             if (Strings.isFilled(effectiveName)) {
                 return effectiveName;
             }
 
-            return columnLabel;
+            return effectiveLabel;
         }
 
         return null;
     }
 
     /**
-     * @return {@link Tuple}s of the original column names and their mapped column names. Contains <tt>null</tt>s before
+     * Returns {@link Tuple tuples} of the original column names and their mapped column names.
+     *
+     * @return the original column names and their mapped column names. Contains <tt>null</tt>s before
      * the first row has been read!
      */
     public List<Tuple<String, String>> getColumnMapping() {
