@@ -167,7 +167,7 @@ public class Template {
         renderWithContext(context);
     }
 
-    public void setupEscaper(GlobalRenderContext ctx) {
+    private void setupEscaper(GlobalRenderContext ctx) {
         if (getEffectiveFileName().endsWith(".html") || getEffectiveFileName().endsWith(".xml")) {
             ctx.setEscaper(GlobalRenderContext::escapeXML);
         }
@@ -200,7 +200,8 @@ public class Template {
         if (!Tagliatelle.isAssignable(argumentValue, arg.getType())) {
             throw RenderException.create(ctx,
                                          new IllegalArgumentException(Strings.apply(
-                                                 "An invalid value was supplied for parameter '%s'. Expected was: %s, Given was: %s",
+                                                 "An invalid value was supplied for parameter '%s'. "
+                                                 + "Expected was: %s, Given was: %s",
                                                  arg.getName(),
                                                  arg.getType(),
                                                  argumentValue == null ? "null" : argumentValue.getClass())));

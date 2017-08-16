@@ -23,7 +23,7 @@ import java.util.Optional;
  * Provides helper methods used in Velocity Macros.
  * <p>
  * The instance of this class is made available as <b>helper</b>
- * via {@link sirius.web.templates.DefaultContentContextExtender}.
+ * via {@link DefaultGlobalContextExtender}.
  */
 public class ContentHelper {
 
@@ -31,6 +31,9 @@ public class ContentHelper {
      * Contains the instance which is passed into the velocity context as "helper".
      */
     public static final ContentHelper INSTANCE = new ContentHelper();
+
+    @Part
+    private static Resources resources;
 
     private ContentHelper() {
     }
@@ -85,9 +88,6 @@ public class ContentHelper {
 
         return result.toString();
     }
-
-    @Part
-    private static Resources resources;
 
     /**
      * Returns the contents of the given template as a single line string which can be embedded into a string

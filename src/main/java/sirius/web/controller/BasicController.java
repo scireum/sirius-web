@@ -13,6 +13,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.nls.NLS;
 import sirius.web.http.WebContext;
+import sirius.web.http.WebServer;
 import sirius.web.security.Permissions;
 import sirius.web.security.UserContext;
 import sirius.web.security.UserInfo;
@@ -33,6 +34,41 @@ import java.util.function.Consumer;
  * user than just jumping to a random error page.
  */
 public class BasicController implements Controller {
+
+    protected Consumer<WebContext> defaultRoute;
+
+    /**
+     * Creates a new instance of the controller and tries to determine the {@link DefaultRoute} which
+     * is used in case another route throws an error.
+     */
+    public BasicController() {
+        Optional<Method> defaultMethod = Arrays.stream(getClass().getMethods())
+                                               .filter(m -> m.isAnnotationPresent(DefaultRoute.class))
+                                               .findFirst();
+        defaultMethod.ifPresent(this::generateDefaultRoute);
+    }
+
+    private void generateDefaultRoute(Method method) {
+        this.defaultRoute = ctx -> defaultRoute(ctx, method);
+    }
+
+    private void defaultRoute(WebContext ctx, Method method) {
+        Set<String> requiredPermissions = Permissions.computePermissionsFromAnnotations(method);
+        try {
+            if (!requiredPermissions.isEmpty()) {
+                UserInfo user = UserContext.getCurrentUser();
+                for (String permission : requiredPermissions) {
+                    user.assertPermission(permission);
+                }
+            }
+
+            method.invoke(this, ctx);
+        } catch (InvocationTargetException e) {
+            fail(ctx, Exceptions.handle(WebServer.LOG, e.getTargetException()));
+        } catch (Exception e) {
+            fail(ctx, Exceptions.handle(WebServer.LOG, e));
+        }
+    }
 
     /**
      * Obtains the currently active user.
@@ -92,37 +128,6 @@ public class BasicController implements Controller {
      */
     public void showDeletedMessage() {
         UserContext.message(Message.info(NLS.get("BasicController.objectDeleted")));
-    }
-
-    protected Consumer<WebContext> defaultRoute;
-
-    /**
-     * Creates a new instance of the controller and tries to determine the {@link DefaultRoute} which
-     * is used in case another route throws an error.
-     */
-    public BasicController() {
-        Optional<Method> defaultMethod = Arrays.stream(getClass().getMethods())
-                                               .filter(m -> m.isAnnotationPresent(DefaultRoute.class))
-                                               .findFirst();
-        if (defaultMethod.isPresent()) {
-            Set<String> requiredPermissions = Permissions.computePermissionsFromAnnotations(defaultMethod.get());
-            this.defaultRoute = ctx -> {
-                try {
-                    if (!requiredPermissions.isEmpty()) {
-                        UserInfo user = UserContext.getCurrentUser();
-                        for (String permission : requiredPermissions) {
-                            user.assertPermission(permission);
-                        }
-                    }
-
-                    defaultMethod.get().invoke(this, ctx);
-                } catch (IllegalAccessException e) {
-                    fail(ctx, Exceptions.handle(e));
-                } catch (InvocationTargetException e) {
-                    fail(ctx, Exceptions.handle(e.getTargetException()));
-                }
-            };
-        }
     }
 
     /**

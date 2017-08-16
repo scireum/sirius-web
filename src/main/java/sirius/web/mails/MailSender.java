@@ -38,7 +38,7 @@ import java.util.Map;
  */
 public class MailSender {
 
-    public static final String CONFIG_KEY_HEADERS = "headers";
+    protected static final String CONFIG_KEY_HEADERS = "headers";
     protected boolean simulate;
     protected String senderEmail;
     protected String senderName;
@@ -65,7 +65,6 @@ public class MailSender {
     private static Templates templates;
 
     protected MailSender() {
-
     }
 
     /**

@@ -66,8 +66,8 @@ public class CompositeEmitter extends Emitter {
      * <p>
      * Two actual optimizations are attempted:
      * <ul>
-     * <ol>Adjacent {@link ConstantEmitter constant emitters} are joined into one.</ol>
-     * <ol>Composite children hab their children pulled up into the list of children to simplify the emitter tree.</ol>
+     * <li>Adjacent {@link ConstantEmitter constant emitters} are joined into one.</li>
+     * <li>Composite children hab their children pulled up into the list of children to simplify the emitter tree.</li>
      * </ul>
      * <p>
      * Both of these optimizations are very efficient when a template is inlined into another one.

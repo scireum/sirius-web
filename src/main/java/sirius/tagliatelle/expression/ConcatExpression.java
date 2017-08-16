@@ -63,21 +63,7 @@ public class ConcatExpression extends Expression {
         List<Expression> expressions = stringExpressions.stream().map(Expression::reduce).collect(Collectors.toList());
         stringExpressions.clear();
         for (Expression expression : expressions) {
-            if (expression.isConstant()) {
-                if (sb == null) {
-                    sb = new StringBuilder();
-                }
-                Object result = expression.eval(null);
-                if (result != null) {
-                    sb.append(result);
-                }
-            } else {
-                if (sb != null) {
-                    stringExpressions.add(new ConstantString(sb.toString()));
-                    sb = null;
-                }
-                stringExpressions.add(expression);
-            }
+            sb = reduceExpression(sb, expression);
         }
 
         if (sb != null) {
@@ -89,6 +75,26 @@ public class ConcatExpression extends Expression {
         }
 
         return this;
+    }
+
+    public StringBuilder reduceExpression(StringBuilder currentBuilder, Expression expression) {
+        if (expression.isConstant()) {
+            Object result = expression.eval(null);
+            if (result == null) {
+                return currentBuilder;
+            }
+            if (currentBuilder != null) {
+                return currentBuilder.append(result);
+            }
+            return new StringBuilder().append(result);
+        }
+
+        if (currentBuilder != null) {
+            stringExpressions.add(new ConstantString(currentBuilder.toString()));
+        }
+
+        stringExpressions.add(expression);
+        return null;
     }
 
     @Override

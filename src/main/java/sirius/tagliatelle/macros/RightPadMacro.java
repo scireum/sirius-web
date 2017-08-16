@@ -1,3 +1,11 @@
+/*
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
 package sirius.tagliatelle.macros;
 
 import sirius.kernel.commons.Strings;
@@ -23,10 +31,12 @@ public class RightPadMacro implements Macro {
 
     @Override
     public void verifyArguments(List<Expression> args) {
-        if (args.size() != 3 || !Tagliatelle.isAssignableTo(args.get(0).getType(), String.class)
-                || !Tagliatelle.isAssignableTo(args.get(1).getType(), String.class)
-                || !Tagliatelle.isAssignableTo(args.get(2).getType(), int.class)) {
-            throw new IllegalArgumentException("Expected the first and second argument to be a string and the third to be a integer.");
+        if (args.size() != 3
+            || !Tagliatelle.isAssignableTo(args.get(0).getType(), String.class)
+            || !Tagliatelle.isAssignableTo(args.get(1).getType(), String.class)
+            || !Tagliatelle.isAssignableTo(args.get(2).getType(), int.class)) {
+            throw new IllegalArgumentException("Expected the first and second argument to be a string "
+                                               + "and the third to be a integer.");
         }
     }
 

@@ -24,7 +24,9 @@ import java.util.function.Function;
 public interface SmartRow {
 
     /**
-     * @return {@link Tuple}s of the original column names and their mapped column names. Contains <tt>null</tt>s before
+     * Returns {@link Tuple tuples} of the original column names and their mapped column names.
+     *
+     * @return the original column names and their mapped column names. Contains <tt>null</tt>s before
      * the first row has been read!
      */
     List<Tuple<String, String>> getColumnMapping();

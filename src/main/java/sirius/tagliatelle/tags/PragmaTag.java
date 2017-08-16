@@ -21,9 +21,12 @@ import java.util.List;
  */
 public class PragmaTag extends TagHandler {
 
-    public static final String PARAM_NAME = "name";
-    public static final String PARAM_VALUE = "value";
+    protected static final String PARAM_NAME = "name";
+    protected static final String PARAM_VALUE = "value";
 
+    /**
+     * Creates new tags of the given type (name).
+     */
     @Register
     public static class Factory implements TagHandlerFactory {
 

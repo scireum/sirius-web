@@ -24,6 +24,9 @@ import java.util.List;
  */
 public class RawTag extends TagHandler {
 
+    /**
+     * Creates new tags of the given type (name).
+     */
     @Register
     public static class Factory implements TagHandlerFactory {
 

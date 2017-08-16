@@ -46,7 +46,7 @@ public class DefaultGlobalContextExtender implements GlobalContextExtender {
         parameterCollector.accept("nodeName", CallContext.getNodeName());
         parameterCollector.accept("isDev", Sirius.isDev());
         parameterCollector.accept("call", ctx.get(WebContext.class));
-        parameterCollector.accept("watch",ctx.getWatch());
+        parameterCollector.accept("watch", ctx.getWatch());
         parameterCollector.accept("lang", NLS.getCurrentLang());
         parameterCollector.accept("wondergemRoot", wondergemRoot);
         parameterCollector.accept("tagLine", tagLine);
@@ -66,5 +66,4 @@ public class DefaultGlobalContextExtender implements GlobalContextExtender {
 
         return detailedVersion;
     }
-
 }

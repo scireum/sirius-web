@@ -38,7 +38,7 @@ public abstract class TagHandler {
      *
      * @param name the name of the block
      * @param body the emitter representing the block
-     * @see TagBlock
+     * @see BlockTag
      */
     public void addBlock(String name, Emitter body) {
         if (blocks == null) {

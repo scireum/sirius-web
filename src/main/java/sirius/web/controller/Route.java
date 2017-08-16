@@ -239,6 +239,7 @@ public class Route {
     /**
      * Determines if the current user is authorized to access this routing.
      *
+     * @param user the current user
      * @return <tt>null</tt> if the user is authorized or otherwise the name of the permission which the user is
      * missing.
      */

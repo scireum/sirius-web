@@ -96,8 +96,16 @@ public class Response {
      * Caches the GMT TimeZone (lookup is synchronized)
      */
     private static final TimeZone TIME_ZONE_GMT = TimeZone.getTimeZone("GMT");
+
+    /*
+     * Contains the file extension used by HTML
+     */
     private static final String FILETYPE_HTML = ".html";
-    public static final String CONTENT_TYPE_HTML = "text/html; charset=UTF-8";
+
+    /*
+     * Contains the content type used for html
+     */
+    private static final String CONTENT_TYPE_HTML = "text/html; charset=UTF-8";
 
     /*
      * Stores the associated request
@@ -943,7 +951,9 @@ public class Response {
                                         .to(WebServer.LOG)
                                         .error(e)
                                         .withSystemErrorMessage("An exception occurred while sending an HTTP error! "
-                                                                + "Original Status Code: %s, Original Error: %s, URL: %s - %s (%s)",
+                                                                + "Original Status Code: %s, "
+                                                                + "Original Error: %s, "
+                                                                + "URL: %s - %s (%s)",
                                                                 status == null ? "null" : status.code(),
                                                                 message,
                                                                 wc == null || wc.getRequest() == null ?

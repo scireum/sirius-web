@@ -22,6 +22,9 @@ import java.util.List;
  */
 public class ElseTag extends TagHandler {
 
+    /**
+     * Creates new tags of the given type (name).
+     */
     @Register
     public static class Factory implements TagHandlerFactory {
 

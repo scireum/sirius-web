@@ -171,6 +171,11 @@ public class SystemController extends BasicController {
                      NLS.convertDuration(Sirius.getUptimeInMilliseconds(), true, false));
     }
 
+    /**
+     * Provides a list of recorded micro timings.
+     *
+     * @param ctx the current request
+     */
     @Routed("/system/timing")
     @Permission(PERMISSION_SYSTEM_TIMING)
     public void timing(WebContext ctx) {
@@ -215,8 +220,8 @@ public class SystemController extends BasicController {
 
     private boolean matchesQuery(String query, Microtiming.Timing timing) {
         return query == null || timing.getKey().toLowerCase().contains(query) || timing.getCategory()
-                                                                                    .toLowerCase()
-                                                                                    .contains(query);
+                                                                                       .toLowerCase()
+                                                                                       .contains(query);
     }
 
     private String getPeriodSinceLastReset() {

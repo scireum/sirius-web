@@ -35,7 +35,8 @@ public class CompileException extends Exception {
     /**
      * Creates a new exception based on the list of errors.
      *
-     * @param errors the errors which occurred while processing the user input
+     * @param template the template in which the error occurred
+     * @param errors   the errors which occurred while processing the user input
      * @return a new CompileException which can be thrown
      */
     public static CompileException create(Template template, List<CompileError> errors) {

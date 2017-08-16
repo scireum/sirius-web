@@ -300,7 +300,8 @@ class Parser extends InputProcessor {
             if (reader.current().is('+')) {
                 Char operator = reader.consume();
                 Expression right = product();
-                if (Tagliatelle.isAssignableTo(result.getType(), int.class) && Tagliatelle.isAssignableTo(right.getType(), int.class)) {
+                if (Tagliatelle.isAssignableTo(result.getType(), int.class)
+                    && Tagliatelle.isAssignableTo(right.getType(), int.class)) {
                     result = new IntOperation(Operator.ADD, result, right);
                 } else if (result instanceof ConcatExpression) {
                     ((ConcatExpression) result).add(right);
@@ -562,8 +563,8 @@ class Parser extends InputProcessor {
             return null;
         }
 
-        for(Object o : enumType.getEnumConstants()) {
-            if (Strings.areEqual(((Enum<?>)o).name(), typeNameName.getSecond())) {
+        for (Object o : enumType.getEnumConstants()) {
+            if (Strings.areEqual(((Enum<?>) o).name(), typeNameName.getSecond())) {
                 reader.consume(offset);
                 return new ConstantEnum(enumType, o);
             }
@@ -584,7 +585,7 @@ class Parser extends InputProcessor {
         consumeExpectedCharacter('(');
         MacroCall call = new MacroCall();
         call.setParameters(parseParameterList());
-        call.bindToMethod(pos, context, methodName);
+        call.bind(pos, context, methodName);
         consumeExpectedCharacter(')');
 
         return call;

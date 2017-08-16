@@ -29,8 +29,8 @@ public abstract class ExpressionHandler implements Priorized {
      *
      * @param compiler the compiler which provides access to the {@link Compiler#getReader()} and {@link
      *                 Compiler#getContext()}.
-     * @return <tt>true</tt> if this handler should parse the expression (the reader currently points to the {@literal
-     * @} in the source code
+     * @return <tt>true</tt> if this handler should parse the expression (the reader currently points to the
+     * {@literal @} in the source code)
      */
     public abstract boolean shouldProcess(Compiler compiler);
 

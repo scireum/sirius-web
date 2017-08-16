@@ -59,6 +59,9 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
     protected Barrier barrier = null;
     protected RateLimit logLimit = RateLimit.timeInterval(5, TimeUnit.SECONDS);
 
+    @Part
+    private static Tasks tasks;
+
     protected ManagedTaskExecution(ManagedTaskSetup setup) {
         this.setup = setup;
         this.taskId = UUID.randomUUID().toString();
@@ -83,7 +86,7 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
         if (!canceled) {
             try {
                 setup.task.accept(this);
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 handle(e);
             }
             waitForForkedTasks();
@@ -168,6 +171,7 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             error(Exceptions.createHandled().error(e).handle().getMessage());
         }
     }
@@ -296,9 +300,6 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
     public Instant getTerminated() {
         return terminated;
     }
-
-    @Part
-    private static Tasks tasks;
 
     @Override
     public void fork(String category, Runnable runnable) {

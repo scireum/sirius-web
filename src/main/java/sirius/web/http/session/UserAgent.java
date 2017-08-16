@@ -31,7 +31,7 @@ public class UserAgent {
     private static final String BLACKBERRY_10 = "bb10";
     private static final String WINDOWS = "windows";
     private static final String ARM = "arm";
-    
+
     private String userAgentString;
 
     private boolean phone = false;
