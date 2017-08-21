@@ -518,12 +518,20 @@ public class Compiler extends InputProcessor {
      */
     private String consumeStaticBlock() {
         StringBuilder sb = new StringBuilder();
+        Integer numberOfOpenBlocks = 0;
+
         while (!reader.current().isEndOfInput()) {
             if (isAtEscapedAt()) {
                 sb.append(reader.consume().getValue());
                 reader.consume().getValue();
             } else {
-                if (isAtPotentialEndOfStaticBlock()) {
+                if (reader.current().is('{')) {
+                    numberOfOpenBlocks++;
+                } else if (reader.current().is('}')) {
+                    numberOfOpenBlocks--;
+                }
+
+                if (isAtPotentialEndOfStaticBlock(numberOfOpenBlocks)) {
                     return sb.toString();
                 }
 
@@ -549,8 +557,8 @@ public class Compiler extends InputProcessor {
      *
      * @return <tt>true</tt> if the reader points to something of interest to the compiler, <tt>false</tt> otherwise
      */
-    private boolean isAtPotentialEndOfStaticBlock() {
-        if (reader.current().is('}')) {
+    private boolean isAtPotentialEndOfStaticBlock(Integer numberOfOpenBlocks) {
+        if (reader.current().is('}') && numberOfOpenBlocks < 0) {
             return true;
         }
 
