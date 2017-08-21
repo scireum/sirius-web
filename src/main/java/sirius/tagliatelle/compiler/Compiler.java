@@ -518,7 +518,7 @@ public class Compiler extends InputProcessor {
      */
     private String consumeStaticBlock() {
         StringBuilder sb = new StringBuilder();
-        Integer numberOfOpenBlocks = 0;
+        Integer numberOfOpenBlocks = 1;
 
         while (!reader.current().isEndOfInput()) {
             if (isAtEscapedAt()) {
@@ -558,7 +558,7 @@ public class Compiler extends InputProcessor {
      * @return <tt>true</tt> if the reader points to something of interest to the compiler, <tt>false</tt> otherwise
      */
     private boolean isAtPotentialEndOfStaticBlock(Integer numberOfOpenBlocks) {
-        if (reader.current().is('}') && numberOfOpenBlocks < 0) {
+        if (reader.current().is('}') && numberOfOpenBlocks == 0) {
             return true;
         }
 
