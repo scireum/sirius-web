@@ -555,6 +555,8 @@ public class Compiler extends InputProcessor {
      * Determines if the reader might be pointing to something interesting and should therefore stop consuming static
      * text to investigate further.
      *
+     * @param numberOfOpenBlocks signals the number of opened blocks (a block is opened via a "{") in the current static
+     *                           block
      * @return <tt>true</tt> if the reader points to something of interest to the compiler, <tt>false</tt> otherwise
      */
     private boolean isAtPotentialEndOfStaticBlock(Integer numberOfOpenBlocks) {
