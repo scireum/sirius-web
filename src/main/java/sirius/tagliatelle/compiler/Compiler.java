@@ -518,7 +518,7 @@ public class Compiler extends InputProcessor {
      */
     private String consumeStaticBlock() {
         StringBuilder sb = new StringBuilder();
-        Integer numberOfOpenBlocks = 1;
+        int numberOfOpenBlocks = 1;
 
         while (!reader.current().isEndOfInput()) {
             if (isAtEscapedAt()) {
