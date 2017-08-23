@@ -512,6 +512,8 @@ public class WebContext implements SubContext {
                     return Value.of(byteBuf.toString(attr.getCharset()));
                 }
             }
+        } catch (HttpPostRequestDecoder.NotEnoughDataDecoderException e) {
+            Exceptions.ignore(e);
         } catch (Exception e) {
             Exceptions.handle()
                       .to(WebServer.LOG)

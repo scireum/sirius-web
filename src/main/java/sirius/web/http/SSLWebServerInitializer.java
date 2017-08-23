@@ -140,7 +140,7 @@ class SSLWebServerInitializer extends WebServerInitializer {
         public X509Certificate[] getCertificateChain(String alias) {
             X509Certificate[] certificateChain = keyManager.getCertificateChain(alias);
             if (certificateChain == null) {
-                LOG.WARN("No certificate chain found for: %s", alias);
+                LOG.FINE("No certificate chain found for: %s", alias);
             } else {
                 if (LOG.isFINE()) {
                     LOG.FINE("Certificate chain for %s has %d entries...", alias, certificateChain.length);
@@ -153,7 +153,7 @@ class SSLWebServerInitializer extends WebServerInitializer {
         public PrivateKey getPrivateKey(String alias) {
             PrivateKey privateKey = keyManager.getPrivateKey(alias);
             if (privateKey == null) {
-                LOG.WARN("No private key found for: %s", alias);
+                LOG.FINE("No private key found for: %s", alias);
             } else {
                 if (LOG.isFINE()) {
                     LOG.FINE("Private key for %s is: %s", alias, privateKey);
