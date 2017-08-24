@@ -180,7 +180,11 @@ public class MailSender {
      * @return the builder itself
      */
     public MailSender textTemplate(String template, Context context) {
-        return textContent(templates.generator().useTemplate(template).applyContext(context).generate());
+        return textContent(templates.generator()
+                                    .useTemplate(template)
+                                    .put("mailContext", this)
+                                    .applyContext(context)
+                                    .generate());
     }
 
     /**
@@ -202,7 +206,11 @@ public class MailSender {
      * @return the builder itself
      */
     public MailSender htmlTemplate(String template, Context context) {
-        return htmlContent(templates.generator().useTemplate(template).applyContext(context).generate());
+        return htmlContent(templates.generator()
+                                    .useTemplate(template)
+                                    .put("mailContext", this)
+                                    .applyContext(context)
+                                    .generate());
     }
 
     /**
@@ -251,6 +259,23 @@ public class MailSender {
         attachments.add(attachment);
 
         return this;
+    }
+
+    /**
+     * Adds a resource as attachment.
+     * <p>
+     * This can be called from within a template to reference the template directly.
+     *
+     * @param resource the resource to lookup using {@link Resources#resolve(String)}
+     * @param filename the filename to use for the attachment
+     * @return the content id to reference it within HTML content. &lt; and &gt; are automatically added.
+     * @see #addResourceAsAttachment(String, String, String)
+     */
+    public String addResourceAsAttachment(@Nonnull String resource, @Nullable String filename) {
+        String cid = Strings.generateCode(16) + "@mail.local";
+        addResourceAsAttachment(resource, filename, cid);
+
+        return cid;
     }
 
     /**
