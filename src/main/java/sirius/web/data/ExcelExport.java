@@ -60,60 +60,16 @@ public class ExcelExport {
     private HSSFPatriarch drawing;
 
     /**
-     * Represents a header column for a column containing images. As images have a certain width, this sets the width
-     * of
-     * the column to the given value.
-     * <p>
-     * The column with has to be set during creation of the header as changing the column width later would result in
-     * distorted images.
-     */
-    public static class ImageHeaderCol {
-
-        private static final short EXCEL_COLUMN_WIDTH_FACTOR = 256;
-        private static final int UNIT_OFFSET_LENGTH = 7;
-        private static final int[] UNIT_OFFSET_MAP = {0, 36, 73, 109, 146, 182, 219};
-
-        private String name;
-        private int widthInPixel;
-
-        /**
-         * Creates a new header column object which can be used to create a column containing images. This has to be
-         * inserted in the header (first row) only once per column as later insertions can result in distorted images.
-         * <p>
-         * The given width in pixels should be the width of the widest image to insert so that it fits in the column.
-         *
-         * @param name         the name of the column to print on the excel sheet
-         * @param widthInPixel the width the column should have in pixels
-         * @return a new image header column object
-         */
-        public static ImageHeaderCol create(String name, int widthInPixel) {
-            ImageHeaderCol col = new ImageHeaderCol();
-            col.name = name;
-            col.widthInPixel = widthInPixel;
-            return col;
-        }
-
-        /**
-         * Returns width of column formatted in POI's unit for pixel width. This is not the exact pixel with but more of
-         * an approximation.
-         * <p>
-         * Adapted from: https://stackoverflow.com/a/31837639
-         *
-         * @return column width formatted for POI
-         */
-        protected int getPOIWidth() {
-            int widthUnits = EXCEL_COLUMN_WIDTH_FACTOR * (widthInPixel / UNIT_OFFSET_LENGTH);
-            widthUnits += UNIT_OFFSET_MAP[(widthInPixel % UNIT_OFFSET_LENGTH)];
-            return widthUnits / 2;
-        }
-    }
-
-    /**
      * Represents a cell containing an image which should be inserted.
      */
     public static class ImageCell {
+
+        private static final short EXCEL_COLUMN_WIDTH_FACTOR = 256;
+        private static final int[] UNIT_OFFSET_ARRAY = {0, 36, 73, 109, 146, 182, 219};
+
         byte[] fileData;
         int heightInPixel;
+        int widthInPixel;
         int pictureType;
 
         /**
@@ -122,26 +78,30 @@ public class ExcelExport {
          * The height in pixel determines the height of the row containing the image. Currently, only one image is
          * allowed per row as the changes in height for the row might result in distorted images.
          * <p>
+         * The width in pixel determines the width of the column containing this cell. However, only the first cell
+         * inserted in the column is able to set the width of the column as changing a column's width while images
+         * being present in the column would result in them beind distorted. The given width should be the width of the
+         * widest image for the column containing this image.
+         * <p>
          * The filename is needed in order to determine the type of image. POI requires an image type for inserting
          * images. Only jpeg, png and bmp are supported.
          *
          * @param fileData      the data of the picture
          * @param heightInPixel the height the row containing the image should have
+         * @param widthInPixel  the width of the column containing the image should have
          * @param fileName      the filename or path to file containing the filename
-         * @return a new image cell object
          */
-        public static ImageCell create(byte[] fileData, int heightInPixel, String fileName) {
-            ImageCell cell = new ImageCell();
+        public ImageCell(byte[] fileData, int heightInPixel, int widthInPixel, String fileName) {
             int guessedPictureType = determinePictureType(fileName);
             if (guessedPictureType < 0) {
                 throw Exceptions.handle()
                                 .withSystemErrorMessage("Unknown picture type for file %s: %s (%s)", fileName)
                                 .handle();
             }
-            cell.pictureType = guessedPictureType;
-            cell.fileData = fileData;
-            cell.heightInPixel = heightInPixel;
-            return cell;
+            this.pictureType = guessedPictureType;
+            this.fileData = fileData;
+            this.heightInPixel = heightInPixel;
+            this.widthInPixel = widthInPixel;
         }
 
         /**
@@ -151,6 +111,20 @@ public class ExcelExport {
          */
         protected int getHeightInPoints() {
             return heightInPixel * 72 / 96;
+        }
+
+        /**
+         * Returns width of column containing the image formatted in POI's unit for pixel width. This is not the exact
+         * pixel with but more of an approximation.
+         * <p>
+         * Adapted from: https://stackoverflow.com/a/31837639
+         *
+         * @return column width formatted for POI
+         */
+        protected int getPOIWidth() {
+            int widthUnits = EXCEL_COLUMN_WIDTH_FACTOR * (widthInPixel / UNIT_OFFSET_ARRAY.length);
+            widthUnits += UNIT_OFFSET_ARRAY[(widthInPixel % UNIT_OFFSET_ARRAY.length)];
+            return widthUnits / 2;
         }
 
         private static int determinePictureType(String fileName) {
@@ -236,12 +210,6 @@ public class ExcelExport {
             cell.setCellValue(((BigDecimal) obj).doubleValue());
             return;
         }
-        if (obj instanceof ImageHeaderCol) {
-            cell.setCellValue(new HSSFRichTextString(((ImageHeaderCol) obj).name));
-            sheet.setColumnWidth(columnIndex, ((ImageHeaderCol) obj).getPOIWidth());
-            pictureCols.add((short) columnIndex);
-            return;
-        }
         if (obj instanceof ImageCell) {
             addImageCell(row, (ImageCell) obj, columnIndex);
             return;
@@ -253,6 +221,10 @@ public class ExcelExport {
         row.setHeightInPoints(imageCell.getHeightInPoints());
         if (drawing == null) {
             drawing = sheet.createDrawingPatriarch();
+        }
+        if (!pictureCols.contains((short) columnIndex)) {
+            sheet.setColumnWidth(columnIndex, imageCell.getPOIWidth());
+            pictureCols.add((short) columnIndex);
         }
         int iconIndex = workbook.addPicture(imageCell.fileData, imageCell.pictureType);
         ClientAnchor anchor = new HSSFClientAnchor();
