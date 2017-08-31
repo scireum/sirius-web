@@ -124,7 +124,7 @@ public class ExcelExport {
         protected int getPOIWidth() {
             int widthUnits = EXCEL_COLUMN_WIDTH_FACTOR * (widthInPixel / UNIT_OFFSET_ARRAY.length);
             widthUnits += UNIT_OFFSET_ARRAY[(widthInPixel % UNIT_OFFSET_ARRAY.length)];
-            return widthUnits / 2;
+            return widthUnits;
         }
 
         private static int determinePictureType(String fileName) {
