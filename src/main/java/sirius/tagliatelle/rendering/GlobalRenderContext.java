@@ -31,7 +31,9 @@ public class GlobalRenderContext {
     protected Map<String, Template> templateCache;
     protected StackAllocator stack = new StackAllocator();
     protected Tagliatelle engine;
-    protected StringBuilder buffer = new StringBuilder();
+    protected StringBuilder buffer;
+    protected StringBuilder currentBuffer;
+    protected Map<String, String> extraBlocks;
     protected Function<String, String> escaper = GlobalRenderContext::escapeRAW;
 
     /**
@@ -43,6 +45,8 @@ public class GlobalRenderContext {
      */
     public GlobalRenderContext(Tagliatelle engine) {
         this.engine = engine;
+        this.buffer = new StringBuilder();
+        this.currentBuffer = buffer;
     }
 
     /**
@@ -85,7 +89,7 @@ public class GlobalRenderContext {
      */
     protected void outputRaw(String string) {
         if (string != null) {
-            buffer.append(string);
+            currentBuffer.append(string);
         }
     }
 
@@ -99,7 +103,7 @@ public class GlobalRenderContext {
      */
     protected void outputEscaped(String string) {
         if (string != null) {
-            buffer.append(escaper.apply(string));
+            currentBuffer.append(escaper.apply(string));
         }
     }
 
@@ -178,5 +182,52 @@ public class GlobalRenderContext {
             this.globals = engine.createEnvironment();
         }
         return globals;
+    }
+
+    /**
+     * Returns the contents for the given extra block, which were create during rendering.
+     * <p>
+     * Using &lt;i:block&gt; tags at the top level permits to output additional rendering results, next to the main
+     * string.
+     *
+     * @param name the name of the block
+     * @return the result generated while rendering the template or an empty string if no content is available.
+     */
+    @Nonnull
+    public String getExtraBlock(String name) {
+        if (extraBlocks == null) {
+            return "";
+        }
+
+        String result = extraBlocks.getOrDefault(name, null);
+        return result != null ? result : "";
+    }
+
+    /**
+     * Starts an extra buffer so that the subsequent contents can be stored into an extra block next to the main
+     * result.
+     * <p>
+     * Note that {@link #completeExtraBlock(String)} has to be called after this, otherwise the render context is in an
+     * inconsistent state.
+     *
+     * @see #getExtraBlock(String)
+     */
+    public void beginExtraBlock() {
+        this.currentBuffer = new StringBuilder();
+    }
+
+    /**
+     * Completes the rendering of an extra block and stores the content as extra block.
+     * <p>
+     * The main rendering buffer will be restored, so that subsequent emitters contribute to the main rendering result.
+     *
+     * @param name the name of the block to store
+     */
+    public void completeExtraBlock(String name) {
+        if (extraBlocks == null) {
+            extraBlocks = new HashMap<>();
+        }
+        extraBlocks.put(name, currentBuffer.toString());
+        this.currentBuffer = buffer;
     }
 }
