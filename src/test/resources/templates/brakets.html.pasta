@@ -1,7 +1,0 @@
-{
-    @if (true) {
-        { This is a test }
-    } else {
-        { This isn't a test }
-    }
-}

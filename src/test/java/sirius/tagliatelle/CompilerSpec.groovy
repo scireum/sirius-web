@@ -9,6 +9,7 @@
 package sirius.tagliatelle
 
 import sirius.kernel.BaseSpecification
+import sirius.kernel.commons.Strings
 import sirius.kernel.di.std.Part
 import sirius.web.resources.Resources
 
@@ -16,14 +17,20 @@ class CompilerSpec extends BaseSpecification {
 
     @Part
     private static Tagliatelle tagliatelle
-        @Part
+    @Part
     private static Resources resources
 
-    def "mixing of { brakets works as expected"() {
+    private boolean basicallyEqual(String left, String right) {
+        return Strings.areEqual(left.replaceAll("\\s", ""), right.replaceAll("\\s", ""))
+    }
+
+    def "nesting of { brackets works as expected"() {
+        given:
+        String expectedResult = resources.resolve("templates/brackets.html").get().getContentAsString()
         when:
-        String result = tagliatelle.resolve("templates/brakets.html.pasta").get().renderToString()
+        String result = tagliatelle.resolve("templates/brackets.html.pasta").get().renderToString()
         then:
-        result == resources.resolve("templates/brakets.html").get().getContentAsString()
+        basicallyEqual(result, expectedResult)
     }
 
 }

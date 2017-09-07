@@ -1,0 +1,15 @@
+{
+    @if (true) {
+        {
+            @if (true) {
+                { This is a test }
+            }
+            @("test")
+            @if (true) {
+                { This is a test }
+            }
+        }
+    } else {
+        { This isn't a test }
+    }
+}
