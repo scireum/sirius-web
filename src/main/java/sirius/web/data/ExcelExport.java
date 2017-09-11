@@ -305,16 +305,14 @@ public class ExcelExport {
     }
 
     private HSSFCellStyle getCellStyleForObject(Object data) {
-        HSSFCellStyle style = normalStyle;
         if (data instanceof LocalDate || data instanceof LocalDateTime) {
-            style = dateStyle;
-        } else if (data instanceof Integer
-                   || data instanceof Double
-                   || data instanceof Long
-                   || data instanceof BigDecimal
-                   || (data instanceof Amount && ((Amount) data).isFilled())) {
-            style = numeric;
+            return dateStyle;
         }
-        return style;
+        if (data instanceof Integer || data instanceof Double || data instanceof Long || data instanceof BigDecimal || (
+                data instanceof Amount
+                && ((Amount) data).isFilled())) {
+            return numeric;
+        }
+        return normalStyle;
     }
 }
