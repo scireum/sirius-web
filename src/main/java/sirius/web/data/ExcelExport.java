@@ -24,6 +24,7 @@ import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.PrintSetup;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
+import sirius.kernel.commons.Amount;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 import sirius.web.http.MimeHelper;
@@ -210,6 +211,10 @@ public class ExcelExport {
             cell.setCellValue(((BigDecimal) obj).doubleValue());
             return;
         }
+        if (obj instanceof Amount && ((Amount) obj).isFilled()) {
+            cell.setCellValue(((Amount) obj).getAmount().doubleValue());
+            return;
+        }
         if (obj instanceof ImageCell) {
             addImageCell(row, (ImageCell) obj, columnIndex);
             return;
@@ -303,7 +308,11 @@ public class ExcelExport {
         HSSFCellStyle style = normalStyle;
         if (data instanceof LocalDate || data instanceof LocalDateTime) {
             style = dateStyle;
-        } else if (data instanceof Integer || data instanceof Double || data instanceof Long) {
+        } else if (data instanceof Integer
+                   || data instanceof Double
+                   || data instanceof Long
+                   || data instanceof BigDecimal
+                   || (data instanceof Amount && ((Amount) data).isFilled())) {
             style = numeric;
         }
         return style;
