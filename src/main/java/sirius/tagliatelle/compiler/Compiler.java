@@ -528,7 +528,7 @@ public class Compiler extends InputProcessor {
      * started.
      *
      * @param expectedNumberOfOpenCurlyBrackets the number of open brakets around this block, to known when we hit the
-     *                                          end of the block when lloking for a }
+     *                                          end of the block when looking for a }
      * @return the parsed content
      */
     private String consumeStaticBlock(int expectedNumberOfOpenCurlyBrackets) {
