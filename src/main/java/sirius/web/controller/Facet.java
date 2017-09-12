@@ -233,11 +233,7 @@ public class Facet {
             return false;
         }
 
-        if (items.size() > visibleFacetItems) {
-            return true;
-        } else {
-            return false;
-        }
+        return items.size() > visibleFacetItems;
     }
 
     /**
