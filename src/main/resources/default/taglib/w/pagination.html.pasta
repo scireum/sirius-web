@@ -40,7 +40,7 @@
                         @if (page.hasLess()) {
                             $(document).keyup(function (e) {
                                 if (e.shiftKey && (e.which === 37)) {
-                                @if (isFilled(type)) {
+                                    @if (isFilled(type)) {
                                         var location = '@baseUrl?@page.createPrevPageQueryString()&pageType=@type';
                                     } else {
                                         var location = '@baseUrl?@page.createPrevPageQueryString()';
@@ -52,7 +52,7 @@
                         @if (page.hasMore()) {
                             $(document).keyup(function (e) {
                                 if (e.shiftKey && (e.which === 39)) {
-                                @if (isFilled(type)) {
+                                    @if (isFilled(type)) {
                                         var location = '@baseUrl?@page.createNextPageQueryString()&pageType=@type';
                                     } else {
                                         var location = '@baseUrl?@page.createNextPageQueryString()';

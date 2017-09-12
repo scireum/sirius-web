@@ -45,6 +45,15 @@ public class Compiler extends InputProcessor {
     private static List<ExpressionHandler> expressionHandlers;
 
     /**
+     * To properly handle nested blocks of curly brackets (e.g. JavaScript) interleaved with
+     * tagliatelle code, we keep track of the total number of open curly brackets.
+     * <p>
+     * Then, when parsing a block of text, we know if we hit a closing bracket if this is the end of the block,
+     * or part of the internal static text.
+     */
+    private int numberOfOpenCurlyBrackets = 0;
+
+    /**
      * Creates a new compiler for the given context and input.
      *
      * @param context the context to operate on
@@ -174,8 +183,12 @@ public class Compiler extends InputProcessor {
         ConstantEmitter staticText = new ConstantEmitter(reader.current());
         block.addChild(staticText);
 
+        // Once we enter a block, we remember how many curly brackets were already open,
+        // therefore if our counter reaches this value again and sees another }, we
+        // know that we reached the end of the block.
+        int initialOpenCurlyBrackets = this.numberOfOpenCurlyBrackets;
         while (!reader.current().isEndOfInput()) {
-            staticText.append(consumeStaticBlock());
+            staticText.append(consumeStaticBlock(initialOpenCurlyBrackets));
 
             if (checkForEndOfBlock(waitFor, staticText)) {
                 return block;
@@ -514,11 +527,12 @@ public class Compiler extends InputProcessor {
      * Consumes all static template text until either the end of the current block is reached or an expression or tag is
      * started.
      *
+     * @param expectedNumberOfOpenCurlyBrackets the number of open brakets around this block, to known when we hit the
+     *                                          end of the block when looking for a }
      * @return the parsed content
      */
-    private String consumeStaticBlock() {
+    private String consumeStaticBlock(int expectedNumberOfOpenCurlyBrackets) {
         StringBuilder sb = new StringBuilder();
-        int numberOfOpenBlocks = 1;
 
         while (!reader.current().isEndOfInput()) {
             if (isAtEscapedAt()) {
@@ -526,13 +540,13 @@ public class Compiler extends InputProcessor {
                 reader.consume().getValue();
             } else {
                 if (reader.current().is('{')) {
-                    numberOfOpenBlocks++;
-                } else if (reader.current().is('}')) {
-                    numberOfOpenBlocks--;
+                    numberOfOpenCurlyBrackets++;
                 }
-
-                if (isAtPotentialEndOfStaticBlock(numberOfOpenBlocks)) {
+                if (isAtPotentialEndOfStaticBlock(expectedNumberOfOpenCurlyBrackets)) {
                     return sb.toString();
+                }
+                if (reader.current().is('}')) {
+                    numberOfOpenCurlyBrackets--;
                 }
 
                 sb.append(reader.consume().getValue());
@@ -555,12 +569,11 @@ public class Compiler extends InputProcessor {
      * Determines if the reader might be pointing to something interesting and should therefore stop consuming static
      * text to investigate further.
      *
-     * @param numberOfOpenBlocks signals the number of opened blocks (a block is opened via a "{") in the current static
-     *                           block
+     * @param expectedNumberOfOpenCurlyBrackets the expected number of open curly brackets
      * @return <tt>true</tt> if the reader points to something of interest to the compiler, <tt>false</tt> otherwise
      */
-    private boolean isAtPotentialEndOfStaticBlock(Integer numberOfOpenBlocks) {
-        if (reader.current().is('}') && numberOfOpenBlocks == 0) {
+    private boolean isAtPotentialEndOfStaticBlock(int expectedNumberOfOpenCurlyBrackets) {
+        if (reader.current().is('}') && numberOfOpenCurlyBrackets == expectedNumberOfOpenCurlyBrackets) {
             return true;
         }
 
