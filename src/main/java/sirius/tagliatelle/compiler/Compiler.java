@@ -45,13 +45,13 @@ public class Compiler extends InputProcessor {
     private static List<ExpressionHandler> expressionHandlers;
 
     /**
-     * The properly handle nested blocks of curly brackets (e.g. JavaScript) interleaved with
-     * tagliatelle code, we keep track of the total number of open curly brakets.
+     * To properly handle nested blocks of curly brackets (e.g. JavaScript) interleaved with
+     * tagliatelle code, we keep track of the total number of open curly brackets.
      * <p>
      * Then, when parsing a block of text, we know if we hit a closing bracket if this is the end of the block,
      * or part of the internal static text.
      */
-    private int numberOfOpenCurlyBrackets;
+    private int numberOfOpenCurlyBrackets = 0;
 
     /**
      * Creates a new compiler for the given context and input.
