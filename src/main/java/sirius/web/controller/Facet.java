@@ -189,7 +189,7 @@ public class Facet {
      * @param visibleFacetItems the number of visible facet items
      * @return the facet itself for fluent method calls
      */
-    public Facet setVisibleFacetItems(int visibleFacetItems) {
+    public Facet withVisibleFacetItems(int visibleFacetItems) {
         this.visibleFacetItems = visibleFacetItems;
 
         return this;
@@ -200,7 +200,7 @@ public class Facet {
      *
      * @return the maximum number of visible facet items
      */
-    public int getVisibleFacetItems() {
+    public int withVisibleFacetItems() {
         return visibleFacetItems;
     }
 
