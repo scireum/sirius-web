@@ -32,7 +32,7 @@ import sirius.tagliatelle.expression.ConstantNull;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.expression.ExpressionVisitor;
 import sirius.tagliatelle.expression.ReadLocal;
-import sirius.tagliatelle.tags.InvokeTagHandler;
+import sirius.tagliatelle.tags.TaglibTagHandler;
 import sirius.tagliatelle.tags.TagHandler;
 import sirius.tagliatelle.tags.TagHandlerFactory;
 
@@ -282,7 +282,7 @@ public class CompilationContext {
         }
 
         try {
-            return resolveTemplate(position, engine.resolveTagName(tagName)).map(InvokeTagHandler::new).orElse(null);
+            return resolveTemplate(position, engine.resolveTagName(tagName)).map(TaglibTagHandler::new).orElse(null);
         } catch (CompileException e) {
             error(position, "Error compiling referenced tag: %s%n%s", tagName, e.getMessage());
             return null;

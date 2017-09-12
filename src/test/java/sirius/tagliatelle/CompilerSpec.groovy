@@ -33,4 +33,13 @@ class CompilerSpec extends BaseSpecification {
         basicallyEqual(result, expectedResult)
     }
 
+    def "dynamicInvoke works"() {
+        given:
+        String expectedResult = resources.resolve("templates/dynamic-invoke.html").get().getContentAsString()
+        when:
+        String result = tagliatelle.resolve("templates/dynamic-invoke-outer.html.pasta").get().renderToString()
+        then:
+        basicallyEqual(result, expectedResult)
+    }
+
 }

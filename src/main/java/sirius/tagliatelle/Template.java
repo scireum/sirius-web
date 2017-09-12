@@ -136,21 +136,31 @@ public class Template {
         GlobalRenderContext ctx = engine.createRenderContext();
         setupEscaper(ctx);
         LocalRenderContext renderContext = ctx.createContext(this);
+        transferArguments(context, renderContext);
+        renderWithContext(renderContext);
 
+        return ctx.toString();
+    }
+
+    /**
+     * Reads all arguments from the given map into the given render context.
+     * <p>
+     * Also, all given values are verified and default values are used, where required.
+     *
+     * @param args          the arguments to use
+     * @param renderContext the context to fill
+     * @throws RenderException in case of invalid or missing arguments
+     */
+    public void transferArguments(Map<String, Object> args, LocalRenderContext renderContext) throws RenderException {
         int index = 0;
         for (TemplateArgument arg : getArguments()) {
-            Object argumentValue = (context.containsKey(arg.getName())) ?
-                                   context.get(arg.getName()) :
-                                   getDefaultValue(renderContext, arg);
+            Object argumentValue =
+                    (args.containsKey(arg.getName())) ? args.get(arg.getName()) : getDefaultValue(renderContext, arg);
             verifyArgument(renderContext, arg, argumentValue);
             renderContext.setLocal(index, argumentValue);
 
             index++;
         }
-
-        renderWithContext(renderContext);
-
-        return ctx.toString();
     }
 
     /**
