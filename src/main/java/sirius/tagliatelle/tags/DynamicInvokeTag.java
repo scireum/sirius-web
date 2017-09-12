@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Handles <tt>i:invoke</tt> which invokes or inlines a given template.
+ * Handles <tt>i:dynamicInvoke</tt> which invokes or inlines a given template.
  */
 public class DynamicInvokeTag extends TagHandler {
 
