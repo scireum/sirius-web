@@ -1437,7 +1437,7 @@ public class WebContext implements SubContext {
         if (queryString == null) {
             decodeQueryString();
         }
-        Set<String> names = Sets.newTreeSet(queryString.keySet());
+        Set<String> names = Sets.newLinkedHashSet(queryString.keySet());
         if (postDecoder != null) {
             try {
                 for (InterfaceHttpData data : postDecoder.getBodyHttpDatas()) {
