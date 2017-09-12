@@ -168,7 +168,7 @@ public class Facet {
      * @param facetCollapsingEnabled <tt>true</tt> to enable facet collapsing, <tt>false</tt> otherwise
      * @return the facet itself for fluent method calls
      */
-    public Facet setFacetCollapsingEnabled(boolean facetCollapsingEnabled) {
+    public Facet withFacetCollapsingEnabled(boolean facetCollapsingEnabled) {
         this.facetCollapsingEnabled = facetCollapsingEnabled;
 
         return this;
@@ -200,7 +200,7 @@ public class Facet {
      *
      * @return the maximum number of visible facet items
      */
-    public int withVisibleFacetItems() {
+    public int getVisibleFacetItems() {
         return visibleFacetItems;
     }
 
