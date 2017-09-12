@@ -19,7 +19,7 @@ import sirius.tagliatelle.emitter.CompositeEmitter;
  * Templates named <tt>/taglib/PREFIX/tagName.html.pasta</tt> can be referenced via &lt;PREFIX:tagName&gt;. Their
  * invocation is handled by this handler.
  */
-public class InvokeTagHandler extends TagHandler {
+public class TaglibTagHandler extends TagHandler {
 
     private Template template;
 
@@ -28,7 +28,7 @@ public class InvokeTagHandler extends TagHandler {
      *
      * @param template the template which was resolved via a tag prefix and name.
      */
-    public InvokeTagHandler(Template template) {
+    public TaglibTagHandler(Template template) {
         this.template = template;
     }
 
