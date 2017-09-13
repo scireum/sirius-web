@@ -14,6 +14,7 @@ import sirius.kernel.commons.Strings;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -25,6 +26,8 @@ public class Facet {
     private String title;
     private List<String> values;
     private final ValueComputer<String, String> translator;
+    private boolean facetCollapsingEnabled = false;
+    private int maxVisibleFacetItems;
     private List<FacetItem> items = Lists.newArrayList();
 
     /**
@@ -49,12 +52,29 @@ public class Facet {
     }
 
     /**
-     * Returns all items collected for this facet.
+     * Returns all visible items collected for this facet.
      *
-     * @return a list of all items of this facet
+     * @return a list of all visible items of this facet
      */
     public List<FacetItem> getItems() {
-        return items;
+        if (!hasHiddenItems()) {
+            return items;
+        }
+
+        return items.subList(0, maxVisibleFacetItems);
+    }
+
+    /**
+     * Returns all hidden items collected for this facet.
+     *
+     * @return a list of all hidden items of this facet, or an empty list if there are none
+     */
+    public List<FacetItem> getHiddenItems() {
+        if (!hasHiddenItems()) {
+            return Collections.emptyList();
+        }
+
+        return items.subList(maxVisibleFacetItems, items.size());
     }
 
     /**
@@ -143,12 +163,77 @@ public class Facet {
     }
 
     /**
+     * Enables or disables collapsing for this facet.
+     *
+     * @param facetCollapsingEnabled <tt>true</tt> to enable facet collapsing, <tt>false</tt> otherwise
+     * @return the facet itself for fluent method calls
+     */
+    public Facet withFacetCollapsingEnabled(boolean facetCollapsingEnabled) {
+        this.facetCollapsingEnabled = facetCollapsingEnabled;
+
+        return this;
+    }
+
+    /**
+     * Determines if collapsing is enabled for this facet.
+     *
+     * @return <tt>true</tt> if facet collapsing is enabled, <tt>false</tt> otherwise
+     */
+    public boolean isFacetCollapsingEnabled() {
+        return facetCollapsingEnabled;
+    }
+
+    /**
+     * Sets the number of visible facet items.
+     *
+     * @param maxVisibleFacetItems the number of visible facet items
+     * @return the facet itself for fluent method calls
+     */
+    public Facet withMaxVisibleFacetItems(int maxVisibleFacetItems) {
+        this.maxVisibleFacetItems = maxVisibleFacetItems;
+
+        return this;
+    }
+
+    /**
+     * Returns the maximum number of items that should be visible.
+     *
+     * @return the maximum number of visible facet items
+     */
+    public int getMaxVisibleFacetItems() {
+        return maxVisibleFacetItems;
+    }
+
+    /**
      * Determines if this facet has at least one item
      *
      * @return <tt>true</tt> if this facet has at least one item, <tt>false</tt> otherwise
      */
     public boolean hasItems() {
         return !items.isEmpty();
+    }
+
+    /**
+     * Determines if this facet has at least one hidden item
+     *
+     * @return <tt>true</tt> if this facet has at least one hidden item, <tt>false</tt> otherwise
+     */
+    public boolean hasHiddenItems() {
+        if (!facetCollapsingEnabled) {
+            return false;
+        }
+
+        // Don't hide anything when items are selected
+        if (!values.isEmpty()) {
+            return false;
+        }
+
+        // Don't hide anything when only hide one item would be hidden
+        if (items.size() == maxVisibleFacetItems + 1) {
+            return false;
+        }
+
+        return items.size() > maxVisibleFacetItems;
     }
 
     /**
