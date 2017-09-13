@@ -42,7 +42,7 @@
     </i:if>
 
     <i:if test="isFilled(help)">
-        <span class="help-block">@help</span>
+        <span class="help-block"><i:raw>@help</i:raw></span>
     </i:if>
     <i:if test="user.hasError(name)">
         <span class="error-block help-block">@user.getFieldErrorMessage(name)</span>
