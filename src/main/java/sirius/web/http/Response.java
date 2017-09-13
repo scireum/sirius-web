@@ -1712,7 +1712,7 @@ public class Response {
                 HttpUtil.setContentLength(response, initialBuffer.readableBytes());
                 complete(commit(response));
             } else {
-                HttpResponse response = createChunkedResponse(HttpResponseStatus.OK, true);
+                HttpResponse response = createChunkedResponse(status, true);
                 commit(response, false);
             }
         }
