@@ -27,7 +27,7 @@ public class Facet {
     private List<String> values;
     private final ValueComputer<String, String> translator;
     private boolean facetCollapsingEnabled = false;
-    private int visibleFacetItems;
+    private int maxVisibleFacetItems;
     private List<FacetItem> items = Lists.newArrayList();
 
     /**
@@ -61,7 +61,7 @@ public class Facet {
             return items;
         }
 
-        return items.subList(0, visibleFacetItems);
+        return items.subList(0, maxVisibleFacetItems);
     }
 
     /**
@@ -74,7 +74,7 @@ public class Facet {
             return Collections.emptyList();
         }
 
-        return items.subList(visibleFacetItems, items.size());
+        return items.subList(maxVisibleFacetItems, items.size());
     }
 
     /**
@@ -186,11 +186,11 @@ public class Facet {
     /**
      * Sets the number of visible facet items.
      *
-     * @param visibleFacetItems the number of visible facet items
+     * @param maxVisibleFacetItems the number of visible facet items
      * @return the facet itself for fluent method calls
      */
-    public Facet withVisibleFacetItems(int visibleFacetItems) {
-        this.visibleFacetItems = visibleFacetItems;
+    public Facet withMaxVisibleFacetItems(int maxVisibleFacetItems) {
+        this.maxVisibleFacetItems = maxVisibleFacetItems;
 
         return this;
     }
@@ -200,8 +200,8 @@ public class Facet {
      *
      * @return the maximum number of visible facet items
      */
-    public int getVisibleFacetItems() {
-        return visibleFacetItems;
+    public int getMaxVisibleFacetItems() {
+        return maxVisibleFacetItems;
     }
 
     /**
@@ -228,12 +228,12 @@ public class Facet {
             return false;
         }
 
-        // Don't hide anything when there is only one item to hide
-        if (items.size() - visibleFacetItems == 1) {
+        // Don't hide anything when only hide one item would be hidden
+        if (items.size() == maxVisibleFacetItems + 1) {
             return false;
         }
 
-        return items.size() > visibleFacetItems;
+        return items.size() > maxVisibleFacetItems;
     }
 
     /**
