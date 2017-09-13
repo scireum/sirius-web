@@ -119,7 +119,7 @@ class ChunkedOutputStream extends OutputStream {
             HttpUtil.setContentLength(res, initialBuffer.readableBytes());
             response.complete(response.commit(res));
         } else {
-            HttpResponse res = response.createChunkedResponse(HttpResponseStatus.OK, true);
+            HttpResponse res = response.createChunkedResponse(status, true);
             response.commit(res, false);
         }
     }
