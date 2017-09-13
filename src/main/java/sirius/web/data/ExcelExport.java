@@ -30,6 +30,9 @@ import sirius.kernel.nls.NLS;
 import sirius.web.http.MimeHelper;
 import sirius.web.http.WebContext;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
@@ -71,28 +74,29 @@ public class ExcelExport {
         byte[] fileData;
         int heightInPixel;
         int widthInPixel;
+        int colWidthInPixel;
         int pictureType;
 
         /**
          * Creates a new cell containing an image which could be inserted into an Excel sheet.
          * <p>
-         * The height in pixel determines the height of the row containing the image. Currently, only one image is
+         * The height of the image determines the height of the row containing the image. Currently, only one image is
          * allowed per row as the changes in height for the row might result in distorted images.
          * <p>
-         * The width in pixel determines the width of the column containing this cell. However, only the first cell
-         * inserted in the column is able to set the width of the column as changing a column's width while images
-         * being present in the column would result in them beind distorted. The given width should be the width of the
-         * widest image for the column containing this image.
+         * Images are scaled to fit in a cell. Their scaling is determined by their width and the parameter
+         * colWidthInPixel. Images are only scaled down but never up.
+         * <p>
+         * Only the first image cell inserted in a given column is able to set the width of the column
+         * as changing a column's width while images being present in the column would result in them beind distorted.
          * <p>
          * The filename is needed in order to determine the type of image. POI requires an image type for inserting
          * images. Only jpeg, png and bmp are supported.
          *
-         * @param fileData      the data of the picture
-         * @param heightInPixel the height the row containing the image should have
-         * @param widthInPixel  the width of the column containing the image should have
-         * @param fileName      the filename or path to file containing the filename
+         * @param fileData        the data of the picture
+         * @param colWidthInPixel the width of the column containing the image should have
+         * @param fileName        the filename or path to file containing the filename
          */
-        public ImageCell(byte[] fileData, int heightInPixel, int widthInPixel, String fileName) {
+        public ImageCell(byte[] fileData, int colWidthInPixel, String fileName) {
             int guessedPictureType = determinePictureType(fileName);
             if (guessedPictureType < 0) {
                 throw Exceptions.handle()
@@ -101,8 +105,18 @@ public class ExcelExport {
             }
             this.pictureType = guessedPictureType;
             this.fileData = fileData;
-            this.heightInPixel = heightInPixel;
-            this.widthInPixel = widthInPixel;
+            this.colWidthInPixel = colWidthInPixel;
+            try {
+                determineImageSize(fileData);
+            } catch (IOException e) {
+                throw Exceptions.handle(e);
+            }
+        }
+
+        private void determineImageSize(byte[] fileData) throws IOException {
+            BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(fileData));
+            this.heightInPixel = bufferedImage.getHeight();
+            this.widthInPixel = bufferedImage.getWidth();
         }
 
         /**
@@ -111,7 +125,7 @@ public class ExcelExport {
          * @return the height the row should have in points
          */
         protected int getHeightInPoints() {
-            return heightInPixel * 72 / 96;
+            return (int) ((heightInPixel * 72 / 96) * getScaleFactor());
         }
 
         /**
@@ -123,9 +137,23 @@ public class ExcelExport {
          * @return column width formatted for POI
          */
         protected int getPOIWidth() {
-            int widthUnits = EXCEL_COLUMN_WIDTH_FACTOR * (widthInPixel / UNIT_OFFSET_ARRAY.length);
-            widthUnits += UNIT_OFFSET_ARRAY[(widthInPixel % UNIT_OFFSET_ARRAY.length)];
+            int widthUnits = EXCEL_COLUMN_WIDTH_FACTOR * (colWidthInPixel / UNIT_OFFSET_ARRAY.length);
+            widthUnits += UNIT_OFFSET_ARRAY[(colWidthInPixel % UNIT_OFFSET_ARRAY.length)];
             return widthUnits;
+        }
+
+        /**
+         * Calculates the scale factor images should be scaled to so that they fit into the set column width. Images
+         * with a width smaller than the column width are not scaled up but keep their size (scaling of 100%).
+         *
+         * @return the scaling factor of images to fit in the column
+         */
+        protected float getScaleFactor() {
+            float scaleFactor = (float) colWidthInPixel / widthInPixel;
+            if (scaleFactor > 1f) {
+                return 1f;
+            }
+            return scaleFactor;
         }
 
         private static int determinePictureType(String fileName) {
@@ -236,7 +264,7 @@ public class ExcelExport {
         anchor.setCol1(columnIndex);
         anchor.setRow1(row.getRowNum());
         HSSFPicture picture = drawing.createPicture(anchor, iconIndex);
-        picture.resize();
+        picture.resize(imageCell.getScaleFactor());
     }
 
     /**
