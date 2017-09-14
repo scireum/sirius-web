@@ -1,0 +1,8 @@
+This namespace is totally unknown and should be passed through:
+<xxx:test />
+
+This should throw an error as "w" is known:
+<w:unknown />
+
+This should also throw an error as "i" is known:
+<i:unknown />

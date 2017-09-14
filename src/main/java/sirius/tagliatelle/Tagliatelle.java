@@ -10,9 +10,11 @@ package sirius.tagliatelle;
 
 import parsii.tokenizer.ParseError;
 import parsii.tokenizer.Position;
+import sirius.kernel.Sirius;
 import sirius.kernel.cache.Cache;
 import sirius.kernel.cache.CacheEntry;
 import sirius.kernel.cache.CacheManager;
+import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
@@ -38,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -74,6 +77,51 @@ public class Tagliatelle {
     private Cache<Resource, Template> compiledTemplates = CacheManager.createCache("tagliatelle-templates");
 
     private List<Tuple<String, Class<?>>> globalVariables;
+
+    private MultiMap<String, String> taglibTags;
+
+    /**
+     * Returns all taglibs and all tags within this taglib.
+     *
+     * @return a multimap containing all taglibs (prefix) and their tags
+     */
+    public MultiMap<String, String> getTagLibTags() {
+        if (taglibTags == null) {
+
+            MultiMap<String, String> result = MultiMap.createOrdered();
+            Sirius.getClasspath()
+                  .find(Pattern.compile("(default/)?taglib/([a-z]+)/(.*).html.pasta"))
+                  .forEach(m -> result.put(m.group(2), m.group(3)));
+            taglibTags = result;
+        }
+
+        return taglibTags;
+    }
+
+    /**
+     * Returns a list of all tag lib prefixes and descriptions.
+     *
+     * @return a list of tuples containing the taglib prefix and a short description
+     */
+    public List<Tuple<String, String>> getTagLibs() {
+        return getTagLibTags().keySet()
+                              .stream()
+                              .map(name -> Tuple.create(name,
+                                                        Sirius.getSettings()
+                                                              .get("tagliatelle.taglib." + name)
+                                                              .asString(name)))
+                              .collect(Collectors.toList());
+    }
+
+    /**
+     * Determines if a taglib with the given prefix exists.
+     *
+     * @param prefix the prefix to check
+     * @return <tt>true</tt> if a taglib with the given prefix exists, <tt>false</tt>  otherwise
+     */
+    public boolean isTaglib(String prefix) {
+        return getTagLibTags().getUnderlyingMap().containsKey(prefix);
+    }
 
     /**
      * Provides all known class aliases.
@@ -185,11 +233,7 @@ public class Tagliatelle {
     }
 
     private static boolean checkTypeConversion(Class<?> from, Class<?> to) {
-        if (from == long.class && to == int.class || from == int.class && to == long.class) {
-            return true;
-        }
-
-        return false;
+        return from == long.class && to == int.class || from == int.class && to == long.class;
     }
 
     /**
