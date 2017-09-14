@@ -53,8 +53,9 @@ class CompilerSpec extends BaseSpecification {
             errors = err.getErrors()
         }
         then:
-        errors.size() == 1
+        errors.size() == 2
         errors.get(0).toString().contains("Cannot find a template for the tag: w:unknown")
+        errors.get(1).toString().contains("Cannot find a handler for the internal tag: i:unknown")
     }
 
 }
