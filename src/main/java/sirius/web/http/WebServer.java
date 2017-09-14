@@ -113,11 +113,11 @@ public class WebServer implements Lifecycle, MetricProvider {
     private static long maxUploadSize;
 
     /**
-     * Config value of the maximal tolerated response time. (<tt>http.maxResponseTime</tt>). Requests which are
-     * not marked as <tt>long running</tt> but take longer, will be logged.
+     * Config value of the maximal tolerated time it takes to generate a response. (<tt>http.maxTimeToFirstByte</tt>).
+     * Requests which are not marked as <tt>long running</tt> but take longer, will be logged.
      */
-    @ConfigValue("http.maxResponseTime")
-    private static long maxResponseTime;
+    @ConfigValue("http.maxTimeToFirstByte")
+    private static long maxTimeToFirstByte;
 
     /**
      * Contains a list of IP ranges which are permitted to access this server. Access from unauthorized IPs will be
@@ -182,6 +182,7 @@ public class WebServer implements Lifecycle, MetricProvider {
     protected static volatile long websockets = 0;
     protected static Map<WebServerHandler, WebServerHandler> openConnections = Maps.newConcurrentMap();
     protected static Average responseTime = new Average();
+    protected static Average timeToFirstByte = new Average();
     protected static volatile MicrotimingMode microtimingMode = MicrotimingMode.URI;
 
     /**
@@ -320,12 +321,12 @@ public class WebServer implements Lifecycle, MetricProvider {
     }
 
     /**
-     * Returns the maximal tolerated response time in millis.
+     * Returns the maximal tolerated time it takes to create a response (send the first byte).
      *
-     * @return the maximal response time in millis
+     * @return the maximal time to first byte in millis
      */
-    protected static long getMaxResponseTime() {
-        return maxResponseTime;
+    protected static long getMaxTimeToFirstByte() {
+        return maxTimeToFirstByte;
     }
 
     /**
@@ -668,6 +669,14 @@ public class WebServer implements Lifecycle, MetricProvider {
     public static double getAvgResponseTime() {
         return responseTime.getAvg();
     }
+    /**
+     * Returns the average time required to generate a response.
+     *
+     * @return the average time to first byte of the last requests in milliseconds.
+     */
+    public static double getAvgTimeToFirstByte() {
+        return timeToFirstByte.getAvg();
+    }
 
     @Override
     public void gather(MetricsCollector collector) {
@@ -693,6 +702,7 @@ public class WebServer implements Lifecycle, MetricProvider {
                                      "/min");
         collector.metric("http-open-connections", "HTTP Open Connections", openConnections.size(), null);
         collector.metric("http-response-time", "HTTP Avg. Reponse Time", responseTime.getAndClearAverage(), "ms");
+        collector.metric("http-response-ttfb", "HTTP Avg. Time To First Byte", timeToFirstByte.getAndClearAverage(), "ms");
         collector.metric("http-sessions", "HTTP Sessions", sessionManager.getNumberOfSessions(), null);
         collector.metric("websockets", "Open Websockets", websockets, null);
     }

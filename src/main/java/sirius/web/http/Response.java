@@ -324,6 +324,7 @@ public class Response {
             WebServer.LOG.FINE("COMMITTING: " + wc.getRequestedURI());
         }
         wc.responseCommitted = true;
+        wc.committed = System.currentTimeMillis();
         wc.releaseContentHandler();
         return flush ? ctx.writeAndFlush(response) : ctx.write(response);
     }
@@ -382,13 +383,17 @@ public class Response {
             callContext.getWatch().submitMicroTiming("HTTP", WebServer.microtimingMode.getMicrotimingKey(wc));
         }
         if (!wc.isLongCall() && wc.started > 0) {
+            long ttfbMillis = wc.committed - wc.started;
             long responseTimeMillis = System.currentTimeMillis() - wc.started;
+
             WebServer.responseTime.addValue(responseTimeMillis);
-            if (responseTimeMillis > WebServer.getMaxResponseTime() && WebServer.getMaxResponseTime() > 0) {
+            WebServer.timeToFirstByte.addValue(ttfbMillis);
+
+            if (ttfbMillis > WebServer.getMaxTimeToFirstByte() && WebServer.getMaxTimeToFirstByte() > 0) {
                 WebServer.LOG.WARN("Long running request: %s (%s)%nMDC:%n%s%n",
                                    wc.getRequestedURI(),
                                    NLS.convertDuration(responseTimeMillis, true, true),
-                                   CallContext.getCurrent());
+                                   callContext);
             }
         }
     }
