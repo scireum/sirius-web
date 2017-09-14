@@ -11,6 +11,8 @@ package sirius.tagliatelle
 import sirius.kernel.BaseSpecification
 import sirius.kernel.commons.Strings
 import sirius.kernel.di.std.Part
+import sirius.tagliatelle.compiler.CompileError
+import sirius.tagliatelle.compiler.CompileException
 import sirius.web.resources.Resources
 
 class CompilerSpec extends BaseSpecification {
@@ -40,6 +42,19 @@ class CompilerSpec extends BaseSpecification {
         String result = tagliatelle.resolve("templates/dynamic-invoke-outer.html.pasta").get().renderToString()
         then:
         basicallyEqual(result, expectedResult)
+    }
+
+    def "missing tag detection works"() {
+        when:
+        List<CompileError> errors = null
+        try {
+            tagliatelle.resolve("templates/missing-tag.html.pasta").get()
+        } catch(CompileException err) {
+            errors = err.getErrors()
+        }
+        then:
+        errors.size() == 1
+        errors.get(0).toString().contains("Cannot find a template for the tag: w:unknown")
     }
 
 }

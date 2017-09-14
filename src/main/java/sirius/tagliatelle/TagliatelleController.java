@@ -9,9 +9,6 @@
 package sirius.tagliatelle;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import sirius.kernel.Sirius;
-import sirius.kernel.commons.MultiMap;
-import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
@@ -24,8 +21,6 @@ import sirius.web.http.WebContext;
 import sirius.web.security.Permission;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -50,34 +45,9 @@ public class TagliatelleController implements Controller {
     @Part
     private GlobalContext context;
 
-    private MultiMap<String, String> taglibTags;
-
     @Override
     public void onError(WebContext ctx, HandledException error) {
         ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
-    }
-
-    private MultiMap<String, String> getTagLibTags() {
-        if (taglibTags == null) {
-
-            MultiMap<String, String> result = MultiMap.createOrdered();
-            Sirius.getClasspath()
-                  .find(Pattern.compile("(default/)?taglib/([a-z]+)/(.*).html.pasta"))
-                  .forEach(m -> result.put(m.group(2), m.group(3)));
-            taglibTags = result;
-        }
-
-        return taglibTags;
-    }
-
-    private List<Tuple<String, String>> getTagLibs(MultiMap<String, String> tagLibTags) {
-        return tagLibTags.keySet()
-                         .stream()
-                         .map(name -> Tuple.create(name,
-                                                   Sirius.getSettings()
-                                                         .get("tagliatelle.taglib." + name)
-                                                         .asString(name)))
-                         .collect(Collectors.toList());
     }
 
     /**
@@ -94,11 +64,14 @@ public class TagliatelleController implements Controller {
                                              .map(TagHandlerFactory::getName)
                                              .map(name -> name.substring(2))
                                              .collect(Collectors.toList());
-        List<Tuple<String, Class<?>>> globals = tagliatelle.getGlobalVariables();
-        MultiMap<String, String> tagLibTags = getTagLibTags();
-        List<Tuple<String, String>> tagLibs = getTagLibs(tagLibTags);
 
-        ctx.respondWith().template("templates/system/tags.html.pasta", macros, globals, builtIns, tagLibs, tagLibTags);
+        ctx.respondWith()
+           .template("templates/system/tags.html.pasta",
+                     macros,
+                     tagliatelle.getGlobalVariables(),
+                     builtIns,
+                     tagliatelle.getTagLibs(),
+                     tagliatelle.getTagLibTags());
     }
 
     /**
@@ -137,7 +110,7 @@ public class TagliatelleController implements Controller {
 
     @Routed("/system/tags/state")
     @Permission(PERMISSION_SYSTEM_TAGS_STATE)
-    public void tagState(WebContext ctx) throws Exception {
+    public void tagState(WebContext ctx) {
         ctx.respondWith().template("templates/system/tags-state.html.pasta", tagliatelle.getCompiledTemplates());
     }
 }

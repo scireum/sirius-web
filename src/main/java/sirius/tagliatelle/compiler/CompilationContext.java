@@ -32,9 +32,9 @@ import sirius.tagliatelle.expression.ConstantNull;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.expression.ExpressionVisitor;
 import sirius.tagliatelle.expression.ReadLocal;
-import sirius.tagliatelle.tags.TaglibTagHandler;
 import sirius.tagliatelle.tags.TagHandler;
 import sirius.tagliatelle.tags.TagHandlerFactory;
+import sirius.tagliatelle.tags.TaglibTagHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -278,11 +278,26 @@ public class CompilationContext {
             TagHandlerFactory factory = ctx.getPart(tagName, TagHandlerFactory.class);
             if (factory != null) {
                 return factory.createHandler();
+            } else {
+                error(position, "Cannot find a handler for the internal tag: %s", tagName);
+                return null;
             }
         }
 
+        String prefix = Strings.split(tagName, ":").getFirst();
+        if (!engine.isTaglib(prefix)) {
+            return null;
+        }
+
         try {
-            return resolveTemplate(position, engine.resolveTagName(tagName)).map(TaglibTagHandler::new).orElse(null);
+            Optional<TaglibTagHandler> tagHandler =
+                    resolveTemplate(position, engine.resolveTagName(tagName)).map(TaglibTagHandler::new);
+            if (tagHandler.isPresent()) {
+                return tagHandler.get();
+            } else {
+                error(position, "Cannot find a template for the tag: %s", tagName);
+                return null;
+            }
         } catch (CompileException e) {
             error(position, "Error compiling referenced tag: %s%n%s", tagName, e.getMessage());
             return null;
