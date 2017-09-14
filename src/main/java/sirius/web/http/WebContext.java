@@ -258,7 +258,7 @@ public class WebContext implements SubContext {
     /*
      * If longCall is set to true (by the user), the idle-state handler is disabled for this request.
      */
-    private boolean longCall;
+    private volatile boolean longCall;
 
     /*
      * If set, will be supplied with all incoming content (instead of buffering on disk or in memory)
@@ -269,7 +269,13 @@ public class WebContext implements SubContext {
      * Contains the timestamp this request was dispatched. (Will not be filled in predispatch, as we only
      * want to measure how long it takes to generate an "average" result, not how long an upload took....
      */
-    protected long started = 0;
+    protected volatile long started = 0;
+
+    /*
+     * Contains the timestamp this request was commited (a response was created).
+     * This can be used to actually measure the server performance and not the download speed of clients.
+     */
+    protected volatile long committed = 0;
 
     /*
      * Caches the content size as the "readableBytes" value changes once a stream is on it.
