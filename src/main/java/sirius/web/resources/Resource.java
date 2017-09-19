@@ -51,7 +51,7 @@ public class Resource {
         this.url = url;
         this.file = determineFile(url);
 
-        if (Sirius.isDev() && file != null) {
+        if (file != null && (Sirius.isDev() || Sirius.isStartedAsTest())) {
             ensureCaseMatch(path);
         }
 
@@ -68,7 +68,7 @@ public class Resource {
             String absolutePath = file.getAbsolutePath();
             String canonicalPath = file.getCanonicalPath();
             if (!absolutePath.equals(canonicalPath) && absolutePath.equalsIgnoreCase(canonicalPath)) {
-                Resources.LOG.WARN("A resource was found, but only case insensitive: %s vs. %s", path, canonicalPath);
+                throw new IllegalStateException(Strings.apply("A resource was found, but only case insensitive: %s vs. %s", path, canonicalPath));
             }
         } catch (IOException e) {
             Exceptions.ignore(e);
