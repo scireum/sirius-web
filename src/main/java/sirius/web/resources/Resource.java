@@ -50,12 +50,29 @@ public class Resource {
         this.path = path;
         this.url = url;
         this.file = determineFile(url);
+
+        if (Sirius.isDev() && file != null) {
+            ensureCaseMatch(path);
+        }
+
         this.consideredConstant = constant;
         this.minLastModified = System.currentTimeMillis();
 
         Objects.requireNonNull(scopeId);
         Objects.requireNonNull(path);
         Objects.requireNonNull(url);
+    }
+
+    private void ensureCaseMatch(String path) {
+        try {
+            String absolutePath = file.getAbsolutePath();
+            String canonicalPath = file.getCanonicalPath();
+            if (!absolutePath.equals(canonicalPath) && absolutePath.equalsIgnoreCase(canonicalPath)) {
+                Resources.LOG.WARN("A resource was found, but only case insensitive: %s vs. %s", path, canonicalPath);
+            }
+        } catch (IOException e) {
+            Exceptions.ignore(e);
+        }
     }
 
     private File determineFile(URL url) {
