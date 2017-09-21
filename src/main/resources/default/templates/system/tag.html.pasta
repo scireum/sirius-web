@@ -46,14 +46,8 @@
 
     <i:if test="isFilled(source)">
         <w:heading label="Source Code" />
-        <div id="editor" style="height: 250px">@source</div>
-        <script type="text/javascript">
-            var editor = ace.edit("editor");
-            editor.setTheme("ace/theme/idle_fingers");
-            editor.setReadOnly(true);
-            editor.session.setMode("ace/mode/html")
-            editor.session.setOption("useWorker", false);
-        </script>
+
+        <w:codeEditor readonly="true" height="250">@source</w:codeEditor>
     </i:if>
 
     <div class="form-actions">
