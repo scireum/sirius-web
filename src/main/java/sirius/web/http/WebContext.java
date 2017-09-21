@@ -35,6 +35,8 @@ import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.InterfaceHttpPostRequestDecoder;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
+import sirius.kernel.cache.Cache;
+import sirius.kernel.cache.CacheManager;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
@@ -47,9 +49,11 @@ import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.StructuredInput;
 import sirius.kernel.xml.XMLStructuredInput;
+import sirius.web.controller.Message;
 import sirius.web.http.session.ServerSession;
 import sirius.web.http.session.SessionManager;
 import sirius.web.http.session.UserAgent;
+import sirius.web.security.UserContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -96,6 +100,7 @@ public class WebContext implements SubContext {
     private static final String HEADER_X_FORWARDED_FOR = "X-Forwarded-For";
     private static final String HEADER_X_FORWARDED_PROTO = "X-Forwarded-Proto";
     private static final String PROTOCOL_HTTPS = "https";
+    private static final String CACHED_MESSAGES_ID = "cachedMessagesId";
 
     /**
      * Used to specify the source of a server session
@@ -358,6 +363,8 @@ public class WebContext implements SubContext {
      * Date format used by HTTP date headers
      */
     public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
+
+    private static Cache<String, List<Message>> userMessageCache = CacheManager.createCache("user-messages");
 
     /**
      * Provides access to the underlying ChannelHandlerContext
@@ -780,6 +787,52 @@ public class WebContext implements SubContext {
             session.clear();
             sessionModified = true;
         }
+    }
+
+    /**
+     * Caches user messages to show them with the next request.
+     * <p>
+     * In some interaction patterns, we cannot directly show generated messages to a user. Therefore these are cached
+     * and retrieved with the next "full" request.
+     * <p>
+     * When sending a redirect or performing an ajax call + a refresh, it is not possible to show messages to a user.
+     * Therefore we cache those messages and return them with the next call to {@link UserContext#getMessages()}.
+     */
+    public void cacheUserMessages() {
+        if (getSessionValue(CACHED_MESSAGES_ID).isFilled()) {
+            return;
+        }
+
+        List<Message> messages = UserContext.get().getMessages();
+        if (messages.isEmpty()) {
+            return;
+        }
+
+        String cacheId = Strings.generateCode(32);
+        userMessageCache.put(cacheId, messages);
+        setSessionValue(CACHED_MESSAGES_ID, cacheId);
+    }
+
+    /**
+     * Invoked by {@link UserContext#getMessages()} to fetch and apply all previously cached message.
+     */
+    public void restoreCachedMessages() {
+        if (!isValid()) {
+            return;
+        }
+        
+        String cachedMessagesId = getSessionValue(CACHED_MESSAGES_ID).asString();
+        if (Strings.isEmpty(cachedMessagesId)) {
+            return;
+        }
+
+        List<Message> cachedMessages = userMessageCache.get(cachedMessagesId);
+        if (cachedMessages != null) {
+            cachedMessages.forEach(UserContext::message);
+            userMessageCache.remove(cachedMessagesId);
+        }
+
+        setSessionValue(CACHED_MESSAGES_ID, null);
     }
 
     /**
