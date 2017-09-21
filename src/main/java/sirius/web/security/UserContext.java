@@ -287,6 +287,8 @@ public class UserContext implements SubContext {
      * @return a list of messages to be shown to the user
      */
     public List<Message> getMessages() {
+        CallContext.getCurrent().get(WebContext.class).restoreCachedMessages();
+
         if (cluster.getClusterState() == MetricState.RED
             && getUser().hasPermission(PERMISSION_SYSTEM_NOTIFY_STATE)
             && !Sirius.isStartedAsTest()) {
