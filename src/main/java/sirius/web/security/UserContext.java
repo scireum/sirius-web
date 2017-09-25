@@ -70,6 +70,7 @@ public class UserContext implements SubContext {
     private static Cluster cluster;
 
     private UserInfo currentUser = null;
+    private boolean fetchingCurrentUser = false;
 
     /*
      * As getUserForScope will most probalby only hit one other scope
@@ -80,6 +81,7 @@ public class UserContext implements SubContext {
     private UserInfo cachedUser = null;
 
     private ScopeInfo currentScope = null;
+    private boolean fetchingCurrentScope = false;
     private List<Message> msgList = Lists.newArrayList();
     private Map<String, String> fieldErrors = Maps.newHashMap();
     private Map<String, String> fieldErrorMessages = Maps.newHashMap();
@@ -420,8 +422,17 @@ public class UserContext implements SubContext {
      */
     public UserInfo getUser() {
         if (currentUser == null) {
-            bindUserToRequest(CallContext.getCurrent().get(WebContext.class));
+            if (fetchingCurrentUser) {
+                return UserInfo.NOBODY;
+            }
+            try {
+                fetchingCurrentUser = true;
+                bindUserToRequest(CallContext.getCurrent().get(WebContext.class));
+            } finally {
+                fetchingCurrentUser = false;
+            }
         }
+
         return currentUser;
     }
 
@@ -513,7 +524,15 @@ public class UserContext implements SubContext {
      */
     public ScopeInfo getScope() {
         if (currentScope == null) {
-            bindScopeToRequest(CallContext.getCurrent().get(WebContext.class));
+            if (fetchingCurrentScope) {
+                return ScopeInfo.DEFAULT_SCOPE;
+            }
+            try {
+                fetchingCurrentScope = true;
+                bindScopeToRequest(CallContext.getCurrent().get(WebContext.class));
+            } finally {
+                fetchingCurrentScope = false;
+            }
         }
         return currentScope;
     }

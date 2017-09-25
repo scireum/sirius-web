@@ -820,7 +820,7 @@ public class WebContext implements SubContext {
         if (!isValid()) {
             return;
         }
-        
+
         String cachedMessagesId = getSessionValue(CACHED_MESSAGES_ID).asString();
         if (Strings.isEmpty(cachedMessagesId)) {
             return;
