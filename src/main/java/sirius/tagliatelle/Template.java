@@ -178,7 +178,11 @@ public class Template {
     }
 
     private void setupEscaper(GlobalRenderContext ctx) {
-        if (getEffectiveFileName().endsWith(".html") || getEffectiveFileName().endsWith(".xml")) {
+        // For XML and HTML we obviously use an XML escaper. As we use flying saucer to generate PDFs
+        // which internally renders HTML, we also enable the escaper there.
+        if (getEffectiveFileName().endsWith(".html")
+            || getEffectiveFileName().endsWith(".xml")
+            || getEffectiveFileName().endsWith(".pdf")) {
             ctx.setEscaper(GlobalRenderContext::escapeXML);
         }
     }
