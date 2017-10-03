@@ -257,6 +257,9 @@ public class Response {
         String requestedOrigin = wc.getHeader(HttpHeaderNames.ORIGIN);
         if (Strings.isFilled(requestedOrigin)) {
             response.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, requestedOrigin);
+            if (!response.headers().contains(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS)) {
+                response.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
+            }
         }
     }
 
