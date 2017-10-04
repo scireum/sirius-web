@@ -31,6 +31,7 @@ import io.netty.handler.codec.http.multipart.MemoryAttribute;
 import sirius.kernel.async.Barrier;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
+import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
@@ -188,7 +189,7 @@ public class TestRequest extends WebContext implements HttpRequest {
     }
 
     /**
-     * Creates a mock request simulating a POST on the given uri and form data
+     * Creates a mock request simulating a POST on the given uri and form data while sending data
      *
      * @param uri      the relative uri to call
      * @param formData the parameters be included in the post request
@@ -224,6 +225,25 @@ public class TestRequest extends WebContext implements HttpRequest {
         result.testMethod = HttpMethod.POST;
         result.testUri = uri;
         installContent(result, new ByteArrayInputStream(json.toJSONString().getBytes(Charsets.UTF_8)));
+        return result;
+    }
+
+    /**
+     * Creates a mock request simulating a POST on the given uri and form data while sending the given data.
+     *
+     * @param uri      the relative uri to call
+     * @param resource resource the data to send to the server
+     * @param formData the parameters be included in the post request
+     * @return an instance used to further specify the request to send
+     */
+    public static TestRequest POST(String uri, InputStream resource, Context formData) {
+        TestRequest result = POST(uri, formData);
+        try {
+            result.addHeader(HttpHeaderNames.CONTENT_LENGTH, resource.available());
+        } catch (IOException e) {
+            Exceptions.createHandled().error(e).handle();
+        }
+        installContent(result, resource);
         return result;
     }
 
