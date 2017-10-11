@@ -32,6 +32,8 @@ public class ContentHelper {
      */
     public static final ContentHelper INSTANCE = new ContentHelper();
 
+    private static final String STRIP_XML_REGEX = "\\s*</?[a-zA-Z0-9]+[^>]*>\\s*";
+
     @Part
     private static Resources resources;
 
@@ -87,6 +89,25 @@ public class ContentHelper {
         }
 
         return result.toString();
+    }
+
+    /**
+     * Removes all XML tags from a given content.
+     *
+     * @param content content to strip XML of
+     * @return content without XML tags
+     */
+    public String stripXML(String content) {
+        if (Strings.isEmpty(content)) {
+            return content;
+        }
+        String alreadyStrippedContent = content;
+        String contentToStrip;
+        do {
+            contentToStrip = alreadyStrippedContent;
+            alreadyStrippedContent = contentToStrip.replaceFirst(STRIP_XML_REGEX, " ");
+        } while (!Strings.areEqual(contentToStrip, alreadyStrippedContent));
+        return alreadyStrippedContent;
     }
 
     /**
