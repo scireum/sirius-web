@@ -48,6 +48,7 @@ public class DefaultGlobalContextExtender implements GlobalContextExtender {
         parameterCollector.accept("call", ctx.get(WebContext.class));
         parameterCollector.accept("watch", ctx.getWatch());
         parameterCollector.accept("lang", NLS.getCurrentLang());
+        parameterCollector.accept("contentHelper", ContentHelper.INSTANCE);
         parameterCollector.accept("wondergemRoot", wondergemRoot);
         parameterCollector.accept("tagLine", tagLine);
         parameterCollector.accept("dateFormat", NLS.get("RythmConfig.jsDateFormat"));
