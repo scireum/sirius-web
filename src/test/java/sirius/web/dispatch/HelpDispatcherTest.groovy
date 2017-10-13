@@ -13,7 +13,7 @@ import spock.lang.Specification
 
 class HelpDispatcherTest extends Specification {
 
-    HelpDispatcher helpDispatcher;
+    HelpDispatcher helpDispatcher
 
     def setup() {
         helpDispatcher = new HelpDispatcher()

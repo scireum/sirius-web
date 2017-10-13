@@ -8,6 +8,10 @@
 
 package sirius.web.http;
 
+import sirius.kernel.di.std.Priorized;
+
+import java.util.function.Consumer;
+
 /**
  * Participates in the dispatching process for incoming HTTP requests.
  * <p>
@@ -36,7 +40,7 @@ package sirius.web.http;
  *
  * @see WebServerHandler
  */
-public interface WebDispatcher {
+public interface WebDispatcher extends Priorized {
 
     /**
      * Returns the priority to determine the position in the dispatcher list.
@@ -47,6 +51,7 @@ public interface WebDispatcher {
      *
      * @return the priority of the dispatcher
      */
+    @Override
     int getPriority();
 
     /**
@@ -66,6 +71,28 @@ public interface WebDispatcher {
      * @see sirius.web.controller.ControllerDispatcher#preDispatch(WebContext)
      */
     boolean preDispatch(WebContext ctx) throws Exception;
+
+    /**
+     * Invoked in order to handle the given request.
+     * <p>
+     * If the dispatcher doesn't feel responsible for handling the request, it simply returns <tt>false</tt>. Otherwise
+     * if the request is being handled, <tt>true</tt> must be returned
+     * <p>
+     * Note that no blocking operation must be performed in this method. For any complex interaction, a new thread
+     * should be forked using {@link sirius.kernel.async.Tasks#executor(String)}. Note that even
+     * {@link Response#outputStream(io.netty.handler.codec.http.HttpResponseStatus, String)} might
+     * block sooner or later to limit heap memory usage - so fork a thread for any serious work besides checking
+     * responsibilities for handling requests.
+     *
+     * @param ctx the request to handle
+     * @return <tt>true</tt> if the request was handled by this dispatcher, <tt>false</tt> otherwise.
+     * @throws Exception in case of an error when parsing or dispatching the request
+     */
+    default void dispatch(WebContext ctx, Consumer<WebContext> startOfPipeline, Consumer<WebContext> nextStage) throws Exception {
+        if (!dispatch(ctx)) {
+            nextStage.accept(ctx);
+        }
+    }
 
     /**
      * Invoked in order to handle the given request.

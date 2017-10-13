@@ -47,9 +47,7 @@ public abstract class ServiceCall {
                                         .to(LOG)
                                         .error(error)
                                         .withSystemErrorMessage("Service call to '%s' failed: %s (%s)",
-                                                                ctx.getRequest() == null ?
-                                                                "? " :
-                                                                ctx.getRequest().uri())
+                                                                ctx.getRequestedURI())
                                         .handle();
         if (ctx.isResponseCommitted()) {
             LOG.WARN("Cannot send service error for: %s. "

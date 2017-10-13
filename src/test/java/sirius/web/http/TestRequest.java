@@ -60,6 +60,7 @@ public class TestRequest extends WebContext implements HttpRequest {
     private boolean preDispatch;
     private List<Cookie> testCookies = Lists.newArrayList();
     protected Promise<TestResponse> testResponsePromise = new Promise<>();
+    private static DispatcherPipeline pipeline;
 
     private TestRequest() {
         super();
@@ -282,19 +283,24 @@ public class TestRequest extends WebContext implements HttpRequest {
      */
     public Promise<TestResponse> execute() {
         CallContext.getCurrent().set(WebContext.class, this);
-        for (WebDispatcher dispatcher : WebServerHandler.getSortedDispatchers()) {
-            try {
-                if (preDispatch && dispatcher.preDispatch(this)) {
-                    contentHandler.handle(this.content.getByteBuf(), true);
-                    return testResponsePromise;
-                } else if (!preDispatch && dispatcher.dispatch(this)) {
-                    return testResponsePromise;
-                }
-            } catch (Exception e) {
-                throw Exceptions.handle(e);
+        try {
+            if (preDispatch && getPipeline().preDispatch(this)) {
+                contentHandler.handle(this.content.getByteBuf(), true);
+            } else {
+                getPipeline().dispatch(this);
             }
+            return testResponsePromise;
+        } catch (Exception e) {
+            throw Exceptions.handle(e);
         }
-        throw Exceptions.handle().withSystemErrorMessage("No Dispatcher found for request: " + uri()).handle();
+    }
+
+    private DispatcherPipeline getPipeline() {
+        if (pipeline == null) {
+            pipeline = DispatcherPipeline.create();
+        }
+
+        return pipeline;
     }
 
     /**

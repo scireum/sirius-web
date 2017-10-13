@@ -1151,6 +1151,45 @@ public class WebContext implements SubContext {
     }
 
     /**
+     * Overwrites the uri with the given one.
+     * <p>
+     * This can be used to control dispatching or to even re-dispatch a request for another destination.
+     * <p>
+     * Note however, that only the the <tt>requestedURI</tt> and the <tt>queryString</tt> are overwritten, not the one
+     * of the underlying request.
+     *
+     * @param uri the new uri to use. The uri and its query string will be parsed and the internal fields are updated
+     *            accordingly.
+     * @return the web context itself for fluent method calls
+     */
+    public WebContext withCustomURI(String uri) {
+        QueryStringDecoder qsd = new QueryStringDecoder(uri, Charsets.UTF_8);
+        requestedURI = qsd.path();
+        queryString = qsd.parameters();
+
+        return this;
+    }
+
+    /**
+     * Overwrites the path with the given one.
+     * <p>
+     * This can be used to control dispatching or to even re-dispatch a request for another destination.
+     * <p>
+     * Note however, that the original query string and its parameters remain.
+     *
+     * @param path the new path to use
+     * @return the web context itself for fluent method calls
+     */
+    public WebContext withCustomPath(String path) {
+        if (requestedURI == null) {
+            decodeQueryString();
+        }
+        requestedURI = path;
+
+        return this;
+    }
+
+    /**
      * Returns all cookies submitted by the client
      *
      * @return a list of cookies sent by the client
