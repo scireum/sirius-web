@@ -1091,7 +1091,7 @@ public class WebContext implements SubContext {
      */
     private void decodeQueryString() {
         QueryStringDecoder qsd = new QueryStringDecoder(request.uri(), Charsets.UTF_8);
-        requestedURI = QueryStringDecoder.decodeComponent(qsd.path());
+        requestedURI = qsd.path();
         queryString = qsd.parameters();
     }
 
