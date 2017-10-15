@@ -31,7 +31,8 @@
 
     <w:pageHeader titleKey="ManagedTaskController.scripting" />
 
-    <div id="editor">task.log('Good Morning Dave');</div>
+    <w:codeEditor mode="javascript" useWorker="true">task.log('Good Morning Dave');</w:codeEditor>
+
     <div class="form-actions">
         <a href="#" id="execute" class="btn btn-success btn-lg">@i18n("ManagedTaskController.run")</a>
         <a href="#" id="cancel" style="display:none" class="btn btn-danger btn-lg">@i18n("NLS.cancel")</a>
@@ -55,10 +56,6 @@
     </div>
 
     <script type="text/javascript">
-
-        var editor = ace.edit("editor");
-        editor.setTheme("ace/theme/idle_fingers");
-        editor.getSession().setMode("ace/mode/javascript");
         var $output = $('#output');
         var taskId = null;
         var lastLog = 0;
