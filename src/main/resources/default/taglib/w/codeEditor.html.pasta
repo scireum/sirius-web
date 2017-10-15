@@ -1,0 +1,19 @@
+<i:arg type="String" name="id" default="editor" />
+<i:arg type="int" name="height" default="450" />
+<i:arg type="boolean" name="readonly" default="false" />
+<i:arg type="String" name="mode" default="html" />
+<i:arg type="boolean" name="useWorker" default="false"/>
+
+<div id="@id" style="height: @apply('%spx', height)"><i:render name="body" /></div>
+
+<script type="text/javascript">
+    var @id;
+    $(document).ready(function () {
+        @id = ace.edit("@id");
+        @(id).setTheme("ace/theme/idle_fingers");
+        @(id).setReadOnly(eval("@readonly"));
+
+        @(id).session.setMode("ace/mode/@mode")
+        @(id).session.setOption("useWorker", eval("@useWorker"));
+    });
+</script>

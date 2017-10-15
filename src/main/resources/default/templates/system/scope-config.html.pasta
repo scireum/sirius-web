@@ -32,12 +32,7 @@
             </w:navbox>
         </div>
         <div class="col-md-9">
-            <div id="editor" style="height: 450px">@contents</div>
-            <script type="text/javascript">
-                var editor = ace.edit("editor");
-                editor.setTheme("ace/theme/idle_fingers");
-                editor.setReadOnly(true);
-            </script>
+            <w:codeEditor mode="json" readonly="true">@contents</w:codeEditor>
         </div>
     </div>
 </w:page>
