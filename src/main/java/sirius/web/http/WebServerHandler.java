@@ -29,11 +29,8 @@ import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.timeout.IdleStateEvent;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.TaskContext;
-import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Watch;
-import sirius.kernel.di.PartCollection;
-import sirius.kernel.di.std.Parts;
 import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
@@ -73,9 +70,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     private Watch latencyWatch;
     private boolean ssl;
 
-    @Parts(WebDispatcher.class)
-    private static PartCollection<WebDispatcher> dispatchers;
-    protected static WebDispatcher[] sortedDispatchers;
+    private DispatcherPipeline pipeline;
 
     /**
      * Creates a new instance and initializes some statistics.
@@ -83,25 +78,6 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     WebServerHandler(boolean ssl) {
         this.ssl = ssl;
         this.connected = System.currentTimeMillis();
-    }
-
-    /*
-     * Sorts all available dispatchers by their priority ascending
-     */
-    private static WebDispatcher[] computeSortedDispatchers() {
-        PriorityCollector<WebDispatcher> collector = PriorityCollector.create();
-        for (WebDispatcher wd : dispatchers.getParts()) {
-            collector.add(wd.getPriority(), wd);
-        }
-        return collector.getData().toArray(new WebDispatcher[collector.getData().size()]);
-    }
-
-    protected static WebDispatcher[] getSortedDispatchers() {
-        if (sortedDispatchers == null) {
-            sortedDispatchers = computeSortedDispatchers();
-        }
-
-        return sortedDispatchers;
     }
 
     /**
@@ -596,6 +572,15 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         }
     }
 
+
+    private DispatcherPipeline getPipeline() {
+        if (pipeline == null) {
+            pipeline = DispatcherPipeline.create();
+        }
+
+        return pipeline;
+    }
+
     /*
      * Tries to dispatch a POST or PUT request before it is completely received so that the handler can install
      * a ContentHandler to process all incoming data.
@@ -605,19 +590,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             WebServer.LOG.FINE("DISPATCHING: " + currentContext.getRequestedURI());
         }
 
-        for (WebDispatcher wd : getSortedDispatchers()) {
-            try {
-                currentCall.get(TaskContext.class).setSubSystem(wd.getClass().getSimpleName());
-                if (wd.preDispatch(currentContext)) {
-                    logPredispatched("PRE-DISPATCHED: " + currentContext.getRequestedURI() + " to " + wd);
-                    return true;
-                }
-            } catch (Exception e) {
-                Exceptions.handle(WebServer.LOG, e);
-            }
-        }
-
-        return false;
+        return getPipeline().preDispatch(currentContext);
     }
 
     private void logPredispatched(String msg) {
@@ -635,24 +608,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         }
         currentContext.started = System.currentTimeMillis();
         dispatched = true;
-        for (WebDispatcher wd : getSortedDispatchers()) {
-            try {
-                currentCall.get(TaskContext.class).setSubSystem(wd.getClass().getSimpleName());
-                if (wd.dispatch(currentContext)) {
-                    logPreDispatched(wd);
-                    currentRequest = null;
-                    return;
-                }
-            } catch (Exception e) {
-                Exceptions.handle(WebServer.LOG, e);
-            }
-        }
-    }
-
-    private void logPreDispatched(WebDispatcher wd) {
-        if (WebServer.LOG.isFINE()) {
-            WebServer.LOG.FINE("DISPATCHED: " + currentContext.getRequestedURI() + " to " + wd);
-        }
+        getPipeline().dispatch(currentContext);
+        currentRequest = null;
     }
 
     @Override

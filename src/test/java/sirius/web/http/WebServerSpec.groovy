@@ -105,6 +105,19 @@ class WebServerSpec extends BaseSpecification {
     }
 
     /**
+     * Determines if redispatching in the TestDispatcher works.
+     */
+    def "Redispatching works"() {
+        given:
+        def uri = "/redispatch"
+        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
+        when:
+        def data = callAndRead(uri, null, expectedHeaders)
+        then:
+        '{"test":true}' == data
+    }
+
+    /**
      * Call a small service which result fits into a single response chunk...
      */
     def "Invoke /service/json/test"() {
