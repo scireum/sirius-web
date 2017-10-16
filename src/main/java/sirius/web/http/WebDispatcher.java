@@ -75,8 +75,7 @@ public interface WebDispatcher extends Priorized {
     /**
      * Invoked in order to handle the given request.
      * <p>
-     * If the dispatcher doesn't feel responsible for handling the request, it simply returns <tt>false</tt>. Otherwise
-     * if the request is being handled, <tt>true</tt> must be returned
+     * If the dispatcher doesn't feel responsible for handling the request, it simply invokes <tt>nextStage</tt>.
      * <p>
      * Note that no blocking operation must be performed in this method. For any complex interaction, a new thread
      * should be forked using {@link sirius.kernel.async.Tasks#executor(String)}. Note that even
@@ -85,7 +84,8 @@ public interface WebDispatcher extends Priorized {
      * responsibilities for handling requests.
      *
      * @param ctx the request to handle
-     * @return <tt>true</tt> if the request was handled by this dispatcher, <tt>false</tt> otherwise.
+     * @param startOfPipeline the start of the pipeline in order
+     * @param nextStage the next stage to forward the request to in case the dispatcher isn't interested
      * @throws Exception in case of an error when parsing or dispatching the request
      */
     default void dispatch(WebContext ctx, Consumer<WebContext> startOfPipeline, Consumer<WebContext> nextStage) throws Exception {
