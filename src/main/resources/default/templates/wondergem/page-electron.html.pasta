@@ -1,0 +1,16 @@
+<script type="text/javascript">
+    //Setup Electron / Desktop app...
+    var electronRemote = null;
+    var electronIpc = null;
+    try {
+        electronRemote = require('electron').remote;
+        electronIpc = require('electron').ipcRenderer;
+    } catch (e) {
+    }
+
+    // Make jQuery work with electron / npm environments
+    if (typeof module === 'object') {
+        window._module = module;
+        module = undefined;
+    }
+</script>
