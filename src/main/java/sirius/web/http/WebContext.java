@@ -1592,8 +1592,6 @@ public class WebContext implements SubContext {
         if (!content.isInMemory()) {
             return new FileInputStream(content.getFile());
         }
-        //Backup the original size...
-        contentSize = (long) content.getByteBuf().readableBytes();
         return new ByteBufInputStream(content.getByteBuf().copy());
     }
 
