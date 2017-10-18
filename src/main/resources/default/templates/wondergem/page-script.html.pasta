@@ -240,6 +240,19 @@
                     $('.img', container).attr('src', responseJSON.previewUrl);
                     $('.lnk', container).attr('href', responseJSON.imageUrl);
                 }
+                if(responseJSON.fileId) {
+                    $('#uploadedFile').val(responseJSON.fileId);
+                    if (responseJSON.refresh) {
+                        setTimeout(function () {
+                            var editForm = $('#editForm');
+                            if (editForm.length) {
+                                editForm.submit();
+                            } else {
+                                window.location.reload();
+                            }
+                        }, 1250);
+                    }
+                }
             },
             showMessage: function (message) {
                 // We generally send a flag "error" which is true or false as
@@ -294,16 +307,18 @@
                         addInfo(responseJSON.message);
                     }
                 }
-                if (responseJSON.refresh) {
-                    setTimeout(function () {
-                        var editForm = $('#editForm');
-                        if (editForm.length) {
-                            $('#uploadedFile').val(responseJSON.fileId);
-                            editForm.submit();
-                        } else {
-                            window.location.reload();
-                        }
-                    }, 1250);
+                if(responseJSON.fileId) {
+                    $('#uploadedFile').val(responseJSON.fileId);
+                    if (responseJSON.refresh) {
+                        setTimeout(function () {
+                            var editForm = $('#editForm');
+                            if (editForm.length) {
+                                editForm.submit();
+                            } else {
+                                window.location.reload();
+                            }
+                        }, 1250);
+                    }
                 }
             },
             showMessage: function (message) {
