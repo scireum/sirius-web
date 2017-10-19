@@ -19,20 +19,11 @@ import com.google.common.hash.Hashing;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.handler.codec.http.QueryStringEncoder;
+import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
-import io.netty.handler.codec.http.multipart.Attribute;
-import io.netty.handler.codec.http.multipart.FileUpload;
-import io.netty.handler.codec.http.multipart.HttpData;
-import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
-import io.netty.handler.codec.http.multipart.InterfaceHttpData;
-import io.netty.handler.codec.http.multipart.InterfaceHttpPostRequestDecoder;
+import io.netty.handler.codec.http.multipart.*;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
 import sirius.kernel.cache.Cache;
@@ -57,14 +48,7 @@ import sirius.web.security.UserContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -73,18 +57,7 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -1619,9 +1592,7 @@ public class WebContext implements SubContext {
         if (!content.isInMemory()) {
             return new FileInputStream(content.getFile());
         }
-        //Backup the original size...
-        contentSize = (long) content.getByteBuf().readableBytes();
-        return new ByteBufInputStream(content.getByteBuf());
+        return new ByteBufInputStream(content.getByteBuf().copy());
     }
 
     /**
