@@ -11,13 +11,15 @@
 
     <i:block name="breadcrumbs">
         <li><a href="/system/tags">Tagliatelle</a></li>
-        <li><a href="/system/tag/%s/%s">@apply('%s:%s', tagLib, tag)</a></li>
+        <li><a href="/system/tag/@tagLib/@tag">@apply('%s:%s', tagLib, tag)</a></li>
     </i:block>
 
     <w:pageHeader>@apply('%s:%s', tagLib, tag)</w:pageHeader>
     <i:if test="isFilled(description)">
         <div class="well">
-            <pre style="font-size: small">@description</pre>
+            <pre style="font-size: small">
+                <i:raw>@description</i:raw>
+            </pre>
         </div>
     </i:if>
     <i:if test="!arguments.isEmpty()">
@@ -37,7 +39,7 @@
                         @arg.getName() <small>(@arg.getType().getName())</small>
                     </td>
                     <td>
-                        @arg.getDescription()
+                        <i:raw>@arg.getDescription()</i:raw>
                     </td>
                 </tr>
             </i:for>
