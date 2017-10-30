@@ -35,6 +35,7 @@
             @if (strict) { data-strict="true" }
             @if (optional) { data-optional="true" }
             @if (forceFullWidth) { style="width: 100%;" }
+            multiple="multiple"
             data-autocomplete="@serviceUri">
         <i:render name="body" />
     </select>

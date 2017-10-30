@@ -55,12 +55,11 @@ import java.util.zip.GZIPOutputStream;
  * #MAX_FILE_SIZE} bytes large.
  * <p>
  * If a new file is started, it is ensured that the base directory exists and also that enough free space is avilable
- * on
- * the underlying disk.
+ * on the underlying disk.
  * <p>
  * If no new file can be created (due to the constraints named above), a warning is output once and all records are
  * ignored until the outside circumstances have changes. The log will then automatically recover and start logging
- * records. This behaviour is probably the best in many circumstances as nighter havinng the heap buffer grow
+ * records. This behaviour is probably the best in many circumstances as neighter having the heap buffer grow
  * indefinitely large nor having the filesystem run out of free space is feasible for a server system.
  */
 @Framework("web.crunchlog")
@@ -182,11 +181,7 @@ public class CrunchlogKernel extends BackgroundLoop implements Lifecycle, Metric
         }
 
         // Limit size per file...
-        if (currentFile.length() > MAX_FILE_SIZE) {
-            return true;
-        }
-
-        return false;
+        return currentFile.length() > MAX_FILE_SIZE;
     }
 
     /**
@@ -213,7 +208,7 @@ public class CrunchlogKernel extends BackgroundLoop implements Lifecycle, Metric
                 warnedAboutOverflow = false;
             }
             return true;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             Exceptions.handle(Crunchlog.LOG, e);
             emitOverflowWarning("Crunchlog was stopped as we failed to create a log file (%s): %s",
                                 currentFile.getAbsolutePath(),
@@ -234,7 +229,7 @@ public class CrunchlogKernel extends BackgroundLoop implements Lifecycle, Metric
     private void createOutputFile() {
         startedWriting = LocalDateTime.now();
         File yearDir = new File(baseDirectory, String.valueOf(startedWriting.getYear()));
-        File monthDir = new File(baseDirectory, String.valueOf(startedWriting.getMonthValue()));
+        File monthDir = new File(yearDir, String.valueOf(startedWriting.getMonthValue()));
         if (!monthDir.exists()) {
             monthDir.mkdirs();
         }
@@ -323,6 +318,7 @@ public class CrunchlogKernel extends BackgroundLoop implements Lifecycle, Metric
 
     @Override
     public void started() {
+        // Nothing to do here
     }
 
     @Override
@@ -337,6 +333,7 @@ public class CrunchlogKernel extends BackgroundLoop implements Lifecycle, Metric
 
     @Override
     public void awaitTermination() {
+        // Nothing to do here
     }
 
     /**
