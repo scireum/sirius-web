@@ -43,8 +43,11 @@ public class DeleteOldCrunchlogs implements EveryDay {
             Instant fileDate = Instant.ofEpochMilli(file.lastModified());
             if (Duration.between(fileDate, now).toDays() > ONE_YEAR) {
                 try {
-                    file.delete();
-                    filesDeleted.inc();
+                    if (file.delete()) {
+                        filesDeleted.inc();
+                    } else {
+                        Crunchlog.LOG.WARN("Cannot delete old crunchlog file: %s", file.getAbsolutePath());
+                    }
                 } catch (Exception e) {
                     Exceptions.handle(Crunchlog.LOG, e);
                 }
