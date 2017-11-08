@@ -10,7 +10,7 @@
     </parent>
     <artifactId>sirius-web</artifactId>
     <version>10.3</version>
-    <nastme>SIRIUS web</nastme>
+    <name>SIRIUS web</name>
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
     <dependencies>
