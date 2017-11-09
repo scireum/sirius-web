@@ -11,7 +11,7 @@ package sirius.tagliatelle.expression;
 /**
  * Represents a constant expression.
  */
-public abstract class ConstantExpression extends Expression {
+public abstract class ConstantExpression implements Expression {
 
     @Override
     public Expression propagateVisitor(ExpressionVisitor visitor) {

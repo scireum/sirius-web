@@ -78,7 +78,7 @@ public class LDAPUserManager extends GenericUserManager {
         this.returnedAtts = attrs.toArray(new String[attrs.size()]);
         this.searchBase = config.get("searchBase").asString();
         this.requiredRoles = (List<String>) config.get("requiredRoles").get(List.class, Collections.emptyList());
-        if (sessionStorage == SESSION_STORAGE_TYPE_CLIENT) {
+        if (SESSION_STORAGE_TYPE_CLIENT.equals(sessionStorage)) {
             UserContext.LOG.WARN(
                     "LDAPUserManager (ldap) for scope %s does not support 'client' as session type! Switching to 'server'.",
                     scope.getScopeType());
@@ -102,20 +102,21 @@ public class LDAPUserManager extends GenericUserManager {
             try {
                 NamingEnumeration<SearchResult> answer = searchInDirectory(searchUser, ctx);
                 Set<String> roles = Sets.newTreeSet();
-                if (answer.hasMoreElements()) {
-                    SearchResult sr = answer.next();
-                    log("Found user: %s", sr.getName());
-                    Set<String> permissions = computePermissions(roles, sr, wc);
-                    if (!permissions.containsAll(requiredRoles)) {
-                        return null;
-                    }
-
-                    return UserInfo.Builder.createUser(user).withUsername(user).withPermissions(permissions).build();
+                if (!answer.hasMoreElements()) {
+                    return null;
                 }
+
+                SearchResult sr = answer.next();
+                log("Found user: %s", sr.getName());
+                Set<String> permissions = computePermissions(roles, sr, wc);
+                if (!permissions.containsAll(requiredRoles)) {
+                    return null;
+                }
+
+                return UserInfo.Builder.createUser(user).withUsername(user).withPermissions(permissions).build();
             } finally {
                 ctx.close();
             }
-            return null;
         } catch (AuthenticationException e) {
             log("Auth-Exception for %s: %s", user, e.getMessage());
             return null;

@@ -32,7 +32,7 @@ public class Message {
      */
     public static final String ERROR = "alert-danger";
 
-    private String message;
+    private String messageText;
     private String details;
     private String type;
     private String action;
@@ -47,7 +47,7 @@ public class Message {
      * @param type    the type for the message
      */
     public Message(String message, String details, String type) {
-        this.message = message;
+        this.messageText = message;
         this.details = details;
         this.type = type;
     }
@@ -58,7 +58,7 @@ public class Message {
      * @return the message to show
      */
     public String getMessage() {
-        return message;
+        return messageText;
     }
 
     /**
@@ -135,7 +135,7 @@ public class Message {
 
     @Override
     public String toString() {
-        return message;
+        return messageText;
     }
 
     /**

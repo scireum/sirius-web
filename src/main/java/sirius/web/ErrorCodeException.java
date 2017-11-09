@@ -20,7 +20,7 @@ import sirius.web.controller.Routed;
 public class ErrorCodeException extends HandledException {
 
     private static final long serialVersionUID = -5345498530492414479L;
-    private String code;
+    private final String code;
 
     /**
      * Creates a new exception with the given code and message.

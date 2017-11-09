@@ -107,7 +107,7 @@ public class MimeHelper {
      */
     private static final String VIDEO_QUICKTIME = "video/quicktime";
 
-    private static final Map<String, String> mimeTable = new TreeMap<String, String>();
+    private static final Map<String, String> mimeTable = new TreeMap<>();
 
     /*
      * The list is limited to the most common mime types known to be compressable. Compressing already compressed
@@ -176,7 +176,7 @@ public class MimeHelper {
         mimeTable.put("kar", "audio/midi");
         mimeTable.put("latex", "application/x-latex");
         mimeTable.put("lha", "application/octet-stream");
-        mimeTable.put("log", "text/plain");
+        mimeTable.put("log", TEXT_PLAIN);
         mimeTable.put("lzh", "application/octet-stream");
         mimeTable.put("m3u", "audio/x-mpegurl");
         mimeTable.put("m4a", "audio/mp4a-latm");
@@ -197,6 +197,7 @@ public class MimeHelper {
         mimeTable.put("mp2", AUDIO_MPEG);
         mimeTable.put("mp3", AUDIO_MPEG);
         mimeTable.put("mp4", VIDEO_MP4);
+        mimeTable.put("m2ts", VIDEO_MP2T);
         mimeTable.put("mpe", VIDEO_MPEG);
         mimeTable.put("mpeg", VIDEO_MPEG);
         mimeTable.put("mpg", VIDEO_MPEG);
@@ -212,7 +213,7 @@ public class MimeHelper {
         mimeTable.put("pbm", "image/x-portable-bitmap");
         mimeTable.put("pct", "image/pict");
         mimeTable.put("pdb", "chemical/x-pdb");
-        mimeTable.put("pdf", "application/pdf");
+        mimeTable.put("pdf", APPLICATION_PDF);
         mimeTable.put("pgm", "image/x-portable-graymap");
         mimeTable.put("pgn", "application/x-chess-pgn");
         mimeTable.put("pic", "image/pict");
@@ -309,27 +310,9 @@ public class MimeHelper {
         }
         // Fast lookup for common types....
         if (name.length() >= 4 && name.charAt(name.length() - 4) == '.') {
-            String ending = name.substring(name.length() - 3).toLowerCase().intern();
-            if ("jpg" == ending) {
-                return IMAGE_JPEG;
-            }
-            if ("swf" == ending) {
-                return APPLICATION_X_SHOCKWAVE_FLASH;
-            }
-            if ("pdf" == ending) {
-                return APPLICATION_PDF;
-            }
-            if ("png" == ending) {
-                return IMAGE_PNG;
-            }
-            if ("css" == ending) {
-                return TEXT_CSS;
-            }
-            if ("xml" == ending) {
-                return TEXT_JAVASCRIPT;
-            }
-            if ("txt" == ending) {
-                return TEXT_JAVASCRIPT;
+            String type = guessCommonType(name);
+            if (type != null) {
+                return type;
             }
         }
 
@@ -340,6 +323,33 @@ public class MimeHelper {
         } else {
             return result;
         }
+    }
+
+    public static String guessCommonType(String name) {
+        String ending = name.substring(name.length() - 3).toLowerCase().intern();
+        if ("jpg" == ending) {
+            return IMAGE_JPEG;
+        }
+        if ("swf" == ending) {
+            return APPLICATION_X_SHOCKWAVE_FLASH;
+        }
+        if ("pdf" == ending) {
+            return APPLICATION_PDF;
+        }
+        if ("png" == ending) {
+            return IMAGE_PNG;
+        }
+        if ("css" == ending) {
+            return TEXT_CSS;
+        }
+        if ("xml" == ending) {
+            return TEXT_JAVASCRIPT;
+        }
+        if ("txt" == ending) {
+            return TEXT_JAVASCRIPT;
+        }
+
+        return null;
     }
 
     /**

@@ -49,17 +49,17 @@ public class ConsoleService implements StructuredService {
             System.arraycopy(commandData, 1, parameters, 0, commandData.length - 1);
 
             Command cmd = ctx.getPart(command, Command.class);
-            StringWriter buffer = new StringWriter();
-            final PrintWriter pw = new PrintWriter(buffer);
-            pw.println();
-            if (cmd == null) {
-                pw.println(Strings.apply("Unknown command: %s", command));
-            } else {
-                cmd.execute(new CommandOutput(pw), parameters);
-                pw.println(w.duration());
+            try (StringWriter buffer = new StringWriter(); PrintWriter pw = new PrintWriter(buffer)) {
+                pw.println();
+                if (cmd == null) {
+                    pw.println(Strings.apply("Unknown command: %s", command));
+                } else {
+                    cmd.execute(new CommandOutput(pw), parameters);
+                    pw.println(w.duration());
+                }
+                pw.println();
+                out.property("result", buffer.toString());
             }
-            pw.println();
-            out.property("result", buffer.toString());
         } catch (Exception t) {
             Exception e = Exceptions.handle(t);
             out.beginObject("error");

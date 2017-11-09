@@ -28,6 +28,8 @@ import java.util.function.Supplier;
 public class Page<E> {
 
     private static final int DEFAULT_PAGE_SIZE = 25;
+    public static final String PARAM_START = "start";
+    public static final String PARAM_QUERY = "query";
     private String query;
     private int start;
     private int total;
@@ -146,10 +148,10 @@ public class Page<E> {
      * @return the page itself for fluent method calls
      */
     public Page<E> bindToRequest(WebContext ctx) {
-        if (ctx.get("start").isFilled()) {
-            withStart(ctx.get("start").asInt(1));
+        if (ctx.get(PARAM_START).isFilled()) {
+            withStart(ctx.get(PARAM_START).asInt(1));
         }
-        withQuery(ctx.get("query").asString());
+        withQuery(ctx.get(PARAM_QUERY).asString());
         for (Facet f : getFacets()) {
             f.withValue(ctx.get(f.getName()).asString());
         }
@@ -275,6 +277,15 @@ public class Page<E> {
     }
 
     /**
+     * Returns the total number of items (if known).
+     *
+     * @return the total number of items
+     */
+    public int getTotal() {
+        return total;
+    }
+
+    /**
      * Returns a string representation naming the first and last index contained on this page.
      *
      * @return a string naming the first and last index of this page
@@ -302,7 +313,7 @@ public class Page<E> {
      * @return a query string selecting the previous page
      */
     public String createPrevPageQueryString() {
-        return createQueryString("start", String.valueOf(getPreviousStart()), false);
+        return createQueryString(PARAM_START, String.valueOf(getPreviousStart()), false);
     }
 
     /**
@@ -312,7 +323,7 @@ public class Page<E> {
      * @return a query string selecting the next page
      */
     public String createNextPageQueryString() {
-        return createQueryString("start", String.valueOf(getNextStart()), false);
+        return createQueryString(PARAM_START, String.valueOf(getNextStart()), false);
     }
 
     /**
@@ -334,52 +345,79 @@ public class Page<E> {
      * @return a query string containing all filters, the query and the given parameter
      */
     public String createQueryString(String field, String value, boolean resetStart) {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder queryStringBuilder = new StringBuilder();
         boolean fieldFound = false;
-        Monoflop mf = Monoflop.create();
+        Monoflop ampersandPlaced = Monoflop.create();
+        fieldFound |= createQueryStringForFacets(field, value, queryStringBuilder, ampersandPlaced);
+        if (!resetStart) {
+            fieldFound |= addStartToQueryString(field, value, queryStringBuilder, ampersandPlaced);
+        }
+        fieldFound |= addQueryToQueryString(field, value, queryStringBuilder, ampersandPlaced);
+        if (!fieldFound && Strings.isFilled(value)) {
+            queryStringBuilder.append(ampersandPlaced.firstCall() ? "" : "&");
+            queryStringBuilder.append(field);
+            queryStringBuilder.append("=");
+            queryStringBuilder.append(Strings.urlEncode(value));
+        }
+        return queryStringBuilder.toString();
+    }
+
+    public boolean addQueryToQueryString(String field,
+                                         String value,
+                                         StringBuilder queryStringBuilder,
+                                         Monoflop ampersandPlaced) {
+        if (PARAM_QUERY.equals(field)) {
+            queryStringBuilder.append(ampersandPlaced.firstCall() ? "" : "&");
+            queryStringBuilder.append("query=");
+            queryStringBuilder.append(Strings.urlEncode(value));
+            return true;
+        }
+
+        if (Strings.isFilled(query)) {
+            queryStringBuilder.append(ampersandPlaced.firstCall() ? "" : "&");
+            queryStringBuilder.append("query=");
+            queryStringBuilder.append(Strings.urlEncode(query));
+        }
+        return false;
+    }
+
+    public boolean addStartToQueryString(String field,
+                                         String value,
+                                         StringBuilder queryStringBuilder,
+                                         Monoflop ampersandPlaced) {
+        queryStringBuilder.append(ampersandPlaced.firstCall() ? "" : "&");
+        queryStringBuilder.append("start=");
+        if (PARAM_START.equals(field)) {
+            queryStringBuilder.append(value);
+            return true;
+        } else {
+            queryStringBuilder.append(start);
+            return false;
+        }
+    }
+
+    public boolean createQueryStringForFacets(String field,
+                                              String value,
+                                              StringBuilder queryStringBuilder,
+                                              Monoflop ampersandPlaced) {
+        boolean fieldFound = false;
         for (Facet f : getFacets()) {
             if (Strings.areEqual(field, f.getName())) {
                 fieldFound = true;
                 if (Strings.isFilled(value)) {
-                    sb.append(mf.firstCall() ? "" : "&");
-                    sb.append(field);
-                    sb.append("=");
-                    sb.append(Strings.urlEncode(value));
+                    queryStringBuilder.append(ampersandPlaced.firstCall() ? "" : "&");
+                    queryStringBuilder.append(field);
+                    queryStringBuilder.append("=");
+                    queryStringBuilder.append(Strings.urlEncode(value));
                 }
             } else if (Strings.isFilled(f.getValue())) {
-                sb.append(mf.firstCall() ? "" : "&");
-                sb.append(f.getName());
-                sb.append("=");
-                sb.append(Strings.urlEncode(f.getValue()));
+                queryStringBuilder.append(ampersandPlaced.firstCall() ? "" : "&");
+                queryStringBuilder.append(f.getName());
+                queryStringBuilder.append("=");
+                queryStringBuilder.append(Strings.urlEncode(f.getValue()));
             }
         }
-        if (!resetStart) {
-            sb.append(mf.firstCall() ? "" : "&");
-            sb.append("start=");
-            if ("start".equals(field)) {
-                fieldFound = true;
-                sb.append(value);
-            } else {
-                sb.append(start);
-            }
-        }
-        if ("query".equals(field)) {
-            sb.append(mf.firstCall() ? "" : "&");
-            sb.append("query=");
-            fieldFound = true;
-            sb.append(Strings.urlEncode(value));
-        } else if (Strings.isFilled(query)) {
-            sb.append(mf.firstCall() ? "" : "&");
-            sb.append("query=");
-            sb.append(Strings.urlEncode(query));
-        }
-        if (!fieldFound && Strings.isFilled(value)) {
-            sb.append(mf.firstCall() ? "" : "&");
-            sb.append(field);
-            sb.append("=");
-            sb.append(Strings.urlEncode(value));
-        }
-        return sb.toString();
+        return fieldFound;
     }
 
     /**

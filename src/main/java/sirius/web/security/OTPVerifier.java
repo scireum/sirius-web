@@ -50,6 +50,11 @@ public class OTPVerifier {
     private Duration timeInterval;
 
     /**
+     * An OTP code always has 6 digits...
+     */
+    private static final int CODE_LENGTH = 6;
+
+    /**
      * Returns a randomly generated key which can be used as shared secret.
      * <p>
      * A secret like this has to be stored per user. It is required by {@link #checkCode(String, String)} to verify
@@ -124,11 +129,6 @@ public class OTPVerifier {
         long t = System.currentTimeMillis() / timeInterval.toMillis();
         return extractOTPCode(decodedKey, t);
     }
-
-    /*
-     * An OTP code always has 6 digits...
-     */
-    private static final int CODE_LENGTH = 6;
 
     /*
      * Extracts the given code the given code by applying a HmacSHA1 on the time interval and the given secret key

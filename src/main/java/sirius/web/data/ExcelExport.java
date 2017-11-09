@@ -317,12 +317,8 @@ public class ExcelExport {
         try {
             try (OutputStream out = stream) {
                 // Make it pretty...
-                for (short col = 0; col < maxCols; col++) {
-                    // Don't distort images
-                    if (!pictureCols.contains(col)) {
-                        sheet.autoSizeColumn(col);
-                    }
-                }
+                autosizeColumns();
+
                 // Add autofilter...
                 sheet.setAutoFilter(new CellRangeAddress(0, rows, 0, maxCols - 1));
                 workbook.write(out);
@@ -332,15 +328,30 @@ public class ExcelExport {
         }
     }
 
+    public void autosizeColumns() {
+        for (short col = 0; col < maxCols; col++) {
+            // Don't distort images
+            if (!pictureCols.contains(col)) {
+                sheet.autoSizeColumn(col);
+            }
+        }
+    }
+
     private HSSFCellStyle getCellStyleForObject(Object data) {
         if (data instanceof LocalDate || data instanceof LocalDateTime) {
             return dateStyle;
         }
-        if (data instanceof Integer || data instanceof Double || data instanceof Long || data instanceof BigDecimal || (
-                data instanceof Amount
-                && ((Amount) data).isFilled())) {
+        if (isNumeric(data)) {
             return numeric;
         }
         return normalStyle;
+    }
+
+    private boolean isNumeric(Object data) {
+        if (data instanceof Integer || data instanceof Double || data instanceof Long || data instanceof BigDecimal) {
+            return true;
+        }
+
+        return (data instanceof Amount) && ((Amount) data).isFilled();
     }
 }

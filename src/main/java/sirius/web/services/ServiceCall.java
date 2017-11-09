@@ -175,7 +175,7 @@ public abstract class ServiceCall {
         } catch (ClosedChannelException ex) {
             // If the user unexpectedly closes the connection, we do not need to log an error...
             Exceptions.ignore(ex);
-        } catch (Throwable t) {
+        } catch (Exception t) {
             handle(null, t);
         }
     }

@@ -35,6 +35,9 @@ import java.util.stream.Stream;
 @Register(classes = {SessionManager.class, EveryMinute.class})
 public class SessionManager implements EveryMinute {
 
+    @Part
+    private Tasks tasks;
+
     /**
      * Default implementation which uses heap based maps for session storage
      */
@@ -141,16 +144,12 @@ public class SessionManager implements EveryMinute {
         return storage.getNumberOfSessions();
     }
 
-    @Part
-    private Tasks tasks;
-
     @Override
     public void runTimer() throws Exception {
         tasks.defaultExecutor().fork(this::removeOutdatedSessions);
     }
 
     private void removeOutdatedSessions() {
-        int sessions = storage.getNumberOfSessions();
         AtomicInteger sessionsInvalidated = new AtomicInteger();
         getSessions().map(k -> storage.findSession(k))
                      .filter(Objects::nonNull)
@@ -161,7 +160,7 @@ public class SessionManager implements EveryMinute {
                              s.invalidate();
                              listeners.forEach(l -> l.sessionInvalidated(s));
                              sessionsInvalidated.incrementAndGet();
-                         } catch (Throwable e) {
+                         } catch (Exception e) {
                              Exceptions.handle(WebServer.LOG, e);
                          }
                      });

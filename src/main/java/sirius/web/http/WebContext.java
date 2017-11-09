@@ -101,6 +101,7 @@ public class WebContext implements SubContext {
     private static final String HEADER_X_FORWARDED_FOR = "X-Forwarded-For";
     private static final String HEADER_X_FORWARDED_PROTO = "X-Forwarded-Proto";
     private static final String PROTOCOL_HTTPS = "https";
+    private static final String PROTOCOL_HTTP = "http";
     private static final String CACHED_MESSAGES_ID = "cachedMessagesId";
 
     /**
@@ -946,7 +947,7 @@ public class WebContext implements SubContext {
     public String getBaseURL() {
         if (baseURL == null) {
             StringBuilder sb = new StringBuilder();
-            sb.append(isSSL() ? "https" : "http");
+            sb.append(isSSL() ? PROTOCOL_HTTPS : PROTOCOL_HTTP);
             sb.append("://");
             if (getRequest().headers().contains("X-Forwarded-Host")) {
                 sb.append(getHeader("X-Forwarded-Host"));

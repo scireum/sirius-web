@@ -31,6 +31,7 @@ import java.util.Collections;
  */
 public class PublicUserManager extends GenericUserManager {
 
+    private static final String PUBLIC_PLACEHOLDER = "(public)";
     private final UserInfo user;
     private final UserInfo trustedUser;
 
@@ -49,12 +50,12 @@ public class PublicUserManager extends GenericUserManager {
 
     protected PublicUserManager(ScopeInfo scope, Extension config) {
         super(scope, config);
-        this.user = UserInfo.Builder.createUser("(public)")
-                                    .withUsername("(public)")
+        this.user = UserInfo.Builder.createUser(PUBLIC_PLACEHOLDER)
+                                    .withUsername(PUBLIC_PLACEHOLDER)
                                     .withPermissions(transformRoles(Collections.emptyList(), false))
                                     .build();
-        this.trustedUser = UserInfo.Builder.createUser("(public)")
-                                           .withUsername("(public)")
+        this.trustedUser = UserInfo.Builder.createUser(PUBLIC_PLACEHOLDER)
+                                           .withUsername(PUBLIC_PLACEHOLDER)
                                            .withPermissions(transformRoles(Collections.emptyList(), false))
                                            .build();
     }
@@ -86,10 +87,12 @@ public class PublicUserManager extends GenericUserManager {
 
     @Override
     public void attachToSession(@Nonnull UserInfo user, @Nonnull WebContext ctx) {
+        // Not required - there is actually no user...
     }
 
     @Override
     public void detachFromSession(@Nonnull UserInfo user, @Nonnull WebContext ctx) {
+        // Not required - there is actually no user...
     }
 
     @Override

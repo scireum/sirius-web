@@ -13,7 +13,7 @@ import sirius.tagliatelle.rendering.LocalRenderContext;
 /**
  * Represents a binary operation on boolean types.
  */
-public abstract class BooleanOperation extends Expression {
+public abstract class BooleanOperation implements Expression {
 
     protected Expression leftExpression;
     protected Expression rightExpression;
