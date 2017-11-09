@@ -8,6 +8,7 @@
 
 package sirius.web.services;
 
+import com.alibaba.fastjson.serializer.SerializeWriter;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.xml.AbstractStructuredOutput;
@@ -79,7 +80,7 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
         try {
             addRequiredComma();
             if (getCurrentType() == ElementType.OBJECT) {
-                writer.write(string(name));
+                writeString(name);
                 writer.write(":[");
             } else {
                 writer.write("[");
@@ -94,7 +95,7 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
         try {
             addRequiredComma();
             if (getCurrentType() == ElementType.OBJECT) {
-                writer.write(string(name));
+                writeString(name);
                 writer.write(":{");
             } else {
                 writer.write("{");
@@ -109,60 +110,12 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
         }
     }
 
-    private String string(String value) {
-        if (value == null || value.length() == 0) {
-            return "\"\"";
+    private void writeString(String value) {
+        try (SerializeWriter jsonWriter = new SerializeWriter(writer)) {
+            jsonWriter.writeStringWithDoubleQuote(value, (char) 0);
         }
-
-        char b;
-        char c = 0;
-        int i;
-        int len = value.length();
-        StringBuilder sb = new StringBuilder(len + 4);
-
-        sb.append('"');
-        for (i = 0; i < len; i += 1) {
-            b = c;
-            c = value.charAt(i);
-            switch (c) {
-                case '\\':
-                case '"':
-                    sb.append('\\');
-                    sb.append(c);
-                    break;
-                case '/':
-                    if (b == '<') {
-                        sb.append('\\');
-                    }
-                    sb.append(c);
-                    break;
-                case '\b':
-                    sb.append("\\b");
-                    break;
-                case '\t':
-                    sb.append("\\t");
-                    break;
-                case '\n':
-                    sb.append("\\n");
-                    break;
-                case '\f':
-                    sb.append("\\f");
-                    break;
-                case '\r':
-                    sb.append("\\r");
-                    break;
-                default:
-                    if (c < ' ' || (c >= '\u0080' && c < '\u00a0') || (c >= '\u2000' && c < '\u2100')) {
-                        String t = "000" + Integer.toHexString(c);
-                        sb.append("\\u" + t.substring(t.length() - 4));
-                    } else {
-                        sb.append(c);
-                    }
-            }
-        }
-        sb.append('"');
-        return sb.toString();
     }
+
 
     @Override
     public StructuredOutput beginResult() {
@@ -189,7 +142,7 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
         try {
             addRequiredComma();
             if (getCurrentType() == ElementType.OBJECT) {
-                writer.write(string(name));
+                writeString(name);
                 writer.write(":");
             }
             if (data == null) {
@@ -197,7 +150,7 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
             } else if (data instanceof Boolean || data instanceof Number) {
                 writer.write(data.toString());
             } else {
-                writer.write(string(data.toString()));
+                writeString(data.toString());
             }
         } catch (IOException e) {
             throw Exceptions.handle(e);
