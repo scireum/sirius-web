@@ -20,6 +20,11 @@ public class TestSuite {
 
     @BeforeClass
     public static void setUp() {
+        // Allow us to set the Origin: header...
+        // This is also set in the CORSSpec, but if the whole TestSuite is executed,
+        // this might be too late as a previously opened url connection might be re-used...
+        System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
+
         TestHelper.setUp(TestSuite.class);
     }
 
