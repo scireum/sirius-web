@@ -16,7 +16,7 @@ import sirius.tagliatelle.rendering.LocalRenderContext;
  * If the condition evaluates to <tt>true</tt> the first expression is evaluated and its result returned. Otherwise the
  * second expression is evaluated and its result is returned.
  */
-public class TenaryOperation extends Expression {
+public class TenaryOperation implements Expression {
 
     protected Expression conditionExpression;
     protected Expression leftExpression;

@@ -13,7 +13,7 @@ import sirius.tagliatelle.rendering.LocalRenderContext;
 /**
  * Represents a boolean <tt>and</tt>.
  */
-public class Negation extends Expression {
+public class Negation implements Expression {
 
     private Expression expression;
 

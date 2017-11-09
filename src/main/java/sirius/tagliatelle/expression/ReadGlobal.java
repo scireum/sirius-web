@@ -15,7 +15,7 @@ import sirius.tagliatelle.rendering.LocalRenderContext;
  *
  * @see LocalRenderContext#getGlobal
  */
-public class ReadGlobal extends Expression {
+public class ReadGlobal implements Expression {
 
     private int index;
     private Class<?> type;

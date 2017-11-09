@@ -19,7 +19,7 @@ import sirius.tagliatelle.rendering.LocalRenderContext;
  * satisfying. As we use <tt>.as()</tt> as cast operator, we simply overload this behavior, if the
  * <tt>selfExpression</tt> is known to be a <tt>Transformable</tt>.
  */
-public class TransformerCast extends Expression {
+public class TransformerCast implements Expression {
 
     private Expression selfExpression;
     private final Class<?> type;

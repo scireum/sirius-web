@@ -13,7 +13,7 @@ import sirius.tagliatelle.rendering.LocalRenderContext;
 /**
  * Represents an <tt>instanceof</tt> check.
  */
-public class InstanceCheck extends Expression {
+public class InstanceCheck implements Expression {
 
     private Expression selfExpression;
     private final Class<?> type;
