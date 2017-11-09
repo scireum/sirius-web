@@ -23,26 +23,46 @@ import java.util.List;
  */
 public class IPRange {
 
-    /*
+    /**
      * Internal bitmask representing the IP range. We use BigInteger internally since primitive types are
      * signed and computations get nasty.
      */
     private BigInteger baseIP = BigInteger.ZERO;
 
-    /*
+    /**
      * Represents the full mask, meaning that all bits of the given baseIP need to be applied
      */
     private static final BigInteger COMPLETE_MASK = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16);
 
-    /*
+    /**
      * Contains the effective mask. This determines which bits of baseIP are used to check against an incoming IP.
      */
     private BigInteger mask = COMPLETE_MASK;
 
-    /*
+    /**
      * Contains a string representation of this range
      */
     private String stringRepresentation = "*";
+
+    /**
+     * Constant for a "non filtering" range set which accepts all IP addresses
+     */
+    public static final RangeSet NO_FILTER = new RangeSet();
+    /**
+     * Constant for a range which only accepts localhost.
+     */
+    public static final RangeSet LOCALHOST = createLocalHostRangeSet();
+
+    /**
+     * Represents the IP address of the localhost in an IPv4 environment
+     */
+    public static final IPRange IPV4_LOCALHOST = IPRange.parseRange("127.0.0.1");
+
+    /**
+     * Represents the IP address of the localhost in an IPv6 environment
+     */
+    public static final IPRange IPV6_LOCALHOST = IPRange.parseRange("0:0:0:0:0:0:0:1");
+
 
     /**
      * Parses a CIDR expression and returns an <tt>IPRange</tt>
@@ -58,13 +78,13 @@ public class IPRange {
             if (Strings.isFilled(cidr)) {
                 result.stringRepresentation = cidr;
                 String[] input = cidr.split("/");
-                boolean IPv6 = cidr.contains(":");
+                boolean ip6 = cidr.contains(":");
                 result.baseIP = ipToInt(InetAddress.getByName(input[0]));
                 if (input.length > 1) {
-                    result.mask = COMPLETE_MASK.shiftLeft((IPv6 ? 128 : 32) - Integer.parseInt(input[1]));
+                    result.mask = COMPLETE_MASK.shiftLeft((ip6 ? 128 : 32) - Integer.parseInt(input[1]));
                 }
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw new IllegalArgumentException(Strings.apply("Invalid IP range given: %s - %s", cidr, e.getMessage()));
         }
         return result;
@@ -93,25 +113,6 @@ public class IPRange {
         }
         return baseIP.and(mask).and(COMPLETE_MASK).equals(ip.and(mask).and(COMPLETE_MASK));
     }
-
-    /**
-     * Constant for a "non filtering" range set which accepts all IP addresses
-     */
-    public static final RangeSet NO_FILTER = new RangeSet();
-    /**
-     * Constant for a range which only accepts localhost.
-     */
-    public static final RangeSet LOCALHOST = createLocalHostRangeSet();
-
-    /**
-     * Represents the IP address of the localhost in an IPv4 environment
-     */
-    public static final IPRange IPV4_LOCALHOST = IPRange.parseRange("127.0.0.1");
-
-    /**
-     * Represents the IP address of the localhost in an IPv6 environment
-     */
-    public static final IPRange IPV6_LOCALHOST = IPRange.parseRange("0:0:0:0:0:0:0:1");
 
     /*
      * Computes a RangeSet which only accepts localhost

@@ -153,9 +153,12 @@ public class InputStreamHandler extends InputStream implements ContentHandler {
                 // Indicate that no more data can be expected
                 eof = true;
                 // Offer an empty buffer to unblock any waiting polls...
-                transferQueue.offer(Unpooled.EMPTY_BUFFER);
+                if (!transferQueue.offer(Unpooled.EMPTY_BUFFER)) {
+                    throw new IOException("Writing to the buffer queue timed out");
+                }
             }
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             error = true;
             release();
             throw new IOException("Got interrupted while waiting content to be written", e);
@@ -201,7 +204,7 @@ public class InputStreamHandler extends InputStream implements ContentHandler {
                     buf.release();
                 }
             }
-        } catch (Throwable t) {
+        } catch (Exception t) {
             Exceptions.ignore(t);
         }
     }
@@ -332,6 +335,7 @@ public class InputStreamHandler extends InputStream implements ContentHandler {
             currentBuffer.retain();
             return currentBuffer;
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             error = true;
             release();
             throw new IOException("Got interrupted while waiting for readable content", e);

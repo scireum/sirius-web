@@ -585,7 +585,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
      * Tries to dispatch a POST or PUT request before it is completely received so that the handler can install
      * a ContentHandler to process all incoming data.
      */
-    private boolean preDispatch() throws Exception {
+    private boolean preDispatch() {
         if (WebServer.LOG.isFINE() && currentContext != null) {
             WebServer.LOG.FINE("DISPATCHING: " + currentContext.getRequestedURI());
         }
@@ -602,7 +602,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     /*
      * Dispatches the completely read request.
      */
-    private void dispatch() throws Exception {
+    private void dispatch() {
         if (WebServer.LOG.isFINE() && currentContext != null) {
             WebServer.LOG.FINE("DISPATCHING: " + currentContext.getRequestedURI());
         }

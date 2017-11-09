@@ -49,11 +49,11 @@ public class InvokeTag extends TagHandler {
         @Override
         public List<TemplateArgument> reportArguments() {
             return Arrays.asList(new TemplateArgument(String.class,
-                                                      "template",
+                                                      ATTR_TEMPLATE,
                                                       "Contains the path of the template to render.",
                                                       null),
                                  new TemplateArgument(boolean.class,
-                                                      "inline",
+                                                      ATTR_INLINE,
                                                       "Determines if the invocation should be actually "
                                                       + "inlined int othe calling template.",
                                                       ConstantBoolean.FALSE));

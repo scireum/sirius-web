@@ -34,11 +34,11 @@ public interface ManagedTask {
     enum State {
         SCHEDULED("label-info"), RUNNING("label-success"), WARNINGS("label-warn"), TERMINATED("label-default");
 
+        private final String labelClass;
+
         State(String labelClass) {
             this.labelClass = labelClass;
         }
-
-        private final String labelClass;
 
         public String getLabelClass() {
             return labelClass;

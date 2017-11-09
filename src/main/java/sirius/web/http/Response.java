@@ -1127,7 +1127,7 @@ public class Response {
     protected void sendTemplateContent(HttpResponseStatus status, String name, String content) {
         try {
             if (name.endsWith("html")) {
-                setHeader(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=UTF-8");
+                setHeader(HttpHeaderNames.CONTENT_TYPE, CONTENT_TYPE_HTML);
             } else {
                 setContentTypeHeader(name);
             }

@@ -43,21 +43,32 @@ public class Permissions {
 
     private static Set<String> getProfile(String role) {
         if (profilesCache == null) {
-            Map<String, Set<String>> profiles = Maps.newHashMap();
-
-            for (Extension ext : Sirius.getSettings().getExtensions("security.profiles")) {
-                Set<String> permissions = Sets.newTreeSet();
-                for (Map.Entry<String, Object> permission : ext.getContext().entrySet()) {
-                    if (Value.of(permission.getValue()).asBoolean()) {
-                        permissions.add(permission.getKey());
-                    }
-                }
-                profiles.put(ext.getId(), permissions);
-            }
-
-            profilesCache = profiles;
+            buildProfileCache();
         }
+
         return profilesCache.getOrDefault(role, Collections.emptySet());
+    }
+
+    private static void buildProfileCache() {
+        Map<String, Set<String>> profiles = Maps.newHashMap();
+
+        for (Extension ext : Sirius.getSettings().getExtensions("security.profiles")) {
+            Set<String> profile = compileProfile(ext);
+            profiles.put(ext.getId(), profile);
+        }
+
+        profilesCache = profiles;
+    }
+
+    private static Set<String> compileProfile(Extension ext) {
+        Set<String> permissions = Sets.newTreeSet();
+        for (Map.Entry<String, Object> permission : ext.getContext().entrySet()) {
+            if (Value.of(permission.getValue()).asBoolean()) {
+                permissions.add(permission.getKey());
+            }
+        }
+
+        return permissions;
     }
 
     private static void expand(String role, Set<String> result) {
@@ -107,23 +118,32 @@ public class Permissions {
      * @return a set of permissions required to execute the annotated element
      */
     public static Set<String> computePermissionsFromAnnotations(AnnotatedElement object) {
-        if (object.isAnnotationPresent(Permission.class)
-            || object.isAnnotationPresent(NotPermission.class)
-            || object.isAnnotationPresent(PermissionList.class)
-            || object.isAnnotationPresent(NotPermissionList.class)
-            || object.isAnnotationPresent(LoginRequired.class)) {
-            Set<String> result = Sets.newTreeSet();
-            for (Permission p : object.getAnnotationsByType(Permission.class)) {
-                result.add(p.value());
-            }
-            for (NotPermission p : object.getAnnotationsByType(NotPermission.class)) {
-                result.add("!" + p.value());
-            }
-            if (object.isAnnotationPresent(LoginRequired.class)) {
-                result.add(UserInfo.PERMISSION_LOGGED_IN);
-            }
-            return result;
+        if (!wearsPermissionAnnotation(object)) {
+            return Collections.emptySet();
         }
-        return Collections.emptySet();
+
+        Set<String> result = Sets.newTreeSet();
+        for (Permission p : object.getAnnotationsByType(Permission.class)) {
+            result.add(p.value());
+        }
+        for (NotPermission p : object.getAnnotationsByType(NotPermission.class)) {
+            result.add("!" + p.value());
+        }
+        if (object.isAnnotationPresent(LoginRequired.class)) {
+            result.add(UserInfo.PERMISSION_LOGGED_IN);
+        }
+        return result;
+    }
+
+    public static boolean wearsPermissionAnnotation(AnnotatedElement object) {
+        if (object.isAnnotationPresent(Permission.class) || object.isAnnotationPresent(NotPermission.class)) {
+            return true;
+        }
+
+        if (object.isAnnotationPresent(PermissionList.class) || object.isAnnotationPresent(NotPermissionList.class)) {
+            return true;
+        }
+
+        return object.isAnnotationPresent(LoginRequired.class);
     }
 }
