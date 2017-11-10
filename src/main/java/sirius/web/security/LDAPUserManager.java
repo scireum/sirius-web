@@ -125,6 +125,7 @@ public class LDAPUserManager extends GenericUserManager {
         }
     }
 
+    @SuppressWarnings("squid:S1149")
     private DirContext createInitialContext(String password, String logonUser) throws NamingException {
         Hashtable<String, String> env = new Hashtable<>();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");

@@ -24,6 +24,7 @@ import javax.annotation.Nonnull;
 public class HTTPCommand implements Command {
 
     @Override
+    @SuppressWarnings("squid:S1192")
     public void execute(Output output, String... params) throws Exception {
         Value microtimingMode = Value.indexOf(0, params);
         if (microtimingMode.isFilled() && !"open".equals(microtimingMode.asString())) {

@@ -85,6 +85,7 @@ public class ControllerDispatcher implements WebDispatcher {
         return false;
     }
 
+    @SuppressWarnings("squid:S1698")
     private boolean tryExecuteRoute(WebContext ctx, boolean preDispatch, String uri, Route route) {
         try {
             final List<Object> params = route.matches(ctx, uri, preDispatch);

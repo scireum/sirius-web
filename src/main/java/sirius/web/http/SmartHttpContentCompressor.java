@@ -21,6 +21,7 @@ import sirius.kernel.commons.Value;
  * <p>
  * Also it disables itself if the given content is not compressable (jpg, png) or too small (less than 4 kB).
  */
+@SuppressWarnings("squid:MaximumInheritanceDepth")
 class SmartHttpContentCompressor extends HttpContentCompressor {
 
     private static final int MIN_COMPRESSABLE_CONTENT_LENGTH = 1024;

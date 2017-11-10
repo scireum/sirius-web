@@ -161,13 +161,7 @@ public class OTPVerifier {
 
             truncatedHash &= 0x7FFFFFFF;
             truncatedHash %= (int) Math.pow(10, CODE_LENGTH);
-            String result = String.valueOf(truncatedHash);
-
-            while (result.length() < CODE_LENGTH) {
-                result = "0" + result;
-            }
-
-            return result;
+            return Strings.leftPad(String.valueOf(truncatedHash), "0", CODE_LENGTH);
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             throw Exceptions.handle(e);
         }

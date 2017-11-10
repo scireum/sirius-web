@@ -30,7 +30,7 @@ import java.util.Set;
  */
 public class ConfigUserManager extends GenericUserManager {
 
-    private static final String CONFIG__KEY_SECURITY_USERS = "security.users";
+    private static final String CONFIG_KEY_SECURITY_USERS = "security.users";
     private Map<String, Set<String>> userRoles = Maps.newTreeMap();
 
     /**
@@ -52,7 +52,7 @@ public class ConfigUserManager extends GenericUserManager {
 
     @Override
     public UserInfo findUserByName(@Nullable WebContext ctx, String user) {
-        Extension e = Sirius.getSettings().getExtension(CONFIG__KEY_SECURITY_USERS, user);
+        Extension e = Sirius.getSettings().getExtension(CONFIG_KEY_SECURITY_USERS, user);
         if (e != null) {
             return getUserInfo(ctx, user, e);
         }
@@ -62,7 +62,7 @@ public class ConfigUserManager extends GenericUserManager {
 
     @Override
     public UserInfo findUserByCredentials(@Nullable WebContext ctx, String user, String password) {
-        Extension e = Sirius.getSettings().getExtension(CONFIG__KEY_SECURITY_USERS, user);
+        Extension e = Sirius.getSettings().getExtension(CONFIG_KEY_SECURITY_USERS, user);
         if (e != null && e.get("passwordHash").isFilled()) {
             if (Hashing.md5()
                        .hashBytes((e.get("salt").asString() + password).getBytes(Charsets.UTF_8))
@@ -82,7 +82,7 @@ public class ConfigUserManager extends GenericUserManager {
 
     @Override
     protected Object getUserObject(UserInfo u) {
-        return Sirius.getSettings().getExtension(CONFIG__KEY_SECURITY_USERS, u.getUserId());
+        return Sirius.getSettings().getExtension(CONFIG_KEY_SECURITY_USERS, u.getUserId());
     }
 
     private UserInfo getUserInfo(@Nullable WebContext ctx, String userId, Extension e) {
@@ -101,7 +101,7 @@ public class ConfigUserManager extends GenericUserManager {
     protected Set<String> computeRoles(@Nullable WebContext ctx, String userId) {
         Set<String> roles = userRoles.get(userId);
         if (roles == null) {
-            Extension e = Sirius.getSettings().getExtension(CONFIG__KEY_SECURITY_USERS, userId);
+            Extension e = Sirius.getSettings().getExtension(CONFIG_KEY_SECURITY_USERS, userId);
             if (e != null) {
                 roles = transformRoles(e.get("permissions").get(List.class, Collections.emptyList()), ctx.isTrusted());
                 roles.add(UserInfo.PERMISSION_LOGGED_IN);

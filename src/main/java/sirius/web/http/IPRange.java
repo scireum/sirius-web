@@ -56,6 +56,7 @@ public class IPRange {
     /**
      * Represents the IP address of the localhost in an IPv4 environment
      */
+    @SuppressWarnings("squid:S1313")
     public static final IPRange IPV4_LOCALHOST = IPRange.parseRange("127.0.0.1");
 
     /**
@@ -117,6 +118,7 @@ public class IPRange {
     /*
      * Computes a RangeSet which only accepts localhost
      */
+    @SuppressWarnings("squid:S1313")
     private static RangeSet createLocalHostRangeSet() {
         RangeSet result = new RangeSet();
         result.ranges = Lists.newArrayList();

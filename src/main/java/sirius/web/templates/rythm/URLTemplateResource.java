@@ -29,15 +29,15 @@ class URLTemplateResource extends TemplateResourceBase {
     private Resource resource;
     private RateLimit checkLimit = RateLimit.timeInterval(10, TimeUnit.SECONDS);
 
+    @Part
+    private static Resources resources;
+
     URLTemplateResource(Resource resource) {
         super();
         this.resource = resource;
         this.isProdMode = false;
         this.lastModified = System.currentTimeMillis();
     }
-
-    @Part
-    private static Resources resources;
 
     @Override
     public String getKey() {
@@ -96,7 +96,7 @@ class URLTemplateResource extends TemplateResourceBase {
 
     @Override
     protected Long userCheckInterval() {
-        return Long.valueOf(1000 * 10);
+        return Long.valueOf(10000);
     }
 
     @Override

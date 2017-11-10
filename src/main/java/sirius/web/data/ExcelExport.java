@@ -125,7 +125,7 @@ public class ExcelExport {
          * @return the height the row should have in points
          */
         protected int getHeightInPoints() {
-            return (int) ((heightInPixel * 72 / 96) * getScaleFactor());
+            return (int) ((heightInPixel * 72f / 96f) * getScaleFactor());
         }
 
         /**

@@ -114,6 +114,7 @@ public class LocalRenderContext {
      * @see LocalRenderContext#outputRaw(String)
      * @throws IOException in case of an IO error
      */
+    @SuppressWarnings("squid:RedundantThrowsDeclarationCheck")
     public void outputRaw(String content) throws IOException {
         globalContext.outputRaw(content);
     }
@@ -127,6 +128,7 @@ public class LocalRenderContext {
      * @see LocalRenderContext#outputEscaped(String) (String)
      * @throws IOException in case of an IO error
      */
+    @SuppressWarnings("squid:RedundantThrowsDeclarationCheck")
     public void outputEscaped(String content) throws IOException {
         globalContext.outputEscaped(content);
     }

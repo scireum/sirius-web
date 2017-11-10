@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
  * <p>
  * Contains an internal table of the most common file extensions along with their mime type.
  */
+@SuppressWarnings("squid:S1192")
 public class MimeHelper {
     /**
      * Mime type of flash (swf) files.
@@ -267,7 +268,7 @@ public class MimeHelper {
         mimeTable.put("tiff", "image/tiff");
         mimeTable.put("tr", "application/x-troff");
         mimeTable.put("tsv", "text/tab-separated-values");
-        mimeTable.put("txt", "text/plain");
+        mimeTable.put("txt", TEXT_PLAIN);
         mimeTable.put("ustar", "application/x-ustar");
         mimeTable.put("vcd", "application/x-cdlink");
         mimeTable.put("vrml", "model/vrml");
@@ -325,6 +326,7 @@ public class MimeHelper {
         }
     }
 
+    @SuppressWarnings("squid:S1698")
     public static String guessCommonType(String name) {
         String ending = name.substring(name.length() - 3).toLowerCase().intern();
         if ("jpg" == ending) {

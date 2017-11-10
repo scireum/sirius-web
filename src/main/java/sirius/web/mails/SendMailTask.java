@@ -11,7 +11,6 @@ package sirius.web.mails;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.sun.mail.smtp.SMTPMessage;
 import net.markenwerk.utils.mail.dkim.Canonicalization;
 import net.markenwerk.utils.mail.dkim.DkimMessage;
 import net.markenwerk.utils.mail.dkim.DkimSigner;
@@ -48,6 +47,7 @@ import java.util.Set;
 /**
  * Contains the effective logic to send a mail in its own task queue.
  */
+@SuppressWarnings("squid:S1191")
 class SendMailTask implements Runnable {
 
     private MailSender mail;
@@ -223,8 +223,8 @@ class SendMailTask implements Runnable {
         }
     }
 
-    private SMTPMessage createMessage(Session session) throws Exception {
-        SMTPMessage msg = new SMTPMessage(session);
+    private com.sun.mail.smtp.SMTPMessage createMessage(Session session) throws Exception {
+        com.sun.mail.smtp.SMTPMessage msg = new com.sun.mail.smtp.SMTPMessage(session);
         msg.setSubject(mail.subject);
         msg.setRecipients(Message.RecipientType.TO,
                           new InternetAddress[]{new InternetAddress(mail.receiverEmail, mail.receiverName)});
@@ -303,7 +303,7 @@ class SendMailTask implements Runnable {
         return message;
     }
 
-    private void setupSender(SMTPMessage msg) throws MessagingException, UnsupportedEncodingException {
+    private void setupSender(com.sun.mail.smtp.SMTPMessage msg) throws MessagingException, UnsupportedEncodingException {
         if (Strings.isFilled(mail.senderEmail)) {
             if (config.isUseSenderAndEnvelopeFrom()) {
                 msg.setSender(new InternetAddress(technicalSender, technicalSenderName));
