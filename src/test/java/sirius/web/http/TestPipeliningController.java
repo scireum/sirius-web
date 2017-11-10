@@ -22,6 +22,7 @@ public class TestPipeliningController implements Controller {
     }
 
     @Routed("/pipelining/:1")
+    @SuppressWarnings("squid:S2925")
     public void test(WebContext ctx, String time) throws Exception {
         Thread.sleep(Long.parseLong(time));
         ctx.respondWith().addHeader("URI", ctx.getRequestedURI()).direct(HttpResponseStatus.OK, "OK");
