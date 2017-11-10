@@ -23,7 +23,6 @@ public abstract class WebsocketSession {
 
     private final QueryStringDecoder queryString;
     private ChannelHandlerContext ctx;
-    private final HttpRequest request;
 
     /**
      * Creates a new session for the given channel and request.
@@ -33,7 +32,6 @@ public abstract class WebsocketSession {
      */
     protected WebsocketSession(ChannelHandlerContext ctx, HttpRequest request) {
         this.ctx = ctx;
-        this.request = request;
         this.queryString = new QueryStringDecoder(request.uri());
     }
 

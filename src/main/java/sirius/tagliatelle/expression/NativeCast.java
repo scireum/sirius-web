@@ -15,7 +15,7 @@ import sirius.tagliatelle.rendering.LocalRenderContext;
  * <p>
  * The evaluation itself, only evaluates the <tt>selfExpression</tt> and verifies that the result has the expected type.
  */
-public class NativeCast extends Expression {
+public class NativeCast implements Expression {
 
     private Expression selfExpression;
     private final Class<?> type;

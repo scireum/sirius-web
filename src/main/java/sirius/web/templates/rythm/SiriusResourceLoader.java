@@ -21,6 +21,8 @@ import java.util.regex.Pattern;
  */
 class SiriusResourceLoader extends ResourceLoaderBase {
 
+    private static final Pattern QUALIFIED_TEMPLATE_URI = Pattern.compile("/?(view|help)(\\.|/).*");
+
     @Part
     private static Resources resources;
 
@@ -28,8 +30,6 @@ class SiriusResourceLoader extends ResourceLoaderBase {
     public String getResourceLoaderRoot() {
         return "";
     }
-
-    private static final Pattern QUALIFIED_TEMPLATE_URI = Pattern.compile("/?(view|help)(\\.|/).*");
 
     @Override
     public ITemplateResource load(String path) {

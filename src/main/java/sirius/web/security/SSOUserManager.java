@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
  */
 public class SSOUserManager extends GenericUserManager {
 
+    private static final String PARAM_ROLES = "roles";
+
     /**
      * Used to create <tt>sso</tt> user managers.
      */
@@ -47,7 +49,7 @@ public class SSOUserManager extends GenericUserManager {
 
     protected SSOUserManager(ScopeInfo scope, Extension config) {
         super(scope, config);
-        if (sessionStorage == SESSION_STORAGE_TYPE_CLIENT) {
+        if (SESSION_STORAGE_TYPE_CLIENT.equals(sessionStorage)) {
             UserContext.LOG.WARN(
                     "SSOUserManager (sso) for scope %s does not support 'client' as session type! Switching to 'server'.",
                     scope.getScopeType());
@@ -59,8 +61,8 @@ public class SSOUserManager extends GenericUserManager {
     @Override
     protected String computeSSOHashInput(String user, String timestamp) {
         WebContext ctx = CallContext.getCurrent().get(WebContext.class);
-        if (ctx.isValid() && ctx.get("roles").isFilled()) {
-            return super.computeSSOHashInput(user, timestamp) + ctx.get("roles").asString();
+        if (ctx.isValid() && ctx.get(PARAM_ROLES).isFilled()) {
+            return super.computeSSOHashInput(user, timestamp) + ctx.get(PARAM_ROLES).asString();
         }
         return super.computeSSOHashInput(user, timestamp);
     }
@@ -69,11 +71,12 @@ public class SSOUserManager extends GenericUserManager {
     public UserInfo findUserByName(@Nullable WebContext ctx, String user) {
         Set<String> roles;
         if (ctx != null && parseRoles) {
-            roles = ctx.get("roles").asOptionalString().map(this::parseRolesString).orElseGet(() -> Sets.newTreeSet());
+            roles = ctx.get(PARAM_ROLES).asOptionalString().map(this::parseRolesString).orElseGet(Sets::newTreeSet);
         } else {
             roles = Sets.newTreeSet();
         }
         roles.add(UserInfo.PERMISSION_LOGGED_IN);
+
         return UserInfo.Builder.createUser(user)
                                .withUsername(user)
                                .withPermissions(transformRoles(roles, ctx != null && ctx.isTrusted()))

@@ -11,7 +11,6 @@ package sirius.web.http
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpMethod
 import sirius.kernel.BaseSpecification
-import sirius.kernel.xml.Outcall
 
 class CORSSpec extends BaseSpecification {
 
@@ -19,7 +18,6 @@ class CORSSpec extends BaseSpecification {
         when:
         // Allow us to set the Origin: header...
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true")
-        Outcall
         HttpURLConnection c = new URL("http://localhost:9999/system/ok").openConnection()
         c.addRequestProperty("Origin", "TEST")
 
@@ -32,8 +30,7 @@ class CORSSpec extends BaseSpecification {
         when:
         // Allow us to set the Origin: header...
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true")
-        Outcall
-        HttpURLConnection c = new URL("http://localhost:9999/some/url").openConnection()
+        HttpURLConnection c = new URL("http://localhost:9999/system/ok").openConnection()
         c.setRequestMethod(HttpMethod.OPTIONS.name())
         c.addRequestProperty("Origin", "TEST")
         c.addRequestProperty("Access-Control-Request-Method", "GET")

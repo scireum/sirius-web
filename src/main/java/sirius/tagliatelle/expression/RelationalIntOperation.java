@@ -13,7 +13,7 @@ import sirius.tagliatelle.rendering.LocalRenderContext;
 /**
  * Represents a relational operation on integer values.
  */
-public class RelationalIntOperation extends Expression {
+public class RelationalIntOperation implements Expression {
 
     protected Expression leftExpression;
     protected Expression rightExpression;

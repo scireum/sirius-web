@@ -17,7 +17,7 @@ import java.util.Objects;
  * <p>
  * Note that this can also be inverted to <tt>!=</tt>.
  */
-public class EqualsOperation extends Expression {
+public class EqualsOperation implements Expression {
 
     protected Expression leftExpression;
     protected Expression rightExpression;

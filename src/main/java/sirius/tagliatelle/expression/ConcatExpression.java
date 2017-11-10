@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 /**
  * Resprents a string concatenation operation.
  */
-public class ConcatExpression extends Expression {
+public class ConcatExpression implements Expression {
 
     private List<Expression> stringExpressions = new ArrayList<>();
 

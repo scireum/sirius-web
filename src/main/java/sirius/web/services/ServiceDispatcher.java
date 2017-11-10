@@ -37,16 +37,17 @@ public class ServiceDispatcher implements WebDispatcher {
 
     private static final String SYSTEM_SERVICE = "SERVICE";
 
-    @Override
-    public int getPriority() {
-        return PriorityCollector.DEFAULT_PRIORITY - 5;
-    }
-
     @Part
     private GlobalContext gc;
 
     @Part
     private Tasks tasks;
+
+    @Override
+    public int getPriority() {
+        return PriorityCollector.DEFAULT_PRIORITY - 5;
+    }
+
 
     @Override
     public boolean preDispatch(WebContext ctx) throws Exception {

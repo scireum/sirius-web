@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Represents an invocation with parameters.
  */
-public abstract class Call extends Expression {
+public abstract class Call implements Expression {
 
     /**
      * A placeholder to represent "no arguments", which is preferred over <tt>null</tt> or creating an empty array each

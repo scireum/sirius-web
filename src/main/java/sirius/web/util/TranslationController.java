@@ -41,12 +41,12 @@ public class TranslationController extends BasicController {
     @Permission(PERMISSION_BABELFISH)
     public void export(WebContext ctx, String filter) {
         ExcelExport excelExport = new ExcelExport();
-        List<String> header = new ArrayList<String>();
+        List<String> header = new ArrayList<>();
         header.add("key");
         header.addAll(NLS.getSupportedLanguages());
         excelExport.addRowAsList(header);
         NLS.getTranslationEngine().getTranslations(filter).forEach(translation -> {
-            List<String> row = new ArrayList<String>();
+            List<String> row = new ArrayList<>();
             row.add(translation.getKey());
             NLS.getSupportedLanguages().forEach(lang -> {
                 row.add(translation.translateWithoutFallback(lang));

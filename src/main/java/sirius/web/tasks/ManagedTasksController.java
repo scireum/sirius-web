@@ -40,6 +40,29 @@ public class ManagedTasksController extends BasicController {
      */
     public static final String PERMISSION_SYSTEM_SCRIPTING = "permission-system-scripting";
 
+    private static final String RESPONSE_MESSAGE = "message";
+    private static final String RESPONSE_ID = "id";
+    private static final String RESPONSE_NAME = "name";
+    private static final String RESPONSE_STATE = "state";
+    private static final String RESPONSE_STATE_CLASS = "stateClass";
+    private static final String RESPONSE_STATE_NAME = "stateName";
+    private static final String RESPONSE_USER = "user";
+    private static final String RESPONSE_STARTED = "started";
+    private static final String RESPONSE_SCHEDULED = "scheduled";
+    private static final String RESPONSE_TASK = "task";
+    private static final String PARAM_TASK = "task";
+    private static final String RESPONSE_FOUND = "found";
+    private static final String PARAM_LOG_LIMIT = "logLimit";
+    private static final String RESPONSE_LOGS = "logs";
+    private static final String RESPONSE_ENTRY = "entry";
+    private static final String RESPONSE_DATE = "date";
+    private static final String RESPONSE_TIMESTAMP = "timestamp";
+    private static final String RESPONSE_TYPE = "type";
+    private static final String RESPONSE_COUNTERS = "counters";
+    private static final String RESPONSE_COUNTER = "counter";
+    private static final String RESPONSE_VALUE = "value";
+    private static final String RESPONSE_LAST_LOG = "lastLog";
+
     @Part
     private ManagedTasks managedTasks;
 
@@ -68,16 +91,16 @@ public class ManagedTasksController extends BasicController {
     public void tasksAPI(WebContext ctx, JSONStructuredOutput json) {
         json.beginArray("tasks");
         for (ManagedTask task : managedTasks.getActiveTasks()) {
-            json.beginObject("task");
-            json.property("id", task.getId());
-            json.property("name", task.getName());
-            json.property("state", task.getState().name());
-            json.property("stateClass", task.getState().getLabelClass());
-            json.property("stateName", task.getState().toString());
-            json.property("message", task.getStateString());
-            json.property("user", task.getUsername());
-            json.property("started", NLS.toUserString(task.getStarted()));
-            json.property("scheduled", NLS.toUserString(task.getScheduled()));
+            json.beginObject(RESPONSE_TASK);
+            json.property(RESPONSE_ID, task.getId());
+            json.property(RESPONSE_NAME, task.getName());
+            json.property(RESPONSE_STATE, task.getState().name());
+            json.property(RESPONSE_STATE_CLASS, task.getState().getLabelClass());
+            json.property(RESPONSE_STATE_NAME, task.getState().toString());
+            json.property(RESPONSE_MESSAGE, task.getStateString());
+            json.property(RESPONSE_USER, task.getUsername());
+            json.property(RESPONSE_STARTED, NLS.toUserString(task.getStarted()));
+            json.property(RESPONSE_SCHEDULED, NLS.toUserString(task.getScheduled()));
             json.endObject();
         }
         json.endArray();
@@ -108,39 +131,39 @@ public class ManagedTasksController extends BasicController {
         ManagedTask task = managedTasks.findTask(taskId);
 
         if (task == null) {
-            json.property("found", false);
+            json.property(RESPONSE_FOUND, false);
         } else {
-            json.property("found", true);
-            json.property("name", task.getName());
-            json.property("message", task.getStateString());
-            json.property("user", task.getUsername());
-            json.property("started", NLS.toUserString(task.getStarted()));
-            json.property("scheduled", NLS.toUserString(task.getScheduled()));
-            json.property("state", task.getState().name());
-            json.property("stateClass", task.getState().getLabelClass());
-            json.property("stateName", task.getState().toString());
+            json.property(RESPONSE_FOUND, true);
+            json.property(RESPONSE_NAME, task.getName());
+            json.property(RESPONSE_MESSAGE, task.getStateString());
+            json.property(RESPONSE_USER, task.getUsername());
+            json.property(RESPONSE_STARTED, NLS.toUserString(task.getStarted()));
+            json.property(RESPONSE_SCHEDULED, NLS.toUserString(task.getScheduled()));
+            json.property(RESPONSE_STATE, task.getState().name());
+            json.property(RESPONSE_STATE_CLASS, task.getState().getLabelClass());
+            json.property(RESPONSE_STATE_NAME, task.getState().toString());
 
-            long logLimit = ctx.get("logLimit").asLong(0);
-            json.array("logs", task.getLastLogs(), (o, log) -> {
+            long logLimit = ctx.get(PARAM_LOG_LIMIT).asLong(0);
+            json.array(RESPONSE_LOGS, task.getLastLogs(), (o, log) -> {
                 if (logLimit == 0 || log.getTod().toEpochMilli() > logLimit) {
-                    o.beginObject("entry");
-                    o.property("date", NLS.toUserString(log.getTod()));
-                    o.property("timestamp", log.getTod().toEpochMilli());
-                    o.property("message", log.getMessage());
-                    o.property("type", log.getType());
+                    o.beginObject(RESPONSE_ENTRY);
+                    o.property(RESPONSE_DATE, NLS.toUserString(log.getTod()));
+                    o.property(RESPONSE_TIMESTAMP, log.getTod().toEpochMilli());
+                    o.property(RESPONSE_MESSAGE, log.getMessage());
+                    o.property(RESPONSE_TYPE, log.getType());
                     o.endObject();
                 }
             });
-            json.array("counters", task.getTimings(), (o, counter) -> {
-                o.beginObject("counter");
-                o.property("name", counter.getFirst());
-                o.property("value", counter.getSecond());
+            json.array(RESPONSE_COUNTERS, task.getTimings(), (o, counter) -> {
+                o.beginObject(RESPONSE_COUNTER);
+                o.property(RESPONSE_NAME, counter.getFirst());
+                o.property(RESPONSE_VALUE, counter.getSecond());
                 o.endObject();
             });
             if (task.getLastLogs().isEmpty()) {
-                json.property("lastLog", 0);
+                json.property(RESPONSE_LAST_LOG, 0);
             } else {
-                json.property("lastLog", task.getLastLogs().get(task.getLastLogs().size() - 1).getTod().toEpochMilli());
+                json.property(RESPONSE_LAST_LOG, task.getLastLogs().get(task.getLastLogs().size() - 1).getTod().toEpochMilli());
             }
         }
     }
@@ -187,14 +210,13 @@ public class ManagedTasksController extends BasicController {
         ManagedTask mt = managedTasks.createManagedTaskSetup("Custom Script").execute(jobCtx -> {
             Context params = Context.create();
             params.putAll(templates.createGlobalSystemScriptingContext());
-            params.set("task", jobCtx);
+            params.set(PARAM_TASK, jobCtx);
             templates.generator()
                      .applyContext(params)
                      .direct(scriptSource, JavaScriptContentHandler.JS)
                      .generateTo(null);
         });
 
-        json.property("success", true);
-        json.property("task", mt.getId());
+        json.property(RESPONSE_TASK, mt.getId());
     }
 }
