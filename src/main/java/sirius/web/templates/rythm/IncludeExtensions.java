@@ -17,6 +17,7 @@ import sirius.web.templates.Templates;
  * <p>
  * Can be used to include all files returned by {@link sirius.web.templates.Templates#getExtensions(String)}.
  */
+@SuppressWarnings("squid:MaximumInheritanceDepth")
 class IncludeExtensions extends JavaTagBase {
 
     @Part

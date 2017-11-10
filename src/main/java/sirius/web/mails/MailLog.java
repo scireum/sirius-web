@@ -27,6 +27,7 @@ public interface MailLog {
      * @param text          text part of the mail
      * @param html          html part of the mail
      */
+    @SuppressWarnings("squid:S00107")
     void logSentMail(boolean success,
                      String messageId,
                      String sender,

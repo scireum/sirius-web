@@ -341,6 +341,7 @@ public class CrunchlogKernel extends BackgroundLoop implements Lifecycle, Metric
      *
      * @param fileProcessor the processor being supplied with all completed files
      */
+    @SuppressWarnings("squid:S2095")
     protected void collectAllCompletedFiles(Consumer<File> fileProcessor) {
         if (!ensureBaseDirectoryExists(false)) {
             return;

@@ -185,6 +185,7 @@ public class InputStreamHandler extends InputStream implements ContentHandler {
         super.close();
     }
 
+    @SuppressWarnings("squid:S899")
     private void release() {
         try {
             // Release current buffer if there is one

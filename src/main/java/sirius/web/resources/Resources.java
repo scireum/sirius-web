@@ -64,6 +64,7 @@ public class Resources {
      * or an empty optional if no resource was found
      */
     @Nonnull
+    @SuppressWarnings("squid:S2789")
     public Optional<Resource> resolve(@Nonnull String scopeId, @Nonnull String uri) {
         String effectiveUri = uri.startsWith("/") ? uri : "/" + uri;
 
