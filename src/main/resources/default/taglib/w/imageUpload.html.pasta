@@ -8,7 +8,7 @@
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders an image upload within a Wondergem template" />
 
-<div class="@name">
+<div class="image-upload @name">
     <div class="upload-container"></div>
 
     <i:if test="@urlAllowed">
@@ -17,20 +17,22 @@
         </button>
 
         <div class="popover-content hide">
-            <div class="form-group">
-                <label>@i18n("fileUpload.URL")</label>
-                <input type="text" class="form-control">
-            </div>
-
             <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label>@i18n("fileUpload.URL")</label>
+                        <input type="text" class="form-control">
+                    </div>
+                </div>
+
                 <div class="col-md-6">
-                    <button type="button" class="btn btn-primary button-apply">
+                    <button type="button" class="btn btn-block btn-primary button-apply">
                         @i18n("NLS.ok") <i class="fa fa-check"></i>
                     </button>
                 </div>
 
                 <div class="col-md-6">
-                    <button type="button" class="btn button-close">
+                    <button type="button" class="btn btn-block button-close">
                         @i18n("NLS.cancel") <i class="fa fa-close"></i>
                     </button>
                 </div>
