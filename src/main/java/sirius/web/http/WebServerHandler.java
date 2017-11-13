@@ -121,7 +121,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             uri = currentContext.getRequest().uri();
         }
 
-        if (e instanceof SSLHandshakeException) {
+        if (e instanceof SSLHandshakeException || e.getCause() instanceof SSLHandshakeException) {
             SSLWebServerInitializer.LOG.FINE(e);
         } else if (e instanceof ClosedChannelException || e instanceof IOException || e instanceof DecoderException) {
             WebServer.LOG.FINE("Received an error for url: %s - %s", uri, NLS.toUserString(e));
@@ -129,7 +129,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             Exceptions.handle()
                       .to(WebServer.LOG)
                       .error(e)
-                      .withSystemErrorMessage("Received an error for %s - %s (%s)", uri);
+                      .withSystemErrorMessage("Received an error for %s - %s (%s)", uri)
+                      .handle();
         }
 
         try {
@@ -571,7 +572,6 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             currentRequest = null;
         }
     }
-
 
     private DispatcherPipeline getPipeline() {
         if (pipeline == null) {
