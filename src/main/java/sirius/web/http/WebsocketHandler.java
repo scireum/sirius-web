@@ -10,11 +10,13 @@ package sirius.web.http;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.nls.NLS;
 
 import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
@@ -41,12 +43,15 @@ public class WebsocketHandler extends ChannelDuplexHandler {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable e) throws Exception {
-        if (e instanceof SSLHandshakeException) {
+        if (e instanceof SSLHandshakeException || e.getCause() instanceof SSLHandshakeException) {
             SSLWebServerInitializer.LOG.FINE(e);
-        } else if (e instanceof ClosedChannelException || e instanceof IOException) {
-            WebServer.LOG.FINE(e);
+        } else if (e instanceof ClosedChannelException || e instanceof IOException || e instanceof DecoderException) {
+            WebServer.LOG.FINE("Received an error for a websocket: %s - %s", NLS.toUserString(e));
         } else {
-            Exceptions.handle(WebServer.LOG, e);
+            Exceptions.handle()
+                      .to(WebServer.LOG)
+                      .error(e)
+                      .withSystemErrorMessage("Received an error for a websocket - %s (%s)").handle();
         }
     }
 
