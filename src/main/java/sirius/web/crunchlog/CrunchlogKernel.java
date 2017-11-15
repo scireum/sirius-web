@@ -40,6 +40,7 @@ import java.util.Date;
 import java.util.Queue;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -173,7 +174,6 @@ public class CrunchlogKernel extends BackgroundLoop implements Lifecycle, Metric
      *
      * @return <tt>true</tt> if the writer should be closed, <tt>false</tt> otherwise
      */
-    @SuppressWarnings("RedundantIfStatement")
     private boolean shouldCloseWriter() {
         // Create at least one file per day...
         if (LocalDate.now().atStartOfDay().isAfter(startedWriting)) {
@@ -341,13 +341,12 @@ public class CrunchlogKernel extends BackgroundLoop implements Lifecycle, Metric
      *
      * @param fileProcessor the processor being supplied with all completed files
      */
-    @SuppressWarnings("squid:S2095")
     protected void collectAllCompletedFiles(Consumer<File> fileProcessor) {
         if (!ensureBaseDirectoryExists(false)) {
             return;
         }
-        try {
-            Files.walk(baseDirectory.toPath()).map(Path::toFile).filter(File::isFile).forEach(file -> {
+        try (Stream<Path> stream = Files.walk(baseDirectory.toPath())) {
+            stream.map(Path::toFile).filter(File::isFile).forEach(file -> {
                 if (currentFile == null || !currentFile.equals(file)) {
                     fileProcessor.accept(file);
                 }

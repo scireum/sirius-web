@@ -5,7 +5,6 @@
  * Copyright by scireum GmbH
  * http://www.scireum.de - info@scireum.de
  */
-
 package sirius.web.http;
 
 import com.alibaba.fastjson.JSON;

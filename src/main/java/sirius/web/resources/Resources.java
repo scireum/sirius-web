@@ -11,6 +11,7 @@ package sirius.web.resources;
 import sirius.kernel.Sirius;
 import sirius.kernel.cache.Cache;
 import sirius.kernel.cache.CacheManager;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Log;
@@ -65,6 +66,7 @@ public class Resources {
      */
     @Nonnull
     @SuppressWarnings("squid:S2789")
+    @Explain("We cache optionals and therefore need this null check.")
     public Optional<Resource> resolve(@Nonnull String scopeId, @Nonnull String uri) {
         String effectiveUri = uri.startsWith("/") ? uri : "/" + uri;
 

@@ -23,8 +23,10 @@ import javax.annotation.Nonnull;
 @Register
 public class HTTPCommand implements Command {
 
+    private static final String CONNECTION_LINE_FORMAT = "%-20s %10s";
+    private static final String CONNECTION_NUMBER_LINE_FORMAT = "%-20s %10d";
+
     @Override
-    @SuppressWarnings("squid:S1192")
     public void execute(Output output, String... params) throws Exception {
         Value microtimingMode = Value.indexOf(0, params);
         if (microtimingMode.isFilled() && !"open".equals(microtimingMode.asString())) {
@@ -63,24 +65,24 @@ public class HTTPCommand implements Command {
         } else {
             output.line("Use: 'http open' to get a list of all active connections.");
             output.blankLine();
-            output.apply("%-20s %10s", "NAME", "VALUE");
+            output.apply(CONNECTION_LINE_FORMAT, "NAME", "VALUE");
             output.separator();
-            output.apply("%-20s %10s", "Bytes In", NLS.formatSize(WebServer.getBytesIn()));
-            output.apply("%-20s %10s", "Bytes Out", NLS.formatSize(WebServer.getBytesOut()));
-            output.apply("%-20s %10d", "Packets In", WebServer.getMessagesIn());
-            output.apply("%-20s %10d", "Packets Out", WebServer.getMessagesOut());
-            output.apply("%-20s %10d", "Connects", WebServer.getConnections());
-            output.apply("%-20s %10d", "Blocked Connects", WebServer.getBlockedConnections());
-            output.apply("%-20s %10d", "Requests", WebServer.getRequests());
-            output.apply("%-20s %10d", "Chunks", WebServer.getChunks());
-            output.apply("%-20s %10d", "Keepalives", WebServer.getKeepalives());
-            output.apply("%-20s %10d", "Open Connections", WebServer.getNumberOfOpenConnections());
-            output.apply("%-20s %10d", "Websockets", WebServer.getNumberOfWebsockets());
-            output.apply("%-20s %10d", "Idle Timeouts", WebServer.getIdleTimeouts());
-            output.apply("%-20s %10d", "Client Errors", WebServer.getClientErrors());
-            output.apply("%-20s %10d", "Server Errors", WebServer.getServerErrors());
-            output.apply("%-20s %10s", "Avg. Response Time", NLS.toUserString(WebServer.getAvgResponseTime()) + " ms");
-            output.apply("%-20s %10s", "Avg. TTFB", NLS.toUserString(WebServer.getAvgTimeToFirstByte()) + " ms");
+            output.apply(CONNECTION_LINE_FORMAT, "Bytes In", NLS.formatSize(WebServer.getBytesIn()));
+            output.apply(CONNECTION_LINE_FORMAT, "Bytes Out", NLS.formatSize(WebServer.getBytesOut()));
+            output.apply(CONNECTION_NUMBER_LINE_FORMAT, "Packets In", WebServer.getMessagesIn());
+            output.apply(CONNECTION_NUMBER_LINE_FORMAT, "Packets Out", WebServer.getMessagesOut());
+            output.apply(CONNECTION_NUMBER_LINE_FORMAT, "Connects", WebServer.getConnections());
+            output.apply(CONNECTION_NUMBER_LINE_FORMAT, "Blocked Connects", WebServer.getBlockedConnections());
+            output.apply(CONNECTION_NUMBER_LINE_FORMAT, "Requests", WebServer.getRequests());
+            output.apply(CONNECTION_NUMBER_LINE_FORMAT, "Chunks", WebServer.getChunks());
+            output.apply(CONNECTION_NUMBER_LINE_FORMAT, "Keepalives", WebServer.getKeepalives());
+            output.apply(CONNECTION_NUMBER_LINE_FORMAT, "Open Connections", WebServer.getNumberOfOpenConnections());
+            output.apply(CONNECTION_NUMBER_LINE_FORMAT, "Websockets", WebServer.getNumberOfWebsockets());
+            output.apply(CONNECTION_NUMBER_LINE_FORMAT, "Idle Timeouts", WebServer.getIdleTimeouts());
+            output.apply(CONNECTION_NUMBER_LINE_FORMAT, "Client Errors", WebServer.getClientErrors());
+            output.apply(CONNECTION_NUMBER_LINE_FORMAT, "Server Errors", WebServer.getServerErrors());
+            output.apply(CONNECTION_LINE_FORMAT, "Avg. Response Time", NLS.toUserString(WebServer.getAvgResponseTime()) + " ms");
+            output.apply(CONNECTION_LINE_FORMAT, "Avg. TTFB", NLS.toUserString(WebServer.getAvgTimeToFirstByte()) + " ms");
             output.separator();
         }
     }
