@@ -33,7 +33,6 @@ import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.handler.stream.ChunkedStream;
 import io.netty.handler.stream.ChunkedWriteHandler;
-import org.rythmengine.Rythm;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.MultiMap;
@@ -1053,11 +1052,6 @@ public class Response {
      */
     public void template(HttpResponseStatus status, String name, Object... params) {
         try {
-            if (!name.endsWith(".pasta")) {
-                legacyRythmTemplate(status, name, params);
-                return;
-            }
-
             Template template = engine.resolve(name)
                                       .orElseThrow(() -> Exceptions.handle()
                                                                    .to(Resources.LOG)
@@ -1101,18 +1095,6 @@ public class Response {
             setHeader(HttpHeaderNames.CONTENT_TYPE, CONTENT_TYPE_HTML);
         } else {
             setContentTypeHeader(fileName);
-        }
-    }
-
-    protected void legacyRythmTemplate(HttpResponseStatus status, String name, Object... params) {
-        String content = null;
-        wc.enableTiming(null);
-        try {
-            Object[] effectiveParams = fixParams(params);
-            content = Rythm.render(name, effectiveParams);
-            sendTemplateContent(status, name, content);
-        } catch (Exception e) {
-            handleTemplateError(name, e);
         }
     }
 

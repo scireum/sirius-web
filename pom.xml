@@ -9,7 +9,7 @@
         <version>3.8.3</version>
     </parent>
     <artifactId>sirius-web</artifactId>
-    <version>11.2</version>
+    <version>11.3</version>
     <name>SIRIUS web</name>
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
@@ -17,12 +17,12 @@
         <dependency>
             <groupId>com.scireum</groupId>
             <artifactId>sirius-kernel</artifactId>
-            <version>6.20</version>
+            <version>7.0</version>
         </dependency>
         <dependency>
             <groupId>com.scireum</groupId>
             <artifactId>sirius-kernel</artifactId>
-            <version>6.20</version>
+            <version>7.0</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
@@ -48,16 +48,7 @@
             <version>3.3</version>
         </dependency>
 
-        <!-- Used as main template engine for HTML templates... -->
-        <dependency>
-            <groupId>org.rythmengine</groupId>
-            <artifactId>rythm-engine</artifactId>
-            <!-- Do NOT USE Rythm 1.0.1 as it seems to cache included tempaltes and leads to
-                 VERY STRANGE BUGS -->
-            <version>1.0</version>
-        </dependency>
-
-        <!-- The version provided by rythm is outdated -->
+        <!-- Used as chosen JSON implementation -->
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>

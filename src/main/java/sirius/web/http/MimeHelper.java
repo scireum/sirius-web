@@ -9,6 +9,7 @@
 package sirius.web.http;
 
 import com.google.common.io.Files;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 
 import javax.annotation.Nullable;
@@ -22,6 +23,7 @@ import java.util.regex.Pattern;
  * Contains an internal table of the most common file extensions along with their mime type.
  */
 @SuppressWarnings("squid:S1192")
+@Explain("To simplify maintenance, some constants are duplicated here.")
 public class MimeHelper {
     /**
      * Mime type of flash (swf) files.

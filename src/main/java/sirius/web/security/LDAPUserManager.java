@@ -9,6 +9,7 @@
 package sirius.web.security;
 
 import com.google.common.collect.Sets;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.settings.Extension;
@@ -126,6 +127,7 @@ public class LDAPUserManager extends GenericUserManager {
     }
 
     @SuppressWarnings("squid:S1149")
+    @Explain("Legacy collections are required here as InitialDirContext requires them.")
     private DirContext createInitialContext(String password, String logonUser) throws NamingException {
         Hashtable<String, String> env = new Hashtable<>();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");

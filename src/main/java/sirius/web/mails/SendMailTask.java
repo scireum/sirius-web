@@ -16,6 +16,7 @@ import net.markenwerk.utils.mail.dkim.DkimMessage;
 import net.markenwerk.utils.mail.dkim.DkimSigner;
 import net.markenwerk.utils.mail.dkim.SigningAlgorithm;
 import sirius.kernel.async.Operation;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Parts;
@@ -47,7 +48,6 @@ import java.util.Set;
 /**
  * Contains the effective logic to send a mail in its own task queue.
  */
-@SuppressWarnings("squid:S1191")
 class SendMailTask implements Runnable {
 
     private MailSender mail;
@@ -223,6 +223,8 @@ class SendMailTask implements Runnable {
         }
     }
 
+    @SuppressWarnings("squid:S1191")
+    @Explain("We need the SUN API for DKIM signing.")
     private com.sun.mail.smtp.SMTPMessage createMessage(Session session) throws Exception {
         com.sun.mail.smtp.SMTPMessage msg = new com.sun.mail.smtp.SMTPMessage(session);
         msg.setSubject(mail.subject);

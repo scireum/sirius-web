@@ -13,6 +13,7 @@ import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpResponse;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Value;
 
 /**
@@ -22,6 +23,7 @@ import sirius.kernel.commons.Value;
  * Also it disables itself if the given content is not compressable (jpg, png) or too small (less than 4 kB).
  */
 @SuppressWarnings("squid:MaximumInheritanceDepth")
+@Explain("We inherit the hierarchy from netty and cannot change it.")
 class SmartHttpContentCompressor extends HttpContentCompressor {
 
     private static final int MIN_COMPRESSABLE_CONTENT_LENGTH = 1024;

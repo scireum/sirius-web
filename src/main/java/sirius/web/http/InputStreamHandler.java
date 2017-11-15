@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.health.Exceptions;
 
 import java.io.IOException;
@@ -186,6 +187,7 @@ public class InputStreamHandler extends InputStream implements ContentHandler {
     }
 
     @SuppressWarnings("squid:S899")
+    @Explain("We only drain data, therefore we don't care about the return values.")
     private void release() {
         try {
             // Release current buffer if there is one

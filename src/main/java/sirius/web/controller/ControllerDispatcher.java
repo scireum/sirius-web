@@ -12,6 +12,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.TaskContext;
 import sirius.kernel.async.Tasks;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.di.Injector;
 import sirius.kernel.di.std.Part;
@@ -86,6 +87,7 @@ public class ControllerDispatcher implements WebDispatcher {
     }
 
     @SuppressWarnings("squid:S1698")
+    @Explain("Strings have been intered for performance reasons.")
     private boolean tryExecuteRoute(WebContext ctx, boolean preDispatch, String uri, Route route) {
         try {
             final List<Object> params = route.matches(ctx, uri, preDispatch);

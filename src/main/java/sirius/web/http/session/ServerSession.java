@@ -8,6 +8,7 @@
 
 package sirius.web.http.session;
 
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Value;
 
 import javax.annotation.Nonnull;
@@ -26,6 +27,8 @@ import java.util.List;
  *
  * @see sirius.web.http.WebContext#getServerSession()
  */
+@SuppressWarnings("squid:S1214")
+@Explain("We prefer to keep the constants near to their point of use.")
 public interface ServerSession {
 
     /**

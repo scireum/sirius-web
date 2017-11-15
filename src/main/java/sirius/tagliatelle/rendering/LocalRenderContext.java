@@ -9,6 +9,7 @@
 package sirius.tagliatelle.rendering;
 
 import parsii.tokenizer.Position;
+import sirius.kernel.commons.Explain;
 import sirius.tagliatelle.Template;
 import sirius.tagliatelle.compiler.CompileException;
 import sirius.tagliatelle.emitter.ConstantEmitter;
@@ -115,6 +116,7 @@ public class LocalRenderContext {
      * @throws IOException in case of an IO error
      */
     @SuppressWarnings("squid:RedundantThrowsDeclarationCheck")
+    @Explain("Sublclasses might throw an IOException here.")
     public void outputRaw(String content) throws IOException {
         globalContext.outputRaw(content);
     }
@@ -129,6 +131,7 @@ public class LocalRenderContext {
      * @throws IOException in case of an IO error
      */
     @SuppressWarnings("squid:RedundantThrowsDeclarationCheck")
+    @Explain("Sublclasses might throw an IOException here.")
     public void outputEscaped(String content) throws IOException {
         globalContext.outputEscaped(content);
     }
