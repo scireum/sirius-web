@@ -16,11 +16,9 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.HandledException;
 import sirius.web.http.InputStreamHandler;
 import sirius.web.http.WebContext;
-import sirius.web.services.JSONStructuredOutput;
 import sirius.web.resources.Resources;
+import sirius.web.services.JSONStructuredOutput;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -123,16 +121,11 @@ public class TestController implements Controller {
 
     @Routed(value = "/upload-test", preDispatchable = true, jsonCall = true)
     public void uploadTest(WebContext ctx, JSONStructuredOutput out, InputStreamHandler upload) throws IOException {
-        ctx.markAsLongCall();
-        File result = File.createTempFile("test", ".tmp");
-        long size = 0;
-
-        try(FileOutputStream file = new FileOutputStream(result)) {
-            size = ByteStreams.copy(upload, file);
+        try {
+            long size = ByteStreams.exhaust(upload);
+            out.property("size", size);
         } finally {
             upload.close();
         }
-
-        out.property("size", size);
     }
 }

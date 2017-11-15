@@ -8,7 +8,6 @@
 
 package sirius.web.services;
 
-import com.alibaba.fastjson.serializer.SerializeWriter;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.xml.AbstractStructuredOutput;
@@ -110,12 +109,73 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
         }
     }
 
-    private void writeString(String value) {
-        try (SerializeWriter jsonWriter = new SerializeWriter(writer)) {
-            jsonWriter.writeStringWithDoubleQuote(value, (char) 0);
+    private void writeString(String value) throws IOException {
+        if (value == null || value.length() == 0) {
+            writer.append("\"\"");
+            return;
         }
+
+        writeQuotedString(value);
     }
 
+    private void writeQuotedString(String value) throws IOException {
+        writer.append("\"");
+        int len = value.length();
+        char currentCharacter = '\0';
+        char previousCharacter;
+
+        for (int i = 0; i < len; i++) {
+            previousCharacter = currentCharacter;
+            currentCharacter = value.charAt(i);
+            if (shouldEscapeCharacter(previousCharacter, currentCharacter)) {
+                writer.append('\\').append(currentCharacter);
+            } else if (currentCharacter == '\b') {
+                writer.append("\\b");
+            } else if (currentCharacter == '\t') {
+                writer.append("\\t");
+            } else if (currentCharacter == '\n') {
+                writer.append("\\n");
+            } else if (currentCharacter == '\f') {
+                writer.append("\\f");
+            } else if (currentCharacter == '\r') {
+                writer.append("\\r");
+            } else if (isSpecialCharacter(currentCharacter)) {
+                String t = "000" + Integer.toHexString(currentCharacter);
+                writer.append("\\u" + t.substring(t.length() - 4));
+            } else {
+                writer.append(currentCharacter);
+            }
+        }
+        writer.append("\"");
+    }
+
+    private boolean shouldEscapeCharacter(char previousCharacter, char currentCharacter) {
+        // \ and " are control characters and have to be escaped...
+        if (currentCharacter == '\\' || currentCharacter == '"') {
+            return true;
+        }
+
+        // A forward slash may be escaped in JSON but doesn't have to. We only escape, if we find a </ as this will
+        // confuse a browser even within a JSON string...
+        return currentCharacter == '/' && previousCharacter == '<';
+    }
+
+
+    private boolean isSpecialCharacter(char currentCharacter) {
+        if (isControlChar(currentCharacter)) {
+            return true;
+        }
+
+        if (currentCharacter >= '\u0080' && currentCharacter < '\u00a0') {
+            return true;
+        }
+
+        return currentCharacter >= '\u2000' && currentCharacter < '\u2100';
+    }
+
+    private boolean isControlChar(char currentCharacter) {
+        return currentCharacter < ' ';
+    }
 
     @Override
     public StructuredOutput beginResult() {

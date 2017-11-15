@@ -18,26 +18,17 @@ import sirius.kernel.BaseSpecification
  */
 class UploadSpec extends BaseSpecification {
 
-    String lineFeed = "\r\n";
+    String lineFeed = "\r\n"
 
     def upload(String uri, File file) {
         HttpURLConnection connection = new URL("http://localhost:9999" + uri).openConnection()
 
         InputStream inputStream = new FileInputStream(file)
-
         connection.setDoOutput(true)
-        connection.setUseCaches(false)
-
         connection.setRequestMethod("POST")
-
-        connection.setRequestProperty("Connection", "keep-alive");
-        connection.setRequestProperty("Content-Type", "application/octet-stream");
-
         OutputStream outputStream = connection.getOutputStream()
-
         ByteStreams.copy(inputStream, outputStream)
         inputStream.close()
-
         outputStream.flush()
 
         return new String(ByteStreams.toByteArray(connection.getInputStream()), Charsets.UTF_8)
