@@ -81,8 +81,10 @@ public class ConstantEmitter extends Emitter {
         }
         if (value == null) {
             value = stringToAppend;
+        } else {
+            value += stringToAppend;
         }
-        value += stringToAppend;
+
         return this;
     }
 
