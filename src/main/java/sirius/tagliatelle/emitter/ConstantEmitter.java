@@ -9,6 +9,7 @@
 package sirius.tagliatelle.emitter;
 
 import parsii.tokenizer.Position;
+import sirius.kernel.commons.Strings;
 import sirius.tagliatelle.expression.ExpressionVisitor;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
@@ -29,7 +30,7 @@ public class ConstantEmitter extends Emitter {
         }
     };
 
-    private String value = "";
+    private String value;
 
     /**
      * Creates a new constant emitter at the given position.
@@ -75,18 +76,24 @@ public class ConstantEmitter extends Emitter {
      * @return the emitter itself for fluent method calls
      */
     public ConstantEmitter append(String stringToAppend) {
+        if (Strings.isEmpty(stringToAppend)) {
+            return this;
+        }
+        if (value == null) {
+            value = stringToAppend;
+        }
         value += stringToAppend;
         return this;
     }
 
     @Override
     protected void emitToContext(LocalRenderContext context) throws Exception {
-        context.outputRaw(value);
+        context.outputRaw(getValue());
     }
 
     @Override
     public String toString() {
-        return value;
+        return getValue();
     }
 
     /**
@@ -95,6 +102,6 @@ public class ConstantEmitter extends Emitter {
      * @return the text represented by this emitter
      */
     public String getValue() {
-        return value;
+        return value == null ? "" : value;
     }
 }
