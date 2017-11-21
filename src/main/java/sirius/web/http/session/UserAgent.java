@@ -10,6 +10,8 @@ package sirius.web.http.session;
 
 import sirius.kernel.commons.Strings;
 
+import javax.annotation.Nonnull;
+
 /**
  * Provides information about user agent and used device for given user agent.
  * <p>
@@ -169,11 +171,31 @@ public class UserAgent {
     }
 
     /**
-     * Returns user agent as String.
+     * Returns the user agent as String.
      *
-     * @return user agent
+     * @return the user agent as String
      */
     public String getUserAgentString() {
         return userAgentString;
+    }
+
+    /**
+     * Determines if the user agent is equal to the given value.
+     *
+     * @param expectedUserAgent the expected user agent
+     * @return <tt>true</tt> if the user agent matches, <tt>false</tt> otherwise
+     */
+    public boolean is(@Nonnull String expectedUserAgent) {
+        return Strings.areEqual(userAgentString, expectedUserAgent);
+    }
+
+    /**
+     * Determines if the user agent contains the given value.
+     *
+     * @param userAgentPart the user agent to check for
+     * @return <tt>true</tt> if the usr agent contains the given value, <tt>false</tt> otherwise
+     */
+    public boolean contains(@Nonnull String userAgentPart) {
+        return userAgentString != null && userAgentString.contains(userAgentPart);
     }
 }
