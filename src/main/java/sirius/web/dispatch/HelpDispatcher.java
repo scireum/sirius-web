@@ -12,17 +12,18 @@ import io.netty.handler.codec.http.HttpMethod;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
-import sirius.tagliatelle.Tagliatelle;
+import sirius.kernel.nls.NLS;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
+import sirius.web.resources.Resource;
+import sirius.web.resources.Resources;
 
-import java.io.File;
-import java.net.URL;
+import java.io.IOException;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -32,7 +33,9 @@ import java.util.regex.Pattern;
 public class HelpDispatcher implements WebDispatcher {
 
     private static final String HELP_PREFIX = "/help";
-    private static Pattern startPagePattern = Pattern.compile("^/help/(..)/?$");
+    private static final int HELP_PREFIX_LENGTH = "/help/".length();
+    private static final Pattern LANG_PATTERN = Pattern.compile("[a-z]{2}");
+    private static final String PASTA_SUFFIX = ".html.pasta";
 
     @ConfigValue("help.indexTemplate")
     private String indexTemplate;
@@ -41,7 +44,7 @@ public class HelpDispatcher implements WebDispatcher {
     private List<String> helpSystemLanguageDirectories;
 
     @Part
-    private Tagliatelle tagliatelle;
+    private Resources resources;
 
     @Override
     public boolean preDispatch(WebContext ctx) throws Exception {
@@ -58,62 +61,58 @@ public class HelpDispatcher implements WebDispatcher {
         if (!ctx.getRequestedURI().startsWith(HELP_PREFIX) || !HttpMethod.GET.equals(ctx.getRequest().method())) {
             return false;
         }
-        String uri = getRequestedURI(ctx);
-        String lang = getHelpSystemLanguageDirectory(uri);
-        if (Strings.isFilled(lang)) {
-            CallContext.getCurrent().setLang(lang);
+
+        ctx.enableTiming(HELP_PREFIX);
+
+        String uri = ctx.getRequestedURI();
+        if (uri.endsWith("/")) {
+            uri = uri.substring(0, uri.length() - 1);
         }
-        String helpSystemHomeURI = HELP_PREFIX + "/" + lang;
-        ctx.setAttribute("helpSystemHomeURI", helpSystemHomeURI);
-        if (uri.contains(".")) {
-            URL url = getClass().getResource(uri);
-            if (url == null) {
-                return false;
-            } else if ("file".equals(url.getProtocol())) {
-                ctx.respondWith().file(new File(url.toURI()));
-            } else if (uri.endsWith("html") || uri.endsWith("pasta")) {
-                ctx.respondWith().cached().template(uri);
+
+        if (HELP_PREFIX.equals(uri)) {
+            return serveTopic(ctx, HELP_PREFIX + "/" + indexTemplate);
+        }
+
+        // cut /help/ and try to extract the locale
+        Tuple<String, String> langAndTopic = Strings.split(uri.substring(HELP_PREFIX_LENGTH), "/");
+        setupLang(langAndTopic.getFirst());
+        if (Strings.isEmpty(langAndTopic.getSecond())) {
+            if (Strings.areEqual(langAndTopic.getFirst(), NLS.getDefaultLanguage())) {
+                return serveTopic(ctx, HELP_PREFIX + "/" + indexTemplate);
             } else {
-                ctx.respondWith().resource(url.openConnection());
+                return serveTopic(ctx, HELP_PREFIX + "/" + langAndTopic.getFirst() + "/" + indexTemplate);
             }
-        } else {
-            //search for the matching template
-            StringBuilder sb = new StringBuilder(uri);
-            sb.append(".html");
-            if (tagliatelle.resolve(uri + ".html.pasta").isPresent()) {
-                sb.append(".pasta");
-            }
-            ctx.respondWith().cached().template(sb.toString());
         }
-        ctx.enableTiming(helpSystemHomeURI);
+
+        if (uri.contains(".") && !uri.endsWith(PASTA_SUFFIX)) {
+            return serveAsset(ctx, uri);
+        } else {
+            return serveTopic(ctx, uri);
+        }
+    }
+
+    private boolean serveAsset(WebContext ctx, String uri) throws IOException {
+        Resource asset = resources.resolve(uri).orElse(null);
+        if (asset == null) {
+            return false;
+        }
+
+        ctx.respondWith().resource(asset.getUrl().openConnection());
         return true;
     }
 
-    private String getHelpSystemLanguageDirectory(String uri) {
-        String subUri = uri.substring((HELP_PREFIX + "/").length()).split("/")[0];
-        return helpSystemLanguageDirectories.contains(subUri) ? subUri : "";
+    private boolean serveTopic(WebContext ctx, String uri) {
+        if (uri.endsWith(PASTA_SUFFIX)) {
+            ctx.respondWith().cached().template(uri);
+        } else {
+            ctx.respondWith().cached().template(uri + PASTA_SUFFIX);
+        }
+        return true;
     }
 
-    private String getRequestedURI(WebContext ctx) {
-        String uri = ctx.getRequestedURI();
-        if (HELP_PREFIX.equals(uri) || (HELP_PREFIX + "/").equals(uri)) {
-            return buildHomeURI(null);
+    public void setupLang(String lang) {
+        if (LANG_PATTERN.matcher(lang).matches() && helpSystemLanguageDirectories.contains(lang)) {
+            CallContext.getCurrent().setLang(lang);
         }
-        Matcher matcher = startPagePattern.matcher(uri);
-        if (matcher.matches()) {
-            String lang = matcher.group(1);
-            if (helpSystemLanguageDirectories.contains(lang)) {
-                return buildHomeURI(lang);
-            }
-        }
-        return uri;
-    }
-
-    private String buildHomeURI(String lang) {
-        String uri = HELP_PREFIX;
-        if (Strings.isFilled(lang)) {
-            uri = uri + "/" + lang;
-        }
-        return uri + "/" + indexTemplate;
     }
 }
