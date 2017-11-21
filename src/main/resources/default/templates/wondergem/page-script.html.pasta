@@ -223,7 +223,7 @@
         return params;
     }
 
-    function imageUpload(url, target, defaultPreview, defaultImage, allowedExtensions) {
+    function imageUpload(url, target, defaultPreview, defaultImage, allowedExtensions, fieldId) {
         var container = target;
         new qq.FileUploader({
             element: target,
@@ -241,7 +241,7 @@
                     $('.lnk', container).attr('href', responseJSON.imageUrl);
                 }
                 if(responseJSON.fileId) {
-                    $('#uploadedFile').val(responseJSON.fileId);
+                    $('#' + fieldId).val(responseJSON.fileId);
                     if (responseJSON.refresh) {
                         setTimeout(function () {
                             var editForm = $('#editForm');
@@ -273,8 +273,8 @@
             allowedExtensions: allowedExtensions,
             template: '<div class="qq-uploader">' +
             '<div class="qq-upload-drop-area qq-image-area"><div><span style="display: inline-block"><a href="' + defaultImage + '" class="thumbnail lnk"><img class="img" src="' + defaultPreview + '" /></a></span></div><span>@i18n("template.html.uploadArea")</span></div>' +
-            '<div class="qq-upload-button btn btn-primary" style="display: block">@i18n("template.html.uploadBtn")</div>' +
             '<ul class="qq-upload-list"></ul>' +
+            '<div class="qq-upload-button btn btn-primary btn-block">@i18n("template.html.uploadBtn")</div>' +
             '</div>',
             fileTemplate: '<li>' +
             '<span class="qq-upload-file"></span>' +

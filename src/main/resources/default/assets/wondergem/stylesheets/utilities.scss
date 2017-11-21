@@ -148,6 +148,12 @@ img {
   cursor: wait;
 }
 
-.image-upload .popover {
-  min-width: 300px;
+.file-upload {
+  .popover {
+    min-width: 300px;
+  }
+
+  .btn-block {
+    margin-top: 5px;
+  }
 }

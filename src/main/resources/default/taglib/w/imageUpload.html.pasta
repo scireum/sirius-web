@@ -2,13 +2,16 @@
 <i:arg type="String" name="uploadUrl" />
 <i:arg type="String" name="imageUrl" default="" />
 <i:arg type="String" name="previewUrl" default="@imageUrl" />
+<i:arg type="String" name="defaultUrl" default=""/>
 <i:arg type="String" name="allowedExtensions" default="[]" />
+<i:arg type="String" name="fieldId" default="uploadedFile"/>
 <i:arg type="boolean" name="urlAllowed" default="false"/>
+<i:arg type="boolean" name="showResetButton" default="false"/>
 
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders an image upload within a Wondergem template" />
 
-<div class="image-upload @name">
+<div class="file-upload @name">
     <div class="upload-container"></div>
 
     <i:if test="@urlAllowed">
@@ -39,6 +42,12 @@
             </div>
         </div>
     </i:if>
+
+    <i:if test="@showResetButton">
+        <button type="button" class="btn btn-block" onclick="resetFile('@fieldId')">
+            @i18n("reset")
+        </button>
+    </i:if>
 </div>
 
 <script type="text/javascript">
@@ -48,7 +57,8 @@
                 this,
                 '@previewUrl',
                 '@imageUrl',
-                 @allowedExtensions
+                @allowedExtensions,
+                '@fieldId'
             );
         });
     });
@@ -109,7 +119,7 @@
             function updateURL(url, $popup) {
                 if(url.startsWith('http://') || url.startsWith('https://')) {
                     $('.@name img.img').attr('src', url).parent('a').attr('href', url);
-                    $('#uploadedFile').val(url);
+                    $('#@fieldId').val(url);
                     $('.@name .qq-upload-list li').remove();
 
                     $popup.popover('hide');
@@ -130,5 +140,11 @@
                 }
             }
         });
+
+        function resetFile(fieldId) {
+            $('#' + fieldId).val('');
+            $('.@name img.img').attr('src', '@defaultUrl').parent('a').attr('href', '#');
+            $('.@name .qq-upload-list li').remove();
+        }
     </script>
 </i:if>
