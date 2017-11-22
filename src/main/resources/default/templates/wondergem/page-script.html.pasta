@@ -223,7 +223,7 @@
         return params;
     }
 
-    function imageUpload(url, target, defaultPreview, defaultImage, allowedExtensions, fieldId) {
+    function imageUpload(url, target, defaultPreview, defaultImage, allowedExtensions) {
         var container = target;
         new qq.FileUploader({
             element: target,
@@ -239,73 +239,6 @@
                 if (responseJSON.previewUrl) {
                     $('.img', container).attr('src', responseJSON.previewUrl);
                     $('.lnk', container).attr('href', responseJSON.imageUrl);
-                }
-                if(responseJSON.fileId) {
-                    $('#' + fieldId).val(responseJSON.fileId);
-                    if (responseJSON.refresh) {
-                        setTimeout(function () {
-                            var editForm = $('#editForm');
-                            if (editForm.length) {
-                                editForm.submit();
-                            } else {
-                                window.location.reload();
-                            }
-                        }, 1250);
-                    }
-                }
-            },
-            showMessage: function (message) {
-                // We generally send a flag "error" which is true or false as
-                // part of the response. Sadly, fileUploader.js checks for this
-                // flag (expecting a string) and invokes showMessage is present.
-                // Therefore we have to filter this here :-/
-                if (message !== true) {
-                    clearMessages();
-                    addError(message);
-                }
-            },
-            messages: {
-                typeError: '@i18n("template.html.errInvalidExtension")',
-                sizeError: '@i18n("template.html.errTooLarge")',
-                minSizeError: '@i18n("template.html.errTooSmall")',
-                emptyError: '@i18n("template.html.errEmpty")'
-            },
-            allowedExtensions: allowedExtensions,
-            template: '<div class="qq-uploader">' +
-            '<div class="qq-upload-drop-area qq-image-area"><div><span style="display: inline-block"><a href="' + defaultImage + '" class="thumbnail lnk"><img class="img" src="' + defaultPreview + '" /></a></span></div><span>@i18n("template.html.uploadArea")</span></div>' +
-            '<ul class="qq-upload-list"></ul>' +
-            '<div class="qq-upload-button btn btn-primary btn-block">@i18n("template.html.uploadBtn")</div>' +
-            '</div>',
-            fileTemplate: '<li>' +
-            '<span class="qq-upload-file"></span>' +
-            '<span class="qq-upload-spinner"></span>' +
-            '<span class="qq-upload-size"></span>' +
-            '<a class="qq-upload-cancel" href="#">@i18n("NLS.cancel")</a>' +
-            '<span class="qq-upload-failed-text">@i18n("template.html.uploadFailed")</span>' +
-            '</li>'
-        });
-        var maxWidth = $(container).width();
-        $('.img', container).css('max-width', maxWidth - 30 + 'px');
-    }
-
-    function fileUpload(url, target, params, allowedExtensions) {
-        var container = target;
-
-        new qq.FileUploader({
-            element: target,
-            action: url,
-            params: params,
-            debug: false,
-            onComplete: function (cmp_id, fileName, responseJSON) {
-                clearMessages();
-                if (responseJSON.error) {
-                    addError(responseJSON.message);
-                } else if (responseJSON.message) {
-                    if (responseJSON.action) {
-                        addInfo(responseJSON.message, responseJSON.action, responseJSON.actionLabel);
-                    } else {
-                        addInfo(responseJSON.message);
-                    }
                 }
                 if(responseJSON.fileId) {
                     $('#uploadedFile').val(responseJSON.fileId);
@@ -339,8 +272,77 @@
             },
             allowedExtensions: allowedExtensions,
             template: '<div class="qq-uploader">' +
-            '<div class="qq-upload-drop-area"><span>@i18n("template.html.uploadArea")</span></div>' +
-            '<div class="qq-upload-button btn btn-primary" style="display: block">@i18n("template.html.uploadBtn")</div>' +
+            '<div class="qq-upload-drop-area qq-image-area"><div><span style="display: inline-block"><a href="' + defaultImage + '" class="thumbnail lnk"><img class="img" src="' + defaultPreview + '" /></a></span></div><span>@i18n("template.html.uploadArea")</span></div>' +
+            '<div class="qq-upload-button btn btn-primary btn-block">@i18n("template.html.uploadBtn")</div>' +
+            '<ul class="qq-upload-list"></ul>' +
+            '</div>',
+            fileTemplate: '<li>' +
+            '<span class="qq-upload-file"></span>' +
+            '<span class="qq-upload-spinner"></span>' +
+            '<span class="qq-upload-size"></span>' +
+            '<a class="qq-upload-cancel" href="#">@i18n("NLS.cancel")</a>' +
+            '<span class="qq-upload-failed-text">@i18n("template.html.uploadFailed")</span>' +
+            '</li>'
+        });
+        var maxWidth = $(container).width();
+        $('.img', container).css('max-width', maxWidth - 30 + 'px');
+    }
+
+    function fileUpload(url, target, fileName, fileUrl, allowedExtensions) {
+        var container = target;
+
+        new qq.FileUploader({
+            element: target,
+            action: url,
+            debug: false,
+            onComplete: function (cmp_id, fileName, responseJSON) {
+                clearMessages();
+                if (responseJSON.error) {
+                    addError(responseJSON.message);
+                } else if (responseJSON.message) {
+                    if (responseJSON.action) {
+                        addInfo(responseJSON.message, responseJSON.action, responseJSON.actionLabel);
+                    } else {
+                        addInfo(responseJSON.message);
+                    }
+                }
+                if (responseJSON.previewUrl) {
+                    $('a.lnk', container).text(fileName).attr('href', responseJSON.previewUrl);
+                }
+                if(responseJSON.fileId) {
+                    $('#uploadedFile').val(responseJSON.fileId);
+                    if (responseJSON.refresh) {
+                        setTimeout(function () {
+                            var editForm = $('#editForm');
+                            if (editForm.length) {
+                                editForm.submit();
+                            } else {
+                                window.location.reload();
+                            }
+                        }, 1250);
+                    }
+                }
+            },
+            showMessage: function (message) {
+                // We generally send a flag "error" which is true or false as
+                // part of the response. Sadly, fileUploader.js checks for this
+                // flag (expecting a string) and invokes showMessage is present.
+                // Therefore we have to filter this here :-/
+                if (message !== true) {
+                    clearMessages();
+                    addError(message);
+                }
+            },
+            messages: {
+                typeError: '@i18n("template.html.errInvalidExtension")',
+                sizeError: '@i18n("template.html.errTooLarge")',
+                minSizeError: '@i18n("template.html.errTooSmall")',
+                emptyError: '@i18n("template.html.errEmpty")'
+            },
+            allowedExtensions: allowedExtensions,
+            template: '<div class="qq-uploader">' +
+            '<div class="qq-upload-drop-area"><div><a href="' + fileUrl + '" class="lnk">' + fileName + '</a></div><span>@i18n("template.html.uploadArea")</span></div>' +
+            '<div class="qq-upload-button btn btn-primary btn-block">@i18n("template.html.uploadBtn")</div>' +
             '<ul class="qq-upload-list"></ul>' +
             '</div>',
             fileTemplate: '<li>' +

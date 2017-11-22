@@ -1,18 +1,152 @@
-<i:arg type="String" name="name" default="@('image-upload' + call.generateLocalId())" />
+<i:arg type="String" name="name" default="@('file-upload' + call.generateLocalId())" />
 <i:arg type="String" name="uploadUrl" />
+<i:arg type="String" name="fileUrl" default="" />
+<i:arg type="String" name="fileName" default="@fileUrl" />
 <i:arg type="String" name="allowedExtensions" default="[]" />
+<i:arg type="boolean" name="urlAllowed" default="false"/>
+<i:arg type="boolean" name="showResetButton" default="false"/>
 
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders a file upload within a Wondergem template" />
 
-<div class="@name"></div>
+<div class="file-upload @name">
+    <div class="upload-container"></div>
+
+    <i:if test="@urlAllowed">
+        <button type="button" class="btn btn-block" data-placement="top" data-toggle="popover">
+            @i18n("fileUpload.specifyURL")
+        </button>
+
+        <div class="popover-content hide">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label>@i18n("fileUpload.URL")</label>
+                        <input type="text" class="form-control">
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <button type="button" class="btn btn-block btn-primary button-apply">
+                        @i18n("NLS.ok") <i class="fa fa-check"></i>
+                    </button>
+                </div>
+
+                <div class="col-md-6">
+                    <button type="button" class="btn btn-block button-close">
+                        @i18n("NLS.cancel") <i class="fa fa-close"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </i:if>
+
+    <i:if test="@showResetButton">
+        <button type="button" class="btn btn-block btn-reset-js">
+            @i18n("reset")
+        </button>
+    </i:if>
+</div>
+
 <script type="text/javascript">
     $(document).ready(function() {
-        $('.@name').each(function (index) {
+        $('.@name .upload-container').each(function (index) {
             fileUpload('@uploadUrl',
                        this,
-                       undefined,
+                       '@fileName',
+                       '@fileUrl',
                        @allowedExtensions);
         });
     });
 </script>
+
+<i:if test="@urlAllowed">
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('.@name [data-toggle=popover]').popover({html: true, trigger: 'manual', content: function () {
+                return $('.@name .popover-content').html();
+            }}).on('inserted.bs.popover', function () {
+                var $popup = $(this);
+                var $closeButton = $popup.next('.popover').find('.button-close');
+                var $applyButton = $popup.next('.popover').find('.button-apply');
+                var $input = $popup.next('.popover').find('input');
+
+                $closeButton.click(function (e) {
+                    $popup.popover('hide');
+                });
+
+                $input.keyup(function (e) {
+                    checkURL($input.val(), $applyButton);
+
+                    if (e.which == 13) {
+                        updateURL($input.val(), $popup);
+                    }
+                });
+
+                $applyButton.click(function () {
+                    updateURL($input.val(), $popup);
+                });
+            });
+
+            $('.@name [data-toggle=popover]').click(function () {
+                var url = $('.@name a.lnk').attr('href');
+
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    url = '';
+                }
+
+                $(this).blur()
+                $(this).popover('toggle');
+
+                var $input = $(this).next('.popover').find('input');
+                var $applyButton = $(this).next('.popover').find('.button-apply');
+
+                $input.val(url).select();
+
+                checkURL($input.val(), $applyButton);
+            });
+
+            $('.@name .btn-reset-js').click(function (e) {
+                e.preventDefault();
+
+                $('#uploadedFile').val('');
+                $('.@name a.lnk').text('').attr('href', '#');
+                $('.@name .qq-upload-list li').remove();
+
+                $(this).blur();
+            });
+
+            /**
+             * Updates the file in the upload box and the url in the formular.
+             *
+             * @@param url    the new URL
+             * @@param $popup the popup to hide if the URL was valid
+             */
+            function updateURL(url, $popup) {
+                if(url.startsWith('http://') || url.startsWith('https://')) {
+                    var fileName = url.substr(url.lastIndexOf('/') + 1);
+
+                    $('.@name a.lnk').text(fileName).attr('href', url);
+                    $('#uploadedFile').val(url);
+                    $('.@name .qq-upload-list li').remove();
+
+                    $popup.popover('hide');
+                }
+            }
+
+            /**
+             * Checks if the specified URL is a valid one and disables or enables the apply button accordingly.
+             *
+             * @@param url          the new URL
+             * @@param $applyButton the button to enable/disable
+             */
+            function checkURL(url, $applyButton) {
+                if ('undefined' === typeof url || !(url.startsWith('http://') || url.startsWith('https://'))) {
+                    $applyButton.prop('disabled', true);
+                } else {
+                    $applyButton.prop('disabled', false);
+                }
+            }
+        });
+    </script>
+</i:if>

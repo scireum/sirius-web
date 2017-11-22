@@ -4,7 +4,6 @@
 <i:arg type="String" name="previewUrl" default="@imageUrl" />
 <i:arg type="String" name="defaultUrl" default=""/>
 <i:arg type="String" name="allowedExtensions" default="[]" />
-<i:arg type="String" name="fieldId" default="uploadedFile"/>
 <i:arg type="boolean" name="urlAllowed" default="false"/>
 <i:arg type="boolean" name="showResetButton" default="false"/>
 
@@ -44,7 +43,7 @@
     </i:if>
 
     <i:if test="@showResetButton">
-        <button type="button" class="btn btn-block" onclick="resetFile('@fieldId')">
+        <button type="button" class="btn btn-block btn-reset-js">
             @i18n("reset")
         </button>
     </i:if>
@@ -57,8 +56,7 @@
                 this,
                 '@previewUrl',
                 '@imageUrl',
-                @allowedExtensions,
-                '@fieldId'
+                 @allowedExtensions
             );
         });
     });
@@ -110,6 +108,16 @@
                 checkURL($input.val(), $applyButton);
             });
 
+            $('.@name .btn-reset-js').click(function (e) {
+                e.preventDefault();
+
+                $('#uploadedFile').val('');
+                $('.@name img.img').attr('src', '@defaultUrl').parent('a').attr('href', '#');
+                $('.@name .qq-upload-list li').remove();
+
+                $(this).blur();
+            });
+
             /**
              * Updates the image in the upload box and the url in the formular.
              *
@@ -119,7 +127,7 @@
             function updateURL(url, $popup) {
                 if(url.startsWith('http://') || url.startsWith('https://')) {
                     $('.@name img.img').attr('src', url).parent('a').attr('href', url);
-                    $('#@fieldId').val(url);
+                    $('#uploadedFile').val(url);
                     $('.@name .qq-upload-list li').remove();
 
                     $popup.popover('hide');
@@ -140,11 +148,5 @@
                 }
             }
         });
-
-        function resetFile(fieldId) {
-            $('#' + fieldId).val('');
-            $('.@name img.img').attr('src', '@defaultUrl').parent('a').attr('href', '#');
-            $('.@name .qq-upload-list li').remove();
-        }
     </script>
 </i:if>
