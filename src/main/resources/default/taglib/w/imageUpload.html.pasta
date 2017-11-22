@@ -59,6 +59,16 @@
                  @allowedExtensions
             );
         });
+
+        $('.@name .btn-reset-js').click(function (e) {
+            e.preventDefault();
+
+            $('#uploadedFile').val('');
+            $('.@name img.img').attr('src', '@defaultUrl').parent('a').attr('href', '#');
+            $('.@name .qq-upload-list li').remove();
+
+            $(this).blur();
+        });
     });
 </script>
 
@@ -106,16 +116,6 @@
                 $input.val(url).select();
 
                 checkURL($input.val(), $applyButton);
-            });
-
-            $('.@name .btn-reset-js').click(function (e) {
-                e.preventDefault();
-
-                $('#uploadedFile').val('');
-                $('.@name img.img').attr('src', '@defaultUrl').parent('a').attr('href', '#');
-                $('.@name .qq-upload-list li').remove();
-
-                $(this).blur();
             });
 
             /**
