@@ -976,25 +976,40 @@ public class WebContext implements SubContext {
      */
     public InetAddress getRemoteIP() {
         if (remoteIp == null) {
-            if (ctx == null || request == null) {
-                try {
-                    return InetAddress.getLocalHost();
-                } catch (UnknownHostException e) {
-                    throw Exceptions.handle(e);
-                }
-            }
-            InetAddress ip = ((InetSocketAddress) ctx.channel().remoteAddress()).getAddress();
-            remoteIp = applyProxyIPs(ip);
+            remoteIp = determineRemoteIP(ctx, request);
         }
         return remoteIp;
     }
 
-    private InetAddress applyProxyIPs(InetAddress ip) {
+    /**
+     * Tries to determine the effective remote IP for the given context and request.
+     * <p>
+     * This is the remote address of the channel. However, if recognized as a proxy,
+     * we use the last IP address given in the X-Forarded-For header.
+     *
+     * @param ctx     the channel context used to determine the physical IP
+     * @param request the request used to read the appropriate headers for reverse proxies
+     * @return the effective remote address of the client
+     */
+    public static InetAddress determineRemoteIP(ChannelHandlerContext ctx, HttpRequest request) {
+        if (ctx == null || request == null) {
+            try {
+                return InetAddress.getLocalHost();
+            } catch (UnknownHostException e) {
+                throw Exceptions.handle(e);
+            }
+        }
+
+        InetAddress ip = ((InetSocketAddress) ctx.channel().remoteAddress()).getAddress();
+        return applyProxyIPs(ip, request);
+    }
+
+    private static InetAddress applyProxyIPs(InetAddress ip, HttpRequest request) {
         if (WebServer.getProxyIPs().isEmpty()) {
             return ip;
         }
 
-        if (!WebServer.getProxyIPs().accepts(remoteIp)) {
+        if (!WebServer.getProxyIPs().accepts(ip)) {
             return ip;
         }
 
@@ -1019,11 +1034,10 @@ public class WebContext implements SubContext {
         } catch (Exception e) {
             Exceptions.ignore(e);
             WebServer.LOG.WARN(Strings.apply(
-                    "Cannot parse X-Forwarded-For address: %s, Remote-IP: %s, Request: %s, SSL: %s - %s (%s)",
+                    "Cannot parse X-Forwarded-For address: %s, Remote-IP: %s, Request: %s - %s (%s)",
                     forwardedFor,
-                    remoteIp,
+                    ip,
                     request.uri(),
-                    NLS.toMachineString(isSSL()),
                     e.getMessage(),
                     e.getClass().getName()));
             return ip;
