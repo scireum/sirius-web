@@ -22,7 +22,7 @@ class ConsoleServiceSpec extends BaseSpecification {
         when:
         UserContext.get().setCurrentUser(UserInfo.Builder.createUser("test")
                 .withPermissions(Collections.singleton(SystemController.PERMISSION_SYSTEM_CONSOLE)).build())
-        def result = TestRequest.POST("/service/xml/system/console", Context.create().set("command", "help")).executeAndBlock()
+        def result = TestRequest.POST("/service/xml/system/console").withParameters(Context.create().set("command", "help")).execute()
         then:
         result.getStatus() == HttpResponseStatus.OK
         result.xmlContent().queryString("error/code") == null

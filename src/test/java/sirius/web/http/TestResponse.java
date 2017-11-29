@@ -36,7 +36,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by {@link TestRequest#execute()} or {@link TestRequest#executeAndBlock()} and represents a response
+ * Created by {@link TestRequest#execute()} or {@link TestRequest#executeAsync()} and represents a response
  * generated for a test request.
  * <p>
  * Provides additional information like {@link #getStatus()} or {@link #getType()} to verify what kind of

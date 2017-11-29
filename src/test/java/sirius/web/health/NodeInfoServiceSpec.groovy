@@ -19,7 +19,7 @@ class NodeInfoServiceSpec extends BaseSpecification {
 
     def "/service/xml/system/node-info returns XML"() {
         when:
-        def result = TestRequest.GET("/service/xml/system/node-info").executeAndBlock()
+        def result = TestRequest.GET("/service/xml/system/node-info").execute()
         then:
         result.getStatus() == HttpResponseStatus.OK
         result.getType() == TestResponse.ResponseType.STREAM
