@@ -14,6 +14,7 @@ import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.compiler.CompilationContext;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -73,9 +74,29 @@ public class MethodCall extends Call {
                 return method.invoke(self);
             }
 
-            Object[] params = new Object[parameterExpressions.length];
-            for (int i = 0; i < parameterExpressions.length; i++) {
-                params[i] = parameterExpressions[i].eval(ctx);
+            // Calculates if the called method has a varargs Parameter or not
+            int varargsIndex = method.getParameterCount() - 1;
+            boolean isVarargsMethod = method.getParameterTypes()[varargsIndex].isArray();
+            Object[] params = new Object[method.getParameterCount()];
+
+            if (isVarargsMethod) {
+                // Fills all non-varargs parameters
+                for (int i = 0; i < varargsIndex; i++) {
+                    params[i] = parameterExpressions[i].eval(ctx);
+                }
+                // Instantiates the varargs array of the correct type
+                Object[] varargs =
+                        (Object[]) Array.newInstance(method.getParameterTypes()[varargsIndex].getComponentType(),
+                                                     parameterExpressions.length - varargsIndex);
+                // Fills the varargs parameter array
+                for (int j = varargsIndex; j < parameterExpressions.length; j++) {
+                    varargs[j - varargsIndex] = parameterExpressions[j].eval(ctx);
+                }
+                params[varargsIndex] = varargs;
+            } else {
+                for (int i = 0; i < parameterExpressions.length; i++) {
+                    params[i] = parameterExpressions[i].eval(ctx);
+                }
             }
 
             return method.invoke(self, params);
