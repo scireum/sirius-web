@@ -23,7 +23,7 @@ import sirius.web.http.WebContext;
  * {@code
  *  {@literal @}Routed("/system/console")
  *  public void console(WebContext ctx) {
- *    ctx.respondWith().cached().template("/view/system/console.html");
+ *    ctx.respondWith().cached().template("view/system/console.html");
  *  }
  * }
  * </pre>
