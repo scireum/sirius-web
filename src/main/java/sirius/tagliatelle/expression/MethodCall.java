@@ -79,7 +79,14 @@ public class MethodCall extends Call {
             boolean isVarargsMethod = method.getParameterTypes()[varargsIndex].isArray();
             Object[] params = new Object[method.getParameterCount()];
 
-            if (isVarargsMethod) {
+            Object varargsParam = parameterExpressions[varargsIndex].eval(ctx);
+            Class<?> varargsParamClass = varargsParam.getClass();
+            boolean isAlreadyVaragsArray = isVarargsMethod
+                                           && varargsParamClass.isArray()
+                                           && varargsParamClass.getComponentType()
+                                              == method.getParameterTypes()[varargsIndex].getComponentType();
+
+            if (isVarargsMethod && !isAlreadyVaragsArray) {
                 // Fills all non-varargs parameters
                 for (int i = 0; i < varargsIndex; i++) {
                     params[i] = parameterExpressions[i].eval(ctx);
@@ -90,12 +97,20 @@ public class MethodCall extends Call {
                                                      parameterExpressions.length - varargsIndex);
                 // Fills the varargs parameter array
                 for (int j = varargsIndex; j < parameterExpressions.length; j++) {
-                    varargs[j - varargsIndex] = parameterExpressions[j].eval(ctx);
+                    if (j == varargsIndex) {
+                        varargs[0] = varargsParam;
+                    } else {
+                        varargs[j - varargsIndex] = parameterExpressions[j].eval(ctx);
+                    }
                 }
                 params[varargsIndex] = varargs;
             } else {
                 for (int i = 0; i < parameterExpressions.length; i++) {
-                    params[i] = parameterExpressions[i].eval(ctx);
+                    if (i == varargsIndex) {
+                        params[i] = varargsParam;
+                    } else {
+                        params[i] = parameterExpressions[i].eval(ctx);
+                    }
                 }
             }
 
