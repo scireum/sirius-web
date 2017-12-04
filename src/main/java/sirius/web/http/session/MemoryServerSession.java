@@ -15,6 +15,7 @@ import sirius.kernel.di.std.ConfigValue;
 
 import javax.annotation.Nonnull;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -53,6 +54,9 @@ class MemoryServerSession implements ServerSession {
     @ConfigValue("http.serverUserSessionLifetime")
     private static Duration userSessionLifetime;
 
+    @ConfigValue("http.csrfTokenLifetime")
+    private static Duration csrfTokenLifetime;
+
     /**
      * Creates a new session attached to the given storage.
      *
@@ -60,6 +64,8 @@ class MemoryServerSession implements ServerSession {
      */
     MemoryServerSession(SessionManager.MemorySessionStorage sessionStorage) {
         this.sessionStorage = sessionStorage;
+        values.put("CSRFToken", UUID.randomUUID().toString());
+        values.put("lastCSRFRecompute", Instant.now());
     }
 
     @Override
@@ -75,6 +81,17 @@ class MemoryServerSession implements ServerSession {
     @Override
     public long getLastAccessedTime() {
         return lastAccessed;
+    }
+
+    @Override
+    public String getCSRFToken() {
+        if (Duration.between((Instant) values.get("lastCSRFRecompute"), Instant.now()).toMinutes()
+            > csrfTokenLifetime.toMinutes()) {
+            values.put("CSRFToken", UUID.randomUUID().toString());
+            values.put("lastCSRFRecompute", Instant.now());
+        }
+
+        return (String) values.get("CSRFToken");
     }
 
     @Override

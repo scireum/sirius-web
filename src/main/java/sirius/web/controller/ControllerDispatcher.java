@@ -14,6 +14,7 @@ import sirius.kernel.async.TaskContext;
 import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.PriorityCollector;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.Injector;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.PriorityParts;
@@ -96,6 +97,18 @@ public class ControllerDispatcher implements WebDispatcher {
                 return false;
             }
 
+            if (route.getMethod().isAnnotationPresent(AddSecurityToken.class)) {
+                ctx.withCSRFProtection();
+            }
+
+            if (route.getMethod().isAnnotationPresent(CheckSecurityToken.class) && (!ctx.isPOST()
+                                                                                    || !checkCSRFToken(ctx))) {
+                handleFailure(ctx,
+                              route,
+                              Exceptions.createHandled().withNLSKey("ControllerDispatcher.invalidCSRFToken").handle());
+                return true;
+            }
+
             // Check if interceptors permit execution of route...
             for (Interceptor interceptor : interceptors) {
                 if (!interceptor.shouldExecuteRoute(ctx, route.isJSONCall(), route.getController())) {
@@ -127,6 +140,13 @@ public class ControllerDispatcher implements WebDispatcher {
                  .fork(() -> handleFailure(ctx, route, e));
             return true;
         }
+    }
+
+    private boolean checkCSRFToken(WebContext ctx) {
+        return Strings.isFilled(ctx.get("CSRFToken").asString()) && Strings.areEqual(ctx.get("CSRFToken").asString(),
+                                                                                     ctx.getServerSession()
+                                                                                        .getValue("CSRFToken")
+                                                                                        .asString());
     }
 
     private void performRouteInOwnThread(WebContext ctx, Route route, List<Object> params) {

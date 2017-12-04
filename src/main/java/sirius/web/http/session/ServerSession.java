@@ -167,4 +167,11 @@ public interface ServerSession {
      * session live time over a session without an attached user.
      */
     void markAsUserSession();
+
+    /**
+     * Returns the current CSRF security-token.
+     *
+     * @return the security token which should be placed in sensitiv action links
+     */
+    String getCSRFToken();
 }

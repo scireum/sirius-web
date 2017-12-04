@@ -21,7 +21,9 @@ import io.netty.handler.codec.http.*
 import org.apache.log4j.Level
 import sirius.kernel.BaseSpecification
 import sirius.kernel.commons.Strings
+import sirius.kernel.di.std.ConfigValue
 import sirius.kernel.health.LogHelper
+
 /**
  * Simulates a bunch of "real" (outside) requests through netty and sirius.
  * <p>
@@ -32,6 +34,9 @@ import sirius.kernel.health.LogHelper
  * @since 2015/05
  */
 class WebServerSpec extends BaseSpecification {
+
+    @ConfigValue("http.serverSessionParameterName")
+    private static String serverSessionParameterName
 
     def callAndRead(String uri, Map outHeaders, Map expectedHeaders) {
         URLConnection c = new URL("http://localhost:9999" + uri).openConnection()
@@ -357,7 +362,7 @@ class WebServerSpec extends BaseSpecification {
             b.channel(NioSocketChannel.class)
             b.handler(new ChannelInitializer<SocketChannel>() {
                 @Override
-                 void initChannel(SocketChannel ch) throws Exception {
+                void initChannel(SocketChannel ch) throws Exception {
                     ch.pipeline().addLast(new HttpClientCodec())
                     ch.pipeline().addLast(new ChannelInboundHandlerAdapter() {
                         @Override
@@ -394,4 +399,43 @@ class WebServerSpec extends BaseSpecification {
         responses.get(2).headers().get("URI") == "/pipelining/10"
     }
 
+    def "CSRF security token works correctly if missing"() {
+        when:
+        def result = TestRequest.GET("/test/fake-delete-data").execute()
+        then:
+        result.getStatus() == HttpResponseStatus.INTERNAL_SERVER_ERROR
+    }
+
+    def "CSRF security tokens works correctly if present via POST"() {
+        given:
+        def securityToken = TestRequest.GET("/test/provide-security-token").execute()
+        when:
+        def result = TestRequest.POST("/test/fake-delete-data")
+                .withParameter(serverSessionParameterName, securityToken.getSessionId())
+                .withParameter("CSRFToken", securityToken.getContentAsString()).execute()
+        then:
+        result.getStatus() == HttpResponseStatus.OK
+    }
+
+    def "CSRF security token works correctly if present via POST but wrong"() {
+        given:
+        def securityToken = TestRequest.GET("/test/provide-security-token").execute()
+        when:
+        def result = TestRequest.GET("/test/fake-delete-data")
+                .withParameter(serverSessionParameterName, securityToken.getSessionId())
+                .withParameter("CSRFToken", "s-o-m-e-t-o-k-e-n").execute()
+        then:
+        result.getStatus() == HttpResponseStatus.INTERNAL_SERVER_ERROR
+    }
+
+    def "CSRF security token works correctly if GET is used"() {
+        given:
+        def securityToken = TestRequest.GET("/test/provide-security-token").execute()
+        when:
+        def result = TestRequest.GET("/test/fake-delete-data")
+                .withParameter(serverSessionParameterName, securityToken.getSessionId())
+                .withParameter("CSRFToken", securityToken.getContentAsString()).execute()
+        then:
+        result.getStatus() == HttpResponseStatus.INTERNAL_SERVER_ERROR
+    }
 }
