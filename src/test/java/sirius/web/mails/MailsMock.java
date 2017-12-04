@@ -8,12 +8,12 @@
 
 package sirius.web.mails;
 
-import com.google.common.collect.Lists;
 import sirius.kernel.commons.Context;
 import sirius.kernel.di.Replace;
 import sirius.kernel.di.std.Register;
 
 import javax.activation.DataSource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -21,7 +21,7 @@ import java.util.Map;
 @Register(classes = Mails.class)
 public class MailsMock extends Mails {
 
-    private List<MailSenderMock> sentMails = Lists.newArrayList();
+    private ThreadLocal<List<MailSenderMock>> sentMails = new ThreadLocal<>();
 
     @Override
     public MailSender createEmail() {
@@ -35,7 +35,7 @@ public class MailsMock extends Mails {
         @Override
         protected void sendMailAsync(SMTPConfiguration config) {
             this.effectiveConfig = config;
-            sentMails.add(this);
+            getSentMails().add(this);
             Mails.LOG.INFO("eMail to '%s' was not sent but captured, as MailsMock is active...", getReceiverEmail());
         }
 
@@ -89,10 +89,16 @@ public class MailsMock extends Mails {
     }
 
     public List<MailSenderMock> getSentMails() {
-        return sentMails;
+        List<MailSenderMock> list = sentMails.get();
+        if (list == null) {
+            list = new ArrayList<>();
+            sentMails.set(list);
+        }
+        return list;
     }
 
     public MailSenderMock getLastMail() {
-        return sentMails.get(sentMails.size() - 1);
+        List<MailSenderMock> list = getSentMails();
+        return list.isEmpty() ? null : list.get(list.size() - 1);
     }
 }

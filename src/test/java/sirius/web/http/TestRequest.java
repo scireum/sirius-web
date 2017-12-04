@@ -9,13 +9,10 @@
 package sirius.web.http;
 
 import com.alibaba.fastjson.JSONObject;
-import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
-import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
@@ -25,18 +22,18 @@ import io.netty.handler.codec.http.cookie.ClientCookieEncoder;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.multipart.Attribute;
-import io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
-import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.MemoryAttribute;
 import sirius.kernel.async.Barrier;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
+import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 import sirius.web.resources.Resources;
 
+import javax.annotation.Nonnull;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,35 +46,49 @@ import java.util.stream.Collectors;
  * Provides a test or mock instance of {@link sirius.web.http.WebContext}.
  * <p>
  * Can be used to simulate a request sent to the web server. Additionally the {@link sirius.web.http.TestResponse}
- * returned by {@link #executeAndBlock()} or {@link #execute()} can be used to inspect what kind of response
+ * returned by {@link #execute()} or {@link #executeAsync()} can be used to inspect what kind of response
  * was generated or which parameters were passed along.
  */
 public class TestRequest extends WebContext implements HttpRequest {
 
+    @Part
+    private static Resources resources;
+
     private HttpHeaders testHeaders = new DefaultHttpHeaders();
     private String testUri;
+    private Map<String, Object> parameters = Context.create();
+    private InputStream resource;
     private HttpMethod testMethod;
     private boolean preDispatch;
     private List<Cookie> testCookies = Lists.newArrayList();
     protected Promise<TestResponse> testResponsePromise = new Promise<>();
     private static DispatcherPipeline pipeline;
 
-    private TestRequest() {
+    protected TestRequest() {
         super();
         this.request = this;
     }
 
-    /**
-     * Creates a mock request simulating a GET on the given uri.
-     *
-     * @param uri the relative uri to call
-     * @return an instance used to further specify the request to send
-     */
+    public TestRequest(HttpMethod method, String uri) {
+        this();
+        this.testMethod = method;
+        this.testUri = uri;
+    }
+
     public static TestRequest GET(String uri) {
-        TestRequest result = new TestRequest();
-        result.testMethod = HttpMethod.GET;
-        result.testUri = uri;
-        return result;
+        return new TestRequest(HttpMethod.GET, uri);
+    }
+
+    public static TestRequest POST(String uri) {
+        return new TestRequest(HttpMethod.POST, uri);
+    }
+
+    public static TestRequest DELETE(String uri) {
+        return new TestRequest(HttpMethod.DELETE, uri);
+    }
+
+    public static TestRequest PUT(String uri) {
+        return new TestRequest(HttpMethod.PUT, uri);
     }
 
     /**
@@ -87,22 +98,12 @@ public class TestRequest extends WebContext implements HttpRequest {
      * @param queryString the parameters to be applied to the query string of the request.
      *                    Commonly known as "GET parameters".
      * @return an instance used to further specify the request to send
+     * @deprecated use {@link #GET(String)} and {@link #withParameters(Map)}
      */
+    @Deprecated
     public static TestRequest GET(String uri, sirius.kernel.commons.Context queryString) {
-        if (!queryString.isEmpty()) {
-            uri += "?" + queryString.entrySet()
-                                    .stream()
-                                    .map(e -> e.getKey() + "=" + Strings.urlEncode(NLS.toMachineString(e.getValue())))
-                                    .collect(Collectors.joining("&"));
-        }
-        TestRequest result = new TestRequest();
-        result.testMethod = HttpMethod.GET;
-        result.testUri = uri;
-        return result;
+        return GET(uri).withParameters(queryString);
     }
-
-    @Part
-    private static Resources resources;
 
     /**
      * Creates a mock request simulating a PUT on the given uri while sending the given resource.
@@ -113,25 +114,11 @@ public class TestRequest extends WebContext implements HttpRequest {
      * @param resource the name of the resource to send
      * @return an instance used to further specify the request to send
      * @see #PUT(String, InputStream)
+     * @deprecated use {@link #PUT(String)} and {@link #sendResource(String)}
      */
+    @Deprecated
     public static TestRequest PUT(String uri, String resource) {
-        return PUT(uri, getResourceAsStream(resource));
-    }
-
-    protected static InputStream getResourceAsStream(String resource) {
-        return resources.resolve(resource)
-                        .orElseThrow(() -> new IllegalArgumentException("Unknown Resource: " + resource))
-                        .openStream();
-    }
-
-    private static void installContent(TestRequest request, InputStream inputStream) {
-        try {
-            Attribute body = new MemoryAttribute("body");
-            body.setContent(inputStream);
-            request.content = body;
-        } catch (IOException e) {
-            throw Exceptions.handle(e);
-        }
+        return PUT(uri).sendResource(resource);
     }
 
     /**
@@ -140,18 +127,11 @@ public class TestRequest extends WebContext implements HttpRequest {
      * @param uri      the relative uri to call
      * @param resource the data to send to the server
      * @return an instance used to further specify the request to send
+     * @deprecated use {@link #PUT(String)} and {@link #sendResource(InputStream)}
      */
+    @Deprecated
     public static TestRequest PUT(String uri, InputStream resource) {
-        TestRequest result = new TestRequest();
-        result.testMethod = HttpMethod.PUT;
-        result.testUri = uri;
-        try {
-            result.addHeader(HttpHeaderNames.CONTENT_LENGTH, resource.available());
-        } catch (IOException e) {
-            Exceptions.createHandled().error(e).handle();
-        }
-        installContent(result, resource);
-        return result;
+        return PUT(uri).sendResource(resource);
     }
 
     /**
@@ -163,9 +143,11 @@ public class TestRequest extends WebContext implements HttpRequest {
      * @param resource the name of the resource to send
      * @return an instance used to further specify the request to send
      * @see #POST(String, InputStream)
+     * @deprecated use {@link #POST(String)} and {@link #sendResource(String)}
      */
+    @Deprecated
     public static TestRequest POST(String uri, String resource) {
-        return POST(uri, getResourceAsStream(resource));
+        return POST(uri).sendResource(resource);
     }
 
     /**
@@ -174,18 +156,11 @@ public class TestRequest extends WebContext implements HttpRequest {
      * @param uri      the relative uri to call
      * @param resource the data to send to the server
      * @return an instance used to further specify the request to send
+     * @deprecated use {@link #POST(String)} and {@link #sendResource(InputStream)}
      */
+    @Deprecated
     public static TestRequest POST(String uri, InputStream resource) {
-        TestRequest result = new TestRequest();
-        result.testMethod = HttpMethod.POST;
-        result.testUri = uri;
-        try {
-            result.addHeader(HttpHeaderNames.CONTENT_LENGTH, resource.available());
-        } catch (IOException e) {
-            Exceptions.createHandled().error(e).handle();
-        }
-        installContent(result, resource);
-        return result;
+        return POST(uri).sendResource(resource);
     }
 
     /**
@@ -194,23 +169,11 @@ public class TestRequest extends WebContext implements HttpRequest {
      * @param uri      the relative uri to call
      * @param formData the parameters be included in the post request
      * @return an instance used to further specify the request to send
+     * @deprecated use {@link #POST(String)} and {@link #withParameters(Map)}
      */
+    @Deprecated
     public static TestRequest POST(String uri, sirius.kernel.commons.Context formData) {
-        TestRequest result = new TestRequest();
-        result.testMethod = HttpMethod.POST;
-        result.testUri = uri;
-        MutableHttpPostRequestDecoder dec = new MutableHttpPostRequestDecoder(result);
-        for (Map.Entry<String, Object> entry : formData.entrySet()) {
-            try {
-                dec.addHttpData(new MemoryAttribute(entry.getKey(),
-                                                    entry.getValue() == null ? "" : entry.getValue().toString()));
-            } catch (IOException e) {
-                throw Exceptions.handle(e);
-            }
-        }
-        dec.offer(new DefaultLastHttpContent(Unpooled.EMPTY_BUFFER));
-        result.postDecoder = dec;
-        return result;
+        return POST(uri).withParameters(formData);
     }
 
     /**
@@ -219,13 +182,11 @@ public class TestRequest extends WebContext implements HttpRequest {
      * @param uri  the relative uri to call
      * @param json the JSON data be included in the post request
      * @return an instance used to further specify the request to send
+     * @deprecated use {@link #POST(String)} and {@link #sendData(JSONObject)}
      */
+    @Deprecated
     public static TestRequest POST(String uri, JSONObject json) {
-        TestRequest result = new TestRequest();
-        result.testMethod = HttpMethod.POST;
-        result.testUri = uri;
-        installContent(result, new ByteArrayInputStream(json.toJSONString().getBytes(Charsets.UTF_8)));
-        return result;
+        return POST(uri).sendData(json);
     }
 
     /**
@@ -268,61 +229,49 @@ public class TestRequest extends WebContext implements HttpRequest {
      *
      * @return the request itself for fluent method calls
      */
-    public TestRequest asPreDispatched() {
+    public TestRequest preDispatch() {
         this.preDispatch = true;
         return this;
     }
 
-    /**
-     * Executes the request (dispatches it).
-     * <p>
-     * Returns a promise which will be full filled, once the called code produces a response. Use
-     * {@link #executeAndBlock()} to wait until a response is generated.
-     *
-     * @return a promise which will contain the response generated by the application
-     */
-    public Promise<TestResponse> execute() {
-        CallContext.getCurrent().set(WebContext.class, this);
-        try {
-            if (preDispatch && getPipeline().preDispatch(this)) {
-                contentHandler.handle(this.content.getByteBuf(), true);
-            } else {
-                getPipeline().dispatch(this);
-            }
-            return testResponsePromise;
-        } catch (Exception e) {
-            throw Exceptions.handle(e);
-        }
+    public TestRequest withParameter(String key, Object value) {
+        this.parameters.put(key, value);
+
+        return this;
     }
 
-    private DispatcherPipeline getPipeline() {
-        if (pipeline == null) {
-            pipeline = DispatcherPipeline.create();
-        }
+    public TestRequest withParameters(Map<String, Object> parameters) {
+        this.parameters.putAll(parameters);
 
-        return pipeline;
+        return this;
     }
 
-    /**
-     * Executes (dispatches) the request and waits until a response is generated.
-     *
-     * @return the generated response
-     */
-    public TestResponse executeAndBlock() {
-        Barrier barrier = Barrier.create();
-        barrier.add(execute());
-        if (barrier.await(60, TimeUnit.SECONDS)) {
-            if (testResponsePromise.isSuccessful()) {
-                return testResponsePromise.get();
-            } else {
-                throw Exceptions.handle()
-                                .withSystemErrorMessage("Failed to create a response for: %s", uri())
-                                .error(testResponsePromise.getFailure())
-                                .handle();
-            }
-        } else {
-            throw Exceptions.handle().withSystemErrorMessage("No response was created after 60s: %s", uri()).handle();
-        }
+    public TestRequest sendData(Map<String, Object> postData) {
+        sendData(generateQueryString(postData));
+
+        return this;
+    }
+
+    public TestRequest sendData(JSONObject postData) {
+        sendData(postData.toString());
+
+        return this;
+    }
+
+    public TestRequest sendData(String postData) {
+        sendResource(new ByteArrayInputStream(postData.getBytes()));
+
+        return this;
+    }
+
+    public TestRequest sendResource(String resource) {
+        return sendResource(getResourceAsStream(resource));
+    }
+
+    public TestRequest sendResource(InputStream resource) {
+        this.resource = resource;
+
+        return this;
     }
 
     @Override
@@ -419,14 +368,106 @@ public class TestRequest extends WebContext implements HttpRequest {
         return "TestRequest: " + uri();
     }
 
-    private static class MutableHttpPostRequestDecoder extends HttpPostStandardRequestDecoder {
-        private MutableHttpPostRequestDecoder(TestRequest result) {
-            super(result.getRequest());
+    /**
+     * Executes the request (dispatches it).
+     * <p>
+     * Returns a promise which will be full filled, once the called code produces a response. Use
+     * {@link #execute()} to wait until a response is generated.
+     *
+     * @return a promise which will contain the response generated by the application
+     */
+    public Promise<TestResponse> executeAsync() {
+        build();
+
+        CallContext.getCurrent().set(WebContext.class, this);
+        try {
+            if (preDispatch && getPipeline().preDispatch(this)) {
+                contentHandler.handle(this.content.getByteBuf(), true);
+            } else {
+                getPipeline().dispatch(this);
+            }
+            return testResponsePromise;
+        } catch (Exception e) {
+            throw Exceptions.handle(e);
+        }
+    }
+
+    protected void build() {
+        // append GET parameters to URI
+        String queryString = generateQueryString(parameters);
+        this.testUri = this.testUri + (Strings.isFilled(queryString) ? "?" + queryString : "");
+
+        // send resource in body
+        if (resource != null && (testMethod.equals(HttpMethod.PATCH) || testMethod.equals(HttpMethod.POST) || testMethod
+                .equals(HttpMethod.PUT))) {
+            try {
+                addHeader(HttpHeaderNames.CONTENT_LENGTH, resource.available());
+                Attribute body = new MemoryAttribute("body");
+                body.setContent(resource);
+                content = body;
+            } catch (IOException e1) {
+                throw Exceptions.handle(e1);
+            }
+        }
+    }
+
+    /**
+     * Executes (dispatches) the request and waits until a response is generated.
+     *
+     * @return the generated response
+     * @deprecated use {@link #execute()}
+     */
+    @Deprecated
+    public TestResponse executeAndBlock() {
+        return execute();
+    }
+
+    /**
+     * Executes (dispatches) the request and waits until a response is generated.
+     *
+     * @return the generated response
+     */
+    public TestResponse execute() {
+        Barrier barrier = Barrier.create();
+        barrier.add(executeAsync());
+        if (barrier.await(60, TimeUnit.SECONDS)) {
+            if (testResponsePromise.isSuccessful()) {
+                return testResponsePromise.get();
+            } else {
+                throw Exceptions.handle()
+                                .withSystemErrorMessage("Failed to create a response for: %s", uri())
+                                .error(testResponsePromise.getFailure())
+                                .handle();
+            }
+        } else {
+            throw Exceptions.handle().withSystemErrorMessage("No response was created after 60s: %s", uri()).handle();
+        }
+    }
+
+    @Nonnull
+    protected String generateQueryString(Map<String, Object> parameters) {
+        if (parameters.isEmpty()) {
+            return "";
+        }
+        return parameters.entrySet()
+                         .stream()
+                         .map(e -> Strings.urlEncode(e.getKey())
+                                   + "="
+                                   + Strings.urlEncode(NLS.toMachineString(e.getValue())))
+                         .collect(Collectors.joining("&"));
+    }
+
+    protected InputStream getResourceAsStream(String resource) {
+        return resources.resolve(resource)
+                        .orElseThrow(() -> new IllegalArgumentException("Unknown Resource: " + resource))
+                        .openStream();
+    }
+
+    private DispatcherPipeline getPipeline() {
+        if (pipeline == null) {
+            pipeline = DispatcherPipeline.create();
         }
 
-        @Override
-        public void addHttpData(InterfaceHttpData data) {
-            super.addHttpData(data);
-        }
+        return pipeline;
     }
 }
