@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.ConfigValue;
+import sirius.web.controller.ControllerDispatcher;
 
 import javax.annotation.Nonnull;
 import java.time.Duration;
@@ -35,6 +36,8 @@ import java.util.UUID;
  * @see sirius.web.http.WebContext#getServerSession()
  */
 class MemoryServerSession implements ServerSession {
+
+    private static final String LAST_CSRF_RECOMPUTE = "lastCSRFRecompute";
 
     private SessionManager.MemorySessionStorage sessionStorage;
     private boolean userAttached = false;
@@ -64,8 +67,8 @@ class MemoryServerSession implements ServerSession {
      */
     MemoryServerSession(SessionManager.MemorySessionStorage sessionStorage) {
         this.sessionStorage = sessionStorage;
-        values.put("CSRFToken", UUID.randomUUID().toString());
-        values.put("lastCSRFRecompute", Instant.now());
+        values.put(ControllerDispatcher.CSRF_TOKEN, UUID.randomUUID().toString());
+        values.put(LAST_CSRF_RECOMPUTE, Instant.now());
     }
 
     @Override
@@ -85,13 +88,13 @@ class MemoryServerSession implements ServerSession {
 
     @Override
     public String getCSRFToken() {
-        if (Duration.between((Instant) values.get("lastCSRFRecompute"), Instant.now()).toMinutes()
+        if (Duration.between((Instant) values.get(LAST_CSRF_RECOMPUTE), Instant.now()).toMinutes()
             > csrfTokenLifetime.toMinutes()) {
-            values.put("CSRFToken", UUID.randomUUID().toString());
-            values.put("lastCSRFRecompute", Instant.now());
+            values.put(ControllerDispatcher.CSRF_TOKEN, UUID.randomUUID().toString());
+            values.put(LAST_CSRF_RECOMPUTE, Instant.now());
         }
 
-        return (String) values.get("CSRFToken");
+        return (String) values.get(ControllerDispatcher.CSRF_TOKEN);
     }
 
     @Override

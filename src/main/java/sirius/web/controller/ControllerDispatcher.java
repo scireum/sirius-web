@@ -43,6 +43,8 @@ import java.util.List;
 public class ControllerDispatcher implements WebDispatcher {
 
     protected static final Log LOG = Log.get("controller");
+
+    public static final String CSRF_TOKEN = "CSRFToken";
     private static final String SYSTEM_MVC = "MVC";
 
     private List<Route> routes;
@@ -131,10 +133,9 @@ public class ControllerDispatcher implements WebDispatcher {
     }
 
     private boolean checkCSRFToken(WebContext ctx) {
-        return Strings.isFilled(ctx.get("CSRFToken").asString()) && Strings.areEqual(ctx.get("CSRFToken").asString(),
-                                                                                     ctx.getServerSession()
-                                                                                        .getValue("CSRFToken")
-                                                                                        .asString());
+        String requestToken = ctx.get(CSRF_TOKEN).asString();
+        return Strings.isFilled(requestToken) && Strings.areEqual(requestToken,
+                                                                  ctx.getServerSession().getValue(CSRF_TOKEN).asString());
     }
 
     private void performRouteInOwnThread(WebContext ctx, Route route, List<Object> params) {

@@ -23,6 +23,7 @@ import sirius.kernel.BaseSpecification
 import sirius.kernel.commons.Strings
 import sirius.kernel.di.std.ConfigValue
 import sirius.kernel.health.LogHelper
+import sirius.web.controller.ControllerDispatcher
 
 /**
  * Simulates a bunch of "real" (outside) requests through netty and sirius.
@@ -412,7 +413,7 @@ class WebServerSpec extends BaseSpecification {
         when:
         def result = TestRequest.POST("/test/fake-delete-data")
                 .withParameter(serverSessionParameterName, securityToken.getSessionId())
-                .withParameter("CSRFToken", securityToken.getContentAsString()).execute()
+                .withParameter(ControllerDispatcher.CSRF_TOKEN, securityToken.getContentAsString()).execute()
         then:
         result.getStatus() == HttpResponseStatus.OK
     }
@@ -423,7 +424,7 @@ class WebServerSpec extends BaseSpecification {
         when:
         def result = TestRequest.GET("/test/fake-delete-data")
                 .withParameter(serverSessionParameterName, securityToken.getSessionId())
-                .withParameter("CSRFToken", "s-o-m-e-t-o-k-e-n").execute()
+                .withParameter(ControllerDispatcher.CSRF_TOKEN, "s-o-m-e-t-o-k-e-n").execute()
         then:
         result.getStatus() == HttpResponseStatus.INTERNAL_SERVER_ERROR
     }
@@ -434,7 +435,7 @@ class WebServerSpec extends BaseSpecification {
         when:
         def result = TestRequest.GET("/test/fake-delete-data")
                 .withParameter(serverSessionParameterName, securityToken.getSessionId())
-                .withParameter("CSRFToken", securityToken.getContentAsString()).execute()
+                .withParameter(ControllerDispatcher.CSRF_TOKEN, securityToken.getContentAsString()).execute()
         then:
         result.getStatus() == HttpResponseStatus.INTERNAL_SERVER_ERROR
     }
