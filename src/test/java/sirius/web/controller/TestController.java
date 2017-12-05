@@ -11,6 +11,7 @@ package sirius.web.controller;
 import com.google.common.io.ByteStreams;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.HandledException;
@@ -24,6 +25,10 @@ import java.io.OutputStream;
 
 @Register
 public class TestController implements Controller {
+
+    @ConfigValue("http.serverSessionParameterName")
+    private static String serverSessionParameterName;
+
     @Override
     public void onError(WebContext ctx, HandledException error) {
         ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error.getMessage());
@@ -127,5 +132,19 @@ public class TestController implements Controller {
         } finally {
             upload.close();
         }
+    }
+
+    @AddSecurityToken
+    @Routed("/test/provide-security-token")
+    public void provideSecuritytoken(WebContext ctx) {
+        ctx.respondWith()
+           .addHeader(serverSessionParameterName, ctx.getServerSession().getId())
+           .template("templates/security-token.html.pasta");
+    }
+
+    @CheckSecurityToken
+    @Routed("/test/fake-delete-data")
+    public void deleteData(WebContext ctx) {
+        ctx.respondWith().template("templates/helloWorld.pasta", "test");
     }
 }

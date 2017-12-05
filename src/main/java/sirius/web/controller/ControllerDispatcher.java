@@ -14,6 +14,7 @@ import sirius.kernel.async.TaskContext;
 import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.PriorityCollector;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.Injector;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.PriorityParts;
@@ -42,6 +43,8 @@ import java.util.List;
 public class ControllerDispatcher implements WebDispatcher {
 
     protected static final Log LOG = Log.get("controller");
+
+    public static final String CSRF_TOKEN = "CSRFToken";
     private static final String SYSTEM_MVC = "MVC";
 
     private List<Route> routes;
@@ -129,6 +132,12 @@ public class ControllerDispatcher implements WebDispatcher {
         }
     }
 
+    private boolean checkCSRFToken(WebContext ctx) {
+        String requestToken = ctx.get(CSRF_TOKEN).asString();
+        return Strings.isFilled(requestToken) && Strings.areEqual(requestToken,
+                                                                  ctx.getServerSession().getValue(CSRF_TOKEN).asString());
+    }
+
     private void performRouteInOwnThread(WebContext ctx, Route route, List<Object> params) {
         try {
             setupContext(ctx, route);
@@ -143,6 +152,12 @@ public class ControllerDispatcher implements WebDispatcher {
             // Install user. This is forcefully called here to ensure that the ScopeDetetor
             // and the user manager are guaranteed to be invoked one we enter the controller code...
             UserInfo user = UserContext.getCurrentUser();
+
+            ctx.withUseCSRFProtection(route.getMethod().isAnnotationPresent(AddSecurityToken.class));
+
+            if (!checkCSRFTokenIfNecessary(ctx, route)) {
+                return;
+            }
 
             // If the underlying ScopeDetector made a redirect (for whatever reasons)
             // the response will be committed and we can (must) safely return...
@@ -166,6 +181,18 @@ public class ControllerDispatcher implements WebDispatcher {
             handleFailure(ctx, route, ex);
         }
         ctx.enableTiming(route.toString());
+    }
+
+    private boolean checkCSRFTokenIfNecessary(WebContext ctx, Route route) {
+        if (route.getMethod().isAnnotationPresent(CheckSecurityToken.class) && (!ctx.isPOST()
+                                                                                || !checkCSRFToken(ctx))) {
+            handleFailure(ctx,
+                          route,
+                          Exceptions.createHandled().withNLSKey("ControllerDispatcher.invalidCSRFToken").handle());
+            return false;
+        }
+
+        return true;
     }
 
     private void executeRoute(WebContext ctx, Route route, List<Object> params) throws Exception {

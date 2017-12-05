@@ -12,9 +12,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.ConfigValue;
+import sirius.web.controller.ControllerDispatcher;
 
 import javax.annotation.Nonnull;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -35,6 +37,8 @@ import java.util.UUID;
  */
 class MemoryServerSession implements ServerSession {
 
+    private static final String LAST_CSRF_RECOMPUTE = "lastCSRFRecompute";
+
     private SessionManager.MemorySessionStorage sessionStorage;
     private boolean userAttached = false;
     private long created = System.currentTimeMillis();
@@ -53,6 +57,9 @@ class MemoryServerSession implements ServerSession {
     @ConfigValue("http.serverUserSessionLifetime")
     private static Duration userSessionLifetime;
 
+    @ConfigValue("http.csrfTokenLifetime")
+    private static Duration csrfTokenLifetime;
+
     /**
      * Creates a new session attached to the given storage.
      *
@@ -60,6 +67,8 @@ class MemoryServerSession implements ServerSession {
      */
     MemoryServerSession(SessionManager.MemorySessionStorage sessionStorage) {
         this.sessionStorage = sessionStorage;
+        values.put(ControllerDispatcher.CSRF_TOKEN, UUID.randomUUID().toString());
+        values.put(LAST_CSRF_RECOMPUTE, Instant.now());
     }
 
     @Override
@@ -75,6 +84,17 @@ class MemoryServerSession implements ServerSession {
     @Override
     public long getLastAccessedTime() {
         return lastAccessed;
+    }
+
+    @Override
+    public String getCSRFToken() {
+        if (Duration.between((Instant) values.get(LAST_CSRF_RECOMPUTE), Instant.now()).toMinutes()
+            > csrfTokenLifetime.toMinutes()) {
+            values.put(ControllerDispatcher.CSRF_TOKEN, UUID.randomUUID().toString());
+            values.put(LAST_CSRF_RECOMPUTE, Instant.now());
+        }
+
+        return (String) values.get(ControllerDispatcher.CSRF_TOKEN);
     }
 
     @Override

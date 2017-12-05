@@ -20,6 +20,7 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
+import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.xml.StructuredNode;
 import sirius.kernel.xml.XMLStructuredInput;
@@ -43,6 +44,9 @@ import java.util.List;
  * response was created.
  */
 public class TestResponse extends Response {
+
+    @ConfigValue("http.serverSessionParameterName")
+    private static String serverSessionParameterName;
 
     protected TestResponse(TestRequest testRequest) {
         super(testRequest);
@@ -320,5 +324,9 @@ public class TestResponse extends Response {
                 completeResponse();
             }
         };
+    }
+
+    public String getSessionId(){
+        return headers().get(serverSessionParameterName);
     }
 }

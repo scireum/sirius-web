@@ -294,6 +294,11 @@ public class WebContext implements SubContext {
     protected UserAgent userAgent;
 
     /*
+      * Whether CSRF tokens should be placed into sensitiv links.
+      */
+    private boolean useCSRFProtection = false;
+
+    /*
      * Name of the cookie used to store and load the client session
      */
     @ConfigValue("http.sessionCookieName")
@@ -1076,6 +1081,32 @@ public class WebContext implements SubContext {
         }
 
         return ssl;
+    }
+
+    /**
+     * Returns the CSRF security-token of the current session.
+     *
+     * @return the CSRF security-token to protect sensitv links.
+     */
+    public String getCSRFToken() {
+        return getServerSession().getCSRFToken();
+    }
+
+    /**
+     * Returns whether CSRF security-tokens should be placed in sensitiv action links.
+     *
+     * @return <tt>true</tt> if CSRF security-tokens should be placed in sensitiv action links, <tt>false</tt> otherwise.
+     */
+    public boolean isUseCSRFProtection() {
+        return useCSRFProtection;
+    }
+
+    /**
+     * Marks the current {@link WebContext} context so that CSRF security-tokens should be placed in sensitiv action
+     * links.
+     */
+    public void withUseCSRFProtection(boolean useCSRFProtection) {
+        this.useCSRFProtection = useCSRFProtection;
     }
 
     /**
