@@ -97,18 +97,6 @@ public class ControllerDispatcher implements WebDispatcher {
                 return false;
             }
 
-            if (route.getMethod().isAnnotationPresent(AddSecurityToken.class)) {
-                ctx.withCSRFProtection();
-            }
-
-            if (route.getMethod().isAnnotationPresent(CheckSecurityToken.class) && (!ctx.isPOST()
-                                                                                    || !checkCSRFToken(ctx))) {
-                handleFailure(ctx,
-                              route,
-                              Exceptions.createHandled().withNLSKey("ControllerDispatcher.invalidCSRFToken").handle());
-                return true;
-            }
-
             // Check if interceptors permit execution of route...
             for (Interceptor interceptor : interceptors) {
                 if (!interceptor.shouldExecuteRoute(ctx, route.isJSONCall(), route.getController())) {
@@ -164,6 +152,12 @@ public class ControllerDispatcher implements WebDispatcher {
             // and the user manager are guaranteed to be invoked one we enter the controller code...
             UserInfo user = UserContext.getCurrentUser();
 
+            ctx.withUseCSRFProtection(route.getMethod().isAnnotationPresent(AddSecurityToken.class));
+
+            if (!checkCSRFTokenIfNecessary(ctx, route)) {
+                return;
+            }
+
             // If the underlying ScopeDetector made a redirect (for whatever reasons)
             // the response will be committed and we can (must) safely return...
             if (ctx.isResponseCommitted()) {
@@ -186,6 +180,18 @@ public class ControllerDispatcher implements WebDispatcher {
             handleFailure(ctx, route, ex);
         }
         ctx.enableTiming(route.toString());
+    }
+
+    private boolean checkCSRFTokenIfNecessary(WebContext ctx, Route route) {
+        if (route.getMethod().isAnnotationPresent(CheckSecurityToken.class) && (!ctx.isPOST()
+                                                                                || !checkCSRFToken(ctx))) {
+            handleFailure(ctx,
+                          route,
+                          Exceptions.createHandled().withNLSKey("ControllerDispatcher.invalidCSRFToken").handle());
+            return false;
+        }
+
+        return true;
     }
 
     private void executeRoute(WebContext ctx, Route route, List<Object> params) throws Exception {

@@ -1105,8 +1105,8 @@ public class WebContext implements SubContext {
      * Marks the current {@link WebContext} context so that CSRF security-tokens should be placed in sensitiv action
      * links.
      */
-    public void withCSRFProtection() {
-        this.useCSRFProtection = true;
+    public void withUseCSRFProtection(boolean useCSRFProtection) {
+        this.useCSRFProtection = useCSRFProtection;
     }
 
     /**

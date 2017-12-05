@@ -3,13 +3,12 @@
     function createConfirmForDangerousLinks(message) {
         $("a.link-danger, a.button-danger-ask").on('click', function (event) {
             try {
-                var clickedLink = event.currentTarget;
                 var modalElement = $("#danger-link-confirm");
-
-                var okayLink = $(clickedLink).attr('href');
                 var submitBtn = modalElement.find(":submit");
+                var that = $(this);
+
                 submitBtn.click(function () {
-                    window.location.href = okayLink;
+                    that.closest('form').submit();
                 });
 
                 modalElement.modal({

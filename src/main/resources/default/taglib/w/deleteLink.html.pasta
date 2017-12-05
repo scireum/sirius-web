@@ -4,14 +4,15 @@
 
 <i:pragma name="inline" value="true"/>
 <i:pragma name="description" value="Renders a delete/dangerous link within a Wondergem template"/>
-<i:local name="deleteFormId" value="deleteForm-@call.generateLocalId()"/>
 
-<form id="@deleteFormId" action="@if(page != null) {@url?@page.createQueryString()} else {@url}">
+<i:local name="deleteFormId" value="@apply('deleteForm-%s', call.generateLocalId())"/>
+
+<form id="@deleteFormId" method="post" action="@if(page != null) {@url?@page.createQueryString()} else {@url}">
     <i class="fa fa-trash"></i>
-    <a class="link link-danger @if (adminOnly) {admin-link}" href="javascript: $('@deleteFormId').submit()">
+    <a class="link link-danger @if (adminOnly) {admin-link}" href="#">
         @i18n("NLS.delete")
     </a>
     @if(call.isUseCSRFProtection()) {
-        <input name="CSRFToken" value="call.getCSRFToken()" type="hidden"/>
+        <input name="CSRFToken" value="@call.getCSRFToken()" type="hidden"/>
     }
 </form>
