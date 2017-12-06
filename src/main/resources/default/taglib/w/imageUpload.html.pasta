@@ -44,7 +44,7 @@
 
     <i:if test="@showResetButton">
         <button type="button" class="btn btn-block btn-reset-js">
-            @i18n("reset")
+            @i18n("fileUpload.reset")
         </button>
     </i:if>
 </div>
