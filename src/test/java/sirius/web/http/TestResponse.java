@@ -45,9 +45,6 @@ import java.util.List;
  */
 public class TestResponse extends Response {
 
-    @ConfigValue("http.serverSessionParameterName")
-    private static String serverSessionParameterName;
-
     protected TestResponse(TestRequest testRequest) {
         super(testRequest);
         responsePromise = testRequest.testResponsePromise;
@@ -324,9 +321,5 @@ public class TestResponse extends Response {
                 completeResponse();
             }
         };
-    }
-
-    public String getSessionId(){
-        return headers().get(serverSessionParameterName);
     }
 }

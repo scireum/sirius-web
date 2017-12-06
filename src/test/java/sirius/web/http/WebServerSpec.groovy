@@ -21,9 +21,7 @@ import io.netty.handler.codec.http.*
 import org.apache.log4j.Level
 import sirius.kernel.BaseSpecification
 import sirius.kernel.commons.Strings
-import sirius.kernel.di.std.ConfigValue
 import sirius.kernel.health.LogHelper
-import sirius.web.controller.ControllerDispatcher
 
 /**
  * Simulates a bunch of "real" (outside) requests through netty and sirius.
