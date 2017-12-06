@@ -10,6 +10,7 @@ package sirius.tagliatelle.expression;
 
 import parsii.tokenizer.Char;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.health.Exceptions;
 import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.compiler.CompilationContext;
 import sirius.tagliatelle.rendering.LocalRenderContext;
@@ -24,7 +25,12 @@ import java.lang.reflect.Method;
 public class MethodCall extends Call {
 
     private Method method;
+    private Class<?> varArgType;
+    private int varArgIndex;
     private Expression selfExpression;
+
+    private static final String[] EMPTY_STRING_ARRAY = new String[0];
+    private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
 
     /**
      * Creates a new instance and specifies the expression on which the method is invoked.
@@ -70,56 +76,100 @@ public class MethodCall extends Call {
                 return null;
             }
 
-            if (parameterExpressions == NO_ARGS) {
+            if (parameterExpressions == NO_ARGS && varArgType == null) {
                 return method.invoke(self);
             }
 
-            // Calculates if the called method has a varargs Parameter or not
-            int varargsIndex = method.getParameterCount() - 1;
-            boolean isVarargsMethod = method.getParameterTypes()[varargsIndex].isArray();
-            Object[] params = new Object[method.getParameterCount()];
-
-            Object varargsParam = parameterExpressions[varargsIndex].eval(ctx);
-            Class<?> varargsParamClass = varargsParam.getClass();
-            boolean isAlreadyVaragsArray = isVarargsMethod
-                                           && varargsParamClass.isArray()
-                                           && varargsParamClass.getComponentType()
-                                              == method.getParameterTypes()[varargsIndex].getComponentType();
-
-            if (isVarargsMethod && !isAlreadyVaragsArray) {
-                // Fills all non-varargs parameters
-                for (int i = 0; i < varargsIndex; i++) {
-                    params[i] = parameterExpressions[i].eval(ctx);
-                }
-                // Instantiates the varargs array of the correct type
-                Object[] varargs =
-                        (Object[]) Array.newInstance(method.getParameterTypes()[varargsIndex].getComponentType(),
-                                                     parameterExpressions.length - varargsIndex);
-                // Fills the varargs parameter array
-                for (int j = varargsIndex; j < parameterExpressions.length; j++) {
-                    if (j == varargsIndex) {
-                        varargs[0] = varargsParam;
-                    } else {
-                        varargs[j - varargsIndex] = parameterExpressions[j].eval(ctx);
-                    }
-                }
-                params[varargsIndex] = varargs;
-            } else {
-                for (int i = 0; i < parameterExpressions.length; i++) {
-                    if (i == varargsIndex) {
-                        params[i] = varargsParam;
-                    } else {
-                        params[i] = parameterExpressions[i].eval(ctx);
-                    }
-                }
-            }
-
+            Object[] params = translateMethodParameters(ctx);
             return method.invoke(self, params);
         } catch (IllegalArgumentException | IllegalAccessException e) {
             throw new ExpressionEvaluationException(e);
         } catch (InvocationTargetException e) {
             throw new ExpressionEvaluationException(e.getTargetException());
         }
+    }
+
+    /**
+     * Translates the given list of parameter expressions into an actual array objects to be passed to the method call.
+     * <p>
+     * This is trivial up until vararg methods are involved. In this case we might compact a list of additional
+     * arguments into its own array or supply an empty array if no parameters were supplied.
+     *
+     * @param ctx the context used to evaluate parameter expressions
+     * @return the effective array of parameter objects to pass to the method call
+     */
+    private Object[] translateMethodParameters(LocalRenderContext ctx) {
+        Object[] params = new Object[method.getParameterCount()];
+        Object[] varArgs = null;
+
+        for (int i = 0; i < parameterExpressions.length; i++) {
+            Object param = parameterExpressions[i].eval(ctx);
+            if (varArgType == null || i < varArgIndex || isMatchingVarargArray(i, param)) {
+                params[i] = param;
+            } else {
+                if (varArgs == null) {
+                    varArgs = createVarArgArray();
+                    params[varArgIndex] = varArgs;
+                }
+                varArgs[i - varArgIndex] = param;
+            }
+        }
+
+        if (varArgType != null && parameterExpressions.length < method.getParameterCount()) {
+            appendMissingVarArgArray(params);
+        }
+
+        return params;
+    }
+
+    /**
+     * Adds an empty array as last parameter, if no vararg parameter was present at all.
+     *
+     * @param params the parameter list to complete
+     */
+    private void appendMissingVarArgArray(Object[] params) {
+        if (varArgType == Object.class) {
+            params[varArgIndex] = EMPTY_OBJECT_ARRAY;
+        } else if (varArgType == String.class) {
+            params[varArgIndex] = EMPTY_STRING_ARRAY;
+        } else {
+            params[varArgIndex] = Array.newInstance(varArgType, 0);
+        }
+    }
+
+    private Object[] createVarArgArray() {
+        return (Object[]) Array.newInstance(varArgType, parameterExpressions.length - method.getParameterCount() + 1);
+    }
+
+    /**
+     * Determines if the given parameter for a given index exactly matches the parameter type required for a vararg
+     * method.
+     * <p>
+     * Therefore the parameter must be an array of the right type and also both the last parameter of the method and the
+     * last parameter in the invokation.
+     *
+     * @param index the current index of the parameter being processed
+     * @param param the evaluated parameter to process
+     * @return <tt>true</tt> if it as a matching vararg array, <tt>false</tt> if a conversion is required
+     */
+    private boolean isMatchingVarargArray(int index, Object param) {
+        if (index != varArgIndex) {
+            return false;
+        }
+
+        if (index != parameterExpressions.length - 1) {
+            return false;
+        }
+
+        if (param == null) {
+            return false;
+        }
+
+        if (!param.getClass().isArray()) {
+            return false;
+        }
+
+        return param.getClass().getComponentType() == varArgType;
     }
 
     @Override
@@ -139,20 +189,42 @@ public class MethodCall extends Call {
      * @param name     the name of the method to find
      */
     public void bindToMethod(Char position, CompilationContext context, String name) {
-        try {
-            if (parameterExpressions == NO_ARGS) {
+        if (parameterExpressions == NO_ARGS) {
+            try {
                 this.method = selfExpression.getType().getMethod(name);
                 return;
+            } catch (NoSuchMethodException e) {
+                Exceptions.ignore(e);
             }
+        }
+
+        try {
             Class<?>[] parameterTypes = new Class<?>[parameterExpressions.length];
             for (int i = 0; i < parameterExpressions.length; i++) {
                 parameterTypes[i] = parameterExpressions[i].getType();
             }
 
             this.method = findMethod(selfExpression.getType(), name, parameterTypes);
+            setupVarArgs();
         } catch (NoSuchMethodException e) {
             context.error(position, "%s doesn't have a method '%s'", selfExpression.getType(), e.getMessage());
         }
+    }
+
+    /**
+     * Pre-fills certain fields required at render time for var arg methods
+     */
+    private void setupVarArgs() {
+        if (method.getParameterCount() == 0) {
+            return;
+        }
+
+        if (!method.getParameterTypes()[method.getParameterCount() - 1].isArray()) {
+            return;
+        }
+
+        varArgIndex = method.getParameterCount() - 1;
+        varArgType = method.getParameterTypes()[varArgIndex].getComponentType();
     }
 
     private Method findMethod(Class<?> type, String name, Class<?>[] parameterTypes) throws NoSuchMethodException {
@@ -190,6 +262,20 @@ public class MethodCall extends Call {
             return false;
         }
 
+        // If the method is a pure var arg method and no parameters are given at all.... this will work out...
+        if (parameterTypes.length == 0 && method.getParameterCount() == 1 && method.getParameterTypes()[0].isArray()) {
+            return true;
+        }
+
+        // Check all given parameters and pickup and check the var arg type if the method has one...
+        if (!checkParameterTypes(method, parameterTypes)) {
+            return false;
+        }
+
+        return ensureEnoughParameters(method, parameterTypes);
+    }
+
+    private boolean checkParameterTypes(Method method, Class<?>[] parameterTypes) {
         Class<?> varargType = null;
         for (int i = 0; i < parameterTypes.length; i++) {
             Class<?> parameterType = parameterTypes[i];
@@ -203,13 +289,12 @@ public class MethodCall extends Call {
                 }
             }
         }
-
-        return ensureEnoughParameters(method, parameterTypes, varargType);
+        return true;
     }
 
-    private boolean ensureEnoughParameters(Method method, Class<?>[] parameterTypes, Class<?> varargType) {
+    private boolean ensureEnoughParameters(Method method, Class<?>[] parameterTypes) {
         // The method accepts all given parameters, now ensure, that we also provide enough parameters for the method...
-        if (varargType == null) {
+        if (!method.isVarArgs()) {
             // No varargs -> parameters must match exactly...
             if (method.getParameterTypes().length != parameterTypes.length) {
                 return false;
