@@ -53,6 +53,7 @@ import sirius.web.controller.Message;
 import sirius.web.http.session.ServerSession;
 import sirius.web.http.session.SessionManager;
 import sirius.web.http.session.UserAgent;
+import sirius.web.security.GenericUserManager;
 import sirius.web.security.UserContext;
 
 import javax.annotation.Nonnull;
@@ -73,6 +74,7 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -95,6 +97,12 @@ import java.util.concurrent.atomic.AtomicLong;
  * This context can either be passed along as variable or be accessed using {@link CallContext#get(Class)}
  */
 public class WebContext implements SubContext {
+
+    public static final String CSRF_TOKEN = "CSRFToken";
+    public static final String LAST_CSRF_RECOMPUTE = "lastCSRFRecompute";
+
+    @ConfigValue("http.csrfTokenLifetime")
+    private static Duration csrfTokenLifetime;
 
     private static final String UNKNOWN_FORWARDED_FOR_HOST = "unknown";
     private static final String HEADER_X_FORWARDED_FOR = "X-Forwarded-For";
@@ -1089,7 +1097,25 @@ public class WebContext implements SubContext {
      * @return the CSRF security-token to protect sensitv links.
      */
     public String getCSRFToken() {
-        return getServerSession().getCSRFToken();
+        GenericUserManager userManager = (GenericUserManager) UserContext.get().getUserManager();
+
+        if (userManager.isClientSessionStorage()) {
+            Value lastCSRFRecompute = getSessionValue(LAST_CSRF_RECOMPUTE);
+
+            if (isCSRFTokenOutdated(lastCSRFRecompute.asLong(-1L)) || lastCSRFRecompute.isEmptyString()) {
+                setSessionValue(CSRF_TOKEN, UUID.randomUUID().toString());
+                setSessionValue(LAST_CSRF_RECOMPUTE, Value.of(Instant.now().toEpochMilli()).asString());
+            }
+
+            return getSessionValue(CSRF_TOKEN).asString();
+        } else {
+            return getServerSession().getCSRFToken();
+        }
+    }
+
+    private boolean isCSRFTokenOutdated(long lastCSRFRecompute) {
+        return Duration.between(Instant.ofEpochMilli(lastCSRFRecompute), Instant.now()).toMinutes()
+               > csrfTokenLifetime.toMinutes();
     }
 
     /**

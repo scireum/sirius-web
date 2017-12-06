@@ -26,6 +26,7 @@ import sirius.web.ErrorCodeException;
 import sirius.web.http.InputStreamHandler;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
+import sirius.web.security.GenericUserManager;
 import sirius.web.security.UserContext;
 import sirius.web.security.UserInfo;
 import sirius.web.services.JSONStructuredOutput;
@@ -44,7 +45,6 @@ public class ControllerDispatcher implements WebDispatcher {
 
     protected static final Log LOG = Log.get("controller");
 
-    public static final String CSRF_TOKEN = "CSRFToken";
     private static final String SYSTEM_MVC = "MVC";
 
     private List<Route> routes;
@@ -133,9 +133,10 @@ public class ControllerDispatcher implements WebDispatcher {
     }
 
     private boolean checkCSRFToken(WebContext ctx) {
-        String requestToken = ctx.get(CSRF_TOKEN).asString();
-        return Strings.isFilled(requestToken) && Strings.areEqual(requestToken,
-                                                                  ctx.getServerSession().getValue(CSRF_TOKEN).asString());
+        String requestToken = ctx.get(WebContext.CSRF_TOKEN).asString();
+        String sessionToken = ctx.getCSRFToken();
+
+        return Strings.isFilled(requestToken) && Strings.areEqual(requestToken, sessionToken);
     }
 
     private void performRouteInOwnThread(WebContext ctx, Route route, List<Object> params) {
