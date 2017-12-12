@@ -35,11 +35,16 @@
             </tr>
             <i:for type="sirius.tagliatelle.TemplateArgument" var="arg" items="arguments">
                 <tr>
-                    <td @if (arg.getDefaultValue() == null) { style="font-weight: bold" }>
+                    <td  style="@if (arg.getDefaultValue() == null) {font-weight: bold; } @if (arg.getDeprecationWarning() != null) { text-decoration: line-through }">
                         @arg.getName() <small>(@arg.getType().getName())</small>
                     </td>
                     <td>
-                        <i:raw>@arg.getDescription()</i:raw>
+                        <p>
+                            <i:raw>@arg.getDescription()</i:raw>
+                        </p>
+                        <i:if test="arg.getDeprecationWarning() != null">
+                            <p><b>@arg.getDeprecationWarning()</b></p>
+                        </i:if>
                     </td>
                 </tr>
             </i:for>
