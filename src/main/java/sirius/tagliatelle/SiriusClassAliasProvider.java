@@ -26,9 +26,7 @@ public class SiriusClassAliasProvider implements ClassAliasProvider {
     @Override
     public void collectAliases(BiConsumer<String, Class<?>> consumer) {
         consumer.accept("String", String.class);
-        consumer.accept("char", char.class);
         consumer.accept("int", int.class);
-        consumer.accept("long", long.class);
         consumer.accept("boolean", boolean.class);
         consumer.accept("List", List.class);
         consumer.accept("Page", Page.class);
