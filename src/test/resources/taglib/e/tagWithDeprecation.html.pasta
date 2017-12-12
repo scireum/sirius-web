@@ -1,0 +1,5 @@
+<i:arg type="String" name="deprecatedArg" deprecated="Do not use." />
+
+<i:pragma name="deprecated" value="Do not use." />
+
+<e:secondTagWithDeprecation deprecatedArg="test" />
