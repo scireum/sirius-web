@@ -17,15 +17,16 @@ public interface MailLog {
     /**
      * Invoked once a mail was tried to be sent.
      *
-     * @param success       flag indicating if the mail was successfully sent
-     * @param messageId     id of the message assigned by Javamail
-     * @param sender        email address of the sender
-     * @param senderName    name of the sender
-     * @param receiver      email address of the receiver
-     * @param receiverName  name of the receiver
-     * @param subject       subject line of the mail
-     * @param text          text part of the mail
-     * @param html          html part of the mail
+     * @param success      flag indicating if the mail was successfully sent
+     * @param messageId    id of the message assigned by Javamail
+     * @param sender       email address of the sender
+     * @param senderName   name of the sender
+     * @param receiver     email address of the receiver
+     * @param receiverName name of the receiver
+     * @param subject      subject line of the mail
+     * @param text         text part of the mail
+     * @param html         html part of the mail
+     * @param type         type of the mail
      */
     @SuppressWarnings("squid:S00107")
     void logSentMail(boolean success,
@@ -36,5 +37,6 @@ public interface MailLog {
                      String receiverName,
                      String subject,
                      String text,
-                     String html);
+                     String html,
+                     String type);
 }

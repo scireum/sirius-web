@@ -48,6 +48,7 @@ public class MailSender {
     protected Context context;
     protected String text;
     protected String html;
+    protected String type;
     protected List<DataSource> attachments = Lists.newArrayList();
     protected String bounceToken;
     protected String lang;
@@ -146,6 +147,17 @@ public class MailSender {
      */
     public MailSender subject(String subject) {
         this.subject = subject;
+        return this;
+    }
+
+    /**
+     * Specifies the type of the mail primarily used for logging.
+     *
+     * @param type the type to use.
+     * @return the builder itself
+     */
+    public MailSender type(String type) {
+        this.type = type;
         return this;
     }
 
