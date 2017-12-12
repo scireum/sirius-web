@@ -156,7 +156,8 @@ class SendMailTask implements Runnable {
                                 mail.receiverName,
                                 mail.subject,
                                 mail.text,
-                                mail.html);
+                                mail.html,
+                                mail.type);
             } catch (Exception e) {
                 Exceptions.handle(Mails.LOG, e);
             }
@@ -305,7 +306,8 @@ class SendMailTask implements Runnable {
         return message;
     }
 
-    private void setupSender(com.sun.mail.smtp.SMTPMessage msg) throws MessagingException, UnsupportedEncodingException {
+    private void setupSender(com.sun.mail.smtp.SMTPMessage msg)
+            throws MessagingException, UnsupportedEncodingException {
         if (Strings.isFilled(mail.senderEmail)) {
             if (config.isUseSenderAndEnvelopeFrom()) {
                 msg.setSender(new InternetAddress(technicalSender, technicalSenderName));
