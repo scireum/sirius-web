@@ -59,7 +59,7 @@ import java.util.zip.GZIPOutputStream;
  * on the underlying disk.
  * <p>
  * If no new file can be created (due to the constraints named above), a warning is output once and all records are
- * ignored until the outside circumstances have changes. The log will then automatically recover and start logging
+ * ignored until the outside circumstances have changed. The log will then automatically recover and start logging
  * records. This behaviour is probably the best in many circumstances as neighter having the heap buffer grow
  * indefinitely large nor having the filesystem run out of free space is feasible for a server system.
  */

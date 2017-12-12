@@ -46,8 +46,7 @@ public class DynamicInvokeTag extends TagHandler {
         public List<TemplateArgument> reportArguments() {
             return Collections.singletonList(new TemplateArgument(String.class,
                                                                   ATTR_TEMPLATE,
-                                                                  "Contains the path of the template to render.",
-                                                                  null));
+                                                                  "Contains the path of the template to render."));
         }
 
         @Override

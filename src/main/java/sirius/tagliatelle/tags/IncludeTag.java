@@ -52,8 +52,7 @@ public class IncludeTag extends TagHandler {
         public List<TemplateArgument> reportArguments() {
             return Collections.singletonList(new TemplateArgument(String.class,
                                                                   "name",
-                                                                  "Contains the path of the resource to include.",
-                                                                  null));
+                                                                  "Contains the path of the resource to include."));
         }
 
         @Override

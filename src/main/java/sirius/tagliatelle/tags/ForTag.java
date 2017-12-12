@@ -47,16 +47,13 @@ public class ForTag extends TagHandler {
         public List<TemplateArgument> reportArguments() {
             return Arrays.asList(new TemplateArgument(String.class,
                                                       PARAM_TYPE,
-                                                      "Contains the type name of the items being looped over.",
-                                                      null),
+                                                      "Contains the type name of the items being looped over."),
                                  new TemplateArgument(String.class,
                                                       PARAM_VAR,
-                                                      "Contains the variable name used within the loop.",
-                                                      null),
+                                                      "Contains the variable name used within the loop."),
                                  new TemplateArgument(Iterable.class,
                                                       PARAM_ITEMS,
-                                                      "Contains the collection of items to loop over.",
-                                                      null));
+                                                      "Contains the collection of items to loop over."));
         }
 
         @Override

@@ -54,6 +54,8 @@ import java.util.stream.Collectors;
  */
 public class CompilationContext {
 
+    private static final String PRAGMA_DEPRECATED = "deprecated";
+
     private static class StackLocation {
         int stackIndex;
         Class<?> type;
@@ -354,6 +356,7 @@ public class CompilationContext {
                                   Template template,
                                   Function<String, Expression> arguments,
                                   Map<String, Emitter> blocks) {
+        outputTemplateDeprecationWarning(position, template);
         InvokeTemplateEmitter emitter = new InvokeTemplateEmitter(position, template.getName());
 
         if (!template.getArguments().isEmpty()) {
@@ -371,18 +374,42 @@ public class CompilationContext {
         Expression[] args = new Expression[template.getArguments().size()];
         int index = 0;
         for (TemplateArgument arg : template.getArguments()) {
-            args[index] = arguments.apply(arg.getName());
-            if (args[index] != null && !Tagliatelle.isAssignableTo(args[index].getType(), arg.getType())) {
-                error(position,
-                      "Incompatible attribute types. '%s' expects %s for '%s', but %s was given.",
-                      template.getName(),
-                      arg.getType(),
-                      arg.getName(),
-                      args[index].getType());
+            Expression argumentExpression = arguments.apply(arg.getName());
+            if (argumentExpression != null) {
+                if (!Tagliatelle.isAssignableTo(argumentExpression.getType(), arg.getType())) {
+                    error(position,
+                          "Incompatible attribute types. '%s' expects %s for '%s', but %s was given.",
+                          template.getName(),
+                          arg.getType(),
+                          arg.getName(),
+                          args[index].getType());
+                }
+                outputArgumentDeprecationWarning(position, arg);
             }
+            args[index] = argumentExpression;
             index++;
         }
         return args;
+    }
+
+    private void outputArgumentDeprecationWarning(Position position, TemplateArgument arg) {
+        if (arg.getDeprecationWarning() != null) {
+            if (this.parent == null && (Sirius.isDev() || Sirius.isStartedAsTest())) {
+                error(position, "The attribute '%s' is deprecated: %s", arg.getName(), arg.getDeprecationWarning());
+            } else {
+                warning(position, "The attribute '%s' is deprecated: %s", arg.getName(), arg.getDeprecationWarning());
+            }
+        }
+    }
+
+    private void outputTemplateDeprecationWarning(Position position, Template template) {
+        if (Strings.isFilled(template.getPragma(PRAGMA_DEPRECATED))) {
+            if (this.parent == null && (Sirius.isDev() || Sirius.isStartedAsTest())) {
+                error(position, "The template '%s' is deprecated: %s", template.getShortName(), template.getPragma(PRAGMA_DEPRECATED));
+            } else {
+                warning(position, "The template '%s' is deprecated: %s", template.getShortName(), template.getPragma(PRAGMA_DEPRECATED));
+            }
+        }
     }
 
     /**
@@ -411,6 +438,7 @@ public class CompilationContext {
                                   Template template,
                                   Function<String, Expression> arguments,
                                   Function<String, Emitter> blocks) {
+        outputTemplateDeprecationWarning(startOfTag, template);
         Emitter copy = template.getEmitter().copy();
 
         // Move all existing locals out of the way...
@@ -555,6 +583,8 @@ public class CompilationContext {
                 error(position, "No argument value (and no default) was provided for: %s", arg.getName());
                 value = ConstantNull.NULL;
             }
+        } else {
+            outputArgumentDeprecationWarning(position, arg);
         }
 
         // Constant expressions and local reads can safely invoked several times, therefore

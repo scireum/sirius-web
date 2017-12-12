@@ -50,13 +50,13 @@ public class InvokeTag extends TagHandler {
         public List<TemplateArgument> reportArguments() {
             return Arrays.asList(new TemplateArgument(String.class,
                                                       ATTR_TEMPLATE,
-                                                      "Contains the path of the template to render.",
-                                                      null),
+                                                      "Contains the path of the template to render."),
                                  new TemplateArgument(boolean.class,
                                                       ATTR_INLINE,
                                                       "Determines if the invocation should be actually "
                                                       + "inlined int othe calling template.",
-                                                      ConstantBoolean.FALSE));
+                                                      ConstantBoolean.FALSE,
+                                                      null));
         }
 
         @Override

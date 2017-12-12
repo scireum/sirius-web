@@ -49,8 +49,7 @@ public class BlockTag extends TagHandler {
         public List<TemplateArgument> reportArguments() {
             return Collections.singletonList(new TemplateArgument(String.class,
                                                                   PARAM_NAME,
-                                                                  "Contains the name of the provided block",
-                                                                  null));
+                                                                  "Contains the name of the provided block"));
         }
 
         @Override

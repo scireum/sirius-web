@@ -154,11 +154,11 @@ class CompilerSpec extends BaseSpecification {
         errors.get(1).toString().contains("Cannot find a handler for the internal tag: i:unknown")
     }
 
-    def "deprecation is detected"() {
+    def "argument deprecation is detected"() {
         when:
         List<CompileError> errors = null
         try {
-            tagliatelle.resolve("templates/deprecated.html.pasta").get()
+            tagliatelle.resolve("templates/deprecatedArgument.html.pasta").get()
         } catch (CompileException err) {
             errors = err.getErrors()
         }
@@ -166,6 +166,20 @@ class CompilerSpec extends BaseSpecification {
         errors.size() == 1
         errors.get(0).getError().getSeverity() == ParseError.Severity.ERROR
         errors.get(0).toString().contains("The attribute 'deprecatedArg' is deprecated: Do not use")
+    }
+
+    def "deprecation is detected"() {
+        when:
+        List<CompileError> errors = null
+        try {
+            tagliatelle.resolve("templates/deprecatedCaller.html.pasta").get()
+        } catch (CompileException err) {
+            errors = err.getErrors()
+        }
+        then:
+        errors.size() == 2
+        errors.get(0).getError().getSeverity() == ParseError.Severity.ERROR
+        errors.get(0).toString().contains("The template '<e:deprecated>' is deprecated: Test of deprecated")
     }
 
 }
