@@ -45,8 +45,7 @@ public class RenderTag extends TagHandler {
         public List<TemplateArgument> reportArguments() {
             return Collections.singletonList(new TemplateArgument(String.class,
                                                                   PARAM_NAME,
-                                                                  "Contains the name of the block to render",
-                                                                  null));
+                                                                  "Contains the name of the block to render"));
         }
 
         @Override

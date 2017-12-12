@@ -47,12 +47,10 @@ public class LocalTag extends TagHandler {
         public List<TemplateArgument> reportArguments() {
             return Arrays.asList(new TemplateArgument(String.class,
                                                       PARAM_NAME,
-                                                      "Contains the name of the local variable.",
-                                                      null),
+                                                      "Contains the name of the local variable."),
                                  new TemplateArgument(Expression.class,
                                                       PARAM_VALUE,
-                                                      "Contains a expression which is evaluated into the local variable.",
-                                                      null));
+                                                      "Contains a expression which is evaluated into the local variable."));
         }
 
         @Override

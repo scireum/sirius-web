@@ -49,8 +49,7 @@ public class ExtensionsTag extends InvokeTag {
         public List<TemplateArgument> reportArguments() {
             return Collections.singletonList(new TemplateArgument(String.class,
                                                                   ATTR_NAME,
-                                                                  "Contains the name used to fetch all known extensions.",
-                                                                  null));
+                                                                  "Contains the name used to fetch all known extensions."));
         }
 
         @Override
