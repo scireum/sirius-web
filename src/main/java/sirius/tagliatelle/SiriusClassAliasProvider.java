@@ -13,6 +13,8 @@ import sirius.kernel.di.std.Register;
 import sirius.web.controller.Page;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 
 /**
@@ -29,6 +31,8 @@ public class SiriusClassAliasProvider implements ClassAliasProvider {
         consumer.accept("List", List.class);
         consumer.accept("Page", Page.class);
         consumer.accept("Tuple", Tuple.class);
+        consumer.accept("Map", Map.class);
+        consumer.accept("Set", Set.class);
         consumer.accept("Object", Object.class);
     }
 }
