@@ -15,7 +15,7 @@
                 this,
                 '@previewUrl',
                 '@imageUrl',
-                 @allowedExtensions
+                 <i:raw>@allowedExtensions</i:raw>
         );
         });
     });

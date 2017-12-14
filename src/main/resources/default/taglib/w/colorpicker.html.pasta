@@ -24,8 +24,8 @@
     <div class="input-group pick-a-color">
         <input name="@name"
                type="text"
-               value="user.getFieldValue(name, value)"
-               class="form-control input-block-level date-picker"
+               value="@user.getFieldValue(name, value)"
+               class="form-control input-block-level"
                @if (readonly) { readonly } />
         <span class="input-group-addon"><i></i></span>
     </div>

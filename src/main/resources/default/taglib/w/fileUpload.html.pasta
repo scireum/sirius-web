@@ -12,7 +12,7 @@
             fileUpload('@uploadUrl',
                 this,
                 undefined,
-                       @allowedExtensions);
+                <i:raw>@allowedExtensions</i:raw>);
         });
     });
 </script>
