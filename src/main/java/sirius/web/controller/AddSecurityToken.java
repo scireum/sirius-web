@@ -7,9 +7,9 @@ import java.lang.annotation.Target;
 
 /**
  * Marks a {@link Routed} method, so that a secret security-session-token should be added to action links which modify
- * sensitiv data. The security token is automatically placed/send when using the delete-link taglib
+ * sensitive data. The security token is automatically placed/send when using the delete-link taglib
  * <tt>"<w:deleteLink/>"</tt>, else it must be placed manually as a hidden POST-parameter in a form-tag. Must be
- * combined with a {@link Routed} method which is marked with {@link CheckSecurityToken}, where sensitiv data is
+ * combined with a {@link Routed} method which is marked with {@link CheckSecurityToken}, where sensitive data is
  * modified.
  * <p>
  * This is used to prevent Cross-Side-Request-Forgery (CSRF) attacks.

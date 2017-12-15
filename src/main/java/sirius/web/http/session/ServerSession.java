@@ -171,7 +171,7 @@ public interface ServerSession {
     /**
      * Returns the current CSRF security-token.
      *
-     * @return the security token which should be placed in sensitiv action links
+     * @return the security token which should be placed in sensitive action links
      */
     String getCSRFToken();
 }

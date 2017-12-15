@@ -302,7 +302,7 @@ public class WebContext implements SubContext {
     protected UserAgent userAgent;
 
     /*
-      * Whether CSRF tokens should be placed into sensitiv links.
+      * Whether CSRF tokens should be placed into sensitive links.
       */
     private boolean useCSRFProtection = false;
 
@@ -1094,7 +1094,7 @@ public class WebContext implements SubContext {
     /**
      * Returns the CSRF security-token of the current session.
      *
-     * @return the CSRF security-token to protect sensitv links.
+     * @return the CSRF security-token to protect sensitve links.
      */
     public String getCSRFToken() {
         GenericUserManager userManager = (GenericUserManager) UserContext.get().getUserManager();
@@ -1119,16 +1119,16 @@ public class WebContext implements SubContext {
     }
 
     /**
-     * Returns whether CSRF security-tokens should be placed in sensitiv action links.
+     * Returns whether CSRF security-tokens should be placed in sensitive action links.
      *
-     * @return <tt>true</tt> if CSRF security-tokens should be placed in sensitiv action links, <tt>false</tt> otherwise.
+     * @return <tt>true</tt> if CSRF security-tokens should be placed in sensitive action links, <tt>false</tt> otherwise.
      */
     public boolean isUseCSRFProtection() {
         return useCSRFProtection;
     }
 
     /**
-     * Marks the current {@link WebContext} context so that CSRF security-tokens should be placed in sensitiv action
+     * Marks the current {@link WebContext} context so that CSRF security-tokens should be placed in sensitive action
      * links.
      */
     public void withUseCSRFProtection(boolean useCSRFProtection) {

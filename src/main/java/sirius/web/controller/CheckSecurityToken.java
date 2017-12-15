@@ -6,9 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks a {@link Routed} method, which modifies sensitiv data so that a secret security-session-token is checked
+ * Marks a {@link Routed} method, which modifies sensitive data so that a secret security-session-token is checked
  * against the provided POST parameter. Must be combined with another {@link AddSecurityToken} method which adds the
- * security token to sensitiv action links which call the {@link CheckSecurityToken} annotated method.
+ * security token to sensitive action links which call the {@link CheckSecurityToken} annotated method.
  * <p>
  * This is used to prevent Cross-Side-Request-Forgery (CSRF) attacks.
  */
