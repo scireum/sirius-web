@@ -21,6 +21,7 @@ import java.util.List;
  * Limit the given object to a given lenth.
  *
  * @see sirius.kernel.commons.Strings#limit(Object, int)
+ * @see sirius.kernel.commons.Strings#limit(Object, int, boolean)
  */
 @Register
 public class LimitMacro implements Macro {
@@ -32,7 +33,7 @@ public class LimitMacro implements Macro {
 
     @Override
     public void verifyArguments(List<Expression> args) {
-        if ((args.size() < 2 && args.size() > 3) || !Tagliatelle.isAssignableTo(args.get(1).getType(), int.class)) {
+        if (args.size() < 2 || args.size() > 3 || !Tagliatelle.isAssignableTo(args.get(1).getType(), int.class)) {
             throw new IllegalArgumentException(
                     "Expected the first argument to be an object and the second argument to be an integer.");
         }
