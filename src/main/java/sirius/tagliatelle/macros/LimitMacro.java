@@ -32,15 +32,22 @@ public class LimitMacro implements Macro {
 
     @Override
     public void verifyArguments(List<Expression> args) {
-        if (args.size() != 2 || !Tagliatelle.isAssignableTo(args.get(1).getType(), int.class)) {
+        if ((args.size() < 2 && args.size() > 3) || !Tagliatelle.isAssignableTo(args.get(1).getType(), int.class)) {
             throw new IllegalArgumentException(
                     "Expected the first argument to be an object and the second argument to be an integer.");
+        }
+        if (args.size() == 3 && !Tagliatelle.isAssignableTo(args.get(2).getType(), boolean.class)) {
+            throw new IllegalArgumentException("Expected the third argument to be a boolean.");
         }
     }
 
     @Override
     public Object eval(LocalRenderContext ctx, Expression[] args) {
-        return Strings.limit(args[0].eval(ctx), (int) args[1].eval(ctx));
+        if (args.length == 3) {
+            return Strings.limit(args[0].eval(ctx), (int) args[1].eval(ctx), (boolean) args[2].eval(ctx));
+        } else {
+            return Strings.limit(args[0].eval(ctx), (int) args[1].eval(ctx));
+        }
     }
 
     @Override

@@ -18,7 +18,7 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
- * Represents <tt>join(Iterable)</tt> which is a call to {@link Strings#urlEncode(String)}.
+ * Represents <tt>join(Iterable, String)</tt> which is a call to {@link Strings#join(Iterable, String)}.
  */
 @Register
 public class JoinMacro implements Macro {
