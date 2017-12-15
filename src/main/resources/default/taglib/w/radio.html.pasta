@@ -16,7 +16,7 @@
 
 
 <div class="col-xs-@smallSpan col-md-@span">
-    <div class="form-group @user.signalFieldError(name)">
+    <div class="form-group radio @user.signalFieldError(name)">
         <label>
             <input type="radio" name="@name" value="@key" @if (key == value) { checked="checked" } @if (readonly) { disabled="disabled" } />
             <i:if test="isFilled(label)">
