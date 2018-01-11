@@ -7,12 +7,10 @@
 <w:page title="@apply('%s - %s', title, i18n('help'))">
 
     <i:block name="head">
-        <script type="text/javascript" src="/assets/libs/prettify/prettify.js"></script>
+        <script type="text/javascript" src="/assets/libs/prettify/run_prettify.js?skin=desert"></script>
 
         <script type="text/javascript">
             $(document).ready(function(e) {
-                prettyPrint();
-
                 $(window).resize(invokeResizeHandler);
                 invokeResizeHandler();
             });
