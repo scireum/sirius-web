@@ -39,20 +39,22 @@
         <i:render name="breadcrumbs" />
     </i:block>
 
-    <i:if test="fullWidth">
-        <i:render name="body" />
-        <i:else>
-            <div class="row">
-                <i:if test="withSidebar">
-                    <div class="col-md-3">
-                        <i:render name="sidebar" />
+    <div class="template-help-page">
+        <i:if test="fullWidth">
+            <i:render name="body"/>
+            <i:else>
+                <div class="row">
+                    <i:if test="withSidebar">
+                        <div class="col-md-3">
+                            <i:render name="sidebar"/>
+                        </div>
+                    </i:if>
+                    <div class="col-md-9">
+                        <i:render name="body"/>
                     </div>
-                </i:if>
-                <div class="col-md-9">
-                    <i:render name="body" />
                 </div>
-            </div>
-        </i:else>
-    </i:if>
+            </i:else>
+        </i:if>
+    </div>
 
 </w:page>
