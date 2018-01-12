@@ -1,8 +1,9 @@
 <i:arg type="String" name="url" />
+<i:arg type="String" name="class" default=""/>
 
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders an editor form within a Wondergem template" />
 
-<form action="@url" method="post" id="editForm" class="edit-form">
+<form action="@url" method="post" id="editForm" class="edit-form @class">
     <i:render name="body" />
 </form>
