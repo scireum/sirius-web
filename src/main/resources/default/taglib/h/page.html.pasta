@@ -1,5 +1,6 @@
 <i:arg type="String" name="titleKey" default=""/>
 <i:arg type="String" name="title" default="@i18n(titleKey)"/>
+<i:arg type="String" name="prettifySkin" default="desert"/>
 <i:arg type="boolean" name="withSidebar" default="false"/>
 <i:arg type="boolean" name="fullWidth" default="false"/>
 <i:pragma name="inline" value="true"/>
@@ -7,12 +8,10 @@
 <w:page title="@apply('%s - %s', title, i18n('help'))">
 
     <i:block name="head">
-        <script type="text/javascript" src="/assets/libs/prettify/prettify.js"></script>
+        <script type="text/javascript" src="/assets/libs/prettify/run_prettify.js?skin=@prettifySkin"></script>
 
         <script type="text/javascript">
             $(document).ready(function(e) {
-                prettyPrint();
-
                 $(window).resize(invokeResizeHandler);
                 invokeResizeHandler();
             });
@@ -39,20 +38,22 @@
         <i:render name="breadcrumbs" />
     </i:block>
 
-    <i:if test="fullWidth">
-        <i:render name="body" />
-        <i:else>
-            <div class="row">
-                <i:if test="withSidebar">
-                    <div class="col-md-3">
-                        <i:render name="sidebar" />
+    <div class="template-help-page">
+        <i:if test="fullWidth">
+            <i:render name="body"/>
+            <i:else>
+                <div class="row">
+                    <i:if test="withSidebar">
+                        <div class="col-md-3">
+                            <i:render name="sidebar"/>
+                        </div>
+                    </i:if>
+                    <div class="col-md-9">
+                        <i:render name="body"/>
                     </div>
-                </i:if>
-                <div class="col-md-9">
-                    <i:render name="body" />
                 </div>
-            </div>
-        </i:else>
-    </i:if>
+            </i:else>
+        </i:if>
+    </div>
 
 </w:page>
