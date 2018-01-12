@@ -281,7 +281,7 @@ public class TestResponse extends Response {
     public void template(HttpResponseStatus status, Template template, Object... params) {
         try {
             type = ResponseType.TEMPLATE;
-            status = HttpResponseStatus.OK;
+            this.status = status;
             templateName = template.getName();
             templateParameters = Arrays.asList(params);
             super.template(status, template, params);
