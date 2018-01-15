@@ -11,6 +11,7 @@
 <i:arg name="adminOnly" type="boolean" default="false" />
 <i:arg name="forceFullWidth" type="boolean" default="false" />
 <i:arg name="id" type="String" default="" />
+<i:arg name="allowFreeEntries" type="boolean" default="false" />
 
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders a dropdown field within a Wondergem template" />
@@ -27,6 +28,7 @@
     <select name="@name"
             @if(isFilled(id)) { id="@id" }
             class="select2-select form-control @user.signalFieldError(name)"
+            @if (allowFreeEntries) { data-tags="true" }
             @if (optional) { data-optional="true" }
             @if(forceFullWidth) { style="width: 100%;" }>
         <i:if test="optional">
