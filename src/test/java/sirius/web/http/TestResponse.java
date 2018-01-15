@@ -292,20 +292,6 @@ public class TestResponse extends Response {
     }
 
     @Override
-    public void template(String name, Object... params) {
-        try {
-            type = ResponseType.TEMPLATE;
-            status = HttpResponseStatus.OK;
-            templateName = name;
-            templateParameters = Arrays.asList(params);
-            super.template(name, params);
-        } catch (Throwable e) {
-            innerCallContext = CallContext.getCurrent();
-            responsePromise.fail(e);
-        }
-    }
-
-    @Override
     protected void sendTemplateContent(HttpResponseStatus status, String name, String content) {
         this.status = status;
         this.content = content.getBytes(Charsets.UTF_8);
