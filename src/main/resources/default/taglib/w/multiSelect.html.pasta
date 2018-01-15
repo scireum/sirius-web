@@ -11,7 +11,7 @@
 <i:arg name="readonly" type="boolean" default="false" />
 <i:arg name="adminOnly" type="boolean" default="false" />
 <i:arg name="forceFullWidth" type="boolean" default="false" />
-<i:arg name="allowFreeEntries" type="boolean" default="false" />
+<i:arg name="allowCustomEntries" type="boolean" default="false" />
 
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders a mutliselect dropdown field within a Wondergem template" />
@@ -26,7 +26,7 @@
     </i:if>
 
     <select name="@name" class="select2-select form-control @user.signalFieldError(name)"
-            @if (allowFreeEntries) { data-tags="true" }
+            @if (allowCustomEntries) { data-tags="true" }
             @if (maxItems != 0) { data-maximum-selection-length="@maxItems" }
             @if(forceFullWidth) { style="width: 100%;" }
             multiple="multiple">
