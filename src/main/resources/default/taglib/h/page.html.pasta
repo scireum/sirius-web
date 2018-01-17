@@ -3,15 +3,17 @@
 <i:arg type="String" name="prettifySkin" default="desert"/>
 <i:arg type="boolean" name="withSidebar" default="false"/>
 <i:arg type="boolean" name="fullWidth" default="false"/>
+
 <i:pragma name="inline" value="true"/>
 <i:pragma name="description" value="Provides the base layout topic within the help system"/>
-<w:page title="@apply('%s - %s', title, i18n('help'))">
+
+<w:page title="@apply('%s - %s', title, i18n('help'))" ignoreDisasteMode="true">
 
     <i:block name="head">
         <script type="text/javascript" src="/assets/libs/prettify/run_prettify.js?skin=@prettifySkin"></script>
 
         <script type="text/javascript">
-            $(document).ready(function(e) {
+            $(document).ready(function (e) {
                 $(window).resize(invokeResizeHandler);
                 invokeResizeHandler();
             });
@@ -25,17 +27,22 @@
                         var newHeight = $(window).height() - $('.footer').outerHeight() - $('#mainContainer').position().top;
                         $('#mainContainer').css('min-height', newHeight + 'px');
                     }
-                } catch(e) {
+                } catch (e) {
                     console.log(e);
                 }
             }
         </script>
 
-        <i:render name="head" />
+        <i:render name="head"/>
     </i:block>
+
+    <i:block name="menu">
+        <i:invoke template="/help/menu.html.pasta" inline="true"/>
+    </i:block>
+
     <i:block name="breadcrumbs">
         <li><a href="/help">@i18n('help')</a></li>
-        <i:render name="breadcrumbs" />
+        <i:render name="breadcrumbs"/>
     </i:block>
 
     <div class="template-help-page">
@@ -55,5 +62,9 @@
             </i:else>
         </i:if>
     </div>
+
+    <i:block name="footer">
+        <i:invoke template="/help/footer.html.pasta" inline="true"/>
+    </i:block>
 
 </w:page>
