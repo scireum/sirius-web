@@ -1,0 +1,472 @@
+<script type="text/javascript">
+    window.sirius = window.sirius || {};
+
+    sirius.keys = (function(){
+        // fix physical keyboard bug on iPad that returns keyCode 0 on keyup
+        var map = {
+            "Backspace": 8,
+            "Tab": 9,
+            "Enter": 13,
+            "Control": 17,
+            "Escape": 27,
+            " ": 32,
+            "ArrowUp": 38,
+            "ArrowDown": 40,
+            ",": 188
+        };
+
+        return {
+            KEY_ENTER: 13,
+            KEY_ARROW_UP: 38,
+            KEY_ARROW_DOWN: 40,
+
+            enableKeyUpIpadSupport: function(event){
+                if (event.keyCode === 0 && event.key) {
+                    event.keyCode = event.which = map[event.key];
+                }
+            }
+        }
+    }());
+
+    sirius.autocomplete = (function () {
+        var anchor = {
+            name: "autocomplete-anchor",
+            element: undefined,
+
+            init: function (name) {
+                if (name !== undefined) {
+                    this.name = name;
+                }
+
+                this.element = $("#" + this.name);
+
+                if (!this.element.length) {
+                    throw "Anchor does not exist"
+                }
+            }
+        };
+
+        var input = {
+            name: "autocomplete-input",
+            element: undefined,
+
+            /**
+             * This method gets called each time the user input is changed
+             */
+            onChange: function () {
+                var value = this.element.val();
+                completions.rows = [];
+
+                events.beforeLoad(value);
+                service.load(value);
+
+                completions.update();
+            },
+
+            /**
+             * Will handle key up events that should not be handled as input change but as something else.
+             *
+             * @@return boolean true if the event was handled, else false
+             */
+            onNonInputKeys: function (event) {
+                if (event.keyCode === sirius.keys.KEY_ENTER) {
+                    completions.select(completions.selectedRow);
+                    input.element.blur();
+                    completions.hide();
+                    return true;
+                }
+
+                if (event.keyCode === sirius.keys.KEY_ARROW_DOWN) {
+                    if (completions.selectedRow === undefined) {
+                        completions.hoverRow(completions.element.find(".autocomplete-row-js").first())
+                    } else {
+                        var nextRow = completions.selectedRow.nextAll(".autocomplete-row-js").first();
+
+                        if (nextRow.length) {
+                            completions.unHoverRow(completions.selectedRow);
+                            completions.hoverRow(nextRow);
+                        }
+                    }
+                    return true;
+                }
+
+                if (event.keyCode === sirius.keys.KEY_ARROW_UP && completions.selectedRow !== undefined) {
+                    var prevRow = completions.selectedRow.prevAll(".autocomplete-row-js").first();
+
+                    completions.unHoverRow(completions.selectedRow);
+
+                    if (prevRow.length) {
+                        completions.hoverRow(prevRow);
+                    }
+
+                    return true;
+                }
+
+
+                completions.selectedRow = undefined;
+                return false;
+            },
+
+            init: function () {
+                this.element = $("#" + this.name);
+
+                this.element.keyup(function (event) {
+                    sirius.keys.enableKeyUpIpadSupport(event);
+
+                    if (input.onNonInputKeys(event) === false) {
+                        input.onChange();
+                    }
+                });
+
+                this.element.keydown(function (event) {
+                    if (completions.selectedRow === undefined && event.keyCode !== sirius.keys.KEY_ARROW_DOWN) {
+                        return;
+                    }
+
+                    // disables the default key_arrow_down event (moves cursor after the last char of the input)
+                    // and key_arrow_up event (moves cursor before the first char of the input)
+                    if (event.keyCode === sirius.keys.KEY_ARROW_UP || event.keyCode === sirius.keys.KEY_ARROW_DOWN) {
+                        event.preventDefault();
+                    }
+                });
+
+                this.element.focusout(function () {
+                    completions.hide();
+                });
+
+                this.element.focusin(function () {
+                    completions.show();
+                });
+
+                this.element.click(function () {
+                    completions.show();
+                });
+            }
+        };
+
+        var completions = {
+            element: undefined,
+            selectedRow: undefined,
+            rows: [],
+            rowTemplates: undefined,
+
+            HIDDEN: 0,
+            VISIBLE: 1,
+            state: undefined,
+
+            init: function () {
+                var wrapper = "<div id='autocomplete-wrapper' class='well autocomplete-wrapper'></div>";
+
+                this.state = completions.HIDDEN;
+
+                this.element = $(wrapper);
+                this.element.width(anchor.element.outerWidth());
+                this.element.offset({
+                    top: anchor.element.offset().top + anchor.element.height(),
+                    left: anchor.element.offset().left
+                });
+
+                this.element.click(function (element) {
+                    completions.select($(element.target));
+
+                    completions.hideImmediate();
+                });
+
+                $("body").append(this.element);
+            },
+
+            addHoverRowEvent: function ($row) {
+                $row.find(".autocomplete-row-js").hover(function () {
+                    completions.hoverRow($row);
+                }, function () {
+                    completions.unHoverRow($row);
+                });
+
+                if ($row.hasClass("autocomplete-row-js")) {
+                    $row.hover(function () {
+                        completions.hoverRow($row);
+                    }, function () {
+                        completions.unHoverRow($row);
+                    });
+                }
+            },
+
+            hoverRow: function ($row) {
+                completions.selectedRow = $row;
+                $row.addClass("autocomplete-selected-element");
+            },
+
+            unHoverRow: function ($row) {
+                completions.selectedRow = undefined;
+                $row.removeClass("autocomplete-selected-element");
+            },
+
+            setTemplates: function (templates) {
+                if (typeof templates !== "object") {
+                    throw "templates is no object";
+                }
+
+                this.rowTemplates = templates;
+            },
+
+            show: function () {
+                if (this.rows.length > 0) {
+                    completions.selectedRow = undefined;
+                    this.state = completions.VISIBLE;
+                    this.update();
+                    completions.element.show();
+                    events.onShow();
+                }
+            },
+
+            hide: function () {
+                if (completions.state === completions.HIDDEN) {
+                    return;
+                }
+                completions.state = completions.HIDDEN;
+
+                window.setTimeout(function () {
+                    /*
+                     * This hack is necessary to allow the click event to be handled before the element is hidden.
+                     *
+                     * Order of events:
+                     * 1. mouseDown
+                     * 2. focusOut ( will hide the autocompletion)
+                     * 3. click
+                     *
+                     * The focus check is necessary because the input field could already be focused (again).
+                     * In that case the autocomplete should not be hidden.
+                     */
+                    if (completions.state === completions.VISIBLE || input.element.is(":focus")) {
+                        return;
+                    }
+
+                    completions.hideImmediate();
+                }, 500);
+            },
+
+            hideImmediate: function () {
+                if (completions.state === completions.HIDDEN) {
+                    return;
+                }
+                completions.state = completions.HIDDEN;
+
+                completions.element.hide();
+                events.onHide();
+            },
+
+            /**
+             * Retrieves the template for the given type.
+             *
+             * @@param type string which represents the type name
+             * @@returns string representing the template of the given row type
+             */
+            templateForType: function (type) {
+                if (type && Object.keys(this.rowTemplates).includes(type)) {
+                    return this.rowTemplates[type];
+                }
+
+                return this.rowTemplates.basic;
+            },
+
+            /**
+             * Updates the rows in the autocomplete wrapper
+             */
+            update: function () {
+                this.element.empty();
+
+                if (this.rows.length < 1){
+                    completions.hideImmediate();
+                    return;
+                }
+
+                $.each(this.rows, function (index, row) {
+                    var template = completions.templateForType(row.type);
+
+                    var $row = $(Mustache.render(template, row));
+                    completions.addHoverRowEvent($row);
+                    completions.element.append($row);
+                    events.afterRenderRow($row);
+                });
+
+                events.afterRender();
+            },
+
+            /**
+             * Called if a row of the autocomplete is selected.
+             *
+             * Retrieves the actual row element associated with the selected $element
+             * and calls events.onSelect(selectedRow)
+             *
+             * @@param $element the element that was selected
+             */
+            select: function ($element) {
+                if ($element === undefined) {
+                    return;
+                }
+
+                var selectedElement = $element.closest(".autocomplete-row-js");
+                if (!selectedElement.length) {
+                    // don't do anything if no element with the row class was found
+                    return;
+                }
+
+                events.onSelect(selectedElement);
+            }
+        };
+
+        var events = {
+            onReady: Function(),
+            onShow: Function(),
+            onHide: Function(),
+            onSelect: Function(),
+            beforeLoad: Function(),
+
+            /**
+             * Handles the loaded autocompletion data, after a successful request.
+             *
+             * @@param value the autocomplete string value
+             * @@param the response of the autocomplete service
+             *
+             * @@return an array of row objects.
+             */
+            afterLoad: undefined,
+            afterRenderRow: Function(),
+            afterRender: Function()
+        };
+
+        var service = {
+            uri: undefined,
+            minSize: 1,
+
+            responseCache: {},
+
+            /**
+             * Provides the request object to be sent to the autocomplete service.
+             *
+             * Method can be overwritten with config.service.getRequest.
+             *
+             * @@param inputValue the actual string in the search input field
+             * @@returns {{query: *}} request object to be sent to the autocomplete service
+             */
+            getRequest: function (inputValue) {
+                return {query: inputValue};
+            },
+
+            load: function (value) {
+                var request = this.getRequest(value);
+                if (request.query === undefined || request.query.length < this.minSize) {
+                    completions.hide();
+                    return;
+                }
+
+                // load only if query is not already cached
+                if (this.responseCache[request.query] === undefined) {
+                    $.getJSON(service.uri, request, function (response) {
+                        if (response.error) {
+                            throw response.message;
+                        } else {
+                            // successful response
+                            service.responseCache[request.query] = events.afterLoad(value, response);
+                            service.afterLoad(request);
+                        }
+                    });
+                } else {
+                    service.afterLoad(request);
+                }
+            },
+
+            afterLoad: function (request) {
+                completions.rows = service.responseCache[request.query]
+
+                if (completions.rows.length > 0) {
+                    completions.update();
+                    completions.show();
+                } else {
+                    completions.hide();
+                }
+            },
+
+            init: function (config) {
+                if (config.serviceUri === undefined) {
+                    throw "ServiceUri required";
+                }
+
+                this.uri = config.serviceUri;
+
+                if (config.minSize !== undefined) {
+                    this.minSize = config.minSize;
+                }
+
+                if (typeof config.getRequest === "function") {
+                    this.getRequest = config.getRequest;
+                }
+            }
+        };
+
+        function asFunction(possibleFunction) {
+            return typeof possibleFunction === "function" ? possibleFunction : Function();
+        }
+
+        return {
+            eventNames: function () {
+                return Object.keys(events);
+            },
+
+            on: function (name, callback) {
+                if (this.eventNames().includes(name)) {
+                    events[name] = asFunction(callback);
+                } else {
+                    throw "Callback " + name + " is no valid event."
+                }
+            },
+
+            /**
+             * Method to initialize and start the autocompleter.
+             *
+             * @@param config
+             */
+            start: function (config) {
+                if (events.afterLoad === undefined) {
+                    throw "The event afterLoad must be set.";
+                }
+
+
+                service.init(config.service);
+
+                input.name = config.inputField;
+
+                input.init();
+                anchor.init(config.anchor);
+                completions.init();
+
+                completions.setTemplates(config.templates);
+
+                input.element.focus();
+                events.onReady();
+            },
+
+            /**
+             * Allows to manually set the input of the autocomplete input field.
+             *
+             * @@param value of the input field
+             * @@param silent if true the onChange will not be called
+             */
+            setInput: function (value, silent) {
+                input.element.val(value);
+
+                if (silent !== true) {
+                    input.onChange();
+                }
+            },
+
+            getInput: function () {
+                return input.element;
+            },
+
+            focus: function () {
+                input.element.focus();
+            }
+        };
+    }());
+</script>
