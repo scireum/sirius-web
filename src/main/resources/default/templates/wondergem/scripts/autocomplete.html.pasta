@@ -1,34 +1,11 @@
 <script type="text/javascript">
     window.sirius = window.sirius || {};
 
-    sirius.keys = (function(){
-        // fix physical keyboard bug on iPad that returns keyCode 0 on keyup
-        var map = {
-            "Backspace": 8,
-            "Tab": 9,
-            "Enter": 13,
-            "Control": 17,
-            "Escape": 27,
-            " ": 32,
-            "ArrowUp": 38,
-            "ArrowDown": 40,
-            ",": 188
-        };
+    function asFunction(possibleFunction) {
+        return typeof possibleFunction === "function" ? possibleFunction : Function();
+    }
 
-        return {
-            KEY_ENTER: 13,
-            KEY_ARROW_UP: 38,
-            KEY_ARROW_DOWN: 40,
-
-            enableKeyUpIpadSupport: function(event){
-                if (event.keyCode === 0 && event.key) {
-                    event.keyCode = event.which = map[event.key];
-                }
-            }
-        }
-    }());
-
-    sirius.autocomplete = (function () {
+    sirius.createAutocomplete = (function () {
         var anchor = {
             name: "autocomplete-anchor",
             element: undefined,
@@ -154,12 +131,12 @@
             VISIBLE: 1,
             state: undefined,
 
-            init: function () {
-                var wrapper = "<div id='autocomplete-wrapper' class='well autocomplete-wrapper'></div>";
+            init: function (config) {
+                var wrapper = "<div class='well autocomplete-wrapper autocomplete-wrapper-js' {{#id}}id='{{id}}'{{/id}}></div>";
 
                 this.state = completions.HIDDEN;
 
-                this.element = $(wrapper);
+                this.element = $(Mustache.render(wrapper, config));
                 this.element.width(anchor.element.outerWidth());
                 this.element.offset({
                     top: anchor.element.offset().top + anchor.element.height(),
@@ -223,7 +200,6 @@
                 if (completions.state === completions.HIDDEN) {
                     return;
                 }
-                completions.state = completions.HIDDEN;
 
                 window.setTimeout(function () {
                     /*
@@ -275,7 +251,7 @@
             update: function () {
                 this.element.empty();
 
-                if (this.rows.length < 1){
+                if (this.rows.length < 1) {
                     completions.hideImmediate();
                     return;
                 }
@@ -311,7 +287,10 @@
                     return;
                 }
 
-                events.onSelect(selectedElement);
+                if (events.onSelect(selectedElement) !== true) {
+                    completions.hideImmediate();
+                }
+
             }
         };
 
@@ -404,10 +383,6 @@
             }
         };
 
-        function asFunction(possibleFunction) {
-            return typeof possibleFunction === "function" ? possibleFunction : Function();
-        }
-
         return {
             eventNames: function () {
                 return Object.keys(events);
@@ -421,6 +396,13 @@
                 }
             },
 
+            config: undefined,
+            init: function (config) {
+                if (config) {
+                    this.config = config;
+                }
+            },
+
             /**
              * Method to initialize and start the autocompleter.
              *
@@ -431,16 +413,17 @@
                     throw "The event afterLoad must be set.";
                 }
 
+                this.init(config);
 
-                service.init(config.service);
+                service.init(this.config.service);
 
-                input.name = config.inputField;
+                input.name = this.config.inputField;
 
                 input.init();
-                anchor.init(config.anchor);
-                completions.init();
+                anchor.init(this.config.anchor);
+                completions.init(this.config.completions || {});
 
-                completions.setTemplates(config.templates);
+                completions.setTemplates(this.config.templates);
 
                 input.element.focus();
                 events.onReady();
@@ -466,7 +449,13 @@
 
             focus: function () {
                 input.element.focus();
+            },
+
+            isVisible: function () {
+                return completions.state === completions.VISIBLE;
             }
         };
-    }());
+    });
+
+    sirius.autocomplete = sirius.createAutocomplete();
 </script>
