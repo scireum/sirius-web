@@ -12,11 +12,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.ConfigValue;
-import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -54,7 +52,6 @@ class MemoryServerSession implements ServerSession {
 
     @ConfigValue("http.serverUserSessionLifetime")
     private static Duration userSessionLifetime;
-
 
     /**
      * Creates a new session attached to the given storage.
