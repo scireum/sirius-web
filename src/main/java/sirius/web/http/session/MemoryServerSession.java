@@ -55,8 +55,6 @@ class MemoryServerSession implements ServerSession {
     @ConfigValue("http.serverUserSessionLifetime")
     private static Duration userSessionLifetime;
 
-    @ConfigValue("http.csrfTokenLifetime")
-    private static Duration csrfTokenLifetime;
 
     /**
      * Creates a new session attached to the given storage.
@@ -80,20 +78,6 @@ class MemoryServerSession implements ServerSession {
     @Override
     public long getLastAccessedTime() {
         return lastAccessed;
-    }
-
-    @Override
-    public String getCSRFToken() {
-        if (isCSRFTokenOutdated((Instant) values.get(WebContext.LAST_CSRF_RECOMPUTE))) {
-            values.put(WebContext.CSRF_TOKEN, UUID.randomUUID().toString());
-            values.put(WebContext.LAST_CSRF_RECOMPUTE, Instant.now());
-        }
-
-        return (String) values.get(WebContext.CSRF_TOKEN);
-    }
-
-    private boolean isCSRFTokenOutdated(Instant lastCSRFRecompute) {
-        return Duration.between(lastCSRFRecompute, Instant.now()).toMinutes() > csrfTokenLifetime.toMinutes();
     }
 
     @Override

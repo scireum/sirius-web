@@ -8,7 +8,7 @@
                 var that = $(this);
 
                 submitBtn.click(function () {
-                    that.closest('form').submit();
+                    $("#" + that.data("deleteFormId")).submit();
                 });
 
                 modalElement.modal({

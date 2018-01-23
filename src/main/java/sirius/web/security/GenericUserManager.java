@@ -651,8 +651,4 @@ public abstract class GenericUserManager implements UserManager {
     public boolean isKeepLoginSupported() {
         return keepLoginEnabled;
     }
-
-    public boolean isClientSessionStorage() {
-        return SESSION_STORAGE_TYPE_CLIENT.equals(sessionStorage);
-    }
 }

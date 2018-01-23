@@ -98,12 +98,6 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class WebContext implements SubContext {
 
-    public static final String CSRF_TOKEN = "CSRFToken";
-    public static final String LAST_CSRF_RECOMPUTE = "lastCSRFRecompute";
-
-    @ConfigValue("http.csrfTokenLifetime")
-    private static Duration csrfTokenLifetime;
-
     private static final String UNKNOWN_FORWARDED_FOR_HOST = "unknown";
     private static final String HEADER_X_FORWARDED_FOR = "X-Forwarded-For";
     private static final String HEADER_X_FORWARDED_PROTO = "X-Forwarded-Proto";
@@ -302,11 +296,6 @@ public class WebContext implements SubContext {
     protected UserAgent userAgent;
 
     /*
-      * Whether CSRF tokens should be placed into sensitive links.
-      */
-    private boolean useCSRFProtection = false;
-
-    /*
      * Name of the cookie used to store and load the client session
      */
     @ConfigValue("http.sessionCookieName")
@@ -372,6 +361,9 @@ public class WebContext implements SubContext {
 
     @Part
     private static SessionSecretComputer sessionSecretComputer;
+
+    @Part
+    private static CSRFHelper csrfHelper;
 
     /**
      * Date format used by HTTP date headers
@@ -1097,42 +1089,7 @@ public class WebContext implements SubContext {
      * @return the CSRF security-token to protect sensitve links.
      */
     public String getCSRFToken() {
-        GenericUserManager userManager = (GenericUserManager) UserContext.get().getUserManager();
-
-        if (userManager.isClientSessionStorage()) {
-            Value lastCSRFRecompute = getSessionValue(LAST_CSRF_RECOMPUTE);
-
-            if (isCSRFTokenOutdated(lastCSRFRecompute.asLong(-1L)) || lastCSRFRecompute.isEmptyString()) {
-                setSessionValue(CSRF_TOKEN, UUID.randomUUID().toString());
-                setSessionValue(LAST_CSRF_RECOMPUTE, Value.of(Instant.now().toEpochMilli()).asString());
-            }
-
-            return getSessionValue(CSRF_TOKEN).asString();
-        } else {
-            return getServerSession().getCSRFToken();
-        }
-    }
-
-    private boolean isCSRFTokenOutdated(long lastCSRFRecompute) {
-        return Duration.between(Instant.ofEpochMilli(lastCSRFRecompute), Instant.now()).toMinutes()
-               > csrfTokenLifetime.toMinutes();
-    }
-
-    /**
-     * Returns whether CSRF security-tokens should be placed in sensitive action links.
-     *
-     * @return <tt>true</tt> if CSRF security-tokens should be placed in sensitive action links, <tt>false</tt> otherwise.
-     */
-    public boolean isUseCSRFProtection() {
-        return useCSRFProtection;
-    }
-
-    /**
-     * Marks the current {@link WebContext} context so that CSRF security-tokens should be placed in sensitive action
-     * links.
-     */
-    public void withUseCSRFProtection(boolean useCSRFProtection) {
-        this.useCSRFProtection = useCSRFProtection;
+        return csrfHelper.getCSRFToken(this);
     }
 
     /**

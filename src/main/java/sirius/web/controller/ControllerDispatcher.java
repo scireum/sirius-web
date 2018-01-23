@@ -23,10 +23,10 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
 import sirius.web.ErrorCodeException;
+import sirius.web.http.CSRFHelper;
 import sirius.web.http.InputStreamHandler;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
-import sirius.web.security.GenericUserManager;
 import sirius.web.security.UserContext;
 import sirius.web.security.UserInfo;
 import sirius.web.services.JSONStructuredOutput;
@@ -133,7 +133,7 @@ public class ControllerDispatcher implements WebDispatcher {
     }
 
     private boolean checkCSRFToken(WebContext ctx) {
-        String requestToken = ctx.get(WebContext.CSRF_TOKEN).asString();
+        String requestToken = ctx.get(CSRFHelper.CSRF_TOKEN).asString();
         String sessionToken = ctx.getCSRFToken();
 
         return Strings.isFilled(requestToken) && Strings.areEqual(requestToken, sessionToken);
@@ -153,8 +153,6 @@ public class ControllerDispatcher implements WebDispatcher {
             // Install user. This is forcefully called here to ensure that the ScopeDetetor
             // and the user manager are guaranteed to be invoked one we enter the controller code...
             UserInfo user = UserContext.getCurrentUser();
-
-            ctx.withUseCSRFProtection(route.getMethod().isAnnotationPresent(AddSecurityToken.class));
 
             if (!checkCSRFTokenIfNecessary(ctx, route)) {
                 return;

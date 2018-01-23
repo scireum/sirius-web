@@ -134,7 +134,6 @@ public class TestController implements Controller {
         }
     }
 
-    @AddSecurityToken
     @Routed("/test/provide-security-token")
     public void provideSecuritytoken(WebContext ctx) {
         ctx.respondWith()
