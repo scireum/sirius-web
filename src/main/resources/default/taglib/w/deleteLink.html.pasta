@@ -9,7 +9,7 @@
 
 <form id="@deleteFormId" method="post" action="@if(page != null) {@url?@page.createQueryString()} else {@url}">
     <i class="fa fa-trash"></i>
-    <a class="link link-danger @if (adminOnly) {admin-link}" data-deleteId="@deleteFormId" href="#">
+    <a class="link link-danger @if (adminOnly) {admin-link}" data-deleteid="@deleteFormId" href="#">
         @i18n("NLS.delete")
     </a>
     <input name="CSRFToken" value="@call.getCSRFToken()" type="hidden"/>
