@@ -91,11 +91,9 @@ public class DynamicInvokeTemplateEmitter extends Emitter {
         ExpressionVisitor visitor = visitorSupplier.apply(getStartOfBlock());
         templateName = templateName.propagateVisitor(visitor);
 
-        for (int i = 0; i < args.size(); i++) {
-            Map<String, Expression> copyArgs = new HashMap<>();
-            args.forEach((key, value) -> copyArgs.put(key, value.propagateVisitor(visitor)));
-            this.args = copyArgs;
-        }
+        Map<String, Expression> copyArgs = new HashMap<>();
+        args.forEach((key, value) -> copyArgs.put(key, value.propagateVisitor(visitor)));
+        this.args = copyArgs;
 
         if (blocks != null) {
             this.blocks.values().forEach(block -> block.visitExpressions(visitorSupplier));
