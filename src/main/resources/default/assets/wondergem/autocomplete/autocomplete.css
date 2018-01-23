@@ -14,7 +14,7 @@
 }
 
 .autocomplete-row {
-    padding: 12px 8px;
+    padding: 4px 8px;
 }
 
 .autocomplete-row-heading {
@@ -24,10 +24,15 @@
     padding-top: 8px;
     padding-bottom: 8px;
 }
-
+.autocomplete-preview-img {
+    text-align: center;
+}
+.autocomplete-preview-img img {
+    max-height: 48px;
+}
 .autocomplete-selectable-element {
     cursor: pointer;
 }
 .autocomplete-selected-element, .navigation-up-down-js:hover, .navigation-left-right-js:hover {
-    opacity: 0.7;
+    background-color: #E8E8EA
 }
