@@ -1,6 +1,11 @@
 <script>
     window.sirius = window.sirius || {};
 
+    function asFunction(possibleFunction) {
+        return typeof possibleFunction === "function" ? possibleFunction : Function();
+    }
+
+
     sirius.tokenfield = (function () {
             var input = {
                 id: undefined,
@@ -76,11 +81,6 @@
                 onEnter: Function(),
                 onRemovedToken: Function()
             };
-
-            function asFunction(possibleFunction) {
-                return typeof possibleFunction === "function" ? possibleFunction : Function();
-            }
-
 
             return {
                 eventNames: function () {
