@@ -28,6 +28,7 @@ public class ArgTag extends TagHandler {
 
     private static final String PARAM_NAME = "name";
     private static final String PARAM_DESCRIPTION = "description";
+    private static final String PARAM_DEPRECATED = "deprecated";
     private static final String PARAM_TYPE = "type";
     private static final String PARAM_DEFAULT = "default";
 
@@ -52,20 +53,23 @@ public class ArgTag extends TagHandler {
         public List<TemplateArgument> reportArguments() {
             return Arrays.asList(new TemplateArgument(String.class,
                                                       PARAM_TYPE,
-                                                      "Contains the type name of the argument.",
-                                                      null),
-                                 new TemplateArgument(String.class,
-                                                      PARAM_NAME,
-                                                      "Contains the name of the argument.",
-                                                      null),
+                                                      "Contains the type name of the argument."),
+                                 new TemplateArgument(String.class, PARAM_NAME, "Contains the name of the argument."),
                                  new TemplateArgument(String.class,
                                                       PARAM_DESCRIPTION,
                                                       "Contains a short description of the argument.",
-                                                      ConstantString.EMPTY_STRING),
+                                                      ConstantString.EMPTY_STRING,
+                                                      null),
                                  new TemplateArgument(Expression.class,
                                                       PARAM_DEFAULT,
                                                       "Contains a default expression which is used, if no value is given.",
-                                                      ConstantNull.NULL));
+                                                      ConstantNull.NULL,
+                                                      null),
+                                 new TemplateArgument(Expression.class,
+                                                      PARAM_DEPRECATED,
+                                                      "Contains a warning to indicate that the argument is deprecated and should no longer be used.",
+                                                      ConstantNull.NULL,
+                                                      null));
         }
 
         @Override
@@ -78,6 +82,7 @@ public class ArgTag extends TagHandler {
     public void apply(CompositeEmitter targetBlock) {
         String name = getConstantAttribute(PARAM_NAME).asString();
         String description = getConstantAttribute(PARAM_DESCRIPTION).asString();
+        String deprecationWarning = getConstantAttribute(PARAM_DEPRECATED).getString();
         String typeName = getConstantAttribute(PARAM_TYPE).asString();
         Class<?> type = getCompilationContext().resolveClass(getStartOfTag(), typeName);
         Expression defaultValue = getAttribute(PARAM_DEFAULT);
@@ -94,7 +99,12 @@ public class ArgTag extends TagHandler {
         }
 
         getCompilationContext().push(getStartOfTag(), name, type);
-        getCompilationContext().getTemplate().addArgument(new TemplateArgument(type, name, description, defaultValue));
+        getCompilationContext().getTemplate()
+                               .addArgument(new TemplateArgument(type,
+                                                                 name,
+                                                                 description,
+                                                                 defaultValue,
+                                                                 deprecationWarning));
     }
 
     private boolean isValidDefaultValue(Class<?> type, Expression defaultValue) {
@@ -116,6 +126,10 @@ public class ArgTag extends TagHandler {
         }
 
         if (PARAM_DESCRIPTION.equals(name)) {
+            return String.class;
+        }
+
+        if (PARAM_DEPRECATED.equals(name)) {
             return String.class;
         }
 

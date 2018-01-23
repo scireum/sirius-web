@@ -43,14 +43,8 @@ public class PragmaTag extends TagHandler {
 
         @Override
         public List<TemplateArgument> reportArguments() {
-            return Arrays.asList(new TemplateArgument(String.class,
-                                                      PARAM_NAME,
-                                                      "Contains the name of the pragma",
-                                                      null),
-                                 new TemplateArgument(String.class,
-                                                      PARAM_VALUE,
-                                                      "Contains the values of the pragma",
-                                                      null));
+            return Arrays.asList(new TemplateArgument(String.class, PARAM_NAME, "Contains the name of the pragma"),
+                                 new TemplateArgument(String.class, PARAM_VALUE, "Contains the values of the pragma"));
         }
 
         @Override

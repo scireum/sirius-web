@@ -43,8 +43,7 @@ public class IfTag extends TagHandler {
         public List<TemplateArgument> reportArguments() {
             return Collections.singletonList(new TemplateArgument(boolean.class,
                                                                   "test",
-                                                                  "Contains the condition to check.",
-                                                                  null));
+                                                                  "Contains the condition to check."));
         }
 
         @Override

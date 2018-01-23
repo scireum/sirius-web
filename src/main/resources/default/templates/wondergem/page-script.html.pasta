@@ -89,7 +89,7 @@
         field.on('select2:unselect', function(e) {
             $(this).html('<option value=""></option>');
             e.preventDefault();
-            e.preventBubble();
+            e.stopPropagation();
         });
 
         field.select2({
@@ -239,19 +239,6 @@
                     $('.img', container).attr('src', responseJSON.previewUrl);
                     $('.lnk', container).attr('href', responseJSON.imageUrl);
                 }
-                if(responseJSON.fileId) {
-                    $('#uploadedFile').val(responseJSON.fileId);
-                    if (responseJSON.refresh) {
-                        setTimeout(function () {
-                            var editForm = $('#editForm');
-                            if (editForm.length) {
-                                editForm.submit();
-                            } else {
-                                window.location.reload();
-                            }
-                        }, 1250);
-                    }
-                }
             },
             showMessage: function (message) {
                 // We generally send a flag "error" which is true or false as
@@ -272,7 +259,7 @@
             allowedExtensions: allowedExtensions,
             template: '<div class="qq-uploader">' +
             '<div class="qq-upload-drop-area qq-image-area"><div><span style="display: inline-block"><a href="' + defaultImage + '" class="thumbnail lnk"><img class="img" src="' + defaultPreview + '" /></a></span></div><span>@i18n("template.html.uploadArea")</span></div>' +
-            '<div class="qq-upload-button btn btn-primary btn-block">@i18n("template.html.uploadBtn")</div>' +
+            '<div class="qq-upload-button btn btn-primary" style="display: block">@i18n("template.html.uploadBtn")</div>' +
             '<ul class="qq-upload-list"></ul>' +
             '</div>',
             fileTemplate: '<li>' +
@@ -287,12 +274,13 @@
         $('.img', container).css('max-width', maxWidth - 30 + 'px');
     }
 
-    function fileUpload(url, target, fileName, fileUrl, allowedExtensions) {
+    function fileUpload(url, target, params, allowedExtensions) {
         var container = target;
 
         new qq.FileUploader({
             element: target,
             action: url,
+            params: params,
             debug: false,
             onComplete: function (cmp_id, fileName, responseJSON) {
                 clearMessages();
@@ -305,21 +293,16 @@
                         addInfo(responseJSON.message);
                     }
                 }
-                if (responseJSON.previewUrl) {
-                    $('a.lnk', container).text(fileName).attr('href', responseJSON.previewUrl);
-                }
-                if(responseJSON.fileId) {
-                    $('#uploadedFile').val(responseJSON.fileId);
-                    if (responseJSON.refresh) {
-                        setTimeout(function () {
-                            var editForm = $('#editForm');
-                            if (editForm.length) {
-                                editForm.submit();
-                            } else {
-                                window.location.reload();
-                            }
-                        }, 1250);
-                    }
+                if (responseJSON.refresh) {
+                    setTimeout(function () {
+                        var editForm = $('#editForm');
+                        if (editForm.length) {
+                            $('#uploadedFile').val(responseJSON.fileId);
+                            editForm.submit();
+                        } else {
+                            window.location.reload();
+                        }
+                    }, 1250);
                 }
             },
             showMessage: function (message) {
@@ -340,8 +323,8 @@
             },
             allowedExtensions: allowedExtensions,
             template: '<div class="qq-uploader">' +
-            '<div class="qq-upload-drop-area"><div><a href="' + fileUrl + '" class="lnk">' + fileName + '</a></div><span>@i18n("template.html.uploadArea")</span></div>' +
-            '<div class="qq-upload-button btn btn-primary btn-block">@i18n("template.html.uploadBtn")</div>' +
+            '<div class="qq-upload-drop-area"><span>@i18n("template.html.uploadArea")</span></div>' +
+            '<div class="qq-upload-button btn btn-primary" style="display: block">@i18n("template.html.uploadBtn")</div>' +
             '<ul class="qq-upload-list"></ul>' +
             '</div>',
             fileTemplate: '<li>' +

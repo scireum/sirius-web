@@ -28,6 +28,7 @@ public interface MailLog {
      * @param subject      subject line of the mail
      * @param text         text part of the mail
      * @param html         html part of the mail
+     * @param type         type of the mail
      */
     @SuppressWarnings("squid:S00107")
     @Explain("Refactoring into a parameter object would be the way to go but quite an overhead for a simple logging API")
@@ -39,5 +40,6 @@ public interface MailLog {
                      String receiverName,
                      String subject,
                      String text,
-                     String html);
+                     String html,
+                     String type);
 }

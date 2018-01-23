@@ -32,7 +32,7 @@ public interface ManagedTask {
      * Enuemrates possible states of a task.
      */
     enum State {
-        SCHEDULED("label-info"), RUNNING("label-success"), WARNINGS("label-warn"), TERMINATED("label-default");
+        SCHEDULED("label-info"), RUNNING("label-success"), WARNINGS("label-warning"), TERMINATED("label-default");
 
         private final String labelClass;
 

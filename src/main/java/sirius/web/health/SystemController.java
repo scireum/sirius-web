@@ -31,6 +31,8 @@ import sirius.web.http.session.ServerSession;
 import sirius.web.security.Permission;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -200,7 +202,9 @@ public class SystemController extends BasicController {
     private List<Tuple<String, Collection<Tuple<String, String>>>> computeTimingInfos(Page<String> page) {
         MultiMap<String, Tuple<String, String>> timingMap = MultiMap.createOrdered();
         String query = Strings.isFilled(page.getQuery()) ? page.getQuery().toLowerCase() : null;
-        for (Microtiming.Timing timing : Microtiming.getTimings()) {
+        List<Microtiming.Timing> timings = Microtiming.getTimings();
+        Collections.sort(timings, Comparator.comparingLong(t -> t.getAvg().getCount()));
+        for (Microtiming.Timing timing : timings) {
             if (matchesQuery(query, timing)) {
                 timingMap.put(timing.getCategory(),
                               Tuple.create(timing.getKey(),

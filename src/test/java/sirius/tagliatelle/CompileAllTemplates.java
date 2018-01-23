@@ -12,7 +12,6 @@ import sirius.kernel.Lifecycle;
 import sirius.kernel.Sirius;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
-import sirius.kernel.health.Exceptions;
 import sirius.tagliatelle.compiler.CompileException;
 
 import java.util.regex.Pattern;
@@ -37,8 +36,7 @@ public class CompileAllTemplates implements Lifecycle {
                 Tagliatelle.LOG.INFO("Checking: %s", templateName);
                 engine.resolve(templateName);
             } catch (CompileException e) {
-                Exceptions.ignore(e);
-                Tagliatelle.LOG.INFO("Failed to compile %s: %s", templateName, e.getMessage());
+                Tagliatelle.LOG.INFO(e.getMessage());
             }
         });
     }

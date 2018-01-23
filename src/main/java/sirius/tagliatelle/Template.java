@@ -9,6 +9,7 @@
 package sirius.tagliatelle;
 
 import sirius.kernel.commons.Context;
+import sirius.kernel.commons.Files;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.commons.Watch;
@@ -30,6 +31,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Represents a compiled template which can be rendered.
@@ -46,6 +49,8 @@ public class Template {
     private Average renderTime = new Average();
     private Integer emitterCount;
     private Integer expressionCount;
+
+    private static final Pattern TAGLIB_NAME = Pattern.compile("/taglib/([^/]+)/([^/]+)\\.html\\.pasta");
 
     @Part
     private static Tagliatelle engine;
@@ -389,5 +394,22 @@ public class Template {
      */
     public void setEmitter(Emitter emitter) {
         this.emitter = emitter;
+    }
+
+    /**
+     * Represents a short an readable name of the template used in error messages.
+     * <p>
+     * This will most probably either render the name as tag if it is one or just output the filename instead of the
+     * full path, which is nonambiguous in the context or an error message.
+     *
+     * @return a possibly shortened name of the template to be used in warnings and error messages
+     */
+    public String getShortName() {
+        Matcher m = TAGLIB_NAME.matcher(name);
+        if (m.matches()) {
+            return "<" + m.group(1) + ":" + m.group(2) + ">";
+        } else {
+            return Files.getFilenameAndExtension(name);
+        }
     }
 }

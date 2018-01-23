@@ -155,7 +155,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         }
         wc.setCtx(ctx);
         wc.setRequest(req);
-        currentCall.get(TaskContext.class).setSystem("HTTP").setJob(req.uri());
+        currentCall.get(TaskContext.class).setSystem("HTTP").setJob(wc.getRequestedURI());
         return wc;
     }
 

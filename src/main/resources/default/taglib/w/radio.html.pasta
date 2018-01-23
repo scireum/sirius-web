@@ -16,12 +16,12 @@
 
 
 <div class="col-xs-@smallSpan col-md-@span">
-    <div class="form-group @user.signalFieldError(name)">
+    <div class="form-group radio @user.signalFieldError(name)">
         <label>
             <input type="radio" name="@name" value="@key" @if (key == value) { checked="checked" } @if (readonly) { disabled="disabled" } />
             <i:if test="isFilled(label)">
                 <span class="@if (required) { input-required } @if (adminOnly) { admin-link }">
-                    @label
+                    <i:raw>@label</i:raw>
                 </span>
             </i:if>
             <i:if test="isFilled(help)">

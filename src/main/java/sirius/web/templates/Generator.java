@@ -298,7 +298,7 @@ public class Generator {
      * {@code isTemplateEndsWith(".vm")} but <tt>false</tt> for {@code isTemplateFileExtension("vm")}
      */
     public boolean isTemplateEndsWith(@Nonnull String extension) {
-        return Strings.isFilled(templateName) && extension.toLowerCase().endsWith(extension);
+        return Strings.isFilled(templateName) && templateName.toLowerCase().endsWith(extension);
     }
 
     /**
