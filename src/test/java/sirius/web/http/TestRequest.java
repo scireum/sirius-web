@@ -39,8 +39,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * Provides a test or mock instance of {@link sirius.web.http.WebContext}.
@@ -449,12 +449,22 @@ public class TestRequest extends WebContext implements HttpRequest {
         if (parameters.isEmpty()) {
             return "";
         }
-        return parameters.entrySet()
-                         .stream()
-                         .map(e -> Strings.urlEncode(e.getKey())
-                                   + "="
-                                   + Strings.urlEncode(NLS.toMachineString(e.getValue())))
-                         .collect(Collectors.joining("&"));
+
+        StringJoiner joiner = new StringJoiner("&");
+        for (Map.Entry<String, Object> param : parameters.entrySet()) {
+            if (param.getValue() instanceof Iterable) {
+                for (Object paramExpandedValue : (Iterable<?>) param.getValue()) {
+                    joiner.add(generateQueryStringParam(param.getKey(), paramExpandedValue));
+                }
+            } else {
+                joiner.add(generateQueryStringParam(param.getKey(), param.getValue()));
+            }
+        }
+        return joiner.toString();
+    }
+
+    private String generateQueryStringParam(String key, Object value) {
+        return Strings.urlEncode(key) + "=" + Strings.urlEncode(NLS.toMachineString(value));
     }
 
     protected InputStream getResourceAsStream(String resource) {
