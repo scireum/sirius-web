@@ -1,0 +1,3 @@
+<i:arg type="String" name="deprecatedArg" deprecated="Do not use me." />
+
+<i:pragma name="deprecated" value="Do not use." />

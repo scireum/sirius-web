@@ -21,23 +21,38 @@ public class TemplateArgument {
     private final Class<?> type;
     private final String name;
     private final Expression defaultValue;
+    private final String deprecationWarning;
 
     /**
      * Creates a new argument with the given type, name and default expression.
      *
-     * @param type         the type of the argument
-     * @param name         the name of the argument
-     * @param description  a description of the argument
-     * @param defaultValue the expression which yields the default value if no argument is supplied.
+     * @param type               the type of the argument
+     * @param name               the name of the argument
+     * @param description        a description of the argument
+     * @param defaultValue       the expression which yields the default value if no argument is supplied.
+     * @param deprecationWarning a deprecation warning if the parameter is not to be used
      */
     public TemplateArgument(Class<?> type,
                             String name,
                             @Nullable String description,
-                            @Nullable Expression defaultValue) {
+                            @Nullable Expression defaultValue,
+                            @Nullable String deprecationWarning) {
         this.type = type;
         this.name = name;
         this.description = description;
         this.defaultValue = defaultValue;
+        this.deprecationWarning = deprecationWarning;
+    }
+
+    /**
+     * Creates a new argument with the given type, name and default expression.
+     *
+     * @param type        the type of the argument
+     * @param name        the name of the argument
+     * @param description a description of the argument
+     */
+    public TemplateArgument(Class<?> type, String name, @Nullable String description) {
+        this(type, name, description, null, null);
     }
 
     /**
@@ -74,5 +89,14 @@ public class TemplateArgument {
      */
     public String getDescription() {
         return description;
+    }
+
+    /**
+     * Returns a deprecation warning if present.
+     *
+     * @return a deprecation warning if present, <tt>null</tt> otherwise
+     */
+    public String getDeprecationWarning() {
+        return deprecationWarning;
     }
 }
