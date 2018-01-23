@@ -7,4 +7,6 @@
 
 <div class="form-actions">
     <a href="@backUrl" class="btn btn-primary">@title</a>
+
+    <i:render name="body"/>
 </div>
