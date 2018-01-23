@@ -1,0 +1,9 @@
+<i:arg type="String" name="imageUrl"/>
+<i:arg type="String" name="altText" default=""/>
+
+<i:pragma name="inline" value="true"/>
+<i:pragma name="description" value="Displays an image which will be opened in a overlay on click"/>
+
+<a href="@imageUrl" data-featherlight="image">
+    <img alt="@altText" src="@imageUrl" class="thumbnail"/>
+</a>

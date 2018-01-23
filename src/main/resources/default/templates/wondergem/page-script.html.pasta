@@ -90,7 +90,7 @@
         field.on('select2:unselect', function(e) {
             $(this).html('<option value=""></option>');
             e.preventDefault();
-            e.preventBubble();
+            e.stopPropagation();
         });
 
         field.select2({

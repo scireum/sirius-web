@@ -1,0 +1,124 @@
+<script>
+    window.sirius = window.sirius || {};
+
+    sirius.tokenfield = (function () {
+            var input = {
+                id: undefined,
+
+                /**
+                 * the actual input field
+                 */
+                element: undefined,
+
+                /**
+                 * the generated input field by the tokenfield library
+                 */
+                tokenElement: undefined,
+
+                value: "",
+                allTokens: undefined,
+
+                init: function (config) {
+                    this.id = config.id;
+
+                    if (this.id === undefined) {
+                        throw "The start config must define the property 'id'";
+                    }
+
+                    this.element = $("#" + this.id);
+                    this.value = this.element.val();
+                    this.element.tokenfield(config.tokenfield || {delimiter: " "});
+
+                    this.tokenElement = $("#" + this.id + "-tokenfield");
+
+                    // delete the element value because they are tokens now and the value should not be displayed twice
+                    this.tokenElement.val("");
+
+                    this.element.on('tokenfield:removedtoken', function (e) {
+                        var identifier = e.attrs.value;
+                        $('input[data-identifier="' + identifier + '"]').remove();
+
+                        events.onRemovedToken(e);
+                    });
+
+                    this.tokenElement.keydown(function (e) {
+                        if (e.keyCode === sirius.keys.KEY_ENTER) {
+                            events.onEnter(e);
+                        }
+                    });
+                },
+
+                /**
+                 * Returns the full value of the input field.
+                 *
+                 * This includes the current user input and the tokenized value.
+                 */
+                getValue: function () {
+                    return this.value + " " + this.tokenElement.val();
+                },
+
+                /**
+                 * Adds a list of tokens to the already existing once.
+                 *
+                 * @@param tokens array of tokens to be added
+                 */
+                appendTokens: function (tokens) {
+                    if (this.allTokens === undefined) {
+                        this.allTokens = [this.value];
+                    }
+
+                    this.allTokens = this.allTokens.concat(tokens);
+                    this.element.tokenfield("setTokens", this.allTokens);
+                }
+            };
+
+            var events = {
+                onEnter: Function(),
+                onRemovedToken: Function()
+            };
+
+            function asFunction(possibleFunction) {
+                return typeof possibleFunction === "function" ? possibleFunction : Function();
+            }
+
+
+            return {
+                eventNames: function () {
+                    return Object.keys(events);
+                },
+
+                /**
+                 * Adds event handlers.
+                 *
+                 * Each event handler can be set only once.
+                 *
+                 * @@param name of the event
+                 * @@param callback the function to be executed if the event is triggered
+                 */
+                on: function (name, callback) {
+                    if (this.eventNames().includes(name)) {
+                        events[name] = asFunction(callback);
+                    } else {
+                        throw "Callback " + name + " is no valid event.";
+                    }
+                },
+
+                start: function (config) {
+                    input.init(config);
+                },
+
+                getInput: function () {
+                    return input.getValue();
+                },
+
+                appendTokens: function (tokens) {
+                    input.appendTokens(tokens);
+                },
+
+                getInputFieldId: function () {
+                    return input.tokenElement.prop("id");
+                }
+            };
+        }
+    )();
+</script>

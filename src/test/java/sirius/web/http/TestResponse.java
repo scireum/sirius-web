@@ -23,6 +23,7 @@ import sirius.kernel.commons.Value;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.xml.StructuredNode;
 import sirius.kernel.xml.XMLStructuredInput;
+import sirius.tagliatelle.Template;
 
 import javax.annotation.Nullable;
 import javax.xml.xpath.XPathExpressionException;
@@ -277,13 +278,13 @@ public class TestResponse extends Response {
     }
 
     @Override
-    public void template(String name, Object... params) {
+    public void template(HttpResponseStatus status, Template template, Object... params) {
         try {
             type = ResponseType.TEMPLATE;
-            status = HttpResponseStatus.OK;
-            templateName = name;
+            this.status = status;
+            templateName = template.getName();
             templateParameters = Arrays.asList(params);
-            super.template(name, params);
+            super.template(status, template, params);
         } catch (Throwable e) {
             innerCallContext = CallContext.getCurrent();
             responsePromise.fail(e);
