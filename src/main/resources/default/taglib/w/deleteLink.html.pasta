@@ -12,5 +12,5 @@
     <a class="link link-danger @if (adminOnly) {admin-link}" data-deleteid="@deleteFormId" href="#">
         @i18n("NLS.delete")
     </a>
-    <input name="CSRFToken" value="@call.getCSRFToken()" type="hidden"/>
+    <input name="CSRFToken" value="@csrf.getCSRFToken(call)" type="hidden"/>
 </form>

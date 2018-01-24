@@ -55,6 +55,9 @@ public class ControllerDispatcher implements WebDispatcher {
     @Part
     private Tasks tasks;
 
+    @Part
+    private CSRFHelper csrfHelper;
+
     /**
      * The priority of this controller is {@code PriorityCollector.DEFAULT_PRIORITY + 10} as it is quite complex
      * to check each request against each route.
@@ -134,7 +137,7 @@ public class ControllerDispatcher implements WebDispatcher {
 
     private boolean checkCSRFToken(WebContext ctx) {
         String requestToken = ctx.get(CSRFHelper.CSRF_TOKEN).asString();
-        String sessionToken = ctx.getCSRFToken();
+        String sessionToken = csrfHelper.getCSRFToken(ctx);
 
         return Strings.isFilled(requestToken) && Strings.areEqual(requestToken, sessionToken);
     }
@@ -183,12 +186,13 @@ public class ControllerDispatcher implements WebDispatcher {
     }
 
     private boolean checkCSRFTokenIfNecessary(WebContext ctx, Route route) {
-        if (route.getMethod().isAnnotationPresent(CheckSecurityToken.class) && (!ctx.isPOST()
-                                                                                || !checkCSRFToken(ctx))) {
-            handleFailure(ctx,
-                          route,
-                          Exceptions.createHandled().withNLSKey("ControllerDispatcher.invalidCSRFToken").handle());
-            return false;
+        if (route.getMethod().isAnnotationPresent(CheckSecurityToken.class)) {
+            if ((!ctx.isPOST() || !checkCSRFToken(ctx))) {
+                handleFailure(ctx,
+                              route,
+                              Exceptions.createHandled().withNLSKey("ControllerDispatcher.invalidCSRFToken").handle());
+                return false;
+            }
         }
 
         return true;

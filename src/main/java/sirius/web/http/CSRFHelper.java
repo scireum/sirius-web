@@ -36,7 +36,7 @@ public class CSRFHelper {
     public String getCSRFToken(WebContext ctx) {
         Value lastCSRFRecompute = ctx.getSessionValue(LAST_CSRF_RECOMPUTE);
 
-        if (isCSRFTokenOutdated(lastCSRFRecompute.asLong(-1L)) || lastCSRFRecompute.isEmptyString()) {
+        if (isCSRFTokenOutdated(lastCSRFRecompute.asLong(-1L))) {
             ctx.setSessionValue(CSRF_TOKEN, UUID.randomUUID().toString());
             ctx.setSessionValue(LAST_CSRF_RECOMPUTE, Value.of(Instant.now().toEpochMilli()).asString());
         }

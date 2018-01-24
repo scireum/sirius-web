@@ -1,1 +1,1 @@
-@call.getCSRFToken()
+@csrf.getCSRFToken(call)

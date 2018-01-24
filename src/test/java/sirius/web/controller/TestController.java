@@ -26,9 +26,6 @@ import java.io.OutputStream;
 @Register
 public class TestController implements Controller {
 
-    @ConfigValue("http.serverSessionParameterName")
-    private static String serverSessionParameterName;
-
     @Override
     public void onError(WebContext ctx, HandledException error) {
         ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error.getMessage());
@@ -136,9 +133,7 @@ public class TestController implements Controller {
 
     @Routed("/test/provide-security-token")
     public void provideSecuritytoken(WebContext ctx) {
-        ctx.respondWith()
-           .addHeader(serverSessionParameterName, ctx.getServerSession().getId())
-           .template("templates/security-token.html.pasta");
+        ctx.respondWith().template("templates/security-token.html.pasta");
     }
 
     @CheckSecurityToken

@@ -11,9 +11,11 @@ package sirius.web.templates;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.di.std.ConfigValue;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
+import sirius.web.http.CSRFHelper;
 import sirius.web.http.WebContext;
 import sirius.web.security.UserContext;
 
@@ -35,9 +37,13 @@ public class DefaultGlobalContextExtender implements GlobalContextExtender {
 
     private String detailedVersion;
 
+    @Part
+    private CSRFHelper csrfHelper;
+
     @Override
     public void collectTemplate(BiConsumer<String, Object> parameterCollector) {
         CallContext ctx = CallContext.getCurrent();
+        parameterCollector.accept("csrf", csrfHelper);
         parameterCollector.accept("user", ctx.get(UserContext.class));
         parameterCollector.accept("product", Product.getProduct().getName());
         parameterCollector.accept("now", LocalDateTime.now());

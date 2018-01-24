@@ -362,9 +362,6 @@ public class WebContext implements SubContext {
     @Part
     private static SessionSecretComputer sessionSecretComputer;
 
-    @Part
-    private static CSRFHelper csrfHelper;
-
     /**
      * Date format used by HTTP date headers
      */
@@ -1081,15 +1078,6 @@ public class WebContext implements SubContext {
         }
 
         return ssl;
-    }
-
-    /**
-     * Returns the CSRF security-token of the current session.
-     *
-     * @return the CSRF security-token to protect sensitve links.
-     */
-    public String getCSRFToken() {
-        return csrfHelper.getCSRFToken(this);
     }
 
     /**
