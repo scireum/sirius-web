@@ -6,6 +6,13 @@
     }
 
     sirius.createAutocomplete = (function () {
+
+        /**
+         * Small object which defines some properties (width & position) of the completion div.
+         *
+         * The anchor can be the same as the input field but it is not necessary.
+         * @@type {{name: string, element: undefined, init: init}}
+         */
         var anchor = {
             name: "autocomplete-anchor",
             element: undefined,
@@ -23,16 +30,43 @@
             }
         };
 
+        /**
+         * Represents the input field of the autocomplete.
+         *
+         * Events on the input field like onChange are defined here.
+         *
+         * @@type {{name: string, element: undefined, spinnerElement: undefined, spinnerTemplate: string, showSpinner: showSpinner, hideSpinner: hideSpinner, onChange: onChange, onNonInputKeys: onNonInputKeys, init: init}}
+         */
         var input = {
             name: "autocomplete-input",
             element: undefined,
+            spinnerElement: undefined,
+            spinnerTemplate: '<span class="autocomplete-spinner hide"><i class="fa fa-spinner fa-spin"></i></span>',
 
             /**
-             * This method gets called each time the user input is changed
+             * Shows a small spinner in the input field whenever the service loads data.
+             */
+            showSpinner: function () {
+                if (input.spinnerElement) {
+                    input.spinnerElement.removeClass("hide");
+                }
+
+            },
+
+            /**
+             * Hides the spinner.
+             */
+            hideSpinner: function () {
+                if (input.spinnerElement) {
+                    input.spinnerElement.addClass("hide");
+                }
+            },
+
+            /**
+             * This method gets called each time the user input is changed.
              */
             onChange: function () {
                 var value = this.element.val();
-                completions.rows = [];
 
                 events.beforeLoad(value);
                 service.load(value);
@@ -54,6 +88,10 @@
                 }
 
                 if (event.keyCode === sirius.keys.KEY_ARROW_DOWN) {
+                    if (!completions.isVisible()) {
+                        completions.show();
+                    }
+
                     if (completions.selectedRow === undefined) {
                         completions.hoverRow(completions.element.find(".autocomplete-row-js").first())
                     } else {
@@ -67,15 +105,24 @@
                     return true;
                 }
 
-                if (event.keyCode === sirius.keys.KEY_ARROW_UP && completions.selectedRow !== undefined) {
-                    var prevRow = completions.selectedRow.prevAll(".autocomplete-row-js").first();
+                if (event.keyCode === sirius.keys.KEY_ARROW_UP) {
+                    if (completions.selectedRow !== undefined) {
+                        var prevRow = completions.selectedRow.prevAll(".autocomplete-row-js").first();
 
-                    completions.unHoverRow(completions.selectedRow);
+                        completions.unHoverRow(completions.selectedRow);
 
-                    if (prevRow.length) {
-                        completions.hoverRow(prevRow);
+                        if (prevRow.length) {
+                            completions.hoverRow(prevRow);
+                        }
+                    } else {
+                        completions.hideImmediate();
                     }
 
+                    return true;
+                }
+
+                if (event.keyCode === sirius.keys.KEY_ESC) {
+                    completions.hideImmediate();
                     return true;
                 }
 
@@ -84,8 +131,22 @@
                 return false;
             },
 
-            init: function () {
+
+            /**
+             * Initializes the input field.
+             *
+             */
+            init: function (config) {
                 this.element = $("#" + this.name);
+
+                if (config && !config.noSpinner) {
+                    input.spinnerElement = $(input.spinnerTemplate);
+                    input.spinnerElement.insertAfter(input.element);
+
+                    // this is needed to display the spinner in the same row as the input field
+                    // the spinner holds the class .fa which defines the size to 14
+                    input.element.css("max-width", input.element.width() - 14);
+                }
 
                 this.element.keyup(function (event) {
                     sirius.keys.enableKeyUpIpadSupport(event);
@@ -96,7 +157,7 @@
                 });
 
                 this.element.keydown(function (event) {
-                    if (completions.selectedRow === undefined && event.keyCode !== sirius.keys.KEY_ARROW_DOWN) {
+                    if (!completions.isVisible()) {
                         return;
                     }
 
@@ -121,6 +182,11 @@
             }
         };
 
+        /**
+         * Represents autocomplete suggestions html element.
+         *
+         * Handles the events & actions on the different rows in the element.
+         */
         var completions = {
             element: undefined,
             selectedRow: undefined,
@@ -129,19 +195,22 @@
 
             HIDDEN: 0,
             VISIBLE: 1,
+            SOON_TO_BE_HIDDEN: 2,
             state: undefined,
 
+            /**
+             * Initializes the completions element.
+             *
+             * Keys of the config object are:
+             * - id: the id of the autocomplete wrapper div
+             */
             init: function (config) {
                 var wrapper = "<div class='well autocomplete-wrapper autocomplete-wrapper-js' {{#id}}id='{{id}}'{{/id}}></div>";
 
                 this.state = completions.HIDDEN;
 
                 this.element = $(Mustache.render(wrapper, config));
-                this.element.width(anchor.element.outerWidth());
-                this.element.offset({
-                    top: anchor.element.offset().top + anchor.element.height(),
-                    left: anchor.element.offset().left
-                });
+                this.rePosition();
 
                 this.element.click(function (element) {
                     completions.select($(element.target));
@@ -152,6 +221,19 @@
                 $("body").append(this.element);
             },
 
+            rePosition: function () {
+                this.element.width(anchor.element.outerWidth());
+                this.element.offset({
+                    top: anchor.element.offset().top + anchor.element.height(),
+                    left: anchor.element.offset().left
+                });
+            },
+
+            /**
+             * Adds the hoverRow && unHoverRow events to the given autocompletion row.
+             *
+             * @@param $row the row element or a child element or a autocompletion row.
+             */
             addHoverRowEvent: function ($row) {
                 $row.find(".autocomplete-row-js").hover(function () {
                     completions.hoverRow($row);
@@ -174,8 +256,10 @@
             },
 
             unHoverRow: function ($row) {
+                if ($row) {
+                    $row.removeClass("autocomplete-selected-element");
+                }
                 completions.selectedRow = undefined;
-                $row.removeClass("autocomplete-selected-element");
             },
 
             setTemplates: function (templates) {
@@ -189,9 +273,9 @@
             show: function () {
                 if (this.rows.length > 0) {
                     completions.selectedRow = undefined;
-                    this.state = completions.VISIBLE;
                     this.update();
                     completions.element.show();
+                    this.state = completions.VISIBLE;
                     events.onShow();
                 }
             },
@@ -200,6 +284,8 @@
                 if (completions.state === completions.HIDDEN) {
                     return;
                 }
+
+                completions.state = completions.SOON_TO_BE_HIDDEN;
 
                 window.setTimeout(function () {
                     /*
@@ -226,9 +312,15 @@
                     return;
                 }
                 completions.state = completions.HIDDEN;
+                completions.unHoverRow(completions.selectedRow);
 
                 completions.element.hide();
+                input.hideSpinner();
                 events.onHide();
+            },
+
+            isVisible: function () {
+                return completions.state === completions.VISIBLE;
             },
 
             /**
@@ -317,8 +409,11 @@
         var service = {
             uri: undefined,
             minSize: 1,
+            delay: 400,
 
             responseCache: {},
+            lastLoadTriggered: undefined,
+            loading: false,
 
             /**
              * Provides the request object to be sent to the autocomplete service.
@@ -332,10 +427,27 @@
                 return {query: inputValue};
             },
 
+            isLoading: function () {
+                return service.loading;
+            },
+
             load: function (value) {
+                service.lastLoadTriggered = Date.now();
+                service.loading = true;
+                input.showSpinner();
+
+                setTimeout(function () {
+                    if (service.lastLoadTriggered + service.delay <= Date.now()) {
+                        service.loadImmediate(value);
+                    }
+                }, service.delay)
+            },
+
+            loadImmediate: function (value) {
                 var request = this.getRequest(value);
                 if (request.query === undefined || request.query.length < this.minSize) {
                     completions.hide();
+                    input.hideSpinner();
                     return;
                 }
 
@@ -357,6 +469,9 @@
 
             afterLoad: function (request) {
                 completions.rows = service.responseCache[request.query]
+                service.loading = false;
+
+                input.hideSpinner();
 
                 if (completions.rows.length > 0) {
                     completions.update();
@@ -366,6 +481,14 @@
                 }
             },
 
+            /**
+             * Keys of the config object are:
+             * - serviceUri: the uri of the autocompletion service
+             * - minSize: the minimal length of the input field value before a service request is created
+             * - getRequest: function to build the request object
+             * - cache: object to be used for caching
+             * - delay: the delay time for a service call
+             */
             init: function (config) {
                 if (config.serviceUri === undefined) {
                     throw "ServiceUri required";
@@ -380,6 +503,12 @@
                 if (typeof config.getRequest === "function") {
                     this.getRequest = config.getRequest;
                 }
+
+                if (typeof config.cache === "object") {
+                    this.responseCache = config.cache;
+                }
+
+                this.delay = config.delayTime || this.delay;
             }
         };
 
@@ -406,7 +535,12 @@
             /**
              * Method to initialize and start the autocompleter.
              *
-             * @@param config
+             * Keys of the config object are:
+             * - service: the config object of the service
+             * - inputField: the input field id to autocomplete
+             * - anchor: the id of the anchor div
+             * - completions: the config object of the completions
+             * - templates: the row templates
              */
             start: function (config) {
                 if (events.afterLoad === undefined) {
@@ -419,7 +553,7 @@
 
                 input.name = this.config.inputField;
 
-                input.init();
+                input.init(this.config.input);
                 anchor.init(this.config.anchor);
                 completions.init(this.config.completions || {});
 
@@ -438,7 +572,7 @@
             setInput: function (value, silent) {
                 input.element.val(value);
 
-                if (silent !== true) {
+                if (!silent) {
                     input.onChange();
                 }
             },
@@ -452,7 +586,11 @@
             },
 
             isVisible: function () {
-                return completions.state === completions.VISIBLE;
+                return completions.isVisible();
+            },
+
+            rePosition: function(){
+                return completions.rePosition();
             }
         };
     });

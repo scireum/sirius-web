@@ -5,9 +5,12 @@
         return typeof possibleFunction === "function" ? possibleFunction : Function();
     }
 
+    /**
+     * Bundles some functions and constants for jquery press key events.
+     */
     sirius.keys = (function () {
         // fix physical keyboard bug on iPad that returns keyCode 0 on keyup
-        var map = {
+        var ipadFixMap = {
             "Backspace": 8,
             "Tab": 9,
             "Enter": 13,
@@ -39,6 +42,7 @@
             KEY_TAB: 9,
             KEY_ENTER: 13,
             KEY_SHIFT: 16,
+            KEY_ESC: 27,
             KEY_ARROW_UP: 38,
             KEY_ARROW_DOWN: 40,
 
@@ -59,7 +63,7 @@
 
             enableKeyUpIpadSupport: function (event) {
                 if (event.keyCode === 0 && event.key) {
-                    event.keyCode = event.which = map[event.key];
+                    event.keyCode = event.which = ipadFixMap[event.key];
                 }
             },
 
@@ -67,6 +71,9 @@
                 return e || event;
             },
 
+            /**
+             * Helper method which will call all browser & event specific helper functions.
+             */
             browserFixes: function (e) {
                 e = this.enableInternetExplorer(e);
                 this.enableKeyUpIpadSupport(e);
@@ -102,6 +109,8 @@
 
             /**
              * Checks if one or multiple keyCodes are pressed.
+             *
+             * This method can be used to check for custom defined short cuts (e.g. shift and enter).
              *
              * @@param keyCodes can be a string representation of the keyCode or an array of strings
              * @@return {boolean} true if all requested keyCodes are pressed, false otherwise

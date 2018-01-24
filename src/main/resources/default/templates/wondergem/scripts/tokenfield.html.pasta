@@ -6,6 +6,13 @@
     }
 
 
+    /**
+     * Provides a simple api to use the tokenfield lib.
+     *
+     * Will handle the two different input fields (the actual one and the one the lib generates).
+     *
+     * @@type {{eventNames, on, start, getInput, appendTokens, getInputFieldId, hasTokens}}
+     */
     sirius.tokenfield = (function () {
             var input = {
                 id: undefined,
@@ -23,6 +30,11 @@
                 value: "",
                 allTokens: undefined,
 
+                /**
+                 * Keys of the config object are:
+                 * - id (of the input field)
+                 * - tokenfield: the tokenfield config object: see http://sliptree.github.io/bootstrap-tokenfield/
+                 */
                 init: function (config) {
                     this.id = config.id;
 
@@ -42,6 +54,7 @@
                     this.element.on('tokenfield:removedtoken', function (e) {
                         var identifier = e.attrs.value;
                         $('input[data-identifier="' + identifier + '"]').remove();
+
 
                         events.onRemovedToken(e);
                     });
@@ -117,6 +130,10 @@
 
                 getInputFieldId: function () {
                     return input.tokenElement.prop("id");
+                },
+
+                hasTokens: function () {
+                    return input.element.tokenfield('getTokens').length > 0;
                 }
             };
         }
