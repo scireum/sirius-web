@@ -223,10 +223,10 @@
             },
 
             rePosition: function () {
-                if (!this.config.width) {
-                    this.element.width(anchor.element.outerWidth());
-                } else {
+                if (this.config.width) {
                     this.element.width(this.config.width);
+                } else {
+                    this.element.width(anchor.element.outerWidth());
                 }
 
                 var offset = this.element.offset();
