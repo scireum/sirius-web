@@ -192,12 +192,12 @@
             selectedRow: undefined,
             rows: [],
             rowTemplates: undefined,
-
             HIDDEN: 0,
             VISIBLE: 1,
             SOON_TO_BE_HIDDEN: 2,
             state: undefined,
 
+            config: undefined,
             /**
              * Initializes the completions element.
              *
@@ -205,6 +205,7 @@
              * - id: the id of the autocomplete wrapper div
              */
             init: function (config) {
+                this.config = config;
                 var wrapper = "<div class='well autocomplete-wrapper autocomplete-wrapper-js' {{#id}}id='{{id}}'{{/id}}></div>";
 
                 this.state = completions.HIDDEN;
@@ -222,11 +223,24 @@
             },
 
             rePosition: function () {
-                this.element.width(anchor.element.outerWidth());
-                this.element.offset({
-                    top: anchor.element.offset().top + anchor.element.height(),
-                    left: anchor.element.offset().left
-                });
+                if (this.config.width) {
+                    this.element.width(this.config.width);
+                } else {
+                    this.element.width(anchor.element.outerWidth());
+                }
+
+                var offset = this.element.offset();
+                var top = anchor.element.offset().top + anchor.element.outerHeight();
+                var left = anchor.element.offset().left;
+
+                if (offset.top !== top || offset.left !== left) {
+                    offset.top = top;
+                    offset.left = left;
+
+                    this.element.offset(offset);
+                }
+
+
             },
 
             /**
@@ -589,7 +603,7 @@
                 return completions.isVisible();
             },
 
-            rePosition: function(){
+            rePosition: function () {
                 return completions.rePosition();
             }
         };
