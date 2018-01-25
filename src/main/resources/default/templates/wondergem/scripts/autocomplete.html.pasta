@@ -80,7 +80,7 @@
              * @@return boolean true if the event was handled, else false
              */
             onNonInputKeys: function (event) {
-                if (event.keyCode === sirius.keys.KEY_ENTER) {
+                if (event.keyCode === sirius.keys.KEY_ENTER || event.keyCode === sirius.keys.KEY_TAB) {
                     completions.select(completions.selectedRow);
                     input.element.blur();
                     completions.hide();
