@@ -1,7 +1,34 @@
 <script type="text/javascript">
-
     function createConfirmForDangerousLinks(message) {
-        $("a.link-danger, a.button-danger-ask").on('click', function (event) {
+        $("a.link-danger:not(.guarded-link), a.button-danger-ask:not(.guarded-link)").on('click', function (event) {
+            try {
+                var clickedLink = event.currentTarget;
+                var modalElement = $("#danger-link-confirm");
+
+                var okayLink = $(clickedLink).attr('href');
+                var submitBtn = modalElement.find(":submit");
+
+                submitBtn.click(function () {
+                    window.location.href = okayLink;
+                });
+
+                modalElement.modal({
+                    keyboard: true
+                }).on("hide", function () {
+                    modalElement.find(":submit").unbind("click");
+                }).on("shown", function () {
+                    modalElement.find(".btn-close").focus();
+                }).attr("tabindex", -1);
+            } catch ($e) {
+                console.log($e);
+            }
+
+            return false;
+        });
+    }
+
+    function createConfirmForDangerousGuardedLinks(message) {
+        $("a.link-danger.guarded-link, a.button-danger-ask.guarded-link").on('click', function (event) {
             try {
                 var modalElement = $("#danger-link-confirm");
                 var submitBtn = modalElement.find(":submit");
@@ -116,6 +143,7 @@
 
     $(document).ready(function () {
         createConfirmForDangerousLinks();
+        createConfirmForDangerousGuardedLinks();
         instanciateColorPickers();
 
         $('.date-picker').datepicker({
