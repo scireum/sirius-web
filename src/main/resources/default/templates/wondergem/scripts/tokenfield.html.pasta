@@ -55,6 +55,10 @@
                         var identifier = e.attrs.value;
                         $('input[data-identifier="' + identifier + '"]').remove();
 
+                        if (e.attrs.initialQueryIdentifier) {
+                            input.value = "";
+                        }
+
 
                         events.onRemovedToken(e);
                     });
@@ -63,6 +67,10 @@
                         if (e.keyCode === sirius.keys.KEY_ENTER) {
                             events.onEnter(e);
                         }
+                    });
+
+                    $( window ).resize(function(e) {
+                        input.resize(e);
                     });
                 },
 
@@ -82,17 +90,22 @@
                  */
                 appendTokens: function (tokens) {
                     if (this.allTokens === undefined) {
-                        this.allTokens = [this.value];
+                        this.allTokens = [{label: this.value, value: this.value, initialQueryIdentifier: true}];
                     }
 
                     this.allTokens = this.allTokens.concat(tokens);
                     this.element.tokenfield("setTokens", this.allTokens);
+                },
+
+                resize: function(e){
+                    events.onResize(e);
                 }
             };
 
             var events = {
                 onEnter: Function(),
-                onRemovedToken: Function()
+                onRemovedToken: Function(),
+                onResize: Function()
             };
 
             return {
@@ -130,6 +143,14 @@
 
                 getInputFieldId: function () {
                     return input.tokenElement.prop("id");
+                },
+
+                getInputField: function(){
+                    return input.element;
+                },
+
+                getTokenfieldInputField: function(){
+                    return input.tokenElement;
                 },
 
                 hasTokens: function () {
