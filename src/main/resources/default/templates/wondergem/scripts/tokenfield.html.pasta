@@ -55,6 +55,10 @@
                         var identifier = e.attrs.value;
                         $('input[data-identifier="' + identifier + '"]').remove();
 
+                        if (e.attrs.initialQueryIdentifier) {
+                            input.value = "";
+                        }
+
 
                         events.onRemovedToken(e);
                     });
@@ -82,7 +86,7 @@
                  */
                 appendTokens: function (tokens) {
                     if (this.allTokens === undefined) {
-                        this.allTokens = [this.value];
+                        this.allTokens = [{label: this.value, value: this.value, initialQueryIdentifier: true}];
                     }
 
                     this.allTokens = this.allTokens.concat(tokens);
