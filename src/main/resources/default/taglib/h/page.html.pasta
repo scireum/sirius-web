@@ -41,7 +41,7 @@
     </i:block>
 
     <i:block name="breadcrumbs">
-        <li><a href="/help">@i18n('help')</a></li>
+        <li><a href="/help/@lang">@i18n('help')</a></li>
         <i:render name="breadcrumbs"/>
     </i:block>
 
