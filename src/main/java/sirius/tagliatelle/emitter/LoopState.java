@@ -50,6 +50,17 @@ public class LoopState {
     }
 
     /**
+     * Returns the index of the current row.
+     * <p>
+     * Note that this is one-based and therefore counts <tt>1, 2, 3, ...</tt>
+     *
+     * @return the one-based index of the current row
+     */
+    public int getRowIndex() {
+        return currentRow;
+    }
+
+    /**
      * Determines if the first row is currently being rendered.
      *
      * @return <tt>true</tt> if the first row is currently rendered, <tt>false</tt> otherwise.
