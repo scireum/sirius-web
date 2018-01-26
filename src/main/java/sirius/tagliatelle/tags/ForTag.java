@@ -8,10 +8,12 @@
 
 package sirius.tagliatelle.tags;
 
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.TemplateArgument;
 import sirius.tagliatelle.emitter.CompositeEmitter;
 import sirius.tagliatelle.emitter.LoopEmitter;
+import sirius.tagliatelle.emitter.LoopState;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -24,6 +26,7 @@ public class ForTag extends TagHandler {
 
     protected static final String PARAM_ITEMS = "items";
     protected static final String PARAM_VAR = "var";
+    protected static final String PARAM_STATE = "state";
     protected static final String PARAM_TYPE = "type";
 
     /**
@@ -51,6 +54,9 @@ public class ForTag extends TagHandler {
                                  new TemplateArgument(String.class,
                                                       PARAM_VAR,
                                                       "Contains the variable name used within the loop."),
+                                 new TemplateArgument(String.class,
+                                                      PARAM_STATE,
+                                                      "Contains the variable name used to provide the current loop state."),
                                  new TemplateArgument(Iterable.class,
                                                       PARAM_ITEMS,
                                                       "Contains the collection of items to loop over."));
@@ -63,12 +69,17 @@ public class ForTag extends TagHandler {
     }
 
     private int localIndex;
+    private int loopStateIndex = -1;
 
     @Override
     public void beforeBody() {
         Class<?> type =
                 getCompilationContext().resolveClass(getStartOfTag(), getConstantAttribute(PARAM_TYPE).asString());
         localIndex = getCompilationContext().push(getStartOfTag(), getConstantAttribute(PARAM_VAR).asString(), type);
+        String loopState = getConstantAttribute(PARAM_STATE).asString();
+        if (Strings.isFilled(loopState)) {
+            loopStateIndex = getCompilationContext().push(getStartOfTag(), loopState, LoopState.class);
+        }
     }
 
     @Override
@@ -77,6 +88,7 @@ public class ForTag extends TagHandler {
         result.setIterableExpression(getAttribute(PARAM_ITEMS));
         result.setLoop(getBlock("body"));
         result.setLocalIndex(localIndex);
+        result.setLoopStateIndex(loopStateIndex);
         result.verify(getCompilationContext());
         targetBlock.addChild(result);
         getCompilationContext().pop(getStartOfTag());
@@ -91,6 +103,9 @@ public class ForTag extends TagHandler {
             return String.class;
         }
         if (PARAM_VAR.equals(name)) {
+            return String.class;
+        }
+        if (PARAM_STATE.equals(name)) {
             return String.class;
         }
 

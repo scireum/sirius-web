@@ -26,7 +26,7 @@ import sirius.tagliatelle.emitter.ConstantEmitter;
 import sirius.tagliatelle.emitter.Emitter;
 import sirius.tagliatelle.emitter.InlineTemplateEmitter;
 import sirius.tagliatelle.emitter.InvokeTemplateEmitter;
-import sirius.tagliatelle.emitter.PushEmitter;
+import sirius.tagliatelle.emitter.LoopEmitter;
 import sirius.tagliatelle.emitter.PushLocalEmitter;
 import sirius.tagliatelle.expression.ConstantNull;
 import sirius.tagliatelle.expression.Expression;
@@ -405,9 +405,15 @@ public class CompilationContext {
     private void outputTemplateDeprecationWarning(Position position, Template template) {
         if (Strings.isFilled(template.getPragma(PRAGMA_DEPRECATED))) {
             if (this.parent == null && (Sirius.isDev() || Sirius.isStartedAsTest())) {
-                error(position, "The template '%s' is deprecated: %s", template.getShortName(), template.getPragma(PRAGMA_DEPRECATED));
+                error(position,
+                      "The template '%s' is deprecated: %s",
+                      template.getShortName(),
+                      template.getPragma(PRAGMA_DEPRECATED));
             } else {
-                warning(position, "The template '%s' is deprecated: %s", template.getShortName(), template.getPragma(PRAGMA_DEPRECATED));
+                warning(position,
+                        "The template '%s' is deprecated: %s",
+                        template.getShortName(),
+                        template.getPragma(PRAGMA_DEPRECATED));
             }
         }
     }
@@ -623,7 +629,7 @@ public class CompilationContext {
     /**
      * Moves local variables from the template stack to the callers stack.
      * <p>
-     * This will essentially find all {@link PushEmitter push emitters} and assign a new stack location and update all
+     * This will essentially find all {@link PushLocalEmitter push emitters} and  {@link LoopEmitter loop emitters} and assign a new stack location and update all
      * matching local reads.
      *
      * @param copy the emitters to process
@@ -631,11 +637,23 @@ public class CompilationContext {
      */
     private Emitter transferLocals(Emitter copy) {
         return copy.propagateVisitor(emitter -> {
-            if (emitter instanceof PushEmitter) {
-                PushEmitter pushEmitter = (PushEmitter) emitter;
+            if (emitter instanceof PushLocalEmitter) {
+                PushLocalEmitter pushEmitter = (PushLocalEmitter) emitter;
                 int newStackLocation = stackAlloc();
                 updateLocalReads(copy, pushEmitter.getLocalIndex(), newStackLocation);
                 pushEmitter.setLocalIndex(newStackLocation);
+            }
+            if (emitter instanceof LoopEmitter) {
+                LoopEmitter loopEmitter = (LoopEmitter) emitter;
+                int newStackLocation = stackAlloc();
+                updateLocalReads(copy, loopEmitter.getLocalIndex(), newStackLocation);
+                loopEmitter.setLocalIndex(newStackLocation);
+
+                if (loopEmitter.getLoopStateIndex() > -1) {
+                    newStackLocation = stackAlloc();
+                    updateLocalReads(copy, loopEmitter.getLoopStateIndex(), newStackLocation);
+                    loopEmitter.setLoopStateIndex(newStackLocation);
+                }
             }
 
             return emitter;

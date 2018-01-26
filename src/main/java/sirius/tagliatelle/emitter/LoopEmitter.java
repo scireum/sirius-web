@@ -19,10 +19,12 @@ import java.util.function.Function;
 /**
  * Loops over a given {@link Iterable} and invokes the given block for each item within.
  */
-public class LoopEmitter extends PushEmitter {
+public class LoopEmitter extends Emitter {
 
     private Expression iterableExpression;
     private Emitter loop;
+    private int loopStateIndex;
+    private int localIndex;
 
     /**
      * Creates a new emitter for the given position.
@@ -57,6 +59,7 @@ public class LoopEmitter extends PushEmitter {
         copy.iterableExpression = iterableExpression.copy();
         copy.loop = loop.copy();
         copy.localIndex = localIndex;
+        copy.loopStateIndex = loopStateIndex;
 
         return copy;
     }
@@ -104,7 +107,13 @@ public class LoopEmitter extends PushEmitter {
             return;
         }
 
-        for (Object obj : (Iterable<?>) iterable) {
+        Iterable<?> items = (Iterable<?>) iterable;
+        LoopState loopState = new LoopState(items);
+        if (loopStateIndex > -1) {
+            context.setLocal(loopStateIndex, loopState);
+        }
+        for (Object obj : items) {
+            loopState.nextRow();
             context.setLocal(localIndex, obj);
             loop.emit(context);
         }
@@ -131,4 +140,45 @@ public class LoopEmitter extends PushEmitter {
         return sb.toString();
     }
 
+    /**
+     * Updates the stack index of the loop state.
+     * <p>
+     * When inlining a template, the stack has to be transferred to the callee and therefore the
+     * stack indices might change.
+     *
+     * @param loopStateIndex the new stack index to use
+     */
+    public void setLoopStateIndex(int loopStateIndex) {
+        this.loopStateIndex = loopStateIndex;
+    }
+
+    /**
+     * Contains the stack index which contains the loop state or -1 to indicate that the loop state is unused.
+     *
+     * @return the target index for the loop state
+     */
+    public int getLoopStateIndex() {
+        return loopStateIndex;
+    }
+
+    /**
+     * Contains the stack index being written to.
+     *
+     * @return the target index to write to
+     */
+    public int getLocalIndex() {
+        return localIndex;
+    }
+
+    /**
+     * Updates the stack index being written to.
+     * <p>
+     * When inlining a template, the stack has to be transferred to the callee and therefore the
+     * stack indices might change.
+     *
+     * @param localIndex the new stack index to use
+     */
+    public void setLocalIndex(int localIndex) {
+        this.localIndex = localIndex;
+    }
 }
