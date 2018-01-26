@@ -131,6 +131,15 @@ class CompilerSpec extends BaseSpecification {
         basicallyEqual(result, expectedResult)
     }
 
+    def "loops and the loop state work as expected"() {
+        given:
+        String expectedResult = resources.resolve("templates/loop.html").get().getContentAsString()
+        when:
+        String result = tagliatelle.resolve("templates/loop.html.pasta").get().renderToString(Arrays.asList(1, 2, 3, 4, 5))
+        then:
+        basicallyEqual(result, expectedResult)
+    }
+
     def "dynamicInvoke works"() {
         given:
         String expectedResult = resources.resolve("templates/dynamic-invoke.html").get().getContentAsString()
