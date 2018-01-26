@@ -15,6 +15,7 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
+import sirius.web.http.CSRFHelper;
 import sirius.web.http.WebContext;
 import sirius.web.security.SAMLHelper;
 import sirius.web.security.UserContext;
@@ -39,7 +40,10 @@ public class DefaultGlobalContextExtender implements GlobalContextExtender {
 
     @Part
     private SAMLHelper saml;
-    
+
+    @Part
+    private CSRFHelper csrfHelper;
+
     @Override
     public void collectTemplate(BiConsumer<String, Object> parameterCollector) {
         CallContext ctx = CallContext.getCurrent();
@@ -59,6 +63,7 @@ public class DefaultGlobalContextExtender implements GlobalContextExtender {
         parameterCollector.accept("dateFormat", NLS.get("RythmConfig.jsDateFormat"));
         parameterCollector.accept("timeFormat", NLS.get("RythmConfig.jsTimeFormat"));
         parameterCollector.accept("saml", saml);
+        parameterCollector.accept("csrf", csrfHelper);
     }
 
     @Override

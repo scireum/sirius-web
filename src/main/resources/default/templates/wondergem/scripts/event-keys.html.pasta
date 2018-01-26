@@ -1,0 +1,135 @@
+<script type="text/javascript">
+    window.sirius = window.sirius || {};
+
+    function asFunction(possibleFunction) {
+        return typeof possibleFunction === "function" ? possibleFunction : Function();
+    }
+
+    /**
+     * Bundles some functions and constants for jquery press key events.
+     */
+    sirius.keys = (function () {
+        // fix physical keyboard bug on iPad that returns keyCode 0 on keyup
+        var ipadFixMap = {
+            "Backspace": 8,
+            "Tab": 9,
+            "Enter": 13,
+            "Control": 17,
+            "Escape": 27,
+            " ": 32,
+            "ArrowUp": 38,
+            "ArrowDown": 40,
+            ",": 188
+        };
+
+        /**
+         * Holds information about all pressed keys.
+         *
+         * If a key is pressed pressedKeys[keyCode] is set to true, else false.
+         * If the key was never pressed at all pressedKeys[keyCode] is undefined
+         */
+        var pressedKeys = {};
+
+
+        var events = {
+            keyDown: Function(),
+            keyUp: Function()
+        };
+
+
+        return {
+            KEY_BACKSPACE: 8,
+            KEY_TAB: 9,
+            KEY_ENTER: 13,
+            KEY_SHIFT: 16,
+            KEY_ESC: 27,
+            KEY_ARROW_UP: 38,
+            KEY_ARROW_DOWN: 40,
+
+            KEY_SEMICOLON: 186,
+            KEY_COMMA: 188,
+
+            eventNames: function () {
+                return Object.keys(events);
+            },
+
+            on: function (name, callback) {
+                if (this.eventNames().includes(name)) {
+                    events[name] = asFunction(callback);
+                } else {
+                    throw "Callback " + name + " is no valid event."
+                }
+            },
+
+            enableKeyUpIpadSupport: function (event) {
+                if (event.keyCode === 0 && event.key) {
+                    event.keyCode = event.which = ipadFixMap[event.key];
+                }
+            },
+
+            enableInternetExplorer: function (e) {
+                return e || event;
+            },
+
+            /**
+             * Helper method which will call all browser & event specific helper functions.
+             */
+            browserFixes: function (e) {
+                e = this.enableInternetExplorer(e);
+                this.enableKeyUpIpadSupport(e);
+
+                return e;
+            },
+
+            /**
+             * Register event listeners to detect multiple pressed keys
+             *
+             * every pressed key is saved within the map object
+             * to detected if a key is pressed simple check for map[$keyCode]
+             *
+             * @@param $element which should listen to the key down / key up events
+             * @@return object of pressed key
+             */
+            registerMultipleKeyListener: function ($element) {
+                $element.keydown(function (e) {
+                    e = sirius.keys.browserFixes(e);
+
+                    pressedKeys[e.keyCode] = true;
+                    events.keyDown(e);
+                });
+
+                $element.keyup(function (e) {
+                    e = sirius.keys.browserFixes(e);
+
+                    pressedKeys[e.keyCode] = false;
+                    events.keyUp(e);
+                });
+
+            },
+
+            /**
+             * Checks if one or multiple keyCodes are pressed.
+             *
+             * This method can be used to check for custom defined short cuts (e.g. shift and enter).
+             *
+             * @@param keyCodes can be a string representation of the keyCode or an array of strings
+             * @@return {boolean} true if all requested keyCodes are pressed, false otherwise
+             */
+            isPressed: function (keyCodes) {
+                if (typeof keyCodes !== "object") {
+                    return pressedKeys[keyCodes] || false;
+                }
+
+                var allKeysPressed = true;
+                $.each(keyCodes, function (index, keyCode) {
+                    if (pressedKeys[keyCode] !== true) {
+                        allKeysPressed = false;
+                        return false;
+                    }
+                });
+
+                return allKeysPressed;
+            }
+        }
+    }());
+</script>

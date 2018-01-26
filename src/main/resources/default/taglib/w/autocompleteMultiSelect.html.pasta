@@ -33,7 +33,6 @@
             @if (isFilled(type)) { data-type="@type" }
             @if (isFilled(searchKey)) { data-searchtext="@i18n(searchKey)" }
             @if (strict) { data-strict="true" }
-            @if (optional) { data-optional="true" }
             @if (forceFullWidth) { style="width: 100%;" }
             multiple="multiple"
             data-autocomplete="@serviceUri">

@@ -22,6 +22,7 @@ import org.apache.log4j.Level
 import sirius.kernel.BaseSpecification
 import sirius.kernel.commons.Strings
 import sirius.kernel.health.LogHelper
+
 /**
  * Simulates a bunch of "real" (outside) requests through netty and sirius.
  * <p>
@@ -357,7 +358,7 @@ class WebServerSpec extends BaseSpecification {
             b.channel(NioSocketChannel.class)
             b.handler(new ChannelInitializer<SocketChannel>() {
                 @Override
-                 void initChannel(SocketChannel ch) throws Exception {
+                void initChannel(SocketChannel ch) throws Exception {
                     ch.pipeline().addLast(new HttpClientCodec())
                     ch.pipeline().addLast(new ChannelInboundHandlerAdapter() {
                         @Override
@@ -393,5 +394,4 @@ class WebServerSpec extends BaseSpecification {
         responses.get(1).headers().get("URI") == "/pipelining/500"
         responses.get(2).headers().get("URI") == "/pipelining/10"
     }
-
 }

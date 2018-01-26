@@ -1,29 +1,53 @@
 <script type="text/javascript">
-
-    function createConfirmForDangerousLinks(message) {
+    function createConfirmForDangerousLinks() {
         $("a.link-danger, a.button-danger-ask").on('click', function (event) {
-            try {
-                var clickedLink = event.currentTarget;
-                var modalElement = $("#danger-link-confirm");
+            if ($(this).hasClass("guarded-link")) {
+                try {
+                    var modalElement = $("#danger-link-confirm");
+                    var submitBtn = modalElement.find(":submit");
+                    var that = $(this);
 
-                var okayLink = $(clickedLink).attr('href');
-                var submitBtn = modalElement.find(":submit");
-                submitBtn.click(function () {
-                    window.location.href = okayLink;
-                });
+                    submitBtn.click(function () {
+                        $("#" + that.data("deleteid")).submit();
+                    });
 
-                modalElement.modal({
-                    keyboard: true
-                }).on("hide", function () {
-                    modalElement.find(":submit").unbind("click");
-                }).on("shown", function () {
-                    modalElement.find(".btn-close").focus();
-                }).attr("tabindex", -1);
-            } catch ($e) {
-                console.log($e);
+                    modalElement.modal({
+                        keyboard: true
+                    }).on("hide", function () {
+                        modalElement.find(":submit").unbind("click");
+                    }).on("shown", function () {
+                        modalElement.find(".btn-close").focus();
+                    }).attr("tabindex", -1);
+                } catch ($e) {
+                    console.log($e);
+                }
+
+                return false;
+            } else {
+                try {
+                    var clickedLink = event.currentTarget;
+                    var modalElement = $("#danger-link-confirm");
+
+                    var okayLink = $(clickedLink).attr('href');
+                    var submitBtn = modalElement.find(":submit");
+
+                    submitBtn.click(function () {
+                        window.location.href = okayLink;
+                    });
+
+                    modalElement.modal({
+                        keyboard: true
+                    }).on("hide", function () {
+                        modalElement.find(":submit").unbind("click");
+                    }).on("shown", function () {
+                        modalElement.find(".btn-close").focus();
+                    }).attr("tabindex", -1);
+                } catch ($e) {
+                    console.log($e);
+                }
+
+                return false;
             }
-
-            return false;
         });
     }
 
@@ -63,7 +87,7 @@
             return data;
         }
 
-        if (field.data('optional') && field.is(":empty")) {
+        if (field.data('optional')) {
             field.prepend('<option value=""></option>');
         }
 
@@ -85,12 +109,6 @@
                 }
                 search.attr('placeholder', placeholder);
             });
-        });
-
-        field.on('select2:unselect', function(e) {
-            $(this).html('<option value=""></option>');
-            e.preventDefault();
-            e.stopPropagation();
         });
 
         field.select2({
