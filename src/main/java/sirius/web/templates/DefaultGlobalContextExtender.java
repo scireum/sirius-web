@@ -11,10 +11,12 @@ package sirius.web.templates;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.di.std.ConfigValue;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
 import sirius.web.http.WebContext;
+import sirius.web.security.SAMLHelper;
 import sirius.web.security.UserContext;
 
 import java.time.LocalDate;
@@ -35,6 +37,9 @@ public class DefaultGlobalContextExtender implements GlobalContextExtender {
 
     private String detailedVersion;
 
+    @Part
+    private SAMLHelper saml;
+    
     @Override
     public void collectTemplate(BiConsumer<String, Object> parameterCollector) {
         CallContext ctx = CallContext.getCurrent();
@@ -53,6 +58,7 @@ public class DefaultGlobalContextExtender implements GlobalContextExtender {
         parameterCollector.accept("tagLine", tagLine);
         parameterCollector.accept("dateFormat", NLS.get("RythmConfig.jsDateFormat"));
         parameterCollector.accept("timeFormat", NLS.get("RythmConfig.jsTimeFormat"));
+        parameterCollector.accept("saml", saml);
     }
 
     @Override
