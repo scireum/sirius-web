@@ -68,6 +68,10 @@
                             events.onEnter(e);
                         }
                     });
+
+                    $( window ).resize(function(e) {
+                        input.resize(e);
+                    });
                 },
 
                 /**
@@ -91,12 +95,17 @@
 
                     this.allTokens = this.allTokens.concat(tokens);
                     this.element.tokenfield("setTokens", this.allTokens);
+                },
+
+                resize: function(e){
+                    events.onResize(e);
                 }
             };
 
             var events = {
                 onEnter: Function(),
-                onRemovedToken: Function()
+                onRemovedToken: Function(),
+                onResize: Function()
             };
 
             return {
@@ -134,6 +143,14 @@
 
                 getInputFieldId: function () {
                     return input.tokenElement.prop("id");
+                },
+
+                getInputField: function(){
+                    return input.element;
+                },
+
+                getTokenfieldInputField: function(){
+                    return input.tokenElement;
                 },
 
                 hasTokens: function () {
