@@ -23,7 +23,7 @@ public class LoopEmitter extends Emitter {
 
     private Expression iterableExpression;
     private Emitter loop;
-    private int loopStateIndex;
+    private int loopStateIndex = -1;
     private int localIndex;
 
     /**
