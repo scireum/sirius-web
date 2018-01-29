@@ -13,5 +13,3 @@
 <i:include name="/assets/wondergem/colorpicker/css/bootstrap-colorpicker.sirius.css" />
 
 <i:include name="/assets/wondergem/featherlight/featherlight.css" />
-
-<i:include name="/assets/wondergem/magicsuggest/magicsuggest-min.css" />
