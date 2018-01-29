@@ -114,6 +114,7 @@ public class LoopState {
     /**
      * Determines if the n-th even row is currently being rendered.
      *
+     * @param n the modulo to check for
      * @return <tt>true</tt> if the current row index modulo n is zero, <tt>false</tt> otherwise.
      */
     public boolean isNth(int n) {

@@ -26,7 +26,7 @@ import java.util.List;
 public class BlockTag extends TagHandler {
 
     private static final String PARAM_NAME = "name";
-    public static final String BLOCK_BODY = "body";
+    private static final String BLOCK_BODY = "body";
 
     /**
      * Creates new tags of the given type (name).

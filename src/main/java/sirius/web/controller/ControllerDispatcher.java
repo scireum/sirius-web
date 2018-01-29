@@ -187,7 +187,7 @@ public class ControllerDispatcher implements WebDispatcher {
 
     private boolean checkCSRFTokenIfNecessary(WebContext ctx, Route route) {
         if (route.getMethod().isAnnotationPresent(CheckSecurityToken.class)) {
-            if ((!ctx.isPOST() || !checkCSRFToken(ctx))) {
+            if (!ctx.isPOST() || !checkCSRFToken(ctx)) {
                 handleFailure(ctx,
                               route,
                               Exceptions.createHandled().withNLSKey("ControllerDispatcher.invalidCSRFToken").handle());

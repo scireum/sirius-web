@@ -120,7 +120,7 @@ public class CompositeEmitter extends Emitter {
                 lastConstantChild.append(child.toString());
                 return lastConstantChild;
             } else {
-                ConstantEmitter copy = (ConstantEmitter)child.copy();
+                ConstantEmitter copy = (ConstantEmitter) child.copy();
                 result.children.add(copy);
                 return copy;
             }

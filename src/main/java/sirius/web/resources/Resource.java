@@ -68,7 +68,10 @@ public class Resource {
             String absolutePath = file.getAbsolutePath();
             String canonicalPath = file.getCanonicalPath();
             if (!absolutePath.equals(canonicalPath) && absolutePath.equalsIgnoreCase(canonicalPath)) {
-                throw new IllegalStateException(Strings.apply("A resource was found, but only case insensitive: %s vs. %s", path, canonicalPath));
+                throw new IllegalStateException(Strings.apply(
+                        "A resource was found, but only case insensitive: %s vs. %s",
+                        path,
+                        canonicalPath));
             }
         } catch (IOException e) {
             Exceptions.ignore(e);

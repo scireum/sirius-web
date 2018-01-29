@@ -22,8 +22,12 @@ import java.util.UUID;
 @Register(classes = CSRFHelper.class)
 public class CSRFHelper {
 
+    /**
+     * Contains the parameter name of the CSRF token.
+     */
     public static final String CSRF_TOKEN = "CSRFToken";
-    public static final String LAST_CSRF_RECOMPUTE = "lastCSRFRecompute";
+
+    private static final String LAST_CSRF_RECOMPUTE = "lastCSRFRecompute";
 
     @ConfigValue("http.csrfTokenLifetime")
     private static Duration csrfTokenLifetime;
@@ -31,6 +35,7 @@ public class CSRFHelper {
     /**
      * Returns the CSRF security-token of the current session. Internally recomputes the token if outdated.
      *
+     * @param ctx the request to read the token from
      * @return the CSRF security-token to protect sensitive links.
      */
     public String getCSRFToken(WebContext ctx) {

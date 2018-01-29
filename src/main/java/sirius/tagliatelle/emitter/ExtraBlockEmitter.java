@@ -27,6 +27,12 @@ public class ExtraBlockEmitter extends Emitter {
     private final String name;
     private Emitter body;
 
+    /**
+     * Creates a new instance with the given name and body.
+     *
+     * @param name the name of the block
+     * @param body the body of the block
+     */
     public ExtraBlockEmitter(String name, Emitter body) {
         super(body.startOfBlock);
         this.name = name;

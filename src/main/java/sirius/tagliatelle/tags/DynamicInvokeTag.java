@@ -51,7 +51,8 @@ public class DynamicInvokeTag extends TagHandler {
 
         @Override
         public String getDescription() {
-            return "Invokes a dynamically selected template. Note that all template arguments also have to be passed as tag attributes.";
+            return "Invokes a dynamically selected template."
+                   + " Note that all template arguments also have to be passed as tag attributes.";
         }
     }
 

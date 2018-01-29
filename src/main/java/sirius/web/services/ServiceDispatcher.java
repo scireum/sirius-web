@@ -48,7 +48,6 @@ public class ServiceDispatcher implements WebDispatcher {
         return PriorityCollector.DEFAULT_PRIORITY - 5;
     }
 
-
     @Override
     public boolean preDispatch(WebContext ctx) throws Exception {
         return false;

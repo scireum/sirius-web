@@ -80,7 +80,6 @@ public class PushLocalEmitter extends Emitter {
         return expression;
     }
 
-
     /**
      * Contains the stack index being written to.
      *

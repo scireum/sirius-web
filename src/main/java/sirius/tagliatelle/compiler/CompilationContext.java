@@ -629,8 +629,8 @@ public class CompilationContext {
     /**
      * Moves local variables from the template stack to the callers stack.
      * <p>
-     * This will essentially find all {@link PushLocalEmitter push emitters} and  {@link LoopEmitter loop emitters} and assign a new stack location and update all
-     * matching local reads.
+     * This will essentially find all {@link PushLocalEmitter push emitters} and {@link LoopEmitter loop emitters} and
+     * assign a new stack location and update all matching local reads.
      *
      * @param copy the emitters to process
      * @return the processed emitters

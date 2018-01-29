@@ -160,7 +160,6 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
         return currentCharacter == '/' && previousCharacter == '<';
     }
 
-
     private boolean isSpecialCharacter(char currentCharacter) {
         if (isControlChar(currentCharacter)) {
             return true;

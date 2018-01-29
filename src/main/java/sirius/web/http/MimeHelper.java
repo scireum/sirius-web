@@ -329,7 +329,7 @@ public class MimeHelper {
     }
 
     @SuppressWarnings("squid:S1698")
-    public static String guessCommonType(String name) {
+    private static String guessCommonType(String name) {
         String ending = name.substring(name.length() - 3).toLowerCase().intern();
         if ("jpg" == ending) {
             return IMAGE_JPEG;
