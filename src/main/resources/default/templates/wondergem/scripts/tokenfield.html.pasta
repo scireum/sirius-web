@@ -51,6 +51,8 @@
                     // delete the element value because they are tokens now and the value should not be displayed twice
                     this.tokenElement.val("");
 
+                    this.allTokens = [{label: this.value, value: this.value, initialQueryIdentifier: true}];
+
                     this.element.on('tokenfield:removedtoken', function (e) {
                         var identifier = e.attrs.value;
                         $('input[data-identifier="' + identifier + '"]').remove();
@@ -59,6 +61,10 @@
                             input.value = "";
                         }
 
+                        // remove the token from the tokens array as well
+                        input.allTokens = $.grep(input.allTokens, function (token) {
+                            return identifier !== token.value;
+                        });
 
                         events.onRemovedToken(e);
                     });
@@ -89,10 +95,6 @@
                  * @@param tokens array of tokens to be added
                  */
                 appendTokens: function (tokens) {
-                    if (this.allTokens === undefined) {
-                        this.allTokens = [{label: this.value, value: this.value, initialQueryIdentifier: true}];
-                    }
-
                     this.allTokens = this.allTokens.concat(tokens);
                     this.element.tokenfield("setTokens", this.allTokens);
                 },

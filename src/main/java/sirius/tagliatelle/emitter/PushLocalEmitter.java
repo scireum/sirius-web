@@ -18,9 +18,10 @@ import java.util.function.Function;
 /**
  * Writes the result of an expression evaluation into a temporary / local variable.
  */
-public class PushLocalEmitter extends PushEmitter {
+public class PushLocalEmitter extends Emitter {
 
     private Expression expression;
+    private int localIndex;
 
     /**
      * Creates a new instance at the given position which writes the value of the given expression into the given local
@@ -77,5 +78,27 @@ public class PushLocalEmitter extends PushEmitter {
      */
     public Expression getExpression() {
         return expression;
+    }
+
+
+    /**
+     * Contains the stack index being written to.
+     *
+     * @return the target index to write to
+     */
+    public int getLocalIndex() {
+        return localIndex;
+    }
+
+    /**
+     * Updates the stack index being written to.
+     * <p>
+     * When inlining a template, the stack has to be transferred to the callee and therefore the
+     * stack indices might change.
+     *
+     * @param localIndex the new stack index to use
+     */
+    public void setLocalIndex(int localIndex) {
+        this.localIndex = localIndex;
     }
 }
