@@ -4,6 +4,7 @@
 <i:arg type="boolean" name="withSidebar" default="false"/>
 <i:arg type="boolean" name="fullWidth" default="false"/>
 <i:arg type="boolean" name="showCurrentPageBreadcrumb" default="true"/>
+<i:arg type="String" name="span" default="9"/>
 
 <i:pragma name="inline" value="true"/>
 <i:pragma name="description" value="Provides the base layout topic within the help system"/>
@@ -60,7 +61,11 @@
                         </div>
                     </i:if>
                     <div class="col-md-9">
-                        <i:render name="body"/>
+                        <div class="row">
+                            <div class="col-md-@span">
+                                <i:render name="body"/>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </i:else>
