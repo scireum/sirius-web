@@ -10,7 +10,7 @@
 
 <i:include name="/assets/wondergem/bootstrap/css/bootstrap.min.css" />
 
-<i:include name="/assets/wondergem/colorpicker/css/bootstrap-colorpicker.min.css" />
+<i:include name="/assets/wondergem/colorpicker/css/bootstrap-colorpicker.sirius.css" />
 
 <i:include name="/assets/wondergem/featherlight/featherlight.css" />
 
