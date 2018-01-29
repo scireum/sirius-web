@@ -52,12 +52,39 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+/**
+ * Provides a helper to generate SAML 2 requests and to process responses.
+ * <p>
+ * The <b>Security Assertion Markup Language</b> is an XML beast to permit identity federation accross cloud services.
+ * This implementation provides all the tools required to become an identity consumer, which can call an identity
+ * provider to authenticate a user.
+ */
 @Register(classes = SAMLHelper.class)
 public class SAMLHelper {
 
+    /**
+     * Used to log all events related to SAML.
+     * <p>
+     * Some FINE loggings are provided which might support troubleshooting.
+     */
     public static final Log LOG = Log.get("saml");
+
+    /**
+     * A response as a timestamp called <tt>IssueInstant</tt>. We enforce that a received response isn't older than
+     * <tt>MAX_TIMESTAMP_DELTA_IN_HOURS</tt> hours. The value should be chosen to accept clock drift and differences
+     * in dailight saving time settings.
+     */
     public static final int MAX_TIMESTAMP_DELTA_IN_HOURS = 3;
 
+    /**
+     * Generates a base64 encoded XML request which can be POSTed to a SAML 2 identity provider.
+     *
+     * @param issuer      the name of the issuer. This tells the identity provider "who" is asking to perform an authentication.
+     * @param issuerIndex the index of the issuer. As the identity provider might manage several endpoints for a
+     *                    single issuer configuration, different indices can be passed in. The default value would
+     *                    be "0"
+     * @return a base64 encoded SAML2 request which can be posted to an identity provider
+     */
     public String generateAuthenticationRequest(String issuer, String issuerIndex) {
         return BaseEncoding.base64().encode(createAuthenticationRequestXML(issuer, issuerIndex));
     }
@@ -86,6 +113,15 @@ public class SAMLHelper {
         return buffer.toByteArray();
     }
 
+    /**
+     * Parses a SAML 2 response from the given request.
+     * <p>
+     * Note that the fingerprint <b>must</b> be verified in some way or another, as this method only checks if
+     * the signature is valid, not <b>who</b> created it.
+     *
+     * @param ctx the http request to read the response from
+     * @return the parsed response which has been verified
+     */
     public SAMLResponse parseSAMLResponse(WebContext ctx) {
         if (!ctx.isPOST()) {
             throw Exceptions.createHandled().withSystemErrorMessage("Invalid SAML Response: POST expected!").handle();
@@ -110,6 +146,18 @@ public class SAMLHelper {
         }
     }
 
+    /**
+     * Selects the element with the given node name.
+     * <p>
+     * This method ensures, that there is only one element, as we want to ensure that there is only on <tt>Assertion</tt> and
+     * one <tt>Signature</tt> for it.
+     *
+     * @param doc       the XML document
+     * @param namespace the optional namesapce URI
+     * @param nodeName  the name of the node
+     * @return the element with the given name
+     * @throws HandledException if there are zero or more thant one nodes found
+     */
     private Element selectSingleElement(Document doc, @Nullable String namespace, String nodeName) {
         NodeList nl = Strings.isFilled(namespace) ?
                       doc.getElementsByTagNameNS(namespace, nodeName) :
@@ -124,6 +172,12 @@ public class SAMLHelper {
         return (Element) nl.item(0);
     }
 
+    /**
+     * Verifies the <tt>IssueInstant</tt> within the <tt>Assertion</tt>.
+     *
+     * @param assertion the assertion to verify
+     * @see #MAX_TIMESTAMP_DELTA_IN_HOURS
+     */
     private void verifyTimestamp(Element assertion) {
         String issueInstant = assertion.getAttribute("IssueInstant");
         Instant parsedIssueInstant = Instant.from(DateTimeFormatter.ISO_INSTANT.parse(issueInstant));
@@ -134,6 +188,13 @@ public class SAMLHelper {
         }
     }
 
+    /**
+     * Extracts all relevant data from the <tt>Assertion</tt>.
+     *
+     * @param assertion   the assertion to parse
+     * @param fingerprint the fingerprint of the X509 certificate which was used to sign the assertion
+     * @return the response which represents the payload of the <tt>Assertion</tt>
+     */
     private SAMLResponse parseAssertion(Element assertion, String fingerprint) {
         StructuredNode node = StructuredNode.of(assertion);
         MultiMap<String, String> attributes = MultiMap.create();
@@ -164,6 +225,17 @@ public class SAMLHelper {
         return dbf.newDocumentBuilder().parse(new ByteArrayInputStream(response));
     }
 
+    /**
+     * Validates the <tt>Signature</tt> in the document.
+     * <p>
+     * This also ensures, that there is only one signature and that the signature actually signs the given
+     * <tt>Assertion</tt> and not anything else.
+     *
+     * @param doc       the XML document
+     * @param assertion the assertion which must be signed
+     * @return the fingerprint of the X509 certificate which was used to generate the signature
+     * @throws Exception in case an XML or signung error occurs
+     */
     private String validateXMLSignature(Document doc, Element assertion) throws Exception {
         assertion.setIdAttribute("ID", true);
         String idToVerify = assertion.getAttribute("ID");
@@ -195,6 +267,12 @@ public class SAMLHelper {
         return Hashing.sha1().hashBytes(certificate.getEncoded()).toString().toLowerCase();
     }
 
+    /**
+     * Obtains the reference of the given signature
+     *
+     * @param signature the signature to parse
+     * @return the effective reference URI
+     */
     @SuppressWarnings("unchecked")
     @NotNull
     private String getReferenceBeingSigned(XMLSignature signature) {
@@ -204,6 +282,9 @@ public class SAMLHelper {
                                                                             .orElse("");
     }
 
+    /**
+     * Used to extract the inlined X509 certificate from within the signature.
+     */
     private static class KeyValueKeySelector extends KeySelector {
 
         @SuppressWarnings("unchecked")
@@ -232,6 +313,9 @@ public class SAMLHelper {
         }
     }
 
+    /**
+     * Represents teh inlined X509 certificate from within the signature.
+     */
     private static class X509CertificateResult implements KeySelectorResult {
 
         private X509Certificate cert;
