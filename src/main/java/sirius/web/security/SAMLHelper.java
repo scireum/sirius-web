@@ -12,6 +12,7 @@ import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -46,14 +47,16 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.Key;
 import java.security.cert.X509Certificate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Register(classes = SAMLHelper.class)
 public class SAMLHelper {
 
     public static final Log LOG = Log.get("saml");
+    public static final int MAX_TIMESTAMP_DELTA_IN_HOURS = 3;
 
     public String generateAuthenticationRequest(String issuer, String issuerIndex) {
         return BaseEncoding.base64().encode(createAuthenticationRequestXML(issuer, issuerIndex));
@@ -67,7 +70,7 @@ public class SAMLHelper {
                         Attribute.set("xmlns:saml", "urn:oasis:names:tc:SAML:2.0:assertion"),
                         Attribute.set("ID", "identifier_" + System.currentTimeMillis()),
                         Attribute.set("Version", "2.0"),
-                        Attribute.set("IssueInstant", LocalDateTime.now().atZone(ZoneOffset.UTC).toString()),
+                        Attribute.set("IssueInstant", DateTimeFormatter.ISO_INSTANT.format(Instant.now())),
                         Attribute.set("AssertionConsumerServiceIndex", issuerIndex));
         out.property("saml:Issuer", issuer);
         out.beginObject("samlp:NameIDPolicy",
@@ -91,18 +94,9 @@ public class SAMLHelper {
         try {
             Document doc = getResponseDocument(ctx);
 
-            NodeList nl = doc.getElementsByTagName("Assertion");
-            if (nl.getLength() != 1) {
-                LOG.FINE("SAML Response has %s Assertions", nl.getLength());
-                throw Exceptions.createHandled()
-                                .withSystemErrorMessage("Invalid SAML Response: Expected exactly one Assertion!")
-                                .handle();
-            }
-
-            Element assertion = (Element) nl.item(0);
-            assertion.setIdAttribute("ID", true);
-
-            String fingerprint = validateXMLSignature(doc, assertion.getAttribute("ID"));
+            Element assertion = selectSingleElement(doc, null, "Assertion");
+            verifyTimestamp(assertion);
+            String fingerprint = validateXMLSignature(doc, assertion);
 
             return parseAssertion(assertion, fingerprint);
         } catch (HandledException e) {
@@ -112,6 +106,30 @@ public class SAMLHelper {
                             .to(LOG)
                             .error(e)
                             .withSystemErrorMessage("An error occurred while parsing a SAML Response: %s (%s)")
+                            .handle();
+        }
+    }
+
+    private Element selectSingleElement(Document doc, @Nullable String namespace, String nodeName) {
+        NodeList nl = Strings.isFilled(namespace) ?
+                      doc.getElementsByTagNameNS(namespace, nodeName) :
+                      doc.getElementsByTagName(nodeName);
+        if (nl.getLength() != 1) {
+            LOG.FINE("SAML Response has %s elements of type: %s", nl.getLength(), nodeName);
+            throw Exceptions.createHandled()
+                            .withSystemErrorMessage("Invalid SAML Response: Expected exactly one %s!", nodeName)
+                            .handle();
+        }
+
+        return (Element) nl.item(0);
+    }
+
+    private void verifyTimestamp(Element assertion) {
+        String issueInstant = assertion.getAttribute("IssueInstant");
+        Instant parsedIssueInstant = Instant.from(DateTimeFormatter.ISO_INSTANT.parse(issueInstant));
+        if (Duration.between(Instant.now(), parsedIssueInstant).toHours() > MAX_TIMESTAMP_DELTA_IN_HOURS) {
+            throw Exceptions.createHandled()
+                            .withSystemErrorMessage("Invalid SAML Response: Invalid IssueInstant: %s", issueInstant)
                             .handle();
         }
     }
@@ -146,23 +164,20 @@ public class SAMLHelper {
         return dbf.newDocumentBuilder().parse(new ByteArrayInputStream(response));
     }
 
-    private String validateXMLSignature(Document doc, String idOfValidatedAssertion) throws Exception {
-        NodeList nl = doc.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
-        if (nl.getLength() != 1) {
-            LOG.FINE("SAML Response has %s Signatures", nl.getLength());
-            throw Exceptions.createHandled()
-                            .withSystemErrorMessage("Invalid SAML Response: Expected exactly one Signature.")
-                            .handle();
-        }
+    private String validateXMLSignature(Document doc, Element assertion) throws Exception {
+        assertion.setIdAttribute("ID", true);
+        String idToVerify = assertion.getAttribute("ID");
+
+        Element signatureElement = selectSingleElement(doc, XMLSignature.XMLNS, "Signature");
 
         XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM");
-        DOMValidateContext valContext = new DOMValidateContext(new KeyValueKeySelector(), nl.item(0));
+        DOMValidateContext valContext = new DOMValidateContext(new KeyValueKeySelector(), signatureElement);
         XMLSignature signature = fac.unmarshalXMLSignature(valContext);
 
-        if (!Strings.areEqual(getReferenceBeingSigned(signature), "#" + idOfValidatedAssertion)) {
+        if (!Strings.areEqual(getReferenceBeingSigned(signature), "#" + idToVerify)) {
             LOG.FINE("SAML Response doesn't sign the assertion. Reference: %s, Assertion-ID: %s",
                      getReferenceBeingSigned(signature),
-                     idOfValidatedAssertion);
+                     idToVerify);
             throw Exceptions.createHandled()
                             .withSystemErrorMessage(
                                     "Invalid SAML Response: The given Signature doesn't sign the given Assertion.")
