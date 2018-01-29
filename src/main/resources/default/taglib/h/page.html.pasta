@@ -4,7 +4,7 @@
 <i:arg type="boolean" name="withSidebar" default="false"/>
 <i:arg type="boolean" name="fullWidth" default="false"/>
 <i:arg type="boolean" name="showCurrentPageBreadcrumb" default="true"/>
-<i:arg type="String" name="span" default="12"/>
+<i:arg type="String" name="span" default="9"/>
 
 <i:pragma name="inline" value="true"/>
 <i:pragma name="description" value="Provides the base layout topic within the help system"/>
