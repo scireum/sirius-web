@@ -1118,7 +1118,11 @@ public class Response {
             HttpResponse response = createFullResponse(status, true, channelBuffer);
             complete(commit(response));
         } catch (Exception e) {
-            internalServerError("Cannot send content of template: " + name, e);
+            throw Exceptions.handle()
+                            .to(WebServer.LOG)
+                            .error(e)
+                            .withSystemErrorMessage("Cannot send content of template: " + name)
+                            .handle();
         }
     }
 
