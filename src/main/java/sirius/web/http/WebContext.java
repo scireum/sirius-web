@@ -50,9 +50,6 @@ import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.StructuredInput;
 import sirius.kernel.xml.XMLStructuredInput;
 import sirius.web.controller.Message;
-import sirius.web.http.session.ServerSession;
-import sirius.web.http.session.SessionManager;
-import sirius.web.http.session.UserAgent;
 import sirius.web.security.UserContext;
 
 import javax.annotation.Nonnull;
@@ -82,7 +79,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
@@ -102,13 +98,6 @@ public class WebContext implements SubContext {
     private static final String PROTOCOL_HTTPS = "https";
     private static final String PROTOCOL_HTTP = "http";
     private static final String CACHED_MESSAGES_ID = "cachedMessagesId";
-
-    /**
-     * Used to specify the source of a server session
-     */
-    public enum ServerSessionSource {
-        UNKNOWN, PARAMETER, COOKIE
-    }
 
     /*
      * Underlying channel to send and receive data
@@ -232,21 +221,6 @@ public class WebContext implements SubContext {
     protected Callback<CallContext> completionCallback;
 
     /*
-     * Stores the source of the server session
-     */
-    private ServerSessionSource serverSessionSource;
-
-    /*
-     * Stores the requested session id
-     */
-    private String requestedSessionId;
-
-    /*
-     * Stores the server session once it was fetched
-     */
-    private ServerSession serverSession;
-
-    /*
      * Determines if the requested has a trusted ip address
      */
     private Boolean trusted;
@@ -313,18 +287,6 @@ public class WebContext implements SubContext {
     private static String sessionSecret;
 
     /*
-     * Parameter name in which the server session is expected
-     */
-    @ConfigValue("http.serverSessionParameterName")
-    private static String serverSessionParameterName;
-
-    /*
-     * Cookie name used to store the server session
-     */
-    @ConfigValue("http.serverSessionCookieName")
-    private static String serverSessionCookieName;
-
-    /*
      * Input size limit for structured data (as this is loaded into heap)
      */
     @ConfigValue("http.maxStructuredInputSize")
@@ -353,9 +315,6 @@ public class WebContext implements SubContext {
      */
     @ConfigValue("http.ssl.hstsMaxAge")
     protected static int hstsMaxAge;
-
-    @Part
-    private static SessionManager sessionManager;
 
     @Part
     private static SessionSecretComputer sessionSecretComputer;
@@ -837,96 +796,6 @@ public class WebContext implements SubContext {
     }
 
     /**
-     * Returns the server sided session based on the session parameter or cookie.
-     * <p>
-     * If no session was found, a new one is created if create is <tt>true</tt>. Otherwise <tt>null</tt> is
-     * returned.
-     *
-     * @param create determines if a new session should be created if no active session was found
-     * @return the session associated with the client (based on session id parameter or cookie) or <tt>null</tt> if
-     * neither an active session was found nor a new one was created.
-     */
-    public Optional<ServerSession> getServerSession(boolean create) {
-        if (serverSession != null) {
-            return Optional.of(serverSession);
-        }
-
-        if (serverSessionSource == null) {
-            requestedSessionId = getParameter(serverSessionParameterName);
-            serverSessionSource = ServerSessionSource.PARAMETER;
-            if (Strings.isEmpty(requestedSessionId)) {
-                serverSessionSource = ServerSessionSource.COOKIE;
-                requestedSessionId = getCookieValue(serverSessionCookieName);
-                if (Strings.isEmpty(requestedSessionId)) {
-                    serverSessionSource = null;
-                }
-            }
-        }
-
-        if (Strings.isFilled(requestedSessionId)) {
-            Optional<ServerSession> sessionOptional = sessionManager.getSession(requestedSessionId);
-            if (sessionOptional.isPresent()) {
-                serverSession = sessionOptional.get();
-                return sessionOptional;
-            }
-        }
-
-        if (!create) {
-            return Optional.empty();
-        }
-
-        serverSession = sessionManager.create();
-        serverSession.putValue(ServerSession.INITIAL_URI, getRequestedURI());
-        serverSession.putValue(ServerSession.USER_AGENT, getHeader(HttpHeaderNames.USER_AGENT));
-        serverSession.putValue(ServerSession.REMOTE_IP, getRemoteIP().toString());
-        return Optional.of(serverSession);
-    }
-
-    /**
-     * Returns the server sided session based on the session parameter or cookie.
-     * <p>
-     * This method will create a new session if no active session was found.
-     * <p>
-     * This is a shortcut for {@code getServerSession(true)}
-     *
-     * @return the currently active session for this client. Will create a new session if no active session was found
-     */
-    public ServerSession getServerSession() {
-        return getServerSession(true).orElseThrow(() -> Exceptions.handle()
-                                                                  .to(WebServer.LOG)
-                                                                  .withSystemErrorMessage(
-                                                                          "SessionManager was unable to create a session!")
-                                                                  .handle());
-    }
-
-    /**
-     * Returns the session id requested by the client.
-     *
-     * @return the session id (server session) sent by the client.
-     */
-    public String getRequestedSessionId() {
-        if (serverSession == null) {
-            getServerSession(false);
-        }
-        return requestedSessionId;
-    }
-
-    /**
-     * Returns the source from which the server session id was obtained.
-     * <p>
-     * If a session id is submitted via cookie and via parameter, the parameter always has precedence.
-     *
-     * @return the source from which the session id for the current server session was obtained.
-     */
-    public ServerSessionSource getServerSessionSource() {
-        if (serverSessionSource == null && serverSession == null) {
-            getServerSession(false);
-        }
-
-        return serverSessionSource;
-    }
-
-    /**
      * Returns the requested URI of the underlying HTTP request, without the query string
      *
      * @return the uri of the underlying request
@@ -1332,9 +1201,6 @@ public class WebContext implements SubContext {
      * @return a list of all cookies to be sent to the client.
      */
     protected Collection<Cookie> getOutCookies() {
-        if (serverSession != null && serverSession.isNew()) {
-            setHTTPSessionCookie(serverSessionCookieName, serverSession.getId());
-        }
         buildClientSessionCookie();
         return cookiesOut == null ? null : cookiesOut.values();
     }

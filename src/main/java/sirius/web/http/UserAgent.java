@@ -6,7 +6,7 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.web.http.session;
+package sirius.web.http;
 
 import sirius.kernel.commons.Strings;
 

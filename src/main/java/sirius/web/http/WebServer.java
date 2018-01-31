@@ -41,7 +41,6 @@ import sirius.kernel.health.Log;
 import sirius.kernel.health.metrics.MetricProvider;
 import sirius.kernel.health.metrics.MetricsCollector;
 import sirius.kernel.timer.EveryTenSeconds;
-import sirius.web.http.session.SessionManager;
 
 import java.net.InetSocketAddress;
 import java.time.Duration;
@@ -137,9 +136,6 @@ public class WebServer implements Lifecycle, MetricProvider {
 
     @ConfigValue("http.ssl.port")
     private int sslPort;
-
-    @Part
-    private static SessionManager sessionManager;
 
     @ConfigValue("http.firewall.proxyIPs")
     private static String proxyIPs;
@@ -669,6 +665,7 @@ public class WebServer implements Lifecycle, MetricProvider {
     public static double getAvgResponseTime() {
         return responseTime.getAvg();
     }
+
     /**
      * Returns the average time required to generate a response.
      *
@@ -702,8 +699,10 @@ public class WebServer implements Lifecycle, MetricProvider {
                                      "/min");
         collector.metric("http-open-connections", "HTTP Open Connections", openConnections.size(), null);
         collector.metric("http-response-time", "HTTP Avg. Reponse Time", responseTime.getAndClearAverage(), "ms");
-        collector.metric("http-response-ttfb", "HTTP Avg. Time To First Byte", timeToFirstByte.getAndClearAverage(), "ms");
-        collector.metric("http-sessions", "HTTP Sessions", sessionManager.getNumberOfSessions(), null);
+        collector.metric("http-response-ttfb",
+                         "HTTP Avg. Time To First Byte",
+                         timeToFirstByte.getAndClearAverage(),
+                         "ms");
         collector.metric("websockets", "Open Websockets", websockets, null);
     }
 

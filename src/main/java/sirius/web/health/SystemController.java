@@ -26,7 +26,6 @@ import sirius.web.controller.Controller;
 import sirius.web.controller.Page;
 import sirius.web.controller.Routed;
 import sirius.web.http.WebContext;
-import sirius.web.http.session.ServerSession;
 import sirius.web.security.Permission;
 
 import java.util.Collection;
@@ -144,7 +143,6 @@ public class SystemController extends BasicController {
     @Routed("/system/reset")
     public void reset(WebContext ctx) {
         ctx.clearSession();
-        ctx.getServerSession(false).ifPresent(ServerSession::invalidate);
         ctx.respondWith().direct(HttpResponseStatus.OK, "Session has been cleared...");
     }
 

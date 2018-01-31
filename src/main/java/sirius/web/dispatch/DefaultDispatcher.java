@@ -16,7 +16,6 @@ import sirius.kernel.di.std.Register;
 import sirius.web.http.MimeHelper;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
-import sirius.web.http.session.ServerSession;
 import sirius.web.security.UserContext;
 
 /**
@@ -76,7 +75,6 @@ public class DefaultDispatcher implements WebDispatcher {
                    .direct(HttpResponseStatus.OK, "User-agent: *\n" + "Disallow:\n");
             }
         } else if ("/reset".equals(ctx.getRequestedURI())) {
-            ctx.getServerSession(false).ifPresent(ServerSession::invalidate);
             ctx.clearSession();
             ctx.respondWith().redirectTemporarily(ctx.get("path").asString("/"));
         } else {
