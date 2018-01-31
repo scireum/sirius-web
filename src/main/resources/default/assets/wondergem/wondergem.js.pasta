@@ -14,7 +14,3 @@
 <i:include name="/assets/wondergem/colorpicker/js/bootstrap-colorpicker.min.js" />
 
 <i:include name="/assets/wondergem/featherlight/featherlight.js" />
-
-<i:include name="/assets/wondergem/magicsuggest/magicsuggest.js" />
-
-<i:include name="/assets/wondergem/dragMe/dragMe.js" />
