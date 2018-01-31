@@ -135,6 +135,17 @@ public class Permissions {
         return result;
     }
 
+    /**
+     * Determines if the given element wears a permission annotation.
+     *
+     * @param object the java element to check
+     * @return <tt>true</tt> if there is a permission annotation, <tt>false</tt> otherwise
+     * @see Permission
+     * @see PermissionList
+     * @see NotPermission
+     * @see NotPermissionList
+     * @see LoginRequired
+     */
     public static boolean wearsPermissionAnnotation(AnnotatedElement object) {
         if (object.isAnnotationPresent(Permission.class) || object.isAnnotationPresent(NotPermission.class)) {
             return true;

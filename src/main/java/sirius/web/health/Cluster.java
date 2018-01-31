@@ -8,14 +8,9 @@
 
 package sirius.web.health;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.io.CharStreams;
-import sirius.kernel.Lifecycle;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Tasks;
@@ -28,18 +23,12 @@ import sirius.kernel.health.Log;
 import sirius.kernel.health.metrics.Metric;
 import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.health.metrics.Metrics;
-import sirius.kernel.info.Module;
-import sirius.kernel.info.Product;
 import sirius.kernel.timer.EveryMinute;
-import sirius.web.http.WebServer;
 import sirius.web.mails.Mails;
+import sirius.web.services.JSONCall;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
-import java.net.URLConnection;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
@@ -57,8 +46,8 @@ import java.util.List;
  * (<tt>health.cluster.priority</tt>). The node with the lowest number (which is still functional) is in charge
  * of triggering an alert in case of faulting or unreachable members.
  */
-@Register(classes = {Cluster.class, EveryMinute.class, Lifecycle.class})
-public class Cluster implements EveryMinute, Lifecycle {
+@Register(classes = {Cluster.class, EveryMinute.class})
+public class Cluster implements EveryMinute {
 
     /*
      * Logger used by the cluster system
@@ -170,6 +159,10 @@ public class Cluster implements EveryMinute, Lifecycle {
         return clusterState;
     }
 
+    public boolean isAlarmPresent() {
+        return currentlyNotifying;
+    }
+
     /*
      * Re-computes the node and cluster state...
      */
@@ -179,9 +172,9 @@ public class Cluster implements EveryMinute, Lifecycle {
     }
 
     private void updateClusterState() {
+        cleanNodeInfos();
         MetricState newNodeState = computeNodeState();
         MetricState newClusterState = computeClusterState(newNodeState);
-        cleanNodeInfos();
         checkClusterState(newClusterState);
         clusterState = newClusterState;
     }
@@ -235,26 +228,20 @@ public class Cluster implements EveryMinute, Lifecycle {
         MetricState newClusterState = currentClusterState;
         try {
             LOG.FINE("Testing node: %s", info.getEndpoint());
-            URLConnection c = new URL(info.getEndpoint() + "/service/json/system/node-info").openConnection();
-            c.setConnectTimeout(10000);
-            c.setReadTimeout(10000);
-            c.setDoInput(true);
-            c.setDoOutput(false);
-            try (InputStream in = c.getInputStream()) {
-                JSONObject response = JSON.parseObject(CharStreams.toString(new InputStreamReader(in, Charsets.UTF_8)));
-                info.setName(response.getString("name"));
-                info.setNodeState(MetricState.valueOf(response.getString("nodeState")));
-                if (info.getNodeState().ordinal() > newClusterState.ordinal()) {
-                    newClusterState = info.getNodeState();
-                }
-                info.setClusterState(MetricState.valueOf(response.getString("clusterState")));
-                info.setPriority(response.getInteger("priority"));
-                info.setUptime(response.getString("uptime"));
-                info.getMetrics().clear();
-                parseNodeMetrics(info, response);
-                info.pingSucceeded();
-                LOG.FINE("Node: %s is %s (%s)", info.getName(), info.getNodeState(), info.getClusterState());
+            JSONObject response =
+                    JSONCall.to(new URL(info.getEndpoint() + "/service/json/system/node-info")).getInput();
+            info.setName(response.getString("name"));
+            info.setNodeState(MetricState.valueOf(response.getString("nodeState")));
+            if (info.getNodeState().ordinal() > newClusterState.ordinal()) {
+                newClusterState = info.getNodeState();
             }
+            info.setClusterState(MetricState.valueOf(response.getString("clusterState")));
+            info.setPriority(response.getInteger("priority"));
+            info.setUptime(response.getString("uptime"));
+            info.getMetrics().clear();
+            parseNodeMetrics(info, response);
+            info.pingSucceeded();
+            LOG.FINE("Node: %s is %s (%s)", info.getName(), info.getNodeState(), info.getClusterState());
         } catch (IOException t) {
             Exceptions.ignore(t);
             if (clusterState != MetricState.RED) {
@@ -294,9 +281,6 @@ public class Cluster implements EveryMinute, Lifecycle {
         }
     }
 
-    /*
-     * Determines if this node is in charge of sending alerts
-     */
     private boolean inCharge(MetricState clusterStateToBroadcast) {
         if (isBestAvailableNode()) {
             return true;
@@ -313,9 +297,6 @@ public class Cluster implements EveryMinute, Lifecycle {
         return true;
     }
 
-    /*
-     * Determines if the given node has a better priority than the current node
-     */
     private boolean isBetter(NodeInfo info) {
         if (info.getPriority() > getNodePriority()) {
             return false;
@@ -339,34 +320,5 @@ public class Cluster implements EveryMinute, Lifecycle {
      */
     public int getNodePriority() {
         return priority;
-    }
-
-    @Override
-    public int getPriority() {
-        return WebServer.LIFECYCLE_PRIORITY + 100;
-    }
-
-    @Override
-    public void started() {
-        LinkedHashMap<String, String> ctx = Maps.newLinkedHashMap();
-        ctx.put("Product", Product.getProduct().getDetails());
-        for (Module m : Product.getModules()) {
-            ctx.put(m.getName(), m.getDetails());
-        }
-    }
-
-    @Override
-    public void stopped() {
-        // Nothing to do
-    }
-
-    @Override
-    public void awaitTermination() {
-        // Nothing to do
-    }
-
-    @Override
-    public String getName() {
-        return "Cluster";
     }
 }

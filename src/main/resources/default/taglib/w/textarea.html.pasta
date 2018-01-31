@@ -1,3 +1,4 @@
+<i:arg name="id" type="String" default="" />
 <i:arg name="span" type="int" default="6" />
 <i:arg name="smallSpan" type="int" default="12" description="Defines the span for mobile devices" />
 <i:arg name="rows" type="int" default="3" />
@@ -22,7 +23,7 @@
         </span>
         </label>
     </i:if>
-    <textarea name="@name" rows="@rows" class="form-control input-block-level" @if (readonly) { readonly }>@user.getFieldValue(name, value)</textarea>
+    <textarea @if (isFilled(id)) {id="@id"} name="@name" rows="@rows" class="form-control input-block-level" @if (readonly) { readonly }>@user.getFieldValue(name, value)</textarea>
 
     <i:if test="isFilled(help)">
         <span class="help-block"><i:raw>@help</i:raw></span>

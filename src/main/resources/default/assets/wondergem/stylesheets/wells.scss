@@ -48,15 +48,30 @@
 .infobox {
 
   .well {
-    margin-top: 20px;
-    padding: 10px;
-    background-color: rgba(94, 99, 103, 0.08);
-    font-size: $fontSizeSmall;
+    position: relative;
+
+    .well-colorbox {
+      display: block;
+      left: 0px;
+      top: 0px;
+      position: absolute;
+      bottom: 0;
+      width: 5px;
+    }
+
+    .legend {
+      box-sizing: initial;
+      padding: 5px 10px;
+      width: inherit;
+      margin: -10px -10px 10px;
+    }
+
+    .info-line {
+      margin-left: -20px;
+      margin-right: -20px;
+    }
+
   }
 
-  .legend {
-    box-sizing: initial;
-    padding: 5px 10px;
-  }
 
 }

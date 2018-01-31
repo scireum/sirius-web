@@ -15,6 +15,7 @@ import sirius.web.http.WebContext;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
+import java.util.Set;
 
 /**
  * A simple user manager which always returns the same user with a defined set of roles.
@@ -83,6 +84,12 @@ public class PublicUserManager extends GenericUserManager {
     @Override
     protected Object getUserObject(UserInfo u) {
         throw new UnsupportedOperationException();
+    }
+
+    @Nullable
+    @Override
+    protected Set<String> computeRoles(@Nullable WebContext ctx, String userId) {
+        return Collections.emptySet();
     }
 
     @Override

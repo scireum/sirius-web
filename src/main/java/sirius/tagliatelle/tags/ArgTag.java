@@ -62,12 +62,14 @@ public class ArgTag extends TagHandler {
                                                       null),
                                  new TemplateArgument(Expression.class,
                                                       PARAM_DEFAULT,
-                                                      "Contains a default expression which is used, if no value is given.",
+                                                      "Contains a default expression which is used,"
+                                                      + " if no value is given.",
                                                       ConstantNull.NULL,
                                                       null),
                                  new TemplateArgument(Expression.class,
                                                       PARAM_DEPRECATED,
-                                                      "Contains a warning to indicate that the argument is deprecated and should no longer be used.",
+                                                      "Contains a warning to indicate that the argument"
+                                                      + " is deprecated and should no longer be used.",
                                                       ConstantNull.NULL,
                                                       null));
         }

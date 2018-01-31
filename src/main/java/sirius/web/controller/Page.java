@@ -28,8 +28,8 @@ import java.util.function.Supplier;
 public class Page<E> {
 
     private static final int DEFAULT_PAGE_SIZE = 25;
-    public static final String PARAM_START = "start";
-    public static final String PARAM_QUERY = "query";
+    private static final String PARAM_START = "start";
+    private static final String PARAM_QUERY = "query";
     private String query;
     private int start;
     private int total;
@@ -362,7 +362,7 @@ public class Page<E> {
         return queryStringBuilder.toString();
     }
 
-    public boolean addQueryToQueryString(String field,
+    private boolean addQueryToQueryString(String field,
                                          String value,
                                          StringBuilder queryStringBuilder,
                                          Monoflop ampersandPlaced) {
@@ -381,7 +381,7 @@ public class Page<E> {
         return false;
     }
 
-    public boolean addStartToQueryString(String field,
+    private boolean addStartToQueryString(String field,
                                          String value,
                                          StringBuilder queryStringBuilder,
                                          Monoflop ampersandPlaced) {
@@ -396,7 +396,7 @@ public class Page<E> {
         }
     }
 
-    public boolean createQueryStringForFacets(String field,
+    private boolean createQueryStringForFacets(String field,
                                               String value,
                                               StringBuilder queryStringBuilder,
                                               Monoflop ampersandPlaced) {

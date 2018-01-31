@@ -77,7 +77,7 @@ public class ConcatExpression implements Expression {
         return this;
     }
 
-    public StringBuilder reduceExpression(StringBuilder currentBuilder, Expression expression) {
+    private StringBuilder reduceExpression(StringBuilder currentBuilder, Expression expression) {
         if (expression.isConstant()) {
             Object result = expression.eval(null);
             if (result == null) {

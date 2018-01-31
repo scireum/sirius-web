@@ -138,7 +138,7 @@ public class ExcelExport {
          */
         protected int getPOIWidth() {
             int widthUnits = EXCEL_COLUMN_WIDTH_FACTOR * (colWidthInPixel / UNIT_OFFSET_ARRAY.length);
-            widthUnits += UNIT_OFFSET_ARRAY[(colWidthInPixel % UNIT_OFFSET_ARRAY.length)];
+            widthUnits += UNIT_OFFSET_ARRAY[colWidthInPixel % UNIT_OFFSET_ARRAY.length];
             return widthUnits;
         }
 
@@ -328,7 +328,7 @@ public class ExcelExport {
         }
     }
 
-    public void autosizeColumns() {
+    private void autosizeColumns() {
         for (short col = 0; col < maxCols; col++) {
             // Don't distort images
             if (!pictureCols.contains(col)) {

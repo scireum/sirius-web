@@ -1,13 +1,19 @@
 <i:arg type="String" name="titleKey" default="" />
 <i:arg type="String" name="title" default="@i18n(titleKey)" />
+<i:arg type="String" name="color" default="" />
 
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Provides an info box to output name/value pairs in a sidebar" />
 
-<div class="well">
-    <i:if test="isFilled(title)">
-        <span class="legend">@title</span>
-    </i:if>
+<div class="infobox">
+    <div class="well" style="">
+        <i:if test="isFilled(color)">
+            <div class="well-colorbox" style="background-color: @color">&nbsp;</div>
+        </i:if>
+        <i:if test="isFilled(title)">
+            <span class="legend">@title</span>
+        </i:if>
 
-    <i:render name="body" />
+        <i:render name="body" />
+    </div>
 </div>

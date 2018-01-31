@@ -66,7 +66,6 @@ public class IPRange {
      */
     public static final IPRange IPV6_LOCALHOST = IPRange.parseRange("0:0:0:0:0:0:0:1");
 
-
     /**
      * Parses a CIDR expression and returns an <tt>IPRange</tt>
      *

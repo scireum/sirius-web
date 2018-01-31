@@ -110,7 +110,7 @@ public class HelpDispatcher implements WebDispatcher {
         return true;
     }
 
-    public void setupLang(String lang) {
+    private void setupLang(String lang) {
         if (LANG_PATTERN.matcher(lang).matches() && helpSystemLanguageDirectories.contains(lang)) {
             CallContext.getCurrent().setLang(lang);
         }

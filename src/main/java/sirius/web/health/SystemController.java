@@ -19,7 +19,6 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Microtiming;
 import sirius.kernel.health.metrics.Metric;
-import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.health.metrics.Metrics;
 import sirius.kernel.nls.NLS;
 import sirius.web.controller.BasicController;
@@ -85,23 +84,15 @@ public class SystemController extends BasicController {
     }
 
     /**
-     * Sends the current node state for <tt>/system/monitor</tt>
+     * Determines if there is currently an ALARM present or not for: <tt>/system/monitor</tt>
+     * <p>
+     * Either reports OK or ERROR, if the cluster state is RED for at least two intervals (minutes).
      *
      * @param ctx the request being handled
      */
     @Routed("/system/monitor")
     public void monitorNode(WebContext ctx) {
-        ctx.respondWith().direct(HttpResponseStatus.OK, cluster.getNodeState() == MetricState.RED ? "ERROR" : "OK");
-    }
-
-    /**
-     * Sends the current cluster state for <tt>/system/monitor/cluster</tt>
-     *
-     * @param ctx the request being handled
-     */
-    @Routed("/system/monitor/cluster")
-    public void monitorCluster(WebContext ctx) {
-        ctx.respondWith().direct(HttpResponseStatus.OK, cluster.getClusterState() == MetricState.RED ? "ERROR" : "OK");
+        ctx.respondWith().direct(HttpResponseStatus.OK, cluster.isAlarmPresent() ? "ERROR" : "OK");
     }
 
     /**
