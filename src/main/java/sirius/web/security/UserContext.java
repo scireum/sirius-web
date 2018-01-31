@@ -15,8 +15,8 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
+import sirius.kernel.di.std.Parts;
 import sirius.kernel.health.Log;
-import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.nls.NLS;
 import sirius.web.controller.Message;
 import sirius.web.health.Cluster;
@@ -25,9 +25,9 @@ import sirius.web.http.WebContext;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Used to access the current user and scope.
@@ -57,17 +57,14 @@ public class UserContext implements SubContext {
      */
     public static final Log LOG = Log.get("user");
 
-    /**
-     * Determines the permission required to be notified (see an error in the wondergem UI) when the system state goes
-     * to red.
-     */
-    public static final String PERMISSION_SYSTEM_NOTIFY_STATE = "permission-system-notify-state";
-
     @Part
     private static ScopeDetector detector;
 
     @Part
     private static Cluster cluster;
+
+    @Parts(MessageProvider.class)
+    private static Collection<MessageProvider> messageProviders;
 
     private UserInfo currentUser = null;
     private boolean fetchingCurrentUser = false;
@@ -234,12 +231,6 @@ public class UserContext implements SubContext {
             CallContext.getCurrent().addToMDC(MDC_USER_NAME, null);
         }
 
-        Message msg =
-                this.currentScope.tryAs(MaintenanceInfo.class).map(MaintenanceInfo::maintenanceMessage).orElse(null);
-        if (msg != null) {
-            addMessage(msg);
-        }
-
         CallContext.getCurrent().addToMDC(MDC_SCOPE, currentScope.getScopeId());
     }
 
@@ -291,21 +282,26 @@ public class UserContext implements SubContext {
     public List<Message> getMessages() {
         CallContext.getCurrent().get(WebContext.class).restoreCachedMessages();
 
-        if (cluster.getClusterState() == MetricState.RED
-            && getUser().hasPermission(PERMISSION_SYSTEM_NOTIFY_STATE)
-            && !Sirius.isStartedAsTest()) {
-            Message systemStateWarning = Message.error(Strings.apply("System state is %s (Cluster state is %s)",
-                                                                     cluster.getNodeState(),
-                                                                     cluster.getClusterState()))
-                                                .withAction("/system/state", "View System State");
-            if (msgList.isEmpty()) {
-                return Collections.singletonList(systemStateWarning);
-            } else {
-                List<Message> result = Lists.newArrayList(msgList);
-                result.add(0, systemStateWarning);
-                return result;
-            }
+        if (!Sirius.isStartedAsTest()) {
+            getScope().tryAs(MaintenanceInfo.class)
+                      .filter(info -> !info.isLocked())
+                      .map(MaintenanceInfo::maintenanceMessage)
+                      .filter(Objects::nonNull)
+                      .ifPresent(this::addMessage);
+            getScope().tryAs(MessageProvider.class).ifPresent(provider -> provider.addMessages(this::addMessage));
+            getUser().tryAs(MessageProvider.class).ifPresent(provider -> provider.addMessages(this::addMessage));
+            messageProviders.forEach(provider -> provider.addMessages(this::addMessage));
         }
+
+        return msgList;
+    }
+
+    /**
+     * Returns all user specific messages without any globally or locally generated ones.
+     *
+     * @return a list of "real" messages which were created while processing the current request
+     */
+    public List<Message> getUserSpecificMessages() {
         return msgList;
     }
 

@@ -804,7 +804,7 @@ public class WebContext implements SubContext {
             return;
         }
 
-        List<Message> messages = UserContext.get().getMessages();
+        List<Message> messages = UserContext.get().getUserSpecificMessages();
         if (messages.isEmpty()) {
             return;
         }
