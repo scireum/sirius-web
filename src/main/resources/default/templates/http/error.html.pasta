@@ -1,7 +1,7 @@
-<i:arg type="sirius.kernel.async.CallContext" name="ctx" />
+<i:arg type="sirius.kernel.async.CallContext" name="ctx"/>
 <i:arg type="String" name="message"/>
 <w:page title="@i18n('BasicController.error')">
-    <i:block name="breadcrumbBar" />
+    <i:block name="breadcrumbBar"/>
 
     <w:pageHeader>
         @i18n('BasicController.error')
@@ -22,7 +22,9 @@
         </ul>
     </div>
 
-    <a href="@wondergemRoot" class="btn">
-        <i class="fa fa-angle-double-left"></i> @i18n('BasicController.toDashboard')
-    </a>
+    <div class="form-actions">
+        <a href="@wondergemRoot" class="btn">
+            <i class="fa fa-angle-double-left"></i> @i18n('BasicController.toDashboard')
+        </a>
+    </div>
 </w:page>
