@@ -19,6 +19,7 @@ import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.nls.NLS;
+import sirius.kernel.xml.StructuredOutput;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 import sirius.web.security.Permissions;
@@ -115,6 +116,8 @@ public class ServiceDispatcher implements WebDispatcher {
         // and the user manager are guaranteed to be invoked one we enter the service code...
         UserInfo user = UserContext.getCurrentUser();
 
+        handleMaintenanceMode(call, serv);
+
         // If the underlying ScopeDetector made a redirect (for whatever reasons)
         // the response will be committed and we can (must) safely return...
         if (ctx.isResponseCommitted()) {
@@ -132,5 +135,19 @@ public class ServiceDispatcher implements WebDispatcher {
         ctx.enableTiming(null);
 
         call.invoke(serv);
+    }
+
+    private void handleMaintenanceMode(ServiceCall call, StructuredService serv) {
+        if (!serv.ignoresMaintenanceMode()
+            && UserContext.getCurrentScope()
+                          .is(sirius.web.security.MaintenanceInfo.class)
+            && UserContext.getCurrentScope().as(sirius.web.security.MaintenanceInfo.class).isLocked()) {
+            StructuredOutput out = call.createOutput();
+            out.beginResult();
+            out.property("success", false);
+            out.property("error", true);
+            out.property("message", NLS.get("template.html.maintenanceInfo"));
+            out.endResult();
+        }
     }
 }

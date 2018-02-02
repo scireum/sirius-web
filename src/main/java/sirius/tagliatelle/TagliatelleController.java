@@ -55,7 +55,7 @@ public class TagliatelleController implements Controller {
      *
      * @param ctx the request to process
      */
-    @Routed("/system/tags")
+    @Routed(value = "/system/tags", ignoresMaintenanceMode = true)
     @Permission(PERMISSION_SYSTEM_TAGS)
     public void overview(WebContext ctx) {
         Collection<Macro> macros = context.getParts(Macro.class);
@@ -82,7 +82,7 @@ public class TagliatelleController implements Controller {
      * @param ctx    the request to process
      * @throws Exception in case of an error while rendering the page
      */
-    @Routed("/system/tag/:1/:2")
+    @Routed(value = "/system/tag/:1/:2", ignoresMaintenanceMode = true)
     @Permission(PERMISSION_SYSTEM_TAGS)
     public void tagInfo(WebContext ctx, String tagLib, String tag) throws Exception {
         if ("i".equals(tagLib)) {
@@ -108,7 +108,7 @@ public class TagliatelleController implements Controller {
         }
     }
 
-    @Routed("/system/tags/state")
+    @Routed(value = "/system/tags/state", ignoresMaintenanceMode = true)
     @Permission(PERMISSION_SYSTEM_TAGS_STATE)
     public void tagState(WebContext ctx) {
         ctx.respondWith().template("templates/system/tags-state.html.pasta", tagliatelle.getCompiledTemplates());

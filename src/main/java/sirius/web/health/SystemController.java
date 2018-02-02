@@ -64,7 +64,7 @@ public class SystemController extends BasicController {
      */
     public static final String PERMISSION_SYSTEM_STATE = "permission-system-state";
 
-    @Routed("/system/console")
+    @Routed(value = "/system/console", ignoresMaintenanceMode = true)
     @Permission(PERMISSION_SYSTEM_CONSOLE)
     public void console(WebContext ctx) {
         ctx.respondWith().cached().template("templates/system/console.html.pasta");
@@ -77,7 +77,7 @@ public class SystemController extends BasicController {
      *
      * @param ctx the request being handled
      */
-    @Routed("/system/ok")
+    @Routed(value = "/system/ok", ignoresMaintenanceMode = true)
     public void ok(WebContext ctx) {
         ctx.respondWith().direct(HttpResponseStatus.OK, "OK");
     }
@@ -89,7 +89,7 @@ public class SystemController extends BasicController {
      *
      * @param ctx the request being handled
      */
-    @Routed("/system/monitor")
+    @Routed(value = "/system/monitor", ignoresMaintenanceMode = true)
     public void monitorNode(WebContext ctx) {
         ctx.respondWith().direct(HttpResponseStatus.OK, cluster.isAlarmPresent() ? "ERROR" : "OK");
     }
@@ -100,7 +100,7 @@ public class SystemController extends BasicController {
      * @param ctx the request being handled
      * @param key the name of the metric to fetch
      */
-    @Routed("/system/metric/:1")
+    @Routed(value = "/system/metric/:1", ignoresMaintenanceMode = true)
     public void metric(WebContext ctx, String key) {
         for (Metric m : metrics.getMetrics()) {
             if (Strings.areEqual(key, m.getName())) {
@@ -116,7 +116,7 @@ public class SystemController extends BasicController {
      *
      * @param ctx the current request
      */
-    @Routed("/system/fail")
+    @Routed(value = "/system/fail", ignoresMaintenanceMode = true)
     public void fail(WebContext ctx) {
         throw Exceptions.createHandled().withSystemErrorMessage("Forced Exception").handle();
     }
@@ -128,7 +128,7 @@ public class SystemController extends BasicController {
      *
      * @param ctx the current request
      */
-    @Routed("/system/info")
+    @Routed(value = "/system/info", ignoresMaintenanceMode = true)
     public void info(WebContext ctx) {
         ctx.respondWith().template("templates/system/info.html.pasta");
     }
@@ -140,7 +140,7 @@ public class SystemController extends BasicController {
      *
      * @param ctx the current request
      */
-    @Routed("/system/reset")
+    @Routed(value = "/system/reset", ignoresMaintenanceMode = true)
     public void reset(WebContext ctx) {
         ctx.clearSession();
         ctx.respondWith().direct(HttpResponseStatus.OK, "Session has been cleared...");
@@ -151,7 +151,7 @@ public class SystemController extends BasicController {
      *
      * @param ctx the current request
      */
-    @Routed("/system/state")
+    @Routed(value = "/system/state", ignoresMaintenanceMode = true)
     @Permission(PERMISSION_SYSTEM_STATE)
     public void state(WebContext ctx) {
         ctx.respondWith()
@@ -167,7 +167,7 @@ public class SystemController extends BasicController {
      *
      * @param ctx the current request
      */
-    @Routed("/system/timing")
+    @Routed(value = "/system/timing", ignoresMaintenanceMode = true)
     @Permission(PERMISSION_SYSTEM_TIMING)
     public void timing(WebContext ctx) {
         if (ctx.hasParameter("enable")) {

@@ -1,6 +1,5 @@
 <i:arg type="String" name="titleKey" default=""/>
 <i:arg type="String" name="title" default="@i18n(titleKey)"/>
-<i:arg type="boolean" name="ignoreDisasteMode" default="false"/>
 
 <i:pragma name="inline" value="true"/>
 <i:pragma name="description" value="Provides the base layout for a Wondergem page"/>
@@ -34,29 +33,24 @@
 </i:render>
 
 <div class="wrap">
-    <i:if test="!ignoreDisasteMode && user.getCurrentScope().is(sirius.web.security.MaintenanceInfo.class) && user.getCurrentScope().as(sirius.web.security.MaintenanceInfo.class).isLocked()">
-        <i:invoke template="/templates/wondergem/page-disaster.html.pasta"/>
-        <i:else>
-            <i:render name="header"/>
+    <i:render name="header"/>
 
-            <div id="mainContainer" class="container">
+    <div id="mainContainer" class="container">
 
-                <i:render name="aboveMessages"/>
+        <i:render name="aboveMessages"/>
 
-                <i:render name="breadcrumbBar">
-                    <i:invoke template="/templates/wondergem/page-breadcrumbs.html.pasta" inline="true">
-                        <i:render name="breadcrumbs"/>
-                    </i:invoke>
-                </i:render>
+        <i:render name="breadcrumbBar">
+            <i:invoke template="/templates/wondergem/page-breadcrumbs.html.pasta" inline="true">
+                <i:render name="breadcrumbs"/>
+            </i:invoke>
+        </i:render>
 
-                <i:render name="messages">
-                    <i:invoke template="/templates/wondergem/page-messages.html.pasta" inline="true"/>
-                </i:render>
+        <i:render name="messages">
+            <i:invoke template="/templates/wondergem/page-messages.html.pasta" inline="true"/>
+        </i:render>
 
-                <i:render name="body"/>
-            </div>
-        </i:else>
-    </i:if>
+        <i:render name="body"/>
+    </div>
 </div>
 
 

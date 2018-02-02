@@ -53,6 +53,7 @@ public class Route {
     private Controller controller;
     private boolean preDispatchable;
     private boolean jsonCall;
+    private boolean ignoresMaintenanceMode;
     private Set<String> permissions = null;
 
     /**
@@ -71,6 +72,7 @@ public class Route {
         result.label = result.uri + " -> " + method.getDeclaringClass().getName() + "#" + method.getName();
         result.jsonCall = routed.jsonCall();
         result.preDispatchable = routed.preDispatchable();
+        result.ignoresMaintenanceMode = routed.ignoresMaintenanceMode();
         result.format = routed.value();
         result.permissions = Permissions.computePermissionsFromAnnotations(method);
         List<Class<?>> parameterTypes = Lists.newArrayList(Arrays.asList(method.getParameterTypes()));
@@ -297,6 +299,10 @@ public class Route {
      */
     protected boolean isJSONCall() {
         return jsonCall;
+    }
+
+    protected boolean isIgnoresMaintenanceMode() {
+        return ignoresMaintenanceMode;
     }
 
     /**

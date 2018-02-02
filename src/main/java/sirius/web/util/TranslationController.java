@@ -37,7 +37,7 @@ public class TranslationController extends BasicController {
      * @param ctx    the request being handled
      * @param filter the filter for the translation keys
      */
-    @Routed("/babelfish/export/:1")
+    @Routed(value = "/babelfish/export/:1", ignoresMaintenanceMode = true)
     @Permission(PERMISSION_BABELFISH)
     public void export(WebContext ctx, String filter) {
         ExcelExport excelExport = new ExcelExport();
@@ -61,7 +61,7 @@ public class TranslationController extends BasicController {
      *
      * @param ctx the request being handled
      */
-    @Routed(priority = 99, value = "/babelfish/export/all")
+    @Routed(priority = 99, value = "/babelfish/export/all", ignoresMaintenanceMode = true)
     @Permission(PERMISSION_BABELFISH)
     public void export(WebContext ctx) {
         export(ctx, null);

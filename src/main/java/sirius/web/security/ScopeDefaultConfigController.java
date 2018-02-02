@@ -37,7 +37,7 @@ public class ScopeDefaultConfigController extends BasicController {
      */
     @DefaultRoute
     @Permission(PERMISSION_VIEW_SCOPE_DEFAULT_CONFIG)
-    @Routed("/system/scope-config")
+    @Routed(value = "/system/scope-config", ignoresMaintenanceMode = true)
     public void defaultConfig(WebContext ctx) {
         List<String> files = ScopeInfo.getDefaultScopeConfigFiles();
         if (files.isEmpty()) {
@@ -54,10 +54,13 @@ public class ScopeDefaultConfigController extends BasicController {
      * @param name the name of the config file
      */
     @Permission(PERMISSION_VIEW_SCOPE_DEFAULT_CONFIG)
-    @Routed("/system/scope-config/:1")
+    @Routed(value = "/system/scope-config/:1", ignoresMaintenanceMode = true)
     public void config(WebContext ctx, String name) {
         List<String> files = ScopeInfo.getDefaultScopeConfigFiles();
         ctx.respondWith()
-           .template("templates/system/scope-config.html.pasta", name, files, ScopeInfo.getDefaulScopeConfigContents(name));
+           .template("templates/system/scope-config.html.pasta",
+                     name,
+                     files,
+                     ScopeInfo.getDefaulScopeConfigContents(name));
     }
 }

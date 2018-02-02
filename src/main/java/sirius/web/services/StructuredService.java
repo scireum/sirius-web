@@ -33,4 +33,8 @@ public interface StructuredService {
      * @throws Exception in case of an error. An appropriate result will be generated in the selected format.
      */
     void call(ServiceCall call, StructuredOutput out) throws Exception;
+
+    default boolean ignoresMaintenanceMode() {
+        return false;
+    }
 }

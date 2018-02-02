@@ -75,7 +75,7 @@ public class ManagedTasksController extends BasicController {
      * @param ctx the request being handled
      */
     @LoginRequired
-    @Routed("/system/tasks")
+    @Routed(value = "/system/tasks", ignoresMaintenanceMode = true)
     public void tasks(WebContext ctx) {
         ctx.respondWith().template("templates/system/tasks.html.pasta");
     }
@@ -87,7 +87,7 @@ public class ManagedTasksController extends BasicController {
      * @param json the JSON response being generated
      */
     @LoginRequired
-    @Routed(value = "/system/api/tasks", jsonCall = true)
+    @Routed(value = "/system/api/tasks", jsonCall = true, ignoresMaintenanceMode = true)
     public void tasksAPI(WebContext ctx, JSONStructuredOutput json) {
         json.beginArray("tasks");
         for (ManagedTask task : managedTasks.getActiveTasks()) {
@@ -112,7 +112,7 @@ public class ManagedTasksController extends BasicController {
      * @param ctx    the request being handled
      * @param taskId the id of the task to be shown
      */
-    @Routed("/system/task/:1")
+    @Routed(value = "/system/task/:1", ignoresMaintenanceMode = true)
     @LoginRequired
     public void task(WebContext ctx, String taskId) {
         ctx.respondWith().template("templates/system/task.html.pasta", taskId);
@@ -125,7 +125,7 @@ public class ManagedTasksController extends BasicController {
      * @param json   the JSON response being generated
      * @param taskId the id of the task to be shown
      */
-    @Routed(value = "/system/task/:1/api/info", jsonCall = true)
+    @Routed(value = "/system/task/:1/api/info", jsonCall = true, ignoresMaintenanceMode = true)
     @LoginRequired
     public void taskInfo(WebContext ctx, JSONStructuredOutput json, String taskId) {
         ManagedTask task = managedTasks.findTask(taskId);
@@ -163,7 +163,8 @@ public class ManagedTasksController extends BasicController {
             if (task.getLastLogs().isEmpty()) {
                 json.property(RESPONSE_LAST_LOG, 0);
             } else {
-                json.property(RESPONSE_LAST_LOG, task.getLastLogs().get(task.getLastLogs().size() - 1).getTod().toEpochMilli());
+                json.property(RESPONSE_LAST_LOG,
+                              task.getLastLogs().get(task.getLastLogs().size() - 1).getTod().toEpochMilli());
             }
         }
     }
@@ -176,7 +177,7 @@ public class ManagedTasksController extends BasicController {
      * @param taskId the id of the task to be shown
      */
     @LoginRequired
-    @Routed(value = "/system/task/:1/api/cancel", jsonCall = true)
+    @Routed(value = "/system/task/:1/api/cancel", jsonCall = true, ignoresMaintenanceMode = true)
     public void taskCancel(WebContext ctx, JSONStructuredOutput json, String taskId) {
         ManagedTask task = managedTasks.findTask(taskId);
 
@@ -191,7 +192,7 @@ public class ManagedTasksController extends BasicController {
      * @param ctx the request being handled
      */
     @Permission(PERMISSION_SYSTEM_SCRIPTING)
-    @Routed("/system/scripting")
+    @Routed(value = "/system/scripting", ignoresMaintenanceMode = true)
     public void scripting(WebContext ctx) {
         ctx.respondWith().template("templates/system/scripting.html.pasta");
     }
@@ -203,7 +204,7 @@ public class ManagedTasksController extends BasicController {
      * @param json the response sent to the browser
      * @throws IOException in case of an io error
      */
-    @Routed(value = "/system/scripting/api/execute", jsonCall = true)
+    @Routed(value = "/system/scripting/api/execute", jsonCall = true, ignoresMaintenanceMode = true)
     @Permission(PERMISSION_SYSTEM_SCRIPTING)
     public void scriptingExecute(WebContext ctx, JSONStructuredOutput json) throws IOException {
         String scriptSource = CharStreams.toString(new InputStreamReader(ctx.getContent(), Charsets.UTF_8));
