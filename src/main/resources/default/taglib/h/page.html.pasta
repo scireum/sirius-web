@@ -9,7 +9,7 @@
 <i:pragma name="inline" value="true"/>
 <i:pragma name="description" value="Provides the base layout topic within the help system"/>
 
-<w:page title="@apply('%s - %s', title, i18n('help'))" ignoreDisasteMode="true">
+<w:page title="@apply('%s - %s', title, i18n('help'))">
 
     <i:block name="head">
         <script type="text/javascript" src="/assets/libs/prettify/run_prettify.js?skin=@prettifySkin"></script>

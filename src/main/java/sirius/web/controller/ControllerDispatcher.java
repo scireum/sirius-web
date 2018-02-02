@@ -157,6 +157,8 @@ public class ControllerDispatcher implements WebDispatcher {
             // and the user manager are guaranteed to be invoked one we enter the controller code...
             UserInfo user = UserContext.getCurrentUser();
 
+            handleMaintenanceMode(ctx, route);
+
             if (!checkCSRFTokenIfNecessary(ctx, route)) {
                 return;
             }
@@ -183,6 +185,25 @@ public class ControllerDispatcher implements WebDispatcher {
             handleFailure(ctx, route, ex);
         }
         ctx.enableTiming(route.toString());
+    }
+
+    private void handleMaintenanceMode(WebContext ctx, Route route) {
+        if (!route.isIgnoresMaintenanceMode()
+            && UserContext.getCurrentScope()
+                          .is(sirius.web.security.MaintenanceInfo.class)
+            && UserContext.getCurrentScope().as(sirius.web.security.MaintenanceInfo.class).isLocked()) {
+            if (route.isJSONCall()) {
+                JSONStructuredOutput out = ctx.respondWith().json();
+                out.beginResult();
+                out.property("success", false);
+                out.property("error", true);
+                out.property("message", NLS.get("template.html.maintenanceInfo"));
+                out.endResult();
+            } else {
+                ctx.respondWith()
+                   .template(HttpResponseStatus.SERVICE_UNAVAILABLE, "/templates/wondergem/page-disaster.html.pasta");
+            }
+        }
     }
 
     private boolean checkCSRFTokenIfNecessary(WebContext ctx, Route route) {

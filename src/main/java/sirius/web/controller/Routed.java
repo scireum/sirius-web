@@ -93,4 +93,6 @@ public @interface Routed {
      * @return <tt>true</tt> if the method is used to create a JSON response for an AJAX call, <tt>false</tt> otherwise
      */
     boolean jsonCall() default false;
+
+    boolean ignoresMaintenanceMode() default false;
 }
