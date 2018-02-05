@@ -10,21 +10,18 @@ package sirius.tagliatelle.macros;
 
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
-import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
-import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Optional;
 
 /**
- * Inlines a complete resource file into a JavaScript string.
+ * Escapes all line breakes and ' within the given string.
  */
 @Register
-public class InlineResourceMacro implements Macro {
+public class EscapeJSMacro implements Macro {
 
     @Part
     private static Resources resources;
@@ -36,20 +33,19 @@ public class InlineResourceMacro implements Macro {
 
     @Override
     public void verifyArguments(List<Expression> args) {
-        if (args.size() != 1 || !Tagliatelle.isAssignableTo(args.get(0).getType(), String.class)) {
-            throw new IllegalArgumentException("Expected a single String as argument.");
+        if (args.size() != 1) {
+            throw new IllegalArgumentException("Expected a single argument.");
         }
     }
 
     @Override
     public Object eval(LocalRenderContext ctx, Expression[] args) {
-        String path = (String) args[0].eval(ctx);
-        if (!path.startsWith("/assets")) {
-            throw new IllegalArgumentException("Only assets can be inlined for security reasons.");
+        Object value = args[0].eval(ctx);
+        if (value == null) {
+            return "";
         }
 
-        Optional<Resource> res = resources.resolve(path);
-        return res.map(r -> r.getContentAsString()).orElse("");
+        return value.toString().replaceAll("\\r?\\n", " ").replace("'", "\\'");
     }
 
     @Override
@@ -60,11 +56,11 @@ public class InlineResourceMacro implements Macro {
     @Nonnull
     @Override
     public String getName() {
-        return "inlineResource";
+        return "escapeJS";
     }
 
     @Override
     public String getDescription() {
-        return "Returns the contents of the given asset as string.";
+        return "Converts the given argument to an escaped JavaScript string by replacing linebreaks by blanks and ' by \\'";
     }
 }
