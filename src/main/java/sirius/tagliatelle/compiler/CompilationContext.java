@@ -31,6 +31,7 @@ import sirius.tagliatelle.emitter.PushLocalEmitter;
 import sirius.tagliatelle.expression.ConstantNull;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.expression.ExpressionVisitor;
+import sirius.tagliatelle.expression.MacroCall;
 import sirius.tagliatelle.expression.ReadLocal;
 import sirius.tagliatelle.tags.TagHandler;
 import sirius.tagliatelle.tags.TagHandlerFactory;
@@ -688,12 +689,16 @@ public class CompilationContext {
      * <p>
      * For complex blocks, we wrap them in an {@link InvokeTemplateEmitter}, simple (constant) ones don't need this
      * trick as we do not need to maintain the render stack as no render error can occur here.
+     * <p>
+     * We also give all {@link MacroCall macro calls} a chance to dereference their block usages.
      *
      * @param blocks the map of blocks available
      * @param copy   the copied template content
      * @return the template contant where all block references haven been replaced
      */
     private Emitter propagateBlocksForInline(Function<String, Emitter> blocks, Emitter copy) {
+        copy.visitExpressions(pos -> expr -> propagateBlockReferences(expr, blocks));
+
         return copy.propagateVisitor(e -> {
             if (e instanceof BlockEmitter) {
                 BlockEmitter blockEmitter = (BlockEmitter) e;
@@ -702,6 +707,18 @@ public class CompilationContext {
 
             return e;
         });
+    }
+
+    private Expression propagateBlockReferences(Expression expr, Function<String, Emitter> blocks) {
+        if (expr instanceof MacroCall) {
+            Function<String, InlineTemplateEmitter> blocksToInline =
+                    blocks.andThen(emitter -> new InlineTemplateEmitter(emitter.getStartOfBlock(),
+                                                                        getTemplate(),
+                                                                        emitter));
+            return ((MacroCall) expr).dereference(blocksToInline);
+        } else {
+            return expr;
+        }
     }
 
     /**
