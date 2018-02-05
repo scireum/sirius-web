@@ -32,7 +32,6 @@ public class GlobalRenderContext {
     protected StackAllocator stack = new StackAllocator();
     protected Tagliatelle engine;
     protected StringBuilder buffer;
-    protected StringBuilder currentBuffer;
     protected Map<String, String> extraBlocks;
     protected Function<String, String> escaper = GlobalRenderContext::escapeRAW;
 
@@ -46,7 +45,6 @@ public class GlobalRenderContext {
     public GlobalRenderContext(Tagliatelle engine) {
         this.engine = engine;
         this.buffer = new StringBuilder();
-        this.currentBuffer = buffer;
     }
 
     /**
@@ -89,7 +87,7 @@ public class GlobalRenderContext {
      */
     protected void outputRaw(String string) {
         if (string != null) {
-            currentBuffer.append(string);
+            buffer.append(string);
         }
     }
 
@@ -103,7 +101,7 @@ public class GlobalRenderContext {
      */
     protected void outputEscaped(String string) {
         if (string != null) {
-            currentBuffer.append(escaper.apply(string));
+            buffer.append(escaper.apply(string));
         }
     }
 
@@ -204,30 +202,41 @@ public class GlobalRenderContext {
     }
 
     /**
-     * Starts an extra buffer so that the subsequent contents can be stored into an extra block next to the main
-     * result.
-     * <p>
-     * Note that {@link #completeExtraBlock(String)} has to be called after this, otherwise the render context is in an
-     * inconsistent state.
+     * Emits everything with is invoked from within the callback into an unescaped string.
      *
-     * @see #getExtraBlock(String)
+     * @param callback     the callback which will invoke emitters.
+     * @param escaperToUse the effective escaper to use. As the final string will most probably be emitted again,
+     *                     {@link #escapeRAW(String)} is most probably the one to use.
+     * @return the contents which were emitted within the <tt>callback</tt>
      */
-    public void beginExtraBlock() {
-        this.currentBuffer = new StringBuilder();
+    public String emitToString(RenderCall callback, Function<String, String> escaperToUse) {
+        StringBuilder backupBuffer = this.buffer;
+        Function<String, String> backupEscaper = this.escaper;
+        this.buffer = new StringBuilder();
+        this.escaper = escaperToUse;
+
+        try {
+            callback.render();
+            return buffer.toString().trim();
+        } catch (Exception e) {
+            throw new IllegalArgumentException(e);
+        } finally {
+            this.escaper = backupEscaper;
+            this.buffer = backupBuffer;
+        }
     }
 
     /**
-     * Completes the rendering of an extra block and stores the content as extra block.
-     * <p>
-     * The main rendering buffer will be restored, so that subsequent emitters contribute to the main rendering result.
+     * Stores the rendering of an extra block.
      *
-     * @param name the name of the block to store
+     * @param name     the name of the block to store
+     * @param contents the contents to store
      */
-    public void completeExtraBlock(String name) {
+    public void storeExtraBlock(String name, String contents) {
         if (extraBlocks == null) {
             extraBlocks = new HashMap<>();
         }
-        extraBlocks.put(name, currentBuffer.toString());
-        this.currentBuffer = buffer;
+
+        extraBlocks.put(name, contents);
     }
 }

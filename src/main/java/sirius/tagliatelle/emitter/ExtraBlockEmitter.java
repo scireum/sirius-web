@@ -41,12 +41,9 @@ public class ExtraBlockEmitter extends Emitter {
 
     @Override
     protected void emitToContext(@Nonnull LocalRenderContext context) throws Exception {
-        context.getGlobalContext().beginExtraBlock();
-        try {
+        context.getGlobalContext().storeExtraBlock(name, context.getGlobalContext().emitToString(() -> {
             body.emit(context);
-        } finally {
-            context.getGlobalContext().completeExtraBlock(name);
-        }
+        }, context.getGlobalContext().getEscaper()));
     }
 
     @Nonnull
