@@ -112,8 +112,8 @@ public class LocalRenderContext {
      * Adds unescaped output to the result buffer.
      *
      * @param content the string to output
-     * @see LocalRenderContext#outputRaw(String)
      * @throws IOException in case of an IO error
+     * @see LocalRenderContext#outputRaw(String)
      */
     @SuppressWarnings("squid:RedundantThrowsDeclarationCheck")
     @Explain("Sublclasses might throw an IOException here.")
@@ -127,8 +127,8 @@ public class LocalRenderContext {
      * Utilizes the current {@link GlobalRenderContext#escaper} to escape the given string.
      *
      * @param content the string to output
-     * @see LocalRenderContext#outputEscaped(String) (String)
      * @throws IOException in case of an IO error
+     * @see LocalRenderContext#outputEscaped(String) (String)
      */
     @SuppressWarnings("squid:RedundantThrowsDeclarationCheck")
     @Explain("Sublclasses might throw an IOException here.")

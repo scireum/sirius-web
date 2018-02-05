@@ -37,7 +37,7 @@ public class InlineTemplateEmitter extends Emitter {
     public InlineTemplateEmitter(Position startOfBlock, Template template, Emitter body) {
         super(startOfBlock);
         this.template = template;
-        this.body = body;
+        this.body = body == null ? ConstantEmitter.EMPTY : body;
     }
 
     @Override
