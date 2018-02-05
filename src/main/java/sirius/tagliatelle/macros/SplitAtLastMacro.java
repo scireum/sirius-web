@@ -36,7 +36,7 @@ public class SplitAtLastMacro implements Macro {
         if (args.size() != 2
             || !Tagliatelle.isAssignableTo(args.get(0).getType(), String.class)
             || !Tagliatelle.isAssignableTo(args.get(1).getType(), String.class)) {
-            throw new IllegalArgumentException("Expect two strings as arguments.");
+            throw new IllegalArgumentException("Expected two strings as arguments.");
         }
     }
 
