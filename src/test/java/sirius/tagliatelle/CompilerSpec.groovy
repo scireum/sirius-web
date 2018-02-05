@@ -149,6 +149,24 @@ class CompilerSpec extends BaseSpecification {
         basicallyEqual(result, expectedResult)
     }
 
+    def "renderToString works"() {
+        given:
+        String expectedResult = resources.resolve("templates/render-to-string.html").get().getContentAsString()
+        when:
+        String result = tagliatelle.resolve("templates/render-to-string.html.pasta").get().renderToString()
+        then:
+        basicallyEqual(result, expectedResult)
+    }
+
+    def "define and xml and json macros works"() {
+        given:
+        String expectedResult = resources.resolve("templates/define.html").get().getContentAsString()
+        when:
+        String result = tagliatelle.resolve("templates/define.html.pasta").get().renderToString()
+        then:
+        basicallyEqual(result, expectedResult)
+    }
+
     def "missing tag detection works"() {
         when:
         List<CompileError> errors = null
