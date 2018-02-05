@@ -285,7 +285,7 @@
             },
 
             show: function () {
-                if (this.rows.length > 0) {
+                if (this.rows.length > 0 && input.element.is(":focus")) {
                     completions.selectedRow = undefined;
                     this.update();
                     completions.element.show();
@@ -605,6 +605,26 @@
 
             rePosition: function () {
                 return completions.rePosition();
+            },
+
+            /**
+             * Getter for the currently selected row.
+             *
+             * A selected row is a row of the suggested completions. It is selected by the arrow keys on the keyboard
+             * or by hovering over the row with the mouse pointer.
+             *
+             * If no completions are shown no row can be selected and the return value is undefined.
+             * @@returns jquery object representing the selected row or undefined if non is selected
+             */
+            getCurrentSelection: function () {
+                return this.isVisible() ? completions.selectedRow : undefined;
+            },
+
+            /**
+             * Hides the suggested completions.
+             */
+            hide: function(){
+                completions.hideImmediate();
             }
         };
     });
