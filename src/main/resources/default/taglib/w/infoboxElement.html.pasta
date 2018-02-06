@@ -1,34 +1,26 @@
 <i:arg type="String" name="labelKey" default="" />
 <i:arg type="String" name="label" default="@i18n(labelKey)" />
 <i:arg type="Object" name="value" default="" />
+<i:arg type="Object" name="effectiveValue" default="value | renderToString('body')" />
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Provides a line (key / value pair) within an infobox" />
 
-<i:if test="isFilled(value)">
+<i:if test="isFilled(effectiveValue)">
     <div class="row info-line">
-        <div class="col-md-4 name">
-            @label
-        </div>
-        <div class="col-md-8 value word-wrap">
+        <i:if test="isFilled(label)">
+            <div class="col-md-4 name">
+                @label
+            </div>
+        </i:if>
+        <div class="@if (isFilled(label)) { col-md-8 value } else { col-md-12 } word-wrap">
             <div>
-                @toUserString(value)
+                <i:if test="isFilled(value)">
+                    @toUserString(value)
+                    <i:else>
+                        <i:raw>@effectiveValue</i:raw>
+                    </i:else>
+                </i:if>
             </div>
         </div>
     </div>
-    <i:else>
-        <i:local name="bodyValue" value="@renderToString('body')" />
-        <i:if test="isFilled(bodyValue)">
-            <div class="row info-line">
-                <div class="col-md-4 name">
-                    @label
-                </div>
-                <div class="col-md-8 value word-wrap">
-                    <div>
-                        <i:raw>@bodyValue</i:raw>
-                    </div>
-                </div>
-            </div>
-        </i:if>
-    </i:else>
 </i:if>
-
