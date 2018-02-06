@@ -11,11 +11,14 @@ package sirius.tagliatelle.expression;
 import parsii.tokenizer.Position;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
+import sirius.tagliatelle.Template;
 import sirius.tagliatelle.compiler.CompilationContext;
+import sirius.tagliatelle.emitter.Emitter;
 import sirius.tagliatelle.macros.Macro;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
 import java.util.Arrays;
+import java.util.function.Function;
 
 /**
  * Invokes a {@link Macro} at runtime.
@@ -117,8 +120,8 @@ public class MacroCall extends Call {
     /**
      * Actually tells the macro to try to resolve an appropriate {@link Macro} to invoke.
      *
-     * @param position   the current position, used for error reports
-     * @param context    the compilation context
+     * @param position  the current position, used for error reports
+     * @param context   the compilation context
      * @param macroName the name of the macro
      */
     public void bind(Position position, CompilationContext context, String macroName) {
@@ -142,5 +145,23 @@ public class MacroCall extends Call {
         if (macro != null) {
             macro.verifyArguments(Arrays.asList(parameterExpressions));
         }
+    }
+
+    /**
+     * Transforms all macros that access blocks of the {@link LocalRenderContext} into alternative expressions.
+     *
+     * @param template the template for which the blocks are dereferenced
+     * @param blocks   the provider to resolve a block name into an {@link sirius.tagliatelle.emitter.Emitter}
+     * @return the replacement expression for the macro call
+     */
+    public Expression dereference(Template template, Function<String, Emitter> blocks) {
+        if (macro != null) {
+            Expression dereferenced = macro.dereference(template, blocks, parameterExpressions);
+            if (dereferenced != null) {
+                return dereferenced;
+            }
+        }
+        
+        return this;
     }
 }

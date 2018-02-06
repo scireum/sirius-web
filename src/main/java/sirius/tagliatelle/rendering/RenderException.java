@@ -39,6 +39,10 @@ public class RenderException extends Exception {
             return (RenderException) ex;
         }
 
+        if (ex.getCause() instanceof RenderException) {
+            return (RenderException)ex.getCause();
+        }
+
         String renderStack = Strings.apply("%nRender Stack:%n------------%n%s%n", context.toString());
         if (ex instanceof CompileException || ex instanceof HandledException) {
             return new RenderException(Strings.apply("%s%s", ex.getMessage(), renderStack), ex);

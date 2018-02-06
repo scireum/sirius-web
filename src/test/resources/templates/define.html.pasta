@@ -1,0 +1,8 @@
+<i:define name="test">
+    <hello attr="Test">This is a test</hello>
+</i:define>
+<i:define name="test2">
+    { doesWork: 'Yesss' }
+</i:define>
+_@xml(test).queryString('@attr')_
+_@json(test2).getString('doesWork')_

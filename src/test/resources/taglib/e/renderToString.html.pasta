@@ -1,0 +1,2 @@
+<i:pragma name="inline" value="true" />
+X@renderToString('body')X

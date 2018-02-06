@@ -8,30 +8,25 @@
 
 package sirius.tagliatelle.macros;
 
-import sirius.kernel.di.std.Part;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
-import sirius.web.resources.Resource;
-import sirius.web.resources.Resources;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Optional;
 
 /**
- * Inlines a complete resource file into a JavaScript string.
+ * Parses the given JSON string into a {@link com.alibaba.fastjson.JSONObject}.
  */
 @Register
-public class InlineResourceMacro implements Macro {
-
-    @Part
-    private static Resources resources;
+public class JSONMacro implements Macro {
 
     @Override
     public Class<?> getType() {
-        return String.class;
+        return JSONObject.class;
     }
 
     @Override
@@ -43,13 +38,12 @@ public class InlineResourceMacro implements Macro {
 
     @Override
     public Object eval(LocalRenderContext ctx, Expression[] args) {
-        String path = (String) args[0].eval(ctx);
-        if (!path.startsWith("/assets")) {
-            throw new IllegalArgumentException("Only assets can be inlined for security reasons.");
+        try {
+            String jsonString = (String) args[0].eval(ctx);
+            return JSON.parseObject(jsonString);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid json: " + e.getMessage(), e);
         }
-
-        Optional<Resource> res = resources.resolve(path);
-        return res.map(r -> r.getContentAsString()).orElse("");
     }
 
     @Override
@@ -57,14 +51,14 @@ public class InlineResourceMacro implements Macro {
         return true;
     }
 
+    @Override
+    public String getDescription() {
+        return "Parses the given JSON string into a JSONObject";
+    }
+
     @Nonnull
     @Override
     public String getName() {
-        return "inlineResource";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Returns the contents of the given asset as string.";
+        return "json";
     }
 }
