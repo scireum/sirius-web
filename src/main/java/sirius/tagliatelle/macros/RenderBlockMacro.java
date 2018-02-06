@@ -10,10 +10,13 @@ package sirius.tagliatelle.macros;
 
 import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.Tagliatelle;
+import sirius.tagliatelle.Template;
+import sirius.tagliatelle.emitter.ConstantEmitter;
+import sirius.tagliatelle.emitter.Emitter;
 import sirius.tagliatelle.emitter.InlineTemplateEmitter;
+import sirius.tagliatelle.expression.ConstantString;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.expression.RenderEmitterExpression;
-import sirius.tagliatelle.rendering.GlobalRenderContext;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
 import javax.annotation.Nonnull;
@@ -43,7 +46,7 @@ public class RenderBlockMacro implements Macro {
     public Object eval(LocalRenderContext ctx, Expression[] args) {
         return ctx.getGlobalContext().emitToString(() -> {
             ctx.emitBlock((String) args[0].eval(null));
-        }, GlobalRenderContext::escapeRAW);
+        });
     }
 
     @Override
@@ -63,7 +66,18 @@ public class RenderBlockMacro implements Macro {
     }
 
     @Override
-    public Expression dereference(Function<String, InlineTemplateEmitter> blocks, Expression[] args) {
-        return new RenderEmitterExpression(blocks.apply((String) args[0].eval(null)));
+    public Expression dereference(Template template, Function<String, Emitter> blocks, Expression[] args) {
+        Emitter blockEmitter = blocks.apply((String) args[0].eval(null));
+        if (blockEmitter == null) {
+            return ConstantString.EMPTY_STRING;
+        }
+
+        if (blockEmitter instanceof ConstantEmitter) {
+            return new ConstantString(((ConstantEmitter) blockEmitter).getValue().trim());
+        }
+
+        return new RenderEmitterExpression(new InlineTemplateEmitter(blockEmitter.getStartOfBlock(),
+                                                                     template,
+                                                                     blockEmitter));
     }
 }

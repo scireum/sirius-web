@@ -4,4 +4,4 @@
 <i:if test="isFilled(contents)">
     <li class="divider"></li>
 </i:if>
-@contents
+<i:raw>@contents</i:raw>

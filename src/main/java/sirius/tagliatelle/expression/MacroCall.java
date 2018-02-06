@@ -11,8 +11,9 @@ package sirius.tagliatelle.expression;
 import parsii.tokenizer.Position;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
+import sirius.tagliatelle.Template;
 import sirius.tagliatelle.compiler.CompilationContext;
-import sirius.tagliatelle.emitter.InlineTemplateEmitter;
+import sirius.tagliatelle.emitter.Emitter;
 import sirius.tagliatelle.macros.Macro;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
@@ -149,16 +150,18 @@ public class MacroCall extends Call {
     /**
      * Transforms all macros that access blocks of the {@link LocalRenderContext} into alternative expressions.
      *
-     * @param blocks the provider to resolve a block name into an {@link sirius.tagliatelle.emitter.Emitter}
+     * @param template the template for which the blocks are dereferenced
+     * @param blocks   the provider to resolve a block name into an {@link sirius.tagliatelle.emitter.Emitter}
      * @return the replacement expression for the macro call
      */
-    public Expression dereference(Function<String, InlineTemplateEmitter> blocks) {
+    public Expression dereference(Template template, Function<String, Emitter> blocks) {
         if (macro != null) {
-            Expression dereferenced = macro.dereference(blocks, parameterExpressions);
+            Expression dereferenced = macro.dereference(template, blocks, parameterExpressions);
             if (dereferenced != null) {
                 return dereferenced;
             }
         }
+        
         return this;
     }
 }

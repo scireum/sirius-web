@@ -11,7 +11,6 @@ package sirius.tagliatelle.expression;
 import sirius.tagliatelle.emitter.ConstantEmitter;
 import sirius.tagliatelle.emitter.Emitter;
 import sirius.tagliatelle.emitter.InlineTemplateEmitter;
-import sirius.tagliatelle.rendering.GlobalRenderContext;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
 /**
@@ -31,7 +30,7 @@ public class RenderEmitterExpression implements Expression {
     public Object eval(LocalRenderContext ctx) {
         return ctx.getGlobalContext().emitToString(() -> {
             emitter.emit(ctx);
-        }, GlobalRenderContext::escapeRAW);
+        });
     }
 
     @Override

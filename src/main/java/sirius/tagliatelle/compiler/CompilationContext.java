@@ -461,7 +461,7 @@ public class CompilationContext {
             ensureValidReadLocals(copy);
         }
 
-        copy = propagateBlocksForInline(blocks, copy);
+        copy = propagateBlocksForInline(template, blocks, copy);
 
         copy = copy.reduce();
 
@@ -696,8 +696,8 @@ public class CompilationContext {
      * @param copy   the copied template content
      * @return the template contant where all block references haven been replaced
      */
-    private Emitter propagateBlocksForInline(Function<String, Emitter> blocks, Emitter copy) {
-        copy.visitExpressions(pos -> expr -> propagateBlockReferences(expr, blocks));
+    private Emitter propagateBlocksForInline(Template template, Function<String, Emitter> blocks, Emitter copy) {
+        copy.visitExpressions(pos -> expr -> propagateBlockReferences(template, expr, blocks));
 
         return copy.propagateVisitor(e -> {
             if (e instanceof BlockEmitter) {
@@ -709,13 +709,9 @@ public class CompilationContext {
         });
     }
 
-    private Expression propagateBlockReferences(Expression expr, Function<String, Emitter> blocks) {
+    private Expression propagateBlockReferences(Template template, Expression expr, Function<String, Emitter> blocks) {
         if (expr instanceof MacroCall) {
-            Function<String, InlineTemplateEmitter> blocksToInline =
-                    blocks.andThen(emitter -> new InlineTemplateEmitter(emitter.getStartOfBlock(),
-                                                                        getTemplate(),
-                                                                        emitter));
-            return ((MacroCall) expr).dereference(blocksToInline);
+            return ((MacroCall) expr).dereference(template, blocks);
         } else {
             return expr;
         }

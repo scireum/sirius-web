@@ -205,15 +205,11 @@ public class GlobalRenderContext {
      * Emits everything which is invoked from within the callback into an unescaped string.
      *
      * @param callback     the callback which will invoke emitters.
-     * @param escaperToUse the effective escaper to use. As the final string will most probably be emitted again,
-     *                     {@link #escapeRAW(String)} is most probably the one to use.
      * @return the contents which were emitted within the <tt>callback</tt>
      */
-    public String emitToString(RenderCall callback, Function<String, String> escaperToUse) {
+    public String emitToString(RenderCall callback) {
         StringBuilder backupBuffer = this.buffer;
-        Function<String, String> backupEscaper = this.escaper;
         this.buffer = new StringBuilder();
-        this.escaper = escaperToUse;
 
         try {
             callback.render();
@@ -221,7 +217,6 @@ public class GlobalRenderContext {
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
         } finally {
-            this.escaper = backupEscaper;
             this.buffer = backupBuffer;
         }
     }

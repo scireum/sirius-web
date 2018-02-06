@@ -43,7 +43,7 @@ public class ExtraBlockEmitter extends Emitter {
     protected void emitToContext(@Nonnull LocalRenderContext context) throws Exception {
         context.getGlobalContext().storeExtraBlock(name, context.getGlobalContext().emitToString(() -> {
             body.emit(context);
-        }, context.getGlobalContext().getEscaper()));
+        }));
     }
 
     @Nonnull

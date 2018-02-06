@@ -1,7 +1,6 @@
 <i:arg type="String" name="labelKey" default="" />
 <i:arg type="String" name="label" default="@i18n(labelKey)" />
-<i:arg type="Object" name="value" default="@renderToString('body')" />
-
+<i:arg type="Object" name="value" default="" />
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Provides a line (key / value pair) within an infobox" />
 
@@ -16,4 +15,20 @@
             </div>
         </div>
     </div>
+    <i:else>
+        <i:local name="bodyValue" value="@renderToString('body')" />
+        <i:if test="isFilled(bodyValue)">
+            <div class="row info-line">
+                <div class="col-md-4 name">
+                    @label
+                </div>
+                <div class="col-md-8 value word-wrap">
+                    <div>
+                        <i:raw>@bodyValue</i:raw>
+                    </div>
+                </div>
+            </div>
+        </i:if>
+    </i:else>
 </i:if>
+
