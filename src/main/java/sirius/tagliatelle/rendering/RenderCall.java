@@ -8,10 +8,8 @@
 
 package sirius.tagliatelle.rendering;
 
-import java.util.function.Function;
-
 /**
- * Represents a simple callback used by {@link GlobalRenderContext#emitToString(RenderCall, Function)}.
+ * Represents a simple callback used by {@link GlobalRenderContext#emitToString(RenderCall)}.
  * <p>
  * This is essentially {@link Runnable} with the addition of {@link RenderException} as exception.
  */
@@ -23,5 +21,4 @@ public interface RenderCall {
      * @throws RenderException in case of an exception while rendering
      */
     void render() throws RenderException;
-
 }
