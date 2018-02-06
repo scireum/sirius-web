@@ -1,6 +1,5 @@
 <i:pragma name="inline" value="true" />
-<i:pragma name="description" value="Renders renders the menu items within its body and places a divider above if at least one menu item is visible." />
-
+<i:pragma name="description" value="Renders the menu items within its body and places a divider above if at least one menu item is visible." />
 <i:local name="contents" value="@renderToString('body')" />
 <i:if test="isFilled(contents)">
     <li class="divider"></li>

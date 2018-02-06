@@ -202,7 +202,7 @@ public class GlobalRenderContext {
     }
 
     /**
-     * Emits everything with is invoked from within the callback into an unescaped string.
+     * Emits everything which is invoked from within the callback into an unescaped string.
      *
      * @param callback     the callback which will invoke emitters.
      * @param escaperToUse the effective escaper to use. As the final string will most probably be emitted again,
