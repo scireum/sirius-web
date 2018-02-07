@@ -213,9 +213,9 @@
                 this.element = $(Mustache.render(wrapper, config));
                 this.rePosition();
 
-                this.element.click(function (element) {
-                    completions.select($(element.target));
 
+                this.element.on("mouseup.sirius-autocomplete", ".autocomplete-row-js", function () {
+                    completions.select($(this));
                     completions.hideImmediate();
                 });
 
