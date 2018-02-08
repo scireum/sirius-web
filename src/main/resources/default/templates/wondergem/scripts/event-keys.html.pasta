@@ -91,14 +91,14 @@
              * @@return object of pressed key
              */
             registerMultipleKeyListener: function ($element) {
-                $element.keydown(function (e) {
+                $element.on("keydown.sirius-keys", function (e) {
                     e = sirius.keys.browserFixes(e);
 
                     pressedKeys[e.keyCode] = true;
                     events.keyDown(e);
                 });
 
-                $element.keyup(function (e) {
+                $element.on("keyup.sirius-keys", function (e) {
                     e = sirius.keys.browserFixes(e);
 
                     pressedKeys[e.keyCode] = false;

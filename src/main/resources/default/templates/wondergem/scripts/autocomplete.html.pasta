@@ -82,8 +82,6 @@
             onNonInputKeys: function (event) {
                 if (event.keyCode === sirius.keys.KEY_ENTER || event.keyCode === sirius.keys.KEY_TAB) {
                     completions.select(completions.selectedRow);
-                    input.element.blur();
-                    completions.hide();
                     return true;
                 }
 
@@ -213,10 +211,9 @@
                 this.element = $(Mustache.render(wrapper, config));
                 this.rePosition();
 
-                this.element.click(function (element) {
-                    completions.select($(element.target));
 
-                    completions.hideImmediate();
+                this.element.on("mouseup.sirius-autocomplete", ".autocomplete-row-js", function () {
+                    completions.select($(this));
                 });
 
                 $("body").append(this.element);
@@ -378,25 +375,29 @@
              * Called if a row of the autocomplete is selected.
              *
              * Retrieves the actual row element associated with the selected $element
-             * and calls events.onSelect(selectedRow)
+             * and calls events.onSelect(selectedRow).
+             *
+             * Will call events.onSelect() if no valid current row was selected.
              *
              * @@param $element the element that was selected
              */
             select: function ($element) {
-                if ($element === undefined) {
-                    return;
+                var result = false;
+
+                if ($element) {
+                    var selectedElement = $element.closest(".autocomplete-row-js");
+                    if (selectedElement.length) {
+                        result = events.onSelect(selectedElement);
+                    } else {
+                        result = events.onSelect();
+                    }
+                } else {
+                    result = events.onSelect();
                 }
 
-                var selectedElement = $element.closest(".autocomplete-row-js");
-                if (!selectedElement.length) {
-                    // don't do anything if no element with the row class was found
-                    return;
-                }
-
-                if (events.onSelect(selectedElement) !== true) {
+                if (!result) {
                     completions.hideImmediate();
                 }
-
             }
         };
 
