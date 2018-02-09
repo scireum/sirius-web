@@ -46,6 +46,8 @@ public class MailSender {
     protected String receiverName;
     protected String subject;
     protected Context context;
+    protected String textTemplate;
+    protected String htmlTemplate;
     protected String text;
     protected String html;
     protected String type;
@@ -191,12 +193,10 @@ public class MailSender {
      * @param context  the context passed to the renderer
      * @return the builder itself
      */
-    public MailSender textTemplate(String template, Context context) {
-        return textContent(templates.generator()
-                                    .useTemplate(template)
-                                    .put("mailContext", this)
-                                    .applyContext(context)
-                                    .generate());
+    public MailSender textTemplate(String template, @Nonnull Context context) {
+        this.textTemplate = template;
+        this.context = context;
+        return this;
     }
 
     /**
@@ -217,12 +217,10 @@ public class MailSender {
      * @param context  the context passed to the renderer
      * @return the builder itself
      */
-    public MailSender htmlTemplate(String template, Context context) {
-        return htmlContent(templates.generator()
-                                    .useTemplate(template)
-                                    .put("mailContext", this)
-                                    .applyContext(context)
-                                    .generate());
+    public MailSender htmlTemplate(String template, @Nonnull Context context) {
+        this.htmlTemplate = template;
+        this.context = context;
+        return this;
     }
 
     /**
@@ -377,6 +375,7 @@ public class MailSender {
                 if (lang != null) {
                     CallContext.getCurrent().setLang(lang);
                 }
+                render();
                 sanitize();
                 check();
                 sendMailAsync(new SMTPConfiguration());
@@ -397,6 +396,23 @@ public class MailSender {
                             .to(Mails.LOG)
                             .error(e)
                             .handle();
+        }
+    }
+
+    private void render() {
+        if (Strings.isFilled(htmlTemplate)) {
+            htmlContent(templates.generator()
+                                 .useTemplate(htmlTemplate)
+                                 .put("mailContext", this)
+                                 .applyContext(context)
+                                 .generate());
+        }
+        if (Strings.isFilled(textTemplate)) {
+            textContent(templates.generator()
+                                 .useTemplate(textTemplate)
+                                 .put("mailContext", this)
+                                 .applyContext(context)
+                                 .generate());
         }
     }
 
