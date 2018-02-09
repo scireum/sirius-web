@@ -45,7 +45,8 @@ public class MailSender {
     protected String receiverEmail;
     protected String receiverName;
     protected String subject;
-    protected Context context;
+    protected Context textContext;
+    protected Context htmlContext;
     protected String textTemplate;
     protected String htmlTemplate;
     protected String text;
@@ -195,7 +196,7 @@ public class MailSender {
      */
     public MailSender textTemplate(String template, @Nonnull Context context) {
         this.textTemplate = template;
-        this.context = context;
+        this.textContext = context;
         return this;
     }
 
@@ -219,7 +220,7 @@ public class MailSender {
      */
     public MailSender htmlTemplate(String template, @Nonnull Context context) {
         this.htmlTemplate = template;
-        this.context = context;
+        this.htmlContext = context;
         return this;
     }
 
@@ -404,14 +405,14 @@ public class MailSender {
             htmlContent(templates.generator()
                                  .useTemplate(htmlTemplate)
                                  .put("mailContext", this)
-                                 .applyContext(context)
+                                 .applyContext(htmlContext)
                                  .generate());
         }
         if (Strings.isFilled(textTemplate)) {
             textContent(templates.generator()
                                  .useTemplate(textTemplate)
                                  .put("mailContext", this)
-                                 .applyContext(context)
+                                 .applyContext(textContext)
                                  .generate());
         }
     }

@@ -8,7 +8,6 @@
 
 package sirius.web.mails;
 
-import sirius.kernel.commons.Context;
 import sirius.kernel.di.Replace;
 import sirius.kernel.di.std.Register;
 
@@ -62,10 +61,6 @@ public class MailsMock extends Mails {
 
         public String getSubject() {
             return subject;
-        }
-
-        public Context getContext() {
-            return context;
         }
 
         public String getText() {
