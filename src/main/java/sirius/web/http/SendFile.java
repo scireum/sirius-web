@@ -118,7 +118,8 @@ class SendFile {
     private boolean sendFileResponse() throws IOException {
         HttpResponseStatus responseStatus = range != null ? HttpResponseStatus.PARTIAL_CONTENT : HttpResponseStatus.OK;
         HttpResponse res;
-        if (response.canBeCompressed(contentType)) {
+        if (response.canBeCompressed(contentType)
+            && expectedContentLength > SmartHttpContentCompressor.MIN_COMPRESSABLE_CONTENT_LENGTH) {
             res = response.createChunkedResponse(responseStatus, true);
         } else {
             res = response.createResponse(responseStatus, true);
