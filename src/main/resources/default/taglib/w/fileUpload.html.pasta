@@ -1,6 +1,7 @@
 <i:arg type="String" name="name" default="@('image-upload' + call.generateLocalId())" />
 <i:arg type="String" name="uploadUrl" />
 <i:arg type="String" name="allowedExtensions" default="[]" />
+<i:arg type="int" name="maxParallelConnections" default="3" />
 
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders a file upload within a Wondergem template" />
@@ -12,7 +13,8 @@
             fileUpload('@uploadUrl',
                 this,
                 undefined,
-                <i:raw>@allowedExtensions</i:raw>);
+                <i:raw>@allowedExtensions</i:raw>,
+                @maxParallelConnections);
         });
     });
 </script>

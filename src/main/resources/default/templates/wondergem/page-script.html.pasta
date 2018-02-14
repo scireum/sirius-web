@@ -293,14 +293,20 @@
         $('.img', container).css('max-width', maxWidth - 30 + 'px');
     }
 
-    function fileUpload(url, target, params, allowedExtensions) {
+    function fileUpload(url, target, params, allowedExtensions, maxParallelConnections) {
         var container = target;
+        
+        if (!maxParallelConnections) {
+            // Fallback to default value of FileUploader library
+            maxParallelConnections = 3;
+        }
 
         new qq.FileUploader({
             element: target,
             action: url,
             params: params,
             debug: false,
+            maxConnections: maxParallelConnections,
             onComplete: function (cmp_id, fileName, responseJSON) {
                 clearMessages();
                 if (responseJSON.error) {
