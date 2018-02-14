@@ -20,7 +20,6 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
-import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.xml.StructuredNode;
 import sirius.kernel.xml.XMLStructuredInput;
@@ -32,7 +31,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.List;
@@ -203,6 +204,41 @@ public class TestResponse extends Response {
         } catch (XPathExpressionException e) {
             throw Exceptions.handle(e);
         }
+    }
+
+    /**
+     * @return whether this response has a body that contains data
+     */
+    public boolean isFilled() {
+        switch (getType()) {
+            case STATUS:
+            case TEMPORARY_REDIRECT:
+            case PERMANENT_REDIRECT:
+            case ERROR:
+                return true;
+            case FILE:
+                return getFile().length() > 0;
+            case RESOURCE:
+            case DIRECT:
+            case TEMPLATE:
+            case STREAM:
+                return getRawContent().length > 0;
+            case TUNNEL:
+                try (InputStream stream = URI.create(getTunnelTargetUrl()).toURL().openStream()) {
+                    return stream.available() > 0;
+                } catch (IOException e) {
+                    Exceptions.handle(e);
+                    return true;
+                }
+        }
+        return true;
+    }
+
+    /**
+     * @return whether this response has no body or contains no data
+     */
+    public boolean isEmpty() {
+        return !isFilled();
     }
 
     @Override
