@@ -49,7 +49,7 @@
 
 .qq-upload-spinner {
     display: inline-block;
-    background: url("loading.gif");
+    background: url("/assets/wondergem/fileupload/loading.gif");
     width: 15px;
     height: 15px;
     vertical-align: text-bottom;
