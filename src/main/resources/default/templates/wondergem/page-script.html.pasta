@@ -293,7 +293,7 @@
         $('.img', container).css('max-width', maxWidth - 30 + 'px');
     }
 
-    function fileUpload(url, target, params, allowedExtensions) {
+    function fileUpload(url, target, params, allowedExtensions, maxParallelConnections) {
         var container = target;
 
         new qq.FileUploader({
@@ -301,6 +301,7 @@
             action: url,
             params: params,
             debug: false,
+            maxConnections: maxParallelConnections || 3,
             onComplete: function (cmp_id, fileName, responseJSON) {
                 clearMessages();
                 if (responseJSON.error) {
