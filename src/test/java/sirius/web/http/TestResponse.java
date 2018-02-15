@@ -207,6 +207,8 @@ public class TestResponse extends Response {
     }
 
     /**
+     * Returns whether this response has a body that contains data
+     *
      * @return whether this response has a body that contains data
      */
     public boolean isFilled() {
@@ -235,6 +237,8 @@ public class TestResponse extends Response {
     }
 
     /**
+     * Returns whether this response has no body or contains no data
+     *
      * @return whether this response has no body or contains no data
      */
     public boolean isEmpty() {
