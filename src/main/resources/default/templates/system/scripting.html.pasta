@@ -31,7 +31,7 @@
 
     <w:pageHeader titleKey="ManagedTaskController.scripting" />
 
-    <w:codeEditor mode="javascript" useWorker="true">task.log('Good Morning Dave');</w:codeEditor>
+    <w:codeEditor id="editor" mode="javascript" useWorker="true">task.log('Good Morning Dave');</w:codeEditor>
 
     <div class="form-actions">
         <a href="#" id="execute" class="btn btn-success btn-lg">@i18n("ManagedTaskController.run")</a>
