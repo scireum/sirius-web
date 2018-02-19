@@ -55,7 +55,7 @@ public class XLSProcessor implements LineBasedProcessor {
             current++;
             Row row = iter.next();
             short first = 0;
-            short last = row.getLastCellNum();
+            short last = getLastFilledCell(row);
             List<Object> values = Lists.newArrayList();
             for (int i = first; i <= last; i++) {
                 Cell cell = row.getCell(i);
@@ -65,6 +65,19 @@ public class XLSProcessor implements LineBasedProcessor {
             rowProcessor.handleRow(current, Values.of(values));
             tc.setState(NLS.get("LineBasedProcessor.linesProcessed"), current);
         }
+    }
+
+    private short getLastFilledCell(Row row) {
+        short lastFilled = -1;
+        Iterator<Cell> cellIterator = row.cellIterator();
+        for (short current = 0; cellIterator.hasNext(); current++) {
+            Cell cell = cellIterator.next();
+            Object cellValue = extractCellValue(cell);
+            if (cellValue != null && Strings.isFilled(cellValue)) {
+                lastFilled = current;
+            }
+        }
+        return lastFilled;
     }
 
     private Object extractCellValue(Cell cell) {
