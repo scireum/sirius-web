@@ -16,7 +16,6 @@ import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
@@ -306,12 +305,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             return false;
         }
 
-        HttpHeaders headers = currentRequest.headers();
-        if (!headers.contains(HttpHeaderNames.ORIGIN)) {
-            return false;
-        }
-
-        return headers.contains(HttpHeaderNames.ACCESS_CONTROL_REQUEST_METHOD);
+        return currentRequest.headers().contains(HttpHeaderNames.ACCESS_CONTROL_REQUEST_METHOD);
     }
 
     private void channelReadRequest(ChannelHandlerContext ctx, HttpRequest msg) {
