@@ -812,9 +812,9 @@ public class WebContext implements SubContext {
         return requestedURI;
     }
     /**
-     * Returns the unencoded requested URI of the underlying HTTP request, without the query string
+     * Returns the raw undecoded requested URI of the underlying HTTP request, without the query string
      *
-     * @return the unencoded uri of the underlying request
+     * @return the undecoded uri of the underlying request
      */
     public String getRawRequestedURI() {
         if (rawRequestedURI == null && request != null) {
