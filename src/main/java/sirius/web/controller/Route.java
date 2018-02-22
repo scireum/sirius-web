@@ -212,7 +212,13 @@ public class Route {
                 Object effectiveValue = Value.of(value).coerce(parameterTypes[idx - 1], null);
                 setAtPosition(result, idx, effectiveValue);
             } else if ("**".equals(expr.getFirst())) {
-                result.add(Arrays.asList(value.split("/")));
+                //we need to split the encoded values so we dont mistake data for the delimiter
+                ArrayList<String> values = new ArrayList<>(Arrays.asList(m.group(i).split("/")));
+                ArrayList<String> decodedValues = new ArrayList<>(values.size());
+                for (String singleValue : values) {
+                    decodedValues.add(URLDecoder.decode(singleValue, Charsets.UTF_8.name()));
+                }
+                result.add(decodedValues);
             }
         }
         if (parameterTypes.length - 1 > result.size() && parameterTypes[parameterTypes.length - 1] == List.class) {
