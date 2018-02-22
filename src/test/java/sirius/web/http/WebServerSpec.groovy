@@ -465,7 +465,7 @@ class WebServerSpec extends BaseSpecification {
         then:
         JSON.parseObject(data).get("test") == 'Hello World'
     }
-    
+
     def "Invoke /test/json-params/one/t%2Fwotesting multiple parameter decoding delimiter"() {
         given:
         def uri = "/test/json-params/one/t%2Fwo"

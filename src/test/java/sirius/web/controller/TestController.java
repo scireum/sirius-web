@@ -62,10 +62,10 @@ public class TestController implements Controller {
 
     @Routed(value = "/test/json-params-varargs/:1/:2/**", jsonCall = true)
     public void testJSONWithVarArgs(WebContext ctx,
-                                     JSONStructuredOutput out,
-                                     String param1,
-                                     String param2,
-                                     List<String> paramList) {
+                                    JSONStructuredOutput out,
+                                    String param1,
+                                    String param2,
+                                    List<String> paramList) {
         out.property("param1", param1);
         out.property("param2", param2);
         out.array("params", "param", paramList);
