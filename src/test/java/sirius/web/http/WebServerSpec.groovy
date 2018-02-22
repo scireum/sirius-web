@@ -240,9 +240,9 @@ class WebServerSpec extends BaseSpecification {
         JSON.parseObject(data).get("test") == 'Hello'
     }
 
-    def "Invoke /test/params/2/1 testing mixed parameter order"() {
+    def "Invoke /test/json-params/1/2 testing multiple parameter"() {
         given:
-        def uri = "/test/params/2/1"
+        def uri = "/test/json-params/1/2"
         def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
         when:
         def data = callAndRead(uri, null, expectedHeaders)
@@ -250,6 +250,35 @@ class WebServerSpec extends BaseSpecification {
         JSON.parseObject(data).get("param1") == '1'
         and:
         JSON.parseObject(data).get("param2") == '2'
+    }
+
+    def "Invoke /test/mixed-json-params/2/1 testing mixed parameter order"() {
+        given:
+        def uri = "/test/mixed-json-params/2/1"
+        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
+        when:
+        def data = callAndRead(uri, null, expectedHeaders)
+        then:
+        JSON.parseObject(data).get("param1") == '1'
+        and:
+        JSON.parseObject(data).get("param2") == '2'
+    }
+
+    def "Invoke /test/json-params-varargs/1/2/3/4/5/6/7/8/9 testing varargs"() {
+        given:
+        def uri = "/test/json-params-varargs/1/2/3/4/5/6/7/8/9"
+        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
+        when:
+        def data = callAndRead(uri, null, expectedHeaders)
+        then:
+        JSON.parseObject(data).get("param1") == '1'
+        and:
+        JSON.parseObject(data).get("param2") == '2'
+        and:
+        def varargs = JSON.parseObject(data).getJSONArray("params")
+        varargs.size() == 7
+        varargs.get(0) == '3'
+        varargs.get(6) == '9'
     }
 
     /**
@@ -393,5 +422,131 @@ class WebServerSpec extends BaseSpecification {
         responses.get(0).headers().get("URI") == "/pipelining/1000"
         responses.get(1).headers().get("URI") == "/pipelining/500"
         responses.get(2).headers().get("URI") == "/pipelining/10"
+    }
+    /**
+     * Test correct decoding
+     */
+    def "Invoke /test/json testing correct decoding delimiter"() {
+        given:
+        def uri = "/test/json?test=Hello%2FWorld"
+        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
+        when:
+        def data = callAndRead(uri, null, expectedHeaders)
+        then:
+        JSON.parseObject(data).get("test") == 'Hello/World'
+    }
+
+    def "Invoke /test/json testing correct decoding space"() {
+        given:
+        def uri = "/test/json?test=Hello%20World"
+        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
+        when:
+        def data = callAndRead(uri, null, expectedHeaders)
+        then:
+        JSON.parseObject(data).get("test") == 'Hello World'
+    }
+
+    def "Invoke /test/json-param testing correct decoding delimiter"() {
+        given:
+        def uri = "/test/json-param/Hello%2FWorld"
+        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
+        when:
+        def data = callAndRead(uri, null, expectedHeaders)
+        then:
+        JSON.parseObject(data).get("test") == 'Hello/World'
+    }
+
+    def "Invoke /test/json-param testing correct decoding space"() {
+        given:
+        def uri = "/test/json-param/Hello%20World"
+        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
+        when:
+        def data = callAndRead(uri, null, expectedHeaders)
+        then:
+        JSON.parseObject(data).get("test") == 'Hello World'
+    }
+    
+    def "Invoke /test/json-params/one/t%2Fwotesting multiple parameter decoding delimiter"() {
+        given:
+        def uri = "/test/json-params/one/t%2Fwo"
+        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
+        when:
+        def data = callAndRead(uri, null, expectedHeaders)
+        then:
+        JSON.parseObject(data).get("param1") == 'one'
+        and:
+        JSON.parseObject(data).get("param2") == 't/wo'
+    }
+
+    def "Invoke /test/json-params/one/t%20wo testing multiple parameter decoding space"() {
+        given:
+        def uri = "/test/json-params/one/t%20wo"
+        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
+        when:
+        def data = callAndRead(uri, null, expectedHeaders)
+        then:
+        JSON.parseObject(data).get("param1") == 'one'
+        and:
+        JSON.parseObject(data).get("param2") == 't wo'
+    }
+
+    def "Invoke /test/json-params-varargs/1%2F/%2F2/one/t%2Fwo/t%2Fhree/%2Ffour/five%2F testing varargs decoding delimiter"() {
+        given:
+        def uri = "/test/json-params-varargs/1%2F/%2F2/one/t%2Fwo/t%2Fhree/%2Ffour/five%2F"
+        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
+        when:
+        def data = callAndRead(uri, null, expectedHeaders)
+        then:
+        JSON.parseObject(data).get("param1") == '1/'
+        and:
+        JSON.parseObject(data).get("param2") == '/2'
+        and:
+        def varargs = JSON.parseObject(data).getJSONArray("params")
+        varargs.size() == 5
+        varargs.get(0) == 'one'
+        varargs.get(1) == 't/wo'
+        varargs.get(2) == 't/hree'
+        varargs.get(3) == '/four'
+        varargs.get(4) == 'five/'
+    }
+
+    def "Invoke /test/json-params-varargs/1%20/%202/one/t%20wo/t%20hree/%20four/five%20 testing varargs decoding space"() {
+        given:
+        def uri = "/test/json-params-varargs/1%20/%202/one/t%20wo/t%20hree/%20four/five%20"
+        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
+        when:
+        def data = callAndRead(uri, null, expectedHeaders)
+        then:
+        JSON.parseObject(data).get("param1") == '1 '
+        and:
+        JSON.parseObject(data).get("param2") == ' 2'
+        and:
+        def varargs = JSON.parseObject(data).getJSONArray("params")
+        varargs.size() == 5
+        varargs.get(0) == 'one'
+        varargs.get(1) == 't wo'
+        varargs.get(2) == 't hree'
+        varargs.get(3) == ' four'
+        varargs.get(4) == 'five '
+    }
+
+    def "Invoke /test/json-param testing param with only delimiter"() {
+        given:
+        def uri = "/test/json-param/%2F%2F%2F"
+        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
+        when:
+        def data = callAndRead(uri, null, expectedHeaders)
+        then:
+        JSON.parseObject(data).get("test") == '///'
+    }
+
+    def "Invoke /test/json-param testing param with only space"() {
+        given:
+        def uri = "/test/json-param/%20%20%20"
+        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
+        when:
+        def data = callAndRead(uri, null, expectedHeaders)
+        then:
+        JSON.parseObject(data).get("test") == '   '
     }
 }
