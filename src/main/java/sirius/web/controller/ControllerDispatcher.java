@@ -80,7 +80,7 @@ public class ControllerDispatcher implements WebDispatcher {
     }
 
     private boolean route(final WebContext ctx, boolean preDispatch) {
-        String uri = ctx.getRequestedURI();
+        String uri = ctx.getRawRequestedURI();
         if (uri.endsWith("/") && !"/".equals(uri)) {
             uri = uri.substring(0, uri.length() - 1);
         }
