@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Represents a compiled routed as a result of parsing a {@link Controller} and its methods.
@@ -178,29 +179,25 @@ public class Route {
      * the template
      */
     protected List<Object> matches(WebContext ctx, String requestedURI, boolean preDispatch) {
-        try {
-            if (preDispatch != this.preDispatchable) {
-                return NO_MATCH;
-            }
-            Matcher m = pattern.matcher(requestedURI);
-            if (m.matches()) {
-                List<Object> result = extractRouteParameters(ctx, m);
-                if (!result.equals(NO_MATCH)) {
-                    CallContext.getCurrent().addToMDC("route", format);
-                }
-                return result;
-            }
+        if (preDispatch != this.preDispatchable) {
             return NO_MATCH;
-        } catch (UnsupportedEncodingException e) {
-            throw Exceptions.handle(WebServer.LOG, e);
         }
+        Matcher m = pattern.matcher(requestedURI);
+        if (m.matches()) {
+            List<Object> result = extractRouteParameters(ctx, m);
+            if (!result.equals(NO_MATCH)) {
+                CallContext.getCurrent().addToMDC("route", format);
+            }
+            return result;
+        }
+        return NO_MATCH;
     }
 
-    private List<Object> extractRouteParameters(WebContext ctx, Matcher m) throws UnsupportedEncodingException {
+    private List<Object> extractRouteParameters(WebContext ctx, Matcher m) {
         List<Object> result = Lists.newArrayListWithCapacity(parameterTypes.length);
         for (int i = 1; i <= m.groupCount(); i++) {
             Tuple<String, Object> expr = expressions.get(i - 1);
-            String value = URLDecoder.decode(m.group(i), Charsets.UTF_8.name());
+            String value = decodeParameter(m.group(i));
             if ("$".equals(expr.getFirst())) {
                 if (!NLS.get((String) expr.getSecond()).equalsIgnoreCase(value)) {
                     return NO_MATCH;
@@ -212,13 +209,24 @@ public class Route {
                 Object effectiveValue = Value.of(value).coerce(parameterTypes[idx - 1], null);
                 setAtPosition(result, idx, effectiveValue);
             } else if ("**".equals(expr.getFirst())) {
-                result.add(Arrays.asList(value.split("/")));
+                //we need to split the encoded values so we dont mistake data for the delimiter
+                result.add(Arrays.stream(m.group(i).split("/"))
+                                 .map(this::decodeParameter)
+                                 .collect(Collectors.toList()));
             }
         }
         if (parameterTypes.length - 1 > result.size() && parameterTypes[parameterTypes.length - 1] == List.class) {
             result.add(Collections.emptyList());
         }
         return result;
+    }
+
+    private String decodeParameter(String parameter) {
+        try {
+            return URLDecoder.decode(parameter, Charsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            throw Exceptions.handle(WebServer.LOG, e);
+        }
     }
 
     /*

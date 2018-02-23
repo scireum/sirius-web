@@ -121,6 +121,11 @@ public class WebContext implements SubContext {
     private String requestedURI;
 
     /*
+     * The effective request uri (without the query string)
+     */
+    private String rawRequestedURI;
+
+    /*
      * The base url (without the uri, like: http://myhost.com)
      */
     private String baseURL;
@@ -796,15 +801,27 @@ public class WebContext implements SubContext {
     }
 
     /**
-     * Returns the requested URI of the underlying HTTP request, without the query string
+     * Returns the decoded requested URI of the underlying HTTP request, without the query string
      *
-     * @return the uri of the underlying request
+     * @return the decoded uri of the underlying request
      */
     public String getRequestedURI() {
         if (requestedURI == null && request != null) {
             decodeQueryString();
         }
         return requestedURI;
+    }
+    /**
+     * Returns the raw undecoded requested URI of the underlying HTTP request, without the query string
+     *
+     * @return the undecoded uri of the underlying request
+     */
+    public String getRawRequestedURI() {
+        if (rawRequestedURI == null && request != null) {
+            int pathEndPos = request.uri().indexOf('?');
+            rawRequestedURI = pathEndPos < 0 ? request.uri() : request.uri().substring(0, pathEndPos);
+        }
+        return rawRequestedURI;
     }
 
     /**

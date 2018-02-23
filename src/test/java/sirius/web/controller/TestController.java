@@ -11,7 +11,6 @@ package sirius.web.controller;
 import com.google.common.io.ByteStreams;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.HandledException;
@@ -22,6 +21,7 @@ import sirius.web.services.JSONStructuredOutput;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 
 @Register
 public class TestController implements Controller {
@@ -48,10 +48,27 @@ public class TestController implements Controller {
         out.property("test", param);
     }
 
-    @Routed(value = "/test/params/:2/:1", jsonCall = true)
+    @Routed(value = "/test/json-params/:1/:2", jsonCall = true)
     public void testJSONParams(WebContext ctx, JSONStructuredOutput out, String param1, String param2) {
         out.property("param1", param1);
         out.property("param2", param2);
+    }
+
+    @Routed(value = "/test/mixed-json-params/:2/:1", jsonCall = true)
+    public void testMixedJSONParams(WebContext ctx, JSONStructuredOutput out, String param1, String param2) {
+        out.property("param1", param1);
+        out.property("param2", param2);
+    }
+
+    @Routed(value = "/test/json-params-varargs/:1/:2/**", jsonCall = true)
+    public void testJSONWithVarArgs(WebContext ctx,
+                                    JSONStructuredOutput out,
+                                    String param1,
+                                    String param2,
+                                    List<String> paramList) {
+        out.property("param1", param1);
+        out.property("param2", param2);
+        out.array("params", "param", paramList);
     }
 
     @Routed("/tunnel/test")
