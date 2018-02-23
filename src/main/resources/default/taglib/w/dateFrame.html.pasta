@@ -1,0 +1,12 @@
+<i:arg name="showFrom" type="String" default=""/>
+<i:arg name="showUntil" type="String" default=""/>
+
+<i:pragma name="inline" value="true" />
+<i:pragma name="description" value="Provides an easy taglib to show certain parts only in a limited date frame" />
+
+<i:local name="isShowFromMatched" value="@!isFilled(showFrom) || !today.isBefore(parseUserString(java.time.LocalDate.class, showFrom).as(java.time.LocalDate.class))"/>
+<i:local name="isShowUntilMatched" value="@!isFilled(showUntil) || !today.isAfter(parseUserString(java.time.LocalDate.class, showUntil).as(java.time.LocalDate.class))"/>
+
+<i:if test="@isShowFromMatched && isShowUntilMatched">
+    <i:render name="body"/>
+</i:if>
