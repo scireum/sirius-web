@@ -17,6 +17,12 @@ import sirius.tagliatelle.rendering.LocalRenderContext;
 import javax.annotation.Nonnull;
 import java.util.List;
 
+/**
+ * Parses the given user string into the desired object.
+ * <p>
+ *
+ * @see NLS#parseUserString(Class, String)
+ */
 @Register
 public class ParseUserStringMacro implements Macro {
 
