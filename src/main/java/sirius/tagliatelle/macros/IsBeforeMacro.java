@@ -9,12 +9,9 @@
 package sirius.tagliatelle.macros;
 
 import sirius.kernel.di.std.Register;
-import sirius.tagliatelle.expression.Expression;
-import sirius.tagliatelle.rendering.LocalRenderContext;
 
 import javax.annotation.Nonnull;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 /**
  * Macro for comparing it a given date is before another given date or now.
@@ -23,25 +20,8 @@ import java.time.LocalTime;
 public class IsBeforeMacro extends DateComparingMacro {
 
     @Override
-    public Object eval(LocalRenderContext ctx, Expression[] args) {
-        LocalDateTime firstDate = parseInput(args[0].eval(ctx));
-
-        LocalDateTime secondDate;
-        if (args.length == 2) {
-            secondDate = parseInput(args[1].eval(ctx));
-        } else {
-            secondDate = LocalDateTime.now();
-        }
-
-        if (LocalTime.MIDNIGHT.equals(firstDate.toLocalTime())) {
-            return firstDate.toLocalDate().isBefore(secondDate.toLocalDate());
-        }
+    protected boolean compare(LocalDateTime firstDate, LocalDateTime secondDate) {
         return firstDate.isBefore(secondDate);
-    }
-
-    @Override
-    public boolean isConstant(Expression[] args) {
-        return true;
     }
 
     @Override

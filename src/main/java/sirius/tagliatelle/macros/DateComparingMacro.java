@@ -11,6 +11,7 @@ package sirius.tagliatelle.macros;
 import sirius.kernel.nls.NLS;
 import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.expression.Expression;
+import sirius.tagliatelle.rendering.LocalRenderContext;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -29,6 +30,11 @@ public abstract class DateComparingMacro implements Macro {
         return Boolean.class;
     }
 
+    @Override
+    public boolean isConstant(Expression[] args) {
+        return true;
+    }
+
     protected LocalDateTime parseInput(Object object) {
         if (object instanceof String) {
             return NLS.parseUserString(LocalDateTime.class, (String) object);
@@ -43,27 +49,40 @@ public abstract class DateComparingMacro implements Macro {
     }
 
     @Override
+    public Object eval(LocalRenderContext ctx, Expression[] args) {
+        LocalDateTime firstDate = parseInput(args[0].eval(ctx));
+        LocalDateTime secondDate = (args.length == 2 ? parseInput(args[1].eval(ctx)) : LocalDateTime.now());
+
+        return compare(firstDate, secondDate);
+    }
+
+    protected abstract boolean compare(LocalDateTime firstDate, LocalDateTime secondDate);
+
+    @Override
     public void verifyArguments(List<Expression> args) {
         if (args.size() > 2 || args.isEmpty()) {
             throw new IllegalArgumentException(WRONG_ARGUMENT_EXCEPTION);
         }
 
-        if (!Tagliatelle.isAssignableTo(args.get(0).getType(), String.class)
-            && !Tagliatelle.isAssignableTo(args.get(0)
-                                               .getType(),
+        Class<?> firstType = args.get(0).getType();
+        
+        if (!Tagliatelle.isAssignableTo(firstType, String.class)
+            && !Tagliatelle.isAssignableTo(firstType,
                                            LocalDate.class)
-            && !Tagliatelle.isAssignableTo(args.get(0).getType(), LocalDateTime.class)) {
+            && !Tagliatelle.isAssignableTo(firstType, LocalDateTime.class)) {
             throw new IllegalArgumentException(WRONG_ARGUMENT_EXCEPTION);
         }
 
         if (args.size() == 1) {
             return;
         }
-        if (!Tagliatelle.isAssignableTo(args.get(1).getType(), String.class)
-            && !Tagliatelle.isAssignableTo(args.get(1)
-                                               .getType(),
+
+        Class<?> secondType = args.get(1).getType();
+
+        if (!Tagliatelle.isAssignableTo(secondType, String.class)
+            && !Tagliatelle.isAssignableTo(secondType,
                                            LocalDate.class)
-            && !Tagliatelle.isAssignableTo(args.get(1).getType(), LocalDateTime.class)) {
+            && !Tagliatelle.isAssignableTo(secondType, LocalDateTime.class)) {
             throw new IllegalArgumentException(WRONG_ARGUMENT_EXCEPTION);
         }
     }
