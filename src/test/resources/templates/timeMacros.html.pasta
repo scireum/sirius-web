@@ -1,0 +1,48 @@
+<i:if test="isBefore(now, now)">
+now is equal not before
+</i:if>
+<i:if test="isAfter(now, now)">
+now is equal not after
+</i:if>
+<i:if test="isBefore(today, today)">
+today is equal not before
+</i:if>
+<i:if test="isAfter(today, today)">
+today is equal not after
+</i:if>
+<i:if test="isBefore(today, today)">
+today is equal not before
+</i:if>
+<i:if test="isAfter(today, today)">
+today is equal not after
+</i:if>
+<i:if test="isBefore(today.plusDays(1), today)">
+tomorrow is not before today
+</i:if>
+<i:if test="isAfter(today.plusDays(1), today)">
+tomorrow is after today
+</i:if>
+<i:if test="isBefore(today, today.plusDays(1))">
+today is before tomorrow
+</i:if>
+<i:if test="isAfter(today, today.plusDays(1))">
+today is not after tomorrow
+</i:if>
+<i:if test="isBefore(toUserString(today.plusDays(1)))">
+tomorrow as string is not before today
+</i:if>
+<i:if test="isAfter(toUserString(today.plusDays(1)))">
+tomorrow as string is after today
+</i:if>
+<i:if test="isBefore(toUserString(today.minusDays(1)))">
+yesterday as string is before today
+</i:if>
+<i:if test="isAfter(toUserString(today.minusDays(1)))">
+yesterday as string is not after today
+</i:if>
+<i:if test="isBefore(toUserString(now.plusMinutes(1)))">
+one minute later as string is not before now
+</i:if>
+<i:if test="isAfter(toUserString(now.plusMinutes(1)))">
+one minute later as string is after now
+</i:if>

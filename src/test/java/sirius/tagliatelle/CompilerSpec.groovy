@@ -209,4 +209,13 @@ class CompilerSpec extends BaseSpecification {
         errors.get(0).toString().contains("The template '<e:deprecated>' is deprecated: Test of deprecated")
     }
 
+    def "time macros state work as expected"() {
+        given:
+        String expectedResult = resources.resolve("templates/timeMacros.html").get().getContentAsString()
+        when:
+        String result = tagliatelle.resolve("templates/timeMacros.html.pasta").get().renderToString()
+        then:
+        basicallyEqual(result, expectedResult)
+    }
+
 }
