@@ -64,25 +64,19 @@ public abstract class DateComparingMacro implements Macro {
             throw new IllegalArgumentException(WRONG_ARGUMENT_EXCEPTION);
         }
 
-        Class<?> firstType = args.get(0).getType();
-        
-        if (!Tagliatelle.isAssignableTo(firstType, String.class)
-            && !Tagliatelle.isAssignableTo(firstType,
-                                           LocalDate.class)
-            && !Tagliatelle.isAssignableTo(firstType, LocalDateTime.class)) {
-            throw new IllegalArgumentException(WRONG_ARGUMENT_EXCEPTION);
-        }
+        checkClassAssignable(args.get(0).getType());
 
         if (args.size() == 1) {
             return;
         }
 
-        Class<?> secondType = args.get(1).getType();
+        checkClassAssignable(args.get(1).getType());
+    }
 
-        if (!Tagliatelle.isAssignableTo(secondType, String.class)
-            && !Tagliatelle.isAssignableTo(secondType,
-                                           LocalDate.class)
-            && !Tagliatelle.isAssignableTo(secondType, LocalDateTime.class)) {
+    private void checkClassAssignable(Class<?> type) {
+        if (!Tagliatelle.isAssignableTo(type, String.class)
+            && !Tagliatelle.isAssignableTo(type, LocalDate.class)
+            && !Tagliatelle.isAssignableTo(type, LocalDateTime.class)) {
             throw new IllegalArgumentException(WRONG_ARGUMENT_EXCEPTION);
         }
     }
