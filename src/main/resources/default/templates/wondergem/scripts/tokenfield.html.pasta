@@ -44,14 +44,18 @@
 
                     this.element = $("#" + this.id);
                     this.value = this.element.val();
-                    this.element.tokenfield(config.tokenfield || {delimiter: " "});
+                    var tokenfieldConfig = $.extend({delimiter: " "}, config.tokenfield );
+                    this.element.tokenfield(tokenfieldConfig);
 
                     this.tokenElement = $("#" + this.id + "-tokenfield");
 
                     // delete the element value because they are tokens now and the value should not be displayed twice
                     this.tokenElement.val("");
 
-                    this.allTokens = [{label: this.value, value: this.value, initialQueryIdentifier: true}];
+                    // create initial tokens
+                    $.each(this.value.split(tokenfieldConfig.delimiter), function(index, element) {
+                        this.allTokens = [{label: element, value: element, initialQueryIdentifier: true}];
+                    });
 
                     this.element.on('tokenfield:removedtoken', function (e) {
                         var identifier = e.attrs.value;
