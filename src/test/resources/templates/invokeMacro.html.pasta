@@ -1,0 +1,2 @@
+@invoke("templates/macroSyntax.html.pasta")
+___invoke("templates/macroSyntax.html.pasta")
