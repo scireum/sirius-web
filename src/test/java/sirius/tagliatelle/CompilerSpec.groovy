@@ -236,12 +236,4 @@ class CompilerSpec extends BaseSpecification {
         basicallyEqual(result, expectedResult)
     }
 
-    def "invoke macro"() {
-        given:
-        String expectedResult = resources.resolve("templates/invokeMacro.html").get().getContentAsString()
-        when:
-        String result = tagliatelle.resolve("templates/invokeMacro.html.pasta").get().renderToString()
-        then:
-        basicallyEqual(result, expectedResult)
-    }
 }
