@@ -357,7 +357,7 @@ public class Compiler extends InputProcessor {
     }
 
     /**
-     * Processes an expression started with an {@literal @}.
+     * Processes an expression started with an {@literal @} or with "___"
      *
      * @param block the block to append the expression or the parsed emitters to
      * @return <tt>true</tt> if an expression was parsed, <tt>false</tt> otherwise
