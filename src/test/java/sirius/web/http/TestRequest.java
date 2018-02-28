@@ -395,7 +395,8 @@ public class TestRequest extends WebContext implements HttpRequest {
     protected void build() {
         // append GET parameters to URI
         String queryString = generateQueryString(parameters);
-        this.testUri = this.testUri + (Strings.isFilled(queryString) ? "?" + queryString : "");
+        this.testUri =
+                this.testUri + (Strings.isFilled(queryString) ? (testUri.contains("?") ? "&" : "?") + queryString : "");
 
         // send resource in body
         if (resource != null && (testMethod.equals(HttpMethod.PATCH) || testMethod.equals(HttpMethod.POST) || testMethod
