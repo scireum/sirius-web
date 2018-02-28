@@ -346,13 +346,24 @@ public class Compiler extends InputProcessor {
     }
 
     /**
-     * Processes an expression started with an {@literal @}.
+     * Evaluates if the current char marks the start of an expression.
+     * <p>
+     * If the current char is '@' or this and the next 2 chars all equal to '_' the current char marks the start of an expression.
+     *
+     * @return <tt>true</tt> if the current char could mark an expression, <tt>false</tt> otherwise
+     */
+    private boolean isPotentialExpression() {
+        return reader.current().is('@') || (reader.current().is('_') && reader.next().is('_') && reader.next(2).is('_'));
+    }
+
+    /**
+     * Processes an expression started with an {@literal @} or with "___"
      *
      * @param block the block to append the expression or the parsed emitters to
      * @return <tt>true</tt> if an expression was parsed, <tt>false</tt> otherwise
      */
     private boolean processExpression(CompositeEmitter block) {
-        if (!reader.current().is('@')) {
+        if (!isPotentialExpression()) {
             return false;
         }
 
@@ -596,7 +607,7 @@ public class Compiler extends InputProcessor {
             return true;
         }
 
-        if (reader.current().is('@')) {
+        if (isPotentialExpression()) {
             return true;
         }
 
