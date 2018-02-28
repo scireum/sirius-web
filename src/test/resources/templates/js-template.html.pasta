@@ -1,0 +1,3 @@
+<w:jsTemplate variableName="jsVariable">
+    <a class="link" href="#">Test1234</a>
+</w:jsTemplate>

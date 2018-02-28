@@ -1,0 +1,10 @@
+<i:arg type="String" name="variableName" />
+<i:arg type="String" name="content" default="@renderToString('body')" />
+
+<i:pragma name="inline" value="true" />
+<i:pragma name="description"
+          value="Renders the body of this tag as string into a javascript variable with given variableName" />
+
+<i:raw>
+    var @variableName = '@escapeJS(content)';
+</i:raw>

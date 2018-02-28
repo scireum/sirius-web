@@ -227,4 +227,13 @@ class CompilerSpec extends BaseSpecification {
         basicallyEqual(result, expectedResult)
     }
 
+    def "jsTemplate taglib works"() {
+        given:
+        String expectedResult = resources.resolve("templates/js-template.html").get().getContentAsString()
+        when:
+        String result = tagliatelle.resolve("templates/js-template.html.pasta").get().renderToString()
+        then:
+        basicallyEqual(result, expectedResult)
+    }
+
 }
