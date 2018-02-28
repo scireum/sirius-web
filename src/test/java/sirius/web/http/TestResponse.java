@@ -354,6 +354,10 @@ public class TestResponse extends Response {
         if (Strings.isFilled(contentType)) {
             addHeaderIfNotExists(HttpHeaderNames.CONTENT_TYPE, contentType);
         }
+        if (name != null) {
+            setContentDisposition(name, download);
+        }
+
         return new ByteArrayOutputStream() {
             @Override
             public void close() throws IOException {
