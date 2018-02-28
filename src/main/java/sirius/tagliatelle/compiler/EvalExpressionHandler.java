@@ -30,7 +30,12 @@ public class EvalExpressionHandler extends ExpressionHandler {
 
     @Override
     public Emitter process(Compiler compiler) {
-        compiler.getReader().consume();
+        if (compiler.getReader().current().is('_')) {
+            compiler.getReader().consume(3);
+        } else {
+            compiler.getReader().consume();
+        }
+
         return new ExpressionEmitter(compiler.getReader().current(), compiler.parseExpression(false));
     }
 }

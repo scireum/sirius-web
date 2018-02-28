@@ -218,4 +218,13 @@ class CompilerSpec extends BaseSpecification {
         basicallyEqual(result, expectedResult)
     }
 
+    def "different macro call syntax"() {
+        given:
+        String expectedResult = resources.resolve("templates/macroSyntax.html").get().getContentAsString()
+        when:
+        String result = tagliatelle.resolve("templates/macroSyntax.html.pasta").get().renderToString()
+        then:
+        basicallyEqual(result, expectedResult)
+    }
+
 }
