@@ -61,32 +61,28 @@ public class AttributeExpressionHandler extends ExpressionHandler {
         compiler.skipWhitespaces();
         compiler.consumeExpectedCharacter('"');
         if (boolean.class.equals(condition.getType())) {
-            ConditionalEmitter result = new ConditionalEmitter(start);
-            result.setConditionExpression(condition);
-            result.setWhenTrue(new ConstantEmitter(start).append(attributeName)
-                                                         .append("=\"")
-                                                         .append(attributeName)
-                                                         .append("\""));
-            return result;
+            return translateBooleanExpression(start, attributeName, condition);
         }
 
+        return translateLiteralExpression(compiler, start, attributeName, condition);
+    }
+
+    @NotNull
+    private Emitter translateLiteralExpression(Compiler compiler,
+                                               Position start,
+                                               String attributeName,
+                                               Expression literalExpression) {
         CompositeEmitter result = new CompositeEmitter(start);
-        if (!condition.isConstant()) {
-            PushLocalEmitter localEmitter = new PushLocalEmitter(start,
-                                                                 compiler.getContext()
-                                                                         .push(start, null, condition.getType()),
-                                                                 condition);
-            result.addChild(localEmitter);
-            condition = new ReadLocal(condition.getType(), localEmitter.getLocalIndex());
-        }
 
-        Expression effectiveCondition = new EqualsOperation(condition, ConstantNull.NULL, true);
+        Expression constantLiteralExpression = ensureConstantExpression(compiler, start, literalExpression, result);
 
         ConditionalEmitter conditionalEmitter = new ConditionalEmitter(start);
-        conditionalEmitter.setConditionExpression(effectiveCondition);
+        conditionalEmitter.setConditionExpression(new EqualsOperation(constantLiteralExpression,
+                                                                      ConstantNull.NULL,
+                                                                      true));
         CompositeEmitter trueBlock = new CompositeEmitter(start);
         trueBlock.addChild(new ConstantEmitter(start).append(attributeName).append("=\""));
-        trueBlock.addChild(new ExpressionEmitter(start, condition));
+        trueBlock.addChild(new ExpressionEmitter(start, constantLiteralExpression));
         trueBlock.addChild(new ConstantEmitter(start).append("\""));
         conditionalEmitter.setWhenTrue(trueBlock);
         result.addChild(conditionalEmitter);
@@ -94,7 +90,29 @@ public class AttributeExpressionHandler extends ExpressionHandler {
         return result;
     }
 
-    @NotNull
+    private Expression ensureConstantExpression(Compiler compiler,
+                                                Position start,
+                                                Expression literalExpression,
+                                                CompositeEmitter compositeEmitter) {
+        if (!literalExpression.isConstant()) {
+            return literalExpression;
+        }
+
+        int localIndex = compiler.getContext().push(start, null, literalExpression.getType());
+        compositeEmitter.addChild(new PushLocalEmitter(start, localIndex, literalExpression));
+        return new ReadLocal(literalExpression.getType(), localIndex);
+    }
+
+    private Emitter translateBooleanExpression(Position start, String attributeName, Expression condition) {
+        ConditionalEmitter result = new ConditionalEmitter(start);
+        result.setConditionExpression(condition);
+        result.setWhenTrue(new ConstantEmitter(start).append(attributeName)
+                                                     .append("=\"")
+                                                     .append(attributeName)
+                                                     .append("\""));
+        return result;
+    }
+
     private String readAttributeName(Compiler compiler) {
         StringBuilder attributeName = new StringBuilder();
         while (compiler.getReader().current().isLetter()) {
