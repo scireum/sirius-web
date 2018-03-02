@@ -22,12 +22,12 @@ public class RawHandler extends ExpressionHandler {
 
     @Override
     public boolean shouldProcess(Compiler compiler) {
-        return compiler.isAtText(0, "@raw") && compiler.getReader().next(4).is(' ', '(');
+        return compiler.isAtText(0, "raw") && compiler.getReader().next(3).is(' ', '(');
     }
 
     @Override
     public Emitter process(Compiler compiler) {
-        compiler.getReader().consume(4);
+        compiler.getReader().consume(3);
         compiler.skipWhitespaces();
         if (compiler.getReader().current().is('(')) {
             compiler.consumeExpectedCharacter('(');

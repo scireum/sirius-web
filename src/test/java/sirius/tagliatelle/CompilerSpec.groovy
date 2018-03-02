@@ -236,4 +236,14 @@ class CompilerSpec extends BaseSpecification {
         basicallyEqual(result, expectedResult)
     }
 
+
+    def "attribute expressions work"() {
+        given:
+        String expectedResult = resources.resolve("templates/attribute-expressions.html").get().getContentAsString()
+        when:
+        String result = tagliatelle.resolve("templates/attribute-expressions.html.pasta").get().renderToString()
+        then:
+        basicallyEqual(result, expectedResult)
+    }
+
 }

@@ -23,13 +23,13 @@ public class ForHandler extends ExpressionHandler {
 
     @Override
     public boolean shouldProcess(Compiler compiler) {
-        return compiler.isAtText(0, "@for") && compiler.getReader().next(4).is(' ', '(');
+        return compiler.isAtText(0, "for") && compiler.getReader().next(3).is(' ', '(');
     }
 
     @Override
     public Emitter process(Compiler compiler) {
         LoopEmitter result = new LoopEmitter(compiler.getReader().current());
-        compiler.getReader().consume(4);
+        compiler.getReader().consume(3);
         compiler.skipWhitespaces();
         compiler.consumeExpectedCharacter('(');
         compiler.skipWhitespaces();
