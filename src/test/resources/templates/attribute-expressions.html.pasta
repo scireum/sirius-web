@@ -1,0 +1,7 @@
+<option @selected="'yes'" />
+
+<option @selected="1 < 2" />
+
+<option @selected="1 > 2" />
+
+<option @test="@toUserString(counter().inc())" />

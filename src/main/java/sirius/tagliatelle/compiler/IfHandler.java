@@ -22,13 +22,13 @@ public class IfHandler extends ExpressionHandler {
 
     @Override
     public boolean shouldProcess(Compiler compiler) {
-        return compiler.isAtText(0, "@if") && compiler.getReader().next(3).is(' ', '(');
+        return compiler.isAtText(0, "if") && compiler.getReader().next(2).is(' ', '(');
     }
 
     @Override
     public Emitter process(Compiler compiler) {
         ConditionalEmitter result = new ConditionalEmitter(compiler.getReader().current());
-        compiler.getReader().consume(3);
+        compiler.getReader().consume(2);
         compiler.skipWhitespaces();
         compiler.consumeExpectedCharacter('(');
         result.setConditionExpression(compiler.parseExpression(true));

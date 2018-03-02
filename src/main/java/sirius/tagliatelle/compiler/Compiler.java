@@ -353,7 +353,8 @@ public class Compiler extends InputProcessor {
      * @return <tt>true</tt> if the current char could mark an expression, <tt>false</tt> otherwise
      */
     private boolean isPotentialExpression() {
-        return reader.current().is('@') || (reader.current().is('_') && reader.next().is('_') && reader.next(2).is('_'));
+        return reader.current().is('@') || (reader.current().is('_') && reader.next().is('_') && reader.next(2)
+                                                                                                       .is('_'));
     }
 
     /**
@@ -367,6 +368,12 @@ public class Compiler extends InputProcessor {
             return false;
         }
 
+        if (reader.current().is('_')) {
+            reader.consume(3);
+        } else {
+            reader.consume();
+        }
+
         for (ExpressionHandler handler : expressionHandlers) {
             if (handler.shouldProcess(this)) {
                 Emitter child = handler.process(this);
@@ -377,7 +384,7 @@ public class Compiler extends InputProcessor {
             }
         }
 
-        return false;
+        throw new IllegalStateException("EvalExpressionHandler should have processed the input");
     }
 
     /**
@@ -566,8 +573,13 @@ public class Compiler extends InputProcessor {
 
         while (!reader.current().isEndOfInput()) {
             if (isAtEscapedAt()) {
+                reader.consume();
                 sb.append(reader.consume().getValue());
-                reader.consume().getValue();
+            } else if (isAtEscapedUnderscores()) {
+                reader.consume();
+                sb.append(reader.consume().getValue());
+                sb.append(reader.consume().getValue());
+                sb.append(reader.consume().getValue());
             } else {
                 if (reader.current().is('{')) {
                     numberOfOpenCurlyBrackets++;
@@ -587,12 +599,25 @@ public class Compiler extends InputProcessor {
     }
 
     /**
-     * Determines if the parser is hitting an escaped at: ({@literal @@}.
+     * Determines if the parser is hitting an escaped at: ({@literal @@}).
      *
      * @return <tt>true</tt> if the reader is at an escaped at, <tt>false</tt> otherwise
      */
     private boolean isAtEscapedAt() {
         return reader.current().is('@') && reader.next().is('@');
+    }
+
+    /**
+     * Determines if the parser is hitting an escaped underscore block: ({{@literal @___}).
+     *
+     * @return <tt>true</tt> if the reader is at an escaped underscroe block, <tt>false</tt> otherwise
+     */
+    private boolean isAtEscapedUnderscores() {
+        if (!reader.current().is('@')) {
+            return false;
+        }
+
+        return reader.next().is('_') && reader.next(2).is('_') && reader.next(3).is('_');
     }
 
     /**
