@@ -83,50 +83,55 @@ public class AssetsDispatcher implements WebDispatcher {
             return false;
         }
 
-        String uri = getEffectiveURI(ctx);
+        Tuple<String, Boolean> uriAndCacheFlag = getEffectiveURI(ctx);
 
-        if (tryStaticResource(ctx, uri)) {
+        Response response = ctx.respondWith();
+        if (uriAndCacheFlag.getSecond()) {
+            response.infinitelyCached();
+        }
+
+        if (tryStaticResource(ctx, uriAndCacheFlag.getFirst(), response)) {
             return true;
         }
 
-        if (trySASS(ctx, uri)) {
+        if (trySASS(ctx, uriAndCacheFlag.getFirst(), response)) {
             return true;
         }
 
-        return tryTagliatelle(ctx, uri);
+        return tryTagliatelle(ctx, uriAndCacheFlag.getFirst(), response);
     }
 
-    private boolean tryStaticResource(WebContext ctx, String uri) throws URISyntaxException, IOException {
+    private boolean tryStaticResource(WebContext ctx, String uri, Response response)
+            throws URISyntaxException, IOException {
         Optional<Resource> res = resources.resolve(uri);
         if (res.isPresent()) {
             ctx.enableTiming("/assets/");
             URL url = res.get().getUrl();
             if ("file".equals(url.getProtocol())) {
-                ctx.respondWith().file(new File(url.toURI()));
+                response.file(new File(url.toURI()));
             } else {
-                ctx.respondWith().resource(url.openConnection());
+                response.resource(url.openConnection());
             }
             return true;
         }
         return false;
     }
 
-    private String getEffectiveURI(WebContext ctx) {
+    private Tuple<String, Boolean> getEffectiveURI(WebContext ctx) {
         String uri = ctx.getRequestedURI();
         if (uri.startsWith("/assets/dynamic")) {
             uri = uri.substring(16);
             Tuple<String, String> pair = Strings.split(uri, "/");
-            uri = "/assets/" + pair.getSecond();
+            return Tuple.create("/assets/" + pair.getSecond(), true);
         }
 
-        return uri;
+        return Tuple.create(uri, false);
     }
 
-    private boolean tryTagliatelle(WebContext ctx, String uri) {
+    private boolean tryTagliatelle(WebContext ctx, String uri, Response response) {
         try {
             Optional<Template> template = tagliatelle.resolve(uri + ".pasta");
             if (template.isPresent()) {
-                Response response = ctx.respondWith().cached();
                 if (!handleUnmodified(template.get(), response)) {
                     response.template(HttpResponseStatus.OK, template.get());
                 }
@@ -149,7 +154,7 @@ public class AssetsDispatcher implements WebDispatcher {
         return response.handleIfModifiedSince(template.getCompilationTimestamp());
     }
 
-    private boolean trySASS(WebContext ctx, String uri) {
+    private boolean trySASS(WebContext ctx, String uri, Response response) {
         if (!uri.endsWith(".css")) {
             return false;
         }
@@ -157,13 +162,29 @@ public class AssetsDispatcher implements WebDispatcher {
         String scopeId = UserContext.getCurrentScope().getScopeId();
 
         String scssUri = uri.substring(0, uri.length() - 4) + ".scss";
-        if (resources.resolve(scssUri).isPresent()) {
-            ctx.enableTiming("/assets/*.css");
-            handleSASS(ctx, uri, scssUri, scopeId);
-            return true;
+        Optional<Resource> resource = resources.resolve(scssUri);
+        if (!resource.isPresent()) {
+            return false;
         }
 
-        return false;
+        ctx.enableTiming("/assets/*.css");
+        String cacheKey = scopeId + "-" + Files.toSaneFileName(uri.substring(1)).orElse("");
+        File file = new File(getCacheDirFile(), cacheKey);
+
+        if (Sirius.isStartedAsTest() || !file.exists() || file.lastModified() < resource.get().getLastModified()) {
+            try {
+                compileSASS(scssUri, file);
+            } catch (Exception t) {
+                if (!file.delete()) {
+                    Templates.LOG.WARN("Cannot delete temporary file: %s", file.getAbsolutePath());
+                }
+                ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(Templates.LOG, t));
+                return true;
+            }
+        }
+
+        response.named(uri.substring(uri.lastIndexOf("/") + 1)).file(file);
+        return true;
     }
 
     /*
@@ -191,41 +212,17 @@ public class AssetsDispatcher implements WebDispatcher {
         }
     }
 
-    /*
-     * Uses server-sass to compile a SASS file (.scss) into a .css file
-     */
-    private void handleSASS(WebContext ctx, String uri, String scssUri, String scopeId) {
-        String cacheKey = scopeId + "-" + Files.toSaneFileName(uri.substring(1)).orElse("");
-        File file = new File(getCacheDirFile(), cacheKey);
+    private void compileSASS(String scssUri, File file) throws IOException {
 
-        Optional<Resource> resource = resources.resolve(scssUri);
-        if (!resource.isPresent()) {
-            return;
+        Resources.LOG.FINE("Compiling: " + scssUri);
+        SIRIUSGenerator gen = new SIRIUSGenerator();
+        gen.importStylesheet(scssUri);
+        gen.compile();
+        try (FileWriter writer = new FileWriter(file, false)) {
+            // Let the content compressor take care of minifying the CSS
+            Output out = new Output(writer, false);
+            gen.generate(out);
         }
-
-        Resource resolved = resource.get();
-        if (Sirius.isStartedAsTest() || !file.exists() || file.lastModified() < resolved.getLastModified()) {
-            try {
-                Resources.LOG.FINE("Compiling: " + scssUri);
-                SIRIUSGenerator gen = new SIRIUSGenerator();
-                gen.importStylesheet(scssUri);
-                gen.compile();
-                try (FileWriter writer = new FileWriter(file, false)) {
-                    // Let the content compressor take care of minifying the CSS
-                    Output out = new Output(writer, false);
-                    gen.generate(out);
-                }
-            } catch (Exception t) {
-                if (!file.delete()) {
-                    Templates.LOG.WARN("Cannot delete temporary file: %s", file.getAbsolutePath());
-                }
-                ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(Templates.LOG, t));
-                return;
-            }
-        }
-
-        ctx.respondWith().
-                named(uri.substring(uri.lastIndexOf("/") + 1)).file(file);
     }
 
     /**
