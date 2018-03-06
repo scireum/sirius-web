@@ -37,4 +37,31 @@ class WebContextSpec extends BaseSpecification {
         r.getQueryString() == ""
     }
 
+    def "withCustomURI rewrites the uri correctly and removes the existing query string"() {
+        when:
+        TestRequest r = TestRequest.GET("/test?a=a")
+        and:
+        r.withCustomURI("/test%2Ftest?b=b")
+        then:
+        r.getRawRequestedURI() == "/test%2Ftest"
+        and:
+        r.getRequestedURI() == "/test/test"
+        and:
+        !r.get("a").isFilled()
+        and:
+        r.get("b").isFilled()
+    }
+
+    def "withCustomPath rewrites the path correctly without removing the existing query string"() {
+        when:
+        TestRequest r = TestRequest.GET("/test?a=a")
+        and:
+        r.withCustomPath("/test/test")
+        then:
+        r.getRawRequestedURI() == "/test/test"
+        and:
+        r.getRequestedURI() == "/test/test"
+        and:
+        r.get("a").isFilled()
+    }
 }
