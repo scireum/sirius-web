@@ -818,8 +818,7 @@ public class WebContext implements SubContext {
      */
     public String getRawRequestedURI() {
         if (rawRequestedURI == null && request != null) {
-            int pathEndPos = request.uri().indexOf('?');
-            rawRequestedURI = pathEndPos < 0 ? request.uri() : request.uri().substring(0, pathEndPos);
+            rawRequestedURI = stripQueryFromURI(request.uri());
         }
         return rawRequestedURI;
     }
@@ -1052,12 +1051,23 @@ public class WebContext implements SubContext {
     }
 
     /**
+     * Strips the query part of a uri.
+     *
+     * @param uri the uri to remove the query string of
+     * @return the uri without the query string
+     */
+    private String stripQueryFromURI(String uri) {
+        int pathEndPos = uri.indexOf('?');
+        return pathEndPos < 0 ? uri : uri.substring(0, pathEndPos);
+    }
+
+    /**
      * Overwrites the uri with the given one.
      * <p>
      * This can be used to control dispatching or to even re-dispatch a request for another destination.
      * <p>
-     * Note however, that only the the <tt>requestedURI</tt> and the <tt>queryString</tt> are overwritten, not the one
-     * of the underlying request.
+     * Note however, that only the the <tt>requestedURI</tt>, <tt>queryString</tt> and the <tt>rawRequestedURI</tt> are
+     * overwritten, not the one of the underlying request.
      *
      * @param uri the new uri to use. The uri and its query string will be parsed and the internal fields are updated
      *            accordingly.
@@ -1067,6 +1077,7 @@ public class WebContext implements SubContext {
         QueryStringDecoder qsd = new QueryStringDecoder(uri, Charsets.UTF_8);
         requestedURI = qsd.path();
         queryString = qsd.parameters();
+        rawRequestedURI = stripQueryFromURI(uri);
 
         return this;
     }
@@ -1086,6 +1097,7 @@ public class WebContext implements SubContext {
             decodeQueryString();
         }
         requestedURI = path;
+        rawRequestedURI = stripQueryFromURI(path);
 
         return this;
     }
