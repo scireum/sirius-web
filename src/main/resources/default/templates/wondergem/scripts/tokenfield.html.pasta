@@ -53,8 +53,9 @@
                     this.tokenElement.val("");
 
                     // create initial tokens
+                    input.allTokens = [];
                     $.each(this.value.split(tokenfieldConfig.delimiter), function(index, element) {
-                        this.allTokens = [{label: element, value: element, initialQueryIdentifier: true}];
+                        input.allTokens.push({label: element, value: element, initialQueryIdentifier: true});
                     });
 
                     this.element.on('tokenfield:removedtoken', function (e) {
