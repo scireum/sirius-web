@@ -10,6 +10,7 @@ package sirius.web.controller;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.async.Promise;
 import sirius.kernel.async.TaskContext;
 import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Explain;
@@ -218,8 +219,14 @@ public class ControllerDispatcher implements WebDispatcher {
         out.beginResult();
         out.property("success", true);
         out.property("error", false);
-        route.getMethod().invoke(route.getController(), params.toArray());
-        out.endResult();
+        Object result = route.getMethod().invoke(route.getController(), params.toArray());
+        if (result instanceof Promise) {
+            ((Promise<?>) result).onSuccess(ignored -> out.endResult()).onFailure(e -> {
+                handleFailure(ctx, route, e);
+            });
+        } else {
+            out.endResult();
+        }
     }
 
     private void handlePermissionError(WebContext ctx, Route route, String missingPermission) throws Exception {
