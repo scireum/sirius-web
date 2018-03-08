@@ -801,6 +801,22 @@ public class WebContext implements SubContext {
     }
 
     /**
+     * Clears all previously cached user messages
+     */
+    public void clearCachedUserMessages() {
+        if (!isValid()) {
+            return;
+        }
+
+        String cachedMessagesId = getSessionValue(CACHED_MESSAGES_ID).asString();
+
+        if (Strings.isFilled(cachedMessagesId)) {
+            userMessageCache.remove(cachedMessagesId);
+            setSessionValue(CACHED_MESSAGES_ID, null);
+        }
+    }
+
+    /**
      * Returns the decoded requested URI of the underlying HTTP request, without the query string
      *
      * @return the decoded uri of the underlying request
