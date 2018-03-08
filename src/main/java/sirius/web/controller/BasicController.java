@@ -75,7 +75,7 @@ public class BasicController implements Controller {
      *
      * @return the currently active user
      */
-    protected UserInfo getUser() {
+    protected static UserInfo getUser() {
         return UserContext.getCurrentUser();
     }
 

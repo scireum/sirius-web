@@ -417,4 +417,8 @@ public class UserInfo extends Composable {
             return settingsSupplier.apply(this);
         }
     }
+
+    protected void setPermissions(Set<String> permissions) {
+        this.permissions = permissions;
+    }
 }
