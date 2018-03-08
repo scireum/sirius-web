@@ -11,6 +11,9 @@ package sirius.web.controller;
 import com.google.common.io.ByteStreams;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import sirius.kernel.async.Future;
+import sirius.kernel.async.Tasks;
+import sirius.kernel.commons.Wait;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.HandledException;
@@ -25,6 +28,9 @@ import java.util.List;
 
 @Register
 public class TestController implements Controller {
+
+    @Part
+    private Tasks tasks;
 
     @Override
     public void onError(WebContext ctx, HandledException error) {
@@ -157,5 +163,13 @@ public class TestController implements Controller {
     @Routed("/test/fake-delete-data")
     public void deleteData(WebContext ctx) {
         ctx.respondWith().template("templates/helloWorld.pasta", "test");
+    }
+
+    @Routed(value = "/test/json/async", jsonCall = true)
+    public Future asyncJSONCall(WebContext ctx, JSONStructuredOutput out) {
+        return tasks.defaultExecutor().start(() -> {
+            Wait.seconds(1);
+            out.property("test", "1");
+        });
     }
 }

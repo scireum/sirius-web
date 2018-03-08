@@ -84,10 +84,9 @@ public @interface Routed {
      * within the controller method, a result with <tt>success</tt>, <tt>errro</tt> and <tt>message</tt> is
      * automatically created.
      * <p>
-     * <b>Note:</b> The implementing method must not fork a new thread and pass the given output along,
-     * as it is closed by the framework once the method completed. If this is a requirement, create your
-     * own output by setting jsonCall to <tt>false</tt> and using {@code ctx.respondWith().json()}
-     * manually.
+     * <b>Note:</b> If implementing method does fork a new thread and pass the given output along,
+     * the method must return a {@link sirius.kernel.async.Promise} or {@link sirius.kernel.async.Future}
+     * so that the dispatcher knowns when the generated output is complete.
      * </p>
      *
      * @return <tt>true</tt> if the method is used to create a JSON response for an AJAX call, <tt>false</tt> otherwise

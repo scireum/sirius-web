@@ -549,4 +549,14 @@ class WebServerSpec extends BaseSpecification {
         then:
         JSON.parseObject(data).get("test") == '   '
     }
+
+    def "async JSON calls work"() {
+        given:
+        def uri = "/test/json/async"
+        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
+        when:
+        def data = callAndRead(uri, null, expectedHeaders)
+        then:
+        JSON.parseObject(data).get("test") == '1'
+    }
 }
