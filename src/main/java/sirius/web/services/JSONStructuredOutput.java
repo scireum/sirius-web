@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.nio.channels.ClosedChannelException;
 
 /**
  * Encoder to generate JSON via the {@link sirius.kernel.xml.StructuredOutput} interface.
@@ -60,6 +61,8 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
     protected void endArray(String name) {
         try {
             writer.write("]");
+        } catch (ClosedChannelException e) {
+            throw Exceptions.createHandled().error(e).withSystemErrorMessage("An IO exception occurred: %s").handle();
         } catch (IOException e) {
             throw Exceptions.handle(e);
         }
@@ -69,6 +72,8 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
     protected void endObject(String name) {
         try {
             writer.write("}");
+        } catch (ClosedChannelException e) {
+            throw Exceptions.createHandled().error(e).withSystemErrorMessage("An IO exception occurred: %s").handle();
         } catch (IOException e) {
             throw Exceptions.handle(e);
         }
@@ -84,6 +89,8 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
             } else {
                 writer.write("[");
             }
+        } catch (ClosedChannelException e) {
+            throw Exceptions.createHandled().error(e).withSystemErrorMessage("An IO exception occurred: %s").handle();
         } catch (IOException e) {
             throw Exceptions.handle(e);
         }
@@ -184,6 +191,8 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
                 writer.write("(");
             }
             beginObject("result");
+        } catch (ClosedChannelException e) {
+            throw Exceptions.createHandled().error(e).withSystemErrorMessage("An IO exception occurred: %s").handle();
         } catch (IOException e) {
             throw Exceptions.handle(e);
         }
@@ -211,6 +220,8 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
             } else {
                 writeString(data.toString());
             }
+        } catch (ClosedChannelException e) {
+            throw Exceptions.createHandled().error(e).withSystemErrorMessage("An IO exception occurred: %s").handle();
         } catch (IOException e) {
             throw Exceptions.handle(e);
         }
@@ -220,6 +231,11 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
         if (!isCurrentObjectEmpty()) {
             try {
                 writer.write(",");
+            } catch (ClosedChannelException e) {
+                throw Exceptions.createHandled()
+                                .error(e)
+                                .withSystemErrorMessage("An IO exception occurred: %s")
+                                .handle();
             } catch (IOException e) {
                 throw Exceptions.handle(e);
             }
@@ -235,6 +251,8 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
                 writer.write(")");
             }
             writer.close();
+        } catch (ClosedChannelException e) {
+            throw Exceptions.createHandled().error(e).withSystemErrorMessage("An IO exception occurred: %s").handle();
         } catch (IOException e) {
             throw Exceptions.handle(e);
         }
