@@ -1061,7 +1061,6 @@ public class Response {
                                                                    .handle());
             template(status, template, params);
         } catch (CompileException e) {
-
             throw Exceptions.handle().to(Resources.LOG).error(e).withSystemErrorMessage("%s", e.getMessage()).handle();
         }
     }

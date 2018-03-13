@@ -9,6 +9,7 @@
 package sirius.web.dispatch;
 
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.commons.Strings;
@@ -16,11 +17,17 @@ import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
+import sirius.tagliatelle.Tagliatelle;
+import sirius.tagliatelle.Template;
+import sirius.tagliatelle.compiler.CompileException;
+import sirius.web.controller.Message;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
+import sirius.web.security.UserContext;
 
 import java.io.IOException;
 import java.util.List;
@@ -45,6 +52,9 @@ public class HelpDispatcher implements WebDispatcher {
 
     @Part
     private Resources resources;
+
+    @Part
+    private Tagliatelle tagliatelle;
 
     @Override
     public boolean preDispatch(WebContext ctx) throws Exception {
@@ -73,21 +83,24 @@ public class HelpDispatcher implements WebDispatcher {
             return serveTopic(ctx, HELP_PREFIX + "/" + indexTemplate);
         }
 
+        if (uri.contains(".") && !uri.endsWith(PASTA_SUFFIX)) {
+            return serveAsset(ctx, uri);
+        }
+
         // cut /help/ and try to extract the locale
         Tuple<String, String> langAndTopic = Strings.split(uri.substring(HELP_PREFIX_LENGTH), "/");
-        setupLang(langAndTopic.getFirst());
-        if (Strings.isEmpty(langAndTopic.getSecond())) {
-            if (Strings.areEqual(langAndTopic.getFirst(), NLS.getDefaultLanguage())) {
-                return serveTopic(ctx, HELP_PREFIX + "/" + indexTemplate);
-            } else {
-                return serveTopic(ctx, HELP_PREFIX + "/" + langAndTopic.getFirst() + "/" + indexTemplate);
+        boolean languageFound = setupLang(langAndTopic.getFirst());
+
+        if (!languageFound || Strings.isFilled(langAndTopic.getSecond())) {
+            if (serveTopic(ctx, uri)) {
+                return true;
             }
         }
 
-        if (uri.contains(".") && !uri.endsWith(PASTA_SUFFIX)) {
-            return serveAsset(ctx, uri);
+        if (!languageFound || Strings.areEqual(langAndTopic.getFirst(), NLS.getDefaultLanguage())) {
+            return serveTopic(ctx, HELP_PREFIX + "/" + indexTemplate);
         } else {
-            return serveTopic(ctx, uri);
+            return serveTopic(ctx, HELP_PREFIX + "/" + langAndTopic.getFirst() + "/" + indexTemplate);
         }
     }
 
@@ -102,17 +115,35 @@ public class HelpDispatcher implements WebDispatcher {
     }
 
     private boolean serveTopic(WebContext ctx, String uri) {
-        if (uri.endsWith(PASTA_SUFFIX)) {
-            ctx.respondWith().cached().template(uri);
-        } else {
-            ctx.respondWith().cached().template(uri + PASTA_SUFFIX);
+        Template template = resolveTemplate(uri);
+        if (template != null) {
+            ctx.respondWith().cached().template(HttpResponseStatus.OK, template);
+            return true;
         }
-        return true;
+
+        UserContext.get().addMessage(Message.error(NLS.get("HelpDispatcher.unknownTopic")));
+        return false;
     }
 
-    private void setupLang(String lang) {
+    private Template resolveTemplate(String uri) {
+        try {
+            return tagliatelle.resolve(uri.endsWith(PASTA_SUFFIX) ? uri : uri + PASTA_SUFFIX).orElse(null);
+        } catch (CompileException e) {
+            Exceptions.handle()
+                      .to(Tagliatelle.LOG)
+                      .error(e)
+                      .withSystemErrorMessage("Failed to render the template '%s': %s (%s)", uri)
+                      .handle();
+            return null;
+        }
+    }
+
+    private boolean setupLang(String lang) {
         if (LANG_PATTERN.matcher(lang).matches() && helpSystemLanguageDirectories.contains(lang)) {
             CallContext.getCurrent().setLang(lang);
+            return true;
         }
+
+        return false;
     }
 }
