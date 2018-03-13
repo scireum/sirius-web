@@ -19,10 +19,10 @@ import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.LastHttpContent;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.health.Exceptions;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.channels.ClosedChannelException;
 
 /**
  * Provides an adapter from {@link OutputStream} to an underlying channel using a buffer.
@@ -89,14 +89,14 @@ class ChunkedOutputStream extends OutputStream {
         }
     }
 
-    private void failIfChannelIsNotOpen() throws ClosedChannelException {
+    private void failIfChannelIsNotOpen() {
         if (!response.ctx.channel().isOpen()) {
             open = false;
             if (buffer != null) {
                 buffer.release();
                 buffer = null;
             }
-            throw new ClosedChannelException();
+            throw Exceptions.createHandled().withSystemErrorMessage("Channel was closed").handle();
         }
     }
 
