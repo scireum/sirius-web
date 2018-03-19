@@ -78,7 +78,7 @@ public class Message {
     /**
      * Returns the type of the message
      *
-     * @return the type (one of {@link #INFO}, {@link #WARN}, {@link #ERROR})
+     * @return the type (one of {@link #SUCCESS}, {@link #INFO}, {@link #WARN}, {@link #ERROR})
      */
     public String getType() {
         return type;
