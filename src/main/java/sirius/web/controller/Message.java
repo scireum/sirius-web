@@ -18,6 +18,11 @@ import sirius.web.security.UserContext;
 public class Message {
 
     /**
+     * Declares a message as success.
+     */
+    public static final String SUCCESS = "alert-success";
+
+    /**
      * Declares a message as information.
      */
     public static final String INFO = "alert-info";
@@ -73,7 +78,7 @@ public class Message {
     /**
      * Returns the type of the message
      *
-     * @return the type (one of {@link #INFO}, {@link #WARN}, {@link #ERROR})
+     * @return the type (one of {@link #SUCCESS}, {@link #INFO}, {@link #WARN}, {@link #ERROR})
      */
     public String getType() {
         return type;
@@ -136,6 +141,16 @@ public class Message {
     @Override
     public String toString() {
         return messageText;
+    }
+
+    /**
+     * Factory method to create a success message
+     *
+     * @param message the message content
+     * @return a new message with the given content and SUCCESS as type
+     */
+    public static Message success(String message) {
+        return new Message(message, null, SUCCESS);
     }
 
     /**
