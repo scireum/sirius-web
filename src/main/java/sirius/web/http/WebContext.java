@@ -20,7 +20,6 @@ import com.google.common.io.Files;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.MessageAggregationException;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
@@ -38,9 +37,6 @@ import io.netty.handler.codec.http.multipart.InterfaceHttpPostRequestDecoder;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
 import sirius.kernel.cache.Cache;
-import sirius.kernel.cache.CacheManager;
-import sirius.kernel.cache.distributed.DefaultValueParser;
-import sirius.kernel.cache.distributed.ValueParser;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
@@ -53,6 +49,8 @@ import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.StructuredInput;
 import sirius.kernel.xml.XMLStructuredInput;
+import sirius.web.cache.DistributedCacheManager;
+import sirius.web.cache.ValueParser;
 import sirius.web.controller.Message;
 import sirius.web.security.UserContext;
 
@@ -784,25 +782,26 @@ public class WebContext implements SubContext {
 
     private static Cache<String, List<Message>> getUserMessageCache() {
         if (userMessageCache == null) {
-            userMessageCache = CacheManager.createDistributedCache("user-messages", new ValueParser<List<Message>>() {
-                @Override
-                public List<Message> toObject(String json) {
-                    List<Message> messages = new ArrayList<>();
-                    JSONArray jsonArray = JSON.parseArray(json);
-                    for (int i = 0; i < jsonArray.size(); i++) {
-                        JSONObject jsonObject = jsonArray.getJSONObject(i);
-                        messages.add(new Message(jsonObject.getString("message"),
-                                                 jsonObject.getString("details"),
-                                                 jsonObject.getString("type")));
-                    }
-                    return messages;
-                }
+            userMessageCache =
+                    DistributedCacheManager.createDistributedCache("user-messages", new ValueParser<List<Message>>() {
+                        @Override
+                        public List<Message> toObject(String json) {
+                            List<Message> messages = new ArrayList<>();
+                            JSONArray jsonArray = JSON.parseArray(json);
+                            for (int i = 0; i < jsonArray.size(); i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                messages.add(new Message(jsonObject.getString("message"),
+                                                         jsonObject.getString("details"),
+                                                         jsonObject.getString("type")));
+                            }
+                            return messages;
+                        }
 
-                @Override
-                public String toJSON(List<Message> object) {
-                    return JSON.toJSONString(object);
-                }
-            });
+                        @Override
+                        public String toJSON(List<Message> object) {
+                            return JSON.toJSONString(object);
+                        }
+                    });
         }
         return userMessageCache;
     }
