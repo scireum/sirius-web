@@ -8,6 +8,7 @@
 package sirius.web.http;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
@@ -19,6 +20,7 @@ import com.google.common.io.Files;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.MessageAggregationException;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
@@ -37,6 +39,8 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
 import sirius.kernel.cache.Cache;
 import sirius.kernel.cache.CacheManager;
+import sirius.kernel.cache.distributed.DefaultValueParser;
+import sirius.kernel.cache.distributed.ValueParser;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
@@ -329,7 +333,7 @@ public class WebContext implements SubContext {
      */
     public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
 
-    private static Cache<String, List<Message>> userMessageCache = CacheManager.createCache("user-messages");
+    private static Cache<String, List<Message>> userMessageCache;
 
     /**
      * Provides access to the underlying ChannelHandlerContext
@@ -774,8 +778,33 @@ public class WebContext implements SubContext {
         }
 
         String cacheId = Strings.generateCode(32);
-        userMessageCache.put(cacheId, messages);
+        getUserMessageCache().put(cacheId, messages);
         setSessionValue(CACHED_MESSAGES_ID, cacheId);
+    }
+
+    private static Cache<String, List<Message>> getUserMessageCache() {
+        if (userMessageCache == null) {
+            userMessageCache = CacheManager.createDistributedCache("user-messages", new ValueParser<List<Message>>() {
+                @Override
+                public List<Message> toObject(String json) {
+                    List<Message> messages = new ArrayList<>();
+                    JSONArray jsonArray = JSON.parseArray(json);
+                    for (int i = 0; i < jsonArray.size(); i++) {
+                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                        messages.add(new Message(jsonObject.getString("message"),
+                                                 jsonObject.getString("details"),
+                                                 jsonObject.getString("type")));
+                    }
+                    return messages;
+                }
+
+                @Override
+                public String toJSON(List<Message> object) {
+                    return JSON.toJSONString(object);
+                }
+            });
+        }
+        return userMessageCache;
     }
 
     /**
@@ -791,10 +820,10 @@ public class WebContext implements SubContext {
             return;
         }
 
-        List<Message> cachedMessages = userMessageCache.get(cachedMessagesId);
+        List<Message> cachedMessages = getUserMessageCache().get(cachedMessagesId);
         if (cachedMessages != null) {
             cachedMessages.forEach(UserContext::message);
-            userMessageCache.remove(cachedMessagesId);
+            getUserMessageCache().remove(cachedMessagesId);
         }
 
         setSessionValue(CACHED_MESSAGES_ID, null);
@@ -811,7 +840,7 @@ public class WebContext implements SubContext {
         String cachedMessagesId = getSessionValue(CACHED_MESSAGES_ID).asString();
 
         if (Strings.isFilled(cachedMessagesId)) {
-            userMessageCache.remove(cachedMessagesId);
+            getUserMessageCache().remove(cachedMessagesId);
             setSessionValue(CACHED_MESSAGES_ID, null);
         }
     }
@@ -827,6 +856,7 @@ public class WebContext implements SubContext {
         }
         return requestedURI;
     }
+
     /**
      * Returns the raw undecoded requested URI of the underlying HTTP request, without the query string
      *
