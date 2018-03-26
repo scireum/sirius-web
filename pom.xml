@@ -13,16 +13,20 @@
     <name>SIRIUS web</name>
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
+    <properties>
+        <sirius.kernel>8.1</sirius.kernel>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.scireum</groupId>
             <artifactId>sirius-kernel</artifactId>
-            <version>7.5.3</version>
+            <version>${sirius.kernel}</version>
         </dependency>
         <dependency>
             <groupId>com.scireum</groupId>
             <artifactId>sirius-kernel</artifactId>
-            <version>7.5.3</version>
+            <version>${sirius.kernel}</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
