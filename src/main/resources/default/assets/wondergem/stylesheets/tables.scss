@@ -72,11 +72,13 @@ tfoot {
 
   tr > th:first-child {
     width: 10px;
+    min-width: 10px;
     padding: 0px;
   }
 
   tr > td:first-child {
     width: 10px;
+    min-width: 10px;
     padding: 0px;
   }
 
