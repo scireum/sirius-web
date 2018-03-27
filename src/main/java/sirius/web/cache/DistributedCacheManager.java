@@ -95,6 +95,9 @@ public class DistributedCacheManager {
                      + "DistributedCacheFactories are injected at runtime, so maybe you need to wait for system start.");
             return CacheManager.createCache(name, valueComputer, verifier);
         }
-        return distributedCacheFactory.createDistributedCache(name, valueComputer, verifier, valueParser);
+        Cache<String, V> cache =
+                distributedCacheFactory.createDistributedCache(name, valueComputer, verifier, valueParser);
+        CacheManager.addCache(cache);
+        return cache;
     }
 }
