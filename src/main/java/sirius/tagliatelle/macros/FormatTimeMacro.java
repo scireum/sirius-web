@@ -65,11 +65,11 @@ public class FormatTimeMacro implements Macro {
     @Nonnull
     @Override
     public String getName() {
-        return "formatDate";
+        return "formatTime";
     }
 
     @Override
     public String getDescription() {
-        return "Formats the given parameter as date.";
+        return "Formats the given parameter as time.";
     }
 }
