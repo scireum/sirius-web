@@ -822,6 +822,7 @@ public class WebContext implements SubContext {
         String cachedMessagesId = getSessionValue(CACHED_MESSAGES_ID).asString();
 
         if (Strings.isFilled(cachedMessagesId)) {
+            getUserMessageCache().getAndRemove(cachedMessagesId);
             setSessionValue(CACHED_MESSAGES_ID, null);
         }
     }
