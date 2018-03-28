@@ -34,6 +34,7 @@ import io.netty.handler.codec.http.multipart.HttpData;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.InterfaceHttpPostRequestDecoder;
+import org.jetbrains.annotations.NotNull;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
 import sirius.kernel.cache.Cache;
@@ -782,29 +783,10 @@ public class WebContext implements SubContext {
     }
 
     private static ReadOnceCache<List<Message>> getUserMessageCache() {
-        if (userMessageCache != null) {
-            return userMessageCache;
+        if (userMessageCache == null) {
+            userMessageCache =
+                    ReadOnceCacheManager.createDistributedReadOnceCache("user-messages", new MessageValueParser());
         }
-        userMessageCache =
-                ReadOnceCacheManager.createDistributedReadOnceCache("user-messages", new ValueParser<List<Message>>() {
-                    @Override
-                    public List<Message> toObject(String json) {
-                        List<Message> messages = new ArrayList<>();
-                        JSONArray jsonArray = JSON.parseArray(json);
-                        for (int i = 0; i < jsonArray.size(); i++) {
-                            JSONObject jsonObject = jsonArray.getJSONObject(i);
-                            messages.add(new Message(jsonObject.getString("message"),
-                                                     jsonObject.getString("details"),
-                                                     jsonObject.getString("type")));
-                        }
-                        return messages;
-                    }
-
-                    @Override
-                    public String toJSON(List<Message> object) {
-                        return JSON.toJSONString(object);
-                    }
-                });
         return userMessageCache;
     }
 
@@ -1981,5 +1963,45 @@ public class WebContext implements SubContext {
     public void detach() {
         // Detaching the context from the current thread has no consequences as
         // a request cann be passed on to another thread...
+    }
+
+    private static class MessageValueParser implements ValueParser<List<Message>> {
+        @Override
+        public List<Message> toObject(String json) {
+            List<Message> messages = new ArrayList<>();
+            JSONArray jsonArray = JSON.parseArray(json);
+            for (int i = 0; i < jsonArray.size(); i++) {
+                messages.add(parseMessage(jsonArray.getJSONObject(i)));
+            }
+            return messages;
+        }
+
+        @NotNull
+        private Message parseMessage(JSONObject jsonObject) {
+            Message message = new Message(jsonObject.getString("message"),
+                                          jsonObject.getString("details"),
+                                          jsonObject.getString("type"));
+
+            String action = jsonObject.getString("action");
+            String actionLabel = jsonObject.getString("actionLabel");
+            boolean actionJavascript = jsonObject.getBoolean("actionJavascript");
+
+            if (Strings.isEmpty(action)) {
+                return message;
+            }
+
+            if (actionJavascript) {
+                message.withJavascriptAction(action, actionLabel);
+            } else {
+                message.withAction(action, actionLabel);
+            }
+
+            return message;
+        }
+
+        @Override
+        public String toJSON(List<Message> object) {
+            return JSON.toJSONString(object);
+        }
     }
 }
