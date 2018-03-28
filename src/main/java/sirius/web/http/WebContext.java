@@ -49,7 +49,8 @@ import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.StructuredInput;
 import sirius.kernel.xml.XMLStructuredInput;
-import sirius.web.cache.DistributedCacheManager;
+import sirius.web.cache.ReadOnceCache;
+import sirius.web.cache.ReadOnceCacheManager;
 import sirius.web.cache.ValueParser;
 import sirius.web.controller.Message;
 import sirius.web.security.UserContext;
@@ -331,7 +332,7 @@ public class WebContext implements SubContext {
      */
     public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
 
-    private static Cache<String, List<Message>> userMessageCache;
+    private static ReadOnceCache<List<Message>> userMessageCache;
 
     /**
      * Provides access to the underlying ChannelHandlerContext
@@ -780,29 +781,30 @@ public class WebContext implements SubContext {
         setSessionValue(CACHED_MESSAGES_ID, cacheId);
     }
 
-    private static Cache<String, List<Message>> getUserMessageCache() {
-        if (userMessageCache == null) {
-            userMessageCache =
-                    DistributedCacheManager.createDistributedCache("user-messages", new ValueParser<List<Message>>() {
-                        @Override
-                        public List<Message> toObject(String json) {
-                            List<Message> messages = new ArrayList<>();
-                            JSONArray jsonArray = JSON.parseArray(json);
-                            for (int i = 0; i < jsonArray.size(); i++) {
-                                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                messages.add(new Message(jsonObject.getString("message"),
-                                                         jsonObject.getString("details"),
-                                                         jsonObject.getString("type")));
-                            }
-                            return messages;
-                        }
-
-                        @Override
-                        public String toJSON(List<Message> object) {
-                            return JSON.toJSONString(object);
-                        }
-                    });
+    private static ReadOnceCache<List<Message>> getUserMessageCache() {
+        if (userMessageCache != null) {
+            return userMessageCache;
         }
+        userMessageCache =
+                ReadOnceCacheManager.createDistributedReadOnceCache("user-messages", new ValueParser<List<Message>>() {
+                    @Override
+                    public List<Message> toObject(String json) {
+                        List<Message> messages = new ArrayList<>();
+                        JSONArray jsonArray = JSON.parseArray(json);
+                        for (int i = 0; i < jsonArray.size(); i++) {
+                            JSONObject jsonObject = jsonArray.getJSONObject(i);
+                            messages.add(new Message(jsonObject.getString("message"),
+                                                     jsonObject.getString("details"),
+                                                     jsonObject.getString("type")));
+                        }
+                        return messages;
+                    }
+
+                    @Override
+                    public String toJSON(List<Message> object) {
+                        return JSON.toJSONString(object);
+                    }
+                });
         return userMessageCache;
     }
 
@@ -819,10 +821,9 @@ public class WebContext implements SubContext {
             return;
         }
 
-        List<Message> cachedMessages = getUserMessageCache().get(cachedMessagesId);
+        List<Message> cachedMessages = getUserMessageCache().getAndRemove(cachedMessagesId);
         if (cachedMessages != null) {
             cachedMessages.forEach(UserContext::message);
-            getUserMessageCache().remove(cachedMessagesId);
         }
 
         setSessionValue(CACHED_MESSAGES_ID, null);
@@ -839,7 +840,6 @@ public class WebContext implements SubContext {
         String cachedMessagesId = getSessionValue(CACHED_MESSAGES_ID).asString();
 
         if (Strings.isFilled(cachedMessagesId)) {
-            getUserMessageCache().remove(cachedMessagesId);
             setSessionValue(CACHED_MESSAGES_ID, null);
         }
     }
