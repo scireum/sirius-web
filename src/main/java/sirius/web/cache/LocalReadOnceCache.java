@@ -11,6 +11,11 @@ package sirius.web.cache;
 import sirius.kernel.cache.Cache;
 import sirius.kernel.cache.CacheManager;
 
+/**
+ * A {@link ReadOnceCache} backed by a {@link Cache} created by the {@link CacheManager}.
+ *
+ * @param <V> The type of the value.
+ */
 public class LocalReadOnceCache<V> implements ReadOnceCache<V> {
 
     private Cache<String, V> cache;
