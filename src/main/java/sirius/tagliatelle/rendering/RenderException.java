@@ -40,7 +40,7 @@ public class RenderException extends Exception {
         }
 
         if (ex.getCause() instanceof RenderException) {
-            return (RenderException)ex.getCause();
+            return (RenderException) ex.getCause();
         }
 
         String renderStack = Strings.apply("%nRender Stack:%n------------%n%s%n", context.toString());

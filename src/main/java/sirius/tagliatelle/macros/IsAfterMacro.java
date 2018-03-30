@@ -26,7 +26,8 @@ public class IsAfterMacro extends DateComparingMacro {
 
     @Override
     public String getDescription() {
-        return "Compares if the first given date / date with time is after the second given date / date with time or the curent date / date with time if no second argument was given.";
+        return "Compares if the first given date / date with time is after the second given date / "
+               + "date with time or the curent date / date with time if no second argument was given.";
     }
 
     @Nonnull
