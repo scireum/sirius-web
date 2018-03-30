@@ -16,7 +16,7 @@
         <meta property="og:title" content="@i18n('help'): @title">
         <i:if test="isFilled(description)">
             <meta property="og:description" content="@description">
-        </script>
+        </i:if>
         <script type="text/javascript" src="/assets/libs/prettify/run_prettify.js?skin=@prettifySkin"></script>
 
         <script type="text/javascript">
