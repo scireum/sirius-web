@@ -49,7 +49,7 @@ public class InlineResourceMacro implements Macro {
         }
 
         Optional<Resource> res = resources.resolve(path);
-        return res.map(r -> r.getContentAsString()).orElse("");
+        return res.map(Resource::getContentAsString).orElse("");
     }
 
     @Override
