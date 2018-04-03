@@ -34,6 +34,7 @@ import io.netty.handler.codec.http.multipart.HttpData;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.InterfaceHttpPostRequestDecoder;
+import org.apache.xmlbeans.impl.jam.JSourcePosition;
 import org.jetbrains.annotations.NotNull;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
@@ -801,44 +802,13 @@ public class WebContext implements SubContext {
             return;
         }
 
-        List<Message> cachedMessages = parseMessages(getUserMessageCache().getAndRemove(cachedMessagesId));
+        List<Message> cachedMessages =
+                JSON.parseArray(getUserMessageCache().getAndRemove(cachedMessagesId), Message.class);
         if (cachedMessages != null) {
             cachedMessages.forEach(UserContext::message);
         }
 
         setSessionValue(CACHED_MESSAGES_ID, null);
-    }
-
-    private List<Message> parseMessages(String cachedString) {
-        List<Message> messages = new ArrayList<>();
-        JSONArray jsonArray = JSON.parseArray(cachedString);
-        for (int i = 0; i < jsonArray.size(); i++) {
-            messages.add(parseMessage(jsonArray.getJSONObject(i)));
-        }
-        return messages;
-    }
-
-    @NotNull
-    private Message parseMessage(JSONObject jsonObject) {
-        Message message = new Message(jsonObject.getString("message"),
-                                      jsonObject.getString("details"),
-                                      jsonObject.getString("type"));
-
-        String action = jsonObject.getString("action");
-        String actionLabel = jsonObject.getString("actionLabel");
-        boolean actionJavascript = jsonObject.getBoolean("actionJavascript");
-
-        if (Strings.isEmpty(action)) {
-            return message;
-        }
-
-        if (actionJavascript) {
-            message.withJavascriptAction(action, actionLabel);
-        } else {
-            message.withAction(action, actionLabel);
-        }
-
-        return message;
     }
 
     /**

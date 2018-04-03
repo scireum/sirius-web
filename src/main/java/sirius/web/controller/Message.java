@@ -58,6 +58,13 @@ public class Message {
     }
 
     /**
+     * Creates a new empty message.
+     */
+    public Message() {
+
+    }
+
+    /**
      * Returns the message for the user.
      *
      * @return the message to show
@@ -194,5 +201,29 @@ public class Message {
             return error(t.getMessage());
         }
         return new Message(Exceptions.handle(UserContext.LOG, t).getMessage(), null, ERROR);
+    }
+
+    public void setMessage(String message) {
+        this.messageText = message;
+    }
+
+    public void setDetails(String details) {
+        this.details = details;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
+    }
+
+    public void setActionLabel(String actionLabel) {
+        this.actionLabel = actionLabel;
+    }
+
+    public void setActionJavascript(boolean actionJavascript) {
+        this.actionJavascript = actionJavascript;
     }
 }
