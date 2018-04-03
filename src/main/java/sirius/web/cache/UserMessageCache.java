@@ -8,18 +8,22 @@
 
 package sirius.web.cache;
 
+import sirius.web.controller.Message;
+
+import java.util.List;
+
 /**
  * A cache in which a value for a key can be read once and then is removed again.
  */
-public interface ReadOnceCache {
+public interface UserMessageCache {
 
     /**
      * Puts a value inside the cache identified by the key.
      *
-     * @param key   the key identifying the value
-     * @param value the value to put inside the cache
+     * @param key      the key identifying the value
+     * @param messages the messages to put inside the cache
      */
-    void put(String key, String value);
+    void put(String key, List<Message> messages);
 
     /**
      * Gets the value identified by the given key and removes it from the cache.
@@ -27,5 +31,5 @@ public interface ReadOnceCache {
      * @param key the key identifying the value
      * @return the value identified by the key
      */
-    String getAndRemove(String key);
+    List<Message> getAndRemove(String key);
 }
