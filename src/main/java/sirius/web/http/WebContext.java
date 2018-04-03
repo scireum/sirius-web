@@ -35,8 +35,6 @@ import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.InterfaceHttpPostRequestDecoder;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
-import sirius.kernel.cache.Cache;
-import sirius.kernel.cache.CacheManager;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
@@ -49,6 +47,9 @@ import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.StructuredInput;
 import sirius.kernel.xml.XMLStructuredInput;
+import sirius.web.cache.DistributedUserMessageCacheFactory;
+import sirius.web.cache.LocalUserMessageCache;
+import sirius.web.cache.UserMessageCache;
 import sirius.web.controller.Message;
 import sirius.web.security.UserContext;
 
@@ -324,12 +325,15 @@ public class WebContext implements SubContext {
     @Part
     private static SessionSecretComputer sessionSecretComputer;
 
+    @Part
+    private static DistributedUserMessageCacheFactory cacheFactory;
+
     /**
      * Date format used by HTTP date headers
      */
     public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
 
-    private static Cache<String, List<Message>> userMessageCache = CacheManager.createCache("user-messages");
+    private static UserMessageCache userMessageCache;
 
     /**
      * Provides access to the underlying ChannelHandlerContext
@@ -774,8 +778,34 @@ public class WebContext implements SubContext {
         }
 
         String cacheId = Strings.generateCode(32);
-        userMessageCache.put(cacheId, messages);
+        getUserMessageCache().put(cacheId, messages);
         setSessionValue(CACHED_MESSAGES_ID, cacheId);
+    }
+
+    private static UserMessageCache getUserMessageCache() {
+        if (userMessageCache == null) {
+            userMessageCache = createDistributedReadOnceCache("user-messages");
+        }
+        return userMessageCache;
+    }
+
+    /**
+     * Creates a distributed {@link UserMessageCache} if a {@link DistributedUserMessageCacheFactory} is implemented and can be
+     * injected. A {@link LocalUserMessageCache} otherwise.
+     * <p>
+     * Considers the config <tt>cache.[name].ttl</tt> for the cache.
+     *
+     * @param name The cache name.
+     * @return The created cache.
+     */
+    public static UserMessageCache createDistributedReadOnceCache(String name) {
+        if (cacheFactory == null || !cacheFactory.isConfigured()) {
+            WebServer.LOG.FINE("No DistributedUserMessageCacheFactory is found or ready (yet)! Creating regular "
+                               + "cache. DistributedUserMessageCacheFactory are injected at runtime, so maybe you need "
+                               + "to wait for system start.");
+            return new LocalUserMessageCache(name);
+        }
+        return cacheFactory.createDistributedCache(name);
     }
 
     /**
@@ -791,10 +821,9 @@ public class WebContext implements SubContext {
             return;
         }
 
-        List<Message> cachedMessages = userMessageCache.get(cachedMessagesId);
+        List<Message> cachedMessages = getUserMessageCache().getAndRemove(cachedMessagesId);
         if (cachedMessages != null) {
             cachedMessages.forEach(UserContext::message);
-            userMessageCache.remove(cachedMessagesId);
         }
 
         setSessionValue(CACHED_MESSAGES_ID, null);
@@ -811,7 +840,7 @@ public class WebContext implements SubContext {
         String cachedMessagesId = getSessionValue(CACHED_MESSAGES_ID).asString();
 
         if (Strings.isFilled(cachedMessagesId)) {
-            userMessageCache.remove(cachedMessagesId);
+            getUserMessageCache().getAndRemove(cachedMessagesId);
             setSessionValue(CACHED_MESSAGES_ID, null);
         }
     }
@@ -827,6 +856,7 @@ public class WebContext implements SubContext {
         }
         return requestedURI;
     }
+
     /**
      * Returns the raw undecoded requested URI of the underlying HTTP request, without the query string
      *
