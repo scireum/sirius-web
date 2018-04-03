@@ -13,25 +13,23 @@ import sirius.kernel.cache.CacheManager;
 
 /**
  * A {@link ReadOnceCache} backed by a {@link Cache} created by the {@link CacheManager}.
- *
- * @param <V> The type of the value.
  */
-public class LocalReadOnceCache<V> implements ReadOnceCache<V> {
+public class LocalReadOnceCache implements ReadOnceCache {
 
-    private Cache<String, V> cache;
+    private Cache<String, String> cache;
 
     public LocalReadOnceCache(String name) {
         cache = CacheManager.createCache(name);
     }
 
     @Override
-    public void put(String key, V value) {
+    public void put(String key, String value) {
         cache.put(key, value);
     }
 
     @Override
-    public V getAndRemove(String key) {
-        V value = cache.get(key);
+    public String getAndRemove(String key) {
+        String value = cache.get(key);
         cache.remove(key);
         return value;
     }

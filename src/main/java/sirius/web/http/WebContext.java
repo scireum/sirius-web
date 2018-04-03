@@ -52,7 +52,6 @@ import sirius.kernel.xml.StructuredInput;
 import sirius.kernel.xml.XMLStructuredInput;
 import sirius.web.cache.ReadOnceCache;
 import sirius.web.cache.ReadOnceCacheManager;
-import sirius.web.cache.ValueParser;
 import sirius.web.controller.Message;
 import sirius.web.security.UserContext;
 
@@ -333,7 +332,7 @@ public class WebContext implements SubContext {
      */
     public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
 
-    private static ReadOnceCache<List<Message>> userMessageCache;
+    private static ReadOnceCache userMessageCache;
 
     /**
      * Provides access to the underlying ChannelHandlerContext
@@ -778,14 +777,13 @@ public class WebContext implements SubContext {
         }
 
         String cacheId = Strings.generateCode(32);
-        getUserMessageCache().put(cacheId, messages);
+        getUserMessageCache().put(cacheId, JSON.toJSONString(messages));
         setSessionValue(CACHED_MESSAGES_ID, cacheId);
     }
 
-    private static ReadOnceCache<List<Message>> getUserMessageCache() {
+    private static ReadOnceCache getUserMessageCache() {
         if (userMessageCache == null) {
-            userMessageCache =
-                    ReadOnceCacheManager.createDistributedReadOnceCache("user-messages", new MessageValueParser());
+            userMessageCache = ReadOnceCacheManager.createDistributedReadOnceCache("user-messages");
         }
         return userMessageCache;
     }
@@ -803,12 +801,44 @@ public class WebContext implements SubContext {
             return;
         }
 
-        List<Message> cachedMessages = getUserMessageCache().getAndRemove(cachedMessagesId);
+        List<Message> cachedMessages = parseMessages(getUserMessageCache().getAndRemove(cachedMessagesId));
         if (cachedMessages != null) {
             cachedMessages.forEach(UserContext::message);
         }
 
         setSessionValue(CACHED_MESSAGES_ID, null);
+    }
+
+    private List<Message> parseMessages(String cachedString) {
+        List<Message> messages = new ArrayList<>();
+        JSONArray jsonArray = JSON.parseArray(cachedString);
+        for (int i = 0; i < jsonArray.size(); i++) {
+            messages.add(parseMessage(jsonArray.getJSONObject(i)));
+        }
+        return messages;
+    }
+
+    @NotNull
+    private Message parseMessage(JSONObject jsonObject) {
+        Message message = new Message(jsonObject.getString("message"),
+                                      jsonObject.getString("details"),
+                                      jsonObject.getString("type"));
+
+        String action = jsonObject.getString("action");
+        String actionLabel = jsonObject.getString("actionLabel");
+        boolean actionJavascript = jsonObject.getBoolean("actionJavascript");
+
+        if (Strings.isEmpty(action)) {
+            return message;
+        }
+
+        if (actionJavascript) {
+            message.withJavascriptAction(action, actionLabel);
+        } else {
+            message.withAction(action, actionLabel);
+        }
+
+        return message;
     }
 
     /**
@@ -1964,45 +1994,5 @@ public class WebContext implements SubContext {
     public void detach() {
         // Detaching the context from the current thread has no consequences as
         // a request cann be passed on to another thread...
-    }
-
-    private static class MessageValueParser implements ValueParser<List<Message>> {
-        @Override
-        public List<Message> toObject(String json) {
-            List<Message> messages = new ArrayList<>();
-            JSONArray jsonArray = JSON.parseArray(json);
-            for (int i = 0; i < jsonArray.size(); i++) {
-                messages.add(parseMessage(jsonArray.getJSONObject(i)));
-            }
-            return messages;
-        }
-
-        @NotNull
-        private Message parseMessage(JSONObject jsonObject) {
-            Message message = new Message(jsonObject.getString("message"),
-                                          jsonObject.getString("details"),
-                                          jsonObject.getString("type"));
-
-            String action = jsonObject.getString("action");
-            String actionLabel = jsonObject.getString("actionLabel");
-            boolean actionJavascript = jsonObject.getBoolean("actionJavascript");
-
-            if (Strings.isEmpty(action)) {
-                return message;
-            }
-
-            if (actionJavascript) {
-                message.withJavascriptAction(action, actionLabel);
-            } else {
-                message.withAction(action, actionLabel);
-            }
-
-            return message;
-        }
-
-        @Override
-        public String toJSON(List<Message> object) {
-            return JSON.toJSONString(object);
-        }
     }
 }

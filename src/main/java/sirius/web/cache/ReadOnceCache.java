@@ -10,10 +10,8 @@ package sirius.web.cache;
 
 /**
  * A cache in which a value for a key can be read once and then is removed again.
- *
- * @param <V> The type of the value.
  */
-public interface ReadOnceCache<V> {
+public interface ReadOnceCache {
 
     /**
      * Puts a value inside the cache identified by the key.
@@ -21,7 +19,7 @@ public interface ReadOnceCache<V> {
      * @param key   the key identifying the value
      * @param value the value to put inside the cache
      */
-    void put(String key, V value);
+    void put(String key, String value);
 
     /**
      * Gets the value identified by the given key and removes it from the cache.
@@ -29,5 +27,5 @@ public interface ReadOnceCache<V> {
      * @param key the key identifying the value
      * @return the value identified by the key
      */
-    V getAndRemove(String key);
+    String getAndRemove(String key);
 }

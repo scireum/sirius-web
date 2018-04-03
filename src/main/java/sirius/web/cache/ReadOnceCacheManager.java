@@ -30,11 +30,10 @@ public class ReadOnceCacheManager {
      * Creates a {@link LocalReadOnceCache}, considering the config <tt>cache.[name].ttl</tt> for the cache.
      *
      * @param name The cache name.
-     * @param <V>  The type of the cached values.
      * @return The created cache.
      */
-    public static <V> ReadOnceCache<V> createLocalReadOnceCache(String name) {
-        return new LocalReadOnceCache<>(name);
+    public static ReadOnceCache createLocalReadOnceCache(String name) {
+        return new LocalReadOnceCache(name);
     }
 
     /**
@@ -43,19 +42,17 @@ public class ReadOnceCacheManager {
      * <p>
      * Considers the config <tt>cache.[name].ttl</tt> for the cache.
      *
-     * @param name        The cache name.
-     * @param valueParser Responsible for parsing the value from and to JSON.
-     * @param <V>         The type of the cached values.
+     * @param name The cache name.
      * @return The created cache.
      */
-    public static <V> ReadOnceCache<V> createDistributedReadOnceCache(String name, ValueParser<V> valueParser) {
+    public static ReadOnceCache createDistributedReadOnceCache(String name) {
         DistributedReadOnceCacheFactory distributedCacheFactory = ctx.getPart(DistributedReadOnceCacheFactory.class);
         if (distributedCacheFactory == null || !distributedCacheFactory.isConfigured()) {
             LOG.WARN("No DistributedReadOnceCacheFactory is found or ready (yet)! Creating regular cache. "
                      + "DistributedReadOnceCacheFactory are injected at runtime, so maybe you need to wait for system "
                      + "start.");
-            return new LocalReadOnceCache<>(name);
+            return new LocalReadOnceCache(name);
         }
-        return distributedCacheFactory.createDistributedCache(name, valueParser);
+        return distributedCacheFactory.createDistributedCache(name);
     }
 }
