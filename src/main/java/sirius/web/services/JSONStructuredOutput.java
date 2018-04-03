@@ -10,6 +10,7 @@ package sirius.web.services;
 
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.health.HandledException;
 import sirius.kernel.xml.AbstractStructuredOutput;
 import sirius.kernel.xml.Attribute;
 import sirius.kernel.xml.StructuredOutput;
@@ -62,10 +63,14 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
         try {
             writer.write("]");
         } catch (ClosedChannelException e) {
-            throw Exceptions.createHandled().error(e).withSystemErrorMessage("An IO exception occurred: %s").handle();
+            throw handleClosedChannel(e);
         } catch (IOException e) {
             throw Exceptions.handle(e);
         }
+    }
+
+    private HandledException handleClosedChannel(ClosedChannelException e) {
+        return Exceptions.createHandled().error(e).withSystemErrorMessage("An IO exception occurred (closed channel): %s").handle();
     }
 
     @Override
@@ -73,7 +78,7 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
         try {
             writer.write("}");
         } catch (ClosedChannelException e) {
-            throw Exceptions.createHandled().error(e).withSystemErrorMessage("An IO exception occurred: %s").handle();
+            throw handleClosedChannel(e);
         } catch (IOException e) {
             throw Exceptions.handle(e);
         }
@@ -90,7 +95,7 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
                 writer.write("[");
             }
         } catch (ClosedChannelException e) {
-            throw Exceptions.createHandled().error(e).withSystemErrorMessage("An IO exception occurred: %s").handle();
+            throw handleClosedChannel(e);
         } catch (IOException e) {
             throw Exceptions.handle(e);
         }
@@ -192,7 +197,7 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
             }
             beginObject("result");
         } catch (ClosedChannelException e) {
-            throw Exceptions.createHandled().error(e).withSystemErrorMessage("An IO exception occurred: %s").handle();
+            throw handleClosedChannel(e);
         } catch (IOException e) {
             throw Exceptions.handle(e);
         }
@@ -221,7 +226,7 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
                 writeString(data.toString());
             }
         } catch (ClosedChannelException e) {
-            throw Exceptions.createHandled().error(e).withSystemErrorMessage("An IO exception occurred: %s").handle();
+            throw handleClosedChannel(e);
         } catch (IOException e) {
             throw Exceptions.handle(e);
         }
@@ -232,10 +237,7 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
             try {
                 writer.write(",");
             } catch (ClosedChannelException e) {
-                throw Exceptions.createHandled()
-                                .error(e)
-                                .withSystemErrorMessage("An IO exception occurred: %s")
-                                .handle();
+                throw handleClosedChannel(e);
             } catch (IOException e) {
                 throw Exceptions.handle(e);
             }
@@ -252,7 +254,7 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
             }
             writer.close();
         } catch (ClosedChannelException e) {
-            throw Exceptions.createHandled().error(e).withSystemErrorMessage("An IO exception occurred: %s").handle();
+            throw handleClosedChannel(e);
         } catch (IOException e) {
             throw Exceptions.handle(e);
         }

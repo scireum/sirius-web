@@ -1,5 +1,6 @@
 <i:arg type="String" name="titleKey" default=""/>
 <i:arg type="String" name="title" default="@i18n(titleKey)"/>
+<i:arg type="String" name="description" default="@renderToString('description')"/>
 <i:arg type="String" name="prettifySkin" default="desert"/>
 <i:arg type="boolean" name="withSidebar" default="false"/>
 <i:arg type="boolean" name="fullWidth" default="false"/>
@@ -12,6 +13,10 @@
 <w:page title="@apply('%s - %s', title, i18n('help'))" ignoreDisasteMode="true">
 
     <i:block name="head">
+        <meta property="og:title" content="@i18n('help'): @title">
+        <i:if test="isFilled(description)">
+            <meta property="og:description" content="@description">
+        </i:if>
         <script type="text/javascript" src="/assets/libs/prettify/run_prettify.js?skin=@prettifySkin"></script>
 
         <script type="text/javascript">

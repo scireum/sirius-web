@@ -44,7 +44,7 @@ class ChunkedOutputStream extends OutputStream {
         buffer = null;
     }
 
-    private void ensureCapacity(int length) throws IOException {
+    private void ensureCapacity(int length) {
         if (buffer != null && buffer.writableBytes() < length) {
             flushBuffer(false);
         }
@@ -53,7 +53,7 @@ class ChunkedOutputStream extends OutputStream {
         }
     }
 
-    private void flushBuffer(boolean last) throws IOException {
+    private void flushBuffer(boolean last) {
         if ((buffer == null || buffer.readableBytes() == 0) && !last) {
             if (buffer != null) {
                 buffer.release();

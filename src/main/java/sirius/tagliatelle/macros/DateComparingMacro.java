@@ -51,7 +51,7 @@ public abstract class DateComparingMacro implements Macro {
     @Override
     public Object eval(LocalRenderContext ctx, Expression[] args) {
         LocalDateTime firstDate = parseInput(args[0].eval(ctx));
-        LocalDateTime secondDate = (args.length == 2 ? parseInput(args[1].eval(ctx)) : LocalDateTime.now());
+        LocalDateTime secondDate = args.length == 2 ? parseInput(args[1].eval(ctx)) : LocalDateTime.now();
 
         return compare(firstDate, secondDate);
     }

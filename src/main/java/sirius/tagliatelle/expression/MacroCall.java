@@ -161,7 +161,7 @@ public class MacroCall extends Call {
                 return dereferenced;
             }
         }
-        
+
         return this;
     }
 }
