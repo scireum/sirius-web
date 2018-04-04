@@ -58,8 +58,7 @@
                     // delete the element value because they are tokens now and the value should not be displayed twice
                     this.tokenElement.val("");
 
-                    // this is needed to display the spinner in the same row as the input field
-                    // the spinner holds the class .fa which defines the size to 14
+                    // this is needed to display the token removal icon in the same row as the input field
                     this.element.css("max-width", input.element.width() - 14);
 
 
