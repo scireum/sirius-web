@@ -49,8 +49,8 @@
             showSpinner: function () {
                 if (input.spinnerElement) {
                     input.spinnerElement.removeClass("hide");
+                    events.onSpinnerShow();
                 }
-
             },
 
             /**
@@ -59,6 +59,7 @@
             hideSpinner: function () {
                 if (input.spinnerElement) {
                     input.spinnerElement.addClass("hide");
+                    events.onSpinnerHide();
                 }
             },
 
@@ -406,6 +407,8 @@
             onShow: Function(),
             onHide: Function(),
             onSelect: Function(),
+            onSpinnerShow: Function(),
+            onSpinnerHide: Function(),
             beforeLoad: Function(),
 
             /**
