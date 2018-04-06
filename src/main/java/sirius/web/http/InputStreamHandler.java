@@ -154,7 +154,7 @@ public class InputStreamHandler extends InputStream implements ContentHandler {
                 // Indicate that no more data can be expected
                 eof = true;
                 // Offer an empty buffer to unblock any waiting polls...
-                if (!transferQueue.offer(Unpooled.EMPTY_BUFFER)) {
+                if (!transferQueue.offer(Unpooled.EMPTY_BUFFER, writeTimeout, unit) && !error) {
                     throw new IOException("Writing to the buffer queue timed out");
                 }
             }
