@@ -156,6 +156,7 @@
                 clearTokens: function () {
                     input.element.tokenfield("setTokens", []);
                     input.value = "";
+                    events.onClearTokens();
                 },
 
                 /**
@@ -174,7 +175,8 @@
             var events = {
                 onEnter: Function(),
                 onRemovedToken: Function(),
-                onResize: Function()
+                onResize: Function(),
+                onClearTokens: Function()
             };
 
             return {
