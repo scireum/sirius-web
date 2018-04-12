@@ -59,7 +59,7 @@
                     this.tokenElement.val("");
 
                     // this is needed to display the token removal icon in the same row as the input field
-                    this.element.css("max-width", input.element.width() - 14);
+                    this.element.css("max-width", input.element.width() - 16);
 
 
                     // create initial tokens

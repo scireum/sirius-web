@@ -144,7 +144,7 @@
 
                     // this is needed to display the spinner in the same row as the input field
                     // the spinner holds the class .fa which defines the size to 14
-                    input.element.css("max-width", input.element.width() - 14);
+                    input.element.css("max-width", input.element.width() - 16);
                 }
 
                 this.element.keyup(function (event) {
