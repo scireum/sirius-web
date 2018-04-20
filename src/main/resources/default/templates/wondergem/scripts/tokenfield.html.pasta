@@ -31,7 +31,7 @@
                 allTokens: undefined,
 
                 tokenRemovalElement: undefined,
-                tokenRemovalTemplate: '<span class="token-removal hide"><i class="fa fa-times fa-lg"></i></span>',
+                tokenRemovalTemplate: '<a href="#" class="token-removal hide" tabindex="-1"><i class="fa fa-times fa-lg"></i></a>',
 
                 /**
                  * Keys of the config object are:
