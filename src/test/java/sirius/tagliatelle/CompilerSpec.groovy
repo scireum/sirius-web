@@ -246,4 +246,13 @@ class CompilerSpec extends BaseSpecification {
         basicallyEqual(result, expectedResult)
     }
 
+    def "validate recursion of a template"() {
+        given:
+        String expectedResult = resources.resolve("templates/recursion.html").get().getContentAsString()
+        when:
+        String result = tagliatelle.resolve("templates/recursion.html.pasta").get().renderToString()
+        then:
+        basicallyEqual(result, expectedResult)
+    }
+
 }
