@@ -1,0 +1,8 @@
+<i:arg type="int" name="source" default="2"/>
+
+<div>
+    @source
+    <i:if test="@source > 0">
+        <i:dynamicInvoke template="'templates/recursion.html.pasta'" source="@(source - 1)" />
+    </i:if>
+</div>
