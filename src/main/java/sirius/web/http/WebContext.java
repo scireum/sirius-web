@@ -1248,6 +1248,22 @@ public class WebContext implements SubContext {
     }
 
     /**
+     * Sets a cookie value to be sent back to the client.
+     * <p>
+     * Note that his cookie is also available to JavaScript which is inherent less secure.
+     *
+     * @param name          the cookie to create
+     * @param value         the contents of the cookie
+     * @param maxAgeSeconds contains the max age of this cookie in seconds
+     */
+    public void setClientCookie(String name, String value, long maxAgeSeconds) {
+        DefaultCookie cookie = new DefaultCookie(name, value);
+        cookie.setMaxAge(maxAgeSeconds);
+        cookie.setPath("/");
+        setCookie(cookie);
+    }
+
+    /**
      * Sets a http only cookie value to be sent back to the client.
      *
      * @param name          the cookie to create
@@ -1257,6 +1273,7 @@ public class WebContext implements SubContext {
     public void setCookie(String name, String value, long maxAgeSeconds) {
         DefaultCookie cookie = new DefaultCookie(name, value);
         cookie.setMaxAge(maxAgeSeconds);
+        cookie.setHttpOnly(true);
         cookie.setPath("/");
         setCookie(cookie);
     }
