@@ -9,6 +9,7 @@
 package sirius.web.security;
 
 import sirius.kernel.di.std.Register;
+import sirius.kernel.nls.NLS;
 import sirius.kernel.settings.Extension;
 import sirius.web.http.WebContext;
 
@@ -90,6 +91,24 @@ public class PublicUserManager extends GenericUserManager {
     @Override
     protected Set<String> computeRoles(@Nullable WebContext ctx, String userId) {
         return Collections.emptySet();
+    }
+
+    @Nonnull
+    @Override
+    protected String computeUsername(@Nullable WebContext ctx, String userId) {
+        return PUBLIC_PLACEHOLDER;
+    }
+
+    @Nonnull
+    @Override
+    protected String computeTenantname(@Nullable WebContext ctx, String tenantId) {
+        return "";
+    }
+
+    @Nonnull
+    @Override
+    protected String computeLang(WebContext ctx, String userId) {
+        return NLS.getDefaultLanguage();
     }
 
     @Override
