@@ -54,11 +54,7 @@ public abstract class GenericUserManager implements UserManager {
      */
     private static final long DEFAULT_SSO_GRACE_INTERVAL = TimeUnit.HOURS.toSeconds(24);
     private static final String SUFFIX_USER_ID = "-user-id";
-    private static final String SUFFIX_USER_NAME = "-user-name";
     private static final String SUFFIX_TENANT_ID = "-tenant-id";
-    private static final String SUFFIX_TENANT_NAME = "-tenant-name";
-    private static final String SUFFIX_USER_EMAIL = "-user-email";
-    private static final String SUFFIX_USER_LANG = "-user-lang";
 
     protected final ScopeInfo scope;
     protected final Extension config;
@@ -402,19 +398,22 @@ public abstract class GenericUserManager implements UserManager {
      */
     protected UserInfo findUserInSession(WebContext ctx) {
         Value userId = ctx.getSessionValue(scope.getScopeId() + SUFFIX_USER_ID);
+        String tenantId = ctx.getSessionValue(scope.getScopeId() + SUFFIX_TENANT_ID).asString();
+
         if (!userId.isFilled() || !isUserStillValid(userId.asString())) {
             return null;
         }
+
         Set<String> roles = computeRoles(ctx, userId.asString());
         if (roles == null) {
             return null;
         }
+
         return UserInfo.Builder.createUser(userId.asString())
-                               .withUsername(ctx.getSessionValue(scope.getScopeId() + SUFFIX_USER_NAME).asString())
-                               .withTenantId(ctx.getSessionValue(scope.getScopeId() + SUFFIX_TENANT_ID).asString())
-                               .withTenantName(ctx.getSessionValue(scope.getScopeId() + SUFFIX_TENANT_NAME).asString())
-                               .withEmail(ctx.getSessionValue(scope.getScopeId() + SUFFIX_USER_EMAIL).asString())
-                               .withLang(ctx.getSessionValue(scope.getScopeId() + SUFFIX_USER_LANG).asString())
+                               .withUsername(computeUsername(ctx, userId.asString()))
+                               .withTenantId(tenantId)
+                               .withTenantName(computeTenantname(ctx, tenantId))
+                               .withLang(computeLang(ctx, userId.asString()))
                                .withPermissions(roles)
                                .withSettingsSupplier(ui -> getUserSettings(getScopeSettings(), ui))
                                .withUserSupplier(this::getUserObject)
@@ -433,6 +432,11 @@ public abstract class GenericUserManager implements UserManager {
         return true;
     }
 
+    /**
+     * Boilerplate for fetching the settings of the current scope.
+     *
+     * @return the settings of the current scope
+     */
     protected UserSettings getScopeSettings() {
         return UserContext.getCurrentScope().getSettings();
     }
@@ -450,6 +454,36 @@ public abstract class GenericUserManager implements UserManager {
     protected abstract Set<String> computeRoles(@Nullable WebContext ctx, String userId);
 
     /**
+     * Compues the name of the given user and request.
+     *
+     * @param ctx    the current request
+     * @param userId the id of the user to fetch the name for
+     * @return the name of the user
+     */
+    @Nonnull
+    protected abstract String computeUsername(@Nullable WebContext ctx, String userId);
+
+    /**
+     * Compues the name of the given tenant and request.
+     *
+     * @param ctx      the current request
+     * @param tenantId the id of the tenant to fetch the name for
+     * @return the name of the tenant
+     */
+    @Nonnull
+    protected abstract String computeTenantname(@Nullable WebContext ctx, String tenantId);
+
+    /**
+     * Compues the langange code of the given user and request.
+     *
+     * @param ctx    the current request
+     * @param userId the id of the user to fetch the language for
+     * @return the language code for the user
+     */
+    @Nonnull
+    protected abstract String computeLang(WebContext ctx, String userId);
+
+    /**
      * Attaches the given user to the current session.
      * <p>
      * This will make the login persistent across requests (if session management is enabled).
@@ -460,11 +494,7 @@ public abstract class GenericUserManager implements UserManager {
     @Override
     public void attachToSession(@Nonnull UserInfo user, @Nonnull WebContext ctx) {
         ctx.setSessionValue(scope.getScopeId() + SUFFIX_TENANT_ID, user.getTenantId());
-        ctx.setSessionValue(scope.getScopeId() + SUFFIX_TENANT_NAME, user.getTenantName());
         ctx.setSessionValue(scope.getScopeId() + SUFFIX_USER_ID, user.getUserId());
-        ctx.setSessionValue(scope.getScopeId() + SUFFIX_USER_NAME, user.getUserName());
-        ctx.setSessionValue(scope.getScopeId() + SUFFIX_USER_EMAIL, user.getEmail());
-        ctx.setSessionValue(scope.getScopeId() + SUFFIX_USER_LANG, user.getLang());
     }
 
     /**
@@ -476,11 +506,7 @@ public abstract class GenericUserManager implements UserManager {
     @Override
     public void detachFromSession(@Nonnull UserInfo user, @Nonnull WebContext ctx) {
         ctx.setSessionValue(scope.getScopeId() + SUFFIX_TENANT_ID, null);
-        ctx.setSessionValue(scope.getScopeId() + SUFFIX_TENANT_NAME, null);
         ctx.setSessionValue(scope.getScopeId() + SUFFIX_USER_ID, null);
-        ctx.setSessionValue(scope.getScopeId() + SUFFIX_USER_NAME, null);
-        ctx.setSessionValue(scope.getScopeId() + SUFFIX_USER_EMAIL, null);
-        ctx.setSessionValue(scope.getScopeId() + SUFFIX_USER_LANG, null);
 
         ctx.deleteCookie(scope.getScopeId() + USER_COOKIE_SUFFIX);
         ctx.deleteCookie(scope.getScopeId() + TOKEN_COOKIE_SUFFIX);

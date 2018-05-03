@@ -70,7 +70,10 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
     }
 
     private HandledException handleClosedChannel(ClosedChannelException e) {
-        return Exceptions.createHandled().error(e).withSystemErrorMessage("An IO exception occurred (closed channel): %s").handle();
+        return Exceptions.createHandled()
+                         .error(e)
+                         .withSystemErrorMessage("An IO exception occurred (closed channel): %s")
+                         .handle();
     }
 
     @Override

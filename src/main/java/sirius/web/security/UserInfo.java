@@ -55,7 +55,6 @@ public class UserInfo extends Composable {
     private String tenantName;
     private String userId;
     private String username;
-    private String email;
     private String lang;
     private Set<String> permissions = null;
     private Function<UserInfo, UserSettings> settingsSupplier;
@@ -125,18 +124,6 @@ public class UserInfo extends Composable {
             if (user == null) {
                 throw new IllegalStateException("UserInfo already built.");
             }
-        }
-
-        /**
-         * Sets the email address of the user.
-         *
-         * @param email the email address
-         * @return the builder itself for fluent method calls
-         */
-        public Builder withEmail(String email) {
-            verifyState();
-            user.email = email;
-            return this;
         }
 
         /**
@@ -238,16 +225,6 @@ public class UserInfo extends Composable {
     @Nullable
     public String getTenantName() {
         return tenantName;
-    }
-
-    /**
-     * The email address of the user
-     *
-     * @return the email address of the user
-     */
-    @Nullable
-    public String getEmail() {
-        return email;
     }
 
     /**
