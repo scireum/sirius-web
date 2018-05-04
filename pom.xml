@@ -9,7 +9,7 @@
         <version>3.8.3</version>
     </parent>
     <artifactId>sirius-web</artifactId>
-    <version>15.0</version>
+    <version>15.1</version>
     <name>SIRIUS web</name>
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
@@ -42,7 +42,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.7.Final</version>
+            <version>4.1.13.Final</version>
         </dependency>
 
         <!-- Used to compile SCSS (SASS) files into CSS files -->
