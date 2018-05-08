@@ -56,6 +56,7 @@ import java.util.stream.Collectors;
 public class CompilationContext {
 
     private static final String PRAGMA_DEPRECATED = "deprecated";
+    private static final int MAX_ERRORS = 50;
 
     private static class StackLocation {
         int stackIndex;
@@ -240,6 +241,11 @@ public class CompilationContext {
      */
     public void error(Position pos, String message, Object... params) {
         errors.add(ParseError.error(pos, Strings.apply(message, params)));
+        if (errors.size() > MAX_ERRORS) {
+            throw Exceptions.createHandled()
+                            .withSystemErrorMessage("More than %s errors occurred. Aborting.", MAX_ERRORS)
+                            .handle();
+        }
     }
 
     /**
@@ -251,6 +257,11 @@ public class CompilationContext {
      */
     public void warning(Position pos, String message, Object... params) {
         errors.add(ParseError.warning(pos, Strings.apply(message, params)));
+        if (errors.size() > MAX_ERRORS) {
+            throw Exceptions.createHandled()
+                            .withSystemErrorMessage("More than %s errors occurred. Aborting.", MAX_ERRORS)
+                            .handle();
+        }
     }
 
     /**

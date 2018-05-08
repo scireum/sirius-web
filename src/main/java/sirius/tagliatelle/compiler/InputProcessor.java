@@ -8,6 +8,7 @@
 
 package sirius.tagliatelle.compiler;
 
+import parsii.tokenizer.Char;
 import parsii.tokenizer.LookaheadReader;
 
 /**
@@ -35,8 +36,13 @@ class InputProcessor {
      */
     public int skipWhitespaces() {
         int whitespaceFound = 0;
-        while (reader.current().isWhitepace()) {
-            reader.consume();
+        while (reader.current().isWhitepace() || reader.current().is('\u00A0')) {
+            Char current = reader.consume();
+            if (current.is('\u00A0')) {
+                context.warning(current,
+                                "A non-breaking whitespace (Ux00A0) was found! "
+                                + "This looks like an innocent whitespace but isn't and may break many systems.");
+            }
             whitespaceFound++;
         }
 
