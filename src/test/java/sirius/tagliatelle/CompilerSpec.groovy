@@ -255,4 +255,15 @@ class CompilerSpec extends BaseSpecification {
         basicallyEqual(result, expectedResult)
     }
 
+    /**
+     * Previously a non-breaking whitespace (U00A0) lead to an endless loop creating an infinita amount of errors.
+     */
+    def "horror whitespaces don't crash the compiler"() {
+        when:
+        def ctx = new CompilationContext(new Template("test", null), null)
+        List<CompileError> errors = new Compiler(ctx, "<i:invoke\u00A0template=\"templates/attribute-expressions.html.pasta\"/>").compile()
+        then:
+        errors.size() == 1
+    }
+
 }
