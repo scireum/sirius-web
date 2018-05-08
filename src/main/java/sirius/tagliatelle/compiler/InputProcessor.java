@@ -40,7 +40,8 @@ class InputProcessor {
             Char current = reader.consume();
             if (current.is('\u00A0')) {
                 context.warning(current,
-                                "A non-breaking whitespace (Ux00A0) was found! This looks like an innocent whitespace but isn't and my break many systems.");
+                                "A non-breaking whitespace (Ux00A0) was found! "
+                                + "This looks like an innocent whitespace but isn't and may break many systems.");
             }
             whitespaceFound++;
         }
