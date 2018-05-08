@@ -446,31 +446,47 @@ public class Compiler extends InputProcessor {
                 handler.setAttribute(name, ConstantNull.NULL);
             } else if (reader.current().is('@')) {
                 reader.consume();
-                Expression expression = parseExpression(true);
-                failForInvalidExpressionType(positionOfAttribute,
-                                             handler.getTagName(),
-                                             name,
-                                             attributeType,
-                                             expression.getType());
-                handler.setAttribute(name, expression);
+                parseAttributeExpression(handler, name, attributeType, positionOfAttribute);
             } else if (!String.class.equals(attributeType)) {
-                Expression expression = parseExpression(true);
-                failForInvalidExpressionType(positionOfAttribute,
-                                             handler.getTagName(),
-                                             name,
-                                             attributeType,
-                                             expression.getType());
-                handler.setAttribute(name, expression);
+                parseAttributeExpression(handler, name, attributeType, positionOfAttribute);
             } else {
+                ConstantString expression = parseAttributeValue();
+
+                // If we weren't able to parse an expression and the reader didn't move at all, we encountered
+                // an entirely misplaced token - consume it so that the compiler doesn't hang forever...
+                if (expression.getValue().length() == 0) {
+                    reader.consume();
+                }
                 failForInvalidExpressionType(positionOfAttribute,
                                              handler.getTagName(),
                                              name,
                                              attributeType,
                                              String.class);
-                handler.setAttribute(name, parseAttributeValue());
+                handler.setAttribute(name, expression);
             }
             consumeExpectedCharacter('"');
         }
+    }
+
+    private void parseAttributeExpression(TagHandler handler,
+                                          String name,
+                                          Class<?> attributeType,
+                                          Char positionOfAttribute) {
+        Position startOfExpression = reader.current();
+        Expression expression = parseExpression(true);
+
+        // If we weren't able to parse an expression and the reader didn't move at all, we encountered
+        // an entirely misplaced token - consume it so that the compiler doesn't hang forever...
+        if (ConstantNull.NULL.equals(expression) && reader.current().equals(startOfExpression)) {
+            reader.consume();
+        }
+
+        failForInvalidExpressionType(positionOfAttribute,
+                                     handler.getTagName(),
+                                     name,
+                                     attributeType,
+                                     expression.getType());
+        handler.setAttribute(name, expression);
     }
 
     /**
@@ -526,7 +542,7 @@ public class Compiler extends InputProcessor {
      *
      * @return the parsed value as string
      */
-    private Expression parseAttributeValue() {
+    private ConstantString parseAttributeValue() {
         StringBuilder sb = new StringBuilder();
         while (!reader.current().isEndOfInput() && !reader.current().is('"')) {
             sb.append(reader.consume().getValue());
