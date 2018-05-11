@@ -280,6 +280,10 @@ public class Response {
             response.headers().set("P3P", "CP=\"This site does not have a p3p policy.\"");
         }
 
+        if (Strings.isFilled(WebContext.contentSecurityPolicy)) {
+            response.headers().set("Content-Security-Policy", WebContext.contentSecurityPolicy);
+        }
+
         // Adds a Strict Transport Security (HSTS) header...
         if (WebContext.forceHSTS) {
             response.headers()
