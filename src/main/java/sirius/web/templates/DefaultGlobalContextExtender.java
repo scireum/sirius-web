@@ -36,6 +36,9 @@ public class DefaultGlobalContextExtender implements GlobalContextExtender {
     @ConfigValue("product.tagLine")
     private String tagLine;
 
+    @ConfigValue("http.contentSecurityPolicy")
+    private String contentSecurityPolicy;
+
     private String detailedVersion;
 
     @Part
@@ -60,6 +63,7 @@ public class DefaultGlobalContextExtender implements GlobalContextExtender {
         parameterCollector.accept("contentHelper", ContentHelper.INSTANCE);
         parameterCollector.accept("wondergemRoot", wondergemRoot);
         parameterCollector.accept("tagLine", tagLine);
+        parameterCollector.accept("contentSecurityPolicy", contentSecurityPolicy);
         parameterCollector.accept("dateFormat", NLS.get("RythmConfig.jsDateFormat"));
         parameterCollector.accept("timeFormat", NLS.get("RythmConfig.jsTimeFormat"));
         parameterCollector.accept("saml", saml);
