@@ -3,3 +3,4 @@ target
 *.iml
 logs
 /data
+instance.conf
