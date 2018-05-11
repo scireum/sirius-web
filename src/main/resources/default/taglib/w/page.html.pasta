@@ -9,6 +9,7 @@
 <html lang="@lang">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+    <meta http-equiv="Content-Security-Policy" content="@contentSecurityPolicy"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@title - @product</title>
 
