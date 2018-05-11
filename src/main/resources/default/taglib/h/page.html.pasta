@@ -17,12 +17,14 @@
         <i:if test="isFilled(description)">
             <meta property="og:description" content="@description">
         </i:if>
-        <script type="text/javascript" src="/assets/libs/prettify/run_prettify.js?skin=@prettifySkin"></script>
+        <link rel="stylesheet" type="text/css" href="/assets/libs/prettify/skins/desert.css">
+        <script type="text/javascript" src="/assets/libs/prettify/prettify.js"></script>
 
         <script type="text/javascript">
             $(document).ready(function (e) {
                 $(window).resize(invokeResizeHandler);
                 invokeResizeHandler();
+                PR.prettyPrint();
             });
 
             function invokeResizeHandler() {
