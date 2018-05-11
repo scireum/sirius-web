@@ -305,6 +305,12 @@ public class WebContext implements SubContext {
     protected static boolean addP3PHeader;
 
     /*
+     * Determines the security policy used by the client when loading internet resources.
+     */
+    @ConfigValue("http.contentSecurityPolicy")
+    protected static String contentSecurityPolicy;
+
+    /*
      * Should the automatic CORS handling be done or not?
      */
     @ConfigValue("http.corsAllowAll")
