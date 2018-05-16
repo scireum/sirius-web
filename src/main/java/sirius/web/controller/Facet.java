@@ -29,6 +29,7 @@ public class Facet {
     private boolean facetCollapsingEnabled = false;
     private int maxVisibleFacetItems;
     private List<FacetItem> items = Lists.newArrayList();
+    private FacetRange facetRange;
 
     /**
      * Creates a new faced with the given parameters.
@@ -259,5 +260,35 @@ public class Facet {
         this.values = values;
 
         return this;
+    }
+
+    /**
+     * Returns the used facet range.
+     *
+     * @return the facet range
+     */
+    public FacetRange getRange() {
+        return facetRange;
+    }
+
+    /**
+     * Specifies the facet range to use for this facet.
+     *
+     * @param facetRange the facet range to use
+     * @return the facet itself for fluent method calls
+     */
+    public Facet withRange(FacetRange facetRange) {
+        this.facetRange = facetRange;
+
+        return this;
+    }
+
+    /**
+     * Determines if this facet has a range for filtering values.
+     *
+     * @return <tt>true</tt> if this facet has a range, <tt>false</tt> otherwise
+     */
+    public boolean hasRange() {
+        return facetRange != null;
     }
 }
