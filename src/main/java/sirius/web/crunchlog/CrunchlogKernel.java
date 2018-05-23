@@ -142,10 +142,8 @@ public class CrunchlogKernel extends BackgroundLoop implements Command, Lifecycl
      * possible
      */
     private boolean ensureWriterIsReady() {
-        if (currentWriter != null) {
-            if (shouldCloseWriter()) {
-                closeWriter();
-            }
+        if (currentWriter != null && shouldCloseWriter()) {
+            closeWriter();
         }
         if (currentWriter != null) {
             return true;
@@ -373,7 +371,7 @@ public class CrunchlogKernel extends BackgroundLoop implements Command, Lifecycl
     @Override
     public void execute(Output output, String... strings) throws Exception {
         doWork();
-        if(currentWriter == null) {
+        if (currentWriter == null) {
             output.line("No open crunchlog file to close!");
             return;
         }
