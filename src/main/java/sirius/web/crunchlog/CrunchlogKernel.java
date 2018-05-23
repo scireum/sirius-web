@@ -69,7 +69,7 @@ import java.util.zip.GZIPOutputStream;
 public class CrunchlogKernel extends BackgroundLoop implements Command, Lifecycle, MetricProvider {
 
     private static final int MIN_FREE_SPACE = 1024 * 1024 * 100;
-    private static final String GZIP_FILE_EXTENSION = ".gzip";
+    private static final String GZIP_FILE_EXTENSION = ".gz";
     private static final int MAX_FILE_SIZE = 1024 * 1024 * 10;
     private static final int MAX_BUFFERED_LINES = 4096;
 
