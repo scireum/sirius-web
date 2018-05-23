@@ -84,7 +84,7 @@ public class SmartLineBasedProcessor implements RowProcessor {
             throw new IllegalStateException("No processor available.");
         } else {
             if (row.length() > columnMapping.size()) {
-                throw Exceptions.handle()
+                throw Exceptions.createHandled()
                                 .withNLSKey("SmartLineBasedProcessor.tooManyCols")
                                 .set("cols", row.length())
                                 .handle();
