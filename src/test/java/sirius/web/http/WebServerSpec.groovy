@@ -284,7 +284,7 @@ class WebServerSpec extends BaseSpecification {
     /**
      * Call a controller which uses predispatching
      */
-    def "Invoke /test/presidpatch with POST"() {
+    def "Invoke /test/predispatch with POST"() {
         given:
         HttpURLConnection u = new URL("http://localhost:9999/test/predispatch").openConnection()
         and:
