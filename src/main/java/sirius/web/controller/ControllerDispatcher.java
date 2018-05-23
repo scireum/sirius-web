@@ -26,7 +26,10 @@ import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
 import sirius.web.ErrorCodeException;
 import sirius.web.http.CSRFHelper;
+import sirius.web.http.Firewall;
 import sirius.web.http.InputStreamHandler;
+import sirius.web.http.Limited;
+import sirius.web.http.Unlimited;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 import sirius.web.security.UserContext;
@@ -38,6 +41,7 @@ import java.lang.reflect.Method;
 import java.nio.channels.ClosedChannelException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Dispatches incoming requests to the appropriate {@link Controller}.
@@ -56,6 +60,9 @@ public class ControllerDispatcher implements WebDispatcher {
 
     @Part
     private Tasks tasks;
+
+    @Part
+    private Firewall firewall;
 
     @Part
     private CSRFHelper csrfHelper;
@@ -120,6 +127,15 @@ public class ControllerDispatcher implements WebDispatcher {
                                      List<Object> params,
                                      InputStreamHandler inputStreamHandler) {
         try {
+            if (firewall != null && !route.getMethod().isAnnotationPresent(Unlimited.class)) {
+                if (firewall.handleRateLimiting(ctx,
+                                                Optional.ofNullable(route.getMethod().getAnnotation(Limited.class))
+                                                        .map(Limited::value)
+                                                        .orElse(Limited.HTTP))) {
+                    return;
+                }
+            }
+
             // Inject WebContext as first parameter...
             params.add(0, ctx);
 

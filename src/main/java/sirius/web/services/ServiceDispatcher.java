@@ -18,11 +18,16 @@ import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.nls.NLS;
+import sirius.web.http.Firewall;
+import sirius.web.http.Limited;
+import sirius.web.http.Unlimited;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 import sirius.web.security.Permissions;
 import sirius.web.security.UserContext;
 import sirius.web.security.UserInfo;
+
+import java.util.Optional;
 
 /**
  * Dispatches calls to the JSON / XML Service-Framework (/service).
@@ -38,6 +43,9 @@ public class ServiceDispatcher implements WebDispatcher {
 
     @Part
     private GlobalContext gc;
+
+    @Part
+    private Firewall firewall;
 
     @Override
     public int getPriority() {
@@ -94,6 +102,16 @@ public class ServiceDispatcher implements WebDispatcher {
 
     private void invokeService(WebContext ctx, ServiceCall call, StructuredService serv) {
         TaskContext.get().setSystem(SYSTEM_SERVICE).setSubSystem(serv.getClass().getSimpleName());
+
+        // Check firewall
+        if (firewall != null && !serv.getClass().isAnnotationPresent(Unlimited.class)) {
+            if (firewall.handleRateLimiting(ctx,
+                                            Optional.ofNullable(serv.getClass().getAnnotation(Limited.class))
+                                                    .map(Limited::value)
+                                                    .orElse(Limited.HTTP))) {
+                return;
+            }
+        }
 
         // Install language
         CallContext.getCurrent().setLang(NLS.makeLang(ctx.getLang()));
