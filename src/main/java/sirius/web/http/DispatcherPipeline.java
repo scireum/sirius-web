@@ -11,6 +11,9 @@ package sirius.web.http;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.TaskContext;
+import sirius.kernel.async.Tasks;
+import sirius.kernel.commons.Callback;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.health.Exceptions;
 
@@ -26,8 +29,13 @@ import java.util.function.Consumer;
  */
 class DispatcherPipeline {
 
+    public static final String EXECUTOR_WEBSERVER = "webserver";
+
     @PriorityParts(WebDispatcher.class)
     private static List<WebDispatcher> dispatchers;
+
+    @Part
+    private static Tasks tasks;
 
     private WebDispatcher dispatcher;
     private DispatcherPipeline next;
@@ -60,7 +68,13 @@ class DispatcherPipeline {
      * @param ctx the request to handle
      */
     public void dispatch(WebContext ctx) {
-        dispatch(ctx, this::dispatch, CallContext.getCurrent().get(TaskContext.class));
+        tasks.executor(EXECUTOR_WEBSERVER)
+             .dropOnOverload(() -> handleDrop(ctx))
+             .fork(() -> dispatch(ctx, this::dispatch, CallContext.getCurrent().get(TaskContext.class)));
+    }
+
+    private void handleDrop(WebContext ctx) {
+        ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, "Request dropped - System overload!");
     }
 
     private void dispatch(WebContext webContext, Consumer<WebContext> pipelineRoot, TaskContext context) {
@@ -74,11 +88,16 @@ class DispatcherPipeline {
                 }
             });
         } catch (Exception e) {
-            if (!webContext.responseCommitted) {
-                webContext.respondWith()
-                          .error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, e));
-            }
+            handleInternalServerError(webContext, e);
         }
+    }
+
+    private void handleInternalServerError(WebContext webContext, Exception e) {
+        if (webContext.responseCommitted) {
+            return;
+        }
+
+        webContext.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, e));
     }
 
     /**
@@ -88,26 +107,32 @@ class DispatcherPipeline {
      * @return <tt>true</tt> if the request was handled, <tt>false</tt> otherwise
      */
     public boolean preDispatch(WebContext webContext) {
-        return preDispatch(webContext, CallContext.getCurrent().get(TaskContext.class));
-    }
-
-    private boolean preDispatch(WebContext webContext, TaskContext context) {
         try {
-            context.setSubSystem(dispatcher.getClass().getSimpleName());
-            if (dispatcher.preDispatch(webContext)) {
+            Callback<WebContext> handler = dispatcher.preparePreDispatch(webContext);
+            if (handler != null) {
+                tasks.executor(EXECUTOR_WEBSERVER)
+                     .dropOnOverload(() -> handleDrop(webContext))
+                     .fork(() -> executePreDispatching(webContext, handler));
+
                 return true;
             }
         } catch (Exception e) {
-            if (!webContext.responseCommitted) {
-                webContext.respondWith()
-                          .error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, e));
-            }
+            handleInternalServerError(webContext, e);
         }
 
         if (next == null) {
             return false;
         }
 
-        return next.preDispatch(webContext, context);
+        return next.preDispatch(webContext);
+    }
+
+    private void executePreDispatching(WebContext webContext, Callback<WebContext> handler) {
+        try {
+            CallContext.getCurrent().get(TaskContext.class).setSubSystem(dispatcher.getClass().getSimpleName());
+            handler.invoke(webContext);
+        } catch (Exception e) {
+            handleInternalServerError(webContext, e);
+        }
     }
 }

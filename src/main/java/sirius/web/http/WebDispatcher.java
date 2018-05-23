@@ -8,6 +8,7 @@
 
 package sirius.web.http;
 
+import sirius.kernel.commons.Callback;
 import sirius.kernel.di.std.Priorized;
 
 import java.util.function.Consumer;
@@ -16,7 +17,7 @@ import java.util.function.Consumer;
  * Participates in the dispatching process for incoming HTTP requests.
  * <p>
  * Once a HTTP request is fully read by the server it is dispatched calling all available <tt>WebDispatcher</tt>
- * instances available. To provide a WebDispatch, a subclass therefore needs to wear an
+ * instances available. To provide a WebDispatcher, a subclass therefore needs to wear an
  * {@link sirius.kernel.di.std.Register} annotation.
  * <p>
  * As the first request arrives, all dispatchers are asked for their priority (via {@link #getPriority()} and
@@ -29,14 +30,18 @@ import java.util.function.Consumer;
  * For each incoming request, the list of dispatchers is iterated and {@link #dispatch(WebContext)} is invoked
  * until one of those returns <tt>true</tt>, to signal that the request was handled.
  * <p>
- * If a dispatcher performs serious work or any blocking IO operation. The dispatcher must complete the request
- * in another thread (using {@link sirius.kernel.async.Tasks#executor(String)}
+ * The dispatchers are invoked in a separate thread so that blocking operations will not block the web-server itself.
  * <p>
  * If a dispatcher is willing to handle all incoming data (payload of a PUT or POST request) by itself - instead of
- * just accumulating this data in memory or on disk, the {@link #preDispatch(WebContext)} method must return
- * <tt>true</tt> for a given request. This needs to install a {@link ContentHandler}. Note that no further
+ * just accumulating this data in memory or on disk, the {@link #preparePreDispatch(WebContext)} method must return
+ * an appropriate handler for a given request. This needs to install a {@link ContentHandler}. Note that no further
  * {@link #dispatch(WebContext)} will be called for a request which received a <tt>true</tt> for its call
- * to {@link #preDispatch(WebContext)}.
+ * to {@link #preparePreDispatch(WebContext)}.
+ * <p>
+ * Note that {@link #preparePreDispatch(WebContext)} will be invoked within the event loop of the web-server, therefore
+ * absolutely no blocking operations must be performed. However, the returned <tt>Callback</tt> is executed in its own
+ * thread and free of any constraints.
+ * </p>
  *
  * @see WebServerHandler
  */
@@ -62,15 +67,18 @@ public interface WebDispatcher extends Priorized {
      * in order to directly process the uploaded data. A request for which <tt>true</tt> was replied will <b>not</b>
      * be dispatched again once it is complete.
      * <p>
-     * Note that it is required to handle and consume the request in another thread as further contents are not
-     * processed until this method returns.
+     * Note thatthis method will be invoked within the event loop of the web-server, therefore absolutely no blocking
+     * operations must be performed. However, the returned <tt>Callback</tt> is executed in its own thread and free of
+     * any constraints.
      *
      * @param ctx the request to handle
-     * @return <tt>true</tt> if the request was handled by this dispatcher, <tt>false</tt> otherwise.
-     * @throws Exception in case of an error when parsing or dispatching the request
-     * @see sirius.web.controller.ControllerDispatcher#preDispatch(WebContext)
+     * @return the handler which will install the <tt>ContentHandler</tt> and eventually process the request or
+     * <tt>null</tt> to indicate that no pre-dispatching is possible.
+     * @see sirius.web.controller.ControllerDispatcher#preparePreDispatch(WebContext)
      */
-    boolean preDispatch(WebContext ctx) throws Exception;
+    default Callback<WebContext> preparePreDispatch(WebContext ctx) {
+        return null;
+    }
 
     /**
      * Invoked in order to handle the given request.
@@ -83,12 +91,13 @@ public interface WebDispatcher extends Priorized {
      * block sooner or later to limit heap memory usage - so fork a thread for any serious work besides checking
      * responsibilities for handling requests.
      *
-     * @param ctx the request to handle
+     * @param ctx             the request to handle
      * @param startOfPipeline the start of the pipeline in order
-     * @param nextStage the next stage to forward the request to in case the dispatcher isn't interested
+     * @param nextStage       the next stage to forward the request to in case the dispatcher isn't interested
      * @throws Exception in case of an error when parsing or dispatching the request
      */
-    default void dispatch(WebContext ctx, Consumer<WebContext> startOfPipeline, Consumer<WebContext> nextStage) throws Exception {
+    default void dispatch(WebContext ctx, Consumer<WebContext> startOfPipeline, Consumer<WebContext> nextStage)
+            throws Exception {
         if (!dispatch(ctx)) {
             nextStage.accept(ctx);
         }

@@ -11,7 +11,6 @@ package sirius.web.services;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.TaskContext;
-import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
@@ -40,17 +39,9 @@ public class ServiceDispatcher implements WebDispatcher {
     @Part
     private GlobalContext gc;
 
-    @Part
-    private Tasks tasks;
-
     @Override
     public int getPriority() {
         return PriorityCollector.DEFAULT_PRIORITY - 5;
-    }
-
-    @Override
-    public boolean preDispatch(WebContext ctx) throws Exception {
-        return false;
     }
 
     @Override
@@ -72,11 +63,7 @@ public class ServiceDispatcher implements WebDispatcher {
             return false;
         }
 
-        tasks.executor("web-services")
-             .dropOnOverload(() -> ctx.respondWith()
-                                      .error(HttpResponseStatus.INTERNAL_SERVER_ERROR,
-                                             "Request dropped - System overload!"))
-             .fork(() -> invokeService(ctx, handler.getFirst(), handler.getSecond()));
+        invokeService(ctx, handler.getFirst(), handler.getSecond());
         return true;
     }
 

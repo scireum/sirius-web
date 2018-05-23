@@ -23,11 +23,6 @@ public class TestDispatcher implements WebDispatcher {
     }
 
     @Override
-    public boolean preDispatch(WebContext ctx) throws Exception {
-        return false;
-    }
-
-    @Override
     public void dispatch(WebContext ctx, Consumer<WebContext> startOfPipeline, Consumer<WebContext> nextStage)
             throws Exception {
         if ("/redispatch".equalsIgnoreCase(ctx.getRequestedURI())) {
