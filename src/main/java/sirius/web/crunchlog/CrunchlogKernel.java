@@ -22,6 +22,7 @@ import sirius.kernel.di.std.Framework;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Counter;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.health.console.Command;
 import sirius.kernel.health.metrics.MetricProvider;
 import sirius.kernel.health.metrics.MetricsCollector;
 import sirius.kernel.nls.NLS;
@@ -65,7 +66,7 @@ import java.util.zip.GZIPOutputStream;
  */
 @Framework("web.crunchlog")
 @Register(classes = {CrunchlogKernel.class, BackgroundLoop.class, Lifecycle.class, MetricProvider.class})
-public class CrunchlogKernel extends BackgroundLoop implements Lifecycle, MetricProvider {
+public class CrunchlogKernel extends BackgroundLoop implements Command, Lifecycle, MetricProvider {
 
     private static final int MIN_FREE_SPACE = 1024 * 1024 * 100;
     private static final String GZIP_FILE_EXTENSION = ".gzip";
@@ -367,5 +368,21 @@ public class CrunchlogKernel extends BackgroundLoop implements Lifecycle, Metric
             // Emits a one to make the system state turn red if the crunchlog is unhappy
             collector.metric("crunchlog-error", "Crunchlog Error", 1, null);
         }
+    }
+
+    @Override
+    public void execute(Output output, String... strings) throws Exception {
+        doWork();
+        if(currentWriter == null) {
+            output.line("No open crunchlog file to close!");
+            return;
+        }
+        closeWriter();
+        output.line("Closed active crunchlog file.");
+    }
+
+    @Override
+    public String getDescription() {
+        return "Closes the currently open crunchlog file";
     }
 }
