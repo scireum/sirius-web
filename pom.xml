@@ -14,7 +14,7 @@
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
     <properties>
-        <sirius.kernel>9.4</sirius.kernel>
+        <sirius.kernel>9.5</sirius.kernel>
     </properties>
 
     <dependencies>
@@ -64,14 +64,6 @@
             <groupId>com.ning</groupId>
             <artifactId>async-http-client</artifactId>
             <version>1.9.32</version>
-        </dependency>
-
-
-        <!-- Required logging bridge to make slf4j log to log4j -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.5</version>
         </dependency>
 
         <!-- Used to generate QR codes -->
