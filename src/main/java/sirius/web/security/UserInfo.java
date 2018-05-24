@@ -51,14 +51,14 @@ public class UserInfo extends Composable {
      */
     private static final String ENABLED = "enabled";
 
-    private String tenantId;
-    private String tenantName;
-    private String userId;
-    private String username;
-    private String lang;
-    private Set<String> permissions = null;
-    private Function<UserInfo, UserSettings> settingsSupplier;
-    private Function<UserInfo, Object> userSupplier;
+    protected String tenantId;
+    protected String tenantName;
+    protected String userId;
+    protected String username;
+    protected String lang;
+    protected Set<String> permissions = null;
+    protected Function<UserInfo, UserSettings> settingsSupplier;
+    protected Function<UserInfo, Object> userSupplier;
 
     /**
      * Builder pattern to create a new {@link UserInfo}.
@@ -288,7 +288,7 @@ public class UserInfo extends Composable {
         return false;
     }
 
-    private boolean permissionsFullfilled(String permissions) {
+    protected boolean permissionsFullfilled(String permissions) {
         for (String permission : permissions.split("\\+")) {
             if (!permissionFullfilled(permission)) {
                 return false;
@@ -297,7 +297,7 @@ public class UserInfo extends Composable {
         return true;
     }
 
-    private boolean permissionFullfilled(String permission) {
+    protected boolean permissionFullfilled(String permission) {
         if (permission.startsWith("!")) {
             return permissions == null || !permissions.contains(permission.substring(1));
         } else {
