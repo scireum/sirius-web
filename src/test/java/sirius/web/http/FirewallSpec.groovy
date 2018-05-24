@@ -9,7 +9,6 @@
 package sirius.web.http
 
 import sirius.kernel.BaseSpecification
-import sirius.kernel.health.HandledException
 
 class FirewallSpec extends BaseSpecification {
 
