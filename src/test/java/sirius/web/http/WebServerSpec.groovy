@@ -376,6 +376,37 @@ class WebServerSpec extends BaseSpecification {
         u.getResponseCode() == 404
     }
 
+    /**
+     * Invoke a web dispatcher which previously blocked the event loop and crashed netty.
+     * <p>
+     * We now fork a thread for every request so that we never block the event loop
+     * in {@link Response#contentionAwareWrite(java.lang.Object)} but always a worker thread.
+     * Therefore the event loop can shovel away the data in the output buffer of the channel
+     * and the future will eventually fullfilled.
+     */
+    def "Invoke /large-blocking-calls with GET"() {
+        given:
+        HttpURLConnection u = new URL("http://localhost:9999/large-blocking-calls").openConnection()
+        when:
+        u.setRequestMethod("GET")
+        u.setDoOutput(false)
+        and:
+        def counter = countBytesInStream(u.getInputStream())
+        then:
+        180000000 == counter
+    }
+
+    def countBytesInStream(InputStream input) {
+        def counter = 0
+        def count = 0
+        def buffer = new byte[8192]
+        while((count = input.read(buffer)) > 0) {
+            counter += count
+        }
+
+        return counter;
+    }
+
     def "HTTP pipelining is supported correctly"() {
         given:
         List<HttpResponse> responses = Lists.newArrayList()
