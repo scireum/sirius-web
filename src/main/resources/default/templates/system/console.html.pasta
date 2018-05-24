@@ -10,7 +10,7 @@
                         if (response.error) {
                             term.error(response.error.message).resume();
                         } else {
-                            term.echo(response.result).resume();
+                            term.echo(response.result, {exec: false}).resume();
                         }
                     });
                 }, {
