@@ -19,6 +19,11 @@ public class FacetRange {
     private Amount from = Amount.NOTHING;
     private Amount to = Amount.NOTHING;
 
+    /**
+     * Creates a new range with the given min and max values.
+     * @param min smallest available value
+     * @param max the largest available value
+     */
     public FacetRange(Amount min, Amount max) {
         this.min = min;
         this.max = max;
