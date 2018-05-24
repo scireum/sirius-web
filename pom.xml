@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.scireum</groupId>
         <artifactId>sirius-parent</artifactId>
-        <version>3.8.3</version>
+        <version>3.12</version>
     </parent>
     <artifactId>sirius-web</artifactId>
     <version>16.0</version>
@@ -14,7 +14,7 @@
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
     <properties>
-        <sirius.kernel>9.5</sirius.kernel>
+        <sirius.kernel>9.6</sirius.kernel>
     </properties>
 
     <dependencies>
@@ -56,26 +56,26 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.31</version>
+            <version>1.2.47</version>
         </dependency>
 
         <!-- Async http client used to tunnel http data from a backend server -->
         <dependency>
             <groupId>com.ning</groupId>
             <artifactId>async-http-client</artifactId>
-            <version>1.9.32</version>
+            <version>1.9.40</version>
         </dependency>
 
         <!-- Used to generate QR codes -->
         <dependency>
             <groupId>com.google.zxing</groupId>
             <artifactId>core</artifactId>
-            <version>2.2</version>
+            <version>3.3.2</version>
         </dependency>
         <dependency>
             <groupId>com.google.zxing</groupId>
             <artifactId>javase</artifactId>
-            <version>2.2</version>
+            <version>3.3.2</version>
         </dependency>
 
         <!-- Used to send and receive mails -->
@@ -93,7 +93,7 @@
         <dependency>
             <groupId>org.xhtmlrenderer</groupId>
             <artifactId>flying-saucer-pdf</artifactId>
-            <version>9.0.4</version>
+            <version>9.1.13</version>
             <exclusions>
                 <exclusion>
                     <groupId>bouncycastle</groupId>
