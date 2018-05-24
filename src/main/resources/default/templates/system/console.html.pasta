@@ -4,9 +4,9 @@
         <link href="/assets/terminal/jquery.terminal-1.15.0.min.css" rel="stylesheet" />
         <script>
             $(document).ready(function ($) {
-                $('#term').terminal(function(command, term) {
+                $('#term').terminal(function (command, term) {
                     term.pause();
-                    $.post('/service/json/system/console', {command: command}).then(function(response) {
+                    $.post('/service/json/system/console', {command: command}).then(function (response) {
                         if (response.error) {
                             term.error(response.error.message).resume();
                         } else {
@@ -14,9 +14,9 @@
                         }
                     });
                 }, {
-                    prompt: function(output) {
+                    prompt: function (output) {
                         var now = new Date();
-                        output(now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds()+' - @(nodeName)> ');
+                        output(now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds() + ' - @(nodeName)> ');
                     },
                     greetings: '@product (@detailedVersion) - Type "help" for a list of available commands.'
                 });
@@ -25,7 +25,7 @@
             });
 
             function handleResize() {
-                $('#term').css('height', ($(window).height() - $('.footer').outerHeight() - $('#term').position().top)+'px');
+                $('#term').css('height', ($(window).height() - $('.footer').outerHeight() - $('#term').position().top) + 'px');
             }
         </script>
         <style>
@@ -44,8 +44,7 @@
             }
 
             .terminal, .terminal .terminal-output, .terminal .terminal-output div, .terminal .terminal-output div div,
-            .cmd, .terminal .cmd span, .terminal .cmd div
-            {
+            .cmd, .terminal .cmd span, .terminal .cmd div {
                 background-color: inherit;
                 color: #CCCCCC;
                 font-family: "Consolas", "Courier New", monospace;
@@ -53,7 +52,7 @@
             }
         </style>
     </i:block>
-    <i:block name="breadcrumbBar" />
+    <i:block name="breadcrumbBar"/>
 
     <div id="term"></div>
 
