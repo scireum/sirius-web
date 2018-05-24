@@ -9,12 +9,12 @@
 package sirius.web.http;
 
 /**
- * Permits application to provide a firewall which can perform IP filtering and rate limiting.
+ * Permits an application to provide a firewall which can perform IP filtering and rate limiting.
  */
 public interface Firewall {
 
     /**
-     * Determines if the remote IP of the given requrest is balcklisted
+     * Determines if the remote IP of the given request is blacklisted
      *
      * @param ctx the request to check
      * @return <tt>true</tt> if the remote IP is blacklisted, <tt>false</tt> otherwise

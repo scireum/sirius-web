@@ -80,16 +80,16 @@ public class ControllerDispatcher implements WebDispatcher {
 
     @Override
     @SuppressWarnings("squid:S1698")
-    @Explain("We acutally can use object identity here as this is a marker object.")
+    @Explain("We actually can use object identity here as this is a marker object.")
     public Callback<WebContext> preparePreDispatch(WebContext ctx) {
         String uri = determineEffectiveURI(ctx);
         for (final Route route : getRoutes()) {
             final List<Object> params = shouldExecute(ctx, uri, route, true);
             if (params != Route.NO_MATCH) {
-                InputStreamHandler ish = new InputStreamHandler();
-                ctx.setContentHandler(ish);
+                InputStreamHandler handler = new InputStreamHandler();
+                ctx.setContentHandler(handler);
 
-                return newCtx -> preparePerformRoute(newCtx, route, params, ish);
+                return newCtx -> preparePerformRoute(newCtx, route, params, handler);
             }
         }
 
@@ -105,7 +105,7 @@ public class ControllerDispatcher implements WebDispatcher {
     }
 
     @SuppressWarnings("squid:S1698")
-    @Explain("We acutally can use object identity here as this is a marker object.")
+    @Explain("We actually can use object identity here as this is a marker object.")
     private List<Object> shouldExecute(WebContext ctx, String uri, Route route, boolean preDispatch) {
         final List<Object> params = route.matches(ctx, uri, preDispatch);
         if (params == Route.NO_MATCH) {
@@ -152,7 +152,7 @@ public class ControllerDispatcher implements WebDispatcher {
 
     @Override
     @SuppressWarnings("squid:S1698")
-    @Explain("We acutally can use object identity here as this is a marker object.")
+    @Explain("We actually can use object identity here as this is a marker object.")
     public boolean dispatch(WebContext ctx) throws Exception {
         String uri = determineEffectiveURI(ctx);
         for (final Route route : getRoutes()) {
