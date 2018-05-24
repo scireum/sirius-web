@@ -57,11 +57,6 @@ public class HelpDispatcher implements WebDispatcher {
     private Tagliatelle tagliatelle;
 
     @Override
-    public boolean preDispatch(WebContext ctx) throws Exception {
-        return false;
-    }
-
-    @Override
     public int getPriority() {
         return PriorityCollector.DEFAULT_PRIORITY + 100;
     }

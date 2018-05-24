@@ -61,7 +61,6 @@ public class Message {
      * Creates a new empty message.
      */
     public Message() {
-
     }
 
     /**

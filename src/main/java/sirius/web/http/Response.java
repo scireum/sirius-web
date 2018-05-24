@@ -1270,6 +1270,18 @@ public class Response {
         return new ChunkedOutputStream(this, contentType, status);
     }
 
+    /**
+     * Writes the given message probably a chunk of output data into the channel.
+     * <p>
+     * If the channel buffer is full (not writeable anymore) we need to trigger a flush,
+     * so that the data is shovelled into the network. If this doesn't clear up the buffer immediatelly,
+     * we block the current thread to throttle the application until free space is available again.
+     * <p>
+     * Note that this method must not be invoked in the event loop as otherwise a deadlock might occur. Therefore
+     * all dispatchers now always for a new thread to handle requests.
+     *
+     * @param message the data to sent
+     */
     protected void contentionAwareWrite(Object message) {
         if (!ctx.channel().isWritable()) {
             ChannelFuture future = ctx.writeAndFlush(message);

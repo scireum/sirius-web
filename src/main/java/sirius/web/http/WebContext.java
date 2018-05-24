@@ -440,7 +440,7 @@ public class WebContext implements SubContext {
     }
 
     /**
-     * Can be set from within {@link WebDispatcher#preDispatch(WebContext)} to manually handle incoming content.
+     * Can be set from within {@link WebDispatcher#preparePreDispatch(WebContext)} to manually handle incoming content.
      *
      * @param handler the handler to be supplied with content. If <tt>null</tt>, the default (memory/disk buffering)
      *                handler is applied.

@@ -7,14 +7,11 @@
  */
 
 import com.googlecode.junittoolbox.SuiteClasses;
-import com.googlecode.junittoolbox.WildcardPatternSuite;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
-import sirius.kernel.TestHelper;
+import sirius.kernel.ScenarioSuite;
 
-@SuppressWarnings("UtilityClassWithoutPrivateConstructor")
-@RunWith(WildcardPatternSuite.class)
+@RunWith(ScenarioSuite.class)
 @SuiteClasses({"**/*Test.class", "**/*Spec.class"})
 public class TestSuite {
 
@@ -24,13 +21,5 @@ public class TestSuite {
         // This is also set in the CORSSpec, but if the whole TestSuite is executed,
         // this might be too late as a previously opened url connection might be re-used...
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
-
-        TestHelper.setUp(TestSuite.class);
     }
-
-    @AfterClass
-    public static void tearDown() {
-        TestHelper.tearDown(TestSuite.class);
-    }
-
 }

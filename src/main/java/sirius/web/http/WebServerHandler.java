@@ -30,6 +30,7 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.async.TaskContext;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Watch;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
@@ -70,6 +71,9 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     private boolean ssl;
 
     private DispatcherPipeline pipeline;
+
+    @Part
+    private static Firewall firewall;
 
     /**
      * Creates a new instance and initializes some statistics.
@@ -448,13 +452,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
      * @return <tt>true</tt> if the request was blocked, false otherwise
      */
     private boolean checkIfBlockedByIPFilter(ChannelHandlerContext ctx, HttpRequest req) {
-        // As determining the remote IP is quite expensive, we only fetch and check it,
-        // if there is a filter at all
-        if (WebServer.getIPFilter().isEmpty()) {
-            return false;
-        }
-
-        if (!WebServer.getIPFilter().accepts(currentContext.getRemoteIP())) {
+        if (isBlocked(currentContext)) {
             WebServer.blocks++;
             if (WebServer.blocks < 0) {
                 WebServer.blocks = 0;
@@ -466,6 +464,14 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             return true;
         }
         return false;
+    }
+
+    private boolean isBlocked(WebContext ctx) {
+        if (!WebServer.getIPFilter().isEmpty() && WebServer.getIPFilter().accepts(ctx.getRemoteIP())) {
+            return true;
+        }
+
+        return firewall != null && firewall.isIPBlacklisted(ctx);
     }
 
     /*

@@ -11,7 +11,6 @@ package sirius.web.services;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.TaskContext;
-import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
@@ -19,11 +18,16 @@ import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.nls.NLS;
+import sirius.web.http.Firewall;
+import sirius.web.http.Limited;
+import sirius.web.http.Unlimited;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 import sirius.web.security.Permissions;
 import sirius.web.security.UserContext;
 import sirius.web.security.UserInfo;
+
+import java.util.Optional;
 
 /**
  * Dispatches calls to the JSON / XML Service-Framework (/service).
@@ -41,16 +45,11 @@ public class ServiceDispatcher implements WebDispatcher {
     private GlobalContext gc;
 
     @Part
-    private Tasks tasks;
+    private Firewall firewall;
 
     @Override
     public int getPriority() {
         return PriorityCollector.DEFAULT_PRIORITY - 5;
-    }
-
-    @Override
-    public boolean preDispatch(WebContext ctx) throws Exception {
-        return false;
     }
 
     @Override
@@ -72,11 +71,7 @@ public class ServiceDispatcher implements WebDispatcher {
             return false;
         }
 
-        tasks.executor("web-services")
-             .dropOnOverload(() -> ctx.respondWith()
-                                      .error(HttpResponseStatus.INTERNAL_SERVER_ERROR,
-                                             "Request dropped - System overload!"))
-             .fork(() -> invokeService(ctx, handler.getFirst(), handler.getSecond()));
+        invokeService(ctx, handler.getFirst(), handler.getSecond());
         return true;
     }
 
@@ -107,6 +102,16 @@ public class ServiceDispatcher implements WebDispatcher {
 
     private void invokeService(WebContext ctx, ServiceCall call, StructuredService serv) {
         TaskContext.get().setSystem(SYSTEM_SERVICE).setSubSystem(serv.getClass().getSimpleName());
+
+        // Check firewall
+        if (firewall != null && !serv.getClass().isAnnotationPresent(Unlimited.class)) {
+            if (firewall.handleRateLimiting(ctx,
+                                            Optional.ofNullable(serv.getClass().getAnnotation(Limited.class))
+                                                    .map(Limited::value)
+                                                    .orElse(Limited.HTTP))) {
+                return;
+            }
+        }
 
         // Install language
         CallContext.getCurrent().setLang(NLS.makeLang(ctx.getLang()));

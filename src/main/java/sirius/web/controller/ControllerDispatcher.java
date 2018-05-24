@@ -13,6 +13,7 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
 import sirius.kernel.async.TaskContext;
 import sirius.kernel.async.Tasks;
+import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.commons.Strings;
@@ -25,7 +26,10 @@ import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
 import sirius.web.ErrorCodeException;
 import sirius.web.http.CSRFHelper;
+import sirius.web.http.Firewall;
 import sirius.web.http.InputStreamHandler;
+import sirius.web.http.Limited;
+import sirius.web.http.Unlimited;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 import sirius.web.security.UserContext;
@@ -37,6 +41,7 @@ import java.lang.reflect.Method;
 import java.nio.channels.ClosedChannelException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Dispatches incoming requests to the appropriate {@link Controller}.
@@ -57,6 +62,9 @@ public class ControllerDispatcher implements WebDispatcher {
     private Tasks tasks;
 
     @Part
+    private Firewall firewall;
+
+    @Part
     private CSRFHelper csrfHelper;
 
     /**
@@ -71,42 +79,60 @@ public class ControllerDispatcher implements WebDispatcher {
     }
 
     @Override
-    public boolean preDispatch(WebContext ctx) throws Exception {
-        return route(ctx, true);
+    @SuppressWarnings("squid:S1698")
+    @Explain("We actually can use object identity here as this is a marker object.")
+    public Callback<WebContext> preparePreDispatch(WebContext ctx) {
+        String uri = determineEffectiveURI(ctx);
+        for (final Route route : getRoutes()) {
+            final List<Object> params = shouldExecute(ctx, uri, route, true);
+            if (params != Route.NO_MATCH) {
+                InputStreamHandler handler = new InputStreamHandler();
+                ctx.setContentHandler(handler);
+
+                return newCtx -> preparePerformRoute(newCtx, route, params, handler);
+            }
+        }
+
+        return null;
     }
 
-    @Override
-    public boolean dispatch(WebContext ctx) throws Exception {
-        return route(ctx, false);
-    }
-
-    private boolean route(final WebContext ctx, boolean preDispatch) {
+    private String determineEffectiveURI(WebContext ctx) {
         String uri = ctx.getRawRequestedURI();
         if (uri.endsWith("/") && !"/".equals(uri)) {
             uri = uri.substring(0, uri.length() - 1);
         }
-        for (final Route route : getRoutes()) {
-            if (tryExecuteRoute(ctx, preDispatch, uri, route)) {
-                return true;
-            }
-        }
-        return false;
+        return uri;
     }
 
     @SuppressWarnings("squid:S1698")
-    @Explain("Strings have been intered for performance reasons.")
-    private boolean tryExecuteRoute(WebContext ctx, boolean preDispatch, String uri, Route route) {
-        try {
-            final List<Object> params = route.matches(ctx, uri, preDispatch);
-            if (params == Route.NO_MATCH) {
-                // Route did not match...
-                return false;
+    @Explain("We actually can use object identity here as this is a marker object.")
+    private List<Object> shouldExecute(WebContext ctx, String uri, Route route, boolean preDispatch) {
+        final List<Object> params = route.matches(ctx, uri, preDispatch);
+        if (params == Route.NO_MATCH) {
+            // Route did not match...
+            return params;
+        }
+        // Check if interceptors permit execution of route...
+        for (Interceptor interceptor : interceptors) {
+            if (!interceptor.shouldExecuteRoute(ctx, route.isJSONCall(), route.getController())) {
+                return Route.NO_MATCH;
             }
+        }
 
-            // Check if interceptors permit execution of route...
-            for (Interceptor interceptor : interceptors) {
-                if (!interceptor.shouldExecuteRoute(ctx, route.isJSONCall(), route.getController())) {
-                    return false;
+        return params;
+    }
+
+    private void preparePerformRoute(WebContext ctx,
+                                     Route route,
+                                     List<Object> params,
+                                     InputStreamHandler inputStreamHandler) {
+        try {
+            if (firewall != null && !route.getMethod().isAnnotationPresent(Unlimited.class)) {
+                if (firewall.handleRateLimiting(ctx,
+                                                Optional.ofNullable(route.getMethod().getAnnotation(Limited.class))
+                                                        .map(Limited::value)
+                                                        .orElse(Limited.HTTP))) {
+                    return;
                 }
             }
 
@@ -115,25 +141,29 @@ public class ControllerDispatcher implements WebDispatcher {
 
             // If a route is pre-dispatchable we inject an InputStream as last parameter of the
             // call. This is also checked by the route-compiler
-            if (preDispatch) {
-                InputStreamHandler ish = new InputStreamHandler();
-                params.add(ish);
-                ctx.setContentHandler(ish);
+            if (inputStreamHandler != null) {
+                params.add(inputStreamHandler);
             }
-            tasks.executor("web-mvc")
-                 .dropOnOverload(() -> ctx.respondWith()
-                                          .error(HttpResponseStatus.INTERNAL_SERVER_ERROR,
-                                                 "Request dropped - System overload!"))
-                 .fork(() -> performRouteInOwnThread(ctx, route, params));
-            return true;
+            performRoute(ctx, route, params);
         } catch (final Exception e) {
-            tasks.executor("web-mvc")
-                 .dropOnOverload(() -> ctx.respondWith()
-                                          .error(HttpResponseStatus.INTERNAL_SERVER_ERROR,
-                                                 "Request dropped - System overload!"))
-                 .fork(() -> handleFailure(ctx, route, e));
-            return true;
+            handleFailure(ctx, route, e);
         }
+    }
+
+    @Override
+    @SuppressWarnings("squid:S1698")
+    @Explain("We actually can use object identity here as this is a marker object.")
+    public boolean dispatch(WebContext ctx) throws Exception {
+        String uri = determineEffectiveURI(ctx);
+        for (final Route route : getRoutes()) {
+            final List<Object> params = shouldExecute(ctx, uri, route, false);
+            if (params != Route.NO_MATCH) {
+                preparePerformRoute(ctx, route, params, null);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private boolean checkCSRFToken(WebContext ctx) {
@@ -143,7 +173,7 @@ public class ControllerDispatcher implements WebDispatcher {
         return Strings.isFilled(requestToken) && Strings.areEqual(requestToken, sessionToken);
     }
 
-    private void performRouteInOwnThread(WebContext ctx, Route route, List<Object> params) {
+    private void performRoute(WebContext ctx, Route route, List<Object> params) {
         try {
             setupContext(ctx, route);
 
@@ -158,13 +188,13 @@ public class ControllerDispatcher implements WebDispatcher {
             // and the user manager are guaranteed to be invoked one we enter the controller code...
             UserInfo user = UserContext.getCurrentUser();
 
-            if (!checkCSRFTokenIfNecessary(ctx, route)) {
-                return;
-            }
-
             // If the underlying ScopeDetector made a redirect (for whatever reasons)
             // the response will be committed and we can (must) safely return...
             if (ctx.isResponseCommitted()) {
+                return;
+            }
+
+            if (!checkCSRFTokenIfNecessary(ctx, route)) {
                 return;
             }
 
