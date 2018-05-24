@@ -18,6 +18,7 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.HandledException;
 import sirius.web.http.InputStreamHandler;
+import sirius.web.http.Limited;
 import sirius.web.http.WebContext;
 import sirius.web.resources.Resources;
 import sirius.web.services.JSONStructuredOutput;
@@ -157,6 +158,18 @@ public class TestController implements Controller {
     @Routed("/test/provide-security-token")
     public void provideSecuritytoken(WebContext ctx) {
         ctx.respondWith().template("templates/security-token.html.pasta");
+    }
+
+    @Routed("/test/firewall")
+    @Limited
+    public void firewallTest(WebContext ctx) {
+        ctx.respondWith().direct(HttpResponseStatus.OK, "OK");
+    }
+
+    @Routed("/test/firewallBlocked")
+    @Limited("blocked")
+    public void firewallTestBlocked(WebContext ctx) {
+        ctx.respondWith().direct(HttpResponseStatus.OK, "OK");
     }
 
     @CheckSecurityToken
