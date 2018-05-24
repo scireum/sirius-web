@@ -227,11 +227,11 @@ public class UserContext implements SubContext {
         this.currentScope = scope == null ? ScopeInfo.DEFAULT_SCOPE : scope;
         if (this.currentUser != null) {
             this.currentUser = null;
-            CallContext.getCurrent().addToMDC(MDC_USER_ID, null);
-            CallContext.getCurrent().addToMDC(MDC_USER_NAME, null);
+            CallContext.getCurrent().removeFromMDC(MDC_USER_ID);
+            CallContext.getCurrent().removeFromMDC(MDC_USER_NAME);
         }
 
-        CallContext.getCurrent().addToMDC(MDC_SCOPE, currentScope.getScopeId());
+        CallContext.getCurrent().addToMDC(MDC_SCOPE, () -> currentScope.getScopeId());
     }
 
     /**
@@ -243,8 +243,8 @@ public class UserContext implements SubContext {
      */
     public void setCurrentUser(@Nullable UserInfo user) {
         this.currentUser = user == null ? UserInfo.NOBODY : user;
-        CallContext.getCurrent().addToMDC(MDC_USER_ID, currentUser.getUserId());
-        CallContext.getCurrent().addToMDC(MDC_USER_NAME, currentUser.getUserName());
+        CallContext.getCurrent().addToMDC(MDC_USER_ID, () -> currentUser.getUserId());
+        CallContext.getCurrent().addToMDC(MDC_USER_NAME, () -> currentUser.getUserName());
     }
 
     /**
