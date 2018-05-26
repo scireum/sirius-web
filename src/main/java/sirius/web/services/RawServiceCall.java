@@ -23,8 +23,9 @@ class RawServiceCall extends ServiceCall {
     }
 
     @Override
-    public void handle(String errorCode, Throwable error) {
+    public boolean handle(Throwable error) {
         ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(error));
+        return true;
     }
 
     @Override
