@@ -258,6 +258,11 @@
                     $('.img', container).attr('src', responseJSON.previewUrl);
                     $('.lnk', container).attr('href', responseJSON.imageUrl);
                 }
+                if (responseJSON.redirect) {
+                    setTimeout(function () {
+                        window.location = responseJSON.redirect;
+                    }, 1250);
+                }
             },
             showMessage: function (message) {
                 // We generally send a flag "error" which is true or false as
