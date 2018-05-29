@@ -37,28 +37,15 @@ public abstract class ServiceCall {
      * Handles the given exception by creating an error response.
      *
      * @param error the exception to report
-     * @return <tt>true</tt> if the response was already committed, <tt>false</tt> otherwise
+     * @return {@link HandledException} the handled Exception
      */
-    public boolean handle(Throwable error) {
-        HandledException he = Exceptions.handle()
+    public HandledException handle(Throwable error) {
+        return Exceptions.handle()
                 .to(ServiceCall.LOG)
                 .error(error)
                 .withSystemErrorMessage("Service call to '%s' failed: %s (%s)",
                         ctx.getRequestedURI())
                 .handle();
-
-        if (ctx.isResponseCommitted()) {
-            ServiceCall.LOG.WARN("Cannot send service error for: %s. "
-                            + "As a partially successful response has already been created and committed!",
-                    ctx.getRequest().uri());
-
-            // Force underlying request / response to be closed...
-            ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, he);
-            return true;
-        }
-
-        return false;
-
     }
 
     /**
@@ -153,9 +140,20 @@ public abstract class ServiceCall {
             // If the user unexpectedly closes the connection, we do not need to log an error...
             Exceptions.ignore(ex);
         } catch (Exception t) {
-            if (!handle(t)) {
-                serv.callOnError(this, createOutput(), t);
+            HandledException he = handle(t);
+
+            if (ctx.isResponseCommitted()) {
+                ServiceCall.LOG.WARN("Cannot send service error for: %s. "
+                                + "As a partially successful response has already been created and committed!",
+                        ctx.getRequest().uri());
+
+                // Force underlying request / response to be closed...
+                ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, he);
+                return;
             }
+
+            serv.handleException(this, createOutput(), he);
+
         }
     }
 

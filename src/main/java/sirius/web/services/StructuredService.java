@@ -9,7 +9,6 @@
 package sirius.web.services;
 
 import sirius.kernel.async.CallContext;
-import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.xml.StructuredOutput;
 import sirius.web.ErrorCodeException;
@@ -43,18 +42,12 @@ public interface StructuredService {
      *
      * @param call the HTTP request to process
      * @param out  the encoder used to generate the desired output
-     * @param e    {@link Exception} causing an error while processing the request
+     * @param e    {@link HandledException} which caused an error while processing the request
      */
-    default void callOnError(ServiceCall call, StructuredOutput out, Exception e) {
-        HandledException he = Exceptions.createHandled()
-                .error(e)
-                .withSystemErrorMessage("Service call to '%s' failed: %s (%s)",
-                        call.getContext().getRequestedURI())
-                .handle();
-
+    default void handleException(ServiceCall call, StructuredOutput out, HandledException e) {
         out.beginResult();
         try {
-            call.markCallFailed(out, he.getMessage());
+            call.markCallFailed(out, e.getMessage());
             Throwable cause = e.getCause();
 
             while (cause != null && cause.getCause() != null && !cause.getCause().equals(cause)) {
