@@ -698,10 +698,10 @@ public class WebServer implements Lifecycle, MetricProvider {
                                      serverErrors,
                                      "/min");
         collector.metric("http-open-connections", "HTTP Open Connections", openConnections.size(), null);
-        collector.metric("http-response-time", "HTTP Avg. Reponse Time", responseTime.getAndClearAverage(), "ms");
+        collector.metric("http-response-time", "HTTP Avg. Reponse Time", responseTime.getAndClear(), "ms");
         collector.metric("http-response-ttfb",
                          "HTTP Avg. Time To First Byte",
-                         timeToFirstByte.getAndClearAverage(),
+                         timeToFirstByte.getAndClear(),
                          "ms");
         collector.metric("websockets", "Open Websockets", websockets, null);
     }

@@ -316,8 +316,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         // Reset stats
         bytesIn = 0;
         bytesOut = 0;
-        inboundLatency.getAndClearAverage();
-        processLatency.getAndClearAverage();
+        inboundLatency.getAndClear();
+        processLatency.getAndClear();
         WebServer.requests++;
         if (WebServer.requests < 0) {
             WebServer.requests = 0;
