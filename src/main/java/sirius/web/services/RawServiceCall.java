@@ -13,6 +13,8 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.xml.StructuredOutput;
 import sirius.web.http.WebContext;
 
+import java.nio.channels.ClosedChannelException;
+
 /**
  * RAW encoder for calls to a {@link sirius.web.services.StructuredService}.
  */
@@ -23,8 +25,16 @@ class RawServiceCall extends ServiceCall {
     }
 
     @Override
-    public void handle(String errorCode, Throwable error) {
-        ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(error));
+    protected void invoke(StructuredService serv) {
+        try {
+            StructuredOutput output = createOutput();
+            serv.call(this, output);
+        } catch (ClosedChannelException ex) {
+            // If the user unexpectedly closes the connection, we do not need to log an error...
+            Exceptions.ignore(ex);
+        } catch (Exception t) {
+            ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, handle(t));
+        }
     }
 
     @Override

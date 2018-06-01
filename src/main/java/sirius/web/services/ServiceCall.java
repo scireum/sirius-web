@@ -9,14 +9,11 @@
 package sirius.web.services;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import sirius.kernel.async.CallContext;
-import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Log;
 import sirius.kernel.xml.StructuredOutput;
-import sirius.web.ErrorCodeException;
 import sirius.web.http.WebContext;
 
 import java.nio.channels.ClosedChannelException;
@@ -39,49 +36,16 @@ public abstract class ServiceCall {
     /**
      * Handles the given exception by creating an error response.
      *
-     * @param errorCode the error code to send
-     * @param error     the exception to report
+     * @param error the exception to report
+     * @return {@link HandledException} the handled Exception
      */
-    public void handle(String errorCode, Throwable error) {
-        HandledException he = Exceptions.handle()
-                                        .to(LOG)
-                                        .error(error)
-                                        .withSystemErrorMessage("Service call to '%s' failed: %s (%s)",
-                                                                ctx.getRequestedURI())
-                                        .handle();
-        if (ctx.isResponseCommitted()) {
-            LOG.WARN("Cannot send service error for: %s. "
-                     + "As a partially successful response has already been created and committed!",
-                     ctx.getRequest().uri());
-
-            // Force underlying request / response to be closed...
-            ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, he);
-            return;
-        }
-
-        StructuredOutput out = createOutput();
-        out.beginResult();
-        try {
-            markCallFailed(out, he.getMessage());
-            Throwable cause = error.getCause();
-            while (cause != null && cause.getCause() != null && !cause.getCause().equals(cause)) {
-                cause = cause.getCause();
-            }
-            if (cause == null) {
-                cause = error;
-            }
-            out.property("type", cause.getClass().getName());
-            if (Strings.isFilled(errorCode)) {
-                out.property("code", errorCode);
-            } else if (error instanceof ErrorCodeException) {
-                out.property("code", ((ErrorCodeException) error).getCode());
-            } else {
-                out.property("code", "ERROR");
-            }
-            out.property("flow", CallContext.getCurrent().getMDCValue(CallContext.MDC_FLOW));
-        } finally {
-            out.endResult();
-        }
+    public HandledException handle(Throwable error) {
+        return Exceptions.handle()
+                .to(ServiceCall.LOG)
+                .error(error)
+                .withSystemErrorMessage("Service call to '%s' failed: %s (%s)",
+                        ctx.getRequestedURI())
+                .handle();
     }
 
     /**
@@ -176,7 +140,20 @@ public abstract class ServiceCall {
             // If the user unexpectedly closes the connection, we do not need to log an error...
             Exceptions.ignore(ex);
         } catch (Exception t) {
-            handle(null, t);
+            HandledException he = handle(t);
+
+            if (ctx.isResponseCommitted()) {
+                ServiceCall.LOG.WARN("Cannot send service error for: %s. "
+                                + "As a partially successful response has already been created and committed!",
+                        ctx.getRequest().uri());
+
+                // Force underlying request / response to be closed...
+                ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, he);
+                return;
+            }
+
+            serv.handleException(this, createOutput(), he);
+
         }
     }
 

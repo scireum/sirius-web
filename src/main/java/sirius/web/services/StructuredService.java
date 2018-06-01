@@ -8,7 +8,10 @@
 
 package sirius.web.services;
 
+import sirius.kernel.async.CallContext;
+import sirius.kernel.health.HandledException;
 import sirius.kernel.xml.StructuredOutput;
+import sirius.web.ErrorCodeException;
 import sirius.web.controller.Routed;
 
 /**
@@ -33,4 +36,39 @@ public interface StructuredService {
      * @throws Exception in case of an error. An appropriate result will be generated in the selected format.
      */
     void call(ServiceCall call, StructuredOutput out) throws Exception;
+
+    /**
+     * Handles the exception caused by handling the incoming call.
+     *
+     * @param call the HTTP request to process
+     * @param out  the encoder used to generate the desired output
+     * @param e    {@link HandledException} which caused an error while processing the request
+     */
+    default void handleException(ServiceCall call, StructuredOutput out, HandledException e) {
+        out.beginResult();
+        try {
+            call.markCallFailed(out, e.getMessage());
+            Throwable cause = e.getCause();
+
+            while (cause != null && cause.getCause() != null && !cause.getCause().equals(cause)) {
+                cause = cause.getCause();
+            }
+
+            if (cause == null) {
+                cause = e;
+            }
+
+            out.property("type", cause.getClass().getName());
+
+            if (e instanceof ErrorCodeException) {
+                out.property("code", ((ErrorCodeException) e).getCode());
+            } else {
+                out.property("code", "ERROR");
+            }
+
+            out.property("flow", CallContext.getCurrent().getMDCValue(CallContext.MDC_FLOW));
+        } finally {
+            out.endResult();
+        }
+    }
 }
