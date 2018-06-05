@@ -41,6 +41,11 @@ public class MimeHelper {
     public static final String IMAGE_JPEG = "image/jpeg";
 
     /**
+     * Mime type of SVG images
+     */
+    public static final String IMAGE_SVG = "image/svg+xml";
+
+    /**
      * Mime type of PDF files
      */
     public static final String APPLICATION_PDF = "application/pdf";
@@ -258,7 +263,7 @@ public class MimeHelper {
         mimeTable.put("src", "application/x-wais-source");
         mimeTable.put("sv4cpio", "application/x-sv4cpio");
         mimeTable.put("sv4crc", "application/x-sv4crc");
-        mimeTable.put("svg", "image/svg+xml");
+        mimeTable.put("svg", IMAGE_SVG);
         mimeTable.put("swf", APPLICATION_X_SHOCKWAVE_FLASH);
         mimeTable.put("t", "application/x-troff");
         mimeTable.put("tar", "application/x-tar");
@@ -346,11 +351,17 @@ public class MimeHelper {
         if ("css" == ending) {
             return TEXT_CSS;
         }
-        if ("xml" == ending) {
+        if ("js" == ending) {
             return TEXT_JAVASCRIPT;
         }
+        if ("xml" == ending) {
+            return TEXT_XML;
+        }
+        if ("svg" == ending) {
+            return IMAGE_SVG;
+        }
         if ("txt" == ending) {
-            return TEXT_JAVASCRIPT;
+            return TEXT_PLAIN;
         }
 
         return null;
