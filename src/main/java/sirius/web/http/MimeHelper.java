@@ -41,6 +41,11 @@ public class MimeHelper {
     public static final String IMAGE_JPEG = "image/jpeg";
 
     /**
+     * Mime type of SVG images
+     */
+    public static final String IMAGE_SVG = "image/svg+xml";
+
+    /**
      * Mime type of PDF files
      */
     public static final String APPLICATION_PDF = "application/pdf";
@@ -78,37 +83,37 @@ public class MimeHelper {
     /**
      * Mime type of mpeg sound files (MP3)
      */
-    private static final String AUDIO_MPEG = "audio/mpeg";
+    public static final String AUDIO_MPEG = "audio/mpeg";
 
     /**
      * Mime type of mpeg video files
      */
-    private static final String VIDEO_MPEG = "video/mpeg";
+    public static final String VIDEO_MPEG = "video/mpeg";
 
     /**
      * Mime type of ogg vorbis video files
      */
-    private static final String VIDEO_OGG = "video/ogg";
+    public static final String VIDEO_OGG = "video/ogg";
 
     /**
      * Mime type of mpeg 4 video files
      */
-    private static final String VIDEO_MP4 = "video/mp4";
+    public static final String VIDEO_MP4 = "video/mp4";
 
     /**
      * Mime type of Blu-ray Disc Audio-Video (BDAV) MPEG-2 Transport Stream (M2TS)
      */
-    private static final String VIDEO_MP2T = "video/MP2T";
+    public static final String VIDEO_MP2T = "video/MP2T";
 
     /**
      * Mime type of zip files
      */
-    private static final String APPLICATION_ZIP = "application/zip";
+    public static final String APPLICATION_ZIP = "application/zip";
 
     /**
      * Mime type of quicktime videos
      */
-    private static final String VIDEO_QUICKTIME = "video/quicktime";
+    public static final String VIDEO_QUICKTIME = "video/quicktime";
 
     private static final Map<String, String> mimeTable = new TreeMap<>();
 
@@ -258,7 +263,7 @@ public class MimeHelper {
         mimeTable.put("src", "application/x-wais-source");
         mimeTable.put("sv4cpio", "application/x-sv4cpio");
         mimeTable.put("sv4crc", "application/x-sv4crc");
-        mimeTable.put("svg", "image/svg+xml");
+        mimeTable.put("svg", IMAGE_SVG);
         mimeTable.put("swf", APPLICATION_X_SHOCKWAVE_FLASH);
         mimeTable.put("t", "application/x-troff");
         mimeTable.put("tar", "application/x-tar");
@@ -346,11 +351,17 @@ public class MimeHelper {
         if ("css" == ending) {
             return TEXT_CSS;
         }
-        if ("xml" == ending) {
+        if ("js" == ending) {
             return TEXT_JAVASCRIPT;
         }
+        if ("xml" == ending) {
+            return TEXT_XML;
+        }
+        if ("zip" == ending) {
+            return APPLICATION_ZIP;
+        }
         if ("txt" == ending) {
-            return TEXT_JAVASCRIPT;
+            return TEXT_PLAIN;
         }
 
         return null;
