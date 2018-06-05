@@ -83,37 +83,37 @@ public class MimeHelper {
     /**
      * Mime type of mpeg sound files (MP3)
      */
-    private static final String AUDIO_MPEG = "audio/mpeg";
+    public static final String AUDIO_MPEG = "audio/mpeg";
 
     /**
      * Mime type of mpeg video files
      */
-    private static final String VIDEO_MPEG = "video/mpeg";
+    public static final String VIDEO_MPEG = "video/mpeg";
 
     /**
      * Mime type of ogg vorbis video files
      */
-    private static final String VIDEO_OGG = "video/ogg";
+    public static final String VIDEO_OGG = "video/ogg";
 
     /**
      * Mime type of mpeg 4 video files
      */
-    private static final String VIDEO_MP4 = "video/mp4";
+    public static final String VIDEO_MP4 = "video/mp4";
 
     /**
      * Mime type of Blu-ray Disc Audio-Video (BDAV) MPEG-2 Transport Stream (M2TS)
      */
-    private static final String VIDEO_MP2T = "video/MP2T";
+    public static final String VIDEO_MP2T = "video/MP2T";
 
     /**
      * Mime type of zip files
      */
-    private static final String APPLICATION_ZIP = "application/zip";
+    public static final String APPLICATION_ZIP = "application/zip";
 
     /**
      * Mime type of quicktime videos
      */
-    private static final String VIDEO_QUICKTIME = "video/quicktime";
+    public static final String VIDEO_QUICKTIME = "video/quicktime";
 
     private static final Map<String, String> mimeTable = new TreeMap<>();
 
@@ -357,8 +357,8 @@ public class MimeHelper {
         if ("xml" == ending) {
             return TEXT_XML;
         }
-        if ("svg" == ending) {
-            return IMAGE_SVG;
+        if ("zip" == ending) {
+            return APPLICATION_ZIP;
         }
         if ("txt" == ending) {
             return TEXT_PLAIN;
