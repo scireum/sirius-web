@@ -26,8 +26,10 @@ import io.netty.handler.codec.http.multipart.DiskAttribute;
 import io.netty.handler.codec.http.multipart.DiskFileUpload;
 import io.netty.handler.codec.http.multipart.HttpDataFactory;
 import io.netty.util.ResourceLeakDetector;
-import sirius.kernel.Lifecycle;
+import sirius.kernel.Killable;
 import sirius.kernel.Sirius;
+import sirius.kernel.Startable;
+import sirius.kernel.Stoppable;
 import sirius.kernel.async.Operation;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
@@ -55,7 +57,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Responsible for setting up and starting netty as HTTP server.
  */
 @Register(framework = "web.http")
-public class WebServer implements Lifecycle, MetricProvider {
+public class WebServer implements Startable, Stoppable, Killable, MetricProvider {
 
     /**
      * Determines the priority of the start of the web server. This is exposed as public so that other life cycles
@@ -526,11 +528,6 @@ public class WebServer implements Lifecycle, MetricProvider {
         }
     }
 
-    @Override
-    public String getName() {
-        return "web (netty HTTP Server)";
-    }
-
     /**
      * Returns the total bytes received so far
      *
@@ -699,10 +696,7 @@ public class WebServer implements Lifecycle, MetricProvider {
                                      "/min");
         collector.metric("http-open-connections", "HTTP Open Connections", openConnections.size(), null);
         collector.metric("http-response-time", "HTTP Avg. Reponse Time", responseTime.getAndClear(), "ms");
-        collector.metric("http-response-ttfb",
-                         "HTTP Avg. Time To First Byte",
-                         timeToFirstByte.getAndClear(),
-                         "ms");
+        collector.metric("http-response-ttfb", "HTTP Avg. Time To First Byte", timeToFirstByte.getAndClear(), "ms");
         collector.metric("websockets", "Open Websockets", websockets, null);
     }
 

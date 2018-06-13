@@ -8,8 +8,8 @@
 
 package sirius.tagliatelle;
 
-import sirius.kernel.Lifecycle;
 import sirius.kernel.Sirius;
+import sirius.kernel.Startable;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.compiler.CompileException;
@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
  * Compiles all templates during a test cycle to detect errors as early as possible.
  */
 @Register
-public class CompileAllTemplates implements Lifecycle {
+public class CompileAllTemplates implements Startable {
 
     @Part
     private Tagliatelle engine;
@@ -39,20 +39,5 @@ public class CompileAllTemplates implements Lifecycle {
                 Tagliatelle.LOG.INFO(e.getMessage());
             }
         });
-    }
-
-    @Override
-    public void stopped() {
-
-    }
-
-    @Override
-    public void awaitTermination() {
-
-    }
-
-    @Override
-    public String getName() {
-        return "CompileAllTemplates";
     }
 }
