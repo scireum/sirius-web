@@ -12,7 +12,7 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Queues;
 import com.google.common.hash.Hashing;
-import sirius.kernel.Lifecycle;
+import sirius.kernel.Stoppable;
 import sirius.kernel.async.BackgroundLoop;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.TaskContext;
@@ -65,8 +65,8 @@ import java.util.zip.GZIPOutputStream;
  * indefinitely large nor having the filesystem run out of free space is feasible for a server system.
  */
 @Framework("web.crunchlog")
-@Register(classes = {CrunchlogKernel.class, BackgroundLoop.class, Lifecycle.class, MetricProvider.class, Command.class})
-public class CrunchlogKernel extends BackgroundLoop implements Command, Lifecycle, MetricProvider {
+@Register(classes = {CrunchlogKernel.class, BackgroundLoop.class, Stoppable.class, MetricProvider.class, Command.class})
+public class CrunchlogKernel extends BackgroundLoop implements Command, Stoppable, MetricProvider {
 
     private static final int MIN_FREE_SPACE = 1024 * 1024 * 100;
     private static final String GZIP_FILE_EXTENSION = ".gz";
@@ -316,11 +316,6 @@ public class CrunchlogKernel extends BackgroundLoop implements Command, Lifecycl
     }
 
     @Override
-    public void started() {
-        // Nothing to do here
-    }
-
-    @Override
     public void stopped() {
         try {
             doWork();
@@ -328,11 +323,6 @@ public class CrunchlogKernel extends BackgroundLoop implements Command, Lifecycl
         } catch (Exception e) {
             Exceptions.handle(Crunchlog.LOG, e);
         }
-    }
-
-    @Override
-    public void awaitTermination() {
-        // Nothing to do here
     }
 
     /**
