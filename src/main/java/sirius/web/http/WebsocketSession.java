@@ -9,12 +9,20 @@
 package sirius.web.http;
 
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.commons.Values;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created per active websocket by a {@link WebsocketDispatcher} to handle incoming and outgoing traffic.
@@ -22,6 +30,7 @@ import sirius.kernel.commons.Values;
 public abstract class WebsocketSession {
 
     private final QueryStringDecoder queryString;
+    private final Map<String, String> cookies;
     private ChannelHandlerContext ctx;
 
     /**
@@ -33,6 +42,13 @@ public abstract class WebsocketSession {
     protected WebsocketSession(ChannelHandlerContext ctx, HttpRequest request) {
         this.ctx = ctx;
         this.queryString = new QueryStringDecoder(request.uri());
+
+        String cookieHeader = request.headers().get(HttpHeaderNames.COOKIE);
+        if (Strings.isFilled(cookieHeader)) {
+            cookies = ServerCookieDecoder.LAX.decode(cookieHeader).stream().collect(Collectors.toMap(Cookie::name, Cookie::value));
+        } else {
+            cookies = Collections.emptyMap();
+        }
     }
 
     /**
@@ -43,6 +59,16 @@ public abstract class WebsocketSession {
      */
     protected Value get(String key) {
         return Values.of(queryString.parameters().get(key)).at(0);
+    }
+
+    /**
+     * Reads the given parameter from the query string of the underlying request.
+     *
+     * @param key the name of the parameter to fetch
+     * @return the value contained in the parameter
+     */
+    protected Value getCookie(String key) {
+        return Value.of(cookies.get(key));
     }
 
     /**
