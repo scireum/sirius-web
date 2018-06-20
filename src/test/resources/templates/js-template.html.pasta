@@ -1,3 +1,5 @@
 <w:jsTemplate variableName="jsVariable">
-    <a class="link" href="#">Test1234</a>
+    <a class="link" href="#">Test'1234
+        567\89\\
+    </a>
 </w:jsTemplate>
