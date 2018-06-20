@@ -698,7 +698,7 @@ public class Response {
     }
 
     protected void installChunkedWriteHandler() {
-        if (ctx.channel().pipeline().get(ChunkedWriteHandler.class) == null) {
+        if (ctx.channel().pipeline().get(ChunkedWriteHandler.class) == null && ctx.channel().isOpen()) {
             ctx.channel().pipeline().addBefore("handler", "chunkedWriter", new ChunkedWriteHandler());
         }
     }
