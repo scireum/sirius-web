@@ -721,6 +721,7 @@ public class Response {
      * Signals an internal server error if one of the response method fails.
      */
     protected void internalServerError(String debugMessage, Throwable t) {
+        noKeepalive();
         WebServer.LOG.FINE(t);
         if (!(t instanceof ClosedChannelException)) {
             if (t instanceof HandledException) {
@@ -739,9 +740,6 @@ public class Response {
                           .handle();
                 error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
             }
-        }
-        if (!ctx.channel().isOpen()) {
-            ctx.channel().close();
         }
     }
 
