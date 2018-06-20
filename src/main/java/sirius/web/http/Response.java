@@ -698,7 +698,7 @@ public class Response {
     }
 
     protected void installChunkedWriteHandler() {
-        if (ctx.channel().pipeline().get(ChunkedWriteHandler.class) == null) {
+        if (ctx.channel().pipeline().get(ChunkedWriteHandler.class) == null && ctx.channel().isOpen()) {
             ctx.channel().pipeline().addBefore("handler", "chunkedWriter", new ChunkedWriteHandler());
         }
     }
@@ -721,6 +721,7 @@ public class Response {
      * Signals an internal server error if one of the response method fails.
      */
     protected void internalServerError(String debugMessage, Throwable t) {
+        noKeepalive();
         WebServer.LOG.FINE(t);
         if (!(t instanceof ClosedChannelException)) {
             if (t instanceof HandledException) {
@@ -739,9 +740,6 @@ public class Response {
                           .handle();
                 error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
             }
-        }
-        if (!ctx.channel().isOpen()) {
-            ctx.channel().close();
         }
     }
 
@@ -929,6 +927,7 @@ public class Response {
                 return;
             }
             if (!ctx.channel().isWritable()) {
+                ctx.channel().close();
                 return;
             }
             if (HttpMethod.HEAD.equals(wc.getRequest().method()) || HttpResponseStatus.NOT_MODIFIED.equals(status)) {
