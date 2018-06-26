@@ -52,20 +52,23 @@ public class GlobalRenderContext {
      * <p>
      * A local cache is maintained so that a previously resolved template is directly re-used and not resolved several
      * times.
+     * <p>
+     * This method will bypass the template cache in case a forced non customized template is requested.
      *
-     * @param templateName the name of the template to resolve
+     * @param templateName     the name of the template to resolve
+     * @param useCustomization flag controlling if template customizations should be considered or not
      * @return the resolved template wrapped as optional or an empty optional, if no such template exists
      * @throws CompileException in case the resolved template has compile errors
      */
-    protected Optional<Template> resolve(String templateName) throws CompileException {
-        if (templateCache != null) {
+    protected Optional<Template> resolve(String templateName, boolean useCustomization) throws CompileException {
+        if (templateCache != null && useCustomization) {
             Template result = templateCache.get(templateName);
             if (result != null) {
                 return Optional.of(result);
             }
         }
 
-        Optional<Template> result = engine.resolve(templateName);
+        Optional<Template> result = engine.resolve(templateName, null, useCustomization);
         if (!result.isPresent()) {
             return result;
         }
@@ -74,7 +77,9 @@ public class GlobalRenderContext {
             templateCache = new HashMap<>();
         }
 
-        templateCache.put(templateName, result.get());
+        if (useCustomization) {
+            templateCache.put(templateName, result.get());
+        }
 
         return result;
     }
@@ -204,7 +209,7 @@ public class GlobalRenderContext {
     /**
      * Emits everything which is invoked from within the callback into an unescaped string.
      *
-     * @param callback     the callback which will invoke emitters.
+     * @param callback the callback which will invoke emitters.
      * @return the contents which were emitted within the <tt>callback</tt>
      */
     public String emitToString(RenderCall callback) {

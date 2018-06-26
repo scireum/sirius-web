@@ -110,7 +110,7 @@ public class InvokeTemplateEmitter extends Emitter {
 
     @Override
     protected void emitToContext(LocalRenderContext context) throws Exception {
-        Template template = context.resolve(templateName).orElseThrow(() -> new FileNotFoundException(templateName));
+        Template template = context.resolve(templateName, true).orElseThrow(() -> new FileNotFoundException(templateName));
         LocalRenderContext subContext = context.createChildContext(template);
         subContext.setBlocks(context, blocks);
 
