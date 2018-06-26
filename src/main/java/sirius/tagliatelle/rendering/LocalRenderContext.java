@@ -181,12 +181,13 @@ public class LocalRenderContext {
      * A local cache is maintained by the {@link GlobalRenderContext} so that a previously resolved template is directly
      * re-used and not resolved several times.
      *
-     * @param templateName the name of the template to resolve
+     * @param templateName     the name of the template to resolve
+     * @param useCustomization flag controlling if template customizations should be considered
      * @return the resolved template wrapped as optional or an empty optional, if no such template exists
      * @throws CompileException in case the resolved template has compile errors
      */
-    public Optional<Template> resolve(String templateName) throws CompileException {
-        return globalContext.resolve(templateName);
+    public Optional<Template> resolve(String templateName, boolean useCustomization) throws CompileException {
+        return globalContext.resolve(templateName, useCustomization);
     }
 
     /**

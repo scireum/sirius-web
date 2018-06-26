@@ -29,17 +29,12 @@ import sirius.tagliatelle.compiler.Compiler;
 import sirius.tagliatelle.rendering.GlobalRenderContext;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
+import sirius.web.security.UserContext;
 import sirius.web.templates.Templates;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -278,8 +273,24 @@ public class Tagliatelle {
      * @throws CompileException in case of one or more compilation errors in the template
      */
     public Optional<Template> resolve(String path, @Nullable CompilationContext parentContext) throws CompileException {
+        return resolve(path, parentContext, true);
+    }
+
+    /**
+     * Resolves the given path using {@link Resources} and compiles it into a {@link Template}.
+     * <p>
+     * If the template is resolved as part of another compilation process, the context is passed in as
+     * <tt>parentContext</tt> to detect and abort cyclic references.
+     *
+     * @param path             the path to resolve
+     * @param parentContext    the outer compilation context which is in charge of compiling the callee
+     * @param useCustomization flag controlling if template customizations should be considered
+     * @return the appropriate template or an empty template if no matching {@link Resource} was found.
+     * @throws CompileException in case of one or more compilation errors in the template
+     */
+    public Optional<Template> resolve(String path, @Nullable CompilationContext parentContext, boolean useCustomization) throws CompileException {
         ensureProperTemplatePath(path);
-        Optional<Resource> optionalResource = resources.resolve(path);
+        Optional<Resource> optionalResource = resources.resolve(UserContext.getCurrentScope().getScopeId(), path, useCustomization);
         if (!optionalResource.isPresent()) {
             return Optional.empty();
         }

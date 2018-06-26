@@ -64,29 +64,42 @@ public class Resources {
      * @return a {@link Resource} (wrapped as resource) pointing to the requested content
      * or an empty optional if no resource was found
      */
+    public Optional<Resource> resolve(@Nonnull String scopeId, @Nonnull String uri) {
+        return resolve(scopeId, uri, true);
+    }
+
+    /**
+     * Tries to resolve a template or content-file into a {@link Resource}
+     *
+     * @param scopeId          the scope to use. Use {@link #resolve(String)} to pick the currently active scope
+     * @param uri              the local name of the uri to load
+     * @param useCustomization flag controlling if template customizations should be considered
+     * @return a {@link Resource} (wrapped as resource) pointing to the requested content
+     * or an empty optional if no resource was found
+     */
     @Nonnull
     @SuppressWarnings("squid:S2789")
     @Explain("We cache optionals and therefore need this null check.")
-    public Optional<Resource> resolve(@Nonnull String scopeId, @Nonnull String uri) {
+    public Optional<Resource> resolve(@Nonnull String scopeId, @Nonnull String uri, boolean useCustomization) {
         String effectiveUri = uri.startsWith("/") ? uri : "/" + uri;
 
         String lookupKey = scopeId + "://" + effectiveUri;
         Optional<Resource> result = resolverCache.get(lookupKey);
-        if (result != null) {
+        if (result != null && useCustomization) {
             if (Sirius.isDev()) {
                 // In dev environments, we always perform a lookup in case something changed
-                Optional<Resource> currentResult = resolveURI(scopeId, effectiveUri);
+                Optional<Resource> currentResult = resolveURI(scopeId, effectiveUri, true);
                 if (!result.isPresent()) {
                     return currentResult;
                 }
                 if (!currentResult.isPresent() || !Objects.equals(result.get().getUrl(),
-                                                                  currentResult.get().getUrl())) {
+                        currentResult.get().getUrl())) {
                     return currentResult;
                 }
             }
             return result;
         }
-        result = resolveURI(scopeId, effectiveUri);
+        result = resolveURI(scopeId, effectiveUri, useCustomization);
         resolverCache.put(lookupKey, result);
         return result;
     }
@@ -107,11 +120,20 @@ public class Resources {
         resolverCache.remove(lookupKey);
     }
 
-    /*
-     * Calls all available resolvers to pick the right content for the given scope and uri (without using a cache)
+    /**
+     * Calls all available resolvers to pick the right content for the given scope and uri (without using a cache).
+     *
+     * @param scopeId          the current scope id
+     * @param uri              the uri to resolve
+     * @param useCustomization flag controlling if template customizations should be considered
+     * @return {@link Optional<Resource>} holding the resource, or if none was found {@link Optional#empty()}
      */
-    private Optional<Resource> resolveURI(String scopeId, String uri) {
+    private Optional<Resource> resolveURI(String scopeId, String uri, boolean useCustomization) {
         for (Resolver res : resolvers) {
+            if (!useCustomization && res instanceof ClasspathCustomizationResolver) {
+                continue;
+            }
+
             Resource r = res.resolve(scopeId, uri);
             if (r != null) {
                 return Optional.of(r);

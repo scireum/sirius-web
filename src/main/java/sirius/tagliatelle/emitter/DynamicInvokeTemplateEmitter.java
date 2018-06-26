@@ -23,6 +23,7 @@ import java.util.function.Function;
  * Invokes and renders a sub template at runtime.
  */
 public class DynamicInvokeTemplateEmitter extends Emitter {
+    private static final String USE_CUSTOMIZATION = "useCustomization";
 
     private Map<String, Expression> args;
     private Expression templateName;
@@ -103,8 +104,8 @@ public class DynamicInvokeTemplateEmitter extends Emitter {
     @Override
     protected void emitToContext(LocalRenderContext context) throws Exception {
         String effectiveTemplateName = String.valueOf(templateName.eval(context));
-        Template template = context.resolve(effectiveTemplateName)
-                                   .orElseThrow(() -> new FileNotFoundException(effectiveTemplateName));
+        Template template = context.resolve(effectiveTemplateName, useCustomization(context))
+                .orElseThrow(() -> new FileNotFoundException(effectiveTemplateName));
 
         LocalRenderContext subContext = context.createChildContext(template);
         subContext.setBlocks(context, blocks);
@@ -116,5 +117,9 @@ public class DynamicInvokeTemplateEmitter extends Emitter {
         } finally {
             subContext.release();
         }
+    }
+
+    private boolean useCustomization(LocalRenderContext context) {
+        return !args.containsKey(USE_CUSTOMIZATION) || (Boolean) args.get(USE_CUSTOMIZATION).eval(context);
     }
 }

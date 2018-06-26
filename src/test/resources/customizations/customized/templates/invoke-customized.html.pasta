@@ -1,0 +1,2 @@
+Hello Customized
+<i:dynamicInvoke template="'templates/invoke-customized.html.pasta'" useCustomization="false"/>
