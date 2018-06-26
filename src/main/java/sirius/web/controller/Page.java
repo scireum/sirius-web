@@ -520,6 +520,10 @@ public class Page<E> {
     /**
      * Returns the current set {@link Limit} for this page based on the start set via {@link Page#withStart(int)}
      * and size of the page set via {@link Page#withPageSize(int)} or their default values if not being set.
+     * <p>
+     * Using this limit e.g. via {@link Limit#asPredicate()} for slicing a list would return a list of size
+     * {@link Page#pageSize} + 1 for easier handling whether there are more elements to determine if there is
+     * another page.
      *
      * @return the current set limit for the page
      */
