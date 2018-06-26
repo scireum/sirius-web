@@ -43,4 +43,26 @@ class PageSpec extends Specification {
         return new Facet("", field, value, null)
     }
 
+    def "withLimitedItemsSupplier() removes elements which exceed the page size"() {
+        given:
+        def limitPage = new Page<>().withPageSize(5)
+        def elementsList = new ArrayList()
+        elementsList.add("1")
+        elementsList.add("2")
+        elementsList.add("3")
+        elementsList.add("4")
+        elementsList.add("5")
+        elementsList.add("6")
+        elementsList.add("7")
+        when:
+        limitPage.withLimitedItemsSupplier{limit -> elementsList}
+        then:
+        limitPage.getItems().size() == 5
+        and:
+        limitPage.hasMore() == true
+        and:
+        limitPage.getItems().get(4) == "5"
+        limitPage.getItems().get(0) == "1"
+    }
+
 }

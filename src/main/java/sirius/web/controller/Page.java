@@ -95,7 +95,7 @@ public class Page<E> {
         List<E> suppliedItems = itemsSupplier.apply(supplierLimit);
         if (suppliedItems.size() > supplierLimit.getMaxItems() - 1) {
             more = true;
-            suppliedItems.remove(suppliedItems.size() - 1);
+            suppliedItems = suppliedItems.subList(0, supplierLimit.getMaxItems() - 1);
         }
         return withItems(suppliedItems);
     }
