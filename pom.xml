@@ -9,7 +9,7 @@
         <version>3.14</version>
     </parent>
     <artifactId>sirius-web</artifactId>
-    <version>18.2</version>
+    <version>18.3</version>
     <name>SIRIUS web</name>
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
@@ -49,7 +49,7 @@
         <dependency>
             <groupId>com.scireum</groupId>
             <artifactId>server-sass</artifactId>
-            <version>4.1.2</version>
+            <version>4.2.1</version>
         </dependency>
 
         <!-- Used as chosen JSON implementation -->
