@@ -31,7 +31,7 @@ import java.util.Optional;
 @Register(classes = Resources.class)
 public class Resources {
 
-    /*
+    /**
      * Logger used by the resource discovery framework
      */
     public static final Log LOG = Log.get("resources");

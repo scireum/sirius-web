@@ -24,8 +24,7 @@ import java.nio.channels.ClosedChannelException;
 
 /**
  * Inserted into the pipeline by the {@link WebServerInitializer} if an implementation of {@link WebsocketDispatcher}
- * is
- * present.
+ * is present.
  */
 public class WebsocketHandler extends ChannelDuplexHandler {
 

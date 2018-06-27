@@ -153,7 +153,6 @@ public abstract class ServiceCall {
             }
 
             serv.handleException(this, createOutput(), he);
-
         }
     }
 
