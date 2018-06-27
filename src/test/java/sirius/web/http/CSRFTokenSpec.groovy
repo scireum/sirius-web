@@ -14,23 +14,36 @@ import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpResponseStatus
 import sirius.kernel.BaseSpecification
 
-class CSRFTokenSpec extends BaseSpecification{
+class CSRFTokenSpec extends BaseSpecification {
 
-    def "CSRF security token works correctly if missing via GET"() {
+    def "safePOST() works correctly if token is missing via GET"() {
         when:
         def result = TestRequest.GET("/test/fake-delete-data").execute()
         then:
         result.getStatus() == HttpResponseStatus.INTERNAL_SERVER_ERROR
     }
 
-    def "CSRF security token works correctly if missing via POST"() {
+    def "safePOST() works correctly if token is present via GET"() {
+        given:
+        HttpURLConnection c = new URL("http://localhost:9999/test/provide-security-token").openConnection()
+        c.setRequestMethod("GET")
+        c.connect()
+        def token = new String(ByteStreams.toByteArray(c.getInputStream()), Charsets.UTF_8)
+
+        when:
+        def result = TestRequest.GET("/test/fake-delete-data?CSRFToken=" + token).execute()
+        then:
+        result.getStatus() == HttpResponseStatus.INTERNAL_SERVER_ERROR
+    }
+
+    def "safePOST() works correctly if token is missing via POST"() {
         when:
         def result = TestRequest.POST("/test/fake-delete-data").execute()
         then:
         result.getStatus() == HttpResponseStatus.INTERNAL_SERVER_ERROR
     }
 
-    def "CSRF security tokens works correctly if present via POST"() {
+    def "safePOST() works correctly if correct token is present via POST"() {
         given:
         HttpURLConnection c = new URL("http://localhost:9999/test/provide-security-token").openConnection()
         c.setRequestMethod("GET")
@@ -46,7 +59,7 @@ class CSRFTokenSpec extends BaseSpecification{
         c2.getResponseCode() == 200
     }
 
-    def "CSRF security token works correctly if present via POST but wrong"() {
+    def "safePOST() works correctly if wrong token is present via POST"() {
         given:
         HttpURLConnection c = new URL("http://localhost:9999/test/provide-security-token").openConnection()
         c.setRequestMethod("GET")
@@ -62,19 +75,17 @@ class CSRFTokenSpec extends BaseSpecification{
         c2.getResponseCode() == 500
     }
 
-    def "CSRF security token works correctly if GET is used"() {
-        given:
-        HttpURLConnection c = new URL("http://localhost:9999/test/provide-security-token").openConnection()
-        c.setRequestMethod("GET")
-        c.connect()
-        def token = new String(ByteStreams.toByteArray(c.getInputStream()), Charsets.UTF_8)
-
+    def "unsafePOST() works correctly if token is missing via POST"() {
         when:
-        HttpURLConnection c2 = new URL("http://localhost:9999/test/fake-delete-data?CSRFToken=" + token).openConnection()
-        c2.setRequestMethod("GET")
-        c2.setRequestProperty(HttpHeaderNames.COOKIE.toString(), c.getHeaderFields().get("set-cookie").get(0))
-        c2.connect()
+        def result = TestRequest.POST("/test/fake-delete-data-unsafe").execute()
         then:
-        c2.getResponseCode() == 500
+        result.getStatus() == HttpResponseStatus.OK
+    }
+
+    def "unsafePOST() works correctly if token is missing via GET"() {
+        when:
+        def result = TestRequest.GET("/test/fake-delete-data-unsafe").execute()
+        then:
+        result.getStatus() == HttpResponseStatus.INTERNAL_SERVER_ERROR
     }
 }

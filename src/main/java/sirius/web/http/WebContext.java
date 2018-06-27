@@ -334,6 +334,9 @@ public class WebContext implements SubContext {
     @Part
     private static DistributedUserMessageCacheFactory cacheFactory;
 
+    @Part
+    private static CSRFHelper csrfHelper;
+
     /**
      * Date format used by HTTP date headers
      */
@@ -1561,9 +1564,41 @@ public class WebContext implements SubContext {
      * A POST request signal the server to alter its state, knowing that side effects will occur.
      *
      * @return <tt>true</tt> if the method of the current request is POST, false otherwise
+     *
+     * @deprecated use {@link #isUnsafePost()} and {@link #isSafePOST()} instead
      */
+    @Deprecated
     public boolean isPOST() {
+        return isUnsafePost();
+    }
+
+    /**
+     * Determines if the current request is a POST request with checking for a valid CSRF-token.
+     * <p>
+     * A POST request signal the server to alter its state, knowing that side effects will occur.
+     *
+     * @return <tt>true</tt> if the method of the current request is POST and the provided CSRF-token is valid, false otherwise
+     */
+    public boolean isSafePOST() {
+        return isUnsafePost() && checkCSRFToken();
+    }
+
+    /**
+     * Determines if the current request is a POST request without checking for a valid CSRF-token.
+     * <p>
+     * A POST request signal the server to alter its state, knowing that side effects will occur.
+     *
+     * @return <tt>true</tt> if the method of the current request is POST, false otherwise
+     */
+    public boolean isUnsafePost() {
         return HttpMethod.POST.equals(request.method()) && !hidePost;
+    }
+
+    private boolean checkCSRFToken() {
+        String requestToken = this.get(CSRFHelper.CSRF_TOKEN).asString();
+        String sessionToken = csrfHelper.getCSRFToken(this);
+
+        return Strings.isFilled(requestToken) && Strings.areEqual(requestToken, sessionToken);
     }
 
     /**
