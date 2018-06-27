@@ -178,7 +178,7 @@ public class TestController implements Controller {
 
     @Routed("/test/fake-delete-data-unsafe")
     public void deleteDataUnsafe(WebContext ctx) {
-        if (!ctx.isUnsafePost()) {
+        if (!ctx.isUnsafePOST()) {
             ctx.respondWith().status(HttpResponseStatus.INTERNAL_SERVER_ERROR);
             return;
         }

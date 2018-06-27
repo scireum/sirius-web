@@ -1565,11 +1565,11 @@ public class WebContext implements SubContext {
      *
      * @return <tt>true</tt> if the method of the current request is POST, false otherwise
      *
-     * @deprecated use {@link #isUnsafePost()} and {@link #isSafePOST()} instead
+     * @deprecated use {@link #isUnsafePOST()} and {@link #isSafePOST()} instead
      */
     @Deprecated
     public boolean isPOST() {
-        return isUnsafePost();
+        return isUnsafePOST();
     }
 
     /**
@@ -1580,7 +1580,7 @@ public class WebContext implements SubContext {
      * @return <tt>true</tt> if the method of the current request is POST and the provided CSRF-token is valid, false otherwise
      */
     public boolean isSafePOST() {
-        return isUnsafePost() && checkCSRFToken();
+        return isUnsafePOST() && checkCSRFToken();
     }
 
     /**
@@ -1590,7 +1590,7 @@ public class WebContext implements SubContext {
      *
      * @return <tt>true</tt> if the method of the current request is POST, false otherwise
      */
-    public boolean isUnsafePost() {
+    public boolean isUnsafePOST() {
         return HttpMethod.POST.equals(request.method()) && !hidePost;
     }
 

@@ -16,7 +16,6 @@ import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.PriorityCollector;
-import sirius.kernel.commons.Strings;
 import sirius.kernel.di.Injector;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.PriorityParts;
@@ -25,7 +24,6 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
 import sirius.web.ErrorCodeException;
-import sirius.web.http.CSRFHelper;
 import sirius.web.http.Firewall;
 import sirius.web.http.InputStreamHandler;
 import sirius.web.http.Limited;
@@ -63,9 +61,6 @@ public class ControllerDispatcher implements WebDispatcher {
 
     @Part
     private Firewall firewall;
-
-    @Part
-    private CSRFHelper csrfHelper;
 
     /**
      * The priority of this controller is {@code PriorityCollector.DEFAULT_PRIORITY + 10} as it is quite complex
