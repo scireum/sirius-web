@@ -266,4 +266,12 @@ class CompilerSpec extends BaseSpecification {
         errors.size() == 1
     }
 
+    def "validate invoke: calling original template from customization"() {
+        given:
+        String expectedResult = resources.resolve("templates/invoke-customized.html").get().getContentAsString()
+        when:
+        String result = tagliatelle.resolve("templates/invoke-customized.html.pasta").get().renderToString()
+        then:
+        basicallyEqual(result, expectedResult)
+    }
 }
