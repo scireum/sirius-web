@@ -45,7 +45,11 @@ public class EscapeJSMacro implements Macro {
             return "";
         }
 
-        return value.toString().replaceAll("\\r?\\n", " ").replace("\\", "\\\\").replace("'", "\\'");
+        return value.toString()
+                    .replace("\\", "\\\\")
+                    .replaceAll("\\r", "\\\\r")
+                    .replaceAll("\\n", "\\\\n")
+                    .replace("'", "\\'");
     }
 
     @Override
