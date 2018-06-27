@@ -11,7 +11,7 @@ package sirius.web.http;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.di.std.Register;
 
-@Register
+@Register(framework = "web.test-firewall")
 public class TestFirewall implements Firewall {
 
     public static boolean blockAllIPs = false;
