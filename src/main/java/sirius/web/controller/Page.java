@@ -86,12 +86,16 @@ public class Page<E> {
      * the supplied {@link Limit} as this method does also is able to determine whether
      * this page {@link Page#withHasMore(boolean) has more items to show} which are currently
      * not being displayed.
+     * <p>
+     * Using the supplied limit e.g. via {@link Limit#asPredicate()} for slicing the provided list results
+     * in a list of size {@link Page#pageSize} + 1 for easier handling whether there are more elements to
+     * determine if there is another page.
      *
      * @param itemsSupplier the supplier to supply items to the current page limited by the provided limit
      * @return the page itself for fluent method calls
      */
     public Page<E> withLimitedItemsSupplier(Function<Limit, List<E>> itemsSupplier) {
-        Limit supplierLimit = getCurrentLimit();
+        Limit supplierLimit = new Limit(getStart() - 1, getPageSize() + 1);
         List<E> suppliedItems = itemsSupplier.apply(supplierLimit);
         if (suppliedItems.size() > supplierLimit.getMaxItems() - 1) {
             more = true;
@@ -515,19 +519,5 @@ public class Page<E> {
      */
     public int getPageSize() {
         return pageSize;
-    }
-
-    /**
-     * Returns the current set {@link Limit} for this page based on the start set via {@link Page#withStart(int)}
-     * and size of the page set via {@link Page#withPageSize(int)} or their default values if not being set.
-     * <p>
-     * Using this limit e.g. via {@link Limit#asPredicate()} for slicing a list would return a list of size
-     * {@link Page#pageSize} + 1 for easier handling whether there are more elements to determine if there is
-     * another page.
-     *
-     * @return the current set limit for the page
-     */
-    public Limit getCurrentLimit() {
-        return new Limit(getStart() - 1, getPageSize() + 1);
     }
 }

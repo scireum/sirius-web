@@ -65,4 +65,22 @@ class PageSpec extends Specification {
         limitPage.getItems().get(0) == "1"
     }
 
+    def "withLimitedItemsSupplier() with a list smaller than the page size does not crash"() {
+        given:
+        def limitPage = new Page<>().withPageSize(5)
+        def elementsList = new ArrayList()
+        elementsList.add("1")
+        elementsList.add("2")
+        elementsList.add("3")
+        when:
+        limitPage.withLimitedItemsSupplier{limit -> elementsList}
+        then:
+        limitPage.getItems().size() == 3
+        and:
+        limitPage.hasMore() == false
+        and:
+        limitPage.getItems().get(2) == "3"
+        limitPage.getItems().get(0) == "1"
+    }
+
 }
