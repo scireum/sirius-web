@@ -1,7 +1,15 @@
+<i:arg type="String" name="permission" default="" />
+<i:arg type="String" name="framework" default="" />
+
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders the menu items within its body and places a divider above if at least one menu item is visible." />
 <i:local name="contents" value="@renderToString('body')" />
-<i:if test="isFilled(contents)">
-    <li class="divider"></li>
+
+<i:if test="isFrameworkEnabled(framework)">
+    <w:permission permission="@permission">
+        <i:if test="isFilled(contents)">
+            <li class="divider"></li>
+        </i:if>
+        <i:raw>@contents</i:raw>
+    </w:permission>
 </i:if>
-<i:raw>@contents</i:raw>
