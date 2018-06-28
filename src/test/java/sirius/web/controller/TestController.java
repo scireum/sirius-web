@@ -185,6 +185,21 @@ public class TestController implements Controller {
         ctx.respondWith().status(HttpResponseStatus.OK);
     }
 
+    @Routed("/test/fake-delete-data-ensure-safe")
+    public void deleteDataEnsureSafe(WebContext ctx) {
+        try {
+            if (!ctx.ensureSafePOST()) {
+                ctx.respondWith().status(HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                return;
+            }
+        } catch (HandledException e) {
+            ctx.respondWith().status(HttpResponseStatus.UNAUTHORIZED);
+            return;
+        }
+
+        ctx.respondWith().status(HttpResponseStatus.OK);
+    }
+
     @Routed("/test/provide-security-token")
     public void provideSecuritytoken(WebContext ctx) {
         ctx.respondWith().template("templates/security-token.html.pasta");
