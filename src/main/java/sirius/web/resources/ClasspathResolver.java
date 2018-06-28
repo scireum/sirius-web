@@ -26,11 +26,11 @@ public class ClasspathResolver implements Resolver {
 
         URL url = getClass().getResource(resourceToResolve);
         if (url != null) {
-            return Resource.constantResource(scopeId, resourceToResolve, url);
+            return Resource.constantResource(scopeId, resource, url);
         }
         url = getClass().getResource("/default" + resourceToResolve);
         if (url != null) {
-            return Resource.constantResource(scopeId, resourceToResolve, url);
+            return Resource.constantResource(scopeId, resource, url);
         }
         return null;
     }
