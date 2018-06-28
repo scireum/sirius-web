@@ -10,6 +10,7 @@ package sirius.web.controller;
 
 import com.google.common.collect.Lists;
 import sirius.kernel.cache.ValueComputer;
+import sirius.kernel.commons.Limit;
 import sirius.kernel.commons.Monoflop;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.nls.NLS;
@@ -18,6 +19,7 @@ import sirius.web.http.WebContext;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -72,6 +74,34 @@ public class Page<E> {
     public Page<E> withItems(List<E> items) {
         this.items = items;
         return this;
+    }
+
+    /**
+     * Easy method for supplying items the page contains to avoid boiler code.
+     * <p>
+     * The supplier provides the {@link Limit} of the current page for easy iteration
+     * over a result set.
+     * <p>
+     * This method should be supplied with a {@link List} which size was determined by
+     * the supplied {@link Limit} as this method does also is able to determine whether
+     * this page {@link Page#withHasMore(boolean) has more items to show} which are currently
+     * not being displayed.
+     * <p>
+     * Using the supplied limit e.g. via {@link Limit#asPredicate()} for slicing the provided list results
+     * in a list of size {@link Page#pageSize} + 1 for easier handling whether there are more elements to
+     * determine if there is another page.
+     *
+     * @param itemsSupplier the supplier to supply items to the current page limited by the provided limit
+     * @return the page itself for fluent method calls
+     */
+    public Page<E> withLimitedItemsSupplier(Function<Limit, List<E>> itemsSupplier) {
+        Limit supplierLimit = new Limit(getStart() - 1, getPageSize() + 1);
+        List<E> suppliedItems = itemsSupplier.apply(supplierLimit);
+        if (suppliedItems.size() > supplierLimit.getMaxItems() - 1) {
+            more = true;
+            suppliedItems = suppliedItems.subList(0, supplierLimit.getMaxItems() - 1);
+        }
+        return withItems(suppliedItems);
     }
 
     /**
@@ -363,9 +393,9 @@ public class Page<E> {
     }
 
     private boolean addQueryToQueryString(String field,
-                                         String value,
-                                         StringBuilder queryStringBuilder,
-                                         Monoflop ampersandPlaced) {
+                                          String value,
+                                          StringBuilder queryStringBuilder,
+                                          Monoflop ampersandPlaced) {
         if (PARAM_QUERY.equals(field)) {
             queryStringBuilder.append(ampersandPlaced.firstCall() ? "" : "&");
             queryStringBuilder.append("query=");
@@ -382,9 +412,9 @@ public class Page<E> {
     }
 
     private boolean addStartToQueryString(String field,
-                                         String value,
-                                         StringBuilder queryStringBuilder,
-                                         Monoflop ampersandPlaced) {
+                                          String value,
+                                          StringBuilder queryStringBuilder,
+                                          Monoflop ampersandPlaced) {
         queryStringBuilder.append(ampersandPlaced.firstCall() ? "" : "&");
         queryStringBuilder.append("start=");
         if (PARAM_START.equals(field)) {
@@ -397,9 +427,9 @@ public class Page<E> {
     }
 
     private boolean createQueryStringForFacets(String field,
-                                              String value,
-                                              StringBuilder queryStringBuilder,
-                                              Monoflop ampersandPlaced) {
+                                               String value,
+                                               StringBuilder queryStringBuilder,
+                                               Monoflop ampersandPlaced) {
         boolean fieldFound = false;
         for (Facet f : getFacets()) {
             if (Strings.areEqual(field, f.getName())) {
