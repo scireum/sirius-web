@@ -16,7 +16,6 @@ import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.PriorityCollector;
-import sirius.kernel.commons.Strings;
 import sirius.kernel.di.Injector;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.PriorityParts;
@@ -25,7 +24,6 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
 import sirius.web.ErrorCodeException;
-import sirius.web.http.CSRFHelper;
 import sirius.web.http.Firewall;
 import sirius.web.http.InputStreamHandler;
 import sirius.web.http.Limited;
@@ -63,9 +61,6 @@ public class ControllerDispatcher implements WebDispatcher {
 
     @Part
     private Firewall firewall;
-
-    @Part
-    private CSRFHelper csrfHelper;
 
     /**
      * The priority of this controller is {@code PriorityCollector.DEFAULT_PRIORITY + 10} as it is quite complex
@@ -166,13 +161,6 @@ public class ControllerDispatcher implements WebDispatcher {
         return false;
     }
 
-    private boolean checkCSRFToken(WebContext ctx) {
-        String requestToken = ctx.get(CSRFHelper.CSRF_TOKEN).asString();
-        String sessionToken = csrfHelper.getCSRFToken(ctx);
-
-        return Strings.isFilled(requestToken) && Strings.areEqual(requestToken, sessionToken);
-    }
-
     private void performRoute(WebContext ctx, Route route, List<Object> params) {
         try {
             setupContext(ctx, route);
@@ -194,10 +182,6 @@ public class ControllerDispatcher implements WebDispatcher {
                 return;
             }
 
-            if (!checkCSRFTokenIfNecessary(ctx, route)) {
-                return;
-            }
-
             String missingPermission = route.checkAuth(user);
             if (missingPermission != null) {
                 handlePermissionError(ctx, route, missingPermission);
@@ -214,19 +198,6 @@ public class ControllerDispatcher implements WebDispatcher {
             handleFailure(ctx, route, ex);
         }
         ctx.enableTiming(route.toString());
-    }
-
-    private boolean checkCSRFTokenIfNecessary(WebContext ctx, Route route) {
-        if (route.getMethod().isAnnotationPresent(CheckSecurityToken.class)) {
-            if (!ctx.isPOST() || !checkCSRFToken(ctx)) {
-                handleFailure(ctx,
-                              route,
-                              Exceptions.createHandled().withNLSKey("ControllerDispatcher.invalidCSRFToken").handle());
-                return false;
-            }
-        }
-
-        return true;
     }
 
     private void executeRoute(WebContext ctx, Route route, List<Object> params) throws Exception {

@@ -155,11 +155,6 @@ public class TestController implements Controller {
         }
     }
 
-    @Routed("/test/provide-security-token")
-    public void provideSecuritytoken(WebContext ctx) {
-        ctx.respondWith().template("templates/security-token.html.pasta");
-    }
-
     @Routed("/test/firewall")
     @Limited
     public void firewallTest(WebContext ctx) {
@@ -172,10 +167,27 @@ public class TestController implements Controller {
         ctx.respondWith().direct(HttpResponseStatus.OK, "OK");
     }
 
-    @CheckSecurityToken
     @Routed("/test/fake-delete-data")
     public void deleteData(WebContext ctx) {
-        ctx.respondWith().template("templates/helloWorld.pasta", "test");
+        if (!ctx.isSafePOST()) {
+            ctx.respondWith().status(HttpResponseStatus.INTERNAL_SERVER_ERROR);
+            return;
+        }
+        ctx.respondWith().status(HttpResponseStatus.OK);
+    }
+
+    @Routed("/test/fake-delete-data-unsafe")
+    public void deleteDataUnsafe(WebContext ctx) {
+        if (!ctx.isUnsafePOST()) {
+            ctx.respondWith().status(HttpResponseStatus.INTERNAL_SERVER_ERROR);
+            return;
+        }
+        ctx.respondWith().status(HttpResponseStatus.OK);
+    }
+
+    @Routed("/test/provide-security-token")
+    public void provideSecuritytoken(WebContext ctx) {
+        ctx.respondWith().template("templates/security-token.html.pasta");
     }
 
     @Routed(value = "/test/json/async", jsonCall = true)
