@@ -72,6 +72,18 @@ class CompilerSpec extends BaseSpecification {
         ctx.getTemplate().renderToString(Value.of("test")) == "test"
     }
 
+    def "method overloading works with generics"() {
+        when:
+        def ctx = new CompilationContext(new Template("test", null), null)
+        List<CompileError> errors = new Compiler(ctx, "<i:arg type=\"sirius.tagliatelle.TestObject\" name=\"test\" />" +
+                "<i:arg type=\"sirius.kernel.commons.Amount\" name=\"test1\" />" +
+                "@test.genericTest(test1)").compile()
+        then:
+        errors.size() == 0
+        and:
+        ctx.getTemplate().renderToString(TestObject.INSTANCE, Amount.TEN) == "-10"
+    }
+
     def "vararg detection works with several parameters"() {
         when:
         def ctx = new CompilationContext(new Template("test", null), null)

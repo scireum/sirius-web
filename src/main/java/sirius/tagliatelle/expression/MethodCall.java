@@ -228,7 +228,20 @@ public class MethodCall extends Call {
     }
 
     private Method findMethod(Class<?> type, String name, Class<?>[] parameterTypes) throws NoSuchMethodException {
-        for (Method m : type.getMethods()) {
+        // First try a regular lookup without coercing of any kind.
+        // This is reasonable, as this takes generic type parameters
+        // into account and selects the proper method...
+        try {
+            Method m = type.getMethod(name, parameterTypes);
+            if (checkSandbox(m)) {
+                return m;
+            }
+        } catch (NoSuchMethodException e) {
+            Exceptions.ignore(e);
+        }
+
+        // Try to find an appropriate method using coercions known to the system...
+        for (Method m: type.getMethods()) {
             if (signatureMatch(m, name, parameterTypes)) {
                 if (checkSandbox(m)) {
                     return m;
