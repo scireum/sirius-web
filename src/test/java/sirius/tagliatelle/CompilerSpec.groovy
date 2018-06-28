@@ -271,7 +271,9 @@ class CompilerSpec extends BaseSpecification {
         String expectedResult = resources.resolve("templates/invoke-customized.html").get().getContentAsString()
         when:
         String result = tagliatelle.resolve("templates/invoke-customized.html.pasta").get().renderToString()
+        String resultCached = tagliatelle.resolve("templates/invoke-customized.html.pasta").get().renderToString()
         then:
         basicallyEqual(result, expectedResult)
+        basicallyEqual(resultCached, expectedResult)
     }
 }
