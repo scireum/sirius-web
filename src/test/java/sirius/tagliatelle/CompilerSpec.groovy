@@ -10,6 +10,7 @@ package sirius.tagliatelle
 
 import parsii.tokenizer.ParseError
 import sirius.kernel.BaseSpecification
+import sirius.kernel.commons.Amount
 import sirius.kernel.commons.Strings
 import sirius.kernel.commons.Value
 import sirius.kernel.di.std.Part
