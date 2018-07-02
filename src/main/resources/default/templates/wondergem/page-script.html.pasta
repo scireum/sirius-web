@@ -70,6 +70,18 @@
         }
     };
 
+    var AUTOCOMPLETE_SUGGESTION_TEMPLATE =
+        '<span>' +
+        '   {{label}}' +
+        '   {{#hasDescription}}' +
+        '      <div class="suggestion-description">' +
+        '      {{#descriptionLines}}' +
+        '          {{.}}<br>' +
+        '      {{/descriptionLines}}' +
+        '      </div>' +
+        '   {{/hasDescription}}' +
+        '</span>';
+
     function enableAutocomplete(field) {
         function createSubmitData(key, value) {
             var data = {};
@@ -115,8 +127,22 @@
             allowClear: field.data('optional'),
             placeholder: '@i18n("template.html.select2.selection")',
             minimumInputLength: 0,
-            templateResult: function (data, container, escapeMarkup) {
-                return data ? (data.hasOwnProperty('description') ? data.description : data.text) : undefined;
+            templateResult: function (result) {
+                if (typeof result === 'undefined') {
+                    return undefined;
+                }
+
+                var hasDescription = typeof result.description !== 'undefined' && result.description !== '';
+
+                if (field.attr('data-multiline')) {
+                    return $(Mustache.render(AUTOCOMPLETE_SUGGESTION_TEMPLATE, {
+                        'label': result.text,
+                        'hasDescription' : hasDescription,
+                        'descriptionLines': hasDescription ? result.description.split('\n') : undefined
+                    }));
+                }
+
+                return hasDescription ? result.description : result.text;
             },
             language: select2Translations,
             ajax: {

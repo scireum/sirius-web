@@ -14,6 +14,7 @@
 <i:arg name="readonly" type="boolean" default="false" />
 <i:arg name="adminOnly" type="boolean" default="false" />
 <i:arg name="forceFullWidth" type="boolean" default="false" />
+<i:arg name="multiLine" type="boolean" default="false" description="Controls if both the label and the description are shown for search results. Newlines inside the description will also be rendered." />
 <i:arg name="id" type="String" default="" />
 
 <i:pragma name="inline" value="true" />
@@ -34,6 +35,7 @@
             @if (strict) { data-strict="true" }
             @if (optional) { data-optional="true" }
             @if (forceFullWidth) { style="width: 100%;" }
+            @if (multiLine) { data-multiline="true" }
             data-autocomplete="@serviceUri">
         <i:render name="body" />
     </select>
