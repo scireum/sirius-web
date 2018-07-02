@@ -1,11 +1,12 @@
 <script type="text/javascript">
     //Setup Electron / Desktop app...
-    var electronRemote = null;
-    var electronIpc = null;
     try {
-        electronRemote = require('electron').remote;
-        electronIpc = require('electron').ipcRenderer;
+        // Try to use variables from preloading script, but fall back for old versions
+        electronRemote = (typeof(electronRemote) !== 'undefined' && electronRemote) ? electronRemote : require('electron').remote;
+        electronIpc = (typeof(electronIpc) !== 'undefined' && electronIpc) ? electronIpc : require('electron').ipcRenderer;
     } catch (e) {
+        electronRemote = null;
+        electronIpc = null;
     }
 
     // Make jQuery work with electron / npm environments
