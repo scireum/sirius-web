@@ -38,6 +38,7 @@ public class AutocompleteHelper {
         private String value;
         private String label;
         private String description;
+        private boolean disabled = false;
 
         /**
          * Generates a new suggestion
@@ -112,6 +113,15 @@ public class AutocompleteHelper {
             return this;
         }
 
+        /**
+         * Sets if the suggestion should be disabled
+         *
+         * @param disabled <tt>true</tt> if the suggestion is disabled, <tt>false</tt> otherwise
+         */
+        public void setDisabled(boolean disabled) {
+            this.disabled = disabled;
+        }
+
         private void writeTo(StructuredOutput out) {
             out.beginObject("completion");
             {
@@ -119,6 +129,9 @@ public class AutocompleteHelper {
                 out.property("text", label == null ? "" : label);
                 if (Strings.isFilled(description)) {
                     out.property("description", description);
+                }
+                if (disabled) {
+                    out.property("disabled", true);
                 }
             }
             out.endObject();
