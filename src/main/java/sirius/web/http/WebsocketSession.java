@@ -45,7 +45,9 @@ public abstract class WebsocketSession {
 
         String cookieHeader = request.headers().get(HttpHeaderNames.COOKIE);
         if (Strings.isFilled(cookieHeader)) {
-            cookies = ServerCookieDecoder.LAX.decode(cookieHeader).stream().collect(Collectors.toMap(Cookie::name, Cookie::value));
+            cookies = ServerCookieDecoder.LAX.decode(cookieHeader)
+                                             .stream()
+                                             .collect(Collectors.toMap(Cookie::name, Cookie::value));
         } else {
             cookies = Collections.emptyMap();
         }

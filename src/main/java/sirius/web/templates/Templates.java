@@ -84,7 +84,7 @@ public class Templates {
     public Map<String, Object> createGlobalContext() {
         Map<String, Object> result = new LinkedHashMap<>();
         for (GlobalContextExtender extender : extenders) {
-            extender.collectTemplate((k,v) -> {
+            extender.collectTemplate((k, v) -> {
                 if (v != null) {
                     result.put(k, v);
                 }
@@ -102,12 +102,12 @@ public class Templates {
     public Map<String, Object> createGlobalSystemScriptingContext() {
         Map<String, Object> result = new LinkedHashMap<>();
         for (GlobalContextExtender extender : extenders) {
-            extender.collectTemplate((k,v) -> {
+            extender.collectTemplate((k, v) -> {
                 if (v != null) {
                     result.put(k, v);
                 }
             });
-            extender.collectScripting((k,v) -> {
+            extender.collectScripting((k, v) -> {
                 if (v != null) {
                     result.put(k, v);
                 }

@@ -1577,7 +1577,8 @@ public class WebContext implements SubContext {
      * <p>
      * A POST request signal the server to alter its state, knowing that side effects will occur.
      *
-     * @return <tt>true</tt> if the method of the current request is POST and the provided CSRF-token is valid, <tt>false</tt> otherwise
+     * @return <tt>true</tt> if the method of the current request is POST and the provided CSRF-token is valid,
+     * <tt>false</tt> otherwise
      */
     public boolean isSafePOST() {
         return isUnsafePOST() && checkCSRFToken();
@@ -1600,7 +1601,8 @@ public class WebContext implements SubContext {
      * <p>
      * A POST request signal the server to alter its state, knowing that side effects will occur.
      *
-     * @return <tt>true</tt> if the method of the current request is POST and the provided CSRF-token is valid, <tt><false</tt> otherwise
+     * @return <tt>true</tt> if the method of the current request is POST and the provided CSRF-token is valid,
+     * <tt>false</tt> otherwise
      */
     @CheckReturnValue
     public boolean ensureSafePOST() {
