@@ -38,6 +38,26 @@ public class AutocompleteHelper {
         private String value;
         private String label;
         private String description;
+        private boolean disabled = false;
+
+        /**
+         * Generates a new suggestion
+         *
+         * @param value the effective value to fill into the field
+         */
+        public Completion(String value) {
+            this(value, value);
+        }
+
+        /**
+         * Generates a new suggestion
+         *
+         * @param value the effective value to fill into the field
+         * @param label the text to display to the user
+         */
+        public Completion(String value, String label) {
+            this(value, label, null);
+        }
 
         /**
          * Generates a new suggestion
@@ -112,6 +132,19 @@ public class AutocompleteHelper {
             return this;
         }
 
+        /**
+         * Sets if the suggestion should be disabled
+         * <p>
+         * Uses standard select2 functionality to have entries in the select, that can't be selected.
+         *
+         * @param disabled <tt>true</tt> if the suggestion is disabled, <tt>false</tt> otherwise
+         * @return the completion itself for fluent method calls
+         */
+        public Completion setDisabled(boolean disabled) {
+            this.disabled = disabled;
+            return this;
+        }
+
         private void writeTo(StructuredOutput out) {
             out.beginObject("completion");
             {
@@ -119,6 +152,9 @@ public class AutocompleteHelper {
                 out.property("text", label == null ? "" : label);
                 if (Strings.isFilled(description)) {
                     out.property("description", description);
+                }
+                if (disabled) {
+                    out.property("disabled", true);
                 }
             }
             out.endObject();
