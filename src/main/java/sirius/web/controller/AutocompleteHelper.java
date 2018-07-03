@@ -44,6 +44,26 @@ public class AutocompleteHelper {
          * Generates a new suggestion
          *
          * @param value       the effective value to fill into the field
+         */
+        public Completion(String value) {
+            this.value = value;
+        }
+
+        /**
+         * Generates a new suggestion
+         *
+         * @param value       the effective value to fill into the field
+         * @param label       the text to display to the user
+         */
+        public Completion(String value, String label) {
+            this.value = value;
+            this.label = label;
+        }
+
+        /**
+         * Generates a new suggestion
+         *
+         * @param value       the effective value to fill into the field
          * @param label       the text to display to the user
          * @param description the text shown in the autocomplete-dropdown
          */
@@ -119,9 +139,11 @@ public class AutocompleteHelper {
          * Uses standard select2 functionality to have entries in the select, that can't be selected.
          *
          * @param disabled <tt>true</tt> if the suggestion is disabled, <tt>false</tt> otherwise
+         * @return the completion itself for fluent method calls
          */
-        public void setDisabled(boolean disabled) {
+        public Completion setDisabled(boolean disabled) {
             this.disabled = disabled;
+            return this;
         }
 
         private void writeTo(StructuredOutput out) {
