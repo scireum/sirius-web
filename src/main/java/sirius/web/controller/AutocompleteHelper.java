@@ -43,21 +43,20 @@ public class AutocompleteHelper {
         /**
          * Generates a new suggestion
          *
-         * @param value       the effective value to fill into the field
+         * @param value the effective value to fill into the field
          */
         public Completion(String value) {
-            this.value = value;
+            this(value, value);
         }
 
         /**
          * Generates a new suggestion
          *
-         * @param value       the effective value to fill into the field
-         * @param label       the text to display to the user
+         * @param value the effective value to fill into the field
+         * @param label the text to display to the user
          */
         public Completion(String value, String label) {
-            this.value = value;
-            this.label = label;
+            this(value, label, null);
         }
 
         /**
