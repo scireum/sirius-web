@@ -14,7 +14,7 @@
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
     <properties>
-        <sirius.kernel>11.0</sirius.kernel>
+        <sirius.kernel>11.5</sirius.kernel>
     </properties>
 
     <dependencies>
