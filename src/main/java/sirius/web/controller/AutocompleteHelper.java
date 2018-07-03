@@ -115,6 +115,8 @@ public class AutocompleteHelper {
 
         /**
          * Sets if the suggestion should be disabled
+         * <p>
+         * Uses standard select2 functionality to have entries in the select, that can't be selected.
          *
          * @param disabled <tt>true</tt> if the suggestion is disabled, <tt>false</tt> otherwise
          */
