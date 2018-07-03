@@ -22,7 +22,8 @@ public class ClasspathResolver implements Resolver {
 
     @Override
     public Resource resolve(@Nonnull String scopeId, @Nonnull String resource) {
-        String resourceToResolve = resource.startsWith(FORCE_ORIGINAL_PREFIX) ? resource.replace(FORCE_ORIGINAL_PREFIX, "/") : resource;
+        String resourceToResolve =
+                resource.startsWith(FORCE_ORIGINAL_PREFIX) ? resource.replace(FORCE_ORIGINAL_PREFIX, "/") : resource;
 
         URL url = getClass().getResource(resourceToResolve);
         if (url != null) {

@@ -123,7 +123,7 @@ public class SAMLHelper {
      * @return the parsed response which has been verified
      */
     public SAMLResponse parseSAMLResponse(WebContext ctx) {
-        if (!ctx.isPOST()) {
+        if (!ctx.isUnsafePOST()) {
             throw Exceptions.createHandled().withSystemErrorMessage("Invalid SAML Response: POST expected!").handle();
         }
 
