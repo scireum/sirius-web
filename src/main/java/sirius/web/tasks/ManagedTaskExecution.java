@@ -209,12 +209,12 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
         for (Map.Entry<String, Average> e : timings.entrySet()) {
             if (!Doubles.isZero(e.getValue().getAvg())) {
                 result.add(Tuple.create(e.getKey(),
-                                        e.getValue().getTotalCount()
+                                        e.getValue().getCount()
                                         + " ("
                                         + NLS.toUserString(e.getValue().getAvg())
                                         + "ms)"));
             } else {
-                result.add(Tuple.create(e.getKey(), String.valueOf(e.getValue().getTotalCount())));
+                result.add(Tuple.create(e.getKey(), String.valueOf(e.getValue().getCount())));
             }
         }
 
