@@ -16,3 +16,8 @@
   box-shadow: none;
   border-radius: $baseBorderRadius;
 }
+
+// Removes the first divider in a dropdown menu
+ul.dropdown-menu li:first-of-type.divider {
+  display: none;
+}
