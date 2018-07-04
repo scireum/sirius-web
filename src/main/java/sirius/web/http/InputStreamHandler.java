@@ -226,6 +226,21 @@ public class InputStreamHandler extends InputStream implements ContentHandler {
     }
 
     @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+        ByteBuf buffer = getBuffer();
+        if (buffer == null) {
+            return -1;
+        }
+        try {
+            len = Math.min(buffer.readableBytes(), len);
+            buffer.readBytes(b, off, len);
+            return len;
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Override
     public long skip(long n) throws IOException {
         ByteBuf buffer = getBuffer();
         if (buffer == null) {
