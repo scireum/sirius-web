@@ -158,6 +158,7 @@
                 clearTokens: function () {
                     input.element.tokenfield("setTokens", []);
                     input.value = "";
+                    input.allTokens = [];
                     events.onClearTokens();
                 },
 
