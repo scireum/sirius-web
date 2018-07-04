@@ -128,6 +128,7 @@
             placeholder: '@i18n("template.html.select2.selection")',
             dropdownParent: field.parent(),
             minimumInputLength: 0,
+            tags: field.data('dynamic-option'),
             templateResult: function (result) {
                 if (typeof result === 'undefined') {
                     return undefined;
@@ -189,6 +190,7 @@
                 allowClear: field.data('optional'),
                 placeholder: '@i18n("template.html.select2.selection")',
                 dropdownParent: field.parent(),
+                tags: field.data('dynamic-option'),
                 minimumResultsForSearch: 10,
                 width: '100%',
                 language: select2Translations,
