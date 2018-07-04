@@ -46,4 +46,17 @@ class UploadSpec extends BaseSpecification {
         and:
         json.get("size") == file.length()
     }
+
+    def "Uploads a gzip-file to /upload-gzip"() {
+        given:
+        File file = new File("src/test/resources/test.csv.gz")
+        when:
+        def response = upload("/upload-gzip", file)
+        and:
+        def json = JSON.parseObject(response)
+        then:
+        json.get("success") == true
+        and:
+        json.get("lines") == 3
+    }
 }

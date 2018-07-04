@@ -23,9 +23,12 @@ import sirius.web.http.WebContext;
 import sirius.web.resources.Resources;
 import sirius.web.services.JSONStructuredOutput;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 
 @Register
 public class TestController implements Controller {
@@ -152,6 +155,13 @@ public class TestController implements Controller {
             out.property("size", size);
         } finally {
             upload.close();
+        }
+    }
+
+    @Routed(value = "/upload-gzip", preDispatchable = true, jsonCall = true)
+    public void uploadGzipTest(WebContext ctx, JSONStructuredOutput out, InputStreamHandler upload) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(upload)))) {
+            out.property("lines", reader.lines().count());
         }
     }
 
