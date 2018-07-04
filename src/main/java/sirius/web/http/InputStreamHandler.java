@@ -219,7 +219,7 @@ public class InputStreamHandler extends InputStream implements ContentHandler {
             return -1;
         }
         try {
-            return buffer.readByte();
+            return buffer.readUnsignedByte();
         } finally {
             buffer.release();
         }
