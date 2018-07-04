@@ -219,22 +219,7 @@ public class InputStreamHandler extends InputStream implements ContentHandler {
             return -1;
         }
         try {
-            return buffer.readByte();
-        } finally {
-            buffer.release();
-        }
-    }
-
-    @Override
-    public int read(byte[] b, int off, int len) throws IOException {
-        ByteBuf buffer = getBuffer();
-        if (buffer == null) {
-            return -1;
-        }
-        try {
-            len = Math.min(buffer.readableBytes(), len);
-            buffer.readBytes(b, off, len);
-            return len;
+            return buffer.readUnsignedByte();
         } finally {
             buffer.release();
         }
