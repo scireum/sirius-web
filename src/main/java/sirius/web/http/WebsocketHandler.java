@@ -45,7 +45,7 @@ public class WebsocketHandler extends ChannelDuplexHandler {
         if (e instanceof SSLHandshakeException || e.getCause() instanceof SSLHandshakeException) {
             SSLWebServerInitializer.LOG.FINE(e);
         } else if (e instanceof ClosedChannelException || e instanceof IOException || e instanceof DecoderException) {
-            WebServer.LOG.FINE("Received an error for a websocket: %s - %s", NLS.toUserString(e));
+            WebServer.LOG.FINE("Received an error for a websocket: %s", NLS.toUserString(e));
         } else {
             Exceptions.handle()
                       .to(WebServer.LOG)
