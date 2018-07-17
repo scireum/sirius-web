@@ -324,7 +324,8 @@ public class ControllerDispatcher implements WebDispatcher {
                 return;
             }
 
-            if (secondRoute.getPattern().equals(baseRoute.getPattern())) {
+            if (secondRoute.getPattern().equals(baseRoute.getPattern())
+                && secondRoute.isPreDispatchable() == baseRoute.isPreDispatchable()) {
                 if (secondRoute.getMethod().equals(baseRoute.getMethod())) {
                     routes.remove(index);
                     index--;
