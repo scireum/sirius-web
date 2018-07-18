@@ -21,6 +21,7 @@ import sirius.kernel.commons.Value;
 import sirius.kernel.commons.Values;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -60,7 +61,12 @@ public abstract class WebsocketSession {
      * @return the value contained in the parameter
      */
     protected Value get(String key) {
-        return Values.of(queryString.parameters().get(key)).at(0);
+        List<String> list = queryString.parameters().get(key);
+        if (list == null) {
+            return Value.EMPTY;
+        }
+
+        return Values.of(list).at(0);
     }
 
     /**
