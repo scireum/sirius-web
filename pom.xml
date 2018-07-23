@@ -31,13 +31,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Include IPL which brings a server main class and some management tools -->
-        <dependency>
-            <groupId>com.scireum</groupId>
-            <artifactId>sirius-ipl</artifactId>
-            <version>2.0-rc4</version>
-        </dependency>
-
         <!-- Netty is the foundation of the built in web server -->
         <dependency>
             <groupId>io.netty</groupId>
