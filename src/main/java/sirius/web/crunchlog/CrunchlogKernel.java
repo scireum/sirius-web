@@ -129,6 +129,13 @@ public class CrunchlogKernel extends BackgroundLoop implements Command, Stoppabl
                 currentWriter.write(lineAsString);
                 currentWriter.write("\n");
             }
+
+            currentWriter.flush();
+
+            if (warnedAboutOverflow) {
+                Crunchlog.LOG.INFO("Crunchlog now continues to write data...");
+                warnedAboutOverflow = false;
+            }
         } catch (IOException e) {
             Exceptions.handle(Crunchlog.LOG, e);
             buffer.clear();
@@ -202,10 +209,6 @@ public class CrunchlogKernel extends BackgroundLoop implements Command, Stoppabl
             currentWriter =
                     new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(currentFile)), Charsets.UTF_8);
 
-            if (warnedAboutOverflow) {
-                Crunchlog.LOG.INFO("Crunchlog now continues to write data...");
-                warnedAboutOverflow = false;
-            }
             return true;
         } catch (Exception e) {
             Exceptions.handle(Crunchlog.LOG, e);
