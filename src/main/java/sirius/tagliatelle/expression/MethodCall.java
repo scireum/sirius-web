@@ -256,7 +256,7 @@ public class MethodCall extends Call {
      * Ensures that no "evil" methods (reflection land) can be invoked via the template.
      * <p>
      * This way the "security" of a template can be controlled via its parameters. As static methods and <tt>new</tt>
-     * cannot be invoked, most if the critical stuff is blocked anyway.
+     * cannot be invoked, most of the critical stuff is blocked anyway.
      *
      * @param method the method to check
      * @return <tt>true</tt> if the method my be invoked, <tt>false</tt> otherwise
