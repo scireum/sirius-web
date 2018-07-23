@@ -71,7 +71,7 @@ public class CrunchlogKernel extends BackgroundLoop implements Command, Stoppabl
     private static final int MIN_FREE_SPACE = 1024 * 1024 * 100;
     private static final String GZIP_FILE_EXTENSION = ".gz";
     private static final int MAX_FILE_SIZE = 1024 * 1024 * 10;
-    private static final int MAX_BUFFERED_LINES = 4096;
+    private static final int MAX_BUFFERED_LINES = 16 * 1024;
 
     protected Queue<Context> buffer = Queues.newArrayDeque();
 
@@ -104,8 +104,8 @@ public class CrunchlogKernel extends BackgroundLoop implements Command, Stoppabl
 
     @Override
     protected double maxCallFrequency() {
-        // We collect data for 30s before writing to disk
-        return 1 / 30d;
+        // We collect data for 5s before writing to disk
+        return 1 / 5d;
     }
 
     @Override
