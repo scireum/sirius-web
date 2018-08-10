@@ -27,7 +27,7 @@ public class CSRFHelper {
      */
     public static final String CSRF_TOKEN = "CSRFToken";
 
-    private static final String LAST_CSRF_RECOMPUTE = "lastCSRFRecompute";
+    public static final String LAST_CSRF_RECOMPUTE = "lastCSRFRecompute";
 
     @ConfigValue("http.csrfTokenLifetime")
     private static Duration csrfTokenLifetime;

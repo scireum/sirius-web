@@ -28,6 +28,7 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
@@ -37,6 +38,8 @@ import javax.annotation.Nonnull;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -51,6 +54,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class TestRequest extends WebContext implements HttpRequest {
 
+    private static final String DUMMY_CSRF_TOKEN = "DUMMY-CSRF-TOKEN";
+
     @Part
     private static Resources resources;
 
@@ -63,10 +68,12 @@ public class TestRequest extends WebContext implements HttpRequest {
     private List<Cookie> testCookies = Lists.newArrayList();
     protected Promise<TestResponse> testResponsePromise = new Promise<>();
     private static DispatcherPipeline pipeline;
+    private Map<String, String> testSession;
 
     protected TestRequest() {
         super();
         this.request = this;
+        this.testSession = new HashMap<>();
     }
 
     public TestRequest(HttpMethod method, String uri) {
@@ -89,6 +96,25 @@ public class TestRequest extends WebContext implements HttpRequest {
 
     public static TestRequest PUT(String uri) {
         return new TestRequest(HttpMethod.PUT, uri);
+    }
+
+    /**
+     * Creates a mock request simulating a POST on the given uri.
+     * <p>
+     * The Request will be sent with a valid CSRF parameter so that it may pass a {@link WebContext#ensureSafePOST()} check.
+     *
+     * @param uri the relative uri to call
+     * @return an instance used to further specify the request to send
+     * @see CSRFHelper
+     * @deprecated use {@link #POST(String)} and {@link #sendResource(String)}
+     */
+    public static TestRequest SAFEPOST(String uri) {
+        TestRequest request = POST(uri);
+
+        request.setTestSessionValue(CSRFHelper.CSRF_TOKEN, DUMMY_CSRF_TOKEN);
+        request.setTestSessionValue(CSRFHelper.LAST_CSRF_RECOMPUTE, Value.of(Instant.now().toEpochMilli()).asString());
+        request.withParameter(CSRFHelper.CSRF_TOKEN, DUMMY_CSRF_TOKEN);
+        return request;
     }
 
     /**
@@ -343,6 +369,11 @@ public class TestRequest extends WebContext implements HttpRequest {
     }
 
     @Override
+    public Value getSessionValue(String key) {
+        return super.getSessionValue(key).isFilled() ? super.getSessionValue(key) : Value.of(testSession.get(key));
+    }
+
+    @Override
     public HttpHeaders headers() {
         return testHeaders;
     }
@@ -480,5 +511,13 @@ public class TestRequest extends WebContext implements HttpRequest {
         }
 
         return pipeline;
+    }
+
+    private void setTestSessionValue(String key, Object value) {
+        if (value == null) {
+            testSession.remove(key);
+        } else {
+            testSession.put(key, NLS.toMachineString(value));
+        }
     }
 }
