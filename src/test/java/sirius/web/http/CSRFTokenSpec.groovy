@@ -43,6 +43,13 @@ class CSRFTokenSpec extends BaseSpecification {
         result.getStatus() == HttpResponseStatus.INTERNAL_SERVER_ERROR
     }
 
+    def "safePOST() works correctly if correct token is present via SAFEPOST"() {
+        when:
+        def result = TestRequest.SAFEPOST("/test/fake-delete-data").execute()
+        then:
+        result.getStatus() == HttpResponseStatus.OK
+    }
+
     def "safePOST() works correctly if correct token is present via POST"() {
         given:
         HttpURLConnection c = new URL("http://localhost:9999/test/provide-security-token").openConnection()
