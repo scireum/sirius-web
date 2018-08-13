@@ -335,10 +335,11 @@ qq.FileUploaderBasic.prototype = {
                 self._options.onProgress(id, fileName, loaded, total);
             },
             onComplete: function (id, fileName, result) {
-                if (self._filesInProgress <= 1) {
+                self._onComplete(id, fileName, result);
+
+                if (self._filesInProgress === 0) {
                     self._options.onComplete(id, fileName, result);
                 }
-                self._onComplete(id, fileName, result);
             },
             onCancel: function (id, fileName) {
                 self._onCancel(id, fileName);
