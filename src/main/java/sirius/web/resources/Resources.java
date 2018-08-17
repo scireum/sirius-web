@@ -42,7 +42,7 @@ public class Resources {
     /**
      * Cache used to map a scope name and local uri to an URL pointing to a resolved content.
      */
-    private Cache<String, Optional<Resource>> resolverCache = CacheManager.createCache("resolver-cache");
+    private Cache<String, Optional<Resource>> resolverCache = CacheManager.createLocalCache("resolver-cache");
 
     /**
      * Tries to resolve a template or content-file into a {@link Resource}

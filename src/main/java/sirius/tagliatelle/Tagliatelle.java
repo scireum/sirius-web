@@ -74,7 +74,7 @@ public class Tagliatelle {
     /**
      * Keeps compiled templates around to improve the speed of rendering.
      */
-    private Cache<Resource, Template> compiledTemplates = CacheManager.createCache("tagliatelle-templates");
+    private Cache<Resource, Template> compiledTemplates = CacheManager.createLocalCache("tagliatelle-templates");
 
     private List<Tuple<String, Class<?>>> globalVariables;
 
