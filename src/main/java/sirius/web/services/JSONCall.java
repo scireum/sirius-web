@@ -94,4 +94,13 @@ public class JSONCall {
     public void getPlainInput() throws IOException {
         outcall.getData();
     }
+
+    /**
+     * Provides access to the underlying outcall.
+     *
+     * @return the underlying outcall
+     */
+    public Outcall getOutcall() {
+        return outcall;
+    }
 }
