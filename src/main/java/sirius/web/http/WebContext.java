@@ -787,7 +787,7 @@ public class WebContext implements SubContext {
         }
 
         String cacheId = Strings.generateCode(32);
-        if (distributedUserMessageCache != null) {
+        if (distributedUserMessageCache != null && distributedUserMessageCache.isReady()) {
             distributedUserMessageCache.put(cacheId, messages);
         } else {
             getLocalUserMessageCache().put(cacheId, messages);
@@ -825,7 +825,7 @@ public class WebContext implements SubContext {
     }
 
     private List<Message> getAndRemoveCachedUserMessages(String cachedMessagesId) {
-        if (distributedUserMessageCache != null) {
+        if (distributedUserMessageCache != null && distributedUserMessageCache.isReady()) {
             return distributedUserMessageCache.getAndRemove(cachedMessagesId);
         }
 

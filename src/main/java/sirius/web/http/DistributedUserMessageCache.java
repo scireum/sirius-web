@@ -32,4 +32,11 @@ public interface DistributedUserMessageCache {
      * @return the value identified by the key
      */
     List<Message> getAndRemove(String key);
+
+    /**
+     * Determines if the distributed cache layer is available or not.
+     *
+     * @return <tt>true</tt> if the cache is configured and ready, <tt>false</tt> otherwise
+     */
+    boolean isReady();
 }
