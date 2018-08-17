@@ -35,6 +35,8 @@ import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.InterfaceHttpPostRequestDecoder;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
+import sirius.kernel.cache.Cache;
+import sirius.kernel.cache.CacheManager;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
@@ -47,9 +49,6 @@ import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.StructuredInput;
 import sirius.kernel.xml.XMLStructuredInput;
-import sirius.web.cache.DistributedUserMessageCacheFactory;
-import sirius.web.cache.LocalUserMessageCache;
-import sirius.web.cache.UserMessageCache;
 import sirius.web.controller.Message;
 import sirius.web.security.UserContext;
 
@@ -333,7 +332,9 @@ public class WebContext implements SubContext {
     private static SessionSecretComputer sessionSecretComputer;
 
     @Part
-    private static DistributedUserMessageCacheFactory cacheFactory;
+    private static DistributedUserMessageCache distributedUserMessageCache;
+
+    private static Cache<String, List<Message>> localUserMessageCache;
 
     @Part
     private static CSRFHelper csrfHelper;
@@ -342,8 +343,6 @@ public class WebContext implements SubContext {
      * Date format used by HTTP date headers
      */
     public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
-
-    private static UserMessageCache userMessageCache;
 
     /**
      * Provides access to the underlying ChannelHandlerContext
@@ -775,7 +774,7 @@ public class WebContext implements SubContext {
      * and retrieved with the next "full" request.
      * <p>
      * When sending a redirect or performing an ajax call + a refresh, it is not possible to show messages to a user.
-     * Therefore we cache those messages and return them with the next call to {@link UserContext#getMessages()}.
+     * Therefore we localUserMessageCache those messages and return them with the next call to {@link UserContext#getMessages()}.
      */
     public void cacheUserMessages() {
         if (getSessionValue(CACHED_MESSAGES_ID).isFilled()) {
@@ -788,40 +787,26 @@ public class WebContext implements SubContext {
         }
 
         String cacheId = Strings.generateCode(32);
-        getUserMessageCache().put(cacheId, messages);
+        if (distributedUserMessageCache != null) {
+            distributedUserMessageCache.put(cacheId, messages);
+        } else {
+            getLocalUserMessageCache().put(cacheId, messages);
+        }
         setSessionValue(CACHED_MESSAGES_ID, cacheId);
     }
 
-    private static UserMessageCache getUserMessageCache() {
-        if (userMessageCache == null) {
-            userMessageCache = createDistributedReadOnceCache("user-messages");
+    private Cache<String, List<Message>> getLocalUserMessageCache() {
+        if (localUserMessageCache == null) {
+            localUserMessageCache = CacheManager.createLocalCache("user-messages");
         }
-        return userMessageCache;
-    }
 
-    /**
-     * Creates a distributed {@link UserMessageCache} if a {@link DistributedUserMessageCacheFactory} is implemented and can be
-     * injected. A {@link LocalUserMessageCache} otherwise.
-     * <p>
-     * Considers the config <tt>cache.[name].ttl</tt> for the cache.
-     *
-     * @param name The cache name.
-     * @return The created cache.
-     */
-    public static UserMessageCache createDistributedReadOnceCache(String name) {
-        if (cacheFactory == null || !cacheFactory.isConfigured()) {
-            WebServer.LOG.FINE("No DistributedUserMessageCacheFactory is found or ready (yet)! Creating regular "
-                               + "cache. DistributedUserMessageCacheFactory are injected at runtime, so maybe you need "
-                               + "to wait for system start.");
-            return new LocalUserMessageCache(name);
-        }
-        return cacheFactory.createDistributedCache(name);
+        return localUserMessageCache;
     }
 
     /**
      * Invoked by {@link UserContext#getMessages()} to fetch and apply all previously cached message.
      */
-    public void restoreCachedMessages() {
+    public void restoreCachedUserMessages() {
         if (!isValid()) {
             return;
         }
@@ -831,12 +816,22 @@ public class WebContext implements SubContext {
             return;
         }
 
-        List<Message> cachedMessages = getUserMessageCache().getAndRemove(cachedMessagesId);
+        List<Message> cachedMessages = getAndRemoveCachedUserMessages(cachedMessagesId);
         if (cachedMessages != null) {
             cachedMessages.forEach(UserContext::message);
         }
 
         setSessionValue(CACHED_MESSAGES_ID, null);
+    }
+
+    private List<Message> getAndRemoveCachedUserMessages(String cachedMessagesId) {
+        if (distributedUserMessageCache != null) {
+            return distributedUserMessageCache.getAndRemove(cachedMessagesId);
+        }
+
+        List<Message> result = getLocalUserMessageCache().get(cachedMessagesId);
+        getLocalUserMessageCache().remove(cachedMessagesId);
+        return result;
     }
 
     /**
@@ -850,7 +845,7 @@ public class WebContext implements SubContext {
         String cachedMessagesId = getSessionValue(CACHED_MESSAGES_ID).asString();
 
         if (Strings.isFilled(cachedMessagesId)) {
-            getUserMessageCache().getAndRemove(cachedMessagesId);
+            getAndRemoveCachedUserMessages(cachedMessagesId);
             setSessionValue(CACHED_MESSAGES_ID, null);
         }
     }

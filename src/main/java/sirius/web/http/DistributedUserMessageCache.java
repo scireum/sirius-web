@@ -6,7 +6,7 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.web.cache;
+package sirius.web.http;
 
 import sirius.web.controller.Message;
 
@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * A cache in which a value for a key can be read once and then is removed again.
  */
-public interface UserMessageCache {
+public interface DistributedUserMessageCache {
 
     /**
      * Puts a value inside the cache identified by the key.
