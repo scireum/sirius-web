@@ -10,12 +10,7 @@ package sirius.web.health;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.google.common.collect.Lists;
-import sirius.kernel.Sirius;
-import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Tasks;
-import sirius.kernel.commons.Strings;
-import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
@@ -24,11 +19,12 @@ import sirius.kernel.health.metrics.Metric;
 import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.health.metrics.Metrics;
 import sirius.kernel.timer.EveryMinute;
-import sirius.web.mails.Mails;
+import sirius.kernel.timer.EveryTenSeconds;
 import sirius.web.services.JSONCall;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -49,96 +45,50 @@ import java.util.List;
 @Register(classes = {Cluster.class, EveryMinute.class})
 public class Cluster implements EveryMinute {
 
-    /*
+    /**
      * Logger used by the cluster system
      */
     public static final Log LOG = Log.get("cluster");
 
-    /*
+    /**
      * Contains the state of the local node
      */
     private MetricState nodeState = MetricState.GRAY;
 
-    /*
+    /**
      * Contains the overall state of the cluster (which is equal to the "worst" node state among all members).
      */
     private MetricState clusterState = MetricState.GRAY;
 
-    /*
-     * Used to lower message levels for ongoing failures
+    /**
+     * Determines if an alarm is currently present
      */
-    private boolean currentlyNotifying = false;
+    private boolean alarmPresent = false;
 
-    /*
+    /**
      * Contains a list of all cluster members.
      */
-    private List<NodeInfo> nodes = null;
-
-    @ConfigValue("health.cluster.priority")
-    private int priority;
-
-    @Part
-    private Metrics metrics;
+    private List<NodeInfo> nodes = Collections.emptyList();
 
     @Part
     private Tasks tasks;
 
     @Part
-    private Mails ms;
+    private Metrics metrics;
+
+    @Part
+    private ClusterManager manager;
 
     /**
      * Reports infos for all known cluster members.
      * <p>
      * During startup (before the initial communication took place) some information (like the node name) might
      * be missing.
-     * </p>
      *
      * @return a list of all cluster members along with their last known state
      */
     public List<NodeInfo> getNodeInfos() {
-        if (nodes == null) {
-            List<NodeInfo> result = Lists.newArrayList();
-            for (String endpoint : Sirius.getSettings().getStringList("health.cluster.nodes")) {
-                NodeInfo info = new NodeInfo();
-                info.setEndpoint(endpoint);
-                result.add(info);
-            }
-            nodes = result;
-        }
-
-        return nodes;
-    }
-
-    /**
-     * Returns the best node which is still functional and has the highest priority (lowest number).
-     *
-     * @return all known data about the best functional cluster node
-     */
-    public NodeInfo getBestAvailableNode() {
-        for (NodeInfo info : nodes) {
-            if (info.getPriority() < priority && info.getNodeState() == MetricState.GREEN) {
-                return info;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Determines if the current node is the best (highest priority, still functional) cluster node.
-     *
-     * @return <tt>true</tt> if the current node is the best node in this cluster
-     */
-    public boolean isBestAvailableNode() {
-        for (NodeInfo info : nodes) {
-            if ((info.getPriority() < priority
-                 || info.getPriority() == priority && info.getName().compareTo(CallContext.getNodeName()) < 0)
-                && info.getNodeState() != MetricState.RED) {
-                return false;
-            }
-        }
-
-        return true;
+        return Collections.unmodifiableList(nodes);
     }
 
     /**
@@ -159,55 +109,33 @@ public class Cluster implements EveryMinute {
         return clusterState;
     }
 
+    /**
+     * Determines if an alarm is currently present.
+     *
+     * @return <tt>true</tt> if the cluster is in an invalid state, <tt>false</tt> otherwise
+     */
     public boolean isAlarmPresent() {
-        return currentlyNotifying;
+        return alarmPresent;
     }
 
-    /*
-     * Re-computes the node and cluster state...
-     */
     @Override
     public void runTimer() throws Exception {
         tasks.defaultExecutor().fork(this::updateClusterState);
     }
 
     private void updateClusterState() {
-        cleanNodeInfos();
-        MetricState newNodeState = computeNodeState();
-        MetricState newClusterState = computeClusterState(newNodeState);
-        checkClusterState(newClusterState);
-        clusterState = newClusterState;
-    }
-
-    private void checkClusterState(MetricState newClusterState) {
-        if (clusterState == MetricState.RED && newClusterState == MetricState.RED) {
-            LOG.FINE("Cluster was RED and remained RED - ensuring alert...");
-            if (inCharge(MetricState.RED)) {
-                LOG.FINE("This node is in charge of action at the bell....fire alert!");
-                alertClusterFailure(!currentlyNotifying);
-            }
-            currentlyNotifying = true;
-        } else if (clusterState == MetricState.RED && newClusterState != MetricState.RED) {
-            if (inCharge(newClusterState)) {
-                LOG.FINE("Cluster recovered");
-            }
-            currentlyNotifying = false;
+        if (manager != null) {
+            nodes = manager.updateClusterState();
         }
-        LOG.FINE("Cluster check complete. Status was %s and is now %s", clusterState, newClusterState);
-    }
 
-    private void cleanNodeInfos() {
-        // Since the cluster.nodes array might contain all nodes of the cluster, we filter out or own (by name)
-        getNodeInfos().removeIf(nodeInfo -> Strings.areEqual(CallContext.getNodeName(), nodeInfo.getName()));
-    }
+        nodeState = computeNodeState();
 
-    private MetricState computeClusterState(MetricState newNodeState) {
-        MetricState newClusterState = newNodeState;
-        LOG.FINE("Scanning cluster...");
-        for (NodeInfo info : getNodeInfos()) {
-            newClusterState = updateNodeState(newClusterState, info);
-        }
-        return newClusterState;
+        MetricState lastClusterState = clusterState;
+        clusterState = getNodeInfos().stream()
+                                     .map(NodeInfo::getNodeState)
+                                     .reduce(nodeState, (a, b) -> a.ordinal() > b.ordinal() ? a : b);
+
+        alarmPresent = lastClusterState == MetricState.RED && clusterState == MetricState.RED;
     }
 
     private MetricState computeNodeState() {
@@ -220,105 +148,8 @@ public class Cluster implements EveryMinute {
                 LOG.WARN("NodeState: Metric %s is %s", m.getName(), m.getValueAsString());
             }
         }
-        this.nodeState = newNodeState;
+
         return newNodeState;
     }
 
-    private MetricState updateNodeState(MetricState currentClusterState, NodeInfo info) {
-        MetricState newClusterState = currentClusterState;
-        try {
-            LOG.FINE("Testing node: %s", info.getEndpoint());
-            JSONObject response =
-                    JSONCall.to(new URL(info.getEndpoint() + "/service/json/system/node-info")).getInput();
-            info.setName(response.getString("name"));
-            info.setNodeState(MetricState.valueOf(response.getString("nodeState")));
-            if (info.getNodeState().ordinal() > newClusterState.ordinal()) {
-                newClusterState = info.getNodeState();
-            }
-            info.setClusterState(MetricState.valueOf(response.getString("clusterState")));
-            info.setPriority(response.getInteger("priority"));
-            info.setUptime(response.getString("uptime"));
-            info.getMetrics().clear();
-            parseNodeMetrics(info, response);
-            info.pingSucceeded();
-            LOG.FINE("Node: %s is %s (%s)", info.getName(), info.getNodeState(), info.getClusterState());
-        } catch (IOException t) {
-            Exceptions.ignore(t);
-            if (clusterState != MetricState.RED) {
-                LOG.WARN("Cannot reach node %s: %s (%s)",
-                         info.getEndpoint(),
-                         t.getMessage(),
-                         t.getClass().getSimpleName());
-            }
-            info.setNodeState(MetricState.RED);
-            info.setClusterState(MetricState.RED);
-            newClusterState = MetricState.RED;
-            info.incPingFailures();
-        } catch (Exception t) {
-            Exceptions.handle(LOG, t);
-            info.setNodeState(MetricState.RED);
-            info.setClusterState(MetricState.RED);
-            newClusterState = MetricState.RED;
-            info.incPingFailures();
-        }
-        return newClusterState;
-    }
-
-    private void parseNodeMetrics(NodeInfo info, JSONObject response) {
-        JSONArray nodeMetrics = response.getJSONArray("metrics");
-        for (int i = 0; i < nodeMetrics.size(); i++) {
-            try {
-                JSONObject metric = (JSONObject) nodeMetrics.get(i);
-                Metric m = new Metric(metric.getString("name"),
-                                      metric.getDoubleValue("value"),
-                                      MetricState.valueOf(metric.getString("state")),
-                                      metric.getString("unit"));
-                info.getMetrics().add(m);
-            } catch (Exception e) {
-                // Ignore non-well-formed metrics...
-                LOG.FINE(e);
-            }
-        }
-    }
-
-    private boolean inCharge(MetricState clusterStateToBroadcast) {
-        if (isBestAvailableNode()) {
-            return true;
-        }
-        for (NodeInfo info : getNodeInfos()) {
-            if (isBetter(info)
-                && info.getClusterState() == clusterStateToBroadcast
-                && info.getNodeState() != MetricState.RED) {
-                // Another node took care of it...
-                LOG.FINE("Node %s is in charge of sending an alert", info.getName());
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean isBetter(NodeInfo info) {
-        if (info.getPriority() > getNodePriority()) {
-            return false;
-        }
-        if (info.getPriority() < getNodePriority()) {
-            return true;
-        }
-        return info.getName().compareTo(CallContext.getNodeName()) < 0;
-    }
-
-    private void alertClusterFailure(boolean firstAlert) {
-        if (firstAlert) {
-            LOG.WARN("NodeState: %s, ClusterState: %s", nodeState, clusterState);
-        }
-    }
-
-    /**
-     * Returns the priority of this node.
-     *
-     * @return the priority of this node (lower is better)
-     */
-    public int getNodePriority() {
-        return priority;
-    }
 }

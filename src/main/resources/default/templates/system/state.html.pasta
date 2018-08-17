@@ -85,18 +85,6 @@
                 </td>
             </tr>
 
-            <i:if test="info.getPingFailures() > 0">
-                <tr class="RED">
-                    <td style="overflow: hidden">
-                        Ping Failures
-                    </td>
-                    <td class="align-right" style="overflow: hidden">
-                        @info.getPingFailures()
-                    </td>
-                </tr>
-
-            </i:if>
-
             <i:for type="sirius.kernel.health.metrics.Metric" var="m" items="info.getMetrics()">
                 <i:if test="all || m.getState() != sirius.kernel.health.metrics.MetricState.GRAY">
                     <tr class="@m.getState()">

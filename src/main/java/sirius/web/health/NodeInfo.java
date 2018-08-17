@@ -12,24 +12,17 @@ import com.google.common.collect.Lists;
 import sirius.kernel.health.metrics.Metric;
 import sirius.kernel.health.metrics.MetricState;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
  * Contains the state of a cluster member.
- * <p>
- * Will be obtained through {@link Cluster} by calling the members {@link NodeInfoService}.
  */
 public class NodeInfo {
 
     private String name;
-    private int priority;
     private String endpoint;
-    private LocalDateTime lastPing;
-    private int pingFailures;
     private String uptime;
     private MetricState nodeState;
-    private MetricState clusterState;
     private List<Metric> metrics = Lists.newArrayList();
 
     /**
@@ -46,26 +39,8 @@ public class NodeInfo {
      *
      * @param name the name to set
      */
-    protected void setName(String name) {
+    public void setName(String name) {
         this.name = name;
-    }
-
-    /**
-     * Returns the priority of the node within the cluster (lower is better).
-     *
-     * @return the priority of the node
-     */
-    public int getPriority() {
-        return priority;
-    }
-
-    /**
-     * Sets the priority of the node.
-     *
-     * @param priority the priority to set
-     */
-    protected void setPriority(int priority) {
-        this.priority = priority;
     }
 
     /**
@@ -82,25 +57,8 @@ public class NodeInfo {
      *
      * @param endpoint the endpoint to set. Should be something like "http://host:port"
      */
-    protected void setEndpoint(String endpoint) {
+    public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
-    }
-
-    /**
-     * Returns the timestamp of the last successful call to obtain the node state.
-     *
-     * @return the timestamp of the last successful communication
-     */
-    public LocalDateTime getLastPing() {
-        return lastPing;
-    }
-
-    /**
-     * Resets the ping failure counter and sets the lastPing value to <tt>now</tt>
-     */
-    protected void pingSucceeded() {
-        this.lastPing = LocalDateTime.now();
-        this.pingFailures = 0;
     }
 
     /**
@@ -117,26 +75,8 @@ public class NodeInfo {
      *
      * @param nodeState the new node state
      */
-    protected void setNodeState(MetricState nodeState) {
+    public void setNodeState(MetricState nodeState) {
         this.nodeState = nodeState;
-    }
-
-    /**
-     * Returns the state of the cluster as seen by this node.
-     *
-     * @return the state of the cluster as seen by this node
-     */
-    public MetricState getClusterState() {
-        return clusterState;
-    }
-
-    /**
-     * Sets the state of the cluster as seen by this node.
-     *
-     * @param clusterState the new cluster state
-     */
-    protected void setClusterState(MetricState clusterState) {
-        this.clusterState = clusterState;
     }
 
     /**
@@ -146,22 +86,6 @@ public class NodeInfo {
      */
     public List<Metric> getMetrics() {
         return metrics;
-    }
-
-    /**
-     * Returns the number of failed attempts to connect to the node.
-     *
-     * @return the number of failed connect attempts
-     */
-    public int getPingFailures() {
-        return pingFailures;
-    }
-
-    /**
-     * Increment the ping failure counter.
-     */
-    public void incPingFailures() {
-        this.pingFailures++;
     }
 
     /**
@@ -178,7 +102,7 @@ public class NodeInfo {
      *
      * @param uptime the uptime to set
      */
-    protected void setUptime(String uptime) {
+    public void setUptime(String uptime) {
         this.uptime = uptime;
     }
 }

@@ -195,7 +195,7 @@ public class SystemController extends BasicController {
         MultiMap<String, Tuple<String, String>> timingMap = MultiMap.createOrdered();
         String query = Strings.isFilled(page.getQuery()) ? page.getQuery().toLowerCase() : null;
         List<Microtiming.Timing> timings = Microtiming.getTimings();
-        Collections.sort(timings, Comparator.comparingLong(t -> t.getAvg().getCount()));
+        timings.sort(Comparator.comparingLong(t -> t.getAvg().getCount()));
         for (Microtiming.Timing timing : timings) {
             if (matchesQuery(query, timing)) {
                 timingMap.put(timing.getCategory(),
