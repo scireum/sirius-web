@@ -55,6 +55,8 @@ import java.util.Optional;
 @Register(classes = {AssetsDispatcher.class, WebDispatcher.class})
 public class AssetsDispatcher implements WebDispatcher {
 
+    private static final String ASSETS_PREFIX = "/assets/";
+
     @ConfigValue("http.generated-directory")
     private String cacheDir;
     private File cacheDirFile;
@@ -96,7 +98,7 @@ public class AssetsDispatcher implements WebDispatcher {
             throws URISyntaxException, IOException {
         Optional<Resource> res = resources.resolve(uri);
         if (res.isPresent()) {
-            ctx.enableTiming("/assets/");
+            ctx.enableTiming(ASSETS_PREFIX);
             URL url = res.get().getUrl();
             if ("file".equals(url.getProtocol())) {
                 response.file(new File(url.toURI()));
@@ -113,11 +115,11 @@ public class AssetsDispatcher implements WebDispatcher {
         if (uri.startsWith("/assets/dynamic")) {
             uri = uri.substring(16);
             Tuple<String, String> pair = Strings.split(uri, "/");
-            return Tuple.create("/assets/" + pair.getSecond(), Response.HTTP_CACHE_INFINITE);
+            return Tuple.create(ASSETS_PREFIX + pair.getSecond(), Response.HTTP_CACHE_INFINITE);
         }
 
         if (uri.startsWith("/assets/no-cache")) {
-            return Tuple.create(uri.substring(16), 0);
+            return Tuple.create(ASSETS_PREFIX + uri.substring(17), 0);
         }
 
         return Tuple.create(uri, Response.HTTP_CACHE);
