@@ -35,6 +35,9 @@ public class CSRFHelper {
     @ConfigValue("http.csrfTokenLifetime")
     private static Duration csrfTokenLifetime;
 
+    @ConfigValue("http.csrfTokenAutoRenew")
+    private static Duration csrfTokenAutoRenew;
+
     /**
      * Returns the CSRF security-token of the current session. Internally recomputes the token if outdated.
      *
@@ -42,9 +45,25 @@ public class CSRFHelper {
      * @return the CSRF security-token to protect sensitive links.
      */
     public String getCSRFToken(WebContext ctx) {
+        return getCSRFToken(ctx, true);
+    }
+
+    /**
+     * Returns the CSRF security-token of the current session. Internally recomputes the token if outdated.
+     * <p>
+     * In checks, the parameter autoRenew should be set to false as autoRenew uses {@link CSRFHelper#csrfTokenAutoRenew} which
+     * might be earlier than the {@link CSRFHelper#csrfTokenLifetime real lifetime} of the token. If autoRenew
+     * is set to true the tokens are renewed after the set time to avoid the token expiring while
+     * staying on one site. Therefore the token is renewed in advance
+     *
+     * @param ctx       the request to read the token from
+     * @param autoRenew whether the token should be recomputed in advance
+     * @return the CSRF security-token to protect sensitive links.
+     */
+    public String getCSRFToken(WebContext ctx, boolean autoRenew) {
         Value lastCSRFRecompute = ctx.getSessionValue(LAST_CSRF_RECOMPUTE);
 
-        if (isCSRFTokenOutdated(lastCSRFRecompute.asLong(-1L))) {
+        if (isCSRFTokenOutdated(lastCSRFRecompute.asLong(-1L), autoRenew)) {
             ctx.setSessionValue(CSRF_TOKEN, UUID.randomUUID().toString());
             ctx.setSessionValue(LAST_CSRF_RECOMPUTE, Value.of(Instant.now().toEpochMilli()).asString());
         }
@@ -52,8 +71,15 @@ public class CSRFHelper {
         return ctx.getSessionValue(CSRF_TOKEN).asString();
     }
 
-    private boolean isCSRFTokenOutdated(long lastCSRFRecompute) {
-        return Duration.between(Instant.ofEpochMilli(lastCSRFRecompute), Instant.now()).toMinutes()
-               > csrfTokenLifetime.toMinutes();
+    private boolean isCSRFTokenOutdated(long lastCSRFRecompute, boolean autoRenew) {
+        return Duration.between(Instant.ofEpochMilli(lastCSRFRecompute), Instant.now()).toMinutes() > getTokenLifetime(
+                autoRenew);
+    }
+
+    private long getTokenLifetime(boolean autoRenew) {
+        if (autoRenew) {
+            return csrfTokenAutoRenew.toMinutes();
+        }
+        return csrfTokenLifetime.toMinutes();
     }
 }
