@@ -82,6 +82,7 @@ public class HTTPCommand implements Command {
             output.apply(CONNECTION_NUMBER_LINE_FORMAT, "Client Errors", WebServer.getClientErrors());
             output.apply(CONNECTION_NUMBER_LINE_FORMAT, "Server Errors", WebServer.getServerErrors());
             output.apply(CONNECTION_LINE_FORMAT, "Avg. Response Time", NLS.toUserString(WebServer.getAvgResponseTime()) + " ms");
+            output.apply(CONNECTION_LINE_FORMAT, "Avg. Queue Time", NLS.toUserString(WebServer.getAvgQueueTime()) + " ms");
             output.apply(CONNECTION_LINE_FORMAT, "Avg. TTFB", NLS.toUserString(WebServer.getAvgTimeToFirstByte()) + " ms");
             output.separator();
         }

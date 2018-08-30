@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Responsible for setting up and starting netty as HTTP server.
@@ -165,22 +166,23 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     private static final int AUTOSELECT_EVENT_LOOP_SIZE = 0;
     private EventLoopGroup eventLoop;
 
-    protected static volatile long bytesIn = 0;
-    protected static volatile long bytesOut = 0;
-    protected static volatile long messagesIn = 0;
-    protected static volatile long messagesOut = 0;
-    protected static volatile long connections = 0;
-    protected static volatile long blocks = 0;
-    protected static volatile long requests = 0;
-    protected static volatile long chunks = 0;
-    protected static volatile long keepalives = 0;
-    protected static volatile long idleTimeouts = 0;
-    protected static volatile long clientErrors = 0;
-    protected static volatile long serverErrors = 0;
-    protected static volatile long websockets = 0;
+    protected static AtomicLong bytesIn = new AtomicLong();
+    protected static AtomicLong bytesOut = new AtomicLong();
+    protected static AtomicLong messagesIn = new AtomicLong();
+    protected static AtomicLong messagesOut = new AtomicLong();
+    protected static AtomicLong connections = new AtomicLong();
+    protected static AtomicLong blocks = new AtomicLong();
+    protected static AtomicLong requests = new AtomicLong();
+    protected static AtomicLong chunks = new AtomicLong();
+    protected static AtomicLong keepalives = new AtomicLong();
+    protected static AtomicLong idleTimeouts = new AtomicLong();
+    protected static AtomicLong clientErrors = new AtomicLong();
+    protected static AtomicLong serverErrors = new AtomicLong();
+    protected static AtomicLong websockets = new AtomicLong();
     protected static Map<WebServerHandler, WebServerHandler> openConnections = Maps.newConcurrentMap();
     protected static Average responseTime = new Average();
     protected static Average timeToFirstByte = new Average();
+    protected static Average queueTime = new Average();
     protected static volatile MicrotimingMode microtimingMode = MicrotimingMode.URI;
 
     /**
@@ -534,7 +536,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
      * @return the total bytes received via the http port
      */
     public static long getBytesIn() {
-        return bytesIn;
+        return bytesIn.get();
     }
 
     /**
@@ -543,7 +545,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
      * @return the total bytes sent via the http port
      */
     public static long getBytesOut() {
-        return bytesOut;
+        return bytesOut.get();
     }
 
     /**
@@ -552,7 +554,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
      * @return the total messages sent via the http port
      */
     public static long getMessagesIn() {
-        return messagesIn;
+        return messagesIn.get();
     }
 
     /**
@@ -561,7 +563,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
      * @return the total messages received via the http port
      */
     public static long getMessagesOut() {
-        return messagesOut;
+        return messagesOut.get();
     }
 
     /**
@@ -570,7 +572,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
      * @return the total number of connections opened on the http port
      */
     public static long getConnections() {
-        return connections;
+        return connections.get();
     }
 
     /**
@@ -579,7 +581,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
      * @return the total number of connections blocked via a firewall rule on the http port
      */
     public static long getBlockedConnections() {
-        return blocks;
+        return blocks.get();
     }
 
     /**
@@ -597,7 +599,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
      * @return the number of currently open websockets
      */
     public static long getNumberOfWebsockets() {
-        return websockets;
+        return websockets.get();
     }
 
     /**
@@ -606,7 +608,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
      * @return the total number of requests received
      */
     public static long getRequests() {
-        return requests;
+        return requests.get();
     }
 
     /**
@@ -615,7 +617,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
      * @return the total number of chunks received
      */
     public static long getChunks() {
-        return chunks;
+        return chunks.get();
     }
 
     /**
@@ -624,7 +626,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
      * @return the number of connections not closed in order to keep them alive.
      */
     public static long getKeepalives() {
-        return keepalives;
+        return keepalives.get();
     }
 
     /**
@@ -633,7 +635,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
      * @return the number of connections closed because they were found to be idle.
      */
     public static long getIdleTimeouts() {
-        return idleTimeouts;
+        return idleTimeouts.get();
     }
 
     /**
@@ -642,7 +644,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
      * @return the number of HTTP responses with an 4xx status code.
      */
     public static long getClientErrors() {
-        return clientErrors;
+        return clientErrors.get();
     }
 
     /**
@@ -651,7 +653,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
      * @return the number of HTTP responses with an 5xx status code.
      */
     public static long getServerErrors() {
-        return serverErrors;
+        return serverErrors.get();
     }
 
     /**
@@ -672,32 +674,42 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
         return timeToFirstByte.getAvg();
     }
 
+    /**
+     * Returns the average time waiting for a idle worker thead of the web server
+     *
+     * @return the average time spent waiting for a idle worker thead in milliseconds
+     */
+    public static double getAvgQueueTime() {
+        return queueTime.getAvg();
+    }
+
     @Override
     public void gather(MetricsCollector collector) {
-        collector.differentialMetric("http-bytes-in", "http-bytes-in", "HTTP Bytes-In", bytesIn / 1024d / 60, "KB/s");
+        collector.differentialMetric("http-bytes-in", "http-bytes-in", "HTTP Bytes-In", bytesIn.get() / 1024d / 60, "KB/s");
         collector.differentialMetric("http-bytes-out",
                                      "http-bytes-out",
                                      "HTTP Bytes-Out",
-                                     bytesOut / 1024d / 60,
+                                     bytesOut.get() / 1024d / 60,
                                      "KB/s");
-        collector.differentialMetric("http-connects", "http-connects", "HTTP Connects", connections, "/min");
-        collector.differentialMetric("http-requests", "http-requests", "HTTP Requests", requests, "/min");
-        collector.differentialMetric("http-blocks", "http-blocks", "HTTP Blocked Requests", blocks, "/min");
-        collector.differentialMetric("http-timeouts", "http-timeouts", "HTTP Idle Timeouts", idleTimeouts, "/min");
+        collector.differentialMetric("http-connects", "http-connects", "HTTP Connects", connections.get(), "/min");
+        collector.differentialMetric("http-requests", "http-requests", "HTTP Requests", requests.get(), "/min");
+        collector.differentialMetric("http-blocks", "http-blocks", "HTTP Blocked Requests", blocks.get(), "/min");
+        collector.differentialMetric("http-timeouts", "http-timeouts", "HTTP Idle Timeouts", idleTimeouts.get(), "/min");
         collector.differentialMetric("http-client-errors",
                                      "http-client-errors",
                                      "HTTP Client Errors (4xx)",
-                                     clientErrors,
+                                     clientErrors.get(),
                                      "/min");
         collector.differentialMetric("http-server-errors",
                                      "http-server-errors",
                                      "HTTP Server Errors (5xx)",
-                                     serverErrors,
+                                     serverErrors.get(),
                                      "/min");
         collector.metric("http-open-connections", "HTTP Open Connections", openConnections.size(), null);
         collector.metric("http-response-time", "HTTP Avg. Reponse Time", responseTime.getAndClear(), "ms");
         collector.metric("http-response-ttfb", "HTTP Avg. Time To First Byte", timeToFirstByte.getAndClear(), "ms");
-        collector.metric("websockets", "Open Websockets", websockets, null);
+        collector.metric("http-response-queue", "HTTP Avg. Queue Time", queueTime.getAndClear(), "ms");
+        collector.metric("websockets", "Open Websockets", websockets.get(), null);
     }
 
     /**

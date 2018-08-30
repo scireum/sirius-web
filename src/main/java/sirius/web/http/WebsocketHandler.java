@@ -58,7 +58,7 @@ public class WebsocketHandler extends ChannelDuplexHandler {
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
         if (websocketSession != null) {
             websocketSession.onWebsocketClosed();
-            WebServer.websockets--;
+            WebServer.websockets.decrementAndGet();
         }
 
         super.channelUnregistered(ctx);
@@ -77,7 +77,7 @@ public class WebsocketHandler extends ChannelDuplexHandler {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof HttpRequest && isWebsocketRequest((HttpRequest) msg)) {
             websocketSession = websocketDispatcher.createSession(ctx, (HttpRequest) msg);
-            WebServer.websockets++;
+            WebServer.websockets.incrementAndGet();
             setupWebsocketPipeline(ctx, msg);
             return;
         }
