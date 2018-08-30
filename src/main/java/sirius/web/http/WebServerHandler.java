@@ -179,9 +179,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                 if (WebServer.LOG.isFINE()) {
                     WebServer.LOG.FINE("IDLE: " + wc.getRequestedURI());
                 }
-                WebServer.idleTimeouts++;
-                if (WebServer.idleTimeouts < 0) {
-                    WebServer.idleTimeouts = 0;
+                if (WebServer.idleTimeouts.incrementAndGet() < 0) {
+                    WebServer.idleTimeouts.set(0);
                 }
                 ctx.channel().close();
             }
@@ -261,9 +260,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             }
             boolean last = msg instanceof LastHttpContent;
             if (!last) {
-                WebServer.chunks++;
-                if (WebServer.chunks < 0) {
-                    WebServer.chunks = 0;
+                if (WebServer.chunks.incrementAndGet() < 0) {
+                    WebServer.chunks.set(0);
                 }
             }
             if (currentContext.contentHandler != null) {
@@ -335,9 +333,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
      * Signals that a bad or incomplete request was received
      */
     private void signalBadRequest(ChannelHandlerContext ctx) {
-        WebServer.clientErrors++;
-        if (WebServer.clientErrors < 0) {
-            WebServer.clientErrors = 0;
+        if (WebServer.clientErrors.incrementAndGet() < 0) {
+            WebServer.clientErrors.set(0);
         }
         ctx.writeAndFlush(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST))
            .addListener(ChannelFutureListener.CLOSE);
@@ -453,9 +450,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
      */
     private boolean checkIfBlockedByIPFilter(ChannelHandlerContext ctx, HttpRequest req) {
         if (isBlocked(currentContext)) {
-            WebServer.blocks++;
-            if (WebServer.blocks < 0) {
-                WebServer.blocks = 0;
+            if (WebServer.blocks.incrementAndGet() < 0) {
+                WebServer.blocks.set(0);
             }
             if (WebServer.LOG.isFINE()) {
                 WebServer.LOG.FINE("BLOCK: " + req.uri());

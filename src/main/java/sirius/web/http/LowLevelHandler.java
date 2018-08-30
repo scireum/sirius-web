@@ -31,16 +31,14 @@ class LowLevelHandler extends ChannelDuplexHandler {
                         SocketAddress remoteAddress,
                         SocketAddress localAddress,
                         ChannelPromise future) throws Exception {
-        WebServer.connections++;
-        if (WebServer.connections < 0) {
-            WebServer.connections = 0;
+        if (WebServer.connections.incrementAndGet() < 0) {
+            WebServer.connections.set(0);
         }
         IPRange.RangeSet filter = WebServer.getIPFilter();
         if (!filter.isEmpty()) {
             if (!filter.accepts(((InetSocketAddress) remoteAddress).getAddress())) {
-                WebServer.blocks++;
-                if (WebServer.blocks < 0) {
-                    WebServer.blocks = 0;
+                if (WebServer.blocks.incrementAndGet() < 0) {
+                    WebServer.blocks.set(0);
                 }
                 ctx.channel().close();
                 future.setSuccess();
@@ -54,13 +52,11 @@ class LowLevelHandler extends ChannelDuplexHandler {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof ByteBuf) {
             int messageSize = ((ByteBuf) msg).readableBytes();
-            WebServer.bytesIn += messageSize;
-            if (WebServer.bytesIn < 0) {
-                WebServer.bytesIn = 0;
+            if (WebServer.bytesIn.addAndGet(messageSize) < 0) {
+                WebServer.bytesIn.set(0);
             }
-            WebServer.messagesIn++;
-            if (WebServer.messagesIn < 0) {
-                WebServer.messagesIn = 0;
+            if (WebServer.messagesIn.incrementAndGet() < 0) {
+                WebServer.messagesIn.set(0);
             }
             ctx.pipeline().get(WebServerHandler.class).inbound(messageSize);
         }
@@ -71,13 +67,11 @@ class LowLevelHandler extends ChannelDuplexHandler {
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         if (msg instanceof ByteBuf) {
             int messageSize = ((ByteBuf) msg).readableBytes();
-            WebServer.bytesOut += messageSize;
-            if (WebServer.bytesOut < 0) {
-                WebServer.bytesOut = 0;
+            if (WebServer.bytesOut.addAndGet(messageSize) < 0) {
+                WebServer.bytesOut.set(0);
             }
-            WebServer.messagesOut++;
-            if (WebServer.messagesOut < 0) {
-                WebServer.messagesOut = 0;
+            if (WebServer.messagesOut.incrementAndGet() < 0) {
+                WebServer.messagesOut.set(0);
             }
             ctx.pipeline().get(WebServerHandler.class).outbound(messageSize);
         }

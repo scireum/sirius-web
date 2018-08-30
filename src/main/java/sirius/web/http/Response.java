@@ -294,14 +294,12 @@ public class Response {
 
     private void updateStatistics(HttpResponseStatus status) {
         if (status.code() >= 500) {
-            WebServer.serverErrors++;
-            if (WebServer.serverErrors < 0) {
-                WebServer.serverErrors = 0;
+            if (WebServer.serverErrors.incrementAndGet() < 0) {
+                WebServer.serverErrors.set(0);
             }
         } else if (status.code() >= 400) {
-            WebServer.clientErrors++;
-            if (WebServer.clientErrors < 0) {
-                WebServer.clientErrors = 0;
+            if (WebServer.clientErrors.incrementAndGet() < 0) {
+                WebServer.clientErrors.set(0);
             }
         }
     }
@@ -425,9 +423,8 @@ public class Response {
             if (WebServer.LOG.isFINE()) {
                 WebServer.LOG.FINE("KEEP-ALIVE: " + wc.getRequestedURI());
             }
-            WebServer.keepalives++;
-            if (WebServer.keepalives < 0) {
-                WebServer.keepalives = 0;
+            if (WebServer.keepalives.incrementAndGet() < 0) {
+                WebServer.keepalives.set(0);
             }
         }
     }
