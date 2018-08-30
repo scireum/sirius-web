@@ -30,6 +30,7 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.async.TaskContext;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Watch;
+import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
@@ -38,6 +39,7 @@ import sirius.kernel.nls.NLS;
 import javax.net.ssl.SSLHandshakeException;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.TimeUnit;
@@ -50,7 +52,7 @@ import java.util.concurrent.TimeUnit;
  */
 class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnection {
 
-    private int numKeepAlive = 15;
+    private int numKeepAlive = maxKeepalive;
     private HttpRequest currentRequest;
     private WebContext currentContext;
     private CallContext currentCall;
@@ -74,6 +76,9 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
 
     @Part
     private static Firewall firewall;
+
+    @ConfigValue("http.maxKeepalive")
+    private static int maxKeepalive;
 
     /**
      * Creates a new instance and initializes some statistics.
@@ -192,10 +197,18 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
      * <p>
      * Internally we used a countdown, to limit the max number of keepalives for a connection. Calling this method
      * decrements the internal counter, therefore this must not be called several times per request.
+     * <p>
+     * For proxies however, we don't apply any limit to permit best resource utilization.
      *
      * @return <tt>true</tt> if keepalive is still supported, <tt>false</tt> otherwise.
      */
     public boolean shouldKeepAlive() {
+        if (!WebServer.getProxyIPs().isEmpty()) {
+            if (WebServer.getProxyIPs().accepts(((InetSocketAddress) this.remoteAddress).getAddress())) {
+                return true;
+            }
+        }
+
         return numKeepAlive-- > 0;
     }
 
@@ -316,9 +329,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         bytesOut = 0;
         inboundLatency.getAndClear();
         processLatency.getAndClear();
-        WebServer.requests++;
-        if (WebServer.requests < 0) {
-            WebServer.requests = 0;
+        if (WebServer.requests.incrementAndGet() < 0) {
+            WebServer.requests.set(0);
         }
 
         // Do some housekeeping...
@@ -602,7 +614,6 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         if (WebServer.LOG.isFINE() && currentContext != null) {
             WebServer.LOG.FINE("DISPATCHING: " + currentContext.getRequestedURI());
         }
-        currentContext.started = System.currentTimeMillis();
         dispatched = true;
         getPipeline().dispatch(currentContext);
         currentRequest = null;
