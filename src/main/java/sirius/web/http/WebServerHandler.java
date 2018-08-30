@@ -691,6 +691,10 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
 
     @Override
     public String getRemoteAddress() {
+        if (currentContext != null && currentContext.isValid()) {
+            return String.valueOf(currentContext.getRemoteIP());
+        }
+
         return String.valueOf(remoteAddress);
     }
 }
