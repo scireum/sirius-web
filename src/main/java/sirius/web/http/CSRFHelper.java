@@ -53,7 +53,7 @@ public class CSRFHelper {
     }
 
     private boolean isCSRFTokenOutdated(long lastCSRFRecompute) {
-        return Duration.between(Instant.ofEpochMilli(lastCSRFRecompute), Instant.now()).toMinutes()
-               > csrfTokenLifetime.toMinutes();
+        return Duration.between(Instant.ofEpochMilli(lastCSRFRecompute), Instant.now()).compareTo(csrfTokenLifetime)
+               > 0;
     }
 }

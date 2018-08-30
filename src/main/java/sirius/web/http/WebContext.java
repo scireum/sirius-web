@@ -1614,7 +1614,7 @@ public class WebContext implements SubContext {
 
     private boolean checkCSRFToken() {
         String requestToken = this.get(CSRFHelper.CSRF_TOKEN).asString();
-        String sessionToken = csrfHelper.getCSRFToken(this);
+        String sessionToken = getSessionValue(CSRFHelper.CSRF_TOKEN).asString();
 
         return Strings.isFilled(requestToken) && Strings.areEqual(requestToken, sessionToken);
     }
