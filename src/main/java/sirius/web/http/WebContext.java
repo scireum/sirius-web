@@ -258,6 +258,13 @@ public class WebContext implements SubContext {
     protected volatile long started = 0;
 
     /*
+     * Contains the timestamp this request was scheduled for execution.
+     * This can be used to measure the actual execution time without the wait time if the thread pool
+     * is fully utilized and requests are queued.
+     */
+    protected volatile long scheduled = 0;
+
+    /*
      * Contains the timestamp this request was commited (a response was created).
      * This can be used to actually measure the server performance and not the download speed of clients.
      */

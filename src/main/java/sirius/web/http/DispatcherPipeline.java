@@ -68,6 +68,7 @@ class DispatcherPipeline {
      * @param ctx the request to handle
      */
     public void dispatch(WebContext ctx) {
+        ctx.started = System.currentTimeMillis();
         tasks.executor(EXECUTOR_WEBSERVER)
              .dropOnOverload(() -> handleDrop(ctx))
              .fork(() -> dispatch(ctx, this::dispatch, CallContext.getCurrent().get(TaskContext.class)));
@@ -79,6 +80,7 @@ class DispatcherPipeline {
 
     private void dispatch(WebContext webContext, Consumer<WebContext> pipelineRoot, TaskContext context) {
         try {
+            webContext.scheduled = System.currentTimeMillis();
             context.setSubSystem(dispatcher.getClass().getSimpleName());
             dispatcher.dispatch(webContext, pipelineRoot, ctx -> {
                 if (next == null) {

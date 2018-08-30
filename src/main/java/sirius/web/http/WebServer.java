@@ -181,6 +181,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     protected static Map<WebServerHandler, WebServerHandler> openConnections = Maps.newConcurrentMap();
     protected static Average responseTime = new Average();
     protected static Average timeToFirstByte = new Average();
+    protected static Average queueTime = new Average();
     protected static volatile MicrotimingMode microtimingMode = MicrotimingMode.URI;
 
     /**
@@ -672,6 +673,15 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
         return timeToFirstByte.getAvg();
     }
 
+    /**
+     * Returns the average time waiting for a idle worker thead of the web server
+     *
+     * @return the average time spent waiting for a idle worker thead in milliseconds
+     */
+    public static double getAvgQueueTime() {
+        return queueTime.getAvg();
+    }
+
     @Override
     public void gather(MetricsCollector collector) {
         collector.differentialMetric("http-bytes-in", "http-bytes-in", "HTTP Bytes-In", bytesIn / 1024d / 60, "KB/s");
@@ -697,7 +707,8 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
         collector.metric("http-open-connections", "HTTP Open Connections", openConnections.size(), null);
         collector.metric("http-response-time", "HTTP Avg. Reponse Time", responseTime.getAndClear(), "ms");
         collector.metric("http-response-ttfb", "HTTP Avg. Time To First Byte", timeToFirstByte.getAndClear(), "ms");
-        collector.metric("websockets", "Open Websockets", websockets, null);
+        collector.metric("http-response-queue", "HTTP Avg. Queue Time", queueTime.getAndClear(), "ms");
+        collector.metric("websockets", "Open Websockets", websockets.get(), null);
     }
 
     /**

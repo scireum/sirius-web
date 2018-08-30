@@ -67,6 +67,7 @@ import java.util.Optional;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Represents a response which is used to reply to a HTTP request.
@@ -389,17 +390,27 @@ public class Response {
             callContext.getWatch().submitMicroTiming("HTTP", WebServer.microtimingMode.getMicrotimingKey(wc));
         }
         if (!wc.isLongCall() && wc.started > 0) {
-            long ttfbMillis = wc.committed - wc.started;
+            long queuedMillis = wc.scheduled - wc.started;
+            long ttfbMillis = wc.committed - wc.scheduled;
             long responseTimeMillis = System.currentTimeMillis() - wc.started;
 
-            WebServer.responseTime.addValue(responseTimeMillis);
+            WebServer.queueTime.addValue(queuedMillis);
             WebServer.timeToFirstByte.addValue(ttfbMillis);
+            WebServer.responseTime.addValue(responseTimeMillis);
 
             if (ttfbMillis > WebServer.getMaxTimeToFirstByte() && WebServer.getMaxTimeToFirstByte() > 0) {
-                WebServer.LOG.WARN("Long running request: %s (%s)%nMDC:%n%s%n",
-                                   wc.getRequestedURI(),
-                                   NLS.convertDuration(responseTimeMillis, true, true),
-                                   callContext);
+                WebServer.LOG.WARN(
+                        "Long running request: %s (Respnse Time: %s, Queue Time: %s, TTFB: %s)%nURL:%s%nParameters:%n%s%nMDC:%n%s%n",
+                        wc.getRequestedURI(),
+                        NLS.convertDuration(responseTimeMillis, true, true),
+                        NLS.convertDuration(queuedMillis, true, true),
+                        NLS.convertDuration(ttfbMillis, true, true),
+                        wc.getRequestedURL(),
+                        wc.getParameterNames()
+                          .stream()
+                          .map(param -> param + ": " + Strings.limit(wc.get(param).asString(), 50))
+                          .collect(Collectors.joining("\n")),
+                        callContext);
             }
         }
     }
