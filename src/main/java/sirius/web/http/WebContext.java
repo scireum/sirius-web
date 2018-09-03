@@ -1613,7 +1613,7 @@ public class WebContext implements SubContext {
         }
 
         if (!checkCSRFToken()) {
-            throw Exceptions.createHandled().withNLSKey("WebContext.invalidCSRFToken").handle();
+            throw Exceptions.handle().to(WebServer.LOG).withNLSKey("WebContext.invalidCSRFToken").handle();
         }
 
         return true;
