@@ -2027,12 +2027,23 @@ public class WebContext implements SubContext {
     }
 
     /**
+     * Returns a token which can be added to dynamic asset-URLS (/asset/dynamic/TOKEN/...).
+     * <p>
+     * As tagliatelle cannot call static methods, this is a copy of {@link #dynamicAssetToken()}.
+     *
+     * @return a random token which is guaranteed to be free of special chars (like / and the like)
+     */
+    public String getDynamicAssetToken() {
+        return dynamicAssetToken();
+    }
+
+    /**
      * Returns a token which can be added to dynamic asset-URLS (/asset/dynamic/TOKEN/...) to force a reload of the
      * specified resource.
      *
      * @return a random token which is guaranteed to be free of special chars (like / and the like)
      */
-    public String getDynamicAssetToken() {
+    public static String dynamicAssetToken() {
         return Product.getProduct().getUniqueVersionString();
     }
 
