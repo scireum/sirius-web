@@ -397,18 +397,22 @@ public class Response {
             WebServer.responseTime.addValue(responseTimeMillis);
 
             if (ttfbMillis > WebServer.getMaxTimeToFirstByte() && WebServer.getMaxTimeToFirstByte() > 0) {
-                WebServer.LOG.WARN(
-                        "Long running request: %s (Respnse Time: %s, Queue Time: %s, TTFB: %s)%nURL:%s%nParameters:%n%s%nMDC:%n%s%n",
-                        wc.getRequestedURI(),
-                        NLS.convertDuration(responseTimeMillis, true, true),
-                        NLS.convertDuration(queuedMillis, true, true),
-                        NLS.convertDuration(ttfbMillis, true, true),
-                        wc.getRequestedURL(),
-                        wc.getParameterNames()
-                          .stream()
-                          .map(param -> param + ": " + Strings.limit(wc.get(param).asString(), 50))
-                          .collect(Collectors.joining("\n")),
-                        callContext);
+                WebServer.LOG.WARN("Long running request: %s (Respnse Time: %s, Queue Time: %s, TTFB: %s)"
+                                   + "%nURL:%s"
+                                   + "%nParameters:"
+                                   + "%n%s"
+                                   + "%nMDC:"
+                                   + "%n%s%n",
+                                   wc.getRequestedURI(),
+                                   NLS.convertDuration(responseTimeMillis, true, true),
+                                   NLS.convertDuration(queuedMillis, true, true),
+                                   NLS.convertDuration(ttfbMillis, true, true),
+                                   wc.getRequestedURL(),
+                                   wc.getParameterNames()
+                                     .stream()
+                                     .map(param -> param + ": " + Strings.limit(wc.get(param).asString(), 50))
+                                     .collect(Collectors.joining("\n")),
+                                   callContext);
             }
         }
     }
