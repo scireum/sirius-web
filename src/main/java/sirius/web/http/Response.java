@@ -985,7 +985,7 @@ public class Response {
                                                                 wc.getRequest().uri())
                                         .handle();
 
-        if (wc.responseCommitted) {
+        if (wc == null || wc.responseCommitted) {
             if (ctx.channel().isOpen()) {
                 ctx.channel().close();
             }
