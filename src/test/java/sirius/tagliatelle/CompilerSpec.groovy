@@ -19,6 +19,7 @@ import sirius.tagliatelle.compiler.CompileError
 import sirius.tagliatelle.compiler.CompileException
 import sirius.tagliatelle.compiler.Compiler
 import sirius.web.resources.Resources
+import sirius.kernel.commons.Tuple;
 
 import java.time.LocalDate
 
@@ -288,5 +289,17 @@ class CompilerSpec extends BaseSpecification {
         then:
         basicallyEqual(result, expectedResult)
         basicallyEqual(resultCached, expectedResult)
+    }
+
+    def "casting to inner class works"() {
+        given:
+        InnerClassTestObject.InnerClass innerClass = new InnerClassTestObject.InnerClass()
+        innerClass.setTest("test")
+        String expectedResult = "test"
+        when:
+        String result = tagliatelle.resolve("templates/inner-class.html.pasta")
+                                   .get().renderToString(Tuple.create(innerClass, innerClass))
+        then:
+        basicallyEqual(result, expectedResult)
     }
 }
