@@ -533,7 +533,7 @@ class Parser extends InputProcessor {
         int offset = 0;
         while (true) {
             Char current = reader.next(offset);
-            if (!(current.isLetter() || current.is('_') || current.is('.') || current.isDigit())) {
+            if (!(current.isLetter() || current.is('_') || current.is('.') || current.is('$') || current.isDigit())) {
                 break;
             }
             sb.append(current.getValue());
