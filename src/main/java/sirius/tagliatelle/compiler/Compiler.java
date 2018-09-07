@@ -420,7 +420,7 @@ public class Compiler extends InputProcessor {
     private void parseAttributes(TagHandler handler) {
         while (true) {
             skipWhitespaces();
-            if (reader.current().isEndOfInput() || reader.current().is('>') || reader.current().is('/')) {
+            if (reader.current().isEndOfInput() || reader.current().is('>','/')) {
                 break;
             }
             String name = parseName();

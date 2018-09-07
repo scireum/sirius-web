@@ -533,7 +533,7 @@ class Parser extends InputProcessor {
         int offset = 0;
         while (true) {
             Char current = reader.next(offset);
-            if (!(current.isLetter() || current.is('_') || current.is('.') || current.is('$') || current.isDigit())) {
+            if (!isValidClassNameChar(current)) {
                 break;
             }
             sb.append(current.getValue());
@@ -554,6 +554,10 @@ class Parser extends InputProcessor {
 
         reader.consume(offset);
         return new ConstantClass(context.resolveClass(pos, literal));
+    }
+
+    private boolean isValidClassNameChar(Char current) {
+        return current.isLetter() || current.isDigit() || current.is('_', '.', '$');
     }
 
     private Expression tryEnumLiteral(String literal, int offset) {

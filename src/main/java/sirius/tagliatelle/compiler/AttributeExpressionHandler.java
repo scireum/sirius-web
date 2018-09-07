@@ -8,7 +8,6 @@
 
 package sirius.tagliatelle.compiler;
 
-import org.jetbrains.annotations.NotNull;
 import parsii.tokenizer.Position;
 import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.emitter.CompositeEmitter;
@@ -21,6 +20,8 @@ import sirius.tagliatelle.expression.ConstantNull;
 import sirius.tagliatelle.expression.EqualsOperation;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.expression.ReadLocal;
+
+import javax.annotation.Nonnull;
 
 /**
  * Parses an attribute expression.
@@ -67,7 +68,7 @@ public class AttributeExpressionHandler extends ExpressionHandler {
         return translateLiteralExpression(compiler, start, attributeName, condition);
     }
 
-    @NotNull
+    @Nonnull
     private Emitter translateLiteralExpression(Compiler compiler,
                                                Position start,
                                                String attributeName,

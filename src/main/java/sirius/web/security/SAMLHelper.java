@@ -11,8 +11,6 @@ package sirius.web.security;
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -28,6 +26,8 @@ import sirius.kernel.xml.StructuredNode;
 import sirius.kernel.xml.XMLStructuredOutput;
 import sirius.web.http.WebContext;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.xml.crypto.AlgorithmMethod;
 import javax.xml.crypto.KeySelector;
 import javax.xml.crypto.KeySelectorException;
@@ -274,7 +274,7 @@ public class SAMLHelper {
      * @return the effective reference URI
      */
     @SuppressWarnings("unchecked")
-    @NotNull
+    @Nonnull
     private String getReferenceBeingSigned(XMLSignature signature) {
         return ((List<Reference>) signature.getSignedInfo().getReferences()).stream()
                                                                             .findFirst()
