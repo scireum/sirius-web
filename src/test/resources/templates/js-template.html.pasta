@@ -2,4 +2,5 @@
     <a class="link" href="#">Test'1234
         567\89\\
     </a>
+    </script ><script>alert('XSS!');</script>
 </w:jsTemplate>

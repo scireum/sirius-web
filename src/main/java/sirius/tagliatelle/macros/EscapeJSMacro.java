@@ -49,7 +49,8 @@ public class EscapeJSMacro implements Macro {
                     .replace("\\", "\\\\")
                     .replaceAll("\\r", "\\\\r")
                     .replaceAll("\\n", "\\\\n")
-                    .replace("'", "\\'");
+                    .replace("'", "\\'")
+                    .replace("/", "\\/");
     }
 
     @Override

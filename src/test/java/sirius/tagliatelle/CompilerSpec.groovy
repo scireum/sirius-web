@@ -19,7 +19,7 @@ import sirius.tagliatelle.compiler.CompileError
 import sirius.tagliatelle.compiler.CompileException
 import sirius.tagliatelle.compiler.Compiler
 import sirius.web.resources.Resources
-import sirius.kernel.commons.Tuple;
+import sirius.kernel.commons.Tuple
 
 import java.time.LocalDate
 
@@ -241,7 +241,7 @@ class CompilerSpec extends BaseSpecification {
         basicallyEqual(result, expectedResult)
     }
 
-    def "jsTemplate taglib works"() {
+    def "jsTemplate taglib works and prevents XSS"() {
         given:
         String expectedResult = resources.resolve("templates/js-template.html").get().getContentAsString()
         when:
