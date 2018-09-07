@@ -116,8 +116,7 @@
                     'background-position': '100% -22px'
                 });
 
-                ___if(!call.getUserAgent().isInternetExplorer())
-                {
+                ___if(!call.getUserAgent().isInternetExplorer()) {
                     var placeholder = field.attr('data-searchtext');
                     if (typeof placeholder === 'undefined' || placeholder === '') {
                         placeholder = '@i18n("template.html.placeholder")';
