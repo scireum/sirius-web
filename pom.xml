@@ -42,7 +42,7 @@
         <dependency>
             <groupId>com.scireum</groupId>
             <artifactId>server-sass</artifactId>
-            <version>4.2.1</version>
+            <version>5.0</version>
         </dependency>
 
         <!-- Used as chosen JSON implementation -->
