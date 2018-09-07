@@ -108,6 +108,11 @@ public class TagliatelleController implements Controller {
         }
     }
 
+    /**
+     * Provides some statistics and metrics for the internals of tagliatelle.
+     *
+     * @param ctx the request being handled
+     */
     @Routed("/system/tags/state")
     @Permission(PERMISSION_SYSTEM_TAGS_STATE)
     public void tagState(WebContext ctx) {

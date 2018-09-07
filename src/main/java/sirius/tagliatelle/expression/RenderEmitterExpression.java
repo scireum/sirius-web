@@ -22,6 +22,11 @@ public class RenderEmitterExpression implements Expression {
 
     private InlineTemplateEmitter emitter;
 
+    /**
+     * Creates an expression with evaluates to the result of the given emitter.
+     *
+     * @param emitter the emitter to wrap
+     */
     public RenderEmitterExpression(InlineTemplateEmitter emitter) {
         this.emitter = emitter;
     }
