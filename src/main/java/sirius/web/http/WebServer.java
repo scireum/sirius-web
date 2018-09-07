@@ -685,7 +685,11 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
 
     @Override
     public void gather(MetricsCollector collector) {
-        collector.differentialMetric("http-bytes-in", "http-bytes-in", "HTTP Bytes-In", bytesIn.get() / 1024d / 60, "KB/s");
+        collector.differentialMetric("http-bytes-in",
+                                     "http-bytes-in",
+                                     "HTTP Bytes-In",
+                                     bytesIn.get() / 1024d / 60,
+                                     "KB/s");
         collector.differentialMetric("http-bytes-out",
                                      "http-bytes-out",
                                      "HTTP Bytes-Out",
@@ -694,7 +698,11 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
         collector.differentialMetric("http-connects", "http-connects", "HTTP Connects", connections.get(), "/min");
         collector.differentialMetric("http-requests", "http-requests", "HTTP Requests", requests.get(), "/min");
         collector.differentialMetric("http-blocks", "http-blocks", "HTTP Blocked Requests", blocks.get(), "/min");
-        collector.differentialMetric("http-timeouts", "http-timeouts", "HTTP Idle Timeouts", idleTimeouts.get(), "/min");
+        collector.differentialMetric("http-timeouts",
+                                     "http-timeouts",
+                                     "HTTP Idle Timeouts",
+                                     idleTimeouts.get(),
+                                     "/min");
         collector.differentialMetric("http-client-errors",
                                      "http-client-errors",
                                      "HTTP Client Errors (4xx)",

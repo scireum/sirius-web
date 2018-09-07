@@ -759,7 +759,7 @@ public class WebContext implements SubContext {
      */
     public List<String> getSessionKeys() {
         if (session == null) {
-            return Collections.emptyList();
+            initSession();
         }
         return Lists.newArrayList(session.keySet());
     }
@@ -768,6 +768,9 @@ public class WebContext implements SubContext {
      * Clears (invalidated) the client session by removing all values.
      */
     public void clearSession() {
+        if (session == null) {
+            session = new HashMap<>();
+        }
         if (session != null) {
             session.clear();
             sessionModified = true;

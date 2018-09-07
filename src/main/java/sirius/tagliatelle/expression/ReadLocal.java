@@ -9,6 +9,7 @@
 package sirius.tagliatelle.expression;
 
 import sirius.tagliatelle.rendering.LocalRenderContext;
+
 /**
  * Performs a read on the local stack.
  *

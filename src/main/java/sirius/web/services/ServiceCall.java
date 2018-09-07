@@ -41,11 +41,10 @@ public abstract class ServiceCall {
      */
     public HandledException handle(Throwable error) {
         return Exceptions.handle()
-                .to(ServiceCall.LOG)
-                .error(error)
-                .withSystemErrorMessage("Service call to '%s' failed: %s (%s)",
-                        ctx.getRequestedURI())
-                .handle();
+                         .to(ServiceCall.LOG)
+                         .error(error)
+                         .withSystemErrorMessage("Service call to '%s' failed: %s (%s)", ctx.getRequestedURI())
+                         .handle();
     }
 
     /**
@@ -144,8 +143,8 @@ public abstract class ServiceCall {
 
             if (ctx.isResponseCommitted()) {
                 ServiceCall.LOG.WARN("Cannot send service error for: %s. "
-                                + "As a partially successful response has already been created and committed!",
-                        ctx.getRequest().uri());
+                                     + "As a partially successful response has already been created and committed!",
+                                     ctx.getRequest().uri());
 
                 // Force underlying request / response to be closed...
                 ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, he);

@@ -50,7 +50,8 @@ public class WebsocketHandler extends ChannelDuplexHandler {
             Exceptions.handle()
                       .to(WebServer.LOG)
                       .error(e)
-                      .withSystemErrorMessage("Received an error for a websocket - %s (%s)").handle();
+                      .withSystemErrorMessage("Received an error for a websocket - %s (%s)")
+                      .handle();
         }
     }
 

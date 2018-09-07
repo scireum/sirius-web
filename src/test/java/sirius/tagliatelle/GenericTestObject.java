@@ -19,5 +19,4 @@ public class GenericTestObject<X> {
     public Amount genericTest(Amount x) {
         return x.times(Amount.MINUS_ONE);
     }
-
 }

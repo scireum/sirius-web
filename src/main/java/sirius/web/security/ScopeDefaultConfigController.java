@@ -58,6 +58,9 @@ public class ScopeDefaultConfigController extends BasicController {
     public void config(WebContext ctx, String name) {
         List<String> files = ScopeInfo.getDefaultScopeConfigFiles();
         ctx.respondWith()
-           .template("templates/system/scope-config.html.pasta", name, files, ScopeInfo.getDefaulScopeConfigContents(name));
+           .template("templates/system/scope-config.html.pasta",
+                     name,
+                     files,
+                     ScopeInfo.getDefaulScopeConfigContents(name));
     }
 }

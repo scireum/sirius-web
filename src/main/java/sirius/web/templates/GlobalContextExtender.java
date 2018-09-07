@@ -29,5 +29,4 @@ public interface GlobalContextExtender {
      * @param globalParameterCollector the collector to be supplied with the variable name and value.
      */
     void collectScripting(BiConsumer<String, Object> globalParameterCollector);
-
 }

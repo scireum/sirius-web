@@ -204,7 +204,7 @@ public class GlobalRenderContext {
     /**
      * Emits everything which is invoked from within the callback into an unescaped string.
      *
-     * @param callback     the callback which will invoke emitters.
+     * @param callback the callback which will invoke emitters.
      * @return the contents which were emitted within the <tt>callback</tt>
      */
     public String emitToString(RenderCall callback) {

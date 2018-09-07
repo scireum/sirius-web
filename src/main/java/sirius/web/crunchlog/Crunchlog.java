@@ -144,9 +144,9 @@ public class Crunchlog {
          */
         @CheckReturnValue
         public LogBuilder set(String key, Object value) {
-           if (context == null) {
-               throw new IllegalArgumentException("LogBuilder of Crunchlog was already submitted.");
-           }
+            if (context == null) {
+                throw new IllegalArgumentException("LogBuilder of Crunchlog was already submitted.");
+            }
 
             context.set(key, value);
             return this;

@@ -241,7 +241,7 @@ public class MethodCall extends Call {
         }
 
         // Try to find an appropriate method using coercions known to the system...
-        for (Method m: type.getMethods()) {
+        for (Method m : type.getMethods()) {
             if (signatureMatch(m, name, parameterTypes)) {
                 if (checkSandbox(m)) {
                     return m;

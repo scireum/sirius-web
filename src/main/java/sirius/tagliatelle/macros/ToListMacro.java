@@ -32,8 +32,7 @@ public class ToListMacro implements Macro {
     @Override
     public void verifyArguments(List<Expression> args) {
         if (args.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Expected at least one parameter");
+            throw new IllegalArgumentException("Expected at least one parameter");
         }
     }
 
