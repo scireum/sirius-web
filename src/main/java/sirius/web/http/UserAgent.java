@@ -33,6 +33,8 @@ public class UserAgent {
     private static final String BLACKBERRY_10 = "bb10";
     private static final String WINDOWS = "windows";
     private static final String ARM = "arm";
+    private static final String INTERNET_EXPLORER = "trident";
+    private static final String MS_EDGE = "edge";
 
     private String userAgentString;
 
@@ -40,6 +42,8 @@ public class UserAgent {
     private boolean tablet = false;
     private boolean android = false;
     private boolean iOS = false;
+    private boolean internetExplorer = false;
+    private boolean msEdge = false;
 
     /**
      * Creates a new instance based on the given user agent string.
@@ -75,6 +79,9 @@ public class UserAgent {
     }
 
     private boolean isWindowsDevice(String lowerCaseUserAgent) {
+        internetExplorer = lowerCaseUserAgent.contains(INTERNET_EXPLORER);
+        msEdge = lowerCaseUserAgent.contains(MS_EDGE);
+
         if (lowerCaseUserAgent.contains(WINDOWS)) {
             if (lowerCaseUserAgent.contains(PHONE)) {
                 phone = true;
@@ -168,6 +175,24 @@ public class UserAgent {
      */
     public boolean isIOS() {
         return iOS;
+    }
+
+    /**
+     * Determines whether the user agent hints to an internet explorer browser.
+     *
+     * @return whether the user agent hints to an internet explorer browser
+     */
+    public boolean isInternetExplorer() {
+        return internetExplorer;
+    }
+
+    /**
+     * Determines whether the user agent hints to an microsoft edge browser.
+     *
+     * @return whether the user agent hints to an microsoft edge browser
+     */
+    public boolean isMsEdge() {
+        return msEdge;
     }
 
     /**

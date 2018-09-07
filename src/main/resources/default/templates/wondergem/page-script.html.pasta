@@ -115,17 +115,29 @@
                     'background-repeat': 'no-repeat',
                     'background-position': '100% -22px'
                 });
-                var placeholder = field.attr('data-searchtext');
-                if (typeof placeholder === 'undefined' || placeholder === '') {
-                    placeholder = '@i18n("template.html.placeholder")';
+
+                ___if(!call.getUserAgent().isInternetExplorer())
+                {
+                    var placeholder = field.attr('data-searchtext');
+                    if (typeof placeholder === 'undefined' || placeholder === '') {
+                        placeholder = '@i18n("template.html.placeholder")';
+                    }
+                    search.attr('placeholder', placeholder);
                 }
-                search.attr('placeholder', placeholder);
             });
+        });
+
+        field.on('select2:unselect', function(e) {
+            $(this).html('<option value=""></option>');
+            e.preventDefault();
+            e.stopPropagation();
         });
 
         field.select2({
             allowClear: field.data('optional'),
-            placeholder: '@i18n("template.html.select2.selection")',
+            ___if(!call.getUserAgent().isInternetExplorer()) {
+                placeholder: '@i18n("template.html.select2.selection")',
+            }
             dropdownParent: field.parent(),
             minimumInputLength: 0,
             tags: field.data('dynamic-option'),
@@ -188,7 +200,9 @@
 
             field.select2({
                 allowClear: field.data('optional'),
-                placeholder: '@i18n("template.html.select2.selection")',
+                ___if(!call.getUserAgent().isInternetExplorer()) {
+                    placeholder: '@i18n("template.html.select2.selection")',
+                }
                 dropdownParent: field.parent(),
                 tags: field.data('dynamic-option'),
                 minimumResultsForSearch: 10,
