@@ -74,6 +74,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
@@ -713,11 +714,13 @@ public class WebContext implements SubContext {
             initSession();
         }
         if (value == null) {
-            session.remove(key);
+            String previous = session.remove(key);
+            sessionModified = Strings.isFilled(previous);
         } else {
-            session.put(key, NLS.toMachineString(value));
+            String newValue = NLS.toMachineString(value);
+            String previous = session.put(key, newValue);
+            sessionModified = !Objects.equals(previous, newValue);
         }
-        sessionModified = true;
     }
 
     /**
