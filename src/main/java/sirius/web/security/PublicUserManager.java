@@ -35,7 +35,6 @@ public class PublicUserManager extends GenericUserManager {
 
     private static final String PUBLIC_PLACEHOLDER = "(public)";
     private final UserInfo user;
-    private final UserInfo trustedUser;
 
     /**
      * Used to create <tt>public</tt> user managers.
@@ -56,20 +55,12 @@ public class PublicUserManager extends GenericUserManager {
                                     .withUsername(PUBLIC_PLACEHOLDER)
                                     .withPermissions(transformRoles(Collections.emptyList(), false))
                                     .build();
-        this.trustedUser = UserInfo.Builder.createUser(PUBLIC_PLACEHOLDER)
-                                           .withUsername(PUBLIC_PLACEHOLDER)
-                                           .withPermissions(transformRoles(Collections.emptyList(), false))
-                                           .build();
     }
 
     @Nonnull
     @Override
     public UserInfo bindToRequest(@Nonnull WebContext ctx) {
-        if (ctx.isTrusted()) {
-            return trustedUser;
-        } else {
-            return user;
-        }
+        return user;
     }
 
     @Override

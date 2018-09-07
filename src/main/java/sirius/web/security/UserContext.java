@@ -19,6 +19,7 @@ import sirius.kernel.di.std.Parts;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
 import sirius.web.controller.Message;
+import sirius.web.http.UserMessagesCache;
 import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
@@ -58,6 +59,9 @@ public class UserContext implements SubContext {
 
     @Part
     private static ScopeDetector detector;
+
+    @Part
+    private static UserMessagesCache userMessagesCache;
 
     @Parts(MessageProvider.class)
     private static Collection<MessageProvider> messageProviders;
@@ -276,7 +280,7 @@ public class UserContext implements SubContext {
      * @return a list of messages to be shown to the user
      */
     public List<Message> getMessages() {
-        CallContext.getCurrent().get(WebContext.class).restoreCachedUserMessages();
+        userMessagesCache.restoreCachedUserMessages(CallContext.getCurrent().get(WebContext.class));
 
         if (!Sirius.isStartedAsTest()) {
             getScope().tryAs(MaintenanceInfo.class)
