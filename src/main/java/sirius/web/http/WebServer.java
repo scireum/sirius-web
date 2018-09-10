@@ -175,7 +175,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     protected static AtomicLong clientErrors = new AtomicLong();
     protected static AtomicLong serverErrors = new AtomicLong();
     protected static AtomicLong websockets = new AtomicLong();
-    protected static Map<WebServerHandler, WebServerHandler> openConnections = Maps.newConcurrentMap();
+    protected static Map<WebServerHandler, ActiveHTTPConnection> openConnections = Maps.newConcurrentMap();
     protected static Average responseTime = new Average();
     protected static Average timeToFirstByte = new Average();
     protected static Average queueTime = new Average();
@@ -236,7 +236,6 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
 
         return proxyRanges;
     }
-
 
     /**
      * Tries to determine the effective remote IP for the given context and request.
@@ -761,9 +760,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
 
         @Override
         public void runTimer() throws Exception {
-            for (WebServerHandler handler : openConnections.values()) {
-                handler.updateBandwidth();
-            }
+            openConnections.keySet().forEach(WebServerHandler::updateBandwidth);
         }
     }
 
@@ -788,7 +785,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
      */
     @SuppressWarnings("unchecked")
     public static Collection<ActiveHTTPConnection> getOpenConnections() {
-        return (Collection<ActiveHTTPConnection>) (Collection<? extends ActiveHTTPConnection>) openConnections.values();
+        return openConnections.values();
     }
 
     /**
