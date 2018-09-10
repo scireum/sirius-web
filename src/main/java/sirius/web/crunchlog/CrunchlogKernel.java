@@ -109,25 +109,27 @@ public class CrunchlogKernel extends BackgroundLoop implements Command, Stoppabl
     }
 
     @Override
-    protected void doWork() throws Exception {
+    protected String doWork() throws Exception {
         if (buffer.isEmpty()) {
-            return;
+            return null;
         }
 
         if (!ensureWriterIsReady()) {
             buffer.clear();
-            return;
+            return null;
         }
 
         try {
+            int numWritten = 0;
             while (TaskContext.get().isActive()) {
                 Context line = buffer.poll();
                 if (line == null) {
-                    return;
+                    return "Crunchlogs written: " + numWritten;
                 }
                 String lineAsString = JSON.toJSONString(line);
                 currentWriter.write(lineAsString);
                 currentWriter.write("\n");
+                numWritten++;
             }
 
             currentWriter.flush();
@@ -140,6 +142,7 @@ public class CrunchlogKernel extends BackgroundLoop implements Command, Stoppabl
             Exceptions.handle(Crunchlog.LOG, e);
             buffer.clear();
         }
+        return null;
     }
 
     /**

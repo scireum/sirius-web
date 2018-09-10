@@ -14,7 +14,7 @@
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
     <properties>
-        <sirius.kernel>12.0-rc16</sirius.kernel>
+        <sirius.kernel>12.0-rc19</sirius.kernel>
     </properties>
 
     <dependencies>
