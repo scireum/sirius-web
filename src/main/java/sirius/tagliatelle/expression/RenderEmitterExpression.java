@@ -23,7 +23,7 @@ public class RenderEmitterExpression implements Expression {
     private InlineTemplateEmitter emitter;
 
     /**
-     * Creates an expression with evaluates to the result of the given emitter.
+     * Creates an expression which evaluates to the result of the given emitter.
      *
      * @param emitter the emitter to wrap
      */

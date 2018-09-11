@@ -783,7 +783,6 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
      *
      * @return a list of all currently open connections
      */
-    @SuppressWarnings("unchecked")
     public static Collection<ActiveHTTPConnection> getOpenConnections() {
         return openConnections.values();
     }

@@ -14,7 +14,6 @@ import sirius.kernel.Sirius;
 import sirius.kernel.cache.Cache;
 import sirius.kernel.cache.CacheEntry;
 import sirius.kernel.cache.CacheManager;
-import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
@@ -347,8 +346,6 @@ public class Tagliatelle {
         return null;
     }
 
-    @SuppressWarnings("squid:S2440")
-    @Explain("False positive")
     private Template compileTemplate(String path, Resource resource, @Nullable CompilationContext parentContext)
             throws CompileException {
         CompilationContext compilationContext = createCompilationContext(path, resource, parentContext);

@@ -8,7 +8,6 @@
 
 package sirius.web.templates;
 
-import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
@@ -37,8 +36,6 @@ public class TagliatelleContentHandler implements ContentHandler {
     @Part
     private Tagliatelle tagliatelle;
 
-    @SuppressWarnings("squid:S2440")
-    @Explain("False positive")
     protected Template getTemplate(Generator generator) throws CompileException {
         if (Strings.isFilled(generator.getTemplateCode())) {
             Compiler compiler = new Compiler(tagliatelle.createCompilationContext("inline", null, null),
