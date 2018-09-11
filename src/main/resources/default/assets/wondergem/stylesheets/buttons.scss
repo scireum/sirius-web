@@ -49,9 +49,17 @@ $linkInfoHover:                 darken($btnInfoBackground, 15%);
   color: $white;
   background-color: $btnBackground;
   border: 0;
-  &:hover {
-    color: $white;
-  }
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn:hover,
+.btn:focus,
+.btn:active,
+.btn.active,
+.btn:active:focus,
+.btn.active:focus {
+  color: $white;
 }
 
 //.btn-large is now .btn-lg TODO: change in Templates
@@ -59,13 +67,30 @@ $linkInfoHover:                 darken($btnInfoBackground, 15%);
 
 // Set the backgrounds
 // -------------------------
+
+.btn-default {
+  background-color: $btnBackground;
+}
+
+.btn-default:hover,
+.btn-default:focus,
+.btn-default:active,
+.btn-default.active,
+.btn-default:active:focus,
+.btn-default.active:focus {
+  background-color: $btnBackgroundHover;
+}
+
 .btn-primary {
   background-color: $btnPrimaryBackground;
 }
 
 .btn-primary:hover,
+.btn-primary:focus,
 .btn-primary:active,
-.btn-primary.active {
+.btn-primary.active,
+.btn-primary:active:focus,
+.btn-primary.active:focus {
   background-color: $btnPrimaryBackgroundHover;
 }
 
@@ -74,44 +99,63 @@ $linkInfoHover:                 darken($btnInfoBackground, 15%);
   background-color: $btnWarningBackground;
 }
 .btn-warning:hover,
+.btn-warning:focus,
 .btn-warning:active,
-.btn-warning.active {
+.btn-warning.active,
+.btn-warning:active:focus,
+.btn-warning.active:focus {
   background-color: $btnWarningBackgroundHover;
 }
+
 // Danger and error appear as red
 .btn-danger {
   background-color: $btnDangerBackground;
 }
 .btn-danger:hover,
+.btn-danger:focus,
 .btn-danger:active,
-.btn-danger.active {
+.btn-danger.active,
+.btn-danger:active:focus,
+.btn-danger.active:focus {
   background-color: $btnDangerBackgroundHover;
 }
+
 // Success appears as green
 .btn-success {
   background-color: $btnSuccessBackground;
 }
 .btn-success:hover,
+.btn-success:focus,
 .btn-success:active,
-.btn-success.active {
+.btn-success.active,
+.btn-success:active:focus,
+.btn-success.active:focus {
   background-color: $btnSuccessBackgroundHover;
 }
+
 // Info appears as a neutral blue
 .btn-info {
   background-color: $btnInfoBackground;
 }
 .btn-info:hover,
+.btn-info:focus,
 .btn-info:active,
-.btn-info.active {
+.btn-info.active,
+.btn-info:active:focus,
+.btn-info.active:focus {
   background-color: $btnInfoBackgroundHover;
 }
+
 // Inverse appears as dark gray
 .btn-inverse {
   background-color: $btnInverseBackground;
 }
 .btn-inverse:hover,
+.btn-inverse:focus,
 .btn-inverse:active,
-.btn-inverse.active {
+.btn-inverse.active,
+.btn-inverse:active:focus,
+.btn-inverse.active:focus {
   background-color: $btnInverseBackgroundHover;
 }
 
