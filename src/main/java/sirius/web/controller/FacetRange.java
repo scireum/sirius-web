@@ -21,6 +21,7 @@ public class FacetRange {
 
     /**
      * Creates a new range with the given min and max values.
+     *
      * @param min smallest available value
      * @param max the largest available value
      */

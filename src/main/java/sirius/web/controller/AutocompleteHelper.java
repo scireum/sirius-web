@@ -165,6 +165,12 @@ public class AutocompleteHelper {
      * Called to generate completions for a given query.
      */
     public interface ItemSearch {
+        /**
+         * Invoked to generate completions.
+         *
+         * @param query  the input provided by the user
+         * @param result the consumer to be supplied with completions for the autocomplete
+         */
         void search(String query, Consumer<Completion> result);
     }
 

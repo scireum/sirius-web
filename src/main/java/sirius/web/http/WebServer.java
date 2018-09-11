@@ -12,6 +12,7 @@ import com.google.common.collect.Maps;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -32,6 +33,7 @@ import sirius.kernel.Startable;
 import sirius.kernel.Stoppable;
 import sirius.kernel.async.Operation;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.ConfigValue;
@@ -44,7 +46,9 @@ import sirius.kernel.health.metrics.MetricProvider;
 import sirius.kernel.health.metrics.MetricsCollector;
 import sirius.kernel.timer.EveryTenSeconds;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
@@ -144,21 +148,13 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     private static String proxyIPs;
     private static IPRange.RangeSet proxyRanges;
 
-    /**
-     * Contains a list of IP ranges which are trusted. This rule will not change the processing of requests, it will
-     * only set the return value of {@link WebContext#isTrusted()}. The format accepted by this field is defined by
-     * {@link IPRange#paraseRangeSet(String)}.
-     *
-     * @see IPRange#paraseRangeSet(String)
-     */
-    @ConfigValue("http.firewall.trustedIPs")
-    private static String trustedIPs;
-    private static IPRange.RangeSet trustedRanges;
-
     @Part
     private GlobalContext ctx;
 
     private static HttpDataFactory httpDataFactory;
+
+    private static final String UNKNOWN_FORWARDED_FOR_HOST = "unknown";
+    private static final String HEADER_X_FORWARDED_FOR = "X-Forwarded-For";
 
     /**
      * Indicates that netty itself will compute the optimal number of threads in the event loop
@@ -179,7 +175,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     protected static AtomicLong clientErrors = new AtomicLong();
     protected static AtomicLong serverErrors = new AtomicLong();
     protected static AtomicLong websockets = new AtomicLong();
-    protected static Map<WebServerHandler, WebServerHandler> openConnections = Maps.newConcurrentMap();
+    protected static Map<WebServerHandler, ActiveHTTPConnection> openConnections = Maps.newConcurrentMap();
     protected static Average responseTime = new Average();
     protected static Average timeToFirstByte = new Average();
     protected static Average queueTime = new Average();
@@ -218,33 +214,6 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     }
 
     /**
-     * Returns all trusted IPs as {@link IPRange.RangeSet}
-     *
-     * @return a range set describing all trusted ranges
-     */
-    protected static IPRange.RangeSet getTrustedRanges() {
-        if (trustedRanges == null) {
-            try {
-                trustedRanges = IPRange.paraseRangeSet(trustedIPs);
-                // If no trust range is given, we trust nobody but good old LOCALHOST....This seems to be a better
-                // alternative than trusting everybody
-                if (trustedRanges.isEmpty()) {
-                    trustedRanges = IPRange.LOCALHOST;
-                }
-            } catch (Exception e) {
-                Exceptions.handle()
-                          .to(LOG)
-                          .error(e)
-                          .withSystemErrorMessage("Error parsing config value: 'http.firewall.trustedIPs': %s (%s)")
-                          .handle();
-                trustedRanges = IPRange.LOCALHOST;
-            }
-        }
-
-        return trustedRanges;
-    }
-
-    /**
      * Returns all proxy IPs as {@link IPRange.RangeSet}
      *
      * @return a range set describing all proxy ranges. This is probably just a single IP addressed, however, using
@@ -266,6 +235,69 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
         }
 
         return proxyRanges;
+    }
+
+    /**
+     * Tries to determine the effective remote IP for the given context and request.
+     * <p>
+     * This is the remote address of the channel. However, if recognized as a proxy,
+     * we use the last IP address given in the X-Forarded-For header.
+     *
+     * @param ctx     the channel context used to determine the physical IP
+     * @param request the request used to read the appropriate headers for reverse proxies
+     * @return the effective remote address of the client
+     */
+    public static InetAddress determineRemoteIP(ChannelHandlerContext ctx, HttpRequest request) {
+        if (ctx == null || request == null) {
+            try {
+                return InetAddress.getLocalHost();
+            } catch (UnknownHostException e) {
+                throw Exceptions.handle(e);
+            }
+        }
+
+        InetAddress ip = ((InetSocketAddress) ctx.channel().remoteAddress()).getAddress();
+        return applyProxyIPs(ip, request);
+    }
+
+    private static InetAddress applyProxyIPs(InetAddress ip, HttpRequest request) {
+        if (WebServer.getProxyIPs().isEmpty()) {
+            return ip;
+        }
+
+        if (!WebServer.getProxyIPs().accepts(ip)) {
+            return ip;
+        }
+
+        Value forwardedFor = Value.of(request.headers().get(HEADER_X_FORWARDED_FOR));
+        if (!forwardedFor.isFilled()) {
+            return ip;
+        }
+
+        try {
+            // A X-Forwarded-For might contain many IPs like 1.2.3.4, 5.6.7.8... We're only interested
+            // in the last IP -> cut appropriately
+            Tuple<String, String> splitIPs = Strings.splitAtLast(forwardedFor.asString(), ",");
+            String forwardedForIp =
+                    Strings.isFilled(splitIPs.getSecond()) ? splitIPs.getSecond().trim() : splitIPs.getFirst().trim();
+
+            // Some reverse proxies like pound use this value if an invalid X-Forwarded-For is given
+            if (UNKNOWN_FORWARDED_FOR_HOST.equals(forwardedForIp)) {
+                return ip;
+            }
+
+            return InetAddress.getByName(forwardedForIp);
+        } catch (Exception e) {
+            Exceptions.ignore(e);
+            WebServer.LOG.WARN(Strings.apply(
+                    "Cannot parse X-Forwarded-For address: %s, Remote-IP: %s, Request: %s - %s (%s)",
+                    forwardedFor,
+                    ip,
+                    request.uri(),
+                    e.getMessage(),
+                    e.getClass().getName()));
+            return ip;
+        }
     }
 
     /**
@@ -685,7 +717,11 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
 
     @Override
     public void gather(MetricsCollector collector) {
-        collector.differentialMetric("http-bytes-in", "http-bytes-in", "HTTP Bytes-In", bytesIn.get() / 1024d / 60, "KB/s");
+        collector.differentialMetric("http-bytes-in",
+                                     "http-bytes-in",
+                                     "HTTP Bytes-In",
+                                     bytesIn.get() / 1024d / 60,
+                                     "KB/s");
         collector.differentialMetric("http-bytes-out",
                                      "http-bytes-out",
                                      "HTTP Bytes-Out",
@@ -694,7 +730,11 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
         collector.differentialMetric("http-connects", "http-connects", "HTTP Connects", connections.get(), "/min");
         collector.differentialMetric("http-requests", "http-requests", "HTTP Requests", requests.get(), "/min");
         collector.differentialMetric("http-blocks", "http-blocks", "HTTP Blocked Requests", blocks.get(), "/min");
-        collector.differentialMetric("http-timeouts", "http-timeouts", "HTTP Idle Timeouts", idleTimeouts.get(), "/min");
+        collector.differentialMetric("http-timeouts",
+                                     "http-timeouts",
+                                     "HTTP Idle Timeouts",
+                                     idleTimeouts.get(),
+                                     "/min");
         collector.differentialMetric("http-client-errors",
                                      "http-client-errors",
                                      "HTTP Client Errors (4xx)",
@@ -720,9 +760,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
 
         @Override
         public void runTimer() throws Exception {
-            for (WebServerHandler handler : openConnections.values()) {
-                handler.updateBandwidth();
-            }
+            openConnections.keySet().forEach(WebServerHandler::updateBandwidth);
         }
     }
 
@@ -745,9 +783,8 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
      *
      * @return a list of all currently open connections
      */
-    @SuppressWarnings("unchecked")
     public static Collection<ActiveHTTPConnection> getOpenConnections() {
-        return (Collection<ActiveHTTPConnection>) (Collection<? extends ActiveHTTPConnection>) openConnections.values();
+        return openConnections.values();
     }
 
     /**

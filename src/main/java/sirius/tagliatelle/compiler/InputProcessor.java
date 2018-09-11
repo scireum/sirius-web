@@ -64,6 +64,13 @@ class InputProcessor {
         }
     }
 
+    /**
+     * Determines if the parser is currently at the given text / keyword.
+     *
+     * @param offset the offset to add to the parsers position
+     * @param text   the text or keyword to check for
+     * @return <tt>true</tt> if the parser is currently at the given text, <tt>false</tt> otherwise
+     */
     public boolean isAtText(int offset, String text) {
         for (int i = 0; i < text.length(); i++) {
             if (!reader.next(offset + i).is(text.charAt(i))) {

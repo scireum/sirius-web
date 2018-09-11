@@ -163,7 +163,8 @@ public class ManagedTasksController extends BasicController {
             if (task.getLastLogs().isEmpty()) {
                 json.property(RESPONSE_LAST_LOG, 0);
             } else {
-                json.property(RESPONSE_LAST_LOG, task.getLastLogs().get(task.getLastLogs().size() - 1).getTod().toEpochMilli());
+                json.property(RESPONSE_LAST_LOG,
+                              task.getLastLogs().get(task.getLastLogs().size() - 1).getTod().toEpochMilli());
             }
         }
     }

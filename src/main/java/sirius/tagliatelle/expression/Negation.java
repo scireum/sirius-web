@@ -11,12 +11,17 @@ package sirius.tagliatelle.expression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
 /**
- * Represents a boolean <tt>and</tt>.
+ * Represents a boolean <tt>not</tt>.
  */
 public class Negation implements Expression {
 
     private Expression expression;
 
+    /**
+     * Creates a new negation.
+     *
+     * @param expresion the expression to negate
+     */
     public Negation(Expression expresion) {
         this.expression = expresion;
     }

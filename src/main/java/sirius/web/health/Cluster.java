@@ -8,22 +8,15 @@
 
 package sirius.web.health;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import sirius.kernel.async.Tasks;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
-import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.health.metrics.Metric;
 import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.health.metrics.Metrics;
 import sirius.kernel.timer.EveryMinute;
-import sirius.kernel.timer.EveryTenSeconds;
-import sirius.web.services.JSONCall;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 
@@ -151,5 +144,4 @@ public class Cluster implements EveryMinute {
 
         return newNodeState;
     }
-
 }

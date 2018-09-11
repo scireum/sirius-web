@@ -263,6 +263,11 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
         }
     }
 
+    /**
+     * Logs the given exception.
+     *
+     * @param throwable the exception to log
+     */
     public void handle(Throwable throwable) {
         log(Exceptions.handle(ManagedTasks.LOG, throwable).getMessage());
     }

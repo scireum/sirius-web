@@ -31,6 +31,11 @@ public class ConcatExpression implements Expression {
         stringExpressions.addAll(Arrays.asList(expressions));
     }
 
+    /**
+     * Adds a new expression.
+     *
+     * @param expr the expression to add
+     */
     public void add(Expression expr) {
         stringExpressions.add(expr);
     }

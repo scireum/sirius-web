@@ -80,5 +80,4 @@ public class InlineTemplateEmitter extends Emitter {
     public String toString() {
         return "INLINE: " + template.getName() + " { " + body + " }\n";
     }
-
 }

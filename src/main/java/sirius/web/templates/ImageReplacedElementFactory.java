@@ -31,9 +31,9 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
-import sirius.web.security.UserContext;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
+import sirius.web.security.UserContext;
 
 import java.awt.Color;
 import java.io.IOException;

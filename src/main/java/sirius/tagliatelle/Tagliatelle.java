@@ -349,7 +349,8 @@ public class Tagliatelle {
     private Template compileTemplate(String path, Resource resource, @Nullable CompilationContext parentContext)
             throws CompileException {
         CompilationContext compilationContext = createCompilationContext(path, resource, parentContext);
-        new Compiler(compilationContext, resource.getContentAsString()).compile();
+        Compiler compiler = new Compiler(compilationContext, resource.getContentAsString());
+        compiler.compile();
         return handleAliasing(compilationContext.getTemplate(), compilationContext);
     }
 

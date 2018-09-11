@@ -30,7 +30,6 @@ import sirius.web.http.WebContext;
 import sirius.web.security.Permission;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,6 +64,11 @@ public class SystemController extends BasicController {
      */
     public static final String PERMISSION_SYSTEM_STATE = "permission-system-state";
 
+    /**
+     * Renders the UI for the system console.
+     *
+     * @param ctx the request being handled
+     */
     @Routed("/system/console")
     @Permission(PERMISSION_SYSTEM_CONSOLE)
     public void console(WebContext ctx) {

@@ -35,8 +35,6 @@ import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.InterfaceHttpPostRequestDecoder;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
-import sirius.kernel.cache.Cache;
-import sirius.kernel.cache.CacheManager;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
@@ -49,8 +47,6 @@ import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.StructuredInput;
 import sirius.kernel.xml.XMLStructuredInput;
-import sirius.web.controller.Message;
-import sirius.web.security.UserContext;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -64,8 +60,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.text.ParseException;
@@ -80,6 +74,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
@@ -93,12 +88,9 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class WebContext implements SubContext {
 
-    private static final String UNKNOWN_FORWARDED_FOR_HOST = "unknown";
-    private static final String HEADER_X_FORWARDED_FOR = "X-Forwarded-For";
     private static final String HEADER_X_FORWARDED_PROTO = "X-Forwarded-Proto";
     private static final String PROTOCOL_HTTPS = "https";
     private static final String PROTOCOL_HTTP = "http";
-    private static final String CACHED_MESSAGES_ID = "cachedMessagesId";
 
     /*
      * Underlying channel to send and receive data
@@ -227,11 +219,6 @@ public class WebContext implements SubContext {
     protected Callback<CallContext> completionCallback;
 
     /*
-     * Determines if the requested has a trusted ip address
-     */
-    private Boolean trusted;
-
-    /*
      * Determines if the request is performed via a secured channel (SSL)
      */
     protected Boolean ssl;
@@ -337,11 +324,6 @@ public class WebContext implements SubContext {
 
     @Part
     private static SessionSecretComputer sessionSecretComputer;
-
-    @Part
-    private static DistributedUserMessageCache distributedUserMessageCache;
-
-    private static Cache<String, List<Message>> localUserMessageCache;
 
     @Part
     private static CSRFHelper csrfHelper;
@@ -732,11 +714,13 @@ public class WebContext implements SubContext {
             initSession();
         }
         if (value == null) {
-            session.remove(key);
+            String previous = session.remove(key);
+            sessionModified = Strings.isFilled(previous);
         } else {
-            session.put(key, NLS.toMachineString(value));
+            String newValue = NLS.toMachineString(value);
+            String previous = session.put(key, newValue);
+            sessionModified = !Objects.equals(previous, newValue);
         }
-        sessionModified = true;
     }
 
     /**
@@ -759,7 +743,7 @@ public class WebContext implements SubContext {
      */
     public List<String> getSessionKeys() {
         if (session == null) {
-            return Collections.emptyList();
+            initSession();
         }
         return Lists.newArrayList(session.keySet());
     }
@@ -768,92 +752,12 @@ public class WebContext implements SubContext {
      * Clears (invalidated) the client session by removing all values.
      */
     public void clearSession() {
+        if (session == null) {
+            session = new HashMap<>();
+        }
         if (session != null) {
             session.clear();
             sessionModified = true;
-        }
-    }
-
-    /**
-     * Caches user messages to show them with the next request.
-     * <p>
-     * In some interaction patterns, we cannot directly show generated messages to a user. Therefore these are cached
-     * and retrieved with the next "full" request.
-     * <p>
-     * When sending a redirect or performing an ajax call + a refresh, it is not possible to show messages to a user.
-     * Therefore we localUserMessageCache those messages and return them with the next call to {@link UserContext#getMessages()}.
-     */
-    public void cacheUserMessages() {
-        if (getSessionValue(CACHED_MESSAGES_ID).isFilled()) {
-            return;
-        }
-
-        List<Message> messages = UserContext.get().getUserSpecificMessages();
-        if (messages.isEmpty()) {
-            return;
-        }
-
-        String cacheId = Strings.generateCode(32);
-        if (distributedUserMessageCache != null && distributedUserMessageCache.isReady()) {
-            distributedUserMessageCache.put(cacheId, messages);
-        } else {
-            getLocalUserMessageCache().put(cacheId, messages);
-        }
-        setSessionValue(CACHED_MESSAGES_ID, cacheId);
-    }
-
-    private Cache<String, List<Message>> getLocalUserMessageCache() {
-        if (localUserMessageCache == null) {
-            localUserMessageCache = CacheManager.createLocalCache("user-messages");
-        }
-
-        return localUserMessageCache;
-    }
-
-    /**
-     * Invoked by {@link UserContext#getMessages()} to fetch and apply all previously cached message.
-     */
-    public void restoreCachedUserMessages() {
-        if (!isValid()) {
-            return;
-        }
-
-        String cachedMessagesId = getSessionValue(CACHED_MESSAGES_ID).asString();
-        if (Strings.isEmpty(cachedMessagesId)) {
-            return;
-        }
-
-        List<Message> cachedMessages = getAndRemoveCachedUserMessages(cachedMessagesId);
-        if (cachedMessages != null) {
-            cachedMessages.forEach(UserContext::message);
-        }
-
-        setSessionValue(CACHED_MESSAGES_ID, null);
-    }
-
-    private List<Message> getAndRemoveCachedUserMessages(String cachedMessagesId) {
-        if (distributedUserMessageCache != null && distributedUserMessageCache.isReady()) {
-            return distributedUserMessageCache.getAndRemove(cachedMessagesId);
-        }
-
-        List<Message> result = getLocalUserMessageCache().get(cachedMessagesId);
-        getLocalUserMessageCache().remove(cachedMessagesId);
-        return result;
-    }
-
-    /**
-     * Clears all previously cached user messages
-     */
-    public void clearCachedUserMessages() {
-        if (!isValid()) {
-            return;
-        }
-
-        String cachedMessagesId = getSessionValue(CACHED_MESSAGES_ID).asString();
-
-        if (Strings.isFilled(cachedMessagesId)) {
-            getAndRemoveCachedUserMessages(cachedMessagesId);
-            setSessionValue(CACHED_MESSAGES_ID, null);
         }
     }
 
@@ -919,90 +823,9 @@ public class WebContext implements SubContext {
      */
     public InetAddress getRemoteIP() {
         if (remoteIp == null) {
-            remoteIp = determineRemoteIP(ctx, request);
+            remoteIp = WebServer.determineRemoteIP(ctx, request);
         }
         return remoteIp;
-    }
-
-    /**
-     * Tries to determine the effective remote IP for the given context and request.
-     * <p>
-     * This is the remote address of the channel. However, if recognized as a proxy,
-     * we use the last IP address given in the X-Forarded-For header.
-     *
-     * @param ctx     the channel context used to determine the physical IP
-     * @param request the request used to read the appropriate headers for reverse proxies
-     * @return the effective remote address of the client
-     */
-    public static InetAddress determineRemoteIP(ChannelHandlerContext ctx, HttpRequest request) {
-        if (ctx == null || request == null) {
-            try {
-                return InetAddress.getLocalHost();
-            } catch (UnknownHostException e) {
-                throw Exceptions.handle(e);
-            }
-        }
-
-        InetAddress ip = ((InetSocketAddress) ctx.channel().remoteAddress()).getAddress();
-        return applyProxyIPs(ip, request);
-    }
-
-    private static InetAddress applyProxyIPs(InetAddress ip, HttpRequest request) {
-        if (WebServer.getProxyIPs().isEmpty()) {
-            return ip;
-        }
-
-        if (!WebServer.getProxyIPs().accepts(ip)) {
-            return ip;
-        }
-
-        Value forwardedFor = Value.of(request.headers().get(HEADER_X_FORWARDED_FOR));
-        if (!forwardedFor.isFilled()) {
-            return ip;
-        }
-
-        try {
-            // A X-Forwarded-For might contain many IPs like 1.2.3.4, 5.6.7.8... We're only interested
-            // in the last IP -> cut appropriately
-            Tuple<String, String> splitIPs = Strings.splitAtLast(forwardedFor.asString(), ",");
-            String forwardedForIp =
-                    Strings.isFilled(splitIPs.getSecond()) ? splitIPs.getSecond().trim() : splitIPs.getFirst().trim();
-
-            // Some reverse proxies like pound use this value if an invalid X-Forwarded-For is given
-            if (UNKNOWN_FORWARDED_FOR_HOST.equals(forwardedForIp)) {
-                return ip;
-            }
-
-            return InetAddress.getByName(forwardedForIp);
-        } catch (Exception e) {
-            Exceptions.ignore(e);
-            WebServer.LOG.WARN(Strings.apply(
-                    "Cannot parse X-Forwarded-For address: %s, Remote-IP: %s, Request: %s - %s (%s)",
-                    forwardedFor,
-                    ip,
-                    request.uri(),
-                    e.getMessage(),
-                    e.getClass().getName()));
-            return ip;
-        }
-    }
-
-    /**
-     * Determines if the request is from a trusted IP.
-     *
-     * @return <tt>true</tt> if the request is from a trusted ip (see {@link WebServer#trustedIPs}), <tt>false</tt>
-     * otherwise
-     */
-    public boolean isTrusted() {
-        if (trusted == null) {
-            if (ctx == null || WebServer.getTrustedRanges().isEmpty()) {
-                trusted = true;
-            } else {
-                trusted = WebServer.getTrustedRanges().accepts(getRemoteIP());
-            }
-        }
-
-        return trusted;
     }
 
     /**
@@ -1562,19 +1385,6 @@ public class WebContext implements SubContext {
     }
 
     /**
-     * Determines if the current request is a POST request.
-     * <p>
-     * A POST request signal the server to alter its state, knowing that side effects will occur.
-     *
-     * @return <tt>true</tt> if the method of the current request is POST, false otherwise
-     * @deprecated use {@link #isUnsafePOST()} and {@link #isSafePOST()} instead
-     */
-    @Deprecated
-    public boolean isPOST() {
-        return isUnsafePOST();
-    }
-
-    /**
      * Determines if the current request is a POST request with checking for a valid CSRF-token.
      * <p>
      * A POST request signal the server to alter its state, knowing that side effects will occur.
@@ -1629,7 +1439,7 @@ public class WebContext implements SubContext {
     /**
      * Hide the fact that this request is a POST request.
      * <p>
-     * Sometimes it is useful to make {@link #isPOST()} return false even if the
+     * Sometimes it is useful to make <tt>isPOST</tt> methods return false even if the
      * current request is a POST requests. Login forms woule be one example. As
      * a login request is sent to any URL, we don't want a common POST handler to
      * trigger on that post data.
@@ -1832,9 +1642,7 @@ public class WebContext implements SubContext {
                                 .withSystemErrorMessage("Expected a valid JSON map as body of this request.")
                                 .handle();
             }
-            if (content.isInMemory()) {
-                return JSON.parseObject(content.getString(getRequestEncoding()));
-            } else {
+            if (!content.isInMemory()) {
                 if (content.getFile().length() > maxStructuredInputSize && maxStructuredInputSize > 0) {
                     throw Exceptions.handle()
                                     .to(WebServer.LOG)
@@ -1843,8 +1651,8 @@ public class WebContext implements SubContext {
                                             maxStructuredInputSize)
                                     .handle();
                 }
-                return JSON.parseObject(content.getString(getRequestEncoding()));
             }
+            return JSON.parseObject(content.getString(getRequestEncoding()));
         } catch (HandledException e) {
             throw e;
         } catch (Exception e) {
