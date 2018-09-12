@@ -17,6 +17,10 @@ body {
   font-family: $sansFontFamily;
   color: $textColor;
   background-color: $bodyBackground;
+
+  // prevents blurry rendering in iframes
+  backface-visibility: hidden;
+  -webkit-font-smoothing: subpixel-antialiased;
 }
 
 // Links
