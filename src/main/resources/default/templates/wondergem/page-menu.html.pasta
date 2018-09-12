@@ -18,7 +18,7 @@
             <ul class="nav navbar-nav">
                 <i:extensions name="templates-page-menu-left" />
             </ul>
-            <ul class="nav navbar-nav pull-right">
+            <ul class="nav navbar-nav nav-right">
                 <i:extensions name="templates-page-menu-right" />
             </ul>
         </div>

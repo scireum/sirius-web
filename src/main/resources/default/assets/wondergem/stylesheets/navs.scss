@@ -190,20 +190,35 @@ $navbarLinkBackgroundActive:    darken($navbarLinkBackgroundHover, 5%);
   border-radius: none;
 }
 
-.navbar-static-top .navbar-nav > li > a {
+.navbar-default .navbar-nav > li > a {
   color: #e7e7e7;
-  float: none;
   font-size: 16px;
   padding: 20px 15px;
-  text-decoration: none;
 }
 
-.navbar-static-top .navbar-nav > li > a:hover,
-.navbar-static-top .navbar-nav > li > a:focus,
-.navbar-static-top .dropdown-menu > li > a:hover,
-.navbar-static-top .navbar-nav > li > a:focus {
-  background-color: $primary-color;
-  color: #e7e7e7;
+.navbar-default .navbar-nav > li > a,
+.navbar-default .navbar-nav .open .dropdown-menu > li > a {
+  float: none;
+  text-decoration: none;
+
+  &:hover, &:focus {
+    background-color: $primary-color;
+    color: #e7e7e7;
+  }
+}
+
+.navbar-nav.nav-right {
+  float: right;
+}
+
+@media(max-width: 767px) {
+  .navbar-default .navbar-nav .open .dropdown-menu > li > a {
+    color: #e7e7e7;
+  }
+
+  .navbar-nav.nav-right {
+    float: none;
+  }
 }
 
 
