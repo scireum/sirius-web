@@ -1,0 +1,47 @@
+<i:arg name="titleKey" type="String" default=""/>
+<i:arg name="title" type="String" default="@i18n(titleKey)"/>
+<i:arg name="value" type="java.lang.Object" default=""/>
+<i:arg name="fullWidth" type="boolean" default="false"/>
+<i:arg name="showIfEmptyValue" type="boolean" default="true"/>
+<i:arg name="isTableHead" type="boolean" default="false"/>
+
+
+<i:if test="@showIfEmptyValue || isFilled(value)">
+    <i:if test="@fullWidth">
+        <tr @if (isTableHead) { class="thead" } >
+            <td colspan="2">
+                <i:if test="@isFilled(title)">
+                    @title <br>
+                </i:if>
+
+                <i:if test="@isFilled(value)">
+                    @value
+                    <i:else>
+                        <i:render name="body"/>
+                    </i:else>
+                </i:if>
+            </td>
+        </tr>
+
+        <i:else>
+            <tr @if (isTableHead) { class="thead" } >
+                <td class="col-xs-6">
+                    <i:if test="@isFilled(title)">
+                        @title
+                        <i:else>
+                            <i:render name="title"/>
+                        </i:else>
+                    </i:if>
+                </td>
+                <td class="col-xs-6">
+                    <i:if test="@isFilled(value)">
+                        @value
+                        <i:else>
+                            <i:render name="body"/>
+                        </i:else>
+                    </i:if>
+                </td>
+            </tr>
+        </i:else>
+    </i:if>
+</i:if>
