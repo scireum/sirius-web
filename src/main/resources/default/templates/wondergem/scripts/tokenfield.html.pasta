@@ -86,12 +86,17 @@
                         });
 
                         input.updateTokenRemovalVisibility();
-                        events.onRemovedToken(e);
+
+                        events.onRemovedToken.forEach(function (handler) {
+                            handler(e);
+                        });
                     });
 
                     this.tokenElement.keydown(function (e) {
                         if (e.keyCode === sirius.keys.KEY_ENTER) {
-                            events.onEnter(e);
+                            events.onEnter.forEach(function (handler) {
+                                handler(e);
+                            });
                         }
                     });
 
@@ -127,7 +132,9 @@
                 },
 
                 resize: function (e) {
-                    events.onResize(e);
+                    events.onResize.forEach(function (handler) {
+                        handler(e);
+                    });
                 },
 
                 /**
@@ -159,7 +166,10 @@
                     input.element.tokenfield("setTokens", []);
                     input.value = "";
                     input.allTokens = [];
-                    events.onClearTokens();
+
+                    events.onClearTokens.forEach(function (handler) {
+                        handler();
+                    });
                 },
 
                 /**
@@ -176,10 +186,10 @@
             };
 
             var events = {
-                onEnter: Function(),
-                onRemovedToken: Function(),
-                onResize: Function(),
-                onClearTokens: Function()
+                onEnter: [],
+                onRemovedToken: [],
+                onResize: [],
+                onClearTokens: []
             };
 
             return {
@@ -190,17 +200,38 @@
                 /**
                  * Adds event handlers.
                  *
-                 * Each event handler can be set only once.
-                 *
                  * @@param name of the event
                  * @@param callback the function to be executed if the event is triggered
                  */
                 on: function (name, callback) {
                     if (this.eventNames().includes(name)) {
-                        events[name] = asFunction(callback);
+                        events[name].push(asFunction(callback));
                     } else {
                         throw "Callback " + name + " is no valid event.";
                     }
+                },
+
+                /**
+                 * Unbinds one or all event handlers.
+                 *
+                 * @@param name of the event
+                 * @@param callback the function to unbind, if left empty all handlers are removed
+                 */
+                off: function (name, callback) {
+                    if (!this.eventNames().includes(name)) {
+                        throw "Callback " + name + " is no valid event.";
+                    }
+
+                    if (callback === undefined) {
+                        events[name] = [];
+                        return;
+                    }
+
+                    var remainingHandlers = events[name].filter(function (value) {
+                        return value !== asFunction(callback);
+                    });
+
+                    events[name] = remainingHandlers;
                 },
 
                 start: function (config) {
