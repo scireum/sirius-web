@@ -103,7 +103,7 @@ public class CrunchlogKernel extends BackgroundLoop implements Command, Stoppabl
     }
 
     @Override
-    protected double maxCallFrequency() {
+    public double maxCallFrequency() {
         // We collect data for 5s before writing to disk
         return 1 / 5d;
     }
