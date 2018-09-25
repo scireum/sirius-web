@@ -49,7 +49,10 @@
             showSpinner: function () {
                 if (input.spinnerElement) {
                     input.spinnerElement.removeClass("hide");
-                    events.onSpinnerShow();
+
+                    events.onSpinnerShow.forEach(function (handler) {
+                        handler();
+                    });
                 }
             },
 
@@ -59,7 +62,10 @@
             hideSpinner: function () {
                 if (input.spinnerElement) {
                     input.spinnerElement.addClass("hide");
-                    events.onSpinnerHide();
+
+                    events.onSpinnerHide.forEach(function (handler) {
+                        handler();
+                    });
                 }
             },
 
@@ -69,7 +75,10 @@
             onChange: function () {
                 var value = this.element.val();
 
-                events.beforeLoad(value);
+                events.beforeLoad.forEach(function (handler) {
+                    handler(value);
+                });
+
                 service.load(value);
 
                 completions.update();
@@ -289,7 +298,10 @@
                     this.update();
                     completions.element.show();
                     this.state = completions.VISIBLE;
-                    events.onShow();
+
+                    events.onShow.forEach(function (handler) {
+                        handler();
+                    });
                 }
             },
 
@@ -329,7 +341,10 @@
 
                 completions.element.hide();
                 input.hideSpinner();
-                events.onHide();
+
+                events.onHide.forEach(function (handler) {
+                    handler();
+                });
             },
 
             isVisible: function () {
@@ -367,10 +382,15 @@
                     var $row = $(Mustache.render(template, row));
                     completions.addHoverRowEvent($row);
                     completions.element.append($row);
-                    events.afterRenderRow($row);
+
+                    events.afterRenderRow.forEach(function (handler) {
+                        handler($row);
+                    });
                 });
 
-                events.afterRender();
+                events.afterRender.forEach(function (handler) {
+                    handler();
+                });
             },
 
             /**
@@ -386,15 +406,17 @@
             select: function ($element) {
                 var result = false;
 
-                if ($element) {
-                    var selectedElement = $element.closest(".autocomplete-row-js");
-                    if (selectedElement.length) {
-                        result = events.onSelect(selectedElement);
+                if (events.onSelect !== undefined) {
+                    if ($element) {
+                        var selectedElement = $element.closest(".autocomplete-row-js");
+                        if (selectedElement.length) {
+                            result = events.onSelect(selectedElement);
+                        } else {
+                            result = events.onSelect();
+                        }
                     } else {
                         result = events.onSelect();
                     }
-                } else {
-                    result = events.onSelect();
                 }
 
                 if (!result) {
@@ -404,25 +426,35 @@
         };
 
         var events = {
-            onReady: Function(),
-            onShow: Function(),
-            onHide: Function(),
-            onSelect: Function(),
-            onSpinnerShow: Function(),
-            onSpinnerHide: Function(),
-            beforeLoad: Function(),
+            onReady: [],
+            onShow: [],
+            onHide: [],
+
+            /**
+             * Handle the selection of a row element.
+             * <p>
+             * Allows only one handler.
+             *
+             * @@param the selected element, optional
+             * @@return <tt>true</tt> if the selection was erroneus, optional
+             */
+            onSelect: undefined,
+            onSpinnerShow: [],
+            onSpinnerHide: [],
+            beforeLoad: [],
 
             /**
              * Handles the loaded autocompletion data, after a successful request.
+             * <p>
+             * Allows only one handler.
              *
              * @@param value the autocomplete string value
              * @@param the response of the autocomplete service
-             *
              * @@return an array of row objects.
              */
             afterLoad: undefined,
-            afterRenderRow: Function(),
-            afterRender: Function()
+            afterRenderRow: [],
+            afterRender: []
         };
 
         var service = {
@@ -536,11 +568,48 @@
                 return Object.keys(events);
             },
 
+            /**
+             * Adds event handlers.
+             *
+             * @@param name of the event
+             * @@param callback the function to be executed if the event is triggered
+             */
             on: function (name, callback) {
-                if (this.eventNames().includes(name)) {
-                    events[name] = asFunction(callback);
+                if (!this.eventNames().includes(name)) {
+                    throw "Callback " + name + " is no valid event.";
+                }
+
+                if (Array.isArray(events[name])) {
+                    events[name].push(asFunction(callback));
                 } else {
-                    throw "Callback " + name + " is no valid event."
+                    events[name] = asFunction(callback);
+                }
+            },
+
+            /**
+             * Unbinds one or all event handlers.
+             *
+             * @@param name of the event
+             * @@param callback the function to unbind, if left empty all handlers are removed
+             */
+            off: function (name, callback) {
+                if (!this.eventNames().includes(name)) {
+                    throw "Callback " + name + " is no valid event.";
+                }
+
+                if (Array.isArray(events[name])) {
+                    if (callback === undefined) {
+                        events[name] = [];
+                        return;
+                    }
+
+                    var remainingEvents = events[name].filter(function (value) {
+                        return value !== asFunction(callback);
+                    });
+
+                    events[name] = remainingEvents;
+                } else if (callback === undefined || events[name] === asFunction(callback)) {
+                    events[name] = undefined;
                 }
             },
 
@@ -579,7 +648,10 @@
                 completions.setTemplates(this.config.templates);
 
                 input.element.focus();
-                events.onReady();
+
+                events.onReady.forEach(function (handler) {
+                    handler();
+                });
             },
 
             /**

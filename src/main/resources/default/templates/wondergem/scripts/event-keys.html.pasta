@@ -32,8 +32,8 @@
 
 
         var events = {
-            keyDown: Function(),
-            keyUp: Function()
+            keyDown: [],
+            keyUp: []
         };
 
 
@@ -53,12 +53,41 @@
                 return Object.keys(events);
             },
 
+            /**
+             * Adds event handlers.
+             *
+             * @@param name of the event
+             * @@param callback the function to be executed if the event is triggered
+             */
             on: function (name, callback) {
                 if (this.eventNames().includes(name)) {
-                    events[name] = asFunction(callback);
+                    events[name].push(asFunction(callback));
                 } else {
-                    throw "Callback " + name + " is no valid event."
+                    throw "Callback " + name + " is no valid event.";
                 }
+            },
+
+            /**
+             * Unbinds one or all event handlers.
+             *
+             * @@param name of the event
+             * @@param callback the function to unbind, if left empty all handlers are removed
+             */
+            off: function (name, callback) {
+                if (!this.eventNames().includes(name)) {
+                    throw "Callback " + name + " is no valid event.";
+                }
+
+                if (callback === undefined) {
+                    events[name] = [];
+                    return;
+                }
+
+                var remainingEvents = events[name].filter(function (value) {
+                    return value !== asFunction(callback);
+                });
+
+                events[name] = remainingEvents;
             },
 
             enableKeyUpIpadSupport: function (event) {
@@ -95,14 +124,20 @@
                     e = sirius.keys.browserFixes(e);
 
                     pressedKeys[e.keyCode] = true;
-                    events.keyDown(e);
+
+                    events.keyDown.forEach(function (handler) {
+                        handler(e);
+                    });
                 });
 
                 $element.on("keyup.sirius-keys", function (e) {
                     e = sirius.keys.browserFixes(e);
 
                     pressedKeys[e.keyCode] = false;
-                    events.keyUp(e);
+
+                    events.keyUp.forEach(function (handler) {
+                        handler(e);
+                    });
                 });
 
             },
