@@ -436,7 +436,7 @@
              * Allows only one handler.
              *
              * @@param the selected element, optional
-             * @@return <tt>true</tt> if the selection was erroneus, optional
+             * @@return <tt>true</tt> if the result overlay should stay visible, optional
              */
             onSelect: undefined,
             onSpinnerShow: [],
@@ -603,11 +603,11 @@
                         return;
                     }
 
-                    var remainingEvents = events[name].filter(function (value) {
+                    var remainingHandlers = events[name].filter(function (value) {
                         return value !== asFunction(callback);
                     });
 
-                    events[name] = remainingEvents;
+                    events[name] = remainingHandlers;
                 } else if (callback === undefined || events[name] === asFunction(callback)) {
                     events[name] = undefined;
                 }

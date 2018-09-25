@@ -83,11 +83,11 @@
                     return;
                 }
 
-                var remainingEvents = events[name].filter(function (value) {
+                var remainingHandlers = events[name].filter(function (value) {
                     return value !== asFunction(callback);
                 });
 
-                events[name] = remainingEvents;
+                events[name] = remainingHandlers;
             },
 
             enableKeyUpIpadSupport: function (event) {
