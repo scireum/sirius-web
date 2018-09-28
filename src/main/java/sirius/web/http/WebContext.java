@@ -43,6 +43,7 @@ import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
+import sirius.kernel.health.Log;
 import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.StructuredInput;
@@ -713,6 +714,7 @@ public class WebContext implements SubContext {
         if (session == null) {
             initSession();
         }
+
         if (value == null) {
             String previous = session.remove(key);
             sessionModified = Strings.isFilled(previous);
@@ -1133,13 +1135,29 @@ public class WebContext implements SubContext {
     }
 
     private void buildClientSessionCookie() {
+        String currentIp = getRemoteIP().getHostAddress();
+        String sessionIp = session.get("ip");
+
+        if (Strings.isFilled(currentIp) && Strings.isFilled(sessionIp) && Strings.areEqual(currentIp, sessionIp)) {
+            Log.get("session-detection")
+               .WARN("IP-CONFLICT: %s vs. %s for session %s%n%s", currentIp, sessionIp, session, this);
+        }
+
         if (!sessionModified) {
             return;
         }
 
         if (session.isEmpty()) {
+            Log.get("session-detection")
+               .FINE("Deleting session for IP: %s for session %s%n%s", currentIp, session, this);
             deleteCookie(sessionCookieName);
             return;
+        }
+
+        Log.get("session-detection").FINE("Updating session for IP: %s for session %s%n%s", currentIp, session, this);
+
+        if (!session.containsKey("ip")) {
+            session.put("ip", currentIp);
         }
 
         QueryStringEncoder encoder = new QueryStringEncoder("");
