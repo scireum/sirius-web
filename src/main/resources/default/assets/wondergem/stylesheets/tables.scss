@@ -160,28 +160,4 @@ tr.info a.link-danger, tr.error a.link-danger {
   color: #EE5F5B;
 }
 
-// Tables with only two columns
-// is mainly used for mobile
-// -------------------------
-.table-col-2 {
-  table-layout: fixed;
 
-  > tbody > tr {
-    td, th {
-      border-top: none;
-      font-size: 100%;
-      overflow: hidden;
-      word-break: break-word;
-    }
-
-    td:first-child, th {
-      font-weight: bold;
-    }
-
-    &:last-of-type {
-      td, th {
-        border-bottom: none;
-      }
-    }
-  }
-}
