@@ -45,6 +45,7 @@ import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
+import sirius.kernel.health.Log;
 import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.StructuredInput;
@@ -80,6 +81,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
@@ -731,12 +733,15 @@ public class WebContext implements SubContext {
         if (session == null) {
             initSession();
         }
+
         if (value == null) {
-            session.remove(key);
+            String previous = session.remove(key);
+            sessionModified = Strings.isFilled(previous);
         } else {
-            session.put(key, NLS.toMachineString(value));
+            String newValue = NLS.toMachineString(value);
+            String previous = session.put(key, newValue);
+            sessionModified = !Objects.equals(previous, newValue);
         }
-        sessionModified = true;
     }
 
     /**
@@ -1310,13 +1315,29 @@ public class WebContext implements SubContext {
     }
 
     private void buildClientSessionCookie() {
+        String currentIp = getRemoteIP().getHostAddress();
+        String sessionIp = session.get("ip");
+
+        if (Strings.isFilled(currentIp) && Strings.isFilled(sessionIp) && Strings.areEqual(currentIp, sessionIp)) {
+            Log.get("session-detection")
+               .WARN("IP-CONFLICT: %s vs. %s for session %s%n%s", currentIp, sessionIp, session, this);
+        }
+
         if (!sessionModified) {
             return;
         }
 
         if (session.isEmpty()) {
+            Log.get("session-detection")
+               .FINE("Deleting session for IP: %s for session %s%n%s", currentIp, session, this);
             deleteCookie(sessionCookieName);
             return;
+        }
+
+        Log.get("session-detection").FINE("Updating session for IP: %s for session %s%n%s", currentIp, session, this);
+
+        if (!session.containsKey("ip")) {
+            session.put("ip", currentIp);
         }
 
         QueryStringEncoder encoder = new QueryStringEncoder("");
