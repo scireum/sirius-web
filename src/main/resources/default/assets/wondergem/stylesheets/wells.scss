@@ -13,6 +13,7 @@
 // Base class
 .well {
   background-color: $white;
+  color: $textColor;
   border: 1px solid $borderColor;
   border-radius: $baseBorderRadius;
   -webkit-box-shadow: none;
