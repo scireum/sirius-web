@@ -161,3 +161,16 @@ img {
     margin-top: 5px;
   }
 }
+
+.flex-group {
+  display: flex;
+  justify-content: stretch;
+  align-items: stretch;
+  margin: 0 -2%;
+
+  > * {
+    flex-grow: 1;
+    margin: 0 2%;
+    min-width: 0;
+  }
+}
