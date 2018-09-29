@@ -101,6 +101,7 @@ public class WebContext implements SubContext {
     private static final String PROTOCOL_HTTPS = "https";
     private static final String PROTOCOL_HTTP = "http";
     private static final String CACHED_MESSAGES_ID = "cachedMessagesId";
+    public static final Log LOGSESS_LOG = Log.get("session-detection");
 
     /*
      * Underlying channel to send and receive data
@@ -1318,9 +1319,15 @@ public class WebContext implements SubContext {
         String currentIp = getRemoteIP().getHostAddress();
         String sessionIp = session.get("ip");
 
-        if (Strings.isFilled(currentIp) && Strings.isFilled(sessionIp) && Strings.areEqual(currentIp, sessionIp)) {
-            Log.get("session-detection")
-               .WARN("IP-CONFLICT: %s vs. %s for session %s%n%s", currentIp, sessionIp, session, this);
+        if (Strings.isFilled(currentIp) && Strings.isFilled(sessionIp) && !Strings.areEqual(currentIp, sessionIp)) {
+            LOGSESS_LOG.WARN("IP-CONFLICT: %s vs. %s for session %s%n%s%n%s%n%s",
+                             currentIp,
+                             sessionIp,
+                             session,
+                             this,
+                             CallContext.getCurrent().getMDC(),
+                             Thread.currentThread().getName());
+            session.put("ip", currentIp);
         }
 
         if (!sessionModified) {
@@ -1328,13 +1335,22 @@ public class WebContext implements SubContext {
         }
 
         if (session.isEmpty()) {
-            Log.get("session-detection")
-               .FINE("Deleting session for IP: %s for session %s%n%s", currentIp, session, this);
+            LOGSESS_LOG.FINE("Deleting session for IP: %s for session %s%n%s%n%s%n%s",
+                             currentIp,
+                             session,
+                             this,
+                             CallContext.getCurrent().getMDC(),
+                             Thread.currentThread().getName());
             deleteCookie(sessionCookieName);
             return;
         }
 
-        Log.get("session-detection").FINE("Updating session for IP: %s for session %s%n%s", currentIp, session, this);
+        LOGSESS_LOG.FINE("Updating session for IP: %s for session %s%n%s%n%s%n%s",
+                         currentIp,
+                         session,
+                         this,
+                         CallContext.getCurrent().getMDC(),
+                         Thread.currentThread().getName());
 
         if (!session.containsKey("ip")) {
             session.put("ip", currentIp);
