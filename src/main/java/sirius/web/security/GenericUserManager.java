@@ -39,16 +39,6 @@ import java.util.concurrent.TimeUnit;
 public abstract class GenericUserManager implements UserManager {
 
     /**
-     * Defines the name used to store the user detail for cookie login storage
-     */
-    private static final String USER_COOKIE_SUFFIX = "-sirius-user";
-
-    /**
-     * Defines the name used to store the token detail for cookie login storage
-     */
-    private static final String TOKEN_COOKIE_SUFFIX = "-sirius-token";
-
-    /**
      * /**
      * Defines the default grace period (max age of an sso timestamp) which is accepted by the system
      */
@@ -65,7 +55,6 @@ public abstract class GenericUserManager implements UserManager {
     protected String ssoSecret;
     protected List<String> publicRoles;
     protected List<String> defaultRoles;
-    protected List<String> trustedRoles;
     protected Duration loginCookieTTL;
     protected UserInfo defaultUser;
 
@@ -80,7 +69,6 @@ public abstract class GenericUserManager implements UserManager {
         this.keepLoginEnabled = config.get("keepLoginEnabled").asBoolean(true);
         this.publicRoles = config.get("publicRoles").get(List.class, Collections.emptyList());
         this.defaultRoles = config.get("defaultRoles").get(List.class, Collections.emptyList());
-        this.trustedRoles = config.get("trustedRoles").get(List.class, Collections.emptyList());
         this.loginCookieTTL = config.get("loginCookieTTL").get(Duration.class, Duration.ofDays(90));
         this.defaultUser = buildDefaultUser();
     }
@@ -243,40 +231,6 @@ public abstract class GenericUserManager implements UserManager {
         return null;
     }
 
-    private UserInfo loginViaCookie(WebContext ctx) {
-        if (!keepLoginEnabled) {
-            return null;
-        }
-        String user = ctx.getCookieValue(scope.getScopeId() + USER_COOKIE_SUFFIX);
-        String token = ctx.getCookieValue(scope.getScopeId() + TOKEN_COOKIE_SUFFIX);
-
-        if (Strings.isEmpty(user) || Strings.isEmpty(token)) {
-            return null;
-        }
-
-        UserInfo result = findUserByName(ctx, user);
-        if (result == null) {
-            return null;
-        }
-
-        // The cookie token is TIMESTAMP:MD5
-        Tuple<String, String> challengeResponse = Strings.split(token, ":");
-        // Verify age...
-        if (checkTokenTTL(Value.of(challengeResponse.getFirst()).asLong(0), loginCookieTTL.getSeconds())) {
-            // Verify hash...
-            if (checkTokenValidity(user, challengeResponse)) {
-                log("Cookie-Login of %s succeeded with token: %s", user, token);
-                return result;
-            } else {
-                log("Cookie-Login of %s failed due to invalid hash in token: %s", user, token);
-            }
-        } else {
-            log("Cookie-Login of %s failed due to outdated timestamp in token: %s", user, token);
-        }
-
-        return null;
-    }
-
     private boolean checkTokenTTL(long timestamp, long maxTtl) {
         return Math.abs(timestamp - (System.currentTimeMillis() / 1000)) < maxTtl;
     }
@@ -336,18 +290,13 @@ public abstract class GenericUserManager implements UserManager {
     /**
      * Applies profile transformations and adds default roles to the set of given roles.
      *
-     * @param roles   the roles granted to a user
-     * @param trusted determines if the user is considered a trusted user
-     *                (Usually determined via {@link sirius.web.http.WebContext#isTrusted()}).
+     * @param roles the roles granted to a user
      * @return a set of permissions which contain the given roles as well as the default roles and profile
      * transformations
      */
-    protected Set<String> transformRoles(Collection<String> roles, boolean trusted) {
+    protected Set<String> transformRoles(Collection<String> roles) {
         Set<String> allRoles = Sets.newTreeSet(roles);
         allRoles.addAll(defaultRoles);
-        if (trusted) {
-            allRoles.addAll(trustedRoles);
-        }
 
         return Permissions.applyProfilesAndPublicRoles(allRoles);
     }
@@ -507,9 +456,6 @@ public abstract class GenericUserManager implements UserManager {
     public void detachFromSession(@Nonnull UserInfo user, @Nonnull WebContext ctx) {
         ctx.setSessionValue(scope.getScopeId() + SUFFIX_TENANT_ID, null);
         ctx.setSessionValue(scope.getScopeId() + SUFFIX_USER_ID, null);
-
-        ctx.deleteCookie(scope.getScopeId() + USER_COOKIE_SUFFIX);
-        ctx.deleteCookie(scope.getScopeId() + TOKEN_COOKIE_SUFFIX);
     }
 
     @Override

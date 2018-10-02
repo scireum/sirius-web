@@ -49,6 +49,9 @@ class WebServerSpec extends BaseSpecification {
         return result
     }
 
+    /**
+     * Ensures that set-cookie and caching headers aren't mixed.
+     */
     def "Invoke /test/cookieCacheTest"() {
         given:
         def uri = "/test/cookieCacheTest"
@@ -417,7 +420,7 @@ class WebServerSpec extends BaseSpecification {
             counter += count
         }
 
-        return counter;
+        return counter
     }
 
     def "HTTP pipelining is supported correctly"() {

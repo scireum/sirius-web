@@ -1181,9 +1181,6 @@ public class WebContext implements SubContext {
         return lang;
     }
 
-    /*
-     * Parses the accept language header
-     */
     private String parseAcceptLanguage() {
         double bestQ = 0;
         String currentLang = CallContext.getCurrent().getLang();
@@ -1195,7 +1192,6 @@ public class WebContext implements SubContext {
         for (String str : header.split(",")) {
             String[] arr = str.trim().replace("-", "_").split(";");
 
-            //Parse the q-value
             double q = 1.0D;
             for (String s : arr) {
                 s = s.trim();
@@ -1205,7 +1201,6 @@ public class WebContext implements SubContext {
                 }
             }
 
-            //Parse the locale
             String[] l = arr[0].split("_");
             if (l.length > 0 && q > bestQ && NLS.isSupportedLanguage(l[0])) {
                 currentLang = l[0];
