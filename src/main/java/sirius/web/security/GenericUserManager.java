@@ -45,6 +45,7 @@ public abstract class GenericUserManager implements UserManager {
     private static final long DEFAULT_SSO_GRACE_INTERVAL = TimeUnit.HOURS.toSeconds(24);
     private static final String SUFFIX_USER_ID = "-user-id";
     private static final String SUFFIX_TENANT_ID = "-tenant-id";
+    private static final String SUFFIX_TTL = "-ttl";
 
     protected final ScopeInfo scope;
     protected final Extension config;
@@ -55,7 +56,7 @@ public abstract class GenericUserManager implements UserManager {
     protected String ssoSecret;
     protected List<String> publicRoles;
     protected List<String> defaultRoles;
-    protected Duration loginCookieTTL;
+    protected Duration loginTTL;
     protected UserInfo defaultUser;
 
     @SuppressWarnings("unchecked")
@@ -69,7 +70,7 @@ public abstract class GenericUserManager implements UserManager {
         this.keepLoginEnabled = config.get("keepLoginEnabled").asBoolean(true);
         this.publicRoles = config.get("publicRoles").get(List.class, Collections.emptyList());
         this.defaultRoles = config.get("defaultRoles").get(List.class, Collections.emptyList());
-        this.loginCookieTTL = config.get("loginCookieTTL").get(Duration.class, Duration.ofDays(90));
+        this.loginTTL = config.get("loginTTL").get(Duration.class, Duration.ofDays(90));
         this.defaultUser = buildDefaultUser();
     }
 
@@ -171,7 +172,12 @@ public abstract class GenericUserManager implements UserManager {
      * @param user the user that logged in
      */
     protected void updateLoginCookie(WebContext ctx, UserInfo user) {
-        ctx.setCustomSessionCookieTTL(isKeepLogin(ctx) ? loginCookieTTL : Duration.ZERO);
+        ctx.setCustomSessionCookieTTL(isKeepLogin(ctx) ? null : Duration.ZERO);
+        ctx.setSessionValue(scope.getScopeId() + SUFFIX_USER_ID, user.getUserId());
+        ctx.setSessionValue(scope.getScopeId() + SUFFIX_TENANT_ID, user.getTenantId());
+        ctx.setSessionValue(scope.getScopeId() + SUFFIX_TTL,
+                            TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+                            + loginTTL.getSeconds());
     }
 
     private boolean isKeepLogin(WebContext ctx) {
@@ -348,6 +354,11 @@ public abstract class GenericUserManager implements UserManager {
     protected UserInfo findUserInSession(WebContext ctx) {
         Value userId = ctx.getSessionValue(scope.getScopeId() + SUFFIX_USER_ID);
         String tenantId = ctx.getSessionValue(scope.getScopeId() + SUFFIX_TENANT_ID).asString();
+        Long ttl = ctx.getSessionValue(scope.getScopeId() + SUFFIX_TTL).getLong();
+
+        if (ttl != null && ttl < System.currentTimeMillis()) {
+            return null;
+        }
 
         if (!userId.isFilled() || !isUserStillValid(userId.asString())) {
             return null;
@@ -433,29 +444,15 @@ public abstract class GenericUserManager implements UserManager {
     protected abstract String computeLang(WebContext ctx, String userId);
 
     /**
-     * Attaches the given user to the current session.
-     * <p>
-     * This will make the login persistent across requests (if session management is enabled).
-     *
-     * @param user the user to attach to the session
-     * @param ctx  the current request to attach the user to
-     */
-    @Override
-    public void attachToSession(@Nonnull UserInfo user, @Nonnull WebContext ctx) {
-        ctx.setSessionValue(scope.getScopeId() + SUFFIX_TENANT_ID, user.getTenantId());
-        ctx.setSessionValue(scope.getScopeId() + SUFFIX_USER_ID, user.getUserId());
-    }
-
-    /**
      * Removes all stored user information from the current session.
      *
-     * @param user the current user - passed in, in case a cache etc. has to be cleared
-     * @param ctx  the request to remove all data from
+     * @param ctx the request to remove all data from
      */
     @Override
-    public void detachFromSession(@Nonnull UserInfo user, @Nonnull WebContext ctx) {
+    public void logout(@Nonnull WebContext ctx) {
         ctx.setSessionValue(scope.getScopeId() + SUFFIX_TENANT_ID, null);
         ctx.setSessionValue(scope.getScopeId() + SUFFIX_USER_ID, null);
+        ctx.setSessionValue(scope.getScopeId() + SUFFIX_TTL, null);
     }
 
     @Override

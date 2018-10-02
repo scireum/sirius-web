@@ -100,12 +100,7 @@ public class PublicUserManager extends GenericUserManager {
     }
 
     @Override
-    public void attachToSession(@Nonnull UserInfo user, @Nonnull WebContext ctx) {
-        // Not required - there is actually no user...
-    }
-
-    @Override
-    public void detachFromSession(@Nonnull UserInfo user, @Nonnull WebContext ctx) {
+    public void logout(@Nonnull WebContext ctx) {
         // Not required - there is actually no user...
     }
 

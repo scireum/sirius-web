@@ -66,22 +66,13 @@ public interface UserManager {
     UserInfo findUserByCredentials(@Nullable WebContext ctx, String user, String password);
 
     /**
-     * Makes the currently authenticated user persistent by storing the required information in the session.
-     *
-     * @param user the user to store
-     * @param ctx  the request containing the session
-     */
-    void attachToSession(@Nonnull UserInfo user, @Nonnull WebContext ctx);
-
-    /**
      * Removes all stored data from the session
      * <p>
      * This can be considered a logout operation.
      *
-     * @param user the user to logout
      * @param ctx  the request containing the session
      */
-    void detachFromSession(@Nonnull UserInfo user, @Nonnull WebContext ctx);
+    void logout(@Nonnull WebContext ctx);
 
     /**
      * Determines if a login via username and password is possible.

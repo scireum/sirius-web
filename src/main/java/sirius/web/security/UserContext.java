@@ -466,23 +466,6 @@ public class UserContext implements SubContext {
     }
 
     /**
-     * Binds the currently active user to the session.
-     * <p>
-     * This will make the authentication of a user persistent als long as the session remains
-     */
-    public void attachUserToSession() {
-        WebContext ctx = CallContext.getCurrent().get(WebContext.class);
-        if (!ctx.isValid()) {
-            return;
-        }
-        if (!getUser().isLoggedIn()) {
-            return;
-        }
-        UserManager manager = getUserManager();
-        manager.attachToSession(getUser(), ctx);
-    }
-
-    /**
      * Determines and returns the current user manager.
      * <p>
      * The user manager is determined by the current scope.
@@ -507,7 +490,7 @@ public class UserContext implements SubContext {
             return;
         }
         UserManager manager = getUserManager();
-        manager.detachFromSession(getCurrentUser(), ctx);
+        manager.logout(ctx);
     }
 
     /**
