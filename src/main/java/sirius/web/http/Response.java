@@ -35,6 +35,7 @@ import io.netty.handler.stream.ChunkedStream;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
@@ -292,6 +293,25 @@ public class Response {
         if (WebContext.forceHSTS) {
             response.headers()
                     .set("Strict-Transport-Security", "max-age=" + WebContext.hstsMaxAge + "; includeSubDomains");
+        }
+
+        // NEVER allow a Set-Cookie header within a cached request...
+        if (response.headers().contains(HttpHeaderNames.SET_COOKIE)) {
+            if (response.headers().contains(HttpHeaderNames.EXPIRES)) {
+                WebServer.LOG.WARN("A response with 'set-cookie' and 'expires' was created for URI: %s%n%s%n%s",
+                                   wc.getRequestedURI(),
+                                   wc,
+                                   ExecutionPoint.snapshot());
+                response.headers().remove(HttpHeaderNames.EXPIRES);
+            }
+            String cacheControl = response.headers().get(HttpHeaderNames.CACHE_CONTROL);
+            if (cacheControl != null && !cacheControl.startsWith(HttpHeaderValues.NO_CACHE.toString())) {
+                WebServer.LOG.WARN("A response with 'set-cookie' and 'cache-control' was created for URI: %s%n%s%n%s",
+                                   wc.getRequestedURI(),
+                                   wc,
+                                   ExecutionPoint.snapshot());
+                response.headers().set(HttpHeaderNames.CACHE_CONTROL, HttpHeaderValues.NO_CACHE + ", max-age=0");
+            }
         }
     }
 

@@ -53,6 +53,12 @@ public class TestController implements Controller {
         out.property("test", ctx.getParameter("test"));
     }
 
+    @Routed("/test/cookieCacheTest")
+    public void testCookieCacheTest(WebContext ctx) {
+        ctx.setCookie("Test", "1", 3600);
+        ctx.respondWith().cached().direct(HttpResponseStatus.OK, "OK");
+    }
+
     @Routed(value = "/test/json-param/:1", jsonCall = true)
     public void testJSONParam(WebContext ctx, JSONStructuredOutput out, String param) {
         out.property("test", param);
