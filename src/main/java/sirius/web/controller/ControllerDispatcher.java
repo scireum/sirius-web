@@ -13,6 +13,7 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
 import sirius.kernel.async.TaskContext;
 import sirius.kernel.async.Tasks;
+import sirius.kernel.commons.CachingSupplier;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.PriorityCollector;
@@ -22,7 +23,6 @@ import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
-import sirius.kernel.nls.NLS;
 import sirius.web.ErrorCodeException;
 import sirius.web.http.Firewall;
 import sirius.web.http.InputStreamHandler;
@@ -31,7 +31,6 @@ import sirius.web.http.Unlimited;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 import sirius.web.security.UserContext;
-import sirius.web.security.UserInfo;
 import sirius.web.services.JSONStructuredOutput;
 
 import java.lang.reflect.InvocationTargetException;
@@ -163,7 +162,10 @@ public class ControllerDispatcher implements WebDispatcher {
 
     private void performRoute(WebContext ctx, Route route, List<Object> params) {
         try {
-            setupContext(ctx, route);
+            TaskContext.get()
+                       .setSystem(SYSTEM_MVC)
+                       .setSubSystem(route.getController().getClass().getSimpleName())
+                       .setJob(ctx.getRequestedURI());
 
             // Intercept call...
             for (Interceptor interceptor : interceptors) {
@@ -172,17 +174,8 @@ public class ControllerDispatcher implements WebDispatcher {
                 }
             }
 
-            // Install user. This is forcefully called here to ensure that the ScopeDetetor
-            // and the user manager are guaranteed to be invoked one we enter the controller code...
-            UserInfo user = UserContext.getCurrentUser();
+            String missingPermission = route.checkAuth(new CachingSupplier<>(UserContext::getCurrentUser));
 
-            // If the underlying ScopeDetector made a redirect (for whatever reasons)
-            // the response will be committed and we can (must) safely return...
-            if (ctx.isResponseCommitted()) {
-                return;
-            }
-
-            String missingPermission = route.checkAuth(user);
             if (missingPermission != null) {
                 handlePermissionError(ctx, route, missingPermission);
             } else {
@@ -201,12 +194,6 @@ public class ControllerDispatcher implements WebDispatcher {
     }
 
     private void executeRoute(WebContext ctx, Route route, List<Object> params) throws Exception {
-        // If a user authenticated during this call...bind to session!
-        UserContext userCtx = UserContext.get();
-        if (userCtx.getUser().isLoggedIn()) {
-            userCtx.attachUserToSession();
-        }
-
         if (route.isJSONCall()) {
             executeJSONCall(ctx, route, params);
         } else {
@@ -249,14 +236,6 @@ public class ControllerDispatcher implements WebDispatcher {
 
         // No Interceptor is in charge...report error...
         ctx.respondWith().error(HttpResponseStatus.UNAUTHORIZED);
-    }
-
-    private void setupContext(WebContext ctx, Route route) {
-        CallContext.getCurrent().setLang(NLS.makeLang(ctx.getLang()));
-        TaskContext.get()
-                   .setSystem(SYSTEM_MVC)
-                   .setSubSystem(route.getController().getClass().getSimpleName())
-                   .setJob(ctx.getRequestedURI());
     }
 
     private void handleFailure(WebContext ctx, Route route, Throwable ex) {

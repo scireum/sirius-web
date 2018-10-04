@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -251,12 +252,12 @@ public class Route {
      * @return <tt>null</tt> if the user is authorized or otherwise the name of the permission which the user is
      * missing.
      */
-    protected String checkAuth(UserInfo user) {
+    protected String checkAuth(Supplier<UserInfo> user) {
         if (permissions == null) {
             return null;
         }
         for (String p : permissions) {
-            if (!user.hasPermission(p)) {
+            if (!user.get().hasPermission(p)) {
                 return p;
             }
         }

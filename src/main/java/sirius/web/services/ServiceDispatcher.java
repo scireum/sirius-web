@@ -11,6 +11,7 @@ package sirius.web.services;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.TaskContext;
+import sirius.kernel.commons.CachingSupplier;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
@@ -113,22 +114,10 @@ public class ServiceDispatcher implements WebDispatcher {
             }
         }
 
-        // Install language
-        CallContext.getCurrent().setLang(NLS.makeLang(ctx.getLang()));
-
-        // Install user. This is forcefully called here to ensure that the ScopeDetetor
-        // and the user manager are guaranteed to be invoked one we enter the service code...
-        UserInfo user = UserContext.getCurrentUser();
-
-        // If the underlying ScopeDetector made a redirect (for whatever reasons)
-        // the response will be committed and we can (must) safely return...
-        if (ctx.isResponseCommitted()) {
-            return;
-        }
-
         // ... and check permissions
+        CachingSupplier<UserInfo> userSupplier = new CachingSupplier<>(UserContext::getCurrentUser);
         for (String p : Permissions.computePermissionsFromAnnotations(serv.getClass())) {
-            if (!user.hasPermission(p)) {
+            if (!userSupplier.get().hasPermission(p)) {
                 ctx.respondWith().error(HttpResponseStatus.UNAUTHORIZED, "Missing permission: " + p);
                 return;
             }

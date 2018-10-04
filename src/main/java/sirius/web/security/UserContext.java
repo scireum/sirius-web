@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Used to access the current user and scope.
@@ -210,10 +211,37 @@ public class UserContext implements SubContext {
             UserManager manager = getUserManager();
             UserInfo user = manager.bindToRequest(ctx);
             setCurrentUser(user);
-            CallContext.getCurrent().setLang(user.getLang());
         } else {
             setCurrentUser(UserInfo.NOBODY);
         }
+    }
+
+    /**
+     * Bind a user from the session if available.
+     * <p>
+     * If no user is available (currently logged in) nothing will happen. User {@link #getUser()}
+     * to fully bind a user and attempt a login.
+     *
+     * @param ctx the current web context to bind against
+     * @return the user which was found in the session or an empty optional if none is present
+     */
+    public Optional<UserInfo> bindUserIfPresent(WebContext ctx) {
+        if (ctx == null || !ctx.isValid()) {
+            return Optional.empty();
+        }
+
+        if (currentUser != null) {
+            return Optional.of(currentUser);
+        }
+
+        UserManager manager = getUserManager();
+        UserInfo user = manager.findUserForRequest(ctx);
+        if (user.isLoggedIn()) {
+            setCurrentUser(user);
+            return Optional.of(user);
+        }
+
+        return Optional.empty();
     }
 
     /**
@@ -243,8 +271,10 @@ public class UserContext implements SubContext {
      */
     public void setCurrentUser(@Nullable UserInfo user) {
         this.currentUser = user == null ? UserInfo.NOBODY : user;
-        CallContext.getCurrent().addToMDC(MDC_USER_ID, () -> currentUser.getUserId());
-        CallContext.getCurrent().addToMDC(MDC_USER_NAME, () -> currentUser.getUserName());
+        CallContext call = CallContext.getCurrent();
+        call.addToMDC(MDC_USER_ID, () -> currentUser.getUserId());
+        call.addToMDC(MDC_USER_NAME, () -> currentUser.getUserName());
+        call.setLang(user.getLang());
     }
 
     /**
@@ -411,7 +441,7 @@ public class UserContext implements SubContext {
     /**
      * Returns the current user.
      * <p>
-     * If no user is present yet, it tries to parse the current {@link WebContext} and retireve the user from the
+     * If no user is present yet, it tries to parse the current {@link WebContext} and retrieve the user from the
      * session.
      *
      * @return the currently active user
