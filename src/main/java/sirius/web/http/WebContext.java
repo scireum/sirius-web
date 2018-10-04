@@ -78,6 +78,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Provides access to a request received by the WebServer.
@@ -91,6 +93,9 @@ public class WebContext implements SubContext {
     private static final String HEADER_X_FORWARDED_PROTO = "X-Forwarded-Proto";
     private static final String PROTOCOL_HTTPS = "https";
     private static final String PROTOCOL_HTTP = "http";
+
+    private static final Pattern ACCEPT_LANGUAGE_PATTERN =
+            Pattern.compile(" *([a-z]{2})(-[a-z]{2})? *(;q=([0-9.]+) *)?");
 
     /*
      * Underlying channel to send and receive data
@@ -192,11 +197,6 @@ public class WebContext implements SubContext {
      * Determines if the client session was modified and should be re-set via a cookie
      */
     private volatile boolean sessionModified;
-
-    /*
-     * Contains the decoded language as two-letter code
-     */
-    private String lang;
 
     /*
      * Specifies the microtiming key used for this request. If null, no microtiming will be recorded.
@@ -1171,40 +1171,27 @@ public class WebContext implements SubContext {
     /**
      * Returns the accepted language of the client as two-letter language code.
      *
-     * @return the two-letter code of the accepted language of the user agent. Returns the current language, if no
-     * supported language was submitted.
+     * @return the two-letter code of the accepted language of the user agent or <tt>null</tt> if no valid accept
+     * language was found
      */
+    @Nullable
     public String getLang() {
-        if (lang == null) {
-            lang = parseAcceptLanguage();
-        }
-        return lang;
-    }
-
-    private String parseAcceptLanguage() {
         double bestQ = 0;
-        String currentLang = CallContext.getCurrent().getLang();
+        String currentLang = null;
         String header = getHeader(HttpHeaderNames.ACCEPT_LANGUAGE);
         if (Strings.isEmpty(header)) {
             return currentLang;
         }
         header = header.toLowerCase();
-        for (String str : header.split(",")) {
-            String[] arr = str.trim().replace("-", "_").split(";");
-
-            double q = 1.0D;
-            for (String s : arr) {
-                s = s.trim();
-                if (s.startsWith("q=")) {
-                    q = Double.parseDouble(s.substring(2).trim());
-                    break;
+        for (String languageBlock : header.split(",")) {
+            Matcher m = ACCEPT_LANGUAGE_PATTERN.matcher(languageBlock);
+            if (m.matches()) {
+                double q = Value.of(m.group(4)).asDouble(1.0d);
+                String language = m.group(1);
+                if (q > bestQ && NLS.isSupportedLanguage(language)) {
+                    bestQ = q;
+                    currentLang = language;
                 }
-            }
-
-            String[] l = arr[0].split("_");
-            if (l.length > 0 && q > bestQ && NLS.isSupportedLanguage(l[0])) {
-                currentLang = l[0];
-                bestQ = q;
             }
         }
 
