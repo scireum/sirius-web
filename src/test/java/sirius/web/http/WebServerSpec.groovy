@@ -28,9 +28,6 @@ import sirius.kernel.health.LogHelper
  * <p>
  * This ensures a basic performance profile and also makes sure no trivial race conditions or memory leaks
  * are added.
- *
- * @author Andreas Haufler (aha@scireum.de)
- * @since 2015/05
  */
 class WebServerSpec extends BaseSpecification {
 
@@ -40,12 +37,31 @@ class WebServerSpec extends BaseSpecification {
         c.connect()
         def result = new String(ByteStreams.toByteArray(c.getInputStream()), Charsets.UTF_8)
         expectedHeaders.each { k, v ->
-            if (!Strings.areEqual(c.getHeaderField(k), v)) {
+            if ("*" == v) {
+                if (Strings.isEmpty(c.getHeaderField(k))) {
+                    throw new IllegalStateException("Header: " + k + " was expected, but not set")
+                }
+            } else if (!Strings.areEqual(c.getHeaderField(k), v)) {
                 throw new IllegalStateException("Header: " + k + " was " + c.getHeaderField(k) + " instead of " + v)
             }
         }
 
         return result
+    }
+
+    /**
+     * Ensures that set-cookie and caching headers aren't mixed.
+     */
+    def "Invoke /test/cookieCacheTest"() {
+        given:
+        def uri = "/test/cookieCacheTest"
+        def headers = ['accept-encoding': 'gzip']
+        // File is too small to be compressed!
+        def expectedHeaders = ['set-cookie': '*', 'expires': null, 'cache-control': 'no-cache, max-age=0']
+        when:
+        def data = callAndRead(uri, headers, expectedHeaders)
+        then:
+        notThrown(IllegalStateException)
     }
 
     def "Invoke /assets/test.css to test"() {
@@ -314,7 +330,7 @@ class WebServerSpec extends BaseSpecification {
         when:
         u.setRequestMethod("POST")
         u.setRequestProperty("Content-Type",
-                "application/x-www-form-urlencoded")
+                             "application/x-www-form-urlencoded")
 
         u.setRequestProperty("Content-Length", Integer.toString(testString.getBytes().length))
         u.setDoInput(true)
@@ -351,7 +367,7 @@ class WebServerSpec extends BaseSpecification {
         when:
         u.setRequestMethod("POST")
         u.setRequestProperty("Content-Type",
-                "application/x-www-form-urlencoded")
+                             "application/x-www-form-urlencoded")
 
         u.setRequestProperty("Content-Length", Integer.toString(testString.getBytes().length))
         u.setDoInput(true)
@@ -400,11 +416,11 @@ class WebServerSpec extends BaseSpecification {
         def counter = 0
         def count = 0
         def buffer = new byte[8192]
-        while((count = input.read(buffer)) > 0) {
+        while ((count = input.read(buffer)) > 0) {
             counter += count
         }
 
-        return counter;
+        return counter
     }
 
     def "HTTP pipelining is supported correctly"() {

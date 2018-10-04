@@ -35,6 +35,7 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
+import sirius.web.security.UserContext;
 
 import javax.net.ssl.SSLHandshakeException;
 import java.io.File;
@@ -158,12 +159,21 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         currentCall = CallContext.initialize();
         currentCall.addToMDC("uri", req.uri());
         WebContext wc = currentCall.get(WebContext.class);
-        if (ssl) {
-            wc.ssl = true;
-        }
+        wc.ssl = this.ssl;
         wc.setCtx(ctx);
         wc.setRequest(req);
         currentCall.get(TaskContext.class).setSystem("HTTP").setJob(wc.getRequestedURI());
+
+        // Adds a deferred handler to determine the language to i18n stuff.
+        // If a user is present, the system will sooner or later detect it and set the appropriate
+        // language. If not, this handler will be evaluated, check for a user in the session or
+        // if everything else fails, parse the lang header.
+        currentCall.deferredSetLang(callContext -> {
+            if (!callContext.get(UserContext.class).bindUserIfPresent(wc).isPresent()) {
+                callContext.setLang(NLS.makeLang(wc.getLang()));
+            }
+        });
+
         return wc;
     }
 

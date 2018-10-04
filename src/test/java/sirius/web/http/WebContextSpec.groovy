@@ -8,6 +8,8 @@
 
 package sirius.web.http
 
+import io.netty.handler.codec.http.HttpHeaderNames
+import io.netty.handler.codec.http.HttpHeaderValues
 import sirius.kernel.BaseSpecification
 
 class WebContextSpec extends BaseSpecification {
@@ -64,4 +66,17 @@ class WebContextSpec extends BaseSpecification {
         and:
         r.get("a").isFilled()
     }
+
+
+    def "parseAcceptLanguage works as expected"(header, lang) {
+        expect:
+        TestRequest.GET("/test?a=a").addHeader(HttpHeaderNames.ACCEPT_LANGUAGE, header).getLang() == lang
+        where:
+        header | lang
+        "de, en;q=0.8" | "de"
+        "en, de;q=0.8" | "en"
+        "xx, de;q=0.8, en-gb;q=0.7" | "de"
+        "xx, de;q=0.5, en-gb;q=0.7" | "en"
+    }
+
 }

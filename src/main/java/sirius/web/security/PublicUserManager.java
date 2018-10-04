@@ -27,9 +27,6 @@ import java.util.Set;
  * This roles granted can be controlled by two config entries. One is <tt>security.publicRoles</tt> which
  * also affects all other user managers. The other is <tt>defaultRoles</tt> which has to be defined within
  * the scope.
- * <p>
- * Note that also <tt>trustedRoles</tt> can be defined to control roles which are only added to a trusted user
- * (i.e. from the local network).
  */
 public class PublicUserManager extends GenericUserManager {
 
@@ -53,7 +50,7 @@ public class PublicUserManager extends GenericUserManager {
         super(scope, config);
         this.user = UserInfo.Builder.createUser(PUBLIC_PLACEHOLDER)
                                     .withUsername(PUBLIC_PLACEHOLDER)
-                                    .withPermissions(transformRoles(Collections.emptyList(), false))
+                                    .withPermissions(transformRoles(Collections.emptyList()))
                                     .build();
     }
 
@@ -103,12 +100,7 @@ public class PublicUserManager extends GenericUserManager {
     }
 
     @Override
-    public void attachToSession(@Nonnull UserInfo user, @Nonnull WebContext ctx) {
-        // Not required - there is actually no user...
-    }
-
-    @Override
-    public void detachFromSession(@Nonnull UserInfo user, @Nonnull WebContext ctx) {
+    public void logout(@Nonnull WebContext ctx) {
         // Not required - there is actually no user...
     }
 
