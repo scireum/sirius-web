@@ -138,7 +138,7 @@ public class Cluster implements EveryMinute {
                 newNodeState = m.getState();
             }
             if (nodeState != MetricState.RED && m.getState() == MetricState.RED) {
-                LOG.WARN("NodeState: Metric %s is %s", m.getName(), m.getValueAsString());
+                LOG.WARN("NodeState: Metric %s is %s", m.getLabel(), m.getValueAsString());
             }
         }
 

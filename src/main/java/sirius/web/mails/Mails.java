@@ -59,8 +59,8 @@ public class Mails implements MetricProvider {
 
     @Override
     public void gather(MetricsCollector collector) {
-        collector.metric("mails-out", "Mails Sent", mailsOut.getCount(), null);
-        collector.metric("mails-duration", "Send Mail Duration", mailsOut.getAndClear(), "ms");
+        collector.metric("mails_out", "mails-out", "Mails Sent", mailsOut.getCount(), null);
+        collector.metric("mails_duration", "mails-duration", "Send Mail Duration", mailsOut.getAndClear(), "ms");
     }
 
     /**

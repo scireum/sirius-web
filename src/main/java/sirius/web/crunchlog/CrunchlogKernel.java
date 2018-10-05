@@ -360,7 +360,7 @@ public class CrunchlogKernel extends BackgroundLoop implements Command, Stoppabl
                                      "1/min");
         if (warnedAboutOverflow) {
             // Emits a one to make the system state turn red if the crunchlog is unhappy
-            collector.metric("crunchlog-error", "Crunchlog Error", 1, null);
+            collector.metric("crunchlog_error", "crunchlog-error", "Crunchlog Error", 1, null);
         }
     }
 

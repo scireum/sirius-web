@@ -717,39 +717,39 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
 
     @Override
     public void gather(MetricsCollector collector) {
-        collector.differentialMetric("http-bytes-in",
+        collector.differentialMetric("http_bytes_in",
                                      "http-bytes-in",
                                      "HTTP Bytes-In",
                                      bytesIn.get() / 1024d / 60,
                                      "KB/s");
-        collector.differentialMetric("http-bytes-out",
+        collector.differentialMetric("http_bytes_out",
                                      "http-bytes-out",
                                      "HTTP Bytes-Out",
                                      bytesOut.get() / 1024d / 60,
                                      "KB/s");
-        collector.differentialMetric("http-connects", "http-connects", "HTTP Connects", connections.get(), "/min");
-        collector.differentialMetric("http-requests", "http-requests", "HTTP Requests", requests.get(), "/min");
+        collector.differentialMetric("http_connects", "http-connects", "HTTP Connects", connections.get(), "/min");
+        collector.differentialMetric("http_requests", "http-requests", "HTTP Requests", requests.get(), "/min");
         collector.differentialMetric("http-blocks", "http-blocks", "HTTP Blocked Requests", blocks.get(), "/min");
-        collector.differentialMetric("http-timeouts",
+        collector.differentialMetric("http_timeouts",
                                      "http-timeouts",
                                      "HTTP Idle Timeouts",
                                      idleTimeouts.get(),
                                      "/min");
-        collector.differentialMetric("http-client-errors",
+        collector.differentialMetric("http_client_errors",
                                      "http-client-errors",
                                      "HTTP Client Errors (4xx)",
                                      clientErrors.get(),
                                      "/min");
-        collector.differentialMetric("http-server-errors",
+        collector.differentialMetric("http_server_errors",
                                      "http-server-errors",
                                      "HTTP Server Errors (5xx)",
                                      serverErrors.get(),
                                      "/min");
-        collector.metric("http-open-connections", "HTTP Open Connections", openConnections.size(), null);
-        collector.metric("http-response-time", "HTTP Avg. Reponse Time", responseTime.getAndClear(), "ms");
-        collector.metric("http-response-ttfb", "HTTP Avg. Time To First Byte", timeToFirstByte.getAndClear(), "ms");
-        collector.metric("http-response-queue", "HTTP Avg. Queue Time", queueTime.getAndClear(), "ms");
-        collector.metric("websockets", "Open Websockets", websockets.get(), null);
+        collector.metric("http_open_connections","http-open-connections", "HTTP Open Connections", openConnections.size(), null);
+        collector.metric("http_response_time","http-response-time", "HTTP Avg. Reponse Time", responseTime.getAndClear(), "ms");
+        collector.metric("http_response_ttfb","http-response-ttfb", "HTTP Avg. Time To First Byte", timeToFirstByte.getAndClear(), "ms");
+        collector.metric("http_response_queue","http-response-queue", "HTTP Avg. Queue Time", queueTime.getAndClear(), "ms");
+        collector.metric("http_websockets", "http-websockets", "Open Websockets", websockets.get(), null);
     }
 
     /**
