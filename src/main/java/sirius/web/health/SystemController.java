@@ -8,6 +8,7 @@
 
 package sirius.web.health;
 
+import com.google.common.base.Charsets;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.MultiMap;
@@ -29,6 +30,8 @@ import sirius.web.controller.Routed;
 import sirius.web.http.WebContext;
 import sirius.web.security.Permission;
 
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -110,12 +113,31 @@ public class SystemController extends BasicController {
     @Routed("/system/metric/:1")
     public void metric(WebContext ctx, String key) {
         for (Metric m : metrics.getMetrics()) {
-            if (Strings.areEqual(key, m.getName())) {
+            if (Strings.areEqual(key, m.getCode())) {
                 ctx.respondWith().direct(HttpResponseStatus.OK, NLS.toMachineString(m.getValue()));
                 return;
             }
         }
         ctx.respondWith().direct(HttpResponseStatus.OK, NLS.toMachineString(0d));
+    }
+
+    /**
+     * Sends all known metrics in a format understood by <b>prometheus.io</b>.
+     *
+     * @param ctx the request being handled
+     */
+    @Routed("/system/metrics")
+    public void metrics(WebContext ctx) {
+        try (PrintWriter out = new PrintWriter(new OutputStreamWriter(ctx.respondWith()
+                                                                         .outputStream(HttpResponseStatus.OK,
+                                                                                       "text/plain; version=0.0.4"),
+                                                                      Charsets.UTF_8))) {
+            for (Metric m : metrics.getMetrics()) {
+                out.print(m.getCode());
+                out.print(" ");
+                out.println(NLS.toMachineString(m.getValue()));
+            }
+        }
     }
 
     /**

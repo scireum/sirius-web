@@ -53,7 +53,7 @@
             <i:if test="all || m.getState() != sirius.kernel.health.metrics.MetricState.GRAY">
                 <tr class="@m.getState()">
                     <td style="overflow: hidden">
-                        @m.getName()
+                        @m.getLabel()
                     </td>
                     <td class="align-right" style="overflow: hidden">
                         @m.getValueAsString()
@@ -89,7 +89,7 @@
                 <i:if test="all || m.getState() != sirius.kernel.health.metrics.MetricState.GRAY">
                     <tr class="@m.getState()">
                         <td style="overflow: hidden">
-                            @m.getName()
+                            @m.getLabel()
                         </td>
                         <td class="align-right" style="overflow: hidden">
                             @m.getValueAsString()
