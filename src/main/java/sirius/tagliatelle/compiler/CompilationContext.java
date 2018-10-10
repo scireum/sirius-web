@@ -190,6 +190,24 @@ public class CompilationContext {
     }
 
     /**
+     * Pops locals off the stack as long as their <tt>stackIndex</tt> is greater or equal than the one provided.
+     * <p>
+     * Note that this will only reduce the visibility of the variables but not free up the technical stack location. We
+     * only used each stack location once, to greatly simplify inlining.
+     *
+     * @param position the position which caused the popUntil - mainly used for error reporting
+     */
+    public void popUntil(Position position, int localIndex) {
+        if (!stack.isEmpty()) {
+            while (!stack.isEmpty() && stack.get(stack.size() - 1).stackIndex >= localIndex) {
+                stack.remove(stack.size() - 1);
+            }
+        } else {
+            error(position, "Cannot pop from empty stack");
+        }
+    }
+
+    /**
      * Returns the maximum stack depth required when rendering this template.
      *
      * @return the maximal required stack depth to render this template

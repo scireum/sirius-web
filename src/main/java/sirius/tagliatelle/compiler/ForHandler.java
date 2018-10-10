@@ -48,7 +48,7 @@ public class ForHandler extends ExpressionHandler {
         compiler.consumeExpectedCharacter('{');
         result.setLocalIndex(compiler.getContext().push(result.getStartOfBlock(), variable, type));
         result.setLoop(compiler.parseBlock(null, "}"));
-        compiler.getContext().pop(compiler.getReader().current());
+        compiler.getContext().popUntil(compiler.getReader().current(), result.getLocalIndex());
         compiler.consumeExpectedCharacter('}');
 
         result.verify(compiler.getContext());

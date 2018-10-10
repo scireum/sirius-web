@@ -1,0 +1,15 @@
+<i:arg type="List" name="iter"/>
+
+<i:for type="String" var="el" items="iter">
+    <i:local name="test" value="5"/>
+    @el
+</i:for>
+@test
+@el
+
+@for(String el : iter) {
+    <i:local name="test" value="5"/>
+    @el
+}
+@test
+@el

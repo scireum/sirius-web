@@ -302,4 +302,42 @@ class CompilerSpec extends BaseSpecification {
         then:
         basicallyEqual(result, expectedResult)
     }
+
+    def "locals within loops cleanup works"() {
+        given:
+        List<String> list = ["a", "b", "c"]
+        String expectedResult = resources.resolve("templates/local-scope.html").get().getContentAsString()
+        when:
+        def ctx = new CompilationContext(new Template("test", null), null)
+        List<CompileError> errors = new Compiler(ctx, tagliatelle.resolve("templates/local-scope.html.pasta")
+                                                                 .get().getResource().getContentAsString()).compile()
+        then:
+        errors.size() == 0
+        and:
+        basicallyEqual(ctx.getTemplate().renderToString(list), expectedResult)
+    }
+
+    def "failing access out of scope works"() {
+        given:
+        List<String> list = ["a", "b", "c"]
+        List<CompileError> errors
+        when:
+        try {
+            def ctx = new CompilationContext(new Template("test", null), null)
+            new Compiler(ctx, tagliatelle.resolve("templates/out-of-scope.html.pasta")
+                                         .get().getResource().getContentAsString()).compile()
+        } catch (CompileException err) {
+            errors = err.getErrors()
+        }
+        then:
+        errors.size() == 4
+        errors.get(0).getError().getSeverity() == ParseError.Severity.ERROR
+        errors.get(0).toString().contains("Unknown variable test")
+        errors.get(1).getError().getSeverity() == ParseError.Severity.ERROR
+        errors.get(1).toString().contains("Unknown variable el")
+        errors.get(2).getError().getSeverity() == ParseError.Severity.ERROR
+        errors.get(2).toString().contains("Unknown variable test")
+        errors.get(3).getError().getSeverity() == ParseError.Severity.ERROR
+        errors.get(3).toString().contains("Unknown variable el")
+    }
 }
