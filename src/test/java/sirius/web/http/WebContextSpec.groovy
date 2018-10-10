@@ -87,8 +87,8 @@ class WebContextSpec extends BaseSpecification {
         then:
         c.getResponseCode() == 200
         and:
-        c.getHeaderFields().get("set-cookie").get(0).contains("test1=test")
+        c.getHeaderFields().get(HttpHeaderNames.SET_COOKIE).get(0).contains("test1=test")
         and:
-        !c.getHeaderFields().get("set-cookie").get(0).contains("test2=")
+        !c.getHeaderFields().get(HttpHeaderNames.SET_COOKIE).get(0).contains("test2=")
     }
 }
