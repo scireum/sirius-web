@@ -713,13 +713,20 @@ public class WebContext implements SubContext {
         if (session == null) {
             initSession();
         }
+
         if (value == null) {
             String previous = session.remove(key);
-            sessionModified = Strings.isFilled(previous);
+
+            if (Strings.isFilled(previous)) {
+                sessionModified = true;
+            }
         } else {
             String newValue = NLS.toMachineString(value);
             String previous = session.put(key, newValue);
-            sessionModified = !Objects.equals(previous, newValue);
+
+            if (!Objects.equals(previous, newValue)) {
+                sessionModified = true;
+            }
         }
     }
 

@@ -79,4 +79,16 @@ class WebContextSpec extends BaseSpecification {
         "xx, de;q=0.5, en-gb;q=0.7" | "en"
     }
 
+    def "setSessionValue works as expected"() {
+        when:
+        HttpURLConnection c = new URL("http://localhost:9999/test/session-test").openConnection()
+        c.setRequestMethod("GET")
+        c.connect()
+        then:
+        c.getResponseCode() == 200
+        and:
+        c.getHeaderFields().get("set-cookie").get(0).contains("test1=test")
+        and:
+        !c.getHeaderFields().get("set-cookie").get(0).contains("test2=")
+    }
 }
