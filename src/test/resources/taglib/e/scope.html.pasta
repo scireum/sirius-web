@@ -1,0 +1,3 @@
+<i:local name="outer" value="1"/>
+test
+<i:render name="body"/>
