@@ -228,4 +228,12 @@ public class TestController implements Controller {
             out.property("test", "1");
         });
     }
+
+    @Routed("/test/session-test")
+    public void sessionTest(WebContext ctx) {
+        ctx.setSessionValue("test1", "test");
+        ctx.setSessionValue("test2", null);
+
+        ctx.respondWith().direct(HttpResponseStatus.OK, "OK");
+    }
 }
