@@ -302,4 +302,18 @@ class CompilerSpec extends BaseSpecification {
         then:
         basicallyEqual(result, expectedResult)
     }
+
+    def "locals within loops cleanup works"(){
+        given:
+        List<String> list = ["a", "b", "c"]
+        String expectedResult = resources.resolve("templates/local-scope.html").get().getContentAsString()
+        when:
+        def ctx = new CompilationContext(new Template("test", null), null)
+        List<CompileError> errors = new Compiler(ctx, tagliatelle.resolve("templates/local-scope.html.pasta")
+                                                                 .get().getResource().getContentAsString()).compile()
+        then:
+        errors.size() == 0
+        and:
+        basicallyEqual(ctx.getTemplate().renderToString(list), expectedResult)
+    }
 }
