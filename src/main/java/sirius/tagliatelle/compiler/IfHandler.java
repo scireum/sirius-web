@@ -20,6 +20,8 @@ import sirius.tagliatelle.emitter.Emitter;
 @Register(classes = ExpressionHandler.class)
 public class IfHandler extends ExpressionHandler {
 
+    private static final String EMPTY_STRING = "";
+
     @Override
     public boolean shouldProcess(Compiler compiler) {
         return compiler.isAtText(0, "if") && compiler.getReader().next(2).is(' ', '(');
@@ -28,6 +30,7 @@ public class IfHandler extends ExpressionHandler {
     @Override
     public Emitter process(Compiler compiler) {
         ConditionalEmitter result = new ConditionalEmitter(compiler.getReader().current());
+        result.setLocalIndex(compiler.getContext().push(result.getStartOfBlock(), EMPTY_STRING, String.class));
         compiler.getReader().consume(2);
         compiler.skipWhitespaces();
         compiler.consumeExpectedCharacter('(');
@@ -38,14 +41,17 @@ public class IfHandler extends ExpressionHandler {
         compiler.consumeExpectedCharacter('{');
         result.setWhenTrue(compiler.parseBlock(null, "}"));
         compiler.consumeExpectedCharacter('}');
+        compiler.getContext().popUntil(compiler.getReader().current(), result.getLocalIndex());
         compiler.skipWhitespaces();
         if (isAtElse(compiler)) {
+            result.setLocalIndex(compiler.getContext().push(result.getStartOfBlock(), EMPTY_STRING, String.class));
             compiler.skipWhitespaces();
             compiler.reader.consume(4);
             compiler.skipWhitespaces();
             compiler.consumeExpectedCharacter('{');
             result.setWhenFalse(compiler.parseBlock(null, "}"));
             compiler.consumeExpectedCharacter('}');
+            compiler.getContext().popUntil(compiler.getReader().current(), result.getLocalIndex());
         }
 
         return result;
