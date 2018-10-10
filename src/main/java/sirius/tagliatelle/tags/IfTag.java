@@ -69,6 +69,7 @@ public class IfTag extends TagHandler {
         result.setWhenTrue(getBlock("body"));
         result.setWhenFalse(getBlock("else"));
         targetBlock.addChild(result);
+        // these might have already been popped of the stack if a <i:else> is present
         getCompilationContext().tryPopUntil(getStartOfTag(), localIndex);
     }
 
