@@ -22,6 +22,8 @@ import java.util.List;
  */
 public class ElseTag extends TagHandler {
 
+    private static final String EMPTY_STRING = "";
+
     /**
      * Creates new tags of the given type (name).
      */
@@ -50,6 +52,8 @@ public class ElseTag extends TagHandler {
         }
     }
 
+    private int localIndex;
+
     @Override
     public void beforeBody() {
         if (!checkParentHandler()) {
@@ -57,6 +61,7 @@ public class ElseTag extends TagHandler {
         }
 
         ((IfTag) getParentHandler()).clearLocalsFromStack();
+        localIndex = getCompilationContext().push(getStartOfTag(), EMPTY_STRING, String.class);
     }
 
     @Override
@@ -69,6 +74,8 @@ public class ElseTag extends TagHandler {
         if (body != null) {
             getParentHandler().addBlock("else", body);
         }
+
+        getCompilationContext().popUntil(getStartOfTag(), localIndex);
     }
 
     private boolean checkParentHandler() {

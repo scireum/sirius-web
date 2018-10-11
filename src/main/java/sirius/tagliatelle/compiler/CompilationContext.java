@@ -190,9 +190,7 @@ public class CompilationContext {
     }
 
     /**
-     * Pops locals off the stack as long as their <tt>stackIndex</tt> is greater or equal than the one provided. In
-     * contrast to {@link #popUntil(Position, int)} this method does generate a {@link ParseError} when the stack
-     * is already empty.
+     * Pops locals off the stack as long as their <tt>stackIndex</tt> is greater or equal than the one provided.
      * <p>
      * Note that this will only reduce the visibility of the variables but not free up the technical stack location. We
      * only used each stack location once, to greatly simplify inlining.
@@ -206,22 +204,6 @@ public class CompilationContext {
             }
         } else {
             error(position, "Cannot pop from empty stack");
-        }
-    }
-
-    /**
-     * Pops locals off the stack as long as their <tt>stackIndex</tt> is greater or equal than the one provided. In
-     * contrast to {@link #popUntil(Position, int)} this method does not generate a {@link ParseError} when the stack
-     * is already empty.
-     * <p>
-     * Note that this will only reduce the visibility of the variables but not free up the technical stack location. We
-     * only used each stack location once, to greatly simplify inlining.
-     *
-     * @param position the position which caused the popUntil - mainly used for error reporting
-     */
-    public void tryPopUntil(Position position, int localIndex) {
-        while (!stack.isEmpty() && stack.get(stack.size() - 1).stackIndex >= localIndex) {
-            stack.remove(stack.size() - 1);
         }
     }
 
