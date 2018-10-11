@@ -669,7 +669,7 @@ public class WebContext implements SubContext {
             }
         }
         if (checkSessionDataIntegrity(decodedSession, sessionInfo)) {
-            if (decodedSessionTTL > 0) {
+            if (decodedSessionTTL >= 0) {
                 sessionCookieTTL = decodedSessionTTL;
             }
             return decodedSession;
