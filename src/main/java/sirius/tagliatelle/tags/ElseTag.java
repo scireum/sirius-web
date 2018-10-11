@@ -22,6 +22,8 @@ import java.util.List;
  */
 public class ElseTag extends TagHandler {
 
+    private static final String EMPTY_STRING = "";
+
     /**
      * Creates new tags of the given type (name).
      */
@@ -50,10 +52,21 @@ public class ElseTag extends TagHandler {
         }
     }
 
+    private int localIndex;
+
+    @Override
+    public void beforeBody() {
+        if (!checkParentHandler()) {
+            return;
+        }
+
+        ((IfTag) getParentHandler()).clearLocalsFromStack();
+        localIndex = getCompilationContext().push(getStartOfTag(), EMPTY_STRING, String.class);
+    }
+
     @Override
     public void apply(CompositeEmitter targetBlock) {
-        if (!(getParentHandler() instanceof IfTag)) {
-            getCompilationContext().error(getStartOfTag(), "i:else must be defined within i:if!");
+        if (!checkParentHandler()) {
             return;
         }
 
@@ -61,5 +74,16 @@ public class ElseTag extends TagHandler {
         if (body != null) {
             getParentHandler().addBlock("else", body);
         }
+
+        getCompilationContext().popUntil(getStartOfTag(), localIndex);
+    }
+
+    private boolean checkParentHandler() {
+        if (!(getParentHandler() instanceof IfTag)) {
+            getCompilationContext().error(getStartOfTag(), "i:else must be defined within i:if!");
+            return false;
+        }
+
+        return true;
     }
 }

@@ -22,6 +22,8 @@ import java.util.List;
  */
 public class IfTag extends TagHandler {
 
+    private static final String EMPTY_STRING = "";
+
     /**
      * Creates new tags of the given type (name).
      */
@@ -53,6 +55,13 @@ public class IfTag extends TagHandler {
         }
     }
 
+    private int localIndex;
+
+    @Override
+    public void beforeBody() {
+        localIndex = getCompilationContext().push(getStartOfTag(), EMPTY_STRING, String.class);
+    }
+
     @Override
     public void apply(CompositeEmitter targetBlock) {
         ConditionalEmitter result = new ConditionalEmitter(getStartOfTag());
@@ -60,6 +69,10 @@ public class IfTag extends TagHandler {
         result.setWhenTrue(getBlock("body"));
         result.setWhenFalse(getBlock("else"));
         targetBlock.addChild(result);
+        if (getBlock("else") == null) {
+            // if a else-block is present, the corresponding handler already popped the locals off the stack
+            getCompilationContext().popUntil(getStartOfTag(), localIndex);
+        }
     }
 
     @Override
@@ -69,5 +82,13 @@ public class IfTag extends TagHandler {
         }
 
         return super.getExpectedAttributeType(name);
+    }
+
+    /**
+     * Clears all local variables created by this if-tag from the stack. This is mainly needed, as <i:if></i:if>
+     * can contain a <i:else></i:else> and we have to clear the locals before entering the else-block.
+     */
+    public void clearLocalsFromStack() {
+        getCompilationContext().popUntil(getStartOfTag(), localIndex);
     }
 }

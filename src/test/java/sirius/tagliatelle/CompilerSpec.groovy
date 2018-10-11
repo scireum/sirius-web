@@ -11,7 +11,6 @@ package sirius.tagliatelle
 import parsii.tokenizer.ParseError
 import sirius.kernel.BaseSpecification
 import sirius.kernel.commons.Amount
-import sirius.kernel.commons.Strings
 import sirius.kernel.commons.Value
 import sirius.kernel.di.std.Part
 import sirius.tagliatelle.compiler.CompilationContext
@@ -27,12 +26,12 @@ class CompilerSpec extends BaseSpecification {
 
     @Part
     private static Tagliatelle tagliatelle
+
     @Part
     private static Resources resources
 
-    private boolean basicallyEqual(String left, String right) {
-        return Strings.areEqual(left.replaceAll("\\s", ""), right.replaceAll("\\s", ""))
-    }
+    @Part
+    private static TestHelper test
 
     def "vararg detection doesn't crash when a non-vararg method is invoked with null"() {
         when:
@@ -142,7 +141,7 @@ class CompilerSpec extends BaseSpecification {
         when:
         String result = tagliatelle.resolve("templates/brackets.html.pasta").get().renderToString()
         then:
-        basicallyEqual(result, expectedResult)
+        test.basicallyEqual(result, expectedResult)
     }
 
     def "loops and the loop state work as expected"() {
@@ -151,7 +150,7 @@ class CompilerSpec extends BaseSpecification {
         when:
         String result = tagliatelle.resolve("templates/loop.html.pasta").get().renderToString(Arrays.asList(1, 2, 3, 4, 5))
         then:
-        basicallyEqual(result, expectedResult)
+        test.basicallyEqual(result, expectedResult)
     }
 
     def "dynamicInvoke works"() {
@@ -160,7 +159,7 @@ class CompilerSpec extends BaseSpecification {
         when:
         String result = tagliatelle.resolve("templates/dynamic-invoke-outer.html.pasta").get().renderToString()
         then:
-        basicallyEqual(result, expectedResult)
+        test.basicallyEqual(result, expectedResult)
     }
 
     def "renderToString works"() {
@@ -169,7 +168,7 @@ class CompilerSpec extends BaseSpecification {
         when:
         String result = tagliatelle.resolve("templates/render-to-string.html.pasta").get().renderToString()
         then:
-        basicallyEqual(result, expectedResult)
+        test.basicallyEqual(result, expectedResult)
     }
 
     def "define and xml and json macros works"() {
@@ -178,7 +177,7 @@ class CompilerSpec extends BaseSpecification {
         when:
         String result = tagliatelle.resolve("templates/define.html.pasta").get().renderToString()
         then:
-        basicallyEqual(result, expectedResult)
+        test.basicallyEqual(result, expectedResult)
     }
 
     def "missing tag detection works"() {
@@ -229,7 +228,7 @@ class CompilerSpec extends BaseSpecification {
         when:
         String result = tagliatelle.resolve("templates/timeMacros.html.pasta").get().renderToString()
         then:
-        basicallyEqual(result, expectedResult)
+        test.basicallyEqual(result, expectedResult)
     }
 
     def "different macro call syntax"() {
@@ -238,7 +237,7 @@ class CompilerSpec extends BaseSpecification {
         when:
         String result = tagliatelle.resolve("templates/macroSyntax.html.pasta").get().renderToString()
         then:
-        basicallyEqual(result, expectedResult)
+        test.basicallyEqual(result, expectedResult)
     }
 
     def "jsTemplate taglib works and prevents XSS"() {
@@ -247,7 +246,7 @@ class CompilerSpec extends BaseSpecification {
         when:
         String result = tagliatelle.resolve("templates/js-template.html.pasta").get().renderToString()
         then:
-        basicallyEqual(result, expectedResult)
+        test.basicallyEqual(result, expectedResult)
     }
 
 
@@ -257,7 +256,7 @@ class CompilerSpec extends BaseSpecification {
         when:
         String result = tagliatelle.resolve("templates/attribute-expressions.html.pasta").get().renderToString()
         then:
-        basicallyEqual(result, expectedResult)
+        test.basicallyEqual(result, expectedResult)
     }
 
     def "validate recursion of a template"() {
@@ -266,7 +265,7 @@ class CompilerSpec extends BaseSpecification {
         when:
         String result = tagliatelle.resolve("templates/recursion.html.pasta").get().renderToString()
         then:
-        basicallyEqual(result, expectedResult)
+        test.basicallyEqual(result, expectedResult)
     }
 
     /**
@@ -287,8 +286,8 @@ class CompilerSpec extends BaseSpecification {
         String result = tagliatelle.resolve("templates/invoke-customized.html.pasta").get().renderToString()
         String resultCached = tagliatelle.resolve("templates/invoke-customized.html.pasta").get().renderToString()
         then:
-        basicallyEqual(result, expectedResult)
-        basicallyEqual(resultCached, expectedResult)
+        test.basicallyEqual(result, expectedResult)
+        test.basicallyEqual(resultCached, expectedResult)
     }
 
     def "casting to inner class works"() {
@@ -300,44 +299,6 @@ class CompilerSpec extends BaseSpecification {
         String result = tagliatelle.resolve("templates/inner-class.html.pasta")
                                    .get().renderToString(Tuple.create(innerClass, innerClass))
         then:
-        basicallyEqual(result, expectedResult)
-    }
-
-    def "locals within loops cleanup works"() {
-        given:
-        List<String> list = ["a", "b", "c"]
-        String expectedResult = resources.resolve("templates/local-scope.html").get().getContentAsString()
-        when:
-        def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx, tagliatelle.resolve("templates/local-scope.html.pasta")
-                                                                 .get().getResource().getContentAsString()).compile()
-        then:
-        errors.size() == 0
-        and:
-        basicallyEqual(ctx.getTemplate().renderToString(list), expectedResult)
-    }
-
-    def "failing access out of scope works"() {
-        given:
-        List<String> list = ["a", "b", "c"]
-        List<CompileError> errors
-        when:
-        try {
-            def ctx = new CompilationContext(new Template("test", null), null)
-            new Compiler(ctx, tagliatelle.resolve("templates/out-of-scope.html.pasta")
-                                         .get().getResource().getContentAsString()).compile()
-        } catch (CompileException err) {
-            errors = err.getErrors()
-        }
-        then:
-        errors.size() == 4
-        errors.get(0).getError().getSeverity() == ParseError.Severity.ERROR
-        errors.get(0).toString().contains("Unknown variable test")
-        errors.get(1).getError().getSeverity() == ParseError.Severity.ERROR
-        errors.get(1).toString().contains("Unknown variable el")
-        errors.get(2).getError().getSeverity() == ParseError.Severity.ERROR
-        errors.get(2).toString().contains("Unknown variable test")
-        errors.get(3).getError().getSeverity() == ParseError.Severity.ERROR
-        errors.get(3).toString().contains("Unknown variable el")
+        test.basicallyEqual(result, expectedResult)
     }
 }
