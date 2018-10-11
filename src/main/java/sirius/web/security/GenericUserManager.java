@@ -359,7 +359,7 @@ public abstract class GenericUserManager implements UserManager {
         String tenantId = ctx.getSessionValue(scope.getScopeId() + SUFFIX_TENANT_ID).asString();
         Long ttl = ctx.getSessionValue(scope.getScopeId() + SUFFIX_TTL).getLong();
 
-        if (ttl != null && ttl < System.currentTimeMillis()) {
+        if (ttl != null && ttl < TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)) {
             return null;
         }
 
