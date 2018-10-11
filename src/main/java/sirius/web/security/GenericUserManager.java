@@ -171,11 +171,13 @@ public abstract class GenericUserManager implements UserManager {
      * Limits the lifetime to the browser session if the login should not be kept. Furthermore the time to life and
      * login information is stored in the session.
      *
-     * @param ctx  the current request
-     * @param user the user that logged in
+     * @param ctx       the current request
+     * @param user      the user that logged in
+     * @param keepLogin <tt>false</tt> if the session should be cleared when the browser session ends, <tt>true</tt>
+     *                  otherwise
      */
-    public void updateLoginCookie(WebContext ctx, UserInfo user) {
-        ctx.setCustomSessionCookieTTL(isKeepLogin(ctx) ? null : Duration.ZERO);
+    public void updateLoginCookie(WebContext ctx, UserInfo user, boolean keepLogin) {
+        ctx.setCustomSessionCookieTTL(keepLoginEnabled && keepLogin ? null : Duration.ZERO);
         ctx.setSessionValue(scope.getScopeId() + SUFFIX_USER_ID, user.getUserId());
         ctx.setSessionValue(scope.getScopeId() + SUFFIX_TENANT_ID, user.getTenantId());
         ctx.setSessionValue(scope.getScopeId() + SUFFIX_TTL,
@@ -183,8 +185,16 @@ public abstract class GenericUserManager implements UserManager {
                             + loginTTL.getSeconds());
     }
 
-    private boolean isKeepLogin(WebContext ctx) {
-        return keepLoginEnabled && ctx.get("keepLogin").asBoolean(false);
+    /**
+     * Updates the login cookie.
+     * <p>
+     * Same as {@link #updateLoginCookie(WebContext, UserInfo)} but the 'keep login' flag is read from the context
+     *
+     * @param ctx  the current request
+     * @param user the user that logged in
+     */
+    protected void updateLoginCookie(WebContext ctx, UserInfo user) {
+        updateLoginCookie(ctx, user, ctx.get("keepLogin").asBoolean(false));
     }
 
     /*
