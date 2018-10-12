@@ -159,7 +159,12 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         currentCall = CallContext.initialize();
         currentCall.addToMDC("uri", req.uri());
         WebContext wc = currentCall.get(WebContext.class);
-        wc.ssl = this.ssl;
+        // If we know we're an SSL endpoint, tell the WebContext, otherwise set to null
+        // so that the automatic detection (headers set by an upstream proxy like X-Forwarded-Proto)
+        // is performend when needed...
+        if (this.ssl) {
+            wc.ssl = true;
+        }
         wc.setCtx(ctx);
         wc.setRequest(req);
         currentCall.get(TaskContext.class).setSystem("HTTP").setJob(wc.getRequestedURI());
