@@ -1874,4 +1874,18 @@ public class WebContext implements SubContext {
         // Detaching the context from the current thread has no consequences as
         // a request cann be passed on to another thread...
     }
+
+    /**
+     * Returns the time it took from the request being scheduled for execution up until
+     * the (at least) first byte of the response being sent.
+     * <p>
+     * At first glance this might sound like a complex metric to measure. However this ensures
+     * that only the local behaviour and duration is measured without taking system load and
+     * downstream bandwidth into account.
+     *
+     * @return the total time in millis the system took to generate a response
+     */
+    public long getTTFBMillis() {
+        return committed > 0 && scheduled > 0 ? committed - scheduled : 0;
+    }
 }

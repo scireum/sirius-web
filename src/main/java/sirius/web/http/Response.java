@@ -410,33 +410,35 @@ public class Response {
         if (wc.microtimingKey != null && Microtiming.isEnabled()) {
             callContext.getWatch().submitMicroTiming("HTTP", WebServer.microtimingMode.getMicrotimingKey(wc));
         }
-        if (!wc.isLongCall() && wc.started > 0) {
-            long queuedMillis = wc.scheduled - wc.started;
-            long ttfbMillis = wc.committed - wc.scheduled;
-            long responseTimeMillis = System.currentTimeMillis() - wc.started;
+        if (wc.isLongCall() || wc.scheduled == 0) {
+            // No response time measurement for long running or aborted requests...
+            return;
+        }
+        long queuedMillis = wc.scheduled - wc.started;
+        long ttfbMillis = wc.getTTFBMillis();
+        long responseTimeMillis = System.currentTimeMillis() - wc.started;
 
-            WebServer.queueTime.addValue(queuedMillis);
-            WebServer.timeToFirstByte.addValue(ttfbMillis);
-            WebServer.responseTime.addValue(responseTimeMillis);
+        WebServer.queueTime.addValue(queuedMillis);
+        WebServer.timeToFirstByte.addValue(ttfbMillis);
+        WebServer.responseTime.addValue(responseTimeMillis);
 
-            if (ttfbMillis > WebServer.getMaxTimeToFirstByte() && WebServer.getMaxTimeToFirstByte() > 0) {
-                WebServer.LOG.WARN("Long running request: %s (Response Time: %s, Queue Time: %s, TTFB: %s)"
-                                   + "%nURL:%s"
-                                   + "%nParameters:"
-                                   + "%n%s"
-                                   + "%nMDC:"
-                                   + "%n%s%n",
-                                   wc.getRequestedURI(),
-                                   NLS.convertDuration(responseTimeMillis, true, true),
-                                   NLS.convertDuration(queuedMillis, true, true),
-                                   NLS.convertDuration(ttfbMillis, true, true),
-                                   wc.getRequestedURL(),
-                                   wc.getParameterNames()
-                                     .stream()
-                                     .map(param -> param + ": " + Strings.limit(wc.get(param).asString(), 50))
-                                     .collect(Collectors.joining("\n")),
-                                   callContext);
-            }
+        if (ttfbMillis > WebServer.getMaxTimeToFirstByte() && WebServer.getMaxTimeToFirstByte() > 0) {
+            WebServer.LOG.WARN("Long running request: %s (Response Time: %s, Queue Time: %s, TTFB: %s)"
+                               + "%nURL:%s"
+                               + "%nParameters:"
+                               + "%n%s"
+                               + "%nMDC:"
+                               + "%n%s%n",
+                               wc.getRequestedURI(),
+                               NLS.convertDuration(responseTimeMillis, true, true),
+                               NLS.convertDuration(queuedMillis, true, true),
+                               NLS.convertDuration(ttfbMillis, true, true),
+                               wc.getRequestedURL(),
+                               wc.getParameterNames()
+                                 .stream()
+                                 .map(param -> param + ": " + Strings.limit(wc.get(param).asString(), 50))
+                                 .collect(Collectors.joining("\n")),
+                               callContext);
         }
     }
 
