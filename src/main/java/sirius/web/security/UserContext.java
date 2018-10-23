@@ -71,7 +71,7 @@ public class UserContext implements SubContext {
     private boolean fetchingCurrentUser = false;
 
     /*
-     * As getUserForScope will most probalby only hit one other scope
+     * As getUserForScope will most probably only hit one other scope
      * we cache the last user and scope here to speed up almost all cases
      * without the need for a map.
      */
