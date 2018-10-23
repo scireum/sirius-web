@@ -1,0 +1,23 @@
+<i:arg type="Object" name="name" default=""/>
+<i:arg type="Object" name="value" default=""/>
+<i:arg type="String" name="help" default=""/>
+<i:arg type="String" name="size" default=""/>
+<i:arg type="String" name="color" default=""/>
+<i:arg type="boolean" name="nameAbove" default="true"/>
+
+<i:pragma name="inline" value="true"/>
+<i:pragma name="description"
+          value="Renders a statictic / metric value. Most probably this will be contained in a well"/>
+
+<div class="statistic @size @color">
+    <i:if test="nameAbove">
+        <div class="label">@name</div>
+    </i:if>
+    <div class="value">@value</div>
+    <i:if test="!nameAbove">
+        <div class="label">@name</div>
+    </i:if>
+    <i:if test="isFilled(help)">
+        <div class="help">@help</div>
+    </i:if>
+</div>

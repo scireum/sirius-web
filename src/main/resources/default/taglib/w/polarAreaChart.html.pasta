@@ -1,0 +1,28 @@
+<i:arg type="String" name="name" default="@apply('polarareachart-%s',call.generateLocalId())"/>
+<i:arg type="String" name="titleKey" default=""/>
+<i:arg type="String" name="title" default="@i18n(titleKey)"/>
+<i:arg type="String" name="data"/>
+<i:arg type="String" name="labels"/>
+<w:subHeading label="@title"/>
+<div>
+    <canvas id="@name" class="chart" style="display: block; margin-bottom: 10px;" height="250"></canvas>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        @raw {
+            new Chart($('#@name').get(0).getContext("2d"), {
+                data: {
+                    datasets: [{
+                        data: [ @data ],
+                        backgroundColor: ["#5cbae6","#b6d957","#fac364","#8cd3ff","#d998cb","#f2d249","#93b9c6","#ccc5a8","#52bacc","#dbdb46","#98aafb"]
+                    }],
+                    labels: [ @labels ]
+                },
+                type: 'polarArea',
+                options: {
+                    startAngle: -0.55 * Math.PI
+                }
+            });
+        }
+    });
+</script>

@@ -28,3 +28,101 @@
   margin: 0;
   vertical-align: 50%;
 }
+
+.statistic {
+  margin-bottom: 10px;
+  text-transform: uppercase;
+
+  .value {
+    font-size: 4em;
+    line-height: 1em;
+    text-align: center;
+    font-weight: 300;
+
+    &.text {
+      font-size: 2em;
+      font-weight: 600;
+    }
+
+    img {
+      max-height: .8em;
+      vertical-align: baseline;
+    }
+  }
+
+  .label {
+    color: inherit;
+    display: block;
+    font-size: 1em;
+    text-align: center;
+    font-weight: 300;
+    white-space: normal;
+    height: 32px;
+  }
+
+  .help {
+    text-transform: none;
+    color: #6c7378;
+    font-size: 80%;
+    text-align: center;
+    padding-top: 10px;
+  }
+}
+
+.statistic {
+  &.mini .value {
+    font-size: 1em;
+    font-weight: bold;
+  }
+  &.tiny .value {
+    font-size: 2em;
+  }
+  &.small .value {
+    font-size: 3em !important;
+  }
+  &.large .value {
+    font-size: 5em;
+  }
+  &.huge .value {
+    font-size: 6em;
+  }
+}
+
+.statistic {
+  &.primary {
+    .value {
+      color: $color_primary;
+    }
+  }
+
+  &.green {
+    .value {
+      color: $green;
+    }
+  }
+
+  &.blue {
+    .value {
+      color: $blue;
+    }
+  }
+
+  &.yellow {
+    .value {
+      color: $yellow;
+    }
+  }
+
+  &.red {
+    .value {
+      color: $red;
+    }
+  }
+
+  &.orange {
+    .value {
+      color: $orange;
+    }
+  }
+
+}
