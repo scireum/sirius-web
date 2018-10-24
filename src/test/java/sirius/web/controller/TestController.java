@@ -108,7 +108,7 @@ public class TestController implements Controller {
     public void tunnelFallbackForError(WebContext ctx) {
         ctx.respondWith()
            .setHeader(HttpHeaderNames.CONTENT_TYPE, "text/test")
-           .tunnel("http://unknownHost",
+           .tunnel("http://localhost:1",
                    (code) -> ctx.respondWith()
                                 .setHeader(HttpHeaderNames.CONTENT_TYPE, "text/test")
                                 .tunnel("http://localhost:9999/service/json/test"));
