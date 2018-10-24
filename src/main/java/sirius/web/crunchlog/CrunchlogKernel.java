@@ -10,7 +10,6 @@ package sirius.web.crunchlog;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.base.Charsets;
-import com.google.common.collect.Queues;
 import com.google.common.hash.Hashing;
 import sirius.kernel.Stoppable;
 import sirius.kernel.async.BackgroundLoop;
@@ -39,6 +38,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -73,7 +73,7 @@ public class CrunchlogKernel extends BackgroundLoop implements Command, Stoppabl
     private static final int MAX_FILE_SIZE = 1024 * 1024 * 10;
     private static final int MAX_BUFFERED_LINES = 16 * 1024;
 
-    protected Queue<Context> buffer = Queues.newArrayDeque();
+    protected Queue<Context> buffer = new ArrayBlockingQueue<>(MAX_BUFFERED_LINES);
 
     @ConfigValue("crunchlog.basedir")
     private String baseDirName;
