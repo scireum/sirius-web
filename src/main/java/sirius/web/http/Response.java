@@ -257,7 +257,8 @@ public class Response {
         if (!WebContext.corsAllowAll || response.headers().contains(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN)) {
             return;
         }
-
+        
+        response.headers().set(HttpHeaderNames.VARY, HttpHeaderNames.ORIGIN);
         String requestedOrigin = wc.getHeader(HttpHeaderNames.ORIGIN);
         if (Strings.isFilled(requestedOrigin)) {
             response.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, requestedOrigin);
