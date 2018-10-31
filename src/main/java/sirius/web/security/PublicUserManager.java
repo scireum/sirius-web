@@ -70,6 +70,12 @@ public class PublicUserManager extends GenericUserManager {
         return null;
     }
 
+    @Nullable
+    @Override
+    public UserInfo findUserByUserId(String userId) {
+        return null;
+    }
+
     @Override
     protected Object getUserObject(UserInfo u) {
         throw new UnsupportedOperationException();

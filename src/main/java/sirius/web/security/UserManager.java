@@ -55,6 +55,16 @@ public interface UserManager {
     UserInfo findUserByName(@Nullable WebContext ctx, String user);
 
     /**
+     * Tries to find a {@link UserInfo} for the given ({@link UserInfo#getUserId() user id}.
+     *
+     * @param userId the user id to resolve
+     * @return the <tt>UserInfo</tt> representing the given user (will utilize caches if available) or <tt>null</tt>
+     * if no such user exists
+     */
+    @Nullable
+    UserInfo findUserByUserId(String userId);
+
+    /**
      * Tries to find a user with the given credentials.
      *
      * @param ctx      the current HTTP request if one is present
@@ -70,7 +80,7 @@ public interface UserManager {
      * <p>
      * This can be considered a logout operation.
      *
-     * @param ctx  the request containing the session
+     * @param ctx the request containing the session
      */
     void logout(@Nonnull WebContext ctx);
 
