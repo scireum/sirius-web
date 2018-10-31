@@ -60,7 +60,7 @@ class TemplatesSpec extends BaseSpecification {
                 .applyContext(Context.create().set("x", "5"))
                 .generate()
         then:
-        result == '<?xml version="1.0" encoding="UTF-8"?><result>\n<x>5</x>\n</result>\n'
+        result == '<?xml version="1.0" encoding="UTF-8"?><result>\n    <x>5</x>\n</result>\n'
     }
 
 }
