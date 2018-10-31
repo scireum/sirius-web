@@ -28,6 +28,7 @@ import sirius.web.http.WebDispatcher;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 import sirius.web.security.UserContext;
+import sirius.web.security.UserInfo;
 
 import java.io.IOException;
 import java.util.List;
@@ -112,7 +113,10 @@ public class HelpDispatcher implements WebDispatcher {
     private boolean serveTopic(WebContext ctx, String uri) {
         Template template = resolveTemplate(uri);
         if (template != null) {
-            ctx.respondWith().cached().template(HttpResponseStatus.OK, template);
+            CallContext.getCurrent()
+                       .get(UserContext.class)
+                       .runAs(UserInfo.NOBODY,
+                              () -> ctx.respondWith().cached().template(HttpResponseStatus.OK, template));
             return true;
         }
 
