@@ -197,7 +197,7 @@ public class UserContext implements SubContext {
         if (ctx != null && ctx.isValid() && detector != null) {
             ScopeInfo scope = detector.detectScope(ctx);
             setCurrentScope(scope);
-            CallContext.getCurrent().provideLang(scope.getLang());
+            CallContext.getCurrent().setLangIfEmpty(scope.getLang());
         } else {
             setCurrentScope(ScopeInfo.DEFAULT_SCOPE);
         }
@@ -274,7 +274,7 @@ public class UserContext implements SubContext {
         CallContext call = CallContext.getCurrent();
         call.addToMDC(MDC_USER_ID, () -> currentUser.getUserId());
         call.addToMDC(MDC_USER_NAME, () -> currentUser.getUserName());
-        call.provideLang(currentUser.getLang());
+        call.setLangIfEmpty(currentUser.getLang());
     }
 
     /**
