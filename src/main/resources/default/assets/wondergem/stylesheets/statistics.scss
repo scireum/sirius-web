@@ -31,26 +31,16 @@
 
 .statistic {
   margin-bottom: 10px;
-  text-transform: uppercase;
 
-  .value {
+  .statistic-value {
     font-size: 4em;
     line-height: 1em;
     text-align: center;
     font-weight: 300;
-
-    &.text {
-      font-size: 2em;
-      font-weight: 600;
-    }
-
-    img {
-      max-height: .8em;
-      vertical-align: baseline;
-    }
   }
 
-  .label {
+  .statistic-label {
+    text-transform: uppercase;
     color: inherit;
     display: block;
     font-size: 1em;
@@ -60,7 +50,7 @@
     height: 32px;
   }
 
-  .help {
+  .statistic-help {
     text-transform: none;
     color: #6c7378;
     font-size: 80%;
@@ -70,57 +60,56 @@
 }
 
 .statistic {
-  &.mini .value {
-    font-size: 1em;
-    font-weight: bold;
+  &.mini .statistic-value {
+    font-size: 1.25em;
   }
-  &.tiny .value {
+  &.tiny .statistic-value {
     font-size: 2em;
   }
-  &.small .value {
-    font-size: 3em !important;
+  &.small .statistic-value {
+    font-size: 3em;
   }
-  &.large .value {
+  &.large .statistic-value {
     font-size: 5em;
   }
-  &.huge .value {
+  &.huge .statistic-value {
     font-size: 6em;
   }
 }
 
 .statistic {
   &.primary {
-    .value {
+    .statistic-value {
       color: $color_primary;
     }
   }
 
   &.green {
-    .value {
+    .statistic-value {
       color: $green;
     }
   }
 
   &.blue {
-    .value {
+    .statistic-value {
       color: $blue;
     }
   }
 
   &.yellow {
-    .value {
+    .statistic-value {
       color: $yellow;
     }
   }
 
   &.red {
-    .value {
+    .statistic-value {
       color: $red;
     }
   }
 
   &.orange {
-    .value {
+    .statistic-value {
       color: $orange;
     }
   }

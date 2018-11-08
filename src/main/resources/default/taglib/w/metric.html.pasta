@@ -11,13 +11,13 @@
 
 <div class="statistic @size @color">
     <i:if test="nameAbove">
-        <div class="label">@name</div>
+        <div class="statistic-label">@name</div>
     </i:if>
-    <div class="value">@value</div>
+    <div class="statistic-value">@value</div>
     <i:if test="!nameAbove">
-        <div class="label">@name</div>
+        <div class="statistic-label">@name</div>
     </i:if>
     <i:if test="isFilled(help)">
-        <div class="help">@help</div>
+        <div class="statistic-help">@help</div>
     </i:if>
 </div>

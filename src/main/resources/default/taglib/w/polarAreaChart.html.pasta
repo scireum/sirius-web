@@ -3,6 +3,11 @@
 <i:arg type="String" name="title" default="@i18n(titleKey)"/>
 <i:arg type="String" name="data"/>
 <i:arg type="String" name="labels"/>
+
+<i:pragma name="inline" value="true"/>
+<i:pragma name="description"
+          value="Renders a polar area chart using Chart.js"/>
+
 <w:subHeading label="@title"/>
 <div>
     <canvas id="@name" class="chart" style="display: block; margin-bottom: 10px;" height="250"></canvas>
