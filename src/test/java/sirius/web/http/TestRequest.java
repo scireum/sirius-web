@@ -67,7 +67,7 @@ public class TestRequest extends WebContext implements HttpRequest {
     private boolean preDispatch;
     private List<Cookie> testCookies = Lists.newArrayList();
     protected Promise<TestResponse> testResponsePromise = new Promise<>();
-    private static DispatcherPipeline pipeline;
+    private DispatcherPipeline pipeline;
     private Map<String, String> testSession;
 
     protected TestRequest() {
