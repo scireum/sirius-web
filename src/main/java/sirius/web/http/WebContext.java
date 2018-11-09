@@ -509,23 +509,23 @@ public class WebContext implements SubContext {
      *
      * @param key used to specify which part of the post request should be used.
      * @return a {@link File file} sent for the given key or <tt>null</tt> if none is available
+     * @throws IOException in case of an IO error
      */
-    public File getFile(String key) {
-        try {
-            FileUpload fileUpload = getFileData(key);
-            if (fileUpload == null) {
-                return null;
-            }
-            File temp = File.createTempFile("http", "");
-            addFileToCleanup(temp);
-            try (FileOutputStream outputStream = new FileOutputStream(temp)) {
-                outputStream.write(fileUpload.get());
-            }
-            return temp;
-        } catch (Exception e) {
-            Exceptions.handle(WebServer.LOG, e);
+    @Nullable
+    public File getFile(String key) throws IOException {
+        FileUpload fileUpload = getFileData(key);
+        if (fileUpload == null) {
+            return null;
         }
-        return null;
+        if (!fileUpload.isInMemory()) {
+            return fileUpload.getFile();
+        }
+        File temp = File.createTempFile("http", "");
+        addFileToCleanup(temp);
+        try (FileOutputStream outputStream = new FileOutputStream(temp)) {
+            outputStream.write(fileUpload.get());
+        }
+        return temp;
     }
 
     /**
