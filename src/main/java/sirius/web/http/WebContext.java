@@ -505,6 +505,30 @@ public class WebContext implements SubContext {
     }
 
     /**
+     * Returns a {@link File file} supplied by the request as POST-parameter.
+     *
+     * @param key used to specify which part of the post request should be used.
+     * @return a {@link File file} sent for the given key or <tt>null</tt> if none is available
+     * @throws IOException in case of an IO error
+     */
+    @Nullable
+    public File getFile(String key) throws IOException {
+        FileUpload fileUpload = getFileData(key);
+        if (fileUpload == null) {
+            return null;
+        }
+        if (!fileUpload.isInMemory()) {
+            return fileUpload.getFile();
+        }
+        File temp = File.createTempFile("http", "");
+        addFileToCleanup(temp);
+        try (FileOutputStream outputStream = new FileOutputStream(temp)) {
+            outputStream.write(fileUpload.get());
+        }
+        return temp;
+    }
+
+    /**
      * Returns the first non empty value for the given keys.
      * <p>
      * This is a boilerplate method for {@link #get(String)} in case the same value could be sent via different
