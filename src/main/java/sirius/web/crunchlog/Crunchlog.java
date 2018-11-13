@@ -45,6 +45,7 @@ import java.util.function.Consumer;
  * <p>
  * To disable the crunchlog entirely, set <tt>frameworks.crunchlog = false</tt> in the system config.
  */
+@Deprecated
 @Register(classes = Crunchlog.class)
 public class Crunchlog {
 

@@ -31,6 +31,7 @@ import java.io.InputStreamReader;
  * Used to view and manage tasks.
  */
 @Register(classes = Controller.class)
+@Deprecated
 public class ManagedTasksController extends BasicController {
 
     /**
