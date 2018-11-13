@@ -23,6 +23,7 @@ import java.time.Instant;
  */
 @Framework("web.crunchlog")
 @Register
+@Deprecated
 public class DeleteOldCrunchlogs implements EveryDay {
 
     private static final int ONE_YEAR = 365;

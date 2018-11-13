@@ -23,6 +23,7 @@ import java.util.List;
  *
  * @see ManagedTask
  */
+@Deprecated
 public interface ManagedTaskContext extends TaskContextAdapter {
 
     /**

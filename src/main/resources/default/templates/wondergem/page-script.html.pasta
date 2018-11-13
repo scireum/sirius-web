@@ -116,7 +116,8 @@
                     'background-position': '100% -22px'
                 });
 
-                ___if(!call.getUserAgent().isInternetExplorer()) {
+                ___if(!call.getUserAgent().isInternetExplorer())
+                {
                     var placeholder = field.attr('data-searchtext');
                     if (typeof placeholder === 'undefined' || placeholder === '') {
                         placeholder = '@i18n("template.html.placeholder")';
@@ -126,7 +127,7 @@
             });
         });
 
-        field.on('select2:unselect', function(e) {
+        field.on('select2:unselect', function (e) {
             $(this).html('<option value=""></option>');
             e.preventDefault();
             e.stopPropagation();
@@ -148,7 +149,7 @@
                 if (field.attr('data-multiline')) {
                     return $(Mustache.render(AUTOCOMPLETE_SUGGESTION_TEMPLATE, {
                         'label': result.text,
-                        'hasDescription' : hasDescription,
+                        'hasDescription': hasDescription,
                         'descriptionLines': hasDescription ? result.description.split('\n') : undefined
                     }));
                 }
@@ -321,17 +322,17 @@
             },
             allowedExtensions: allowedExtensions,
             template: '<div class="qq-uploader">' +
-            '<div class="qq-upload-drop-area qq-image-area"><div><span style="display: inline-block"><a href="' + defaultImage + '" class="thumbnail lnk"><img class="img" src="' + defaultPreview + '" /></a></span></div><span>@i18n("template.html.uploadArea")</span></div>' +
-            '<div class="qq-upload-button btn btn-primary" style="display: block">@i18n("template.html.uploadBtn")</div>' +
-            '<ul class="qq-upload-list"></ul>' +
-            '</div>',
+                '<div class="qq-upload-drop-area qq-image-area"><div><span style="display: inline-block"><a href="' + defaultImage + '" class="thumbnail lnk"><img class="img" src="' + defaultPreview + '" /></a></span></div><span>@i18n("template.html.uploadArea")</span></div>' +
+                '<div class="qq-upload-button btn btn-primary" style="display: block">@i18n("template.html.uploadBtn")</div>' +
+                '<ul class="qq-upload-list"></ul>' +
+                '</div>',
             fileTemplate: '<li>' +
-            '<span class="qq-upload-file"></span>' +
-            '<span class="qq-upload-spinner"></span>' +
-            '<span class="qq-upload-size"></span>' +
-            '<a class="qq-upload-cancel" href="#">@i18n("NLS.cancel")</a>' +
-            '<span class="qq-upload-failed-text">@i18n("template.html.uploadFailed")</span>' +
-            '</li>'
+                '<span class="qq-upload-file"></span>' +
+                '<span class="qq-upload-spinner"></span>' +
+                '<span class="qq-upload-size"></span>' +
+                '<a class="qq-upload-cancel" href="#">@i18n("NLS.cancel")</a>' +
+                '<span class="qq-upload-failed-text">@i18n("template.html.uploadFailed")</span>' +
+                '</li>'
         });
         var maxWidth = $(container).width();
         $('.img', container).css('max-width', maxWidth - 30 + 'px');
@@ -387,17 +388,17 @@
             },
             allowedExtensions: allowedExtensions,
             template: '<div class="qq-uploader">' +
-            '<div class="qq-upload-drop-area"><span>@i18n("template.html.uploadArea")</span></div>' +
-            '<div class="qq-upload-button btn btn-primary" style="display: block">@i18n("template.html.uploadBtn")</div>' +
-            '<ul class="qq-upload-list"></ul>' +
-            '</div>',
+                '<div class="qq-upload-drop-area"><span>@i18n("template.html.uploadArea")</span></div>' +
+                '<div class="qq-upload-button btn btn-primary" style="display: block">@i18n("template.html.uploadBtn")</div>' +
+                '<ul class="qq-upload-list"></ul>' +
+                '</div>',
             fileTemplate: '<li>' +
-            '<span class="qq-upload-file"></span>' +
-            '<span class="qq-upload-spinner"></span>' +
-            '<span class="qq-upload-size"></span>' +
-            '<a class="qq-upload-cancel" href="#">@i18n("NLS.cancel")</a>' +
-            '<span class="qq-upload-failed-text">@i18n("template.html.uploadFailed")</span>' +
-            '</li>'
+                '<span class="qq-upload-file"></span>' +
+                '<span class="qq-upload-spinner"></span>' +
+                '<span class="qq-upload-size"></span>' +
+                '<a class="qq-upload-cancel" href="#">@i18n("NLS.cancel")</a>' +
+                '<span class="qq-upload-failed-text">@i18n("template.html.uploadFailed")</span>' +
+                '</li>'
         });
     }
 
@@ -431,5 +432,109 @@
             a.addClass("single-click-pending");
         });
     });
+
+    var CHART_COLORS = ["#5cbae6", "#fac364", "#b6d957", "#8cd3ff", "#d998cb", "#f2d249", "#93b9c6", "#ccc5a8", "#52bacc", "#dbdb46", "#98aafb"];
+    var LINE_CHART_DEFAULT_OPTIONS = {
+        responsive: true,
+        maintainAspectRatio: false,
+        bezierCurve: true,
+        legend: {display: false},
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true,
+                }
+            }],
+            xAxes: [{
+                ticks: {
+                    autoSkip: false
+                }
+            }]
+        }
+    };
+
+    function lineChart(selector, labels, datasets) {
+        var lineData = [];
+        for (var i = 0; i < datasets.length; i++) {
+            var color = CHART_COLORS[i % CHART_COLORS.length];
+            lineData.push({
+                backgroundColor: "rgba(180,180,180,0.2)",
+                borderColor: color,
+                pointColor: color,
+                pointStrokeColor: "#fff",
+                pointHighlightFill: "#fff",
+                pointHighlightStroke: color,
+                label: datasets[i].label,
+                data: datasets[i].data
+            });
+        }
+        new Chart($(selector).get(0).getContext("2d"),
+            {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: lineData
+                },
+                options: $.extend(LINE_CHART_DEFAULT_OPTIONS, {legend: {display: datasets.length > 1}})
+            });
+    }
+
+    function barChart(selector, labels, datasets) {
+        var barData = [];
+        for (var i = 0; i < datasets.length; i++) {
+            var color = CHART_COLORS[i % CHART_COLORS.length];
+            barData.push({
+                backgroundColor: color,
+                borderColor: color,
+                pointColor: color,
+                pointStrokeColor: "#fff",
+                pointHighlightFill: "#fff",
+                pointHighlightStroke: color,
+                label: datasets[i].label,
+                data: datasets[i].data
+            });
+        }
+        new Chart($(selector).get(0).getContext("2d"),
+            {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: barData
+                },
+                options: $.extend(LINE_CHART_DEFAULT_OPTIONS, {legend: {display: datasets.length > 1}})
+            });
+    }
+
+    function polarAreaChart(selector, labels, data) {
+        new Chart($(selector).get(0).getContext("2d"), {
+            data: {
+                datasets: [{
+                    data: data,
+                    backgroundColor: CHART_COLORS
+                }],
+                labels: labels
+            },
+            type: 'polarArea',
+            options: {
+                startAngle: -0.55 * Math.PI
+            }
+        });
+    }
+
+    function dougnutChart(selector, labels, data) {
+        new Chart($(selector).get(0).getContext("2d"), {
+            data: {
+                datasets: [{
+                    data: data,
+                    backgroundColor: CHART_COLORS
+                }],
+                labels: labels
+            },
+            type: 'doughnut',
+            options: {
+                startAngle: -0.55 * Math.PI
+            }
+        });
+    }
 
 </script>

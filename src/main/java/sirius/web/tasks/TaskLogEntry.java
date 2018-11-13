@@ -15,6 +15,7 @@ import java.time.Instant;
 /**
  * Represents a log entry for a managed task.
  */
+@Deprecated
 public class TaskLogEntry {
 
     /**

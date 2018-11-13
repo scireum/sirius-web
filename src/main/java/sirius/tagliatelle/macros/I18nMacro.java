@@ -48,7 +48,7 @@ public class I18nMacro implements Macro {
             if (exp instanceof ConstantString) {
                 String key = (String) exp.eval(null);
                 if (Strings.isFilled(key) && NLS.getTranslationEngine()
-                                                .getTranslations(key)
+                                                .getEntriesStartingWith(key)
                                                 .noneMatch(t -> key.equals(t.getKey()))) {
                     throw new IllegalArgumentException(Strings.apply("No translation found for key: %s", key));
                 }
@@ -64,7 +64,12 @@ public class I18nMacro implements Macro {
 
     @Override
     public Object eval(LocalRenderContext ctx, Expression[] args) {
-        return NLS.get((String) args[0].eval(ctx));
+        String key = (String) args[0].eval(ctx);
+        if (Strings.isFilled(key)) {
+            return NLS.get(key);
+        } else {
+            return "";
+        }
     }
 
     @Nonnull

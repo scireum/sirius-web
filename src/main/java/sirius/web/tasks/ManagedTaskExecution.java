@@ -39,6 +39,7 @@ import java.util.concurrent.TimeUnit;
  * This acts as a bridge between the actual execution withing {@link Tasks}, the {@link ManagedTasks} framework and the
  * task being executed itself.
  */
+@Deprecated
 class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask {
 
     protected final String taskId;
