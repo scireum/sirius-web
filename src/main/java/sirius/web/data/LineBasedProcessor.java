@@ -43,8 +43,8 @@ public interface LineBasedProcessor {
      * Starts processing and sends each line to the given rowProcessor.
      *
      * @param rowProcessor the processor which handles each row of the file
-     * @param errorHandler errorHandler which gets called on exceptions. returns <tt>true</tt> if exception was handled
-     *                     and <tt>false</tt> if the exception should be rethrown.
+     * @param errorHandler errorHandler which gets called on exceptions. returns <tt>true</tt> if the exception was
+     *                     handled and <tt>false</tt> if the exception should be rethrown.
      * @throws Exception in case an error occurred while processing.
      */
     void run(RowProcessor rowProcessor, Predicate<Exception> errorHandler) throws Exception;
