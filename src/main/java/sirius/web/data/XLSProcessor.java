@@ -29,6 +29,7 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * In charge of processing XLS (MS Excel) files.
@@ -45,7 +46,7 @@ public class XLSProcessor implements LineBasedProcessor {
     }
 
     @Override
-    public void run(RowProcessor rowProcessor) throws Exception {
+    public void run(RowProcessor rowProcessor, Predicate<Exception> errorHandler) throws Exception {
         Workbook wb = xslx ? new XSSFWorkbook(input) : new HSSFWorkbook(input);
         Sheet sheet = wb.getSheetAt(0);
         Iterator<Row> iter = sheet.rowIterator();
@@ -66,7 +67,7 @@ public class XLSProcessor implements LineBasedProcessor {
                 rowProcessor.handleRow(current, Values.of(values));
                 tc.setState(NLS.get("LineBasedProcessor.linesProcessed"), current);
             } catch (Exception e) {
-                if (!rowProcessor.handleError(e)) {
+                if (!errorHandler.test(e)) {
                     throw e;
                 }
             }

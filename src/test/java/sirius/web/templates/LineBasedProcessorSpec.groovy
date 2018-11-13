@@ -14,6 +14,8 @@ import sirius.kernel.commons.Values
 import sirius.web.data.LineBasedProcessor
 import sirius.web.data.RowProcessor
 
+import java.util.function.Predicate
+
 class LineBasedProcessorSpec extends BaseSpecification {
 
     def "readingExcel works including formulas"() {
@@ -21,7 +23,7 @@ class LineBasedProcessorSpec extends BaseSpecification {
         LineBasedProcessor proc = LineBasedProcessor.create("test.xls", getClass().getResourceAsStream("/test.xls"))
         List<Values> contents = Lists.newArrayList()
         when:
-        proc.run({ l, v -> contents.add(v) } as RowProcessor)
+        proc.run({ l, v -> contents.add(v) } as RowProcessor, {e -> false} as Predicate)
         then:
         contents.size() == 3
         and:
@@ -37,7 +39,7 @@ class LineBasedProcessorSpec extends BaseSpecification {
         LineBasedProcessor proc = LineBasedProcessor.create("test.xlsx", getClass().getResourceAsStream("/test.xlsx"))
         List<Values> contents = Lists.newArrayList()
         when:
-        proc.run({ l, v -> contents.add(v) } as RowProcessor)
+        proc.run({ l, v -> contents.add(v) } as RowProcessor, {e -> false} as Predicate)
         then:
         contents.size() == 3
         and:
@@ -53,7 +55,7 @@ class LineBasedProcessorSpec extends BaseSpecification {
         LineBasedProcessor proc = LineBasedProcessor.create("test.csv", getClass().getResourceAsStream("/test.csv"))
         List<Values> contents = Lists.newArrayList()
         when:
-        proc.run({ l, v -> contents.add(v) } as RowProcessor)
+        proc.run({ l, v -> contents.add(v) } as RowProcessor, {e -> false} as Predicate)
         then:
         contents.size() == 2
         and:

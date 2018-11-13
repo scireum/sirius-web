@@ -11,6 +11,7 @@ package sirius.web.data;
 import sirius.kernel.health.Exceptions;
 
 import java.io.InputStream;
+import java.util.function.Predicate;
 
 /**
  * Processes line based input files like MS Excel or CSV.
@@ -44,5 +45,5 @@ public interface LineBasedProcessor {
      * @param rowProcessor the processor which handles each row of the file
      * @throws Exception in case an error occurred while processing.
      */
-    void run(RowProcessor rowProcessor) throws Exception;
+    void run(RowProcessor rowProcessor, Predicate<Exception> errorHandler) throws Exception;
 }
