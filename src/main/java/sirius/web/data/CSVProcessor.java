@@ -37,8 +37,14 @@ public class CSVProcessor implements LineBasedProcessor {
         TaskContext tc = TaskContext.get();
 
         reader.execute(row -> {
-            rowProcessor.handleRow(rowCounter.incrementAndGet(), row);
-            tc.setState(NLS.get("LineBasedProcessor.linesProcessed"), rowCounter.get());
+            try {
+                rowProcessor.handleRow(rowCounter.incrementAndGet(), row);
+                tc.setState(NLS.get("LineBasedProcessor.linesProcessed"), rowCounter.get());
+            } catch (Exception e) {
+                if (!rowProcessor.handleError(e)) {
+                    throw e;
+                }
+            }
         });
     }
 }
