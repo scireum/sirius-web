@@ -117,32 +117,32 @@
 }
 
 // Defines colors as classes (e.g. for table cells)
-.color {
-  &.primary {
+.cell {
+  .color.primary {
     color: $color_primary;
   }
 
-  &.bold {
+  .bold {
     font-weight: bold;
   }
 
-  &.green {
+  .color.green {
     color: $green;
   }
 
-  &.blue {
+  .color.blue {
     color: $blue;
   }
 
-  &.yellow {
+  .color.yellow {
     color: $yellow;
   }
 
-  &.red {
+  .color.red {
     color: $red;
   }
 
-  &.orange {
+  .color.orange {
     color: $orange;
   }
 }
