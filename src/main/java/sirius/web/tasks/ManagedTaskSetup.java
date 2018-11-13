@@ -15,6 +15,7 @@ import java.util.function.Consumer;
 /**
  * A builder pattern to create a {@link ManagedTask}.
  */
+@Deprecated
 public class ManagedTaskSetup {
     protected ManagedTasks managedTasks;
     protected String name;

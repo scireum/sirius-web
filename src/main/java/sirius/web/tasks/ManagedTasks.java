@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
  * @see ManagedTask
  */
 @Register(classes = ManagedTasks.class)
+@Deprecated
 public class ManagedTasks {
 
     /**

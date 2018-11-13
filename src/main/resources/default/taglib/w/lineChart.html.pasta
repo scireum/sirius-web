@@ -14,53 +14,8 @@
 </div>
 <script type="text/javascript">
     $(document).ready(function () {
-        var options = {
-            responsive: true,
-            maintainAspectRatio: false,
-            bezierCurve: true,
-            legend: {
-                display: false
-            },
-            scales: {
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: true,
-
-                    }
-                }],
-                xAxes: [{
-                    ticks: {
-                        autoSkip: false
-                    }
-                }]
-            }
-        };
-
         @raw {
-            var labels = [ @labels ];
-            var data = [ @data ];
-
+            lineChart('#@name', [ @labels ], [ {data: @data } ]);
         }
-
-        var selector = '#@name';
-        new Chart($(selector).get(0).getContext("2d"),
-            {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            fillColor: "rgba(151,187,205,0.2)",
-                            borderColor: "rgba(151,187,205,1)",
-                            pointColor: "rgba(151,187,205,1)",
-                            pointStrokeColor: "#fff",
-                            pointHighlightFill: "#fff",
-                            pointHighlightStroke: "rgba(151,187,205,1)",
-                            data: data
-                        }
-                    ]
-                },
-                options: options
-            });
     });
 </script>

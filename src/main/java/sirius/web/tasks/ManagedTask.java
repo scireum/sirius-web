@@ -26,6 +26,7 @@ import java.util.List;
  * which mainly reports the state of running tasks.
  * </p>
  */
+@Deprecated
 public interface ManagedTask {
 
     /**

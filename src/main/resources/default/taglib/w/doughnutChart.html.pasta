@@ -10,16 +10,7 @@
 <script type="text/javascript">
     $(document).ready(function () {
         @raw {
-            new Chart($('#@name').get(0).getContext("2d"), {
-                data: {
-                    datasets: [{
-                        data: [ @data ],
-                        backgroundColor: ["#5cbae6","#b6d957","#fac364","#8cd3ff","#d998cb","#f2d249","#93b9c6","#ccc5a8","#52bacc","#dbdb46","#98aafb"]
-                    }],
-                    labels: [ @labels ]
-                },
-                type: 'doughnut'
-            });
+            dougnutChart('#@name', [ @labels ], [ @data ]);
         }
     });
 </script>

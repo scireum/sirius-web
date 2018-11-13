@@ -65,6 +65,7 @@ import java.util.zip.GZIPOutputStream;
  * indefinitely large nor having the filesystem run out of free space is feasible for a server system.
  */
 @Framework("web.crunchlog")
+@Deprecated
 @Register(classes = {CrunchlogKernel.class, BackgroundLoop.class, Stoppable.class, MetricProvider.class, Command.class})
 public class CrunchlogKernel extends BackgroundLoop implements Command, Stoppable, MetricProvider {
 

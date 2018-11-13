@@ -21,10 +21,10 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
- * Represents <tt>i18n(String)</tt> which is essentially a call to {@link NLS#get(String)}.
+ * Represents <tt>smartTranslate(String)</tt> which is essentially a call to {@link NLS#smartGet(String)}}.
  */
 @Register
-public class I18nMacro implements Macro {
+public class SmartTranslateMacro implements Macro {
     @Override
     public Class<?> getType() {
         return String.class;
@@ -47,10 +47,14 @@ public class I18nMacro implements Macro {
             Expression exp = args.get(0);
             if (exp instanceof ConstantString) {
                 String key = (String) exp.eval(null);
-                if (Strings.isFilled(key) && NLS.getTranslationEngine()
-                                                .getEntriesStartingWith(key)
-                                                .noneMatch(t -> key.equals(t.getKey()))) {
-                    throw new IllegalArgumentException(Strings.apply("No translation found for key: %s", key));
+                if (key == null || !key.startsWith("$")) {
+                    return;
+                }
+                String effectiveKey = key.substring(1);
+                if (Strings.isFilled(effectiveKey) && NLS.getTranslationEngine()
+                                                         .getEntriesStartingWith(effectiveKey)
+                                                         .noneMatch(t -> effectiveKey.equals(t.getKey()))) {
+                    throw new IllegalArgumentException(Strings.apply("No translation found for key: %s", effectiveKey));
                 }
             }
         }
@@ -58,15 +62,21 @@ public class I18nMacro implements Macro {
 
     @Override
     public boolean isConstant(Expression[] args) {
-        // An i18n macro is inherently not constant unless it is invoked for an empty string
-        return args.length == 1 && args[0].isConstant() && Strings.isEmpty(args[0].eval(null));
+        // This macro is inherently not constant unless it is invoked for an empty string
+        // or for a literal (which doesn't start with a $)
+        if (args.length != 1 || !args[0].isConstant()) {
+            return false;
+        }
+
+        Object value = args[0].eval(null);
+        return Strings.isEmpty(value) || !value.toString().startsWith("$");
     }
 
     @Override
     public Object eval(LocalRenderContext ctx, Expression[] args) {
         String key = (String) args[0].eval(ctx);
         if (Strings.isFilled(key)) {
-            return NLS.get(key);
+            return NLS.smartGet(key);
         } else {
             return "";
         }
@@ -75,11 +85,11 @@ public class I18nMacro implements Macro {
     @Nonnull
     @Override
     public String getName() {
-        return "i18n";
+        return "smartTranslate";
     }
 
     @Override
     public String getDescription() {
-        return "Returns the translation for the given key in the currently active language.";
+        return "Tries to translate the given string (in the currently active language) if it starts with a $. Otherwise the given string is returned.";
     }
 }
