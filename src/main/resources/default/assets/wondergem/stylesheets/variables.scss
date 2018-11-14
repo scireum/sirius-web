@@ -12,8 +12,10 @@
 
 // Primary Color
 // -------------------------
-$primary-color:                 $yellow;
+$primary-color:                 $blue;
 $primary-color-light:           lighten($primary-color, 10%);
+
+$accent-color:                  $yellow;
 
 // Colors
 // -------------------------

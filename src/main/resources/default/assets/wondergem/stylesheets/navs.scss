@@ -14,15 +14,10 @@
 // Navbar Variables
 // -------------------------
 $navbarBackground:              $grayDark;
-$navbarBorder:                  $primary-color;
+$navbarBorder:                  $accent-color;
 $navbarLinkColor:               darken($whiteDark, 5%);
 $navbarLinkColorHover:          $white;
 $navbarLinkColorActive:         $white;
-/*
-$navbarLinkBackgroundHover:     darken($navbarBackground, 5%);
-$navbarLinkBackgroundActive:    darken($navbarLinkBackgroundHover, 5%);
-*/
-
 
 
 // BASE CLASS
@@ -182,6 +177,11 @@ $navbarLinkBackgroundActive:    darken($navbarLinkBackgroundHover, 5%);
 // Navbars
 // --------------------------------------------------
 
+.nav.nav-bar > li > a:hover,
+.nav.nav-bar > li > a:focus {
+  background-color: $accent-color;
+}
+
 // Inner for background effects
 .navbar-static-top {
   border-top: 3px solid $navbarBorder;
@@ -202,7 +202,7 @@ $navbarLinkBackgroundActive:    darken($navbarLinkBackgroundHover, 5%);
   text-decoration: none;
 
   &:hover, &:focus {
-    background-color: $primary-color;
+    background-color: $accent-color;
     color: #e7e7e7;
   }
 }
