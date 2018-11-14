@@ -16,3 +16,5 @@
 <i:include name="/assets/wondergem/featherlight/featherlight.js" />
 
 <i:include name="/assets/wondergem/chartjs/Chart.min.js" />
+
+<i:include name="/assets/wondergem/sparklines/sparkline.js" />
