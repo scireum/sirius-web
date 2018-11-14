@@ -54,7 +54,15 @@ public class SMTPConfiguration {
      * Therefore such an instance must not be cached or reused.
      */
     public SMTPConfiguration() {
-        Settings settings = UserContext.getSettings();
+        this(UserContext.getSettings());
+    }
+
+    /**
+     * Creates a new configuration based on the given settings.
+     *
+     * @param settings the SMTP settings
+     */
+    public SMTPConfiguration(Settings settings) {
         if (settings.get("mail.host").isFilled()) {
             this.host = settings.get("mail.host").getString();
             this.port = settings.get("mail.port").getString();

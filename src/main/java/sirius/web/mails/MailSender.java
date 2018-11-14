@@ -40,6 +40,7 @@ public class MailSender {
 
     protected static final String CONFIG_KEY_HEADERS = "headers";
     protected boolean simulate;
+    protected SMTPConfiguration smtpConfiguration;
     protected String senderEmail;
     protected String senderName;
     protected String receiverEmail;
@@ -70,6 +71,17 @@ public class MailSender {
     private static Templates templates;
 
     protected MailSender() {
+    }
+
+    /**
+     * Sets a custom SMTP configuration.
+     *
+     * @param smtpConfiguration the custom SMTP configuration
+     * @return the builder itself
+     */
+    public MailSender withSMTPConfiguration(SMTPConfiguration smtpConfiguration) {
+        this.smtpConfiguration = smtpConfiguration;
+        return this;
     }
 
     /**
@@ -379,7 +391,7 @@ public class MailSender {
                 render();
                 sanitize();
                 check();
-                sendMailAsync(new SMTPConfiguration());
+                sendMailAsync(smtpConfiguration != null ? smtpConfiguration : new SMTPConfiguration());
             } finally {
                 CallContext.getCurrent().setLang(tmpLang);
             }
