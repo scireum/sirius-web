@@ -53,13 +53,22 @@ public class Facet {
     }
 
     /**
+     * Returns all items collected for this facet.
+     *
+     * @return a list of all items of this facet
+     */
+    public List<FacetItem> getAllItems() {
+        return items;
+    }
+
+    /**
      * Returns all visible items collected for this facet.
      *
      * @return a list of all visible items of this facet
      */
     public List<FacetItem> getItems() {
         if (!hasHiddenItems()) {
-            return items;
+            return Collections.unmodifiableList(items);
         }
 
         return items.subList(0, maxVisibleFacetItems);
