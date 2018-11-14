@@ -137,6 +137,17 @@ public class Facet {
     }
 
     /**
+     * Removes the given item from this facet.
+     *
+     * @param item the item to remove
+     * @return the facet itself for fluent method calls.
+     */
+    public Facet removeItem(FacetItem item) {
+        items.remove(item);
+        return this;
+    }
+
+    /**
      * Adds the given collections of items.
      *
      * @param items the items to add
