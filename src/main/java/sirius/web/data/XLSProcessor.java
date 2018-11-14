@@ -29,6 +29,7 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * In charge of processing XLS (MS Excel) files.
@@ -45,25 +46,31 @@ public class XLSProcessor implements LineBasedProcessor {
     }
 
     @Override
-    public void run(RowProcessor rowProcessor) throws Exception {
+    public void run(RowProcessor rowProcessor, Predicate<Exception> errorHandler) throws Exception {
         Workbook wb = xslx ? new XSSFWorkbook(input) : new HSSFWorkbook(input);
         Sheet sheet = wb.getSheetAt(0);
         Iterator<Row> iter = sheet.rowIterator();
         int current = 0;
         TaskContext tc = TaskContext.get();
         while (iter.hasNext() && tc.isActive()) {
-            current++;
-            Row row = iter.next();
-            short first = 0;
-            short last = getLastFilledCell(row);
-            List<Object> values = Lists.newArrayList();
-            for (int i = first; i <= last; i++) {
-                Cell cell = row.getCell(i);
-                Object value = extractCellValue(cell);
-                values.add(value);
+            try {
+                current++;
+                Row row = iter.next();
+                short first = 0;
+                short last = getLastFilledCell(row);
+                List<Object> values = Lists.newArrayList();
+                for (int i = first; i <= last; i++) {
+                    Cell cell = row.getCell(i);
+                    Object value = extractCellValue(cell);
+                    values.add(value);
+                }
+                rowProcessor.handleRow(current, Values.of(values));
+                tc.setState(NLS.get("LineBasedProcessor.linesProcessed"), current);
+            } catch (Exception e) {
+                if (!errorHandler.test(e)) {
+                    throw e;
+                }
             }
-            rowProcessor.handleRow(current, Values.of(values));
-            tc.setState(NLS.get("LineBasedProcessor.linesProcessed"), current);
         }
     }
 

@@ -14,6 +14,7 @@ import sirius.kernel.commons.Values;
  * Invoked by a {@link LineBasedProcessor} to handle one row.
  */
 public interface RowProcessor {
+
     /**
      * Called the handle a row of an input file.
      * <p>

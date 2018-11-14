@@ -17,6 +17,7 @@ import sirius.kernel.nls.NLS;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 
 /**
  * In charge of processing CSV (comma separated values) files.
@@ -31,14 +32,20 @@ public class CSVProcessor implements LineBasedProcessor {
     }
 
     @Override
-    public void run(RowProcessor rowProcessor) throws Exception {
+    public void run(RowProcessor rowProcessor, Predicate<Exception> errorHandler) throws Exception {
         CSVReader reader = new CSVReader(new BOMReader(new InputStreamReader(input, Charsets.UTF_8)));
         AtomicInteger rowCounter = new AtomicInteger(0);
         TaskContext tc = TaskContext.get();
 
         reader.execute(row -> {
-            rowProcessor.handleRow(rowCounter.incrementAndGet(), row);
-            tc.setState(NLS.get("LineBasedProcessor.linesProcessed"), rowCounter.get());
+            try {
+                rowProcessor.handleRow(rowCounter.incrementAndGet(), row);
+                tc.setState(NLS.get("LineBasedProcessor.linesProcessed"), rowCounter.get());
+            } catch (Exception e) {
+                if (!errorHandler.test(e)) {
+                    throw e;
+                }
+            }
         });
     }
 }

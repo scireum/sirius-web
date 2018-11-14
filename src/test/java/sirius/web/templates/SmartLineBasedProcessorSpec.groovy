@@ -15,6 +15,8 @@ import sirius.web.data.NamedRowProcessor
 import sirius.web.data.SmartLineBasedProcessor
 import sirius.web.data.SmartRow
 
+import java.util.function.Predicate
+
 class SmartLineBasedProcessorSpec extends BaseSpecification {
 
     def "reading CSVs works with different column orders and aliases"() {
@@ -33,8 +35,8 @@ class SmartLineBasedProcessorSpec extends BaseSpecification {
         LineBasedProcessor lineProc1 = LineBasedProcessor.create("smart-test1.csv", getClass().getResourceAsStream("/smart-test1.csv"))
         LineBasedProcessor lineProc2 = LineBasedProcessor.create("smart-test2.csv", getClass().getResourceAsStream("/smart-test2.csv"))
         when:
-        lineProc1.run(proc1)
-        lineProc2.run(proc2)
+        lineProc1.run(proc1, {e -> false} as Predicate)
+        lineProc2.run(proc2, {e -> false} as Predicate)
         then:
         contents1.size() == 2
         contents2.size() == 2
