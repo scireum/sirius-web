@@ -100,28 +100,6 @@ tfoot {
     &.info > td:first-child {
       background-color: $blue;
     }
-
-    // Set .link colors
-    // Set pre.plain colors
-    &.success pre.plain {
-      color: $green;
-    }
-    &.default .link,
-    &.default pre.plain {
-      color: lighten($gray, 20%);
-    }
-    &.danger .link,
-    &.danger pre.plain {
-      color: darken($red, 30%);
-    }
-    &.warning .link,
-    &.warning pre.plain {
-      color: darken($yellow, 15%);
-    }
-    &.info .link,
-    &.info pre.plain {
-      color: darken($blue, 20%);
-    }
   }
 }
 
