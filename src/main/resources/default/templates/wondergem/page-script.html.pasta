@@ -537,4 +537,12 @@
         });
     }
 
+    $(document).ready(function () {
+        $('.sparkline').each(function () {
+            var $this = $(this);
+            var element = $this.get(0);
+            sparkline(element);
+        });
+    });
+
 </script>

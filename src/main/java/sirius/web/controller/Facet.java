@@ -8,8 +8,8 @@
 
 package sirius.web.controller;
 
-import com.google.common.collect.Lists;
 import sirius.kernel.cache.ValueComputer;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 
 import javax.annotation.Nullable;
@@ -28,7 +28,7 @@ public class Facet {
     private final ValueComputer<String, String> translator;
     private boolean facetCollapsingEnabled = false;
     private int maxVisibleFacetItems;
-    private List<FacetItem> items = Lists.newArrayList();
+    private List<FacetItem> items = new ArrayList<>();
     private FacetRange facetRange;
 
     /**
@@ -53,13 +53,22 @@ public class Facet {
     }
 
     /**
+     * Returns all items collected for this facet.
+     *
+     * @return a list of all items of this facet
+     */
+    public List<FacetItem> getAllItems() {
+        return items;
+    }
+
+    /**
      * Returns all visible items collected for this facet.
      *
      * @return a list of all visible items of this facet
      */
     public List<FacetItem> getItems() {
         if (!hasHiddenItems()) {
-            return items;
+            return Collections.unmodifiableList(items);
         }
 
         return items.subList(0, maxVisibleFacetItems);
@@ -133,6 +142,19 @@ public class Facet {
                                         values.stream().anyMatch(value -> Strings.areEqual(value, key))));
             }
         }
+        return this;
+    }
+
+    /**
+     * Removes the given item from this facet.
+     *
+     * @param item the item to remove
+     * @return the facet itself for fluent method calls.
+     */
+    @SuppressWarnings("squid:S2250")
+    @Explain("The list of items is usually small, therefore no performance hotspot is expected.")
+    public Facet removeItem(FacetItem item) {
+        items.remove(item);
         return this;
     }
 
