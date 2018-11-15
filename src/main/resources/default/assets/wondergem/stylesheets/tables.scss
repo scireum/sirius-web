@@ -45,6 +45,12 @@ td.title {
   vertical-align: top;
 }
 
+td .link-inline {
+  padding-right: 8px;
+  padding-top: 8px;
+  display: inline-block;
+}
+
 // Table foot
 tfoot {
   background-color: #e6e6e6;
