@@ -12,14 +12,13 @@ function sparkline(element) {
     var data = element.getAttribute("data-sparkline");
     var spark = data.split(',');
     for (var i in spark) {
-        spark[i] = Math.round(parseFloat(spark[i]) * 100);
+        spark[i] = parseFloat(spark[i]);
     }
 
     var minValue = Math.min.apply(Math, spark);
     for (var j in spark) {
         spark[j] = spark[j] - minValue;
     }
-
 
     var margin = 2;
     var ratioW = ((element.width - margin * 2) * 1) / spark.length;
