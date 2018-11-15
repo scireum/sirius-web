@@ -22,7 +22,7 @@ public class SMTPConfiguration {
     private String user;
     private String password;
 
-    private boolean useSenderAndEnvelopreFrom;
+    private boolean useSenderAndEnvelopeFrom;
 
     private String mailSender;
     private String mailSenderName;
@@ -54,22 +54,61 @@ public class SMTPConfiguration {
      * Therefore such an instance must not be cached or reused.
      */
     public SMTPConfiguration() {
-        Settings settings = UserContext.getSettings();
-        if (settings.get("mail.host").isFilled()) {
-            this.host = settings.get("mail.host").getString();
-            this.port = settings.get("mail.port").getString();
-            this.user = settings.get("mail.user").getString();
-            this.password = settings.get("mail.password").getString();
-        } else {
-            this.host = smtpHost;
-            this.port = smtpPort;
-            this.user = smtpUser;
-            this.password = smtpPassword;
-        }
+        this(UserContext.getSettings());
+    }
 
-        this.mailSender = settings.get("mail.sender").asString(smtpSender);
-        this.mailSenderName = settings.get("mail.senderName").asString(smtpSenderName);
-        this.useSenderAndEnvelopreFrom = settings.get("mail.useEnvelopeFrom").asBoolean(smtpUseEnvelopeFrom);
+    /**
+     * Creates a new configuration based on the given settings.
+     *
+     * @param settings the SMTP settings
+     */
+    public SMTPConfiguration(Settings settings) {
+        this(settings.get("mail.host").asString(smtpHost),
+             settings.get("mail.port").asString(smtpPort),
+             settings.get("mail.user").asString(smtpUser),
+             settings.get("mail.password").asString(smtpPassword),
+             settings.get("mail.sender").asString(smtpSender),
+             settings.get("mail.senderName").asString(smtpSenderName),
+             settings.get("mail.useEnvelopeFrom").asBoolean(smtpUseEnvelopeFrom));
+    }
+
+    /**
+     * Creates a new configuration based on fixed values.
+     *
+     * @param host     the mail server host
+     * @param port     the mail server port
+     * @param user     the mail account user
+     * @param password the mail account password
+     */
+    public SMTPConfiguration(String host, String port, String user, String password) {
+        this(host, port, user, password, smtpSender, smtpSenderName, smtpUseEnvelopeFrom);
+    }
+
+    /**
+     * Creates a new configuration based on fixed values.
+     *
+     * @param host                     the mail server host
+     * @param port                     the mail server port
+     * @param user                     the mail account user
+     * @param password                 the mail account password
+     * @param mailSender               the sender address
+     * @param mailSenderName           the sender name
+     * @param useSenderAndEnvelopeFrom whether to fill the "Sender" and the "Envelope-From" header
+     */
+    public SMTPConfiguration(String host,
+                             String port,
+                             String user,
+                             String password,
+                             String mailSender,
+                             String mailSenderName,
+                             boolean useSenderAndEnvelopeFrom) {
+        this.host = host;
+        this.port = port;
+        this.user = user;
+        this.password = password;
+        this.mailSender = mailSender;
+        this.mailSenderName = mailSenderName;
+        this.useSenderAndEnvelopeFrom = useSenderAndEnvelopeFrom;
     }
 
     /**
@@ -154,6 +193,6 @@ public class SMTPConfiguration {
      * @return <tt>true</tt> if a "sender" / "Envelope-From" header should be set, <tt>false</tt> otherwise
      */
     public boolean isUseSenderAndEnvelopeFrom() {
-        return useSenderAndEnvelopreFrom;
+        return useSenderAndEnvelopeFrom;
     }
 }
