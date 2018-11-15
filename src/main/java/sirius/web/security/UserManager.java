@@ -76,9 +76,23 @@ public interface UserManager {
     UserInfo findUserByCredentials(@Nullable WebContext ctx, String user, String password);
 
     /**
-     * Removes all stored data from the session
+     * Creates a copy of the given <tt>UserInfo</tt> with a new tenant id.
      * <p>
-     * This can be considered a logout operation.
+     * As a user can switch to other tenants, we must be able to create a "fake" user info, which contains the given
+     * tenant data.
+     * <p>
+     * Note that this method will not enforce ANY security checks or constraints. Therefore the
+     * caller must ensure that the given user may be transformed to look like it belongs to
+     * the given tenant.
+     *
+     * @param originalUser the user which is actually logged in
+     * @param tenantId     the id of the tenant to become
+     * @return a new user object, with the original user data but a modified tenant id and object
+     */
+    UserInfo createUserWithTenant(UserInfo originalUser, String tenantId);
+
+    /**
+     * Removes all stored data from the session
      *
      * @param ctx the request containing the session
      */

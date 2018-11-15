@@ -114,4 +114,9 @@ public class PublicUserManager extends GenericUserManager {
     public boolean isLoginSupported() {
         return false;
     }
+
+    @Override
+    public UserInfo createUserWithTenant(UserInfo originalUser, String tenantId) {
+        return originalUser;
+    }
 }
