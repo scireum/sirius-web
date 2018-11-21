@@ -1,0 +1,41 @@
+<i:arg name="span" type="int" default="6" />
+<i:arg name="smallSpan" type="int" default="12" description="Defines the span for mobile devices" />
+<i:arg name="name" type="String" />
+<i:arg name="value" type="java.time.temporal.Temporal" />
+<i:arg name="labelKey" type="String" default="" />
+<i:arg name="label" type="String" default="@i18n(labelKey)" />
+<i:arg name="helpKey" type="String" default="" />
+<i:arg name="help" type="String" default="@i18n(helpKey)" />
+<i:arg name="placeholderKey" type="String" default="" />
+<i:arg name="placeholder" type="String" default="@i18n(placeholderKey)" />
+<i:arg name="required" type="boolean" default="false" />
+<i:arg name="readonly" type="boolean" default="false" />
+<i:arg name="adminOnly" type="boolean" default="false" />
+<i:arg name="id" type="String" default="" />
+
+<i:pragma name="inline" value="true" />
+<i:pragma name="description" value="Renders a time text field within a Wondergem template" />
+
+<div class="timefield col-xs-@smallSpan col-md-@span form-group @user.signalFieldError(name)">
+    <i:if test="isFilled(label)">
+        <label>
+        <span class="@if (required) { input-required } @if (adminOnly) { admin-link }">
+            @label
+        </span>
+        </label>
+    </i:if>
+    <input name="@name"
+           @if(isFilled(id)) { id="@id" }
+           type="time"
+           value="@formatISO(value)"
+           class="form-control input-block-level"
+           placeholder="@placeholder"
+           @if (readonly) { readonly } />
+
+    <i:if test="isFilled(help)">
+        <span class="help-block"><i:raw>@help</i:raw></span>
+    </i:if>
+    <i:if test="user.hasError(name)">
+        <span class="error-block help-block">@user.getFieldErrorMessage(name)</span>
+    </i:if>
+</div>
