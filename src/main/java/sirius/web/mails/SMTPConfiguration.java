@@ -75,13 +75,10 @@ public class SMTPConfiguration {
             password = smtpPassword;
         }
 
-        mailSender = settings.get("mail.sender").isFilled() ? settings.get("mail.sender").getString() : smtpSender;
-        mailSenderName = settings.get("mail.senderName").isFilled() ?
-                         settings.get("mail.senderName").getString() :
-                         smtpSenderName;
-        useSenderAndEnvelopeFrom = settings.get("mail.useEnvelopeFrom").isFilled() ?
-                                   settings.get("mail.useEnvelopeFrom").asBoolean() :
-                                   smtpUseEnvelopeFrom;
+        mailSender = settings.get("mail.sender").replaceEmptyWith(smtpSender).asString();
+        mailSenderName = settings.get("mail.senderName").replaceEmptyWith(smtpSenderName).asString();
+        useSenderAndEnvelopeFrom =
+                settings.get("mail.useEnvelopeFrom").replaceEmptyWith(smtpUseEnvelopeFrom).asBoolean();
     }
 
     /**
