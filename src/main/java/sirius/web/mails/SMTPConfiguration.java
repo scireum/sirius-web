@@ -63,13 +63,25 @@ public class SMTPConfiguration {
      * @param settings the SMTP settings
      */
     public SMTPConfiguration(Settings settings) {
-        this(settings.get("mail.host").asString(smtpHost),
-             settings.get("mail.port").asString(smtpPort),
-             settings.get("mail.user").asString(smtpUser),
-             settings.get("mail.password").asString(smtpPassword),
-             settings.get("mail.sender").asString(smtpSender),
-             settings.get("mail.senderName").asString(smtpSenderName),
-             settings.get("mail.useEnvelopeFrom").asBoolean(smtpUseEnvelopeFrom));
+        if (settings.get("mail.host").isFilled()) {
+            host = settings.get("mail.host").getString();
+            port = settings.get("mail.port").getString();
+            user = settings.get("mail.user").getString();
+            password = settings.get("mail.password").getString();
+        } else {
+            host = smtpHost;
+            port = smtpPort;
+            user = smtpUser;
+            password = smtpPassword;
+        }
+
+        mailSender = settings.get("mail.sender").isFilled() ? settings.get("mail.sender").getString() : smtpSender;
+        mailSenderName = settings.get("mail.senderName").isFilled() ?
+                         settings.get("mail.senderName").getString() :
+                         smtpSenderName;
+        useSenderAndEnvelopeFrom = settings.get("mail.useEnvelopeFrom").isFilled() ?
+                                   settings.get("mail.useEnvelopeFrom").asBoolean() :
+                                   smtpUseEnvelopeFrom;
     }
 
     /**
