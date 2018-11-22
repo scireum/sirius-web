@@ -8,6 +8,7 @@
 
 package sirius.web.mails;
 
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.settings.Settings;
 import sirius.web.security.UserContext;
@@ -21,11 +22,9 @@ public class SMTPConfiguration {
     private String port;
     private String user;
     private String password;
-
-    private boolean useSenderAndEnvelopeFrom;
-
     private String mailSender;
     private String mailSenderName;
+    private boolean useSenderAndEnvelopeFrom;
 
     @ConfigValue("mail.smtp.host")
     private static String smtpHost;
@@ -47,42 +46,6 @@ public class SMTPConfiguration {
 
     @ConfigValue("mail.smtp.useEnvelopeFrom")
     private static boolean smtpUseEnvelopeFrom;
-
-    /**
-     * Creates a new configuration based on either the system configuration or the current scope.
-     * <p>
-     * Therefore such an instance must not be cached or reused.
-     */
-    public SMTPConfiguration() {
-        this(UserContext.getSettings());
-    }
-
-    /**
-     * Creates a new configuration based on the given settings.
-     *
-     * @param settings the SMTP settings
-     */
-    public SMTPConfiguration(Settings settings) {
-        this(settings.get("mail.host").asString(smtpHost),
-             settings.get("mail.port").asString(smtpPort),
-             settings.get("mail.user").asString(smtpUser),
-             settings.get("mail.password").asString(smtpPassword),
-             settings.get("mail.sender").asString(smtpSender),
-             settings.get("mail.senderName").asString(smtpSenderName),
-             settings.get("mail.useEnvelopeFrom").asBoolean(smtpUseEnvelopeFrom));
-    }
-
-    /**
-     * Creates a new configuration based on fixed values.
-     *
-     * @param host     the mail server host
-     * @param port     the mail server port
-     * @param user     the mail account user
-     * @param password the mail account password
-     */
-    public SMTPConfiguration(String host, String port, String user, String password) {
-        this(host, port, user, password, smtpSender, smtpSenderName, smtpUseEnvelopeFrom);
-    }
 
     /**
      * Creates a new configuration based on fixed values.
@@ -112,6 +75,55 @@ public class SMTPConfiguration {
     }
 
     /**
+     * Creates a new configuration based on the config files.
+     *
+     * @return a new configuration based on the config files.
+     */
+    public static SMTPConfiguration fromConfig() {
+        return new SMTPConfiguration(smtpHost,
+                                     smtpPort,
+                                     smtpUser,
+                                     smtpPassword,
+                                     smtpSender,
+                                     smtpSenderName,
+                                     smtpUseEnvelopeFrom);
+    }
+
+    /**
+     * Creates a new configuration based on the current scope and user settings.
+     *
+     * @return a new configuration based on the current scope and user settings.
+     */
+    public static SMTPConfiguration fromUserSettings() {
+        return fromSettings(UserContext.getSettings());
+    }
+
+    /**
+     * Creates a new configuration based on the given settings.
+     *
+     * @param settings the SMTP settings
+     * @return a new configuration based on the given settings.
+     */
+    public static SMTPConfiguration fromSettings(Settings settings) {
+        return new SMTPConfiguration(settings.get("mail.host").getString(),
+                                     settings.get("mail.port").getString(),
+                                     settings.get("mail.user").getString(),
+                                     settings.get("mail.password").getString(),
+                                     settings.get("mail.sender").getString(),
+                                     settings.get("mail.senderName").getString(),
+                                     settings.get("mail.useEnvelopeFrom").asBoolean());
+    }
+
+    /**
+     * Returns the configuration based on the default settings.
+     *
+     * @return the configuration based on the default settings.
+     */
+    public static SMTPConfiguration getDefault() {
+        return fromUserSettings().orElse(fromConfig());
+    }
+
+    /**
      * Returns the default sender from the system configuration.
      *
      * @return the email address used as sender
@@ -127,6 +139,15 @@ public class SMTPConfiguration {
      */
     public static String getDefaultSenderName() {
         return smtpSenderName;
+    }
+
+    /**
+     * Returns the default value whether a "sender" / "Envelope-From" header should be set
+     *
+     * @return the default value whether a "sender" / "Envelope-From" header should be set
+     */
+    public static boolean getDefaultUseSenderAndEnvelopeFrom() {
+        return smtpUseEnvelopeFrom;
     }
 
     /**
@@ -194,5 +215,19 @@ public class SMTPConfiguration {
      */
     public boolean isUseSenderAndEnvelopeFrom() {
         return useSenderAndEnvelopeFrom;
+    }
+
+    /**
+     * Returns the other configuration if this one has no {@link #getMailHost() host}.
+     *
+     * @param other the other configuration
+     * @return <tt>this</tt> configuration, if its {@link #getMailHost() host} is filled, the <tt>other</tt> configuration otherwise
+     */
+    public SMTPConfiguration orElse(SMTPConfiguration other) {
+        if (Strings.isFilled(host)) {
+            return this;
+        } else {
+            return other;
+        }
     }
 }
