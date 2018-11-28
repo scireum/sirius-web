@@ -16,6 +16,7 @@ import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.commons.Values;
@@ -32,7 +33,8 @@ public abstract class WebsocketSession {
 
     private final QueryStringDecoder queryString;
     private final Map<String, String> cookies;
-    private ChannelHandlerContext ctx;
+    private ChannelHandlerContext channelCtx;
+    private WebContext ctx;
 
     /**
      * Creates a new session for the given channel and request.
@@ -41,7 +43,10 @@ public abstract class WebsocketSession {
      * @param request the request made before upgrading to websocket
      */
     protected WebsocketSession(ChannelHandlerContext ctx, HttpRequest request) {
-        this.ctx = ctx;
+        this.channelCtx = ctx;
+        this.ctx = CallContext.getCurrent().get(WebContext.class);
+        this.ctx.setCtx(ctx);
+        this.ctx.setRequest(request);
         this.queryString = new QueryStringDecoder(request.uri());
 
         String cookieHeader = request.headers().get(HttpHeaderNames.COOKIE);
@@ -52,6 +57,10 @@ public abstract class WebsocketSession {
         } else {
             cookies = Collections.emptyMap();
         }
+    }
+
+    public WebContext getWebContext() {
+        return ctx;
     }
 
     /**
@@ -104,6 +113,6 @@ public abstract class WebsocketSession {
      * @param text the string to send
      */
     public void sendMessage(String text) {
-        ctx.writeAndFlush(new TextWebSocketFrame(text));
+        channelCtx.writeAndFlush(new TextWebSocketFrame(text));
     }
 }
