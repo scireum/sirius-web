@@ -78,8 +78,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Provides access to a request received by the WebServer.
@@ -93,9 +91,6 @@ public class WebContext implements SubContext {
     private static final String HEADER_X_FORWARDED_PROTO = "X-Forwarded-Proto";
     private static final String PROTOCOL_HTTPS = "https";
     private static final String PROTOCOL_HTTP = "http";
-
-    private static final Pattern ACCEPT_LANGUAGE_PATTERN =
-            Pattern.compile(" *([a-z]{2})(-[a-z]{2})? *(;q=([0-9.]+) *)?");
 
     /*
      * Underlying channel to send and receive data
@@ -1207,26 +1202,7 @@ public class WebContext implements SubContext {
      */
     @Nullable
     public String getLang() {
-        double bestQ = 0;
-        String currentLang = null;
-        String header = getHeader(HttpHeaderNames.ACCEPT_LANGUAGE);
-        if (Strings.isEmpty(header)) {
-            return currentLang;
-        }
-        header = header.toLowerCase();
-        for (String languageBlock : header.split(",")) {
-            Matcher m = ACCEPT_LANGUAGE_PATTERN.matcher(languageBlock);
-            if (m.matches()) {
-                double q = Value.of(m.group(4)).asDouble(1.0d);
-                String language = m.group(1);
-                if (q > bestQ && NLS.isSupportedLanguage(language)) {
-                    bestQ = q;
-                    currentLang = language;
-                }
-            }
-        }
-
-        return currentLang;
+        return LangHelper.fromHttpRequest(request);
     }
 
     /*
