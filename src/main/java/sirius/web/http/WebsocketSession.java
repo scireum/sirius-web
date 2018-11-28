@@ -9,21 +9,15 @@
 package sirius.web.http;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.cookie.Cookie;
-import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import sirius.kernel.async.CallContext;
-import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
-import sirius.kernel.commons.Values;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -31,10 +25,10 @@ import java.util.stream.Collectors;
  */
 public abstract class WebsocketSession {
 
-    private final QueryStringDecoder queryString;
+    private final Map<String, Value> queryString;
     private final Map<String, String> cookies;
-    private ChannelHandlerContext channelCtx;
-    private WebContext ctx;
+    private final String lang;
+    private final ChannelHandlerContext ctx;
 
     /**
      * Creates a new session for the given channel and request.
@@ -43,24 +37,15 @@ public abstract class WebsocketSession {
      * @param request the request made before upgrading to websocket
      */
     protected WebsocketSession(ChannelHandlerContext ctx, HttpRequest request) {
-        this.channelCtx = ctx;
-        this.ctx = CallContext.getCurrent().get(WebContext.class);
-        this.ctx.setCtx(ctx);
-        this.ctx.setRequest(request);
-        this.queryString = new QueryStringDecoder(request.uri());
+        WebContext webContext = CallContext.getCurrent().get(WebContext.class);
+        webContext.setCtx(ctx);
+        webContext.setRequest(request);
 
-        String cookieHeader = request.headers().get(HttpHeaderNames.COOKIE);
-        if (Strings.isFilled(cookieHeader)) {
-            cookies = ServerCookieDecoder.LAX.decode(cookieHeader)
-                                             .stream()
-                                             .collect(Collectors.toMap(Cookie::name, Cookie::value));
-        } else {
-            cookies = Collections.emptyMap();
-        }
-    }
-
-    public WebContext getWebContext() {
-        return ctx;
+        this.ctx = ctx;
+        queryString =
+                webContext.getParameterNames().stream().collect(Collectors.toMap(Function.identity(), webContext::get));
+        cookies = webContext.getCookies().stream().collect(Collectors.toMap(Cookie::name, Cookie::value));
+        lang = webContext.getLang();
     }
 
     /**
@@ -70,12 +55,7 @@ public abstract class WebsocketSession {
      * @return the value contained in the parameter
      */
     protected Value get(String key) {
-        List<String> list = queryString.parameters().get(key);
-        if (list == null) {
-            return Value.EMPTY;
-        }
-
-        return Values.of(list).at(0);
+        return Value.of(queryString.get(key));
     }
 
     /**
@@ -86,6 +66,15 @@ public abstract class WebsocketSession {
      */
     protected Value getCookie(String key) {
         return Value.of(cookies.get(key));
+    }
+
+    /**
+     * Reads the browser language from the "Accept-Language" header.
+     *
+     * @return the browser language.
+     */
+    public String getLang() {
+        return lang;
     }
 
     /**
@@ -113,6 +102,6 @@ public abstract class WebsocketSession {
      * @param text the string to send
      */
     public void sendMessage(String text) {
-        channelCtx.writeAndFlush(new TextWebSocketFrame(text));
+        ctx.writeAndFlush(new TextWebSocketFrame(text));
     }
 }
