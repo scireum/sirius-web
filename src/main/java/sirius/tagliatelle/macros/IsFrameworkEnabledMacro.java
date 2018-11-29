@@ -19,6 +19,9 @@ import java.util.List;
 
 /**
  * Represents a call to {@link  Sirius#isFrameworkEnabled(String)}.
+ * <p>
+ * Note that multiple frameworks can be requrested using {@code framework1,framework2}. The macro will return
+ * <tt>true</tt> if one of the given frameworks is enabled.
  */
 @Register
 public class IsFrameworkEnabledMacro implements Macro {
@@ -42,8 +45,17 @@ public class IsFrameworkEnabledMacro implements Macro {
 
     @Override
     public Object eval(LocalRenderContext ctx, Expression[] args) {
-        String framework = (String) args[0].eval(ctx);
-        return Strings.isEmpty(framework) || Sirius.isFrameworkEnabled(framework);
+        String frameworks = (String) args[0].eval(ctx);
+        if (Strings.isEmpty(frameworks)) {
+            return true;
+        }
+        for (String framework : frameworks.split(",")) {
+            if (Sirius.isFrameworkEnabled(framework.trim())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Nonnull
@@ -54,6 +66,6 @@ public class IsFrameworkEnabledMacro implements Macro {
 
     @Override
     public String getDescription() {
-        return "Returns true, if the given framework is enabled, false otherwise.";
+        return "Returns true, if one of the given frameworks (as comma separated list) is enabled, false otherwise.";
     }
 }
