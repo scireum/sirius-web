@@ -32,7 +32,8 @@ public abstract class WebsocketSession {
 
     private final QueryStringDecoder queryString;
     private final Map<String, String> cookies;
-    private ChannelHandlerContext ctx;
+    private final String lang;
+    private final ChannelHandlerContext ctx;
 
     /**
      * Creates a new session for the given channel and request.
@@ -52,6 +53,8 @@ public abstract class WebsocketSession {
         } else {
             cookies = Collections.emptyMap();
         }
+
+        lang = LangHelper.from(request.headers().get(HttpHeaderNames.ACCEPT_LANGUAGE)).orElse(null);
     }
 
     /**
@@ -65,7 +68,6 @@ public abstract class WebsocketSession {
         if (list == null) {
             return Value.EMPTY;
         }
-
         return Values.of(list).at(0);
     }
 
@@ -77,6 +79,15 @@ public abstract class WebsocketSession {
      */
     protected Value getCookie(String key) {
         return Value.of(cookies.get(key));
+    }
+
+    /**
+     * Reads the browser language from the "Accept-Language" header.
+     *
+     * @return the browser language.
+     */
+    public String getLang() {
+        return lang;
     }
 
     /**
