@@ -1202,7 +1202,7 @@ public class WebContext implements SubContext {
      * language was found
      */
     public Optional<String> getLang() {
-        return LangHelper.fromHttpRequest(request.headers().get(HttpHeaderNames.ACCEPT_LANGUAGE));
+        return LangHelper.from(request.headers().get(HttpHeaderNames.ACCEPT_LANGUAGE));
     }
 
     /*

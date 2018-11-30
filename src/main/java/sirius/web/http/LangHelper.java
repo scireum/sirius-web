@@ -30,7 +30,7 @@ public class LangHelper {
      * @param acceptLanguage the <tt>Accept-Language</tt> e.g. from a HTTP-Request
      * @return the two-letter code of the accepted language of the user agent or <tt>{@link Optional#empty()}</tt> if no valid accept language was found
      */
-    public static Optional<String> fromHttpRequest(String acceptLanguage) {
+    public static Optional<String> from(String acceptLanguage) {
         if (Strings.isEmpty(acceptLanguage)) {
             return Optional.empty();
         }
