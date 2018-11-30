@@ -15,6 +15,9 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import sirius.kernel.async.CallContext;
+import sirius.kernel.async.Tasks;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 
@@ -30,6 +33,12 @@ public class WebsocketHandler extends ChannelDuplexHandler {
 
     private WebsocketSession websocketSession;
     private WebsocketDispatcher websocketDispatcher;
+    private CallContext currentCall;
+
+    @Part
+    private static Tasks tasks;
+
+    public static final String EXECUTOR_WEBSOCKETS = "websockets";
 
     /**
      * Creates a new handler (one per connection) talking to the given dispatcher.
@@ -77,28 +86,52 @@ public class WebsocketHandler extends ChannelDuplexHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof HttpRequest && isWebsocketRequest((HttpRequest) msg)) {
-            websocketSession = websocketDispatcher.createSession(ctx, (HttpRequest) msg);
+            currentCall = WebServerHandler.initializeContext(ctx, (HttpRequest) msg, false);
+            websocketSession = websocketDispatcher.createSession(currentCall.get(WebContext.class));
             WebServer.websockets.incrementAndGet();
             setupWebsocketPipeline(ctx, msg);
             return;
         }
 
         if (msg instanceof WebSocketFrame) {
-            if (websocketSession != null) {
-                websocketSession.onFrame((WebSocketFrame) msg);
-            } else {
-                try {
-                    ctx.channel().close();
-                } catch (Exception e) {
-                    Exceptions.handle(WebServer.LOG, e);
-                }
-            }
-            ((WebSocketFrame) msg).release();
-
+            handleFrame(ctx, (WebSocketFrame) msg);
             return;
         }
 
         super.channelRead(ctx, msg);
+    }
+
+    private void handleFrame(ChannelHandlerContext ctx, WebSocketFrame msg) {
+        if (websocketSession != null) {
+            dispatchFrame(ctx, msg);
+        } else {
+            terminateOnError(ctx, msg);
+        }
+    }
+
+    private void terminateOnError(ChannelHandlerContext ctx, WebSocketFrame msg) {
+        try {
+            ctx.channel().close();
+        } catch (Exception e) {
+            Exceptions.handle(WebServer.LOG, e);
+        } finally {
+            msg.release();
+        }
+    }
+
+    private void dispatchFrame(ChannelHandlerContext ctx, WebSocketFrame msg) {
+        tasks.executor(EXECUTOR_WEBSOCKETS)
+             .dropOnOverload(() -> terminateOnError(ctx, msg))
+             .start(() -> handleFrameInOwnThread(msg));
+    }
+
+    private void handleFrameInOwnThread(WebSocketFrame msg) {
+        try {
+            CallContext.setCurrent(currentCall);
+            websocketSession.onFrame(msg);
+        } finally {
+            msg.release();
+        }
     }
 
     private void setupWebsocketPipeline(ChannelHandlerContext ctx, Object msg) throws Exception {

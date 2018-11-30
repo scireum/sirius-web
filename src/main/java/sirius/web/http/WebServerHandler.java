@@ -156,13 +156,26 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
      * Binds the request to the CallContext
      */
     private WebContext setupContext(ChannelHandlerContext ctx, HttpRequest req) {
-        currentCall = CallContext.initialize();
+        currentCall = initializeContext(ctx, req, this.ssl);
+        return currentCall.get(WebContext.class);
+    }
+
+    /**
+     * Creates a new CallContext for given request.
+     *
+     * @param ctx   the current handler
+     * @param req   the current request
+     * @param isSSL true if the current conntection is known to be SSL protected
+     * @return the newly initialized call context
+     */
+    protected static CallContext initializeContext(ChannelHandlerContext ctx, HttpRequest req, boolean isSSL) {
+        CallContext currentCall = CallContext.initialize();
         currentCall.addToMDC("uri", req.uri());
         WebContext wc = currentCall.get(WebContext.class);
         // If we know we're an SSL endpoint, tell the WebContext, otherwise let the null value remain
         // so that the automatic detection (headers set by an upstream proxy like X-Forwarded-Proto)
         // is performend when needed...
-        if (this.ssl) {
+        if (isSSL) {
             wc.ssl = true;
         }
         wc.setCtx(ctx);
@@ -179,7 +192,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             }
         });
 
-        return wc;
+        return currentCall;
     }
 
     /*

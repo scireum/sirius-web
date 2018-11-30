@@ -8,9 +8,6 @@
 
 package sirius.web.http;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.HttpRequest;
-
 /**
  * Provides a way to support websockets for the built-in web server.
  * <p>
@@ -28,11 +25,10 @@ public interface WebsocketDispatcher {
     String getWebsocketUri();
 
     /**
-     * Creates a new session for a given channel (context) and request.
+     * Creates a new session for a given request.
      *
-     * @param ctx the channel which was used to initialize a websocket
-     * @param req the request which was made before upgrading to websockets
+     * @param ctx the request which was made before upgrading to websockets
      * @return a new session handling incoming and outgoing frames
      */
-    WebsocketSession createSession(ChannelHandlerContext ctx, HttpRequest req);
+    WebsocketSession createSession(WebContext ctx);
 }
