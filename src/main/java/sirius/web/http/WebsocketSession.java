@@ -54,7 +54,7 @@ public abstract class WebsocketSession {
             cookies = Collections.emptyMap();
         }
 
-        lang = LangHelper.fromHttpRequest(request);
+        lang = LangHelper.fromHttpRequest(request.headers().get(HttpHeaderNames.ACCEPT_LANGUAGE)).orElse(null);
     }
 
     /**

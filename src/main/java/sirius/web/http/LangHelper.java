@@ -8,12 +8,11 @@
 
 package sirius.web.http;
 
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpRequest;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.nls.NLS;
 
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,18 +27,18 @@ public class LangHelper {
     /**
      * Returns the accepted language of the client as two-letter language code.
      *
-     * @param request the HttpRequest to obtain the <tt>Accept-Language</tt> header from
-     * @return the two-letter code of the accepted language of the user agent or <tt>null</tt> if no valid accept language was found
+     * @param acceptLanguage the <tt>Accept-Language</tt> e.g. from a HTTP-Request
+     * @return the two-letter code of the accepted language of the user agent or <tt>{@link Optional#empty()}</tt> if no valid accept language was found
      */
-    public static String fromHttpRequest(HttpRequest request) {
+    public static Optional<String> fromHttpRequest(String acceptLanguage) {
+        if (Strings.isEmpty(acceptLanguage)) {
+            return Optional.empty();
+        }
+
         double bestQ = 0;
         String currentLang = null;
-        String header = request.headers().get(HttpHeaderNames.ACCEPT_LANGUAGE);
-        if (Strings.isEmpty(header)) {
-            return currentLang;
-        }
-        header = header.toLowerCase();
-        for (String languageBlock : header.split(",")) {
+
+        for (String languageBlock : acceptLanguage.toLowerCase().split(",")) {
             Matcher m = ACCEPT_LANGUAGE_PATTERN.matcher(languageBlock);
             if (m.matches()) {
                 double q = Value.of(m.group(4)).asDouble(1.0d);
@@ -51,6 +50,6 @@ public class LangHelper {
             }
         }
 
-        return currentLang;
+        return Optional.of(currentLang);
     }
 }

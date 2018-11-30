@@ -75,6 +75,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
@@ -1200,9 +1201,8 @@ public class WebContext implements SubContext {
      * @return the two-letter code of the accepted language of the user agent or <tt>null</tt> if no valid accept
      * language was found
      */
-    @Nullable
-    public String getLang() {
-        return LangHelper.fromHttpRequest(request);
+    public Optional<String> getLang() {
+        return LangHelper.fromHttpRequest(request.headers().get(HttpHeaderNames.ACCEPT_LANGUAGE));
     }
 
     /*

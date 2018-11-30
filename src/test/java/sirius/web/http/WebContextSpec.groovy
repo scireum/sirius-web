@@ -70,7 +70,7 @@ class WebContextSpec extends BaseSpecification {
 
     def "parseAcceptLanguage works as expected"(header, lang) {
         expect:
-        TestRequest.GET("/test?a=a").addHeader(HttpHeaderNames.ACCEPT_LANGUAGE, header).getLang() == lang
+        TestRequest.GET("/test?a=a").addHeader(HttpHeaderNames.ACCEPT_LANGUAGE, header).getLang().orElse(null) == lang
         where:
         header | lang
         "de, en;q=0.8" | "de"
