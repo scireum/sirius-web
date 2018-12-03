@@ -19,6 +19,7 @@ import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.commons.Values;
+import sirius.kernel.nls.NLS;
 
 import java.util.Collections;
 import java.util.List;
@@ -54,7 +55,7 @@ public abstract class WebsocketSession {
             cookies = Collections.emptyMap();
         }
 
-        lang = LangHelper.from(request.headers().get(HttpHeaderNames.ACCEPT_LANGUAGE)).orElse(null);
+        lang = LangHelper.from(request.headers().get(HttpHeaderNames.ACCEPT_LANGUAGE)).orElse(NLS.getDefaultLanguage());
     }
 
     /**
