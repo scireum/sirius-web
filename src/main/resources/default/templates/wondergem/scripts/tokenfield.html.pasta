@@ -47,7 +47,7 @@
 
                     this.element = $("#" + this.id);
                     this.value = this.element.val();
-                    var tokenfieldConfig = $.extend({delimiter: " "}, config.tokenfield );
+                    var tokenfieldConfig = $.extend({delimiter: " "}, config.tokenfield);
                     this.element.tokenfield(tokenfieldConfig);
 
                     this.tokenElement = $("#" + this.id + "-tokenfield");
@@ -61,12 +61,12 @@
                     // this is needed to display the token removal icon in the same row as the input field
                     // the spinner holds the class .fa which defines the size to 14
                     // because jquery width rounds up or down we need to make provisions for these cases using a 2px margin
-                    this.tokenElement.css("max-width", (this.tokenElement.width() - 16)+"px");
+                    this.tokenElement.css("max-width", (this.tokenElement.width() - 16) + "px");
 
 
                     // create initial tokens
                     input.allTokens = [];
-                    $.each(this.value.split(tokenfieldConfig.delimiter), function(index, element) {
+                    $.each(this.value.split(tokenfieldConfig.delimiter), function (index, element) {
                         input.allTokens.push({label: element, value: element, initialQueryIdentifier: true});
                     });
 
@@ -178,8 +178,7 @@
                 updateTokenRemovalVisibility: function () {
                     if (input.hasTokens()) {
                         input.showTokenRemoval();
-                    }
-                    else {
+                    } else {
                         input.hideTokenRemoval();
                     }
                 },
