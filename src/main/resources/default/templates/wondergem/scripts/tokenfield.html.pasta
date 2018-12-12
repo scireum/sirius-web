@@ -61,7 +61,7 @@
                     // this is needed to display the token removal icon in the same row as the input field
                     // the spinner holds the class .fa which defines the size to 14
                     // because jquery width rounds up or down we need to make provisions for these cases using a 2px margin
-                    this.element.css("max-width", input.element.width() - 16);
+                    this.tokenElement.css("max-width", (this.tokenElement.width() - 16)+"px");
 
 
                     // create initial tokens
