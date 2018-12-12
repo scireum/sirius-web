@@ -24,11 +24,7 @@ import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Used to access the current user and scope.
@@ -210,9 +206,9 @@ public class UserContext implements SubContext {
         if (ctx != null && ctx.isValid()) {
             UserManager manager = getUserManager();
             UserInfo user = manager.bindToRequest(ctx);
-            setCurrentUser(user);
+            manager.bindToUserContext(user);
         } else {
-            setCurrentUser(UserInfo.NOBODY);
+            getUserManager().bindToUserContext(UserInfo.NOBODY);
         }
     }
 

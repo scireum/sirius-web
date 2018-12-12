@@ -134,6 +134,11 @@ public abstract class GenericUserManager implements UserManager {
         return defaultUser;
     }
 
+    @Override
+    public void bindToUserContext(UserInfo userInfo) {
+        UserContext.get().setCurrentUser(userInfo);
+    }
+
     @Nonnull
     @Override
     public UserInfo findUserForRequest(@Nonnull WebContext ctx) {
