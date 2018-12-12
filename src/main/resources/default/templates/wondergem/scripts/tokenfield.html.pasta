@@ -52,8 +52,10 @@
 
                     this.tokenElement = $("#" + this.id + "-tokenfield");
 
-                    this.tokenRemovalElement = $(input.tokenRemovalTemplate);
-                    this.tokenRemovalElement.insertAfter(this.tokenElement);
+                    if (config.showRemovalElement === undefined || config.showRemovalElement) {
+                        this.tokenRemovalElement = $(input.tokenRemovalTemplate);
+                        this.tokenRemovalElement.insertAfter(this.tokenElement);
+                    }
 
                     // delete the element value because they are tokens now and the value should not be displayed twice
                     this.tokenElement.val("");
@@ -100,10 +102,12 @@
                         }
                     });
 
-                    this.tokenRemovalElement.click(function () {
-                        input.clearTokens();
-                        input.hideTokenRemoval();
-                    });
+                    if (this.tokenRemovalElement) {
+                        this.tokenRemovalElement.click(function () {
+                            input.clearTokens();
+                            input.hideTokenRemoval();
+                        });
+                    }
 
                     $(window).resize(function (e) {
                         input.resize(e);
