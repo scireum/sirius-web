@@ -225,7 +225,15 @@ public class SMTPConfiguration {
      */
     public SMTPConfiguration orElse(SMTPConfiguration other) {
         if (Strings.isFilled(host)) {
-            return this;
+            return new SMTPConfiguration(host,
+                                         port,
+                                         user,
+                                         password,
+                                         Strings.isFilled(other.getMailSender()) ? other.getMailSender() : mailSender,
+                                         Strings.isFilled(other.getMailSenderName()) ?
+                                         other.getMailSenderName() :
+                                         mailSenderName,
+                                         other.isUseSenderAndEnvelopeFrom() || useSenderAndEnvelopeFrom);
         } else {
             return other;
         }
