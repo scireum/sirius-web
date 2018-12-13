@@ -37,6 +37,7 @@
                  * Keys of the config object are:
                  * - id (of the input field)
                  * - tokenfield: the tokenfield config object: see http://sliptree.github.io/bootstrap-tokenfield/
+                 * - showRemovalElement: if true the button to delete all tokens is shown (default). if false it's hidden.
                  */
                 init: function (config) {
                     this.id = config.id;
