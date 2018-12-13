@@ -135,8 +135,8 @@ public abstract class GenericUserManager implements UserManager {
     }
 
     @Override
-    public void bindToUserContext(UserInfo userInfo) {
-        UserContext.get().setCurrentUser(userInfo);
+    public UserInfo verifyUser(UserInfo userInfo) {
+        return userInfo;
     }
 
     @Nonnull

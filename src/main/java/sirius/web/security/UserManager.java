@@ -29,7 +29,7 @@ public interface UserManager {
      * Tries to find the current user in the current session or by checking the request for valid credentials.
      * <p>
      * It is not safe to access {@link UserContext#getCurrentUser()} within this method.
-     * Use {@link UserManager#bindToUserContext(UserInfo)} instead.
+     * Use {@link UserManager#verifyUser(UserInfo)} instead.
      *
      * @param ctx the request to attach to
      * @return the user found in the session. If no user is available {@link UserInfo#NOBODY} can be used.
@@ -38,15 +38,14 @@ public interface UserManager {
     UserInfo bindToRequest(@Nonnull WebContext ctx);
 
     /**
-     * Handles the binding to the {@link UserContext}.
+     * Called after the user is bound to the request and set as current user.
      * <p>
-     * Can also be used to handle anything which needs to be executed after a successful login.
-     * <p>
-     * After this method is called it is safe to call {@link UserContext#getCurrentUser()}.
+     * Modifications to the user e.g. adding a permission will be saved in the current user again
      *
      * @param userInfo the user info to bind to the {@link UserContext}
+     * @return the (modified) user to be set as current user
      */
-    void bindToUserContext(UserInfo userInfo);
+    UserInfo verifyUser(UserInfo userInfo);
 
     /**
      * Tries to find the current user in the current session. In contrast to {@link #bindToRequest(WebContext)} this
