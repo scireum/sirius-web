@@ -216,8 +216,11 @@ public class UserContext implements SubContext {
             user = UserInfo.NOBODY;
         }
 
+        // Install the user to perform the verification on a fully populated context
         setCurrentUser(user);
         user = manager.verifyUser(user);
+
+        // Install the effective user - which might be NOBODY to signal that the current user was blocked
         setCurrentUser(user);
     }
 
