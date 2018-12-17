@@ -256,8 +256,6 @@
 
                     this.element.offset(offset);
                 }
-
-
             },
 
             /**
@@ -307,6 +305,7 @@
                     this.update();
                     completions.element.show();
                     this.state = completions.VISIBLE;
+                    completions.rePosition();
 
                     events.onShow.forEach(function (handler) {
                         handler();
