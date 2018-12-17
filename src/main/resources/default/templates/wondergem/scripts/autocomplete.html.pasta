@@ -14,15 +14,15 @@
          * @@type {{name: string, element: undefined, init: init}}
          */
         var anchor = {
-            name: "autocomplete-anchor",
+            selector: "#autocomplete-anchor",
             element: undefined,
 
-            init: function (name) {
-                if (name !== undefined) {
-                    this.name = name;
+            init: function (selector) {
+                if (selector !== undefined) {
+                    this.selector = selector;
                 }
 
-                this.element = $("#" + this.name);
+                this.element = $(this.selector);
 
                 if (!this.element.length) {
                     throw "Anchor does not exist"
