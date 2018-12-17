@@ -391,7 +391,7 @@ public class MailSender {
                 render();
                 sanitize();
                 check();
-                sendMailAsync(smtpConfiguration != null ? smtpConfiguration : SMTPConfiguration.getDefault());
+                sendMailAsync(smtpConfiguration != null ? smtpConfiguration : SMTPConfiguration.fromConfig());
             } finally {
                 CallContext.getCurrent().setLang(tmpLang);
             }
