@@ -22,6 +22,7 @@ import sirius.kernel.nls.NLS;
 import sirius.web.http.MimeHelper;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
+import sirius.web.security.UserContext;
 import sirius.web.templates.Generator;
 import sirius.web.templates.Templates;
 
@@ -391,7 +392,11 @@ public class MailSender {
                 render();
                 sanitize();
                 check();
-                sendMailAsync(smtpConfiguration != null ? smtpConfiguration : SMTPConfiguration.fromConfig());
+                sendMailAsync(smtpConfiguration != null ?
+                              smtpConfiguration :
+                              UserContext.getCurrentScope()
+                                         .tryAs(SMTPConfiguration.class)
+                                         .orElse(SMTPConfiguration.fromConfig()));
             } finally {
                 CallContext.getCurrent().setLang(tmpLang);
             }
