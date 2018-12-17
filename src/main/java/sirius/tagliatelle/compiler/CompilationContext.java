@@ -412,7 +412,7 @@ public class CompilationContext {
                           template.getName(),
                           arg.getType(),
                           arg.getName(),
-                          args[index].getType());
+                          argumentExpression.getType());
                 }
                 outputArgumentDeprecationWarning(position, arg);
             }
