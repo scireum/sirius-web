@@ -647,8 +647,6 @@
 
                 completions.setTemplates(this.config.templates);
 
-                input.element.focus();
-
                 events.onReady.forEach(function (handler) {
                     handler();
                 });
