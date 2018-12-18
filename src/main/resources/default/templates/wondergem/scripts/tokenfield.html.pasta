@@ -53,7 +53,7 @@
 
                     this.tokenElement = $("#" + this.id + "-tokenfield");
 
-                    if (config.showRemovalElement === undefined || config.showRemovalElement) {
+                    if (config.showRemovalElement !== false) {
                         this.tokenRemovalElement = $(input.tokenRemovalTemplate);
                         this.tokenRemovalElement.insertAfter(this.tokenElement);
                     }
