@@ -5,7 +5,6 @@
         return typeof possibleFunction === "function" ? possibleFunction : Function();
     }
 
-
     /**
      * Provides a simple api to use the tokenfield lib.
      *
@@ -28,7 +27,6 @@
                 tokenElement: undefined,
 
                 value: "",
-                allTokens: undefined,
 
                 tokenRemovalElement: undefined,
                 tokenRemovalTemplate: '<a href="#" class="token-removal hide" tabindex="-1"><i class="fa fa-times fa-lg"></i></a>',
@@ -66,13 +64,6 @@
                     // because jquery width rounds up or down we need to make provisions for these cases using a 2px margin
                     this.tokenElement.css("max-width", (this.tokenElement.width() - 16) + "px");
 
-
-                    // create initial tokens
-                    input.allTokens = [];
-                    $.each(this.value.split(tokenfieldConfig.delimiter), function (index, element) {
-                        input.allTokens.push({label: element, value: element, initialQueryIdentifier: true});
-                    });
-
                     input.updateTokenRemovalVisibility();
 
                     this.element.on('tokenfield:removedtoken', function (e) {
@@ -83,16 +74,15 @@
                             input.value = "";
                         }
 
-                        // remove the token from the tokens array as well
-                        input.allTokens = $.grep(input.allTokens, function (token) {
-                            return identifier !== token.value;
-                        });
-
                         input.updateTokenRemovalVisibility();
 
                         events.onRemovedToken.forEach(function (handler) {
                             handler(e);
                         });
+                    });
+
+                    this.element.on('tokenfield:createdtoken', function (e) {
+                        input.updateTokenRemovalVisibility();
                     });
 
                     this.tokenElement.keydown(function (e) {
@@ -130,10 +120,9 @@
                  * @@param tokens array of tokens to be added
                  */
                 appendTokens: function (tokens) {
-                    this.allTokens = this.allTokens.concat(tokens);
-                    this.element.tokenfield("setTokens", this.allTokens);
-
-                    input.updateTokenRemovalVisibility();
+                    $.each(tokens, function (i, token) {
+                        input.element.tokenfield('createToken', token);
+                    });
                 },
 
                 resize: function (e) {
@@ -170,7 +159,6 @@
                 clearTokens: function () {
                     input.element.tokenfield("setTokens", []);
                     input.value = "";
-                    input.allTokens = [];
 
                     events.onClearTokens.forEach(function (handler) {
                         handler();
