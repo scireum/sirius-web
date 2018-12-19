@@ -282,6 +282,10 @@
             hoverRow: function ($row) {
                 completions.selectedRow = $row;
                 $row.addClass("autocomplete-selected-element");
+
+                events.onHoverRow.forEach(function (handler) {
+                    handler($row);
+                });
             },
 
             unHoverRow: function ($row) {
@@ -289,6 +293,10 @@
                     $row.removeClass("autocomplete-selected-element");
                 }
                 completions.selectedRow = undefined;
+
+                events.onUnhoverRow.forEach(function (handler) {
+                    handler($row);
+                });
             },
 
             setTemplates: function (templates) {
@@ -450,6 +458,8 @@
             onSpinnerShow: [],
             onSpinnerHide: [],
             beforeLoad: [],
+            onHoverRow: [],
+            onUnhoverRow: [],
 
             /**
              * Handles the loaded autocompletion data, after a successful request.
