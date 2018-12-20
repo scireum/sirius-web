@@ -26,8 +26,6 @@
                  */
                 tokenElement: undefined,
 
-                value: "",
-
                 tokenRemovalElement: undefined,
                 tokenRemovalTemplate: '<a href="#" class="token-removal hide" tabindex="-1"><i class="fa fa-times fa-lg"></i></a>',
 
@@ -45,7 +43,6 @@
                     }
 
                     this.element = $("#" + this.id);
-                    this.value = this.element.val();
                     var tokenfieldConfig = $.extend({delimiter: " "}, config.tokenfield);
                     this.element.tokenfield(tokenfieldConfig);
 
@@ -69,10 +66,6 @@
                     this.element.on('tokenfield:removedtoken', function (e) {
                         var identifier = e.attrs.value;
                         $('input[data-identifier="' + identifier + '"]').remove();
-
-                        if (e.attrs.initialQueryIdentifier) {
-                            input.value = "";
-                        }
 
                         input.updateTokenRemovalVisibility();
 
@@ -121,7 +114,7 @@
                  * This includes the current user input and the tokenized value.
                  */
                 getValue: function () {
-                    return this.value + " " + this.tokenElement.val();
+                    return this.element.tokenfield('getTokensList', ' ') + " " + this.tokenElement.val();
                 },
 
                 /**
@@ -174,11 +167,10 @@
                 },
 
                 /**
-                 * Cleares the token field of all entries. Also resets the value.
+                 * Cleares the token field of all entries.
                  */
                 clearTokens: function () {
                     input.element.tokenfield("setTokens", []);
-                    input.value = "";
 
                     events.onClearTokens.forEach(function (handler) {
                         handler();
