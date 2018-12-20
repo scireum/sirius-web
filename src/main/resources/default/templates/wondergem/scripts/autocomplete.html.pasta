@@ -103,6 +103,9 @@
 
                 if (event.keyCode === sirius.keys.KEY_ARROW_DOWN) {
                     if (!completions.isVisible()) {
+                        if (localSource.configured) {
+                            localSource.load(this.element.val());
+                        }
                         completions.show();
                     }
 
