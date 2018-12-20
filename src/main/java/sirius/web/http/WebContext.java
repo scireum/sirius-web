@@ -328,8 +328,7 @@ public class WebContext implements SubContext {
      */
     @ConfigValue("http.ssl.hstsMaxAge")
     protected static int hstsMaxAge;
-    
-    
+
     @Part
     private static SessionSecretComputer sessionSecretComputer;
 
