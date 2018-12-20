@@ -61,9 +61,6 @@
                     input.updateTokenRemovalVisibility();
 
                     this.element.on('tokenfield:removedtoken', function (e) {
-                        var identifier = e.attrs.value;
-                        $('input[data-identifier="' + identifier + '"]').remove();
-
                         input.updateTokenRemovalVisibility();
 
                         events.onRemovedToken.forEach(function (handler) {
@@ -278,6 +275,10 @@
 
                 clearTokens: function () {
                     input.clearTokens();
+                },
+
+                removeToken: function (token) {
+                    input.removeToken(token);
                 }
             };
         }
