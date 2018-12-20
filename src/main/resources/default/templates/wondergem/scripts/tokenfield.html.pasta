@@ -81,6 +81,16 @@
                         });
                     });
 
+                    this.element.on('tokenfield:createtoken', function (e) {
+                        var addToken = true;
+                        events.onBeforeCreateToken.forEach(function (handler) {
+                            if (handler(e.attrs) === false) {
+                                addToken = false;
+                            }
+                        });
+                        return addToken;
+                    });
+
                     this.element.on('tokenfield:createdtoken', function (e) {
                         input.updateTokenRemovalVisibility();
                     });
@@ -191,7 +201,8 @@
                 onEnter: [],
                 onRemovedToken: [],
                 onResize: [],
-                onClearTokens: []
+                onClearTokens: [],
+                onBeforeCreateToken: []
             };
 
             return {
