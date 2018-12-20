@@ -153,6 +153,16 @@
                     return input.element.tokenfield('getTokens').length > 0;
                 },
 
+                hasToken: function (token) {
+                    var contains = false;
+                    $.each(input.element.tokenfield('getTokens'), function (i, element) {
+                        if (element.value === token.value) {
+                            contains = true;
+                        }
+                    });
+                    return contains;
+                },
+
                 /**
                  * Cleares the token field of all entries. Also resets the value.
                  */
@@ -252,6 +262,10 @@
 
                 hasTokens: function () {
                     return input.hasTokens();
+                },
+
+                hasToken: function (token) {
+                    return input.hasToken(token);
                 },
 
                 updateTokenRemovalVisibility: function () {
