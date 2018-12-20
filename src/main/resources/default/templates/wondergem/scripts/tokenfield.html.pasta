@@ -160,6 +160,13 @@
                     return contains;
                 },
 
+                removeToken: function (tokenToRemove) {
+                    var newTokens = input.element.tokenfield('getTokens').filter(function (token) {
+                        return tokenToRemove.value !== token.value;
+                    });
+                    input.element.tokenfield("setTokens", newTokens);
+                },
+
                 /**
                  * Cleares the token field of all entries.
                  */
