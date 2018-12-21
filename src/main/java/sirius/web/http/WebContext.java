@@ -277,6 +277,17 @@ public class WebContext implements SubContext {
     private static Duration defaultSessionCookieTTL;
 
     /*
+     * Determines the domain set for all cookies. If empty no domain will be set.
+     * If a cookie's domain attribute is not set, the cookie is only applicable to the domain of the originating request, EXCLUDING all its subdomains.
+     * (However in IE 9 and older versions, a cookie made for abc.com is also sent in requests to xyz.abc.com)
+     * If a cookie's domain attribute is set, the cookie is applicable to that domain, INCLUDING all its subdomains.
+     * This value must be the same as or a parent of the domain of the originating request.
+     * This value should not have a leading dot.
+     */
+    @ConfigValue("http.cookieDomain")
+    private static String cookieDomain;
+
+    /*
      * Shared secret used to protect the client session. If empty one will be created on startup.
      */
     @ConfigValue("http.sessionSecret")
@@ -1106,6 +1117,9 @@ public class WebContext implements SubContext {
         cookie.setMaxAge(Long.MIN_VALUE);
         cookie.setHttpOnly(true);
         cookie.setPath("/");
+        if (Strings.isFilled(cookieDomain)) {
+            cookie.setDomain(cookieDomain);
+        }
         setCookie(cookie);
     }
 
@@ -1122,6 +1136,9 @@ public class WebContext implements SubContext {
         DefaultCookie cookie = new DefaultCookie(name, value);
         cookie.setMaxAge(maxAgeSeconds);
         cookie.setPath("/");
+        if (Strings.isFilled(cookieDomain)) {
+            cookie.setDomain(cookieDomain);
+        }
         setCookie(cookie);
     }
 
@@ -1137,6 +1154,9 @@ public class WebContext implements SubContext {
         cookie.setMaxAge(maxAgeSeconds);
         cookie.setHttpOnly(true);
         cookie.setPath("/");
+        if (Strings.isFilled(cookieDomain)) {
+            cookie.setDomain(cookieDomain);
+        }
         setCookie(cookie);
     }
 
