@@ -1117,6 +1117,9 @@ public class WebContext implements SubContext {
         cookie.setMaxAge(Long.MIN_VALUE);
         cookie.setHttpOnly(true);
         cookie.setPath("/");
+        if (Strings.isFilled(cookieDomain)) {
+            cookie.setDomain(cookieDomain);
+        }
         setCookie(cookie);
     }
 
@@ -1133,6 +1136,9 @@ public class WebContext implements SubContext {
         DefaultCookie cookie = new DefaultCookie(name, value);
         cookie.setMaxAge(maxAgeSeconds);
         cookie.setPath("/");
+        if (Strings.isFilled(cookieDomain)) {
+            cookie.setDomain(cookieDomain);
+        }
         setCookie(cookie);
     }
 
