@@ -28,6 +28,11 @@ public class CSRFHelper {
     public static final String CSRF_TOKEN = "CSRFToken";
 
     /**
+     * Contains the parameter name of the previous CSRF token.
+     */
+    public static final String PREVIOUS_CSRF_TOKEN = "previousCSRFToken";
+
+    /**
      * Contains the parameter name of the date at which point the csrf token was last recomputed.
      */
     public static final String LAST_CSRF_RECOMPUTE = "lastCSRFRecompute";
@@ -45,8 +50,7 @@ public class CSRFHelper {
         Value lastCSRFRecompute = ctx.getSessionValue(LAST_CSRF_RECOMPUTE);
 
         if (isCSRFTokenOutdated(lastCSRFRecompute.asLong(-1L))) {
-            ctx.setSessionValue(CSRF_TOKEN, UUID.randomUUID().toString());
-            ctx.setSessionValue(LAST_CSRF_RECOMPUTE, Value.of(Instant.now().toEpochMilli()).asString());
+            recomputeCSRFToken(ctx);
         }
 
         return ctx.getSessionValue(CSRF_TOKEN).asString();
@@ -55,5 +59,11 @@ public class CSRFHelper {
     private boolean isCSRFTokenOutdated(long lastCSRFRecompute) {
         return Duration.between(Instant.ofEpochMilli(lastCSRFRecompute), Instant.now()).compareTo(csrfTokenLifetime)
                > 0;
+    }
+
+    public void recomputeCSRFToken(WebContext ctx) {
+        ctx.setSessionValue(PREVIOUS_CSRF_TOKEN, ctx.getSessionValue(CSRF_TOKEN).asString());
+        ctx.setSessionValue(CSRF_TOKEN, UUID.randomUUID().toString());
+        ctx.setSessionValue(LAST_CSRF_RECOMPUTE, Value.of(Instant.now().toEpochMilli()).asString());
     }
 }
