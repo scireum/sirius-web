@@ -249,6 +249,11 @@
                     this.element.width(anchor.element.outerWidth());
                 }
 
+                if (this.config.height) {
+                    this.element.css('max-height', this.config.height);
+                    this.element.css('overflow', 'auto');
+                }
+
                 var offset = this.element.offset();
                 var top = anchor.element.offset().top + anchor.element.outerHeight();
                 var left = anchor.element.offset().left;
@@ -285,6 +290,7 @@
             hoverRow: function ($row) {
                 completions.selectedRow = $row;
                 $row.addClass("autocomplete-selected-element");
+                $row.get(0).scrollIntoView({block: "nearest", inline: "nearest"})
 
                 events.onHoverRow.forEach(function (handler) {
                     handler($row);
