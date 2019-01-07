@@ -5,7 +5,7 @@
         return typeof possibleFunction === "function" ? possibleFunction : Function();
     }
 
-    sirius.createAutocomplete = (function () {
+    sirius.createAutocomplete = function () {
 
         /**
          * Small object which defines some properties (width & position) of the completion div.
@@ -762,7 +762,7 @@
                 completions.hideImmediate();
             }
         };
-    });
+    };
 
     sirius.autocomplete = sirius.createAutocomplete();
 </script>
