@@ -28,63 +28,214 @@ class UserContextHelper {
      * @param response the response to dissect
      * @return the user context which was able while creating the response
      */
-    public static UserContext getUserContext(TestResponse response) {
+    static UserContext getUserContext(TestResponse response) {
         return response.getCallContext().get(UserContext.class)
     }
 
     /**
-     * Expects that no messages were created at all
+     * Expects that no messages were created at all.
      *
+     * @param response the response to dissect
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
-    public static void expectNoMessages(TestResponse response) {
+    static void expectNoMessages(TestResponse response) {
         assert getUserContext(response).getMessages().isEmpty()
     }
 
     /**
-     * Expects that no error messages where created at all
+     * Expects that at least one message was created at all.
      *
+     * @param response the response to dissect
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
-    public static void expectNoErrorMessages(TestResponse response) {
-        assert getUserContext(response).getMessages().every { msg -> msg.getType() != Message.ERROR }
+    static void expectMessage(TestResponse response) {
+        assert !getUserContext(response).getMessages().isEmpty()
     }
 
     /**
-     * Expects that at least one error message was created
+     * Expects that no error messages where created at all.
      *
+     * @param response the response to dissect
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
-    public static void expectErrorMessage(TestResponse response) {
-        assert getUserContext(response).getMessages().any { msg -> msg.getType() == Message.ERROR }
+    static void expectNoErrorMessages(TestResponse response) {
+        expectNoMessagesOfType(response, Message.ERROR)
     }
 
     /**
-     * Expects that at least one error message was created which contains the given text part
+     * Expects that at least one error message was created.
      *
+     * @param response the response to dissect
+     * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
+     */
+    static void expectErrorMessage(TestResponse response) {
+        expectMessageOfType(response, Message.ERROR)
+    }
+
+    /**
+     * Expects that at least one error message was created which contains the given text part.
+     *
+     * @param response the response to dissect
      * @param textPart the expected text part to be contained in the error message
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
-    public static void expectErrorMessageContaining(TestResponse response, String textPart) {
-        assert getUserContext(response).getMessages().any { msg -> msg.getType() == Message.ERROR && msg.getMessage().contains(textPart) }
+    static void expectErrorMessageContaining(TestResponse response, String textPart) {
+        expectMessageOfTypeContaining(response, Message.ERROR, textPart)
     }
 
     /**
-     * Expects that at least one success (info) message was created
+     * Expects that no warn messages where created at all.
      *
+     * @param response the response to dissect
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
-    public static void expectSuccessMessage(TestResponse response) {
-        assert getUserContext(response).getMessages().any { msg -> msg.getType() == Message.INFO }
+    static void expectNoWarnMessages(TestResponse response) {
+        expectNoMessagesOfType(response, Message.WARN)
     }
 
     /**
-     * Expects that at least one success (info) message was created which contains the given text part
+     * Expects that at least one warn message was created.
      *
+     * @param response the response to dissect
+     * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
+     */
+    static void expectWarnMessage(TestResponse response) {
+        expectMessageOfType(response, Message.WARN)
+    }
+
+    /**
+     * Expects that at least one warn message was created which contains the given text part.
+     *
+     * @param response the response to dissect
      * @param textPart the expected text part to be contained in the success message
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
-    public static void expectSuccessMessageContaining(TestResponse response, String textPart) {
-        assert getUserContext(response).getMessages().any { msg -> msg.getType() == Message.INFO && msg.getMessage().contains(textPart) }
+    static void expectWarnMessageContaining(TestResponse response, String textPart) {
+        expectMessageOfTypeContaining(response, Message.WARN, textPart)
+    }
+
+    /**
+     * Expects that no success messages where created at all.
+     *
+     * @param response the response to dissect
+     * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
+     */
+    static void expectNoInfoMessages(TestResponse response) {
+        expectNoMessagesOfType(response, Message.INFO)
+    }
+
+    /**
+     * Expects that at least one info message was created.
+     *
+     * @param response the response to dissect
+     * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
+     */
+    static void expectInfoMessage(TestResponse response) {
+        expectMessageOfType(response, Message.INFO)
+    }
+
+    /**
+     * Expects that at least one info message was created which contains the given text part.
+     *
+     * @param response the response to dissect
+     * @param textPart the expected text part to be contained in the success message
+     * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
+     */
+    static void expectInfoMessageContaining(TestResponse response, String textPart) {
+        expectMessageOfTypeContaining(response, Message.INFO, textPart)
+    }
+
+
+    /**
+     * Expects that no success messages where created at all.
+     *
+     * @param response the response to dissect
+     * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
+     */
+    static void expectNoSuccessMessages(TestResponse response) {
+        expectNoMessagesOfType(response, Message.SUCCESS)
+    }
+
+    /**
+     * Expects that at least one success message was created.
+     *
+     * @param response the response to dissect
+     * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
+     */
+    static void expectSuccessMessage(TestResponse response) {
+        expectMessageOfType(response, Message.SUCCESS)
+    }
+
+    /**
+     * Expects that at least one success message was created which contains the given text part.
+     *
+     * @param response the response to dissect
+     * @param textPart the expected text part to be contained in the success message
+     * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
+     */
+    static void expectSuccessMessageContaining(TestResponse response, String textPart) {
+        expectMessageOfTypeContaining(response, Message.SUCCESS, textPart)
+    }
+
+    /**
+     * Expects that there are no field errors.
+     *
+     * @param response the response to dissect
+     * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
+     */
+    static void expectNoFieldErrors(TestResponse response) {
+        def ctx = getUserContext(response)
+        assert ctx.getFieldErrors().isEmpty(): ctx.getFieldErrors()
+                                                  .keySet()
+                                                  .collectEntries({ field -> [field, ctx.getFieldErrorMessage(field)] })
+    }
+
+    /**
+     * Expects that there is a field error for the given field.
+     *
+     * @param response the response to dissect
+     * @param field the name of the field that is expected to have a field error
+     * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
+     */
+    static void expectFieldError(TestResponse response, String field) {
+        def ctx = getUserContext(response)
+        assert ctx.getFieldErrors(field).containsKey(field)
+    }
+
+    /**
+     * Expects that no messages of the given type were created at all.
+     *
+     * @param response the response to dissect
+     * @param type the message type
+     * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
+     */
+    private static void expectNoMessagesOfType(TestResponse response, String type) {
+        def ctx = getUserContext(response)
+        assert ctx.getMessages().every { msg -> msg.getType() != type }
+    }
+
+    /**
+     * Expects that at least one message of the given type was created at all.
+     *
+     * @param response the response to dissect
+     * @param type the message type
+     * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
+     */
+    private static void expectMessageOfType(TestResponse response, String type) {
+        assert getUserContext(response).getMessages().any { msg -> msg.getType() == type }
+    }
+
+    /**
+     * Expects that at least one message of the given type that contains the given text was created at all.
+     *
+     * @param response the response to dissect
+     * @param type the message type
+     * @param textPart the text that the message must contain
+     * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
+     */
+    private static void expectMessageOfTypeContaining(TestResponse response, String type, String textPart) {
+        assert getUserContext(response)
+                .getMessages()
+                .any { msg -> msg.getType() == type && msg.getMessage().contains(textPart) }
     }
 }

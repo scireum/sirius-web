@@ -25,6 +25,7 @@ import sirius.web.http.WebContext;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -430,6 +431,15 @@ public class UserContext implements SubContext {
      */
     public void addFieldErrorMessage(String field, String errorMessage) {
         fieldErrorMessages.put(field, errorMessage);
+    }
+
+    /**
+     * Returns all error message for all fields
+     *
+     * @return all field errors
+     */
+    public Map<String, String> getFieldErrors() {
+        return Collections.unmodifiableMap(fieldErrors);
     }
 
     /**
