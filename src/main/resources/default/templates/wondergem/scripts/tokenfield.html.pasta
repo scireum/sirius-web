@@ -64,7 +64,7 @@
 
                 function refreshHiddenInputs() {
                     $('#' + input.id).parent().find(".hidden-tokenfield-input").remove();
-                    input.element.tokenfield('getTokens').forEach(function (token) {
+                    input.getTokens().forEach(function (token) {
                         var hiddenInput =
                             '<input type="hidden" value="' + token.value + '" class="hidden-tokenfield-input" ' +
                             '       name="' + input.hiddenInputsName + '">';
@@ -165,12 +165,12 @@
             },
 
             hasTokens: function () {
-                return input.element.tokenfield('getTokens').length > 0;
+                return input.getTokens().length > 0;
             },
 
             hasToken: function (token) {
                 var contains = false;
-                $.each(input.element.tokenfield('getTokens'), function (i, element) {
+                $.each(input.getTokens(), function (i, element) {
                     if (element.value === token.value) {
                         contains = true;
                     }
@@ -178,8 +178,12 @@
                 return contains;
             },
 
+            getTokens: function () {
+                return input.element.tokenfield('getTokens');
+            },
+
             removeToken: function (tokenToRemove) {
-                var newTokens = input.element.tokenfield('getTokens').filter(function (token) {
+                var newTokens = input.getTokens().filter(function (token) {
                     return tokenToRemove.value !== token.value;
                 });
                 input.element.tokenfield("setTokens", newTokens);
@@ -304,6 +308,10 @@
 
             removeToken: function (token) {
                 input.removeToken(token);
+            },
+
+            getTokens: function () {
+                return input.getTokens();
             }
         };
     };
