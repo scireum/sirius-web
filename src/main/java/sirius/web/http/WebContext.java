@@ -43,6 +43,7 @@ import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
+import sirius.kernel.health.Log;
 import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.StructuredInput;
@@ -78,6 +79,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -92,6 +94,8 @@ public class WebContext implements SubContext {
     private static final String HEADER_X_FORWARDED_PROTO = "X-Forwarded-Proto";
     private static final String PROTOCOL_HTTPS = "https";
     private static final String PROTOCOL_HTTP = "http";
+    private static final String SESSION_PIN_KEY = "_pin";
+    private static final Log SESSION_CHECK = Log.get("session-check");
 
     /*
      * Underlying channel to send and receive data
@@ -268,6 +272,12 @@ public class WebContext implements SubContext {
      */
     @ConfigValue("http.sessionCookieName")
     private static String sessionCookieName;
+
+    /*
+     * Determines if a session should be pinned to a certain client or user-agent by using another cookie.
+     */
+    @ConfigValue("http.sessionPinning")
+    private static boolean sessionPinning;
 
     /*
      * The ttl of the client session cookie. If this is 0, it will be a "session cookie" and therefore
@@ -671,9 +681,83 @@ public class WebContext implements SubContext {
         String encodedSession = getCookieValue(sessionCookieName);
         if (Strings.isFilled(encodedSession)) {
             session = decodeSession(encodedSession);
+            checkAndEnforceSessionPinning();
         } else {
             session = new HashMap<>();
         }
+    }
+
+    /**
+     * Checks if the session pin matches the one stored in the session (if session pinning is active).
+     * <p>
+     * The idea of session pinning is to use a separate cookie which is updated way less frequently
+     * (theoretically once every 10 years) and to store this value in the session itself.
+     * <p>
+     * Not if (due to a software bug or bad behaviour) someone manages to obtain the session itself
+     * (i.e. a request containing the set-cookie header for SIRIUS_SESSION is cached or logged), the
+     * session will still not be accepted, as the outside cookie and its value is missing.
+     * <p>
+     * The system will ensure that both values are never updated or set in the same request.
+     */
+    private void checkAndEnforceSessionPinning() {
+        String givenSessionPin = getCookieValue(getSessionPinCookieName());
+        String sessionPin = session.get(SESSION_PIN_KEY);
+        String effectiveSessionPin = Strings.isEmpty(givenSessionPin) ?
+                                     "" :
+                                     Hashing.md5().hashString(givenSessionPin, Charsets.UTF_8).toString();
+        
+        if (Strings.isFilled(sessionPin) && !Strings.areEqual(sessionPin, effectiveSessionPin)) {
+            SESSION_CHECK.SEVERE(Strings.apply("Session pin mismatch: %s (%s) vs. %s%n%s%n%s%nIP: %s",
+                                               givenSessionPin,
+                                               effectiveSessionPin,
+                                               sessionPin,
+                                               session,
+                                               this,
+                                               getRemoteIP()));
+            clearSession();
+        } else if (Strings.isEmpty(sessionPin) && Strings.isFilled(givenSessionPin)) {
+            if (SESSION_CHECK.isFINE()) {
+                SESSION_CHECK.FINE("Attaching session pin %s (%s) to %s%n%s%nIP: %s",
+                                   givenSessionPin,
+                                   effectiveSessionPin,
+                                   session,
+                                   this,
+                                   getRemoteIP());
+            }
+            setSessionValue(SESSION_PIN_KEY, effectiveSessionPin);
+        }
+    }
+
+    private String getSessionPinCookieName() {
+        return sessionCookieName + "_PIN";
+    }
+
+    /**
+     * Creates and installs a "session pin" cookie.
+     * <p>
+     * This is only done, if the framework is enabled, a session exists and the session was not modified in this request.
+     */
+    private void installSessionPinningCookieIfRequired() {
+        if (!sessionPinning) {
+            return;
+        }
+
+        String givenSessionPin = getCookieValue(getSessionPinCookieName());
+        if (Strings.isFilled(givenSessionPin)) {
+            return;
+        }
+
+        givenSessionPin = Strings.generateCode(32);
+
+        if (SESSION_CHECK.isFINE()) {
+            SESSION_CHECK.FINE("Creating session pin %s for %s%n%s%nIP: %s",
+                               givenSessionPin,
+                               session,
+                               this,
+                               getRemoteIP());
+        }
+
+        setCookie(getSessionPinCookieName(), givenSessionPin, TimeUnit.DAYS.toSeconds(10L * 365));
     }
 
     private Map<String, String> decodeSession(String encodedSession) {
@@ -694,8 +778,12 @@ public class WebContext implements SubContext {
             }
             return decodedSession;
         } else {
-            if (WebServer.LOG.isFINE()) {
-                WebServer.LOG.FINE("Resetting client session due to security breach: %s", encodedSession);
+            if (SESSION_CHECK.isFINE()) {
+                SESSION_CHECK.FINE("Resetting client session due to inconsistent security hash: %s%n%s%nURI: %s%nIP: %s",
+                                   encodedSession,
+                                   this,
+                                   getRequestedURL(),
+                                   getRemoteIP());
             }
             return new HashMap<>();
         }
@@ -782,10 +870,9 @@ public class WebContext implements SubContext {
         if (session == null) {
             session = new HashMap<>();
         }
-        if (session != null) {
-            session.clear();
-            sessionModified = true;
-        }
+
+        session.clear();
+        sessionModified = true;
     }
 
     /**
@@ -1161,12 +1248,24 @@ public class WebContext implements SubContext {
 
     private void buildClientSessionCookie() {
         if (!sessionModified) {
+            if (session != null && !session.isEmpty()) {
+                installSessionPinningCookieIfRequired();
+            }
+
             return;
         }
 
         if (session.isEmpty()) {
+            if (SESSION_CHECK.isFINE()) {
+                SESSION_CHECK.FINE("Deleting session for %s%nURI: %s%nIP: %s", this, getRequestedURL(), getRemoteIP());
+            }
+
             deleteCookie(sessionCookieName);
             return;
+        }
+
+        if (SESSION_CHECK.isFINE()) {
+            SESSION_CHECK.FINE("Updating session %s%n%s%nIP: %s", session, this, getRemoteIP());
         }
 
         QueryStringEncoder encoder = new QueryStringEncoder("");
