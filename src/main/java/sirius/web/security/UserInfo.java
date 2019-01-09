@@ -85,6 +85,25 @@ public class UserInfo extends Composable {
         }
 
         /**
+         * Provides a method to copy everything but the permissions from the given user info.
+         * <p>
+         * Allows as to copy the user info and modify its permissions
+         * (e.g. in the {@link UserManager#verifyUser(UserInfo)})
+         *
+         * @param info the info to copy from
+         * @return the builder itself for fluent method calls
+         */
+        public static Builder withUser(@Nonnull UserInfo info) {
+            return createUser(info.getUserId())
+                    .withLang(info.getLang())
+                    .withUsername(info.getUserName())
+                    .withTenantId(info.getTenantId())
+                    .withTenantName(info.getTenantName())
+                    .withSettingsSupplier(info.settingsSupplier)
+                    .withUserSupplier(info.userSupplier);
+        }
+
+        /**
          * Sets the name of the user.
          *
          * @param name the name of the user.

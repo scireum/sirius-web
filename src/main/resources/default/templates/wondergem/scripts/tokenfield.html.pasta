@@ -37,6 +37,7 @@
                  * Keys of the config object are:
                  * - id (of the input field)
                  * - tokenfield: the tokenfield config object: see http://sliptree.github.io/bootstrap-tokenfield/
+                 * - showRemovalElement: if true the button to delete all tokens is shown (default). if false it's hidden.
                  */
                 init: function (config) {
                     this.id = config.id;
@@ -47,13 +48,15 @@
 
                     this.element = $("#" + this.id);
                     this.value = this.element.val();
-                    var tokenfieldConfig = $.extend({delimiter: " "}, config.tokenfield );
+                    var tokenfieldConfig = $.extend({delimiter: " "}, config.tokenfield);
                     this.element.tokenfield(tokenfieldConfig);
 
                     this.tokenElement = $("#" + this.id + "-tokenfield");
 
-                    this.tokenRemovalElement = $(input.tokenRemovalTemplate);
-                    this.tokenRemovalElement.insertAfter(this.tokenElement);
+                    if (config.showRemovalElement !== false) {
+                        this.tokenRemovalElement = $(input.tokenRemovalTemplate);
+                        this.tokenRemovalElement.insertAfter(this.tokenElement);
+                    }
 
                     // delete the element value because they are tokens now and the value should not be displayed twice
                     this.tokenElement.val("");
@@ -61,12 +64,12 @@
                     // this is needed to display the token removal icon in the same row as the input field
                     // the spinner holds the class .fa which defines the size to 14
                     // because jquery width rounds up or down we need to make provisions for these cases using a 2px margin
-                    this.element.css("max-width", input.element.width() - 16);
+                    this.tokenElement.css("max-width", (this.tokenElement.width() - 16) + "px");
 
 
                     // create initial tokens
                     input.allTokens = [];
-                    $.each(this.value.split(tokenfieldConfig.delimiter), function(index, element) {
+                    $.each(this.value.split(tokenfieldConfig.delimiter), function (index, element) {
                         input.allTokens.push({label: element, value: element, initialQueryIdentifier: true});
                     });
 
@@ -100,10 +103,12 @@
                         }
                     });
 
-                    this.tokenRemovalElement.click(function () {
-                        input.clearTokens();
-                        input.hideTokenRemoval();
-                    });
+                    if (this.tokenRemovalElement) {
+                        this.tokenRemovalElement.click(function () {
+                            input.clearTokens();
+                            input.hideTokenRemoval();
+                        });
+                    }
 
                     $(window).resize(function (e) {
                         input.resize(e);
@@ -178,8 +183,7 @@
                 updateTokenRemovalVisibility: function () {
                     if (input.hasTokens()) {
                         input.showTokenRemoval();
-                    }
-                    else {
+                    } else {
                         input.hideTokenRemoval();
                     }
                 },

@@ -8,7 +8,6 @@
 
 package sirius.web.mails;
 
-import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.settings.Settings;
 import sirius.web.security.UserContext;
@@ -115,15 +114,6 @@ public class SMTPConfiguration {
     }
 
     /**
-     * Returns the configuration based on the default settings.
-     *
-     * @return the configuration based on the default settings.
-     */
-    public static SMTPConfiguration getDefault() {
-        return fromUserSettings().orElse(fromConfig());
-    }
-
-    /**
      * Returns the default sender from the system configuration.
      *
      * @return the email address used as sender
@@ -215,19 +205,5 @@ public class SMTPConfiguration {
      */
     public boolean isUseSenderAndEnvelopeFrom() {
         return useSenderAndEnvelopeFrom;
-    }
-
-    /**
-     * Returns the other configuration if this one has no {@link #getMailHost() host}.
-     *
-     * @param other the other configuration
-     * @return <tt>this</tt> configuration, if its {@link #getMailHost() host} is filled, the <tt>other</tt> configuration otherwise
-     */
-    public SMTPConfiguration orElse(SMTPConfiguration other) {
-        if (Strings.isFilled(host)) {
-            return this;
-        } else {
-            return other;
-        }
     }
 }

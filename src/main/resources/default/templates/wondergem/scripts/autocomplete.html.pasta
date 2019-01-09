@@ -14,15 +14,15 @@
          * @@type {{name: string, element: undefined, init: init}}
          */
         var anchor = {
-            name: "autocomplete-anchor",
+            selector: "#autocomplete-anchor",
             element: undefined,
 
-            init: function (name) {
-                if (name !== undefined) {
-                    this.name = name;
+            init: function (selector) {
+                if (selector !== undefined) {
+                    this.selector = selector;
                 }
 
-                this.element = $("#" + this.name);
+                this.element = $(this.selector);
 
                 if (!this.element.length) {
                     throw "Anchor does not exist"
@@ -79,7 +79,13 @@
                     handler(value);
                 });
 
-                service.load(value);
+                if (service.configured) {
+                    service.load(value);
+                }
+
+                if (localSource.configured) {
+                    localSource.load(value);
+                }
 
                 completions.update();
             },
@@ -182,6 +188,9 @@
                 });
 
                 this.element.focusin(function () {
+                    if (localSource.configured) {
+                        localSource.load($(this).val());
+                    }
                     completions.show();
                 });
 
@@ -247,8 +256,6 @@
 
                     this.element.offset(offset);
                 }
-
-
             },
 
             /**
@@ -298,6 +305,7 @@
                     this.update();
                     completions.element.show();
                     this.state = completions.VISIBLE;
+                    completions.rePosition();
 
                     events.onShow.forEach(function (handler) {
                         handler();
@@ -457,10 +465,14 @@
             afterRender: []
         };
 
+        /**
+         * An object to get the autocomplete data from a service.
+         */
         var service = {
             uri: undefined,
             minSize: 1,
             delay: 400,
+            configured: false,
 
             responseCache: {},
             lastLoadTriggered: undefined,
@@ -544,6 +556,11 @@
                 if (config.serviceUri === undefined) {
                     throw "ServiceUri required";
                 }
+                if (events.afterLoad === undefined) {
+                    throw "The event afterLoad must be set.";
+                }
+
+                configured = true;
 
                 this.uri = config.serviceUri;
 
@@ -560,6 +577,30 @@
                 }
 
                 this.delay = config.delayTime || this.delay;
+            }
+        };
+
+        /**
+         * An object to get the autocomplete data from a local javascript function.
+         */
+        var localSource = {
+            configured: false,
+            callback: undefined,
+
+            init: function (config) {
+                this.configured = true;
+                this.callback = config.callback
+            },
+
+            load: function (value) {
+                completions.rows = this.callback(value);
+
+                if (completions.rows.length > 0) {
+                    completions.update();
+                    completions.show();
+                } else {
+                    completions.hide();
+                }
             }
         };
 
@@ -631,13 +672,19 @@
              * - templates: the row templates
              */
             start: function (config) {
-                if (events.afterLoad === undefined) {
-                    throw "The event afterLoad must be set.";
-                }
-
                 this.init(config);
 
-                service.init(this.config.service);
+                if (this.config.service) {
+                    service.init(this.config.service);
+                }
+
+                if (this.config.localSource) {
+                    localSource.init(this.config.localSource)
+                }
+
+                if (!this.config.localSource && !this.config.service) {
+                    throw "Either 'service' or 'localSource' must be configured.";
+                }
 
                 input.name = this.config.inputField;
 
@@ -646,8 +693,6 @@
                 completions.init(this.config.completions || {});
 
                 completions.setTemplates(this.config.templates);
-
-                input.element.focus();
 
                 events.onReady.forEach(function (handler) {
                     handler();

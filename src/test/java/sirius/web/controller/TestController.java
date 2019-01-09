@@ -17,6 +17,7 @@ import sirius.kernel.commons.Wait;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.HandledException;
+import sirius.web.http.CSRFHelper;
 import sirius.web.http.InputStreamHandler;
 import sirius.web.http.Limited;
 import sirius.web.http.WebContext;
@@ -35,6 +36,9 @@ public class TestController implements Controller {
 
     @Part
     private Tasks tasks;
+
+    @Part
+    private CSRFHelper csrfHelper;
 
     @Override
     public void onError(WebContext ctx, HandledException error) {
@@ -217,8 +221,14 @@ public class TestController implements Controller {
     }
 
     @Routed("/test/provide-security-token")
-    public void provideSecuritytoken(WebContext ctx) {
+    public void provideSecurityToken(WebContext ctx) {
         ctx.respondWith().template("templates/security-token.html.pasta");
+    }
+
+    @Routed("/test/expire-security-token")
+    public void expireSecurityToken(WebContext ctx) {
+        csrfHelper.recomputeCSRFToken(ctx);
+        ctx.respondWith().direct(HttpResponseStatus.OK, "OK");
     }
 
     @Routed(value = "/test/json/async", jsonCall = true)
