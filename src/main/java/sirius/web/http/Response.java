@@ -699,7 +699,9 @@ public class Response {
             // method to use, so a POST might be re-sent as GET to the new location
             redirectToGet(url);
         } else {
-            userMessagesCache.cacheUserMessages(wc);
+            if (cacheSeconds == 0) {
+                userMessagesCache.cacheUserMessages(wc);
+            }
 
             // Prefer the HTTP/1.1 code 307 as temporary redirect
             HttpResponse response =
@@ -719,7 +721,9 @@ public class Response {
      * @param url the URL to redirect to
      */
     public void redirectToGet(String url) {
-        userMessagesCache.cacheUserMessages(wc);
+        if (cacheSeconds == 0) {
+            userMessagesCache.cacheUserMessages(wc);
+        }
 
         HttpResponse response = createFullResponse(HttpResponseStatus.FOUND, true, Unpooled.EMPTY_BUFFER);
         response.headers().set(HttpHeaderNames.LOCATION, url);
@@ -732,7 +736,9 @@ public class Response {
      * @param url the URL to redirect to
      */
     public void redirectPermanently(String url) {
-        userMessagesCache.cacheUserMessages(wc);
+        if (cacheSeconds == 0) {
+            userMessagesCache.cacheUserMessages(wc);
+        }
 
         HttpResponse response = createFullResponse(HttpResponseStatus.MOVED_PERMANENTLY, true, Unpooled.EMPTY_BUFFER);
         response.headers().set(HttpHeaderNames.LOCATION, url);
