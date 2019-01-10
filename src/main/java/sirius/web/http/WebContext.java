@@ -753,7 +753,9 @@ public class WebContext implements SubContext {
         // session pin.
         givenSessionPin = Hashing.md5()
                                  .hashString(getRemoteIP().toString()
-                                             + TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis()), Charsets.UTF_8)
+                                             + getHeader(HttpHeaderNames.USER_AGENT)
+                                             + TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis()),
+                                             Charsets.UTF_8)
                                  .toString();
 
         if (SESSION_CHECK.isFINE()) {
