@@ -276,11 +276,6 @@ public class Response {
     }
 
     private boolean isCacheable(DefaultHttpResponse response) {
-        // Check for the obvious - which is our own cache setting...
-        if (cacheSeconds > 0) {
-            return true;
-        }
-
         // Check for a manually added expires header (e.g. due to tunneling)...
         if (response.headers().contains(HttpHeaderNames.EXPIRES)) {
             return true;
@@ -699,7 +694,7 @@ public class Response {
             // method to use, so a POST might be re-sent as GET to the new location
             redirectToGet(url);
         } else {
-            if (cacheSeconds == 0) {
+            if (cacheSeconds == null || cacheSeconds == 0) {
                 userMessagesCache.cacheUserMessages(wc);
             }
 
@@ -721,7 +716,7 @@ public class Response {
      * @param url the URL to redirect to
      */
     public void redirectToGet(String url) {
-        if (cacheSeconds == 0) {
+        if (cacheSeconds == null || cacheSeconds == 0) {
             userMessagesCache.cacheUserMessages(wc);
         }
 
@@ -736,7 +731,7 @@ public class Response {
      * @param url the URL to redirect to
      */
     public void redirectPermanently(String url) {
-        if (cacheSeconds == 0) {
+        if (cacheSeconds == null || cacheSeconds == 0) {
             userMessagesCache.cacheUserMessages(wc);
         }
 
