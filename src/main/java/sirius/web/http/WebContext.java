@@ -96,6 +96,7 @@ public class WebContext implements SubContext {
     private static final String PROTOCOL_HTTP = "http";
     private static final String SESSION_PIN_KEY = "_pin";
     private static final Log SESSION_CHECK = Log.get("session-check");
+    private static final long SESSION_PIN_COOKIE_TTL = TimeUnit.DAYS.toSeconds(10L * 365);
 
     /*
      * Underlying channel to send and receive data
@@ -705,7 +706,7 @@ public class WebContext implements SubContext {
         String effectiveSessionPin = Strings.isEmpty(givenSessionPin) ?
                                      "" :
                                      Hashing.md5().hashString(givenSessionPin, Charsets.UTF_8).toString();
-        
+
         if (Strings.isFilled(sessionPin) && !Strings.areEqual(sessionPin, effectiveSessionPin)) {
             SESSION_CHECK.SEVERE(Strings.apply("Session pin mismatch: %s (%s) vs. %s%n%s%n%s%nIP: %s",
                                                givenSessionPin,
@@ -747,7 +748,12 @@ public class WebContext implements SubContext {
             return;
         }
 
-        givenSessionPin = Strings.generateCode(32);
+        // Generate a pin which is stable for one day, as some requests might concurrently want to set the
+        // session pin.
+        givenSessionPin = Hashing.md5()
+                                 .hashString(getRemoteIP().toString()
+                                             + TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis()), Charsets.UTF_8)
+                                 .toString();
 
         if (SESSION_CHECK.isFINE()) {
             SESSION_CHECK.FINE("Creating session pin %s for %s%n%s%nIP: %s",
@@ -757,7 +763,7 @@ public class WebContext implements SubContext {
                                getRemoteIP());
         }
 
-        setCookie(getSessionPinCookieName(), givenSessionPin, TimeUnit.DAYS.toSeconds(10L * 365));
+        setCookie(getSessionPinCookieName(), givenSessionPin, SESSION_PIN_COOKIE_TTL);
     }
 
     private Map<String, String> decodeSession(String encodedSession) {
