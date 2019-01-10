@@ -134,6 +134,11 @@ public abstract class GenericUserManager implements UserManager {
         return defaultUser;
     }
 
+    @Override
+    public UserInfo verifyUser(UserInfo userInfo) {
+        return userInfo;
+    }
+
     @Nonnull
     @Override
     public UserInfo findUserForRequest(@Nonnull WebContext ctx) {

@@ -25,6 +25,7 @@ import sirius.web.http.WebContext;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -207,13 +208,21 @@ public class UserContext implements SubContext {
      * Loads the current user from the given web context.
      */
     private void bindUserToRequest(WebContext ctx) {
+        UserManager manager = getUserManager();
+        UserInfo user;
+
         if (ctx != null && ctx.isValid()) {
-            UserManager manager = getUserManager();
-            UserInfo user = manager.bindToRequest(ctx);
-            setCurrentUser(user);
+            user = manager.bindToRequest(ctx);
         } else {
-            setCurrentUser(UserInfo.NOBODY);
+            user = UserInfo.NOBODY;
         }
+
+        // Install the user to perform the verification on a fully populated context
+        setCurrentUser(user);
+        user = manager.verifyUser(user);
+
+        // Install the effective user - which might be NOBODY to signal that the current user was blocked
+        setCurrentUser(user);
     }
 
     /**
@@ -422,6 +431,15 @@ public class UserContext implements SubContext {
      */
     public void addFieldErrorMessage(String field, String errorMessage) {
         fieldErrorMessages.put(field, errorMessage);
+    }
+
+    /**
+     * Returns all error message for all fields
+     *
+     * @return all field errors
+     */
+    public Map<String, String> getFieldErrors() {
+        return Collections.unmodifiableMap(fieldErrors);
     }
 
     /**

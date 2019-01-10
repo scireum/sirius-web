@@ -222,6 +222,21 @@ class CompilerSpec extends BaseSpecification {
         errors.get(0).toString().contains("The template '<e:deprecated>' is deprecated: Test of deprecated")
     }
 
+    def "invalid varargs are detected"() {
+        when:
+        List<CompileError> errors = null
+        try {
+            tagliatelle.resolve("templates/invalid-argument-caller.html.pasta").get()
+        } catch (CompileException err) {
+            errors = err.getErrors()
+        }
+        then:
+        errors.size() == 2
+        errors.get(0).getError().getSeverity() == ParseError.Severity.ERROR
+        errors.get(0).toString().contains("Incompatible attribute types. e:invalidArgumentTaglib expects int for 'invalidArgument', but class java.lang.String was given.")
+        !errors.get(1).toString().contains("NullPointerException")
+    }
+
     def "time macros state work as expected"() {
         given:
         String expectedResult = resources.resolve("templates/timeMacros.html").get().getContentAsString()

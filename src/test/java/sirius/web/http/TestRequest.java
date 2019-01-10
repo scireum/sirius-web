@@ -54,7 +54,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class TestRequest extends WebContext implements HttpRequest {
 
-    private static final String DUMMY_CSRF_TOKEN = "DUMMY-CSRF-TOKEN";
+    protected static final String DUMMY_CSRF_TOKEN = "DUMMY-CSRF-TOKEN";
 
     @Part
     private static Resources resources;
@@ -106,15 +106,9 @@ public class TestRequest extends WebContext implements HttpRequest {
      * @param uri the relative uri to call
      * @return an instance used to further specify the request to send
      * @see CSRFHelper
-     * @deprecated use {@link #POST(String)} and {@link #sendResource(String)}
      */
     public static TestRequest SAFEPOST(String uri) {
-        TestRequest request = POST(uri);
-
-        request.setTestSessionValue(CSRFHelper.CSRF_TOKEN, DUMMY_CSRF_TOKEN);
-        request.setTestSessionValue(CSRFHelper.LAST_CSRF_RECOMPUTE, Value.of(Instant.now().toEpochMilli()).asString());
-        request.withParameter(CSRFHelper.CSRF_TOKEN, DUMMY_CSRF_TOKEN);
-        return request;
+        return POST(uri).withValidCSRFToken(DUMMY_CSRF_TOKEN);
     }
 
     /**
@@ -268,6 +262,14 @@ public class TestRequest extends WebContext implements HttpRequest {
 
     public TestRequest withParameters(Map<String, Object> parameters) {
         this.parameters.putAll(parameters);
+
+        return this;
+    }
+
+    public TestRequest withValidCSRFToken(String csrfToken) {
+        setTestSessionValue(CSRFHelper.CSRF_TOKEN, csrfToken);
+        setTestSessionValue(CSRFHelper.LAST_CSRF_RECOMPUTE, Value.of(Instant.now().toEpochMilli()).asString());
+        withParameter(CSRFHelper.CSRF_TOKEN, csrfToken);
 
         return this;
     }
