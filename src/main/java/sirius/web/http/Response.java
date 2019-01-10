@@ -257,7 +257,7 @@ public class Response {
         if (!WebContext.corsAllowAll || response.headers().contains(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN)) {
             return;
         }
-        
+
         response.headers().set(HttpHeaderNames.VARY, HttpHeaderNames.ORIGIN);
         String requestedOrigin = wc.getHeader(HttpHeaderNames.ORIGIN);
         if (Strings.isFilled(requestedOrigin)) {
@@ -269,10 +269,26 @@ public class Response {
     }
 
     private void setupCookies(DefaultHttpResponse response) {
-        Collection<Cookie> cookies = wc.getOutCookies();
+        Collection<Cookie> cookies = wc.getOutCookies(isCacheable(response));
         if (cookies != null && !cookies.isEmpty()) {
             response.headers().set(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.LAX.encode(cookies));
         }
+    }
+
+    private boolean isCacheable(DefaultHttpResponse response) {
+        // Check for the obvious - which is our own cache setting...
+        if (cacheSeconds > 0) {
+            return true;
+        }
+
+        // Check for a manually added expires header (e.g. due to tunneling)...
+        if (response.headers().contains(HttpHeaderNames.EXPIRES)) {
+            return true;
+        }
+
+        // Check for a manually added cache-control header (e.g. due to tunneling)...
+        String cacheControl = response.headers().get(HttpHeaderNames.CACHE_CONTROL);
+        return cacheControl != null && !cacheControl.startsWith(HttpHeaderValues.NO_CACHE.toString());
     }
 
     private void setupHeaders(DefaultHttpResponse response) {

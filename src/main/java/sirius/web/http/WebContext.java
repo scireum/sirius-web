@@ -33,6 +33,7 @@ import io.netty.handler.codec.http.multipart.HttpData;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.InterfaceHttpPostRequestDecoder;
+import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
 import sirius.kernel.commons.Callback;
@@ -1247,8 +1248,20 @@ public class WebContext implements SubContext {
      *
      * @return a list of all cookies to be sent to the client.
      */
-    protected Collection<Cookie> getOutCookies() {
-        buildClientSessionCookie();
+    protected Collection<Cookie> getOutCookies(boolean cacheableRequest) {
+        if (cacheableRequest) {
+            // Notify a developer that changes to the client session are discarded due to a request being marked
+            // as cacheable. This is treated as info, as it might be totally fine to have this behaviour if
+            // the session is modified due to a side-effect...
+            if (sessionModified && Sirius.isDev()) {
+                WebServer.LOG.INFO("Not going to update the client session (%s) for a cacheable request: %n%s",
+                                   session,
+                                   this);
+            }
+        } else {
+            buildClientSessionCookie();
+        }
+
         return cookiesOut == null ? null : cookiesOut.values();
     }
 
