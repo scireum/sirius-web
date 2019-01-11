@@ -34,6 +34,7 @@
              * - id (of the input field)
              * - tokenfield: the tokenfield config object: see http://sliptree.github.io/bootstrap-tokenfield/
              * - showRemovalElement: if true the button to delete all tokens is shown (default). if false it's hidden.
+             * - hiddenInputsName: add hidden inputs, to be able to send the tokens as list via POST to the server.
              */
             init: function (config) {
                 this.id = config.id;
@@ -213,10 +214,31 @@
         };
 
         var events = {
+            /**
+             * Handlers are called when user hits the enter key in the input field.
+             */
             onEnter: [],
+            /**
+             * Handlers are called when a token is removed from the tokenfield.
+             *
+             * Called with the event object as parameter.
+             */
             onRemovedToken: [],
             onResize: [],
+            /**
+             * Handlers are called when all tokens are cleared from the tokenfield.
+             *
+             * Called with the event object as parameter.
+             */
             onClearTokens: [],
+            /**
+             * Handlers will be called before the creation of a token.
+             *
+             * Called with the token as parameter. The token can be changed inside the handler and this will be carried
+             * over into the tokefield.
+             *
+             * Returning false will prevent the token from being created.
+             */
             onBeforeCreateToken: []
         };
 
@@ -286,10 +308,23 @@
                 return input.tokenElement;
             },
 
+            /**
+             * Checks whether the tokenfield contains any token.
+             *
+             * @return true if the tokenfield contains at least one token.
+             */
             hasTokens: function () {
                 return input.hasTokens();
             },
 
+            /**
+             * Checks whether the tokenfield contains the given token.
+             *
+             * Tokens are equal if they have the same value-property.
+             *
+             * @param token the given token
+             * @return true if the token field contains the given token
+             */
             hasToken: function (token) {
                 return input.hasToken(token);
             },
@@ -302,14 +337,29 @@
                 input.hideTokenRemoval();
             },
 
+            /**
+             * Cleares the token field of all entries.
+             */
             clearTokens: function () {
                 input.clearTokens();
             },
 
+            /**
+             * Removes the token from the tokenfield.
+             *
+             * Tokens are equal if they have the same value-property.
+             *
+             * @param token the token to remove
+             */
             removeToken: function (token) {
                 input.removeToken(token);
             },
 
+            /**
+             * Get all tokens in the tokenfield.
+             *
+             * @return {*} a list of all tokens in the tokenfield.
+             */
             getTokens: function () {
                 return input.getTokens();
             }

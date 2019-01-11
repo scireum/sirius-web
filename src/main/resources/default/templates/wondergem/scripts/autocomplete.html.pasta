@@ -467,7 +467,19 @@
             onSpinnerShow: [],
             onSpinnerHide: [],
             beforeLoad: [],
+
+            /**
+             * Called when the user hovers over a row of the sugestions or jumps to a row with the arrow keys.
+             *
+             * Called with the jQuery object of the hovered row.
+             */
             onHoverRow: [],
+
+            /**
+             * Called when the user stops hovering over a certain row or jumps to another row with the arrow keys.
+             *
+             * Called with the jQuery object of the now unhovered row.
+             */
             onUnhoverRow: [],
 
             /**
