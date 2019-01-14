@@ -29,6 +29,12 @@
 
     <i:extensions name="templates-page-head"/>
     <i:invoke template="/templates/wondergem/page-script.html.pasta" inline="true"/>
+
+    <i:invoke template="templates/wondergem/scripts/polyfill.html.pasta"/>
+    <i:invoke template="templates/wondergem/scripts/event-keys.html.pasta"/>
+    <i:invoke template="templates/wondergem/scripts/autocomplete.html.pasta"/>
+    <i:invoke template="templates/wondergem/scripts/tokenfield.html.pasta"/>
+
     <i:render name="head"/>
 </head>
 <body>
