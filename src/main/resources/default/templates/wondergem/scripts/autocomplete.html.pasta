@@ -5,7 +5,7 @@
         return typeof possibleFunction === "function" ? possibleFunction : Function();
     }
 
-    sirius.createAutocomplete = (function () {
+    sirius.createAutocomplete = function () {
 
         /**
          * Small object which defines some properties (width & position) of the completion div.
@@ -103,6 +103,9 @@
 
                 if (event.keyCode === sirius.keys.KEY_ARROW_DOWN) {
                     if (!completions.isVisible()) {
+                        if (localSource.configured) {
+                            localSource.load(this.element.val());
+                        }
                         completions.show();
                     }
 
@@ -246,6 +249,11 @@
                     this.element.width(anchor.element.outerWidth());
                 }
 
+                if (this.config.height) {
+                    this.element.css('max-height', this.config.height);
+                    this.element.css('overflow', 'auto');
+                }
+
                 var offset = this.element.offset();
                 var top = anchor.element.offset().top + anchor.element.outerHeight();
                 var left = anchor.element.offset().left;
@@ -282,6 +290,11 @@
             hoverRow: function ($row) {
                 completions.selectedRow = $row;
                 $row.addClass("autocomplete-selected-element");
+                $row.get(0).scrollIntoView({block: "nearest", inline: "nearest"})
+
+                events.onHoverRow.forEach(function (handler) {
+                    handler($row);
+                });
             },
 
             unHoverRow: function ($row) {
@@ -289,6 +302,10 @@
                     $row.removeClass("autocomplete-selected-element");
                 }
                 completions.selectedRow = undefined;
+
+                events.onUnhoverRow.forEach(function (handler) {
+                    handler($row);
+                });
             },
 
             setTemplates: function (templates) {
@@ -450,6 +467,20 @@
             onSpinnerShow: [],
             onSpinnerHide: [],
             beforeLoad: [],
+
+            /**
+             * Called when the user hovers over a row of the sugestions or jumps to a row with the arrow keys.
+             *
+             * Called with the jQuery object of the hovered row.
+             */
+            onHoverRow: [],
+
+            /**
+             * Called when the user stops hovering over a certain row or jumps to another row with the arrow keys.
+             *
+             * Called with the jQuery object of the now unhovered row.
+             */
+            onUnhoverRow: [],
 
             /**
              * Handles the loaded autocompletion data, after a successful request.
@@ -749,7 +780,7 @@
                 completions.hideImmediate();
             }
         };
-    });
+    };
 
     sirius.autocomplete = sirius.createAutocomplete();
 </script>
