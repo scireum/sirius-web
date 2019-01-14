@@ -239,7 +239,7 @@
                     completions.select($(this));
                 });
 
-                $("body").append(this.element);
+                anchor.element.after(this.element);
             },
 
             rePosition: function () {
