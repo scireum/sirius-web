@@ -137,7 +137,6 @@
             showRemovalElement: false,
             hiddenInputsName: args.name,
             tokenfield: {
-                showAutocompleteOnFocus: true,
                 createTokensOnBlur: true,
                 limit: args.maxItems
             }
