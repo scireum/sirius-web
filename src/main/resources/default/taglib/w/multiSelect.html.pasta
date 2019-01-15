@@ -100,9 +100,6 @@
         });
 
         autocomplete.on('onUnhoverRow', function ($row) {
-            if (!args.allowCustomEntries && !autocomplete.isVisible()) {
-                return;
-            }
             autocomplete.getInput().val('');
         });
 
