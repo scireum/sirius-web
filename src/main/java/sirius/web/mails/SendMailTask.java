@@ -70,7 +70,7 @@ class SendMailTask implements Runnable {
     private static final String MAIL_TRANSPORT_PROTOCOL = "mail.transport.protocol";
     private static final String MAIL_FROM = "mail.from";
     private static final String MAIL_SMTP_HOST = "mail.smtp.host";
-    private static final String SMTP = "smtp";
+    private static final String MAIL_SMTP_STARTTLS_ENABLE = "mail.smtp.starttls.enable";
     private static final String MAIL_SMTP_PORT = "mail.smtp.port";
     private static final String MAIL_SMTP_CONNECTIONTIMEOUT = "mail.smtp.connectiontimeout";
     private static final String MAIL_SMTP_TIMEOUT = "mail.smtp.timeout";
@@ -344,7 +344,8 @@ class SendMailTask implements Runnable {
         props.setProperty(MAIL_SMTP_TIMEOUT, MAIL_SOCKET_TIMEOUT);
         props.setProperty(MAIL_SMTP_WRITETIMEOUT, MAIL_SOCKET_TIMEOUT);
 
-        props.setProperty(MAIL_TRANSPORT_PROTOCOL, SMTP);
+        props.setProperty(MAIL_TRANSPORT_PROTOCOL, config.getProtocol().getProtocol());
+        props.setProperty(MAIL_SMTP_STARTTLS_ENABLE, Boolean.toString(config.getProtocol().isStarttls()));
         Authenticator auth = new MailAuthenticator(config);
         if (Strings.isEmpty(config.getMailPassword())) {
             props.setProperty(MAIL_SMTP_AUTH, Boolean.FALSE.toString());
@@ -465,7 +466,7 @@ class SendMailTask implements Runnable {
 
     protected Transport getSMTPTransport(Session session, SMTPConfiguration config) {
         try {
-            Transport transport = session.getTransport(SMTP);
+            Transport transport = session.getTransport();
             transport.connect(config.getMailHost(), config.getMailUser(), null);
             return transport;
         } catch (Exception e) {

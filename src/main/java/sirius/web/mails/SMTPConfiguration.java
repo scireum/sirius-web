@@ -9,6 +9,7 @@
 package sirius.web.mails;
 
 import sirius.kernel.di.std.ConfigValue;
+import sirius.kernel.nls.NLS;
 import sirius.kernel.settings.Settings;
 import sirius.web.security.UserContext;
 
@@ -19,6 +20,7 @@ public class SMTPConfiguration {
 
     private String host;
     private String port;
+    private SMTPProtocol protocol;
     private String user;
     private String password;
     private String mailSender;
@@ -30,6 +32,9 @@ public class SMTPConfiguration {
 
     @ConfigValue("mail.smtp.port")
     private static String smtpPort;
+
+    @ConfigValue("mail.smtp.protocol")
+    private static SMTPProtocol smtpProtocol;
 
     @ConfigValue("mail.smtp.user")
     private static String smtpUser;
@@ -51,6 +56,7 @@ public class SMTPConfiguration {
      *
      * @param host                     the mail server host
      * @param port                     the mail server port
+     * @param protocol                 the mail transport protocol
      * @param user                     the mail account user
      * @param password                 the mail account password
      * @param mailSender               the sender address
@@ -59,6 +65,7 @@ public class SMTPConfiguration {
      */
     public SMTPConfiguration(String host,
                              String port,
+                             SMTPProtocol protocol,
                              String user,
                              String password,
                              String mailSender,
@@ -66,6 +73,7 @@ public class SMTPConfiguration {
                              boolean useSenderAndEnvelopeFrom) {
         this.host = host;
         this.port = port;
+        this.protocol = protocol;
         this.user = user;
         this.password = password;
         this.mailSender = mailSender;
@@ -81,6 +89,7 @@ public class SMTPConfiguration {
     public static SMTPConfiguration fromConfig() {
         return new SMTPConfiguration(smtpHost,
                                      smtpPort,
+                                     smtpProtocol,
                                      smtpUser,
                                      smtpPassword,
                                      smtpSender,
@@ -106,6 +115,7 @@ public class SMTPConfiguration {
     public static SMTPConfiguration fromSettings(Settings settings) {
         return new SMTPConfiguration(settings.get("mail.host").getString(),
                                      settings.get("mail.port").getString(),
+                                     settings.get("mail.protocol").asEnum(SMTPProtocol.class),
                                      settings.get("mail.user").getString(),
                                      settings.get("mail.password").getString(),
                                      settings.get("mail.sender").getString(),
@@ -159,6 +169,15 @@ public class SMTPConfiguration {
     }
 
     /**
+     * Returns the protocol used to connect to the mail server (which might be encrypted)
+     *
+     * @return the protocol used to connect to the mail server (which might be encrypted)
+     */
+    public SMTPProtocol getProtocol() {
+        return protocol;
+    }
+
+    /**
      * Returns the username used to authenticate against the mail server
      *
      * @return the username used for authentication
@@ -205,5 +224,51 @@ public class SMTPConfiguration {
      */
     public boolean isUseSenderAndEnvelopeFrom() {
         return useSenderAndEnvelopeFrom;
+    }
+
+    /**
+     * Lists protocols and encryption methods for SMTP.
+     */
+    public enum SMTPProtocol {
+
+        /**
+         * SMTP over an unencrypted connection
+         */
+        SMTP("smtp", false),
+
+        /**
+         * SMTP over a connection that is encrypted on transport layer (TLS)
+         */
+        SMTPS("smtps", false),
+
+        /**
+         * SMTP over a connection that is encrypted with STARTTLS
+         */
+        STARTTLS("smtp", true);
+
+        private final String protocol;
+        private final boolean starttls;
+
+        SMTPProtocol(String protocol, boolean starttls) {
+            this.protocol = protocol;
+            this.starttls = starttls;
+        }
+
+        public String getProtocol() {
+            return protocol;
+        }
+
+        public boolean isStarttls() {
+            return starttls;
+        }
+
+        public boolean supportsEncryption() {
+            return starttls || "smtps".equals(protocol);
+        }
+
+        @Override
+        public String toString() {
+            return NLS.get(SMTPProtocol.class.getSimpleName() + "." + name());
+        }
     }
 }
