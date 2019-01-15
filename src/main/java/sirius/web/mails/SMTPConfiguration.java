@@ -20,7 +20,7 @@ public class SMTPConfiguration {
 
     private String host;
     private String port;
-    private SMTPEncryption encryption;
+    private SMTPProtocol protocol;
     private String user;
     private String password;
     private String mailSender;
@@ -33,8 +33,8 @@ public class SMTPConfiguration {
     @ConfigValue("mail.smtp.port")
     private static String smtpPort;
 
-    @ConfigValue("mail.smtp.encryption")
-    private static SMTPEncryption smtpEncryption;
+    @ConfigValue("mail.smtp.protocol")
+    private static SMTPProtocol smtpProtocol;
 
     @ConfigValue("mail.smtp.user")
     private static String smtpUser;
@@ -56,7 +56,7 @@ public class SMTPConfiguration {
      *
      * @param host                     the mail server host
      * @param port                     the mail server port
-     * @param encryption               the mail transport encryption
+     * @param protocol                 the mail transport protocol
      * @param user                     the mail account user
      * @param password                 the mail account password
      * @param mailSender               the sender address
@@ -65,7 +65,7 @@ public class SMTPConfiguration {
      */
     public SMTPConfiguration(String host,
                              String port,
-                             SMTPEncryption encryption,
+                             SMTPProtocol protocol,
                              String user,
                              String password,
                              String mailSender,
@@ -73,7 +73,7 @@ public class SMTPConfiguration {
                              boolean useSenderAndEnvelopeFrom) {
         this.host = host;
         this.port = port;
-        this.encryption = encryption;
+        this.protocol = protocol;
         this.user = user;
         this.password = password;
         this.mailSender = mailSender;
@@ -89,7 +89,7 @@ public class SMTPConfiguration {
     public static SMTPConfiguration fromConfig() {
         return new SMTPConfiguration(smtpHost,
                                      smtpPort,
-                                     smtpEncryption,
+                                     smtpProtocol,
                                      smtpUser,
                                      smtpPassword,
                                      smtpSender,
@@ -115,7 +115,7 @@ public class SMTPConfiguration {
     public static SMTPConfiguration fromSettings(Settings settings) {
         return new SMTPConfiguration(settings.get("mail.host").getString(),
                                      settings.get("mail.port").getString(),
-                                     settings.get("mail.encryption").asEnum(SMTPEncryption.class),
+                                     settings.get("mail.protocol").asEnum(SMTPProtocol.class),
                                      settings.get("mail.user").getString(),
                                      settings.get("mail.password").getString(),
                                      settings.get("mail.sender").getString(),
@@ -169,12 +169,12 @@ public class SMTPConfiguration {
     }
 
     /**
-     * Returns the encryption method used to connect to the mail server
+     * Returns the protocol used to connect to the mail server (which might be encrypted)
      *
-     * @return the encryption method used to connect to the mail server
+     * @return the protocol used to connect to the mail server (which might be encrypted)
      */
-    public SMTPEncryption getMailEncryption() {
-        return encryption;
+    public SMTPProtocol getProtocol() {
+        return protocol;
     }
 
     /**
@@ -227,17 +227,29 @@ public class SMTPConfiguration {
     }
 
     /**
-     * Lists encryption methods for SMTP.
+     * Lists protocols and encryption methods for SMTP.
      */
-    public enum SMTPEncryption {
-        NONE("smtp", false),
+    public enum SMTPProtocol {
+
+        /**
+         * SMTP over an unencrypted connection
+         */
+        SMTP("smtp", false),
+
+        /**
+         * SMTP over a connection that is encrypted on transport layer (TLS)
+         */
         SMTPS("smtps", false),
+
+        /**
+         * SMTP over a connection that is encrypted with STARTTLS
+         */
         STARTTLS("smtp", true);
 
         private final String protocol;
         private final boolean starttls;
 
-        SMTPEncryption(String protocol, boolean starttls) {
+        SMTPProtocol(String protocol, boolean starttls) {
             this.protocol = protocol;
             this.starttls = starttls;
         }
@@ -250,13 +262,13 @@ public class SMTPConfiguration {
             return starttls;
         }
 
-        public boolean isEncrypted() {
+        public boolean supportsEncryption() {
             return starttls || "smtps".equals(protocol);
         }
 
         @Override
         public String toString() {
-            return NLS.get(SMTPEncryption.class.getSimpleName() + "." + name());
+            return NLS.get(SMTPProtocol.class.getSimpleName() + "." + name());
         }
     }
 }
