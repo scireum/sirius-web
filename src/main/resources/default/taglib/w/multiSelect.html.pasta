@@ -28,7 +28,7 @@
 </i:if>
 
 <script>
-    $(document).ready(function () {
+    var initMultiSelect = function (args) {
         var createSuggestionsObject = function (selectId) {
             var allSuggestions = [];
             var initialSelection = [];
@@ -90,7 +90,7 @@
                 '</div>'
         }
 
-        var suggestions = createSuggestionsObject('@id-suggestions-select');
+        var suggestions = createSuggestionsObject(args.id + '-suggestions-select');
 
         var tokenfield = sirius.createTokenfield();
         var autocomplete = sirius.createAutocomplete();
@@ -100,7 +100,7 @@
         });
 
         autocomplete.on('onUnhoverRow', function ($row) {
-            if (!@allowCustomEntries && !autocomplete.isVisible()) {
+            if (!args.allowCustomEntries && !autocomplete.isVisible()) {
                 return;
             }
             autocomplete.getInput().val('');
@@ -121,7 +121,7 @@
                 return false;
             }
             if (!suggestions.getTokenForValue(token.value)) {
-                if (@allowCustomEntries) {
+                if (args.allowCustomEntries) {
                     suggestions.addSuggestion(token);
                 } else {
                     return false;
@@ -133,25 +133,25 @@
         });
 
         tokenfield.start({
-            id: '@id-input',
+            id: args.id + '-input',
             showRemovalElement: false,
-            hiddenInputsName: '@name',
+            hiddenInputsName: args.name,
             tokenfield: {
                 showAutocompleteOnFocus: true,
                 createTokensOnBlur: true,
-                limit: @maxItems
+                limit: args.maxItems
             }
         });
 
         tokenfield.appendTokens(suggestions.getInitialSelection());
 
-        @if (!readonly) {
+        if (!args.readonly) {
             autocomplete.start({
                 inputField: tokenfield.getInputFieldId(),
                 localSource: {
                     callback: function (query) {
                         var rows = [];
-                        if (@allowCustomEntries && query && !suggestions.getTokenForValue(query)) {
+                        if (args.allowCustomEntries && query && !suggestions.getTokenForValue(query)) {
                             rows.push({
                                 label: query,
                                 value: query,
@@ -169,7 +169,7 @@
                         });
                         if (rows.length === 0) {
                             rows.push({
-                                label: '@i18n("Select2.noMatches")',
+                                label: args.noMatchesText,
                                 type: 'basic',
                                 inTokenfield: false
                             });
@@ -177,19 +177,32 @@
                         return rows;
                     }
                 },
-                anchor: '#@id .tokenfield',
+                anchor: '#' + args.id + ' .tokenfield',
                 templates: autocompleteTemplates,
                 completions: {
-                    id: '@id-completion',
+                    id: args.id + '-completion',
                     height: '300px'
                 }
             });
         } else {
             // add the 'disabled' class to the tokenfield, so it looks grey and 'disabled'
             // we have to add that manually, because just 'readonly' does not look like that for the tokenfield
-            // but we also don't want to disable the field, because in some browsers disabled field are not sent when
+            // but we also don't want to disable the field, because in some browsers disabled fields are not sent when
             // posting
-            $('#@id .tokenfield').addClass('disabled');
+            $('#' + args.id + ' .tokenfield').addClass('disabled');
         }
+    }
+</script>
+
+<script>
+    $(document).ready(function () {
+        initMultiSelect({
+            id: '@id',
+            name: '@name',
+            noMatchesText : '@i18n("Select2.noMatches")',
+            readonly: @readonly,
+            maxItems: @maxItems,
+            allowCustomEntries: @allowCustomEntries
+        });
     });
 </script>
