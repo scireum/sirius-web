@@ -545,4 +545,164 @@
         });
     });
 
+    var multiSelect = function (args) {
+        var createSuggestionsObject = function (selectId) {
+            var allSuggestions = [];
+            var initialSelection = [];
+
+            var $select = $('#' + selectId);
+            for (var i = 0; i < $select[0].options.length; i++) {
+                var option = $select[0].options[i];
+                var token = {
+                    label: option.text,
+                    value: option.value
+                };
+                allSuggestions.push(token);
+                if (option.selected) {
+                    initialSelection.push(token);
+                }
+            }
+            $select.remove();
+
+            return {
+                getAllSuggestions: function () {
+                    return allSuggestions;
+                },
+                getInitialSelection: function () {
+                    return initialSelection;
+                },
+                addSuggestion: function (token) {
+                    allSuggestions.push(token)
+                },
+                forEachMatchingSuggestion: function (query, callback) {
+                    var found = undefined;
+                    $.each(allSuggestions, function (i, element) {
+                        if (element.label.toLowerCase().indexOf(query.toLowerCase()) !== -1 ||
+                            element.value.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                            if (callback) {
+                                callback(element);
+                            }
+                        }
+                    });
+                    return found;
+                },
+                getTokenForValue: function (value) {
+                    var token = undefined;
+                    $.each(allSuggestions, function (i, element) {
+                        if (element.value === value) {
+                            token = element;
+                        }
+                    });
+                    return token;
+                }
+            }
+        }
+
+        var autocompleteTemplates = {
+            basic:
+                '<div class="autocomplete-row autocomplete-selectable-element autocomplete-row-js' +
+                '            {{#inTokenfield}}in-token-field{{/inTokenfield}}"> ' +
+                '   <span class="element-heading">{{label}}</span>' +
+                '   <span class="autocomplete-data" data-autocomplete="{{value}}" style="display: none"></span>' +
+                '</div>'
+        }
+
+        var suggestions = createSuggestionsObject(args.id + '-suggestions-select');
+
+        var tokenfield = sirius.createTokenfield();
+        var autocomplete = sirius.createAutocomplete();
+
+        autocomplete.on('onHoverRow', function ($row) {
+            autocomplete.getInput().val($row.find('.autocomplete-data').data('autocomplete'));
+        });
+
+        autocomplete.on('onUnhoverRow', function ($row) {
+            autocomplete.getInput().val('');
+        });
+
+        autocomplete.on('onReady', function ($row) {
+            tokenfield.on('onBeforeCreateToken', function (token) {
+                // hide the autocomplete imediately, because else "dragging" over the completions will introduce unwanted
+                // state, e.g. text of a compeltions-row is in input field, but not created as token
+                autocomplete.hide();
+                return true;
+            });
+        });
+
+        tokenfield.on('onBeforeCreateToken', function (token) {
+            if (tokenfield.hasToken(token)) {
+                tokenfield.removeToken(token);
+                return false;
+            }
+            if (!suggestions.getTokenForValue(token.value)) {
+                if (args.allowCustomEntries) {
+                    suggestions.addSuggestion(token);
+                } else {
+                    return false;
+                }
+            } else {
+                token.label = suggestions.getTokenForValue(token.value).label;
+            }
+            return true;
+        });
+
+        tokenfield.start({
+            id: args.id + '-input',
+            showRemovalElement: false,
+            hiddenInputsName: args.name,
+            tokenfield: {
+                createTokensOnBlur: true,
+                limit: args.maxItems
+            }
+        });
+
+        tokenfield.appendTokens(suggestions.getInitialSelection());
+
+        if (!args.readonly) {
+            autocomplete.start({
+                inputField: tokenfield.getInputFieldId(),
+                localSource: {
+                    callback: function (query) {
+                        var rows = [];
+                        if (args.allowCustomEntries && query && !suggestions.getTokenForValue(query)) {
+                            rows.push({
+                                label: query,
+                                value: query,
+                                type: 'basic',
+                                inTokenfield: tokenfield.hasToken({value: query})
+                            });
+                        }
+                        suggestions.forEachMatchingSuggestion(query, function (element) {
+                            rows.push({
+                                label: element.label,
+                                value: element.value,
+                                type: 'basic',
+                                inTokenfield: tokenfield.hasToken(element)
+                            });
+                        });
+                        if (rows.length === 0) {
+                            rows.push({
+                                label: args.noMatchesText,
+                                type: 'basic',
+                                inTokenfield: false
+                            });
+                        }
+                        return rows;
+                    }
+                },
+                anchor: '#' + args.id + ' .tokenfield',
+                templates: autocompleteTemplates,
+                completions: {
+                    id: args.id + '-completion',
+                    height: '300px'
+                }
+            });
+        } else {
+            // add the 'disabled' class to the tokenfield, so it looks grey and 'disabled'
+            // we have to add that manually, because just 'readonly' does not look like that for the tokenfield
+            // but we also don't want to disable the field, because in some browsers disabled fields are not sent when
+            // posting
+            $('#' + args.id + ' .tokenfield').addClass('disabled');
+        }
+    };
 </script>
