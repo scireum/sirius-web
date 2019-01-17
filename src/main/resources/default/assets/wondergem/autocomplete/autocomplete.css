@@ -24,15 +24,32 @@
     padding-top: 8px;
     padding-bottom: 8px;
 }
+
 .autocomplete-preview-img {
     text-align: center;
 }
+
 .autocomplete-preview-img img {
     max-height: 48px;
 }
+
 .autocomplete-selectable-element {
     cursor: pointer;
 }
+
 .autocomplete-selected-element, .navigation-up-down-js:hover, .navigation-left-right-js:hover {
     background-color: #E8E8EA
+}
+
+.multiselect .autocomplete-row.autocomplete-selected-element,
+.multiselect .autocomplete-row.in-token-field.autocomplete-selected-element {
+    background-color: #66afe9;
+    color: #ffffff;
+}
+
+.multiselect .autocomplete-row.in-token-field {
+    background-color: #ededed;
+    border-top: 1px solid #d9d9d9;
+    border-bottom: 1px solid #d9d9d9;
+    margin: 2px 0;
 }
