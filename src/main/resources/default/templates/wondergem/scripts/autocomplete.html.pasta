@@ -316,10 +316,13 @@
                     // -> we should scroll up so the row is on the top of the viewable space
                     container.scrollTop = row.offsetTop;
                 }
-                if (container.scrollTop + container.offsetHeight < row.offsetTop + row.offsetHeight) {
+
+                var containerBottom = container.scrollTop + container.offsetHeight;
+                var rowBottom = row.offsetTop + row.offsetHeight;
+                if (containerBottom < rowBottom) {
                     // row is below the bottom position the container scrolled to
                     // -> we should scroll down so the row is on the bottom of the viewable space
-                    container.scrollTop = row.offsetTop - container.offsetHeight + row.offsetHeight;
+                    container.scrollTop = rowBottom - container.offsetHeight;
                 }
             },
 
