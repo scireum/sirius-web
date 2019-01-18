@@ -219,11 +219,14 @@
             state: undefined,
 
             config: undefined,
+
             /**
              * Initializes the completions element.
              *
              * Keys of the config object are:
              * - id: the id of the autocomplete wrapper div
+             * - width: the width for the element if it should differ from the anchor
+             * - height: the max-height of the element
              */
             init: function (config) {
                 this.config = config;
@@ -290,11 +293,34 @@
             hoverRow: function ($row) {
                 completions.selectedRow = $row;
                 $row.addClass("autocomplete-selected-element");
-                $row.get(0).scrollIntoView({block: "nearest", inline: "nearest"})
+                completions.scrollRowIntoView($row.get(0));
 
                 events.onHoverRow.forEach(function (handler) {
                     handler($row);
                 });
+            },
+
+            /**
+             * If the given row is outside the view, scroll it into view.
+             *
+             * Only used if the completions.height config is set, or else the element will just be as high as it
+             * needs to be to display all completions without scrolling.
+             *
+             * @@param row the row to be scrolled into the view
+             */
+            scrollRowIntoView: function (row) {
+                var container = row.parentNode;
+
+                if (container.scrollTop > row.offsetTop) {
+                    // row is above the position the container scrolled to
+                    // -> we should scroll up so the row is on the top of the viewable space
+                    container.scrollTop = row.offsetTop;
+                }
+                if (container.scrollTop + container.offsetHeight < row.offsetTop + row.offsetHeight) {
+                    // row is below the bottom position the container scrolled to
+                    // -> we should scroll down so the row is on the bottom of the viewable space
+                    container.scrollTop = row.offsetTop - container.offsetHeight + row.offsetHeight;
+                }
             },
 
             unHoverRow: function ($row) {
