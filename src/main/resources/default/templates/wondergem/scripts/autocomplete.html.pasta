@@ -315,6 +315,7 @@
                     // row is above the position the container scrolled to
                     // -> we should scroll up so the row is on the top of the viewable space
                     container.scrollTop = row.offsetTop;
+                    return;
                 }
 
                 var containerBottom = container.scrollTop + container.offsetHeight;
