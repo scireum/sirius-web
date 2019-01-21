@@ -128,9 +128,9 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     /**
      * Contains a list of IP ranges which are permitted to access this server. Access from unauthorized IPs will be
      * blocked at the lowest level possible (probably no connection will be accepted). The format accepted by this
-     * field is defined by {@link IPRange#paraseRangeSet(String)}.
+     * field is defined by {@link IPRange#parseRangeSet(String)}.
      *
-     * @see IPRange#paraseRangeSet(String)
+     * @see IPRange#parseRangeSet(String)
      */
     @ConfigValue("http.firewall.filterIPs")
     private static String ipFilter;
@@ -198,7 +198,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     protected static IPRange.RangeSet getIPFilter() {
         if (filterRanges == null) {
             try {
-                filterRanges = IPRange.paraseRangeSet(ipFilter);
+                filterRanges = IPRange.parseRangeSet(ipFilter);
             } catch (Exception e) {
                 Exceptions.handle()
                           .to(LOG)
@@ -223,7 +223,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     protected static IPRange.RangeSet getProxyIPs() {
         if (proxyRanges == null) {
             try {
-                proxyRanges = IPRange.paraseRangeSet(proxyIPs);
+                proxyRanges = IPRange.parseRangeSet(proxyIPs);
             } catch (Exception e) {
                 Exceptions.handle()
                           .to(LOG)

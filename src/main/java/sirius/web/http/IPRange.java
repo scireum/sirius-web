@@ -139,8 +139,22 @@ public class IPRange {
      *                                   can be an address or a sub net in CIDR notation.
      * @return a RangeSet representing the given input. If the input was empty, a "no filter" set is returned, which
      * accepts all IPs.
+     * @deprecated typo in method name
      */
+    @Deprecated
     public static RangeSet paraseRangeSet(String commaSeparatedListOfRanges) {
+        return parseRangeSet(commaSeparatedListOfRanges);
+    }
+
+    /**
+     * Compiles the given list of ranges into a range set.
+     *
+     * @param commaSeparatedListOfRanges a string defining a list of ip ranges separated by a ",". Each ip range
+     *                                   can be an address or a sub net in CIDR notation.
+     * @return a RangeSet representing the given input. If the input was empty, a "no filter" set is returned, which
+     * accepts all IPs.
+     */
+    public static RangeSet parseRangeSet(String commaSeparatedListOfRanges) {
         RangeSet result = new RangeSet();
         if (Strings.isFilled(commaSeparatedListOfRanges)) {
             result.ranges = Lists.newArrayList();

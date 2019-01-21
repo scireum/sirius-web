@@ -50,17 +50,17 @@ public class IPRangeTest {
         assertTrue(set.accepts(InetAddress.getByName("::1")));
 
         // Test parsing of "no filter"
-        set = IPRange.paraseRangeSet("");
+        set = IPRange.parseRangeSet("");
         assertTrue(set.accepts(InetAddress.getByName("192.168.192.1")));
         assertTrue(set.accepts(InetAddress.getByName("127.0.0.1")));
         assertTrue(set.accepts(InetAddress.getByName("::1")));
-        set = IPRange.paraseRangeSet(",,");
+        set = IPRange.parseRangeSet(",,");
         assertTrue(set.accepts(InetAddress.getByName("192.168.192.1")));
         assertTrue(set.accepts(InetAddress.getByName("127.0.0.1")));
         assertTrue(set.accepts(InetAddress.getByName("::1")));
 
         // Test a simple subnet
-        set = IPRange.paraseRangeSet("192.168.0.0/16");
+        set = IPRange.parseRangeSet("192.168.0.0/16");
         assertTrue(set.accepts(InetAddress.getByName("192.168.192.1")));
         assertFalse(set.accepts(InetAddress.getByName("192.167.192.1")));
         // Localhost is no longer added by default
@@ -68,7 +68,7 @@ public class IPRangeTest {
         assertFalse(set.accepts(InetAddress.getByName("::1")));
 
         // Test a simple subnet
-        set = IPRange.paraseRangeSet("192.168.0.0/16, 192.167.12.0/24");
+        set = IPRange.parseRangeSet("192.168.0.0/16, 192.167.12.0/24");
         assertTrue(set.accepts(InetAddress.getByName("192.168.192.1")));
         assertFalse(set.accepts(InetAddress.getByName("192.167.13.1")));
         // Localhost is no longer added by default
