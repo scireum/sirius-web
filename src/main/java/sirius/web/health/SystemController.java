@@ -15,6 +15,7 @@ import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.GlobalContext;
+import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
@@ -51,6 +52,9 @@ public class SystemController extends BasicController {
 
     @Part
     private GlobalContext context;
+
+    @ConfigValue("sirius.metricLabelPrefix")
+    private String metricLabelPrefix;
 
     /**
      * Describes the permission required to access the system console.
@@ -133,11 +137,31 @@ public class SystemController extends BasicController {
                                                                                        "text/plain; version=0.0.4"),
                                                                       Charsets.UTF_8))) {
             for (Metric m : metrics.getMetrics()) {
-                out.print(m.getCode());
-                out.print(" ");
-                out.println(NLS.toMachineString(m.getValue()));
+                outputMetric(out, m);
             }
         }
+    }
+
+    private void outputMetric(PrintWriter out, Metric m) {
+        String effectiveCode = metricLabelPrefix + m.getCode().toLowerCase().replaceAll("[^a-z0-9]", "_");
+        out.print("# HELP ");
+        out.print(effectiveCode);
+        out.print(" ");
+        if (Strings.isFilled(m.getUnit())) {
+            out.print(m.getLabel());
+            out.print(" (");
+            out.print(m.getUnit());
+            out.println(")");
+        } else {
+            out.println(m.getLabel());
+        }
+
+        out.print("# TYPE ");
+        out.print(effectiveCode);
+        out.println(" gauge");
+        out.print(effectiveCode);
+        out.print(" ");
+        out.println(NLS.toMachineString(m.getValue()));
     }
 
     /**
