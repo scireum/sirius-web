@@ -156,6 +156,7 @@ public class MimeHelper {
         mimeTable.put("dv", "video/x-dv");
         mimeTable.put("dvi", "application/x-dvi");
         mimeTable.put("dxr", "application/x-director");
+        mimeTable.put("eot", "application/vnd.ms-fontobject");
         mimeTable.put("eps", "application/postscript");
         mimeTable.put("etx", "text/x-setext");
         mimeTable.put("exe", "application/octet-stream");
@@ -218,6 +219,7 @@ public class MimeHelper {
         mimeTable.put("oda", "application/oda");
         mimeTable.put("ogg", VIDEO_OGG);
         mimeTable.put("ogv", VIDEO_OGG);
+        mimeTable.put("otf", "font/otf");
         mimeTable.put("pbm", "image/x-portable-bitmap");
         mimeTable.put("pct", "image/pict");
         mimeTable.put("pdb", "chemical/x-pdb");
@@ -275,6 +277,7 @@ public class MimeHelper {
         mimeTable.put("tiff", "image/tiff");
         mimeTable.put("tr", "application/x-troff");
         mimeTable.put("tsv", "text/tab-separated-values");
+        mimeTable.put("ttf", "font/ttf");
         mimeTable.put("txt", TEXT_PLAIN);
         mimeTable.put("ustar", "application/x-ustar");
         mimeTable.put("vcd", "application/x-cdlink");
@@ -287,6 +290,8 @@ public class MimeHelper {
         mimeTable.put("wmlc", "application/vnd.wap.wmlc");
         mimeTable.put("wmls", "text/vnd.wap.wmlscript");
         mimeTable.put("wmlsc", "application/vnd.wap.wmlscriptc");
+        mimeTable.put("woff", "font/woff");
+        mimeTable.put("woff2", "font/woff2");
         mimeTable.put("wrl", "model/vrml");
         mimeTable.put("xbm", "image/x-xbitmap");
         mimeTable.put("xht", "application/xhtml+xml");
