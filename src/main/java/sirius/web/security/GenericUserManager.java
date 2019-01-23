@@ -13,7 +13,6 @@ import com.google.common.collect.Sets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
@@ -39,17 +38,15 @@ import java.util.concurrent.TimeUnit;
 public abstract class GenericUserManager implements UserManager {
 
     /**
-     * /**
      * Defines the default grace period (max age of an sso timestamp) which is accepted by the system
      */
-    private static final long DEFAULT_SSO_GRACE_INTERVAL = TimeUnit.HOURS.toSeconds(24);
+    private static final long DEFAULT_SSO_GRACE_INTERVAL = TimeUnit.DAYS.toDays(3);
     private static final String SUFFIX_USER_ID = "-user-id";
     private static final String SUFFIX_TENANT_ID = "-tenant-id";
     private static final String SUFFIX_TTL = "-ttl";
 
     protected final ScopeInfo scope;
     protected final Extension config;
-    protected final String hashFunction;
     protected final long ssoGraceInterval;
     protected boolean ssoEnabled;
     protected boolean keepLoginEnabled;
@@ -64,7 +61,6 @@ public abstract class GenericUserManager implements UserManager {
         this.scope = scope;
         this.config = config;
         this.ssoSecret = config.get("ssoSecret").asString();
-        this.hashFunction = config.get("hashFunction").asString("md5");
         this.ssoEnabled = Strings.isFilled(ssoSecret) && config.get("ssoEnabled").asBoolean(false);
         this.ssoGraceInterval = config.get("ssoGraceInterval").asLong(DEFAULT_SSO_GRACE_INTERVAL);
         this.keepLoginEnabled = config.get("keepLoginEnabled").asBoolean(true);
@@ -209,61 +205,50 @@ public abstract class GenericUserManager implements UserManager {
         if (!ssoEnabled) {
             return null;
         }
+
         String user = ctx.get("user").trim();
-        if (Strings.isEmpty(user)) {
-            return null;
-        }
-        Tuple<String, String> challengeResponse = extractChallengeAndResponse(ctx);
-        if (challengeResponse == null) {
+        String token = ctx.get("token").trim();
+        if (Strings.isEmpty(user) || Strings.isEmpty(token)) {
             return null;
         }
 
         ctx.hidePost();
-        UserInfo result = findUserByName(ctx, user);
-        if (result == null) {
+        UserInfo userInfo = findUserByName(ctx, user);
+
+        if (userInfo == null) {
             UserContext.message(Message.error(NLS.get("GenericUserManager.invalidSSO")));
             return null;
         }
-        if (checkTokenTTL(Value.of(challengeResponse.getFirst()).asLong(0), ssoGraceInterval)) {
-            if (checkTokenValidity(user, challengeResponse)) {
-                log("SSO-Login of %s succeeded with token: %s", user, challengeResponse);
-                return result;
-            } else {
-                log("SSO-Login of %s failed due to invalid hash in token: %s", user, challengeResponse);
+
+        if (validateSSOToken(userInfo, token)) {
+            return userInfo;
+        }
+
+        return null;
+    }
+
+    /**
+     * Validates a sso token given for a specific user.
+     *
+     * @param userInfo the user to check the token for
+     * @param token    the token to check
+     * @return <tt>true</tt> if the sso token is valid, <tt>false</tt> otherwise
+     */
+    private boolean validateSSOToken(UserInfo userInfo, String token) {
+        long currentTimestampInDays = getCurrentTimestampInDays();
+
+        for (int i = 0; i < ssoGraceInterval; i++) {
+            long timestampInDays = currentTimestampInDays - i;
+            String computedToken = computeSSOTokenForDay(userInfo, timestampInDays);
+
+            if (Strings.areEqual(computedToken, token)) {
+                log("SSO-Login of %s succeeded with token: %s", userInfo.getUserName(), token);
+                return true;
             }
-        } else {
-            log("SSO-Login of %s failed due to outdated timestamp in token: %s", user, challengeResponse);
         }
 
-        return null;
-    }
-
-    protected Tuple<String, String> extractChallengeAndResponse(WebContext ctx) {
-        // Supports the modern parameter token which contains TIMESTAMP:MD5
-        String token = ctx.get("token").trim();
-        if (Strings.isFilled(token)) {
-            return Strings.split(token, ":");
-        }
-
-        // Supports the legacy parameters hash and timestamp...
-        String hash = ctx.get("hash").trim();
-        String timestamp = ctx.get("timestamp").trim();
-        if (Strings.isFilled(hash) && Strings.isFilled(timestamp)) {
-            return Tuple.create(timestamp, hash);
-        }
-
-        return null;
-    }
-
-    private boolean checkTokenTTL(long timestamp, long maxTtl) {
-        return Math.abs(timestamp - (System.currentTimeMillis() / 1000)) < maxTtl;
-    }
-
-    private boolean checkTokenValidity(String user, Tuple<String, String> challengeResponse) {
-        return getSSOHashFunction().hashBytes(computeSSOHashInput(user,
-                                                                  challengeResponse.getFirst()).getBytes(Charsets.UTF_8))
-                                   .toString()
-                                   .equalsIgnoreCase(challengeResponse.getSecond());
+        log("SSO-Login of %s failed with token: %s", userInfo.getUserName(), token);
+        return false;
     }
 
     /**
@@ -271,13 +256,33 @@ public abstract class GenericUserManager implements UserManager {
      * <p>
      * If enabled, the computed token can be passed in using the <tt>token</tt> field.
      *
-     * @param username the username to generate a token for
+     * @param userInfo the user to generate a token for
      * @return a login token to be used for SSO
      */
-    public String computeSSOToken(String username) {
-        String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
-        return timestamp + ":" + getSSOHashFunction().hashBytes(computeSSOHashInput(username, timestamp).getBytes(
-                Charsets.UTF_8)).toString();
+    public String computeSSOToken(UserInfo userInfo) {
+        return computeSSOTokenForDay(userInfo, getCurrentTimestampInDays());
+    }
+
+    private long getCurrentTimestampInDays() {
+        return TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis());
+    }
+
+    /**
+     * Computes an sso token for a given user and timestamp.
+     * <p>
+     * The timestamp in days controls the validity of the token. The token is only valid for three days after is
+     * creation.
+     *
+     * @param userInfo        the user to generate the token for
+     * @param timestampInDays the timestamp of the day the token is created for
+     * @return the login token for the given user and timestamp
+     */
+    private String computeSSOTokenForDay(UserInfo userInfo, long timestampInDays) {
+        byte[] hashInput = computeSSOHashInput(userInfo, timestampInDays).getBytes(Charsets.UTF_8);
+        String tmpHash = getSSOHashFunction().hashBytes(hashInput).toString();
+
+        hashInput = (tmpHash + ssoSecret).getBytes(Charsets.UTF_8);
+        return getSSOHashFunction().hashBytes(hashInput).toString();
     }
 
     /**
@@ -286,29 +291,18 @@ public abstract class GenericUserManager implements UserManager {
      * @return the hash function to use for single sign-on tokens
      */
     protected HashFunction getSSOHashFunction() {
-        if ("md5".equalsIgnoreCase(hashFunction)) {
-            return Hashing.md5();
-        } else if ("sha1".equalsIgnoreCase(hashFunction)) {
-            return Hashing.sha1();
-        } else {
-            throw Exceptions.handle()
-                            .to(UserContext.LOG)
-                            .withSystemErrorMessage(
-                                    "No valid hash function was given ('%s'). Cannot compute SSO token. Pick either md5 or sha1",
-                                    hashFunction)
-                            .handle();
-        }
+        return Hashing.sha512();
     }
 
     /**
      * Computes the input for the hash function used to generate the auth hash.
      *
-     * @param user      the name of the user
-     * @param timestamp the timestamp used as challenge
+     * @param userInfo  the user to generate the token for
+     * @param timestamp the timestamp in days used as challenge
      * @return the input string used by the hash function
      */
-    protected String computeSSOHashInput(String user, String timestamp) {
-        return user + timestamp + ssoSecret;
+    protected String computeSSOHashInput(UserInfo userInfo, long timestamp) {
+        return userInfo.getUserName() + timestamp + ssoSecret;
     }
 
     /**
