@@ -659,6 +659,8 @@
         tokenfield.appendTokens(suggestions.getInitialSelection());
 
         if (!args.readonly) {
+            var noMatchesToken = {label: args.noMatchesText, type: 'basic', inTokenfield: false};
+
             var autocompleteArgs = {
                 inputField: tokenfield.getInputFieldId(),
                 anchor: '#' + args.id + ' .tokenfield',
@@ -680,7 +682,7 @@
                         }
                     });
                     if (responseTokens.length === 0) {
-                        responseTokens.push({label: args.noMatchesText, type: 'basic', inTokenfield: false});
+                        responseTokens.push(noMatchesToken);
                     }
                     return responseTokens;
                 });
@@ -718,11 +720,7 @@
                             });
                         });
                         if (rows.length === 0) {
-                            rows.push({
-                                label: args.noMatchesText,
-                                type: 'basic',
-                                inTokenfield: false
-                            });
+                            rows.push(noMatchesToken);
                         }
                         return rows;
                     }
