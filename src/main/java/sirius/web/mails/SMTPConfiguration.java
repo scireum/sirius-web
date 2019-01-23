@@ -89,16 +89,19 @@ public class SMTPConfiguration {
      * @return a new configuration based on the config files.
      */
     public static SMTPConfiguration fromConfig() {
+
+        SMTPProtocol smtpProtocol = Sirius.getSettings()
+                                          .get("mail.smtp.protocol")
+                                          .getEnum(SMTPProtocol.class)
+                                          .orElseGet(() -> Value.of(Sirius.getSettings()
+                                                                          .get("mail.smtp.protocol")
+                                                                          .toUpperCase())
+                                                                .getEnum(SMTPProtocol.class)
+                                                                .orElse(SMTPProtocol.SMTP));
+
         return new SMTPConfiguration(smtpHost,
                                      smtpPort,
-                                     Sirius.getSettings()
-                                           .get("mail.smtp.protocol")
-                                           .getEnum(SMTPProtocol.class)
-                                           .orElseGet(() -> Value.of(Sirius.getSettings()
-                                                                           .get("mail.smtp.protocol")
-                                                                           .toUpperCase())
-                                                                 .getEnum(SMTPProtocol.class)
-                                                                 .orElse(SMTPProtocol.SMTP)),
+                                     smtpProtocol,
                                      smtpUser,
                                      smtpPassword,
                                      smtpSender,
@@ -122,13 +125,16 @@ public class SMTPConfiguration {
      * @return a new configuration based on the given settings.
      */
     public static SMTPConfiguration fromSettings(Settings settings) {
+
+        SMTPProtocol smtpProtocol = settings.get("mail.protocol")
+                                            .getEnum(SMTPProtocol.class)
+                                            .orElseGet(() -> Value.of(settings.get("mail.protocol").toUpperCase())
+                                                                  .getEnum(SMTPProtocol.class)
+                                                                  .orElse(SMTPProtocol.SMTP));
+
         return new SMTPConfiguration(settings.get("mail.host").getString(),
                                      settings.get("mail.port").getString(),
-                                     settings.get("mail.protocol")
-                                             .getEnum(SMTPProtocol.class)
-                                             .orElseGet(() -> Value.of(settings.get("mail.protocol").toUpperCase())
-                                                                   .getEnum(SMTPProtocol.class)
-                                                                   .orElse(SMTPProtocol.SMTP)),
+                                     smtpProtocol,
                                      settings.get("mail.user").getString(),
                                      settings.get("mail.password").getString(),
                                      settings.get("mail.sender").getString(),
