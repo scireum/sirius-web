@@ -64,7 +64,7 @@
                 this.hiddenInputsName = config.hiddenInputsName;
 
                 function refreshHiddenInputs() {
-                    if (typeof input.hiddenInputsName === "undefined") {
+                    if (!input.hiddenInputsName) {
                         return;
                     }
                     $('#' + input.id).parent().find(".hidden-tokenfield-input").remove();
