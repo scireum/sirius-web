@@ -621,7 +621,7 @@
                     throw "The event afterLoad must be set.";
                 }
 
-                configured = true;
+                this.configured = true;
 
                 this.uri = config.serviceUri;
 
