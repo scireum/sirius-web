@@ -673,18 +673,14 @@
                 autocomplete.on("afterLoad", function (value, response) {
                     var responseTokens = [];
                     response.completions.forEach(function (completion) {
-                        var token = {label: completion.description, value: completion.id};
-                        responseTokens.push(token);
+                        responseTokens.push({label: completion.description, value: completion.id, type: 'basic'});
+
                         if (!suggestions.getTokenForValue(completion.id)) {
-                            suggestions.addSuggestion(token);
+                            suggestions.addSuggestion({label: completion.description, value: completion.id});
                         }
                     });
                     if (responseTokens.length === 0) {
-                        responseTokens.push({
-                            label: args.noMatchesText,
-                            type: 'basic',
-                            inTokenfield: false
-                        });
+                        responseTokens.push({label: args.noMatchesText, type: 'basic', inTokenfield: false});
                     }
                     return responseTokens;
                 });
