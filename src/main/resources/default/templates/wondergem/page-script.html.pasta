@@ -659,9 +659,50 @@
         tokenfield.appendTokens(suggestions.getInitialSelection());
 
         if (!args.readonly) {
-            autocomplete.start({
+            var autocompleteArgs = {
                 inputField: tokenfield.getInputFieldId(),
-                localSource: {
+                anchor: '#' + args.id + ' .tokenfield',
+                templates: autocompleteTemplates,
+                completions: {
+                    id: args.id + '-completion',
+                    height: '300px'
+                }
+            };
+
+            if (args.serviceUri) {
+                autocomplete.on("afterLoad", function (value, response) {
+                    var responseTokens = [];
+                    response.completions.forEach(function (completion) {
+                        var token = {label: completion.description, value: completion.id};
+                        responseTokens.push(token);
+                        if (!suggestions.getTokenForValue(completion.id)) {
+                            suggestions.addSuggestion(token);
+                        }
+                    });
+                    if (responseTokens.length === 0) {
+                        responseTokens.push({
+                            label: args.noMatchesText,
+                            type: 'basic',
+                            inTokenfield: false
+                        });
+                    }
+                    return responseTokens;
+                });
+
+                autocompleteArgs.service = {
+                    serviceUri: args.serviceUri,
+                    minSize: 0,
+                    delay: 0,
+                    getRequest: function (inputValue) {
+                        var requestParams = {query: inputValue || '', strict: !args.allowCustomEntries};
+                        if (args.type) {
+                            requestParams.type = args.type;
+                        }
+                        return requestParams;
+                    }
+                }
+            } else {
+                autocompleteArgs.localSource = {
                     callback: function (query) {
                         var rows = [];
                         if (args.allowCustomEntries && query && !suggestions.getTokenForValue(query)) {
@@ -689,14 +730,10 @@
                         }
                         return rows;
                     }
-                },
-                anchor: '#' + args.id + ' .tokenfield',
-                templates: autocompleteTemplates,
-                completions: {
-                    id: args.id + '-completion',
-                    height: '300px'
                 }
-            });
+            }
+
+            autocomplete.start(autocompleteArgs);
         } else {
             // add the 'disabled' class to the tokenfield, so it looks grey and 'disabled'
             // we have to add that manually, because just 'readonly' does not look like that for the tokenfield
