@@ -8,6 +8,9 @@
 
 package sirius.web.mails;
 
+import sirius.kernel.Sirius;
+import sirius.kernel.commons.Explain;
+import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.settings.Settings;
@@ -32,9 +35,6 @@ public class SMTPConfiguration {
 
     @ConfigValue("mail.smtp.port")
     private static String smtpPort;
-
-    @ConfigValue("mail.smtp.protocol")
-    private static SMTPProtocol smtpProtocol;
 
     @ConfigValue("mail.smtp.user")
     private static String smtpUser;
@@ -63,6 +63,8 @@ public class SMTPConfiguration {
      * @param mailSenderName           the sender name
      * @param useSenderAndEnvelopeFrom whether to fill the "Sender" and the "Envelope-From" header
      */
+    @SuppressWarnings("squid:S00107")
+    @Explain("All settings are needed for a proper SMTP setting")
     public SMTPConfiguration(String host,
                              String port,
                              SMTPProtocol protocol,
@@ -89,7 +91,14 @@ public class SMTPConfiguration {
     public static SMTPConfiguration fromConfig() {
         return new SMTPConfiguration(smtpHost,
                                      smtpPort,
-                                     smtpProtocol,
+                                     Sirius.getSettings()
+                                           .get("mail.smtp.protocol")
+                                           .getEnum(SMTPProtocol.class)
+                                           .orElseGet(() -> Value.of(Sirius.getSettings()
+                                                                           .get("mail.smtp.protocol")
+                                                                           .toUpperCase())
+                                                                 .getEnum(SMTPProtocol.class)
+                                                                 .orElse(SMTPProtocol.SMTP)),
                                      smtpUser,
                                      smtpPassword,
                                      smtpSender,
@@ -115,7 +124,11 @@ public class SMTPConfiguration {
     public static SMTPConfiguration fromSettings(Settings settings) {
         return new SMTPConfiguration(settings.get("mail.host").getString(),
                                      settings.get("mail.port").getString(),
-                                     settings.get("mail.protocol").asEnum(SMTPProtocol.class),
+                                     settings.get("mail.protocol")
+                                             .getEnum(SMTPProtocol.class)
+                                             .orElseGet(() -> Value.of(settings.get("mail.protocol").toUpperCase())
+                                                                   .getEnum(SMTPProtocol.class)
+                                                                   .orElse(SMTPProtocol.SMTP)),
                                      settings.get("mail.user").getString(),
                                      settings.get("mail.password").getString(),
                                      settings.get("mail.sender").getString(),
@@ -262,6 +275,11 @@ public class SMTPConfiguration {
             return starttls;
         }
 
+        /**
+         * Determines if the protocol supports encryption.
+         *
+         * @return <tt>true</tt> if the protocol supports encryption, <tt>false</tt> otherwise
+         */
         public boolean supportsEncryption() {
             return starttls || "smtps".equals(protocol);
         }
