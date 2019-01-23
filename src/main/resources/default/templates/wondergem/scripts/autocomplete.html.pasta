@@ -194,6 +194,9 @@
                     if (localSource.configured) {
                         localSource.load($(this).val());
                     }
+                    if (service.configured && service.minSize === 0) {
+                        service.load($(this).val());
+                    }
                     completions.show();
                 });
 
