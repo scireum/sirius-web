@@ -629,6 +629,10 @@
             });
         });
 
+        autocomplete.on('beforeRenderRow', function (row) {
+            row.inTokenfield = tokenfield.hasToken(row);
+        });
+
         tokenfield.on('onBeforeCreateToken', function (token) {
             if (tokenfield.hasToken(token)) {
                 tokenfield.removeToken(token);
@@ -659,7 +663,7 @@
         tokenfield.appendTokens(suggestions.getInitialSelection());
 
         if (!args.readonly) {
-            var noMatchesToken = {label: args.noMatchesText, type: 'basic', inTokenfield: false};
+            var noMatchesToken = {label: args.noMatchesText, type: 'basic'};
 
             var autocompleteArgs = {
                 inputField: tokenfield.getInputFieldId(),
@@ -707,16 +711,14 @@
                             rows.push({
                                 label: query,
                                 value: query,
-                                type: 'basic',
-                                inTokenfield: tokenfield.hasToken({value: query})
+                                type: 'basic'
                             });
                         }
                         suggestions.forEachMatchingSuggestion(query, function (element) {
                             rows.push({
                                 label: element.label,
                                 value: element.value,
-                                type: 'basic',
-                                inTokenfield: tokenfield.hasToken(element)
+                                type: 'basic'
                             });
                         });
                         if (rows.length === 0) {

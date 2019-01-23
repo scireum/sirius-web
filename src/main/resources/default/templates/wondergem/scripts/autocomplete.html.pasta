@@ -437,6 +437,10 @@
                 $.each(this.rows, function (index, row) {
                     var template = completions.templateForType(row.type);
 
+                    events.beforeRenderRow.forEach(function (handler) {
+                        handler(row);
+                    });
+
                     var $row = $(Mustache.render(template, row));
                     completions.addHoverRowEvent($row);
                     completions.element.append($row);
@@ -525,6 +529,13 @@
              * @@return an array of row objects.
              */
             afterLoad: undefined,
+
+            /**
+             * Is called before a row of the autocomplete is rendered.
+             *
+             * Called with the 'row'-object, which can be changed inside the handler.
+             */
+            beforeRenderRow: [],
             afterRenderRow: [],
             afterRender: []
         };
