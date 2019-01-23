@@ -39,7 +39,7 @@
         multiSelect({
             id: '@id',
             name: '@name',
-            noMatchesText: '@i18n("Select2.noMatches")',
+            noMatchesText: '@i18n("template.html.select2.noMatches")',
             readonly: @readonly,
             maxItems: @maxItems,
             allowCustomEntries: !@strict,
