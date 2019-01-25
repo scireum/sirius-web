@@ -185,13 +185,15 @@
                     tokensWidth = Math.ceil(tokensWidth);
 
                     var inputWidth = $container.width() - tokensWidth;
+                    var minWidth = parseInt(input.tokenElement.css('min-width'));
+                    if (minWidth > inputWidth) {
+                        inputWidth = $container.width();
+                    }
                     if (input.removalElement) {
                         inputWidth -= input.removalElement.outerWidth(true);
                     }
-
-                    var minWidth = parseInt(input.tokenElement.css('min-width'));
-                    input.tokenElement.css('max-width', Math.max(inputWidth, minWidth));
-                    input.tokenElement.width(Math.max(inputWidth, minWidth));
+                    input.tokenElement.css('max-width', inputWidth);
+                    input.tokenElement.width(inputWidth);
 
                     input.resizeTimer = undefined;
                 }, 100);
