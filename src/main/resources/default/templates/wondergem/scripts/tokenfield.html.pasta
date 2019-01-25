@@ -177,9 +177,8 @@
                             currentRow++;
                         }
                         if (currentRow === rows) {
-                            tokensWidth += this.getBoundingClientRect().width
-                                + parseInt(window.getComputedStyle(this).marginRight)
-                                + parseInt(window.getComputedStyle(this).marginLeft);
+                            // + 1 because outerWidth gets the width rounded and else it might not fit because of 1px
+                            tokensWidth += $(this).outerWidth(true) + 1;
                         }
                     });
                     tokensWidth = Math.ceil(tokensWidth);
@@ -190,7 +189,8 @@
                         inputWidth = $container.width();
                     }
                     if (input.removalElement) {
-                        inputWidth -= input.removalElement.outerWidth(true);
+                        // + 1 because outerWidth gets the width rounded and else it might not fit because of 1px
+                        inputWidth -= input.removalElement.outerWidth(true) + 1;
                     }
                     input.tokenElement.css('max-width', inputWidth);
                     input.tokenElement.width(inputWidth);
