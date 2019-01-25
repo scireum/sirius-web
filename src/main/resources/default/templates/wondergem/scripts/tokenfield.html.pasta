@@ -147,11 +147,28 @@
             resizeInputField: function () {
                 var $container = input.tokenElement.parent();
 
+                var rows = 0;
+                var baseline;
+                $container.find('.token').each(function () {
+                    if (!baseline || this.getBoundingClientRect().top !== baseline) {
+                        baseline = this.getBoundingClientRect().top;
+                        rows++;
+                    }
+                });
+
+                var currentRow = 0;
+                baseline = undefined;
                 var tokensWidth = 0;
                 $container.find('.token').each(function () {
-                    tokensWidth += this.getBoundingClientRect().width
-                        + parseInt(window.getComputedStyle(this).marginRight)
-                        + parseInt(window.getComputedStyle(this).marginLeft);
+                    if (!baseline || this.getBoundingClientRect().top !== baseline) {
+                        baseline = this.getBoundingClientRect().top;
+                        currentRow++;
+                    }
+                    if (currentRow === rows) {
+                        tokensWidth += this.getBoundingClientRect().width
+                            + parseInt(window.getComputedStyle(this).marginRight)
+                            + parseInt(window.getComputedStyle(this).marginLeft);
+                    }
                 });
                 tokensWidth = Math.ceil(tokensWidth);
 
