@@ -9,10 +9,8 @@
 package sirius.web.mails;
 
 import sirius.kernel.Sirius;
-import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.ConfigValue;
-import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.settings.Settings;
 import sirius.web.security.UserContext;
@@ -51,41 +49,6 @@ public class SMTPConfiguration {
 
     @ConfigValue("mail.smtp.useEnvelopeFrom")
     private static boolean smtpUseEnvelopeFrom;
-
-    /**
-     * Creates a new configuration based on fixed values.
-     *
-     * @param host                     the mail server host
-     * @param port                     the mail server port
-     * @param protocol                 the mail transport protocol
-     * @param user                     the mail account user
-     * @param password                 the mail account password
-     * @param mailSender               the sender address
-     * @param mailSenderName           the sender name
-     * @param useSenderAndEnvelopeFrom whether to fill the "Sender" and the "Envelope-From" header
-     * @deprecated use builder pattern via {@link SMTPConfiguration#create()} instead
-     */
-    @SuppressWarnings("squid:S00107")
-    @Explain("All settings are needed for a proper SMTP setting")
-    @Deprecated
-    public SMTPConfiguration(String host,
-                             String port,
-                             SMTPProtocol protocol,
-                             String user,
-                             String password,
-                             String mailSender,
-                             String mailSenderName,
-                             boolean useSenderAndEnvelopeFrom) {
-        Exceptions.logDeprecatedMethodUse();
-        this.host = host;
-        this.port = port;
-        this.protocol = protocol;
-        this.user = user;
-        this.password = password;
-        this.mailSender = mailSender;
-        this.mailSenderName = mailSenderName;
-        this.useSenderAndEnvelopeFrom = useSenderAndEnvelopeFrom;
-    }
 
     private SMTPConfiguration() {
     }
