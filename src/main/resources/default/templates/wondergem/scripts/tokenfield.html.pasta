@@ -26,6 +26,11 @@
              */
             tokenElement: undefined,
 
+            /**
+             * Used to debounce the resizing of the tokenElement
+             */
+            resizeTimer: undefined,
+
             tokenRemovalElement: undefined,
             tokenRemovalTemplate: '<a href="#" class="token-removal hide" tabindex="-1"><i class="fa fa-times fa-lg"></i></a>',
 
@@ -145,41 +150,51 @@
             },
 
             resizeInputField: function () {
-                var $container = input.tokenElement.parent();
-
-                var rows = 0;
-                var baseline;
-                $container.find('.token').each(function () {
-                    if (!baseline || this.getBoundingClientRect().top !== baseline) {
-                        baseline = this.getBoundingClientRect().top;
-                        rows++;
-                    }
-                });
-
-                var currentRow = 0;
-                baseline = undefined;
-                var tokensWidth = 0;
-                $container.find('.token').each(function () {
-                    if (!baseline || this.getBoundingClientRect().top !== baseline) {
-                        baseline = this.getBoundingClientRect().top;
-                        currentRow++;
-                    }
-                    if (currentRow === rows) {
-                        tokensWidth += this.getBoundingClientRect().width
-                            + parseInt(window.getComputedStyle(this).marginRight)
-                            + parseInt(window.getComputedStyle(this).marginLeft);
-                    }
-                });
-                tokensWidth = Math.ceil(tokensWidth);
-
-                var inputWidth = $container.width() - tokensWidth;
-                if (input.removalElement) {
-                    inputWidth -= input.removalElement.outerWidth(true);
+                if (input.resizeTimer) {
+                    window.clearTimeout(input.resizeTimer);
                 }
 
-                var minWidth = parseInt(input.tokenElement.css('min-width'));
-                input.tokenElement.css('max-width', Math.max(inputWidth, minWidth));
-                input.tokenElement.width(Math.max(inputWidth, minWidth));
+                input.resizeTimer = window.setTimeout(function () {
+                    console.log("executing resize...")
+
+                    var $container = input.tokenElement.parent();
+
+                    var rows = 0;
+                    var baseline;
+                    $container.find('.token').each(function () {
+                        if (!baseline || this.getBoundingClientRect().top !== baseline) {
+                            baseline = this.getBoundingClientRect().top;
+                            rows++;
+                        }
+                    });
+
+                    var currentRow = 0;
+                    baseline = undefined;
+                    var tokensWidth = 0;
+                    $container.find('.token').each(function () {
+                        if (!baseline || this.getBoundingClientRect().top !== baseline) {
+                            baseline = this.getBoundingClientRect().top;
+                            currentRow++;
+                        }
+                        if (currentRow === rows) {
+                            tokensWidth += this.getBoundingClientRect().width
+                                + parseInt(window.getComputedStyle(this).marginRight)
+                                + parseInt(window.getComputedStyle(this).marginLeft);
+                        }
+                    });
+                    tokensWidth = Math.ceil(tokensWidth);
+
+                    var inputWidth = $container.width() - tokensWidth;
+                    if (input.removalElement) {
+                        inputWidth -= input.removalElement.outerWidth(true);
+                    }
+
+                    var minWidth = parseInt(input.tokenElement.css('min-width'));
+                    input.tokenElement.css('max-width', Math.max(inputWidth, minWidth));
+                    input.tokenElement.width(Math.max(inputWidth, minWidth));
+
+                    input.resizeTimer = undefined;
+                }, 100);
             },
 
             resize: function (e) {
