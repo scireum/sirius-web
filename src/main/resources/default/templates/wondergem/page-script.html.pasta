@@ -629,6 +629,10 @@
             });
         });
 
+        autocomplete.on('beforeRenderRow', function (row) {
+            row.inTokenfield = tokenfield.hasToken(row);
+        });
+
         tokenfield.on('onBeforeCreateToken', function (token) {
             if (tokenfield.hasToken(token)) {
                 tokenfield.removeToken(token);
@@ -659,44 +663,73 @@
         tokenfield.appendTokens(suggestions.getInitialSelection());
 
         if (!args.readonly) {
-            autocomplete.start({
+            var noMatchesToken = {label: args.noMatchesText, type: 'basic'};
+
+            var autocompleteArgs = {
                 inputField: tokenfield.getInputFieldId(),
-                localSource: {
-                    callback: function (query) {
-                        var rows = [];
-                        if (args.allowCustomEntries && query && !suggestions.getTokenForValue(query)) {
-                            rows.push({
-                                label: query,
-                                value: query,
-                                type: 'basic',
-                                inTokenfield: tokenfield.hasToken({value: query})
-                            });
-                        }
-                        suggestions.forEachMatchingSuggestion(query, function (element) {
-                            rows.push({
-                                label: element.label,
-                                value: element.value,
-                                type: 'basic',
-                                inTokenfield: tokenfield.hasToken(element)
-                            });
-                        });
-                        if (rows.length === 0) {
-                            rows.push({
-                                label: args.noMatchesText,
-                                type: 'basic',
-                                inTokenfield: false
-                            });
-                        }
-                        return rows;
-                    }
-                },
                 anchor: '#' + args.id + ' .tokenfield',
                 templates: autocompleteTemplates,
                 completions: {
                     id: args.id + '-completion',
                     height: '300px'
                 }
-            });
+            };
+
+            if (args.serviceUri) {
+                autocomplete.on("afterLoad", function (value, response) {
+                    var responseTokens = [];
+                    response.completions.forEach(function (completion) {
+                        responseTokens.push({label: completion.description, value: completion.id, type: 'basic'});
+
+                        if (!suggestions.getTokenForValue(completion.id)) {
+                            suggestions.addSuggestion({label: completion.description, value: completion.id});
+                        }
+                    });
+                    if (responseTokens.length === 0) {
+                        responseTokens.push(noMatchesToken);
+                    }
+                    return responseTokens;
+                });
+
+                autocompleteArgs.service = {
+                    serviceUri: args.serviceUri,
+                    minSize: 0,
+                    delay: 0,
+                    getRequest: function (inputValue) {
+                        var requestParams = {query: inputValue || '', strict: !args.allowCustomEntries};
+                        if (args.type) {
+                            requestParams.type = args.type;
+                        }
+                        return requestParams;
+                    }
+                }
+            } else {
+                autocompleteArgs.localSource = {
+                    callback: function (query) {
+                        var rows = [];
+                        if (args.allowCustomEntries && query && !suggestions.getTokenForValue(query)) {
+                            rows.push({
+                                label: query,
+                                value: query,
+                                type: 'basic'
+                            });
+                        }
+                        suggestions.forEachMatchingSuggestion(query, function (element) {
+                            rows.push({
+                                label: element.label,
+                                value: element.value,
+                                type: 'basic'
+                            });
+                        });
+                        if (rows.length === 0) {
+                            rows.push(noMatchesToken);
+                        }
+                        return rows;
+                    }
+                }
+            }
+
+            autocomplete.start(autocompleteArgs);
         } else {
             // add the 'disabled' class to the tokenfield, so it looks grey and 'disabled'
             // we have to add that manually, because just 'readonly' does not look like that for the tokenfield

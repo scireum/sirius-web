@@ -1,21 +1,22 @@
-<i:arg name="span" type="int" default="6" />
-<i:arg name="smallSpan" type="int" default="12" description="Defines the span for mobile devices" />
-<i:arg name="name" type="String" />
-<i:arg name="value" type="String" />
-<i:arg name="labelKey" type="String" default="" />
-<i:arg name="label" type="String" default="@i18n(labelKey)" />
-<i:arg name="helpKey" type="String" default="" />
-<i:arg name="help" type="String" default="@i18n(helpKey)" />
-<i:arg name="addonText" type="String" default="" />
-<i:arg name="required" type="boolean" default="false" />
-<i:arg name="readonly" type="boolean" default="false" />
-<i:arg name="adminOnly" type="boolean" default="false" />
-<i:arg name="autofocus" type="boolean" default="false" />
-<i:arg name="type" type="String" default="text" />
-<i:arg name="id" type="String" default="" />
+<i:arg name="span" type="int" default="6"/>
+<i:arg name="smallSpan" type="int" default="12" description="Defines the span for mobile devices"/>
+<i:arg name="name" type="String"/>
+<i:arg name="value" type="String"/>
+<i:arg name="labelKey" type="String" default=""/>
+<i:arg name="label" type="String" default="@i18n(labelKey)"/>
+<i:arg name="helpKey" type="String" default=""/>
+<i:arg name="help" type="String" default="@i18n(helpKey)"/>
+<i:arg name="addonText" type="String" default=""/>
+<i:arg name="required" type="boolean" default="false"/>
+<i:arg name="readonly" type="boolean" default="false"/>
+<i:arg name="adminOnly" type="boolean" default="false"/>
+<i:arg name="autofocus" type="boolean" default="false"/>
+<i:arg name="type" type="String" default="text"/>
+<i:arg name="id" type="String" default=""/>
+<i:arg name="placeholder" type="String" default=""/>
 
-<i:pragma name="inline" value="true" />
-<i:pragma name="description" value="Renders a text input field within a Wondergem template" />
+<i:pragma name="inline" value="true"/>
+<i:pragma name="description" value="Renders a text input field within a Wondergem template"/>
 
 <div class="col-xs-@smallSpan col-md-@span form-group @user.signalFieldError(name)">
     <i:if test="isFilled(label)">
@@ -29,6 +30,7 @@
         <div class="input-group">
             <input name="@name" @if(isFilled(id)) { id="@id" } type="@type" value="@user.getFieldValue(name, value)"
                    class="form-control input-block-level"
+                   @if (isFilled(placeholder)) { placeholder="@placeholder" }
                    @if (readonly) { readonly } @if (autofocus) { autofocus }/>
 
             <span class="input-group-addon"><i:raw>@addonText</i:raw></span>
@@ -37,6 +39,7 @@
         <i:else>
             <input name="@name" @if(isFilled(id)) { id="@id" } type="@type" value="@user.getFieldValue(name, value)"
                    class="form-control input-block-level"
+                   @if (isFilled(placeholder)) { placeholder="@placeholder" }
                    @if (readonly) { readonly } @if (autofocus) { autofocus }/>
         </i:else>
     </i:if>
