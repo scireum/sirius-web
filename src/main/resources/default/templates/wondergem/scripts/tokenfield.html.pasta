@@ -155,8 +155,6 @@
                 }
 
                 input.resizeTimer = window.setTimeout(function () {
-                    console.log("executing resize...")
-
                     var $container = input.tokenElement.parent();
 
                     var rows = 0;
