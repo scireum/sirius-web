@@ -655,7 +655,7 @@
             showRemovalElement: false,
             hiddenInputsName: args.name,
             tokenfield: {
-                delimiter: '|',
+                delimiter: args.delimiter || '|',
                 createTokensOnBlur: true,
                 limit: args.maxItems
             }
