@@ -186,7 +186,11 @@
                     }
                 });
 
-                this.element.focusout(function () {
+                this.element.focusout(function (event) {
+                    if ($(event.relatedTarget).hasClass('autocomplete-wrapper')) {
+                       this.focus();
+                       return false;
+                    }
                     completions.hide();
                 });
 
