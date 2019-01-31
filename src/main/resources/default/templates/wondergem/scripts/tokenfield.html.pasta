@@ -102,6 +102,10 @@
                 this.element.on('tokenfield:createdtoken', function (e) {
                     input.updateTokenRemovalVisibility();
                     refreshHiddenInputs();
+
+                    events.onCreatedToken.forEach(function (handler) {
+                        handler(e);
+                    });
                 });
 
                 this.tokenElement.keydown(function (e) {
@@ -242,7 +246,12 @@
              *
              * Returning false will prevent the token from being created.
              */
-            onBeforeCreateToken: []
+            onBeforeCreateToken: [],
+
+            /**
+             * Will be called after tokenfield created a new token.
+             */
+            onCreatedToken: []
         };
 
         return {
