@@ -647,6 +647,8 @@
             } else {
                 token.label = suggestions.getTokenForValue(token.value).label;
             }
+            
+            tokenfield.getTokenfieldInputField()[0].placeholder = '';
             return true;
         });
 
@@ -661,6 +663,16 @@
         });
 
         tokenfield.appendTokens(suggestions.getInitialSelection());
+
+        if (!tokenfield.hasTokens()) {
+            tokenfield.getTokenfieldInputField()[0].placeholder = args.placeholder;
+        }
+
+        tokenfield.on('onRemovedToken', function () {
+            if (!tokenfield.hasTokens()) {
+                tokenfield.getTokenfieldInputField()[0].placeholder = args.placeholder;
+            }
+        });
 
         if (!args.readonly) {
             var noMatchesToken = {label: args.noMatchesText, type: 'basic'};
