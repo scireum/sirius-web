@@ -613,7 +613,11 @@
         var autocomplete = sirius.createAutocomplete();
 
         autocomplete.on('onHoverRow', function ($row) {
-            autocomplete.getInput().val($row.find('.autocomplete-data').data('autocomplete'));
+            if ($row.hasClass('in-token-field')) {
+                autocomplete.getInput().val('');
+            } else {
+                autocomplete.getInput().val($row.find('.autocomplete-data').data('autocomplete'));
+            }
         });
 
         autocomplete.on('onUnhoverRow', function ($row) {
@@ -627,6 +631,12 @@
                 autocomplete.hide();
                 return true;
             });
+        });
+
+        autocomplete.on('onSelect', function ($row) {
+            if ($row.hasClass('in-token-field')) {
+                tokenfield.appendTokens([$row.find('.autocomplete-data').data('autocomplete')]);
+            }
         });
 
         autocomplete.on('beforeRenderRow', function (row) {
