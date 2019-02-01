@@ -186,7 +186,11 @@
                     }
                 });
 
-                this.element.focusout(function () {
+                this.element.focusout(function (event) {
+                    if ($(event.relatedTarget).hasClass('autocomplete-wrapper')) {
+                       this.focus();
+                       return false;
+                    }
                     completions.hide();
                 });
 
@@ -395,6 +399,11 @@
                     return;
                 }
                 completions.state = completions.HIDDEN;
+                if(completions.selectedRow) {
+                    events.onBeforeHide.forEach(function (handler) {
+                        handler(completions.selectedRow);
+                    });
+                }
                 completions.unHoverRow(completions.selectedRow);
 
                 completions.element.hide();
@@ -491,6 +500,7 @@
             onReady: [],
             onShow: [],
             onHide: [],
+            onBeforeHide: [],
 
             /**
              * Handle the selection of a row element.

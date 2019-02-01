@@ -612,12 +612,8 @@
         var tokenfield = sirius.createTokenfield();
         var autocomplete = sirius.createAutocomplete();
 
-        autocomplete.on('onHoverRow', function ($row) {
-            autocomplete.getInput().val($row.find('.autocomplete-data').data('autocomplete'));
-        });
-
-        autocomplete.on('onUnhoverRow', function ($row) {
-            autocomplete.getInput().val('');
+        autocomplete.on('onBeforeHide', function (selectedRow) {
+            tokenfield.addToken(suggestions.getTokenForValue(selectedRow.find('.autocomplete-data').data('autocomplete')));
         });
 
         autocomplete.on('onReady', function ($row) {
@@ -647,6 +643,8 @@
             } else {
                 token.label = suggestions.getTokenForValue(token.value).label;
             }
+            
+            tokenfield.getTokenfieldInputField()[0].placeholder = '';
             return true;
         });
 
@@ -662,6 +660,16 @@
         });
 
         tokenfield.appendTokens(suggestions.getInitialSelection());
+
+        if (!tokenfield.hasTokens()) {
+            tokenfield.getTokenfieldInputField()[0].placeholder = args.placeholder;
+        }
+
+        tokenfield.on('onRemovedToken', function () {
+            if (!tokenfield.hasTokens()) {
+                tokenfield.getTokenfieldInputField()[0].placeholder = args.placeholder;
+            }
+        });
 
         if (!args.readonly) {
             var noMatchesToken = {label: args.noMatchesText, type: 'basic'};

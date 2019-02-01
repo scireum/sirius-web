@@ -20,8 +20,7 @@
 
 <div id="@id" class="multiselect">
     <w:textfield id="@apply('%s-input',id)" name="@apply('%s-input', name)" span="@span" smallSpan="@smallSpan"
-                 value="" label="@label" help="@help" adminOnly="@adminOnly" readonly="@readonly" required="@required"
-                 placeholder="@i18n('template.html.selects.selection')"/>
+                 value="" label="@label" help="@help" adminOnly="@adminOnly" readonly="@readonly" required="@required"/>
 </div>
 
 <select id="@id-suggestions-select" style="display: none" multiple="multiple">
@@ -39,6 +38,7 @@
             name: '@name',
             noMatchesText : '@i18n("template.html.selects.noMatches")',
             readonly: @readonly,
+            placeholder: '@i18n('template.html.selects.selection')',
             maxItems: @maxItems,
             allowCustomEntries: @allowCustomEntries,
             delimiter: @if(spaceAsDelimiter){' '} else {'|'}
