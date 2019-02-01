@@ -589,7 +589,7 @@
                 getTokenForValue: function (value) {
                     var token = undefined;
                     $.each(allSuggestions, function (i, element) {
-                        if (element.value === value) {
+                        if (String(element.value) === String(value)) {
                             token = element;
                         }
                     });
@@ -653,6 +653,7 @@
             showRemovalElement: false,
             hiddenInputsName: args.name,
             tokenfield: {
+                delimiter: '|',
                 createTokensOnBlur: true,
                 limit: args.maxItems
             }
@@ -687,10 +688,21 @@
                 autocomplete.on("afterLoad", function (value, response) {
                     var responseTokens = [];
                     response.completions.forEach(function (completion) {
-                        responseTokens.push({label: completion.description, value: completion.id, type: 'basic'});
+                        responseTokens.push({
+                            // label is the text displayed in the dropdown. should be what is given as "description"
+                            // by the service. but use other texts as fallback.
+                            label: completion.description || completion.text || completion.id,
+                            value: completion.id,
+                            type: 'basic'
+                        });
 
                         if (!suggestions.getTokenForValue(completion.id)) {
-                            suggestions.addSuggestion({label: completion.description, value: completion.id});
+                            suggestions.addSuggestion({
+                                // label is the text displayed in the tokenfield. should be what is given as "text"
+                                // by the service. but use other texts as fallback.
+                                label: completion.text || completion.description || completion.id,
+                                value: completion.id
+                            });
                         }
                     });
                     if (responseTokens.length === 0) {
