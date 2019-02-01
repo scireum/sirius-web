@@ -188,8 +188,8 @@
 
                 this.element.focusout(function (event) {
                     if ($(event.relatedTarget).hasClass('autocomplete-wrapper')) {
-                       this.focus();
-                       return false;
+                        this.focus();
+                        return false;
                     }
                     completions.hide();
                 });
@@ -399,7 +399,7 @@
                     return;
                 }
                 completions.state = completions.HIDDEN;
-                if(completions.selectedRow) {
+                if (completions.selectedRow) {
                     events.onBeforeHide.forEach(function (handler) {
                         handler(completions.selectedRow);
                     });
@@ -825,6 +825,10 @@
              */
             getCurrentSelection: function () {
                 return this.isVisible() ? completions.selectedRow : undefined;
+            },
+
+            getSelectedRow: function () {
+                return completions.selectedRow;
             },
 
             /**

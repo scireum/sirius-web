@@ -630,6 +630,13 @@
         });
 
         tokenfield.on('onBeforeCreateToken', function (token) {
+            if (autocomplete.getSelectedRow()) {
+                if (token.value === autocomplete.getInput().val()) {
+                    autocomplete.getInput().val('');
+                    return false;
+                }
+            }
+
             if (tokenfield.hasToken(token)) {
                 tokenfield.removeToken(token);
                 return false;
@@ -643,7 +650,7 @@
             } else {
                 token.label = suggestions.getTokenForValue(token.value).label;
             }
-            
+
             tokenfield.getTokenfieldInputField()[0].placeholder = '';
             return true;
         });
