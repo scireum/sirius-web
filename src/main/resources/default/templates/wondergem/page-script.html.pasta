@@ -589,7 +589,7 @@
                 getTokenForValue: function (value) {
                     var token = undefined;
                     $.each(allSuggestions, function (i, element) {
-                        if (element.value === value) {
+                        if (String(element.value) === String(value)) {
                             token = element;
                         }
                     });
