@@ -13,7 +13,6 @@
 <i:arg name="required" type="boolean" default="false"/>
 <i:arg name="readonly" type="boolean" default="false"/>
 <i:arg name="adminOnly" type="boolean" default="false"/>
-<i:arg name="spaceAsDelimiter" type="boolean" default="false" description="If true the delimiter is ' '. If false the delimiter is '|'"/>
 
 <i:pragma name="inline" value="true"/>
 <i:pragma name="description" value="Renders an autocomplete for multiple values within a Wondergem template"/>
@@ -44,8 +43,7 @@
             placeholder: '@i18n('template.html.selects.selection')',
             allowCustomEntries: !@strict,
             serviceUri: '@serviceUri',
-            type: '@type',
-            delimiter: @if(spaceAsDelimiter){' '} else {'|'}
+            type: '@type'
         });
     });
 </script>
