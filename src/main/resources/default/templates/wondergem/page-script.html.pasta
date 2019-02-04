@@ -613,7 +613,7 @@
         var autocomplete = sirius.createAutocomplete();
 
         autocomplete.on('onBeforeHide', function (selectedRow) {
-            tokenfield.addToken(suggestions.getTokenForValue(selectedRow.find('.autocomplete-data').data('autocomplete')));
+            tokenfield.addToken(selectedRow.find('.autocomplete-data').data('autocomplete'));
         });
 
         autocomplete.on('onReady', function ($row) {
@@ -630,6 +630,13 @@
         });
 
         tokenfield.on('onBeforeCreateToken', function (token) {
+            if (autocomplete.getSelectedRow()) {
+                if (token.value === autocomplete.getInput().val()) {
+                    autocomplete.getInput().val('');
+                    return false;
+                }
+            }
+
             if (tokenfield.hasToken(token)) {
                 tokenfield.removeToken(token);
                 return false;
@@ -643,7 +650,7 @@
             } else {
                 token.label = suggestions.getTokenForValue(token.value).label;
             }
-            
+
             tokenfield.getTokenfieldInputField()[0].placeholder = '';
             return true;
         });
