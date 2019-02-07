@@ -616,6 +616,7 @@
             // using .attr() instead of .data() of jQuery, because we do not want automatic type conversion of .data().
             // e.g. data-autocomplete="123" would be converted to the number 123 by .data("autocomplete").
             tokenfield.addToken(selectedRow.find('.autocomplete-data').attr('data-autocomplete'));
+            tokenfield.getTokenfieldInputField().focus();
         });
 
         autocomplete.on('onReady', function ($row) {
