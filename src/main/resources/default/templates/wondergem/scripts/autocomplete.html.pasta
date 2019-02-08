@@ -355,7 +355,6 @@
 
             show: function () {
                 if (this.rows.length > 0 && input.element.is(":focus")) {
-                    completions.selectedRow = undefined;
                     this.update();
                     completions.element.show();
                     this.state = completions.VISIBLE;

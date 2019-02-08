@@ -612,19 +612,15 @@
         var tokenfield = sirius.createTokenfield();
         var autocomplete = sirius.createAutocomplete();
 
-        autocomplete.on('onBeforeHide', function (selectedRow) {
+        autocomplete.on('onSelect', function (selectedRow) {
+            if (!selectedRow) {
+                return;
+            }
+
             // using .attr() instead of .data() of jQuery, because we do not want automatic type conversion of .data().
             // e.g. data-autocomplete="123" would be converted to the number 123 by .data("autocomplete").
             tokenfield.addToken(selectedRow.find('.autocomplete-data').attr('data-autocomplete'));
-        });
-
-        autocomplete.on('onReady', function ($row) {
-            tokenfield.on('onBeforeCreateToken', function (token) {
-                // hide the autocomplete imediately, because else "dragging" over the completions will introduce unwanted
-                // state, e.g. text of a compeltions-row is in input field, but not created as token
-                autocomplete.hide();
-                return true;
-            });
+            tokenfield.getTokenfieldInputField().focus();
         });
 
         autocomplete.on('beforeRenderRow', function (row) {
@@ -634,6 +630,7 @@
         tokenfield.on('onBeforeCreateToken', function (token) {
             if (autocomplete.getSelectedRow()) {
                 if (token.value === autocomplete.getInput().val()) {
+                    // if a row was selected, we do not wan't to add the data of the inputfield, but the selected row
                     autocomplete.getInput().val('');
                     return false;
                 }
