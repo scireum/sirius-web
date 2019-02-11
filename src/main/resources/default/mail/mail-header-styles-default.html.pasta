@@ -36,7 +36,7 @@
         padding: 0;
     }
 
-    body, #bodyTable, #bodyCell, #bodyInnerTable {
+    #bodyTable, #bodyCell, #bodyInnerTable {
         height: 100%;
         margin: 0;
         padding: 0;
