@@ -13,14 +13,20 @@
     <title>@title</title>
 
     <i:invoke template="mail/mail-header-styles-default.html.pasta"/>
+    <i:invoke template="mail/mail-header-styles.html.pasta"/>
+
     <i:render name="styles"/>
 </head>
 
 <body class="@class">
+<i:invoke template="mail/mail-header.html.pasta"/>
+
 <mail:table align="center" class="bodyTable">
     <mail:tableContent align="center" valign="top" class="bodyCell">
         <i:render name="body"/>
     </mail:tableContent>
 </mail:table>
+
+<i:invoke template="mail/mail-footer.html.pasta"/>
 </body>
 </html>

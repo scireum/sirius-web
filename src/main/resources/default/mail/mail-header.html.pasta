@@ -1,0 +1,1 @@
+<i:arg type="sirius.web.mails.MailSender" name="mailContext"/>
