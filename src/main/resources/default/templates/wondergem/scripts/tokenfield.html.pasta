@@ -123,6 +123,10 @@
                     }
                 });
 
+                this.tokenElement.focusin(function () {
+                    input.resizeInputField();
+                });
+
                 if (this.tokenRemovalElement) {
                     this.tokenRemovalElement.click(function () {
                         input.clearTokens();
