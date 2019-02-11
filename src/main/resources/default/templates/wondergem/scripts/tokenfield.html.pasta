@@ -170,29 +170,34 @@
             resizeInputField: function () {
                 var $container = input.tokenElement.parent();
 
-                var rows = 0;
-                var baseline;
+                // count how many rows of tokens we have
+                var numberOfRows = 1;
+                var lastTokenTop;
                 $container.find('.token').each(function () {
-                    if (!baseline || this.getBoundingClientRect().top !== baseline) {
-                        baseline = this.getBoundingClientRect().top;
-                        rows++;
+                    if (!lastTokenTop || this.getBoundingClientRect().top !== lastTokenTop) {
+                        // the current token is below the last token -> new row of tokens
+                        lastTokenTop = this.getBoundingClientRect().top;
+                        numberOfRows++;
                     }
                 });
 
-                var currentRow = 0;
-                baseline = undefined;
+                // calculate the width of the tokens in the last row
+                var currentRow = 1;
+                lastTokenTop = undefined;
                 var tokensWidth = 0;
                 $container.find('.token').each(function () {
-                    if (!baseline || this.getBoundingClientRect().top !== baseline) {
-                        baseline = this.getBoundingClientRect().top;
+                    if (!lastTokenTop || this.getBoundingClientRect().top !== lastTokenTop) {
+                        // the current token is below the last token -> new row of tokens
+                        lastTokenTop = this.getBoundingClientRect().top;
                         currentRow++;
                     }
-                    if (currentRow === rows) {
+                    if (currentRow === numberOfRows) {
+                        // we are in the last row. start adding up the widths of the tokens
+
                         // + 1 because outerWidth gets the width rounded and else it might not fit because of 1px
                         tokensWidth += $(this).outerWidth(true) + 1;
                     }
                 });
-                tokensWidth = Math.ceil(tokensWidth);
 
                 var inputWidth = $container.width() - tokensWidth;
                 var minWidth = parseInt(input.tokenElement.css('min-width'));
