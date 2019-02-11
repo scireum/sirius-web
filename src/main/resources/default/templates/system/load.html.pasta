@@ -22,10 +22,10 @@
         System Load
         <div class="pull-right">
             <i:if test="all">
-                <a href="/system/state" class="btn btn-primary"><i class="fa fa-minus"></i> Less</a>
+                <a href="/system/load" class="btn btn-primary"><i class="fa fa-minus"></i> Less</a>
                 <a class="btn btn-default" href="/system/load?all=true"><i class="fa fa-refresh"></i></a>
                 <i:else>
-                    <a href="/system/state?all=true" class="btn btn-primary"><i class="fa fa-plus"></i> More</a>
+                    <a href="/system/load?all=true" class="btn btn-primary"><i class="fa fa-plus"></i> More</a>
                     <a class="btn btn-default" href="/system/load"><i class="fa fa-refresh"></i></a>
                 </i:else>
             </i:if>
