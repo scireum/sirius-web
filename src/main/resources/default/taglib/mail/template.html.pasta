@@ -1,7 +1,11 @@
 <i:arg type="sirius.web.mails.MailSender" name="mailContext"/>
-<i:arg type="String" name="class" default=""/>
 <i:arg type="String" name="titleKey" default=""/>
 <i:arg type="String" name="title" default="@i18n(titleKey)"/>
+<i:arg type="String" name="class" default=""/>
+<i:arg type="String" name="preheaderClass" default=""/>
+<i:arg type="String" name="headerClass" default=""/>
+<i:arg type="String" name="bodyClass" default=""/>
+<i:arg type="String" name="footerClass" default=""/>
 
 <!doctype html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -22,15 +26,21 @@
 <mail:table align="center" valign="top" id="bodyTable">
     <mail:tableContent align="center" valign="top" id="bodyCell">
         <mail:table align="center" valign="top" id="bodyInnerTable">
-            <mail:tableContent align="center" valign="top" id="templateHeader">
+            <mail:tableContent align="center" valign="top" id="templatePreheader" class="@preheaderClass">
+                <i:render name="preheader"/>
+            </mail:tableContent>
+
+            <mail:tableContent align="center" valign="top" id="templateHeader" class="@headerClass">
                 <i:render name="header">
                     <i:invoke template="mail/mail-header.html.pasta" mailContext="@mailContext"/>
                 </i:render>
             </mail:tableContent>
-            <mail:tableContent align="center" valign="top" id="templateBody">
+
+            <mail:tableContent align="center" valign="top" id="templateBody" class="@bodyClass">
                 <i:render name="body"/>
             </mail:tableContent>
-            <mail:tableContent align="center" valign="top" id="templateFooter">
+
+            <mail:tableContent align="center" valign="top" id="templateFooter" class="@footerClass">
                 <i:render name="footer">
                     <i:invoke template="mail/mail-footer.html.pasta" mailContext="@mailContext"/>
                 </i:render>
