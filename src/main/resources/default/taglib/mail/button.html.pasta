@@ -7,8 +7,8 @@
 
 <i:pragma name="inline" value="true"/>
 
-<mail:table class="@class">
+<mail:tableInline>
     <mail:tableContent align="@align" valign="middle" class="mcnButtonContent">
-        <a href="@href" target="_blank" class="button" style="@style" title="@label" rel="notrack"><b>@label</b></a>
+        <a href="@href" target="_blank" class="btn @class" style="@style" title="@label" rel="notrack"><b>@label</b></a>
     </mail:tableContent>
-</mail:table>
+</mail:tableInline>
