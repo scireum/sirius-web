@@ -274,6 +274,7 @@
              */
             clearTokens: function () {
                 input.element.tokenfield("setTokens", []);
+                input.resizeInputField();
 
                 events.onClearTokens.forEach(function (handler) {
                     handler();
