@@ -1,3 +1,4 @@
+<i:arg type="sirius.web.mails.MailSender" name="mailContext"/>
 <i:arg type="String" name="class" default=""/>
 <i:arg type="String" name="titleKey" default=""/>
 <i:arg type="String" name="title" default="@i18n(titleKey)"/>
@@ -14,19 +15,28 @@
 
     <i:invoke template="mail/mail-header-styles-default.html.pasta"/>
     <i:invoke template="mail/mail-header-styles.html.pasta"/>
-
     <i:render name="styles"/>
 </head>
 
 <body class="@class">
-<i:invoke template="mail/mail-header.html.pasta"/>
-
-<mail:table align="center" class="bodyTable">
-    <mail:tableContent align="center" valign="top" class="bodyCell">
-        <i:render name="body"/>
+<mail:table align="center" valign="top" id="bodyTable">
+    <mail:tableContent align="center" valign="top" id="bodyCell">
+        <mail:table align="center" valign="top" id="bodyInnerTable">
+            <mail:tableContent align="center" valign="top" id="templateHeader">
+                <i:render name="header">
+                    <i:invoke template="mail/mail-header.html.pasta" mailContext="@mailContext"/>
+                </i:render>
+            </mail:tableContent>
+            <mail:tableContent align="center" valign="top" id="templateBody">
+                <i:render name="body"/>
+            </mail:tableContent>
+            <mail:tableContent align="center" valign="top" id="templateFooter">
+                <i:render name="footer">
+                    <i:invoke template="mail/mail-footer.html.pasta" mailContext="@mailContext"/>
+                </i:render>
+            </mail:tableContent>
+        </mail:table>
     </mail:tableContent>
 </mail:table>
-
-<i:invoke template="mail/mail-footer.html.pasta"/>
 </body>
 </html>
