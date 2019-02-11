@@ -200,9 +200,9 @@
                     if (minWidth > inputWidth) {
                         inputWidth = $container.width();
                     }
-                    if (input.removalElement) {
+                    if (input.tokenRemovalElement) {
                         // + 1 because outerWidth gets the width rounded and else it might not fit because of 1px
-                        inputWidth -= input.removalElement.outerWidth(true) + 1;
+                        inputWidth -= input.tokenRemovalElement.outerWidth(true) + 1;
                     }
                     input.tokenElement.css('max-width', inputWidth);
                     input.tokenElement.width(inputWidth);
