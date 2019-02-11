@@ -1,0 +1,53 @@
+<i:arg type="java.util.Collection" name="providers"/>
+<i:arg type="boolean" name="all"/>
+
+<w:page title="@apply('%s - Load', product)">
+    <i:block name="head">
+        <style>
+            .GRAY {
+                color: #555555;
+            }
+
+            .GREEN {
+                color: #168d12;
+            }
+        </style>
+    </i:block>
+
+    <i:block name="breadcrumbs">
+        <li><a href="/system/load">System Load</a></li>
+    </i:block>
+
+    <w:pageHeader>
+        System Load
+        <div class="pull-right">
+            <i:if test="all">
+                <a href="/system/state" class="btn btn-primary"><i class="fa fa-minus"></i> Less</a>
+                <a class="btn btn-default" href="/system/load?all=true"><i class="fa fa-refresh"></i></a>
+                <i:else>
+                    <a href="/system/state?all=true" class="btn btn-primary"><i class="fa fa-plus"></i> More</a>
+                    <a class="btn btn-default" href="/system/load"><i class="fa fa-refresh"></i></a>
+                </i:else>
+            </i:if>
+        </div>
+        <div class="clearfix"></div>
+    </w:pageHeader>
+
+    <i:for type="sirius.web.health.LoadInfoProvider" var="provider" items="providers">
+        <w:heading>@provider.getLabel()</w:heading>
+        <table class="table table-striped">
+            <i:for type="sirius.web.health.LoadInfo" var="info" items="provider.collectLoadInfos()">
+                <i:if test="all || info.isNonZero()">
+                    <tr class="@if (info.isNonZero()) {G REEN } else { GRAY }">
+                        <td style="overflow: hidden">
+                            @info.getLabel()
+                        </td>
+                        <td class="align-right" style="overflow: hidden">
+                            @info.getValueAsString()
+                        </td>
+                    </tr>
+                </i:if>
+            </i:for>
+        </table>
+    </i:for>
+</w:page>
