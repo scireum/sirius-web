@@ -38,7 +38,7 @@
         <table class="table table-striped">
             <i:for type="sirius.web.health.LoadInfo" var="info" items="provider.collectLoadInfos()">
                 <i:if test="all || info.isNonZero()">
-                    <tr class="@if (info.isNonZero()) {G REEN } else { GRAY }">
+                    <tr class="@if (info.isNonZero()) {GREEN } else { GRAY }">
                         <td style="overflow: hidden">
                             @info.getLabel()
                         </td>
