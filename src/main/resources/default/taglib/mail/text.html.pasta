@@ -1,0 +1,14 @@
+<i:arg type="String" name="labelKey" default=""/>
+<i:arg type="String" name="label" default="@i18n(labelKey)"/>
+<i:arg type="String" name="value"/>
+<i:arg type="String" name="class" default=""/>
+<i:arg type="boolean" name="showEmptyValue" default="false"/>
+
+<i:pragma name="inline" value="true"/>
+
+<i:if test="@isFilled(value) || showEmptyValue">
+    <tr class="align-top @class">
+        <td class="order-element-label">@label</td>
+        <td class="order-element-value">@value</td>
+    </tr>
+</i:if>

@@ -1,0 +1,10 @@
+<i:arg name="align" type="String" default=""/>
+<i:arg name="class" type="String" default=""/>
+<i:arg name="style" type="String" default=""/>
+<i:arg name="width" type="String" default=""/>
+
+<i:pragma name="inline" value="true"/>
+
+<table border="0" cellpadding="0" cellspacing="0" width="@width" align="@align" class="@class" style="@style">
+    <i:render name="body"/>
+</table>

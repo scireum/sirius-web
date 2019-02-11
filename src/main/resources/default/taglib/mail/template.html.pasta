@@ -1,0 +1,26 @@
+<i:arg type="String" name="class" default=""/>
+<i:arg type="String" name="titleKey" default=""/>
+<i:arg type="String" name="title" default="@i18n(titleKey)"/>
+
+<!doctype html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>@title</title>
+
+    <i:invoke template="mail/mail-header-styles-default.html.pasta"/>
+    <i:render name="styles"/>
+</head>
+
+<body class="@class">
+<mail:table align="center" class="bodyTable">
+    <mail:tableContent align="center" valign="top" class="bodyCell">
+        <i:render name="body"/>
+    </mail:tableContent>
+</mail:table>
+</body>
+</html>
