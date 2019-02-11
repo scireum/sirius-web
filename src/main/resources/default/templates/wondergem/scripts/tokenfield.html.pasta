@@ -109,6 +109,10 @@
                     input.updateTokenRemovalVisibility();
                     input.resizeInputField();
                     refreshHiddenInputs();
+
+                    events.onCreatedToken.forEach(function (handler) {
+                        handler(e);
+                    });
                 });
 
                 this.tokenElement.keydown(function (e) {
@@ -141,7 +145,7 @@
             },
 
             /**
-             * Adds a list of tokens to the already existing once.
+             * Adds a list of tokens to the already existing ones.
              *
              * @@param tokens array of tokens to be added
              */
@@ -149,6 +153,14 @@
                 $.each(tokens, function (i, token) {
                     input.element.tokenfield('createToken', token);
                 });
+            },
+            /**
+             * Adds a single token to the already existing ones.
+             *
+             * @@param token the token to be added
+             */
+            addToken: function (token) {
+                input.element.tokenfield('createToken', token);
             },
 
             resizeInputField: function () {
@@ -298,7 +310,12 @@
              *
              * Returning false will prevent the token from being created.
              */
-            onBeforeCreateToken: []
+            onBeforeCreateToken: [],
+
+            /**
+             * Will be called after tokenfield created a new token.
+             */
+            onCreatedToken: []
         };
 
         return {
@@ -353,6 +370,10 @@
 
             appendTokens: function (tokens) {
                 input.appendTokens(tokens);
+            },
+
+            addToken: function (token) {
+                input.addToken(token);
             },
 
             getInputFieldId: function () {

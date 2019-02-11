@@ -31,6 +31,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.mail.internet.InternetAddress;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +48,8 @@ public class MailSender {
     protected String receiverEmail;
     protected String receiverName;
     protected String subject;
+    protected String subjectKey;
+    protected Map<String, Object> subjectParams;
     protected Context textContext;
     protected Context htmlContext;
     protected String textTemplate;
@@ -163,6 +166,31 @@ public class MailSender {
      */
     public MailSender subject(String subject) {
         this.subject = subject;
+        return this;
+    }
+
+    /**
+     * Specifies the NLS key used to generate the subject line of the mail.
+     * This uses the language specified in {@link #setLang(String...)} if provided
+     *
+     * @param subjectKey the NLS key for the subject line to use.
+     * @return the builder itself
+     */
+    public MailSender nlsSubject(String subjectKey) {
+        return nlsSubject(subjectKey, null);
+    }
+
+    /**
+     * Specifies the NLS key and optional parameters used to generate the subject line of the mail.
+     * This uses the language specified in {@link #setLang(String...)} if provided
+     *
+     * @param subjectKey    the NLS key for the subject line to use.
+     * @param subjectParams the parameters used to format the subject line
+     * @return the builder itself
+     */
+    public MailSender nlsSubject(String subjectKey, @Nullable Map<String, Object> subjectParams) {
+        this.subjectKey = subjectKey;
+        this.subjectParams = subjectParams == null ? Collections.emptyMap() : subjectParams;
         return this;
     }
 
@@ -390,6 +418,7 @@ public class MailSender {
                     CallContext.getCurrent().setLang(lang);
                 }
                 render();
+                buildSubject();
                 sanitize();
                 check();
                 sendMailAsync(smtpConfiguration != null ?
@@ -431,6 +460,12 @@ public class MailSender {
                                  .put("mailContext", this)
                                  .applyContext(textContext)
                                  .generate());
+        }
+    }
+
+    private void buildSubject() {
+        if (Strings.isFilled(subjectKey)) {
+            subject = NLS.fmtr(subjectKey).set(subjectParams).format();
         }
     }
 

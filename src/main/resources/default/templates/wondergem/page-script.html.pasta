@@ -589,7 +589,7 @@
                 getTokenForValue: function (value) {
                     var token = undefined;
                     $.each(allSuggestions, function (i, element) {
-                        if (element.value === value) {
+                        if (String(element.value) === String(value)) {
                             token = element;
                         }
                     });
@@ -612,21 +612,15 @@
         var tokenfield = sirius.createTokenfield();
         var autocomplete = sirius.createAutocomplete();
 
-        autocomplete.on('onHoverRow', function ($row) {
-            autocomplete.getInput().val($row.find('.autocomplete-data').data('autocomplete'));
-        });
+        autocomplete.on('onSelect', function (selectedRow) {
+            if (!selectedRow) {
+                return;
+            }
 
-        autocomplete.on('onUnhoverRow', function ($row) {
-            autocomplete.getInput().val('');
-        });
-
-        autocomplete.on('onReady', function ($row) {
-            tokenfield.on('onBeforeCreateToken', function (token) {
-                // hide the autocomplete imediately, because else "dragging" over the completions will introduce unwanted
-                // state, e.g. text of a compeltions-row is in input field, but not created as token
-                autocomplete.hide();
-                return true;
-            });
+            // using .attr() instead of .data() of jQuery, because we do not want automatic type conversion of .data().
+            // e.g. data-autocomplete="123" would be converted to the number 123 by .data("autocomplete").
+            tokenfield.addToken(selectedRow.find('.autocomplete-data').attr('data-autocomplete'));
+            tokenfield.getTokenfieldInputField().focus();
         });
 
         autocomplete.on('beforeRenderRow', function (row) {
@@ -634,6 +628,14 @@
         });
 
         tokenfield.on('onBeforeCreateToken', function (token) {
+            if (autocomplete.getSelectedRow()) {
+                if (token.value === autocomplete.getInput().val()) {
+                    // if a row was selected, we do not wan't to add the data of the inputfield, but the selected row
+                    autocomplete.getInput().val('');
+                    return false;
+                }
+            }
+
             if (tokenfield.hasToken(token)) {
                 tokenfield.removeToken(token);
                 return false;
@@ -647,6 +649,8 @@
             } else {
                 token.label = suggestions.getTokenForValue(token.value).label;
             }
+
+            tokenfield.getTokenfieldInputField()[0].placeholder = '';
             return true;
         });
 
@@ -655,12 +659,23 @@
             showRemovalElement: false,
             hiddenInputsName: args.name,
             tokenfield: {
+                delimiter: '|',
                 createTokensOnBlur: true,
                 limit: args.maxItems
             }
         });
 
         tokenfield.appendTokens(suggestions.getInitialSelection());
+
+        if (!tokenfield.hasTokens()) {
+            tokenfield.getTokenfieldInputField()[0].placeholder = args.placeholder;
+        }
+
+        tokenfield.on('onRemovedToken', function () {
+            if (!tokenfield.hasTokens()) {
+                tokenfield.getTokenfieldInputField()[0].placeholder = args.placeholder;
+            }
+        });
 
         if (!args.readonly) {
             var noMatchesToken = {label: args.noMatchesText, type: 'basic'};
@@ -679,10 +694,21 @@
                 autocomplete.on("afterLoad", function (value, response) {
                     var responseTokens = [];
                     response.completions.forEach(function (completion) {
-                        responseTokens.push({label: completion.description, value: completion.id, type: 'basic'});
+                        responseTokens.push({
+                            // label is the text displayed in the dropdown. should be what is given as "description"
+                            // by the service. but use other texts as fallback.
+                            label: completion.description || completion.text || completion.id,
+                            value: completion.id,
+                            type: 'basic'
+                        });
 
                         if (!suggestions.getTokenForValue(completion.id)) {
-                            suggestions.addSuggestion({label: completion.description, value: completion.id});
+                            suggestions.addSuggestion({
+                                // label is the text displayed in the tokenfield. should be what is given as "text"
+                                // by the service. but use other texts as fallback.
+                                label: completion.text || completion.description || completion.id,
+                                value: completion.id
+                            });
                         }
                     });
                     if (responseTokens.length === 0) {

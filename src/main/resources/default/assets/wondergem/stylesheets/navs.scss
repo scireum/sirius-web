@@ -113,7 +113,8 @@ $navbarLinkBackgroundActive:    darken($navbarLinkBackgroundHover, 5%);
 
 .sub-nav > li > a {
   padding-right: 5px;
-  word-break: break-all;
+  overflow-wrap: break-word;
+  word-wrap: break-word; //legacy IE
 }
 
 

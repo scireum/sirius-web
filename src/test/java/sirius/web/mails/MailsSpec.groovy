@@ -9,6 +9,7 @@
 package sirius.web.mails
 
 import sirius.kernel.BaseSpecification
+import sirius.kernel.commons.Context
 import sirius.kernel.di.std.Part
 import sirius.kernel.health.HandledException
 
@@ -36,6 +37,20 @@ class MailsSpec extends BaseSpecification {
         mails.createEmail().to("test@", "Invalid").subject("Test eMail").textContent("This is a Test.").send()
         then:
         thrown(HandledException)
+    }
+
+    def "Mails translates subject to correct language"() {
+        when:
+        ((MailsMock) mails).getSentMails().clear()
+        mails.createEmail()
+             .to("test@scireum.de", "Test")
+             .nlsSubject("mail.subject", Context.create().set("nr", "1"))
+             .setLang("fr")
+             .textContent("This is a Test.")
+             .send()
+        then:
+        MailsMock.MailSenderMock mail = ((MailsMock) mails).getLastMail()
+        mail.getSubject() == "Ceci est le test 1."
     }
 
 }

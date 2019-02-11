@@ -186,7 +186,11 @@
                     }
                 });
 
-                this.element.focusout(function () {
+                this.element.focusout(function (event) {
+                    if ($(event.relatedTarget).hasClass('autocomplete-wrapper')) {
+                        this.focus();
+                        return false;
+                    }
                     completions.hide();
                 });
 
@@ -351,7 +355,6 @@
 
             show: function () {
                 if (this.rows.length > 0 && input.element.is(":focus")) {
-                    completions.selectedRow = undefined;
                     this.update();
                     completions.element.show();
                     this.state = completions.VISIBLE;
@@ -395,6 +398,11 @@
                     return;
                 }
                 completions.state = completions.HIDDEN;
+                if (completions.selectedRow) {
+                    events.onBeforeHide.forEach(function (handler) {
+                        handler(completions.selectedRow);
+                    });
+                }
                 completions.unHoverRow(completions.selectedRow);
 
                 completions.element.hide();
@@ -491,6 +499,7 @@
             onReady: [],
             onShow: [],
             onHide: [],
+            onBeforeHide: [],
 
             /**
              * Handle the selection of a row element.
@@ -815,6 +824,10 @@
              */
             getCurrentSelection: function () {
                 return this.isVisible() ? completions.selectedRow : undefined;
+            },
+
+            getSelectedRow: function () {
+                return completions.selectedRow;
             },
 
             /**

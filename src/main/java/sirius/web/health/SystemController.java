@@ -15,8 +15,10 @@ import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.GlobalContext;
+import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
+import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Microtiming;
@@ -44,11 +46,16 @@ import java.util.stream.Collectors;
 @Register(classes = Controller.class)
 public class SystemController extends BasicController {
 
+    private static final String LOAD_INFO_METRIC_PREFIX = "load_";
+
     @Part
     private Cluster cluster;
 
     @Part
     private Metrics metrics;
+
+    @Parts(LoadInfoProvider.class)
+    private PartCollection<LoadInfoProvider> loadInfoProviders;
 
     @Part
     private GlobalContext context;
@@ -70,6 +77,11 @@ public class SystemController extends BasicController {
      * Describes the permission required to view the system state.
      */
     public static final String PERMISSION_SYSTEM_STATE = "permission-system-state";
+
+    /**
+     * Describes the permission required to view the system load.
+     */
+    public static final String PERMISSION_SYSTEM_LOAD = "permission-system-load";
 
     /**
      * Renders the UI for the system console.
@@ -139,6 +151,12 @@ public class SystemController extends BasicController {
             for (Metric m : metrics.getMetrics()) {
                 outputMetric(out, m);
             }
+
+            for (LoadInfoProvider provider : loadInfoProviders) {
+                for (LoadInfo info : provider.collectLoadInfos()) {
+                    outputLoadInfo(out,provider, info);
+                }
+            }
         }
     }
 
@@ -162,6 +180,31 @@ public class SystemController extends BasicController {
         out.print(effectiveCode);
         out.print(" ");
         out.println(NLS.toMachineString(m.getValue()));
+    }
+
+    private void outputLoadInfo(PrintWriter out, LoadInfoProvider provider, LoadInfo info) {
+        String effectiveCode =
+                metricLabelPrefix + LOAD_INFO_METRIC_PREFIX + info.getCode().toLowerCase().replaceAll("[^a-z0-9]", "_");
+        out.print("# HELP ");
+        out.print(effectiveCode);
+        out.print(" ");
+        if (Strings.isFilled(info.getUnit())) {
+            out.print(provider.getLabel());
+            out.print(": ");
+            out.print(info.getLabel());
+            out.print(" (");
+            out.print(info.getUnit());
+            out.println(")");
+        } else {
+            out.println(info.getLabel());
+        }
+
+        out.print("# TYPE ");
+        out.print(effectiveCode);
+        out.println(" gauge");
+        out.print(effectiveCode);
+        out.print(" ");
+        out.println(NLS.toMachineString(info.getValue()));
     }
 
     /**
@@ -213,6 +256,18 @@ public class SystemController extends BasicController {
                      metrics,
                      ctx.get("all").asBoolean(false),
                      NLS.convertDuration(Sirius.getUptimeInMilliseconds(), true, false));
+    }
+
+    /**
+     * Reports the system load.
+     *
+     * @param ctx the current request
+     */
+    @Routed("/system/load")
+    @Permission(PERMISSION_SYSTEM_STATE)
+    public void load(WebContext ctx) {
+        ctx.respondWith()
+           .template("templates/system/load.html.pasta", loadInfoProviders.getParts(), ctx.get("all").asBoolean(false));
     }
 
     /**
