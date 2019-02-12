@@ -192,6 +192,9 @@
                 }, 50);
             },
 
+            /**
+             * Resizes the input field, so it takes all the available space right of the tokens.
+             */
             resizeInputField: function () {
                 var $container = input.tokenElement.parent();
 
