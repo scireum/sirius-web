@@ -170,33 +170,16 @@
             resizeInputField: function () {
                 var $container = input.tokenElement.parent();
 
-                // count how many rows of tokens we have
-                var numberOfRows = 1;
                 var lastTokenTop;
-                $container.find('.token').each(function () {
-                    if (!lastTokenTop || this.getBoundingClientRect().top !== lastTokenTop) {
-                        // the current token is below the last token -> new row of tokens
-                        lastTokenTop = this.getBoundingClientRect().top;
-                        numberOfRows++;
-                    }
-                });
-
-                // calculate the width of the tokens in the last row
-                var currentRow = 1;
-                lastTokenTop = undefined;
                 var tokensWidth = 0;
                 $container.find('.token').each(function () {
                     if (!lastTokenTop || this.getBoundingClientRect().top !== lastTokenTop) {
                         // the current token is below the last token -> new row of tokens
                         lastTokenTop = this.getBoundingClientRect().top;
-                        currentRow++;
+                        tokensWidth = 0;
                     }
-                    if (currentRow === numberOfRows) {
-                        // we are in the last row. start adding up the widths of the tokens
-
-                        // + 1 because outerWidth gets the width rounded and else it might not fit because of 1px
-                        tokensWidth += $(this).outerWidth(true) + 1;
-                    }
+                    // + 1 because outerWidth gets the width rounded and else it might not fit because of 1px
+                    tokensWidth += $(this).outerWidth(true) + 1;
                 });
 
                 var inputWidth = $container.width() - tokensWidth;
