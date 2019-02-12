@@ -26,11 +26,6 @@
              */
             tokenElement: undefined,
 
-            /**
-             * Used to debounce the resizing of the tokenElement
-             */
-            resizeTimer: undefined,
-
             tokenRemovalElement: undefined,
             tokenRemovalTemplate: '<a href="#" class="token-removal hide" tabindex="-1"><i class="fa fa-times fa-lg"></i></a>',
 
@@ -200,13 +195,8 @@
             },
 
             resize: function (e) {
-                if (input.resizeTimer) {
-                    window.clearTimeout(input.resizeTimer);
-                }
-                input.resizeTimer = window.setTimeout(function () {
-                    input.resizeInputField();
-                    input.resizeTimer = undefined;
-                }, 100);
+                input.resizeInputField();
+                input.resizeTimer = undefined;
 
                 events.onResize.forEach(function (handler) {
                     handler(e);
