@@ -102,6 +102,7 @@
 
                 this.element.on('tokenfield:createdtoken', function (e) {
                     input.updateTokenRemovalVisibility();
+                    input.correctTokenRemovalPosition();
                     input.resizeInputField();
                     refreshHiddenInputs();
 
@@ -160,6 +161,35 @@
              */
             addToken: function (token) {
                 input.element.tokenfield('createToken', token);
+            },
+
+            /**
+             * Corrects the position of the token removal element.
+             *
+             * It could be on the wrong position if tokenfield repositions the input field as last element.
+             */
+            correctTokenRemovalPosition: function () {
+                if (!input.tokenRemovalElement) {
+                    return;
+                }
+
+                var $parent = input.tokenElement.parent();
+                if ($parent.find("a .token-removal :last-child").length > 0) {
+                    // token removal is already the last element
+                    return;
+                }
+
+                // use the timeout as workaround for an unlucky tokenfield implementation
+                // the repositioning of the input field was not yet done.
+                // But there is no later point to catch this event and trigger the logic
+                setTimeout(function () {
+
+                    // tokenfield added the input after the removal
+                    // this happens if an existing token is edited (double click on token)
+
+                    input.tokenRemovalElement.remove();
+                    $parent.append(input.tokenRemovalElement);
+                }, 50);
             },
 
             resizeInputField: function () {
