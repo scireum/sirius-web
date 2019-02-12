@@ -229,7 +229,6 @@
 
             resize: function (e) {
                 input.resizeInputField();
-                input.resizeTimer = undefined;
 
                 events.onResize.forEach(function (handler) {
                     handler(e);
