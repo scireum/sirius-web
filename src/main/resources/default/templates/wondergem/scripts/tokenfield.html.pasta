@@ -170,6 +170,7 @@
             resizeInputField: function () {
                 var $container = input.tokenElement.parent();
 
+                // calculate the width of the last row of tokens
                 var lastTokenTop;
                 var tokensWidth = 0;
                 $container.find('.token').each(function () {
@@ -182,15 +183,18 @@
                     tokensWidth += $(this).outerWidth(true) + 1;
                 });
 
-                var inputWidth = $container.width() - tokensWidth;
-                var minWidth = parseInt(input.tokenElement.css('min-width'));
-                if (minWidth > inputWidth) {
-                    inputWidth = $container.width();
-                }
+                var removalElementWidth = 0;
                 if (input.tokenRemovalElement) {
                     // + 1 because outerWidth gets the width rounded and else it might not fit because of 1px
-                    inputWidth -= input.tokenRemovalElement.outerWidth(true) + 1;
+                    removalElementWidth = input.tokenRemovalElement.outerWidth(true) + 1;
                 }
+
+                var inputWidth = $container.width() - tokensWidth - removalElementWidth;
+                var minWidth = parseInt(input.tokenElement.css('min-width'));
+                if (minWidth > inputWidth) {
+                    inputWidth = $container.width() - removalElementWidth;
+                }
+
                 input.tokenElement.css('max-width', inputWidth);
                 input.tokenElement.width(inputWidth);
             },
