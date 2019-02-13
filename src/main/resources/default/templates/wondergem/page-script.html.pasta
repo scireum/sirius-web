@@ -665,6 +665,43 @@
             }
         });
 
+        if (args.maxItems === 1) {
+            tokenfield.on('onCreatedToken', function (token) {
+                tokenfield.getTokenfieldInputField().hide();
+            });
+
+            tokenfield.on('onRemovedToken', function () {
+                tokenfield.getTokenfieldInputField().show();
+            });
+
+            if (!args.readonly) {
+                $('#' + args.id).on('click', '.tokenfield', function () {
+                    var oldToken = tokenfield.getTokens()[0];
+                    autocomplete.on('onHide', function reAddToken() {
+                        if (!tokenfield.hasTokens() && oldToken) {
+                            tokenfield.addToken(oldToken);
+                            tokenfield.getTokenfieldInputField().val('');
+                        }
+                        autocomplete.off('onHide', reAddToken);
+                    });
+                    tokenfield.clearTokens();
+                    tokenfield.getTokenfieldInputField().show().focus();
+                    tokenfield.getTokenfieldInputField()[0].placeholder = args.placeholder;
+                });
+
+                var $arrow = $('<span class="arrow arrow-down"/>');
+                $('#' + args.id + ' .tokenfield').append($arrow);
+
+                autocomplete.on('onShow', function () {
+                    $arrow.removeClass('arrow-down').addClass('arrow-up');
+                });
+
+                autocomplete.on('onHide', function () {
+                    $arrow.removeClass('arrow-up').addClass('arrow-down');
+                });
+            }
+        }
+
         tokenfield.appendTokens(suggestions.getInitialSelection());
 
         if (!tokenfield.hasTokens()) {

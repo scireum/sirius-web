@@ -9,38 +9,36 @@
 <i:arg name="required" type="boolean" default="false" />
 <i:arg name="readonly" type="boolean" default="false" />
 <i:arg name="adminOnly" type="boolean" default="false" />
-<i:arg name="forceFullWidth" type="boolean" default="false" />
-<i:arg name="id" type="String" default="" />
+<i:arg name="id" type="String" default="@apply('multiselect-%s', call.generateLocalId())" />
 <i:arg name="allowCustomEntries" type="boolean" default="false" />
 
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders a dropdown field within a Wondergem template" />
 
-<div class="col-xs-@smallSpan col-md-@span form-group @user.signalFieldError(name)">
-    <i:if test="isFilled(label)">
-        <label>
-            <span class="@if (required) { input-required } @if (adminOnly) { admin-link }">
-                @label
-            </span>
-        </label>
-    </i:if>
-
-    <select name="@name"
-            @if(isFilled(id)) { id="@id" }
-            class="select2-select form-control @user.signalFieldError(name)"
-            @if (allowCustomEntries) { data-tags="true" }
-            @if (optional) { data-optional="true" }
-            @if(forceFullWidth) { style="width: 100%;" }>
-        <i:if test="optional">
-            <option value=""></option>
-        </i:if>
-        <i:render name="body" />
-    </select>
-
-    <i:if test="isFilled(help)">
-        <span class="help-block"><i:raw>@help</i:raw></span>
-    </i:if>
-    <i:if test="user.hasError(name)">
-        <span class="error-block help-block">@user.getFieldErrorMessage(name)</span>
-    </i:if>
+<div id="@id" class="multiselect singleselect @if(!optional || required){ required }">
+    <w:textfield id="@apply('%s-input',id)" name="@apply('%s-input', name)" span="@span" smallSpan="@smallSpan"
+                 value="" label="@label" help="@help" adminOnly="@adminOnly" readonly="@readonly" required="@required"/>
 </div>
+
+<select id="@id-suggestions-select" style="display: none" multiple="multiple">
+    <i:render name="body"/>
+</select>
+
+<i:if test="optional">
+    <input name="@name" type="hidden" value=""/>
+</i:if>
+
+<script>
+    $(document).ready(function () {
+        multiSelect({
+            id: '@id',
+            name: '@name',
+            noMatchesText : '@i18n("template.html.selects.noMatches")',
+            readonly: @readonly,
+            placeholder: '@i18n('template.html.selects.selection')',
+            maxItems: 1,
+            allowCustomEntries: @allowCustomEntries,
+            optional: @optional
+        });
+    });
+</script>
