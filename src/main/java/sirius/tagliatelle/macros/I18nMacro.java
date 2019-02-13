@@ -39,8 +39,21 @@ public class I18nMacro implements Macro {
      */
     @Override
     public void verifyArguments(List<Expression> args) {
-        if (args.size() != 1 || !Tagliatelle.isAssignableTo(args.get(0).getType(), String.class)) {
+        if (args.isEmpty()) {
+            throw new IllegalArgumentException("Expected at least one String as argument.");
+        }
+
+        if (args.size() > 2) {
+            throw new IllegalArgumentException("Expected at most two arguments.");
+        }
+
+        if (args.size() == 1 && !Tagliatelle.isAssignableTo(args.get(0).getType(), String.class)) {
             throw new IllegalArgumentException("Expected a single String as argument.");
+        }
+
+        if (args.size() == 2 && (!Tagliatelle.isAssignableTo(args.get(0).getType(), String.class)
+                                 || !Tagliatelle.isAssignableTo(args.get(1).getType(), int.class))) {
+            throw new IllegalArgumentException("Expected a String as first and an int as second argument.");
         }
 
         if (Sirius.isDev()) {
@@ -59,17 +72,23 @@ public class I18nMacro implements Macro {
     @Override
     public boolean isConstant(Expression[] args) {
         // An i18n macro is inherently not constant unless it is invoked for an empty string
-        return args.length == 1 && args[0].isConstant() && Strings.isEmpty(args[0].eval(null));
+        return (args.length == 1 || args.length == 2) && args[0].isConstant() && Strings.isEmpty(args[0].eval(null));
     }
 
     @Override
     public Object eval(LocalRenderContext ctx, Expression[] args) {
         String key = (String) args[0].eval(ctx);
+
         if (Strings.isFilled(key)) {
-            return NLS.get(key);
-        } else {
-            return "";
+            if (args.length == 1) {
+                return NLS.get(key);
+            } else if (args.length == 2) {
+                int numeric = (int) args[1].eval(ctx);
+                return NLS.get(key, numeric);
+            }
         }
+
+        return "";
     }
 
     @Nonnull
