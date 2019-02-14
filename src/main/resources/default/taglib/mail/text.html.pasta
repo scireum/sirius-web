@@ -8,7 +8,7 @@
 
 <i:if test="@isFilled(value) || showEmptyValue">
     <tr class="align-top @class">
-        <td class="order-element-label">@label</td>
-        <td class="order-element-value">@value</td>
+        <td class="text-element-label">@label</td>
+        <td class="text-element-value">@value</td>
     </tr>
 </i:if>
