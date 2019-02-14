@@ -1,0 +1,17 @@
+<i:arg name="align" type="String" default=""/>
+<i:arg name="valign" type="String" default=""/>
+<i:arg name="bgcolor" type="String" default=""/>
+<i:arg name="class" type="String" default=""/>
+<i:arg name="style" type="String" default=""/>
+<i:arg name="id" type="String" default=""/>
+
+<i:pragma name="inline" value="true"/>
+
+<tr>
+    <i:render name="td">
+        <td align="@align" valign="@valign" bgcolor="@bgcolor" class="@class" style="@style"
+            @if(isFilled(id)) { id="@id" }>
+            <i:render name="body"/>
+        </td>
+    </i:render>
+</tr>
