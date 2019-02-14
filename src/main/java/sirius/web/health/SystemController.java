@@ -148,6 +148,8 @@ public class SystemController extends BasicController {
                                                                          .outputStream(HttpResponseStatus.OK,
                                                                                        "text/plain; version=0.0.4"),
                                                                       Charsets.UTF_8))) {
+            outputNodeStateAsMetric(out);
+
             for (Metric m : metrics.getMetrics()) {
                 outputMetric(out, m);
             }
@@ -166,6 +168,20 @@ public class SystemController extends BasicController {
                           info.getValue(),
                           MetricState.GREEN,
                           info.getUnit());
+    }
+
+    /**
+     * Reports the node state as metric (0=OK, 1=WARN, 2=ERROR).
+     *
+     * @param out the output stream to write the metric to
+     */
+    private void outputNodeStateAsMetric(PrintWriter out) {
+        outputMetric(out,
+                     new Metric("node_state",
+                                "Node State",
+                                cluster.getNodeState().ordinal() - 1,
+                                cluster.getNodeState(),
+                                null));
     }
 
     private void outputMetric(PrintWriter out, Metric m) {
