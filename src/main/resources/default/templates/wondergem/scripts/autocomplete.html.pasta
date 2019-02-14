@@ -835,6 +835,10 @@
              */
             hide: function () {
                 completions.hideImmediate();
+            },
+
+            getCompletionRows: function () {
+                return completions.rows || [];
             }
         };
     };

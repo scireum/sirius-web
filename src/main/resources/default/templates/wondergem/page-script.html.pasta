@@ -636,18 +636,28 @@
                 }
             }
 
-            if (tokenfield.hasToken(token)) {
-                tokenfield.removeToken(token);
-                return false;
-            }
             if (!suggestions.getTokenForValue(token.value)) {
                 if (args.allowCustomEntries) {
                     suggestions.addSuggestion(token);
                 } else {
-                    return false;
+                    if (autocomplete.getCompletionRows().length !== 1) {
+                        return false;
+                    }
+                    var tokenFromRow = suggestions.getTokenForValue(autocomplete.getCompletionRows()[0].value);
+                    if (tokenFromRow) {
+                        token.label = tokenFromRow.label;
+                        token.value = tokenFromRow.value;
+                    } else {
+                        return false;
+                    }
                 }
             } else {
                 token.label = suggestions.getTokenForValue(token.value).label;
+            }
+
+            if (tokenfield.hasToken(token)) {
+                tokenfield.removeToken(token);
+                return false;
             }
 
             tokenfield.getTokenfieldInputField()[0].placeholder = '';
