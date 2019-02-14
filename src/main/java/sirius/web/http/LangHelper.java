@@ -21,11 +21,11 @@ import java.util.regex.Pattern;
  */
 public class LangHelper {
 
-    private LangHelper() {
-    }
-
     private static final Pattern ACCEPT_LANGUAGE_PATTERN =
             Pattern.compile(" *([a-z]{2})(-[a-z]{2})? *(;q=([0-9.]+) *)?");
+
+    private LangHelper() {
+    }
 
     /**
      * Returns the accepted language of the client as two-letter language code.

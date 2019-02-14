@@ -9,7 +9,6 @@
 package sirius.web.services;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import sirius.kernel.async.CallContext;
 import sirius.kernel.async.TaskContext;
 import sirius.kernel.commons.CachingSupplier;
 import sirius.kernel.commons.PriorityCollector;
@@ -18,7 +17,6 @@ import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
-import sirius.kernel.nls.NLS;
 import sirius.web.http.Firewall;
 import sirius.web.http.Limited;
 import sirius.web.http.Unlimited;
