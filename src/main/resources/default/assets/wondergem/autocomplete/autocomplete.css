@@ -77,7 +77,7 @@
     text-shadow: none;
     opacity: 1;
     font-size: 1em;
-    padding-right: 8px;
+    padding: 0px 8px 0px 10px;
 }
 
 .multiselect.singleselect.required .token .close {
