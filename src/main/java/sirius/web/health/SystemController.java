@@ -9,7 +9,9 @@
 package sirius.web.health;
 
 import com.google.common.base.Charsets;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpServerExpectContinueHandler;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Strings;
@@ -31,6 +33,7 @@ import sirius.web.controller.Controller;
 import sirius.web.controller.Page;
 import sirius.web.controller.Routed;
 import sirius.web.http.WebContext;
+import sirius.web.http.WebServer;
 import sirius.web.security.Permission;
 
 import java.io.OutputStreamWriter;
@@ -60,8 +63,11 @@ public class SystemController extends BasicController {
     @Part
     private GlobalContext context;
 
-    @ConfigValue("sirius.metricLabelPrefix")
+    @ConfigValue("sirius.metrics.labelPrefix")
     private String metricLabelPrefix;
+
+    @ConfigValue("sirius.metrics.blockPublicAccess")
+    private boolean blockPublicAccess;
 
     /**
      * Describes the permission required to access the system console.
@@ -144,6 +150,11 @@ public class SystemController extends BasicController {
      */
     @Routed("/system/metrics")
     public void metrics(WebContext ctx) {
+        if (blockPublicAccess && ctx.getHeaderValue(WebServer.HEADER_X_FORWARDED_FOR).isFilled()) {
+            ctx.respondWith().error(HttpResponseStatus.FORBIDDEN);
+            return;
+        }
+
         try (PrintWriter out = new PrintWriter(new OutputStreamWriter(ctx.respondWith()
                                                                          .outputStream(HttpResponseStatus.OK,
                                                                                        "text/plain; version=0.0.4"),
