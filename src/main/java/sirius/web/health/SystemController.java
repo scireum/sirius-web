@@ -148,16 +148,40 @@ public class SystemController extends BasicController {
                                                                          .outputStream(HttpResponseStatus.OK,
                                                                                        "text/plain; version=0.0.4"),
                                                                       Charsets.UTF_8))) {
+            outputNodeStateAsMetric(out);
+
             for (Metric m : metrics.getMetrics()) {
                 outputMetric(out, m);
             }
 
             for (LoadInfoProvider provider : loadInfoProviders) {
                 for (LoadInfo info : provider.collectLoadInfos()) {
-                    outputLoadInfo(out,provider, info);
+                    outputMetric(out, transformLoadIntoToMetric(provider, info));
                 }
             }
         }
+    }
+
+    private Metric transformLoadIntoToMetric(LoadInfoProvider provider, LoadInfo info) {
+        return new Metric(LOAD_INFO_METRIC_PREFIX + info.getCode(),
+                          provider.getLabel() + ": " + info.getLabel(),
+                          info.getValue(),
+                          MetricState.GREEN,
+                          info.getUnit());
+    }
+
+    /**
+     * Reports the node state as metric (0=OK, 1=WARN, 2=ERROR).
+     *
+     * @param out the output stream to write the metric to
+     */
+    private void outputNodeStateAsMetric(PrintWriter out) {
+        outputMetric(out,
+                     new Metric("node_state",
+                                "Node State",
+                                cluster.getNodeState().ordinal() - 1,
+                                cluster.getNodeState(),
+                                null));
     }
 
     private void outputMetric(PrintWriter out, Metric m) {
@@ -180,31 +204,6 @@ public class SystemController extends BasicController {
         out.print(effectiveCode);
         out.print(" ");
         out.println(NLS.toMachineString(m.getValue()));
-    }
-
-    private void outputLoadInfo(PrintWriter out, LoadInfoProvider provider, LoadInfo info) {
-        String effectiveCode =
-                metricLabelPrefix + LOAD_INFO_METRIC_PREFIX + info.getCode().toLowerCase().replaceAll("[^a-z0-9]", "_");
-        out.print("# HELP ");
-        out.print(effectiveCode);
-        out.print(" ");
-        if (Strings.isFilled(info.getUnit())) {
-            out.print(provider.getLabel());
-            out.print(": ");
-            out.print(info.getLabel());
-            out.print(" (");
-            out.print(info.getUnit());
-            out.println(")");
-        } else {
-            out.println(info.getLabel());
-        }
-
-        out.print("# TYPE ");
-        out.print(effectiveCode);
-        out.println(" gauge");
-        out.print(effectiveCode);
-        out.print(" ");
-        out.println(NLS.toMachineString(info.getValue()));
     }
 
     /**

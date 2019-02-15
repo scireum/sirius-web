@@ -196,6 +196,7 @@ public class CompilationContext {
      * only used each stack location once, to greatly simplify inlining.
      *
      * @param position the position which caused the popUntil - mainly used for error reporting
+     * @param localIndex the limit to pop off to
      */
     public void popUntil(Position position, int localIndex) {
         if (!stack.isEmpty()) {

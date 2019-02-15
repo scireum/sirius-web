@@ -15,20 +15,20 @@ import sirius.tagliatelle.rendering.LocalRenderContext;
  */
 public class ConstantClass extends ConstantExpression {
 
-    private final Class<?> type;
+    private final Class<?> expectedType;
 
     /**
      * Creates a new instance representing the given class.
      *
-     * @param type the class to represent
+     * @param expectedType the class to represent
      */
-    public ConstantClass(Class<?> type) {
-        this.type = type;
+    public ConstantClass(Class<?> expectedType) {
+        this.expectedType = expectedType;
     }
 
     @Override
     public Object eval(LocalRenderContext ctx) {
-        return type;
+        return expectedType;
     }
 
     @Override
@@ -38,6 +38,6 @@ public class ConstantClass extends ConstantExpression {
 
     @Override
     public String toString() {
-        return type.getName();
+        return expectedType.getName();
     }
 }

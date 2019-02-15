@@ -180,7 +180,7 @@ public class AssetsDispatcher implements WebDispatcher {
             }
         }
 
-        response.named(uri.substring(uri.lastIndexOf("/") + 1)).file(file);
+        response.named(uri.substring(uri.lastIndexOf('/') + 1)).file(file);
         return true;
     }
 

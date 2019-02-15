@@ -16,17 +16,17 @@ import sirius.tagliatelle.rendering.LocalRenderContext;
 public class InstanceCheck implements Expression {
 
     private Expression selfExpression;
-    private final Class<?> type;
+    private final Class<?> expectedType;
 
     /**
      * Creates a new <tt>instanceof</tt> for the given expression with the given type.
      *
      * @param selfExpression the expression to check
-     * @param type           the expected type
+     * @param expectedType   the expected type
      */
-    public InstanceCheck(Expression selfExpression, Class<?> type) {
+    public InstanceCheck(Expression selfExpression, Class<?> expectedType) {
         this.selfExpression = selfExpression;
-        this.type = type;
+        this.expectedType = expectedType;
     }
 
     @Override
@@ -40,7 +40,7 @@ public class InstanceCheck implements Expression {
         this.selfExpression = selfExpression.reduce();
         if (selfExpression.isConstant()) {
             Object value = selfExpression.eval(null);
-            if (value != null && type.isAssignableFrom(value.getClass())) {
+            if (value != null && expectedType.isAssignableFrom(value.getClass())) {
                 return ConstantBoolean.TRUE;
             } else {
                 return ConstantBoolean.FALSE;
@@ -52,7 +52,7 @@ public class InstanceCheck implements Expression {
 
     @Override
     public Expression copy() {
-        return new InstanceCheck(selfExpression.copy(), type);
+        return new InstanceCheck(selfExpression.copy(), expectedType);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class InstanceCheck implements Expression {
     @Override
     public Object eval(LocalRenderContext ctx) {
         Object self = selfExpression.eval(ctx);
-        return type.isAssignableFrom(self.getClass());
+        return expectedType.isAssignableFrom(self.getClass());
     }
 
     @Override
