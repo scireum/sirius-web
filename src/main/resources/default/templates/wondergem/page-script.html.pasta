@@ -600,7 +600,7 @@
 
         var autocompleteTemplates = {
             basic:
-                '<div class="autocomplete-row autocomplete-selectable-element autocomplete-row-js' +
+                '<div tabindex="0" class="autocomplete-row autocomplete-selectable-element autocomplete-row-js' +
                 '            {{#inTokenfield}}in-token-field{{/inTokenfield}}"> ' +
                 '   <span class="element-heading">{{label}}</span>' +
                 '   <span class="autocomplete-data" data-autocomplete="{{value}}" style="display: none"></span>' +
@@ -627,13 +627,18 @@
             row.inTokenfield = tokenfield.hasToken(row);
         });
 
-        tokenfield.on('onBeforeCreateToken', function (token) {
+        tokenfield.on('onEnter', function (event) {
             if (autocomplete.getSelectedRow()) {
-                if (token.value === autocomplete.getInput().val()) {
-                    // if a row was selected, we do not wan't to add the data of the inputfield, but the selected row
-                    autocomplete.getInput().val('');
-                    return false;
-                }
+                // The user selected a row and pressed enter so we dont want the tokenfield to autocreate a duplicate token
+                return false;
+            }
+            return true;
+        });
+
+        tokenfield.on('onBeforeCreateToken', function (token) {
+            if (autocomplete.isPreventCreateToken()) {
+                autocomplete.setPreventCreateToken(false);
+                return false;
             }
 
             if (tokenfield.hasToken(token)) {
@@ -650,6 +655,9 @@
                 token.label = suggestions.getTokenForValue(token.value).label;
             }
 
+            if (autocomplete.getInput()) {
+                autocomplete.getInput().val('');
+            }
             tokenfield.getTokenfieldInputField()[0].placeholder = '';
             return true;
         });
