@@ -113,11 +113,24 @@
 
                 this.tokenElement.keydown(function (e) {
                     if (e.keyCode === sirius.keys.KEY_ENTER) {
+                        var allowPropagation = true;
                         events.onEnter.forEach(function (handler) {
-                            handler(e);
+                            if (handler(e) === false) {
+                                allowPropagation = false;
+                            }
                         });
+                        if (!allowPropagation) {
+                            // We don't want the tokenfield to handle this enter key event
+                            e.stopImmediatePropagation();
+                            return false;
+                        }
                     }
                 });
+
+                // TODO dont do this after bootstrap tokenfield dependency was replaced by own code
+                // We ensure our keydown listener gets called before the one of the tokenfield to be capable of preventing propagation
+                var listeners = $._data(this.tokenElement[0], "events").keydown;
+                listeners.unshift(listeners.pop());
 
                 this.tokenElement.focusin(function () {
                     input.resizeInputField();

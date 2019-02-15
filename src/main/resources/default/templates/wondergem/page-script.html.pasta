@@ -627,6 +627,14 @@
             row.inTokenfield = tokenfield.hasToken(row);
         });
 
+        tokenfield.on('onEnter', function (event) {
+            if (autocomplete.getSelectedRow()) {
+                // The user selected a row and pressed enter so we dont want the tokenfield to autocreate a duplicate token
+                return false;
+            }
+            return true;
+        });
+
         tokenfield.on('onBeforeCreateToken', function (token) {
             if (autocomplete.getSelectedRow()) {
                 if (token.value === autocomplete.getInput().val()) {
