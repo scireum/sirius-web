@@ -187,7 +187,8 @@
                 });
 
                 this.element.focusout(function (event) {
-                    if ($(event.relatedTarget).hasClass('autocomplete-wrapper')) {
+                    var $relatedTarget = $(event.relatedTarget);
+                    if ($relatedTarget.hasClass('autocomplete-wrapper') || $relatedTarget.hasClass('autocomplete-row-js')) {
                         this.focus();
                         return false;
                     }
