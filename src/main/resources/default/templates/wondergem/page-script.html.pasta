@@ -600,7 +600,7 @@
 
         var autocompleteTemplates = {
             basic:
-                '<div class="autocomplete-row autocomplete-selectable-element autocomplete-row-js' +
+                '<div tabindex="0" class="autocomplete-row autocomplete-selectable-element autocomplete-row-js' +
                 '            {{#inTokenfield}}in-token-field{{/inTokenfield}}"> ' +
                 '   <span class="element-heading">{{label}}</span>' +
                 '   <span class="autocomplete-data" data-autocomplete="{{value}}" style="display: none"></span>' +

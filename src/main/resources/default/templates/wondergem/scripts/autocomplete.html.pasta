@@ -237,7 +237,7 @@
              */
             init: function (config) {
                 this.config = config;
-                var wrapper = "<div class='well autocomplete-wrapper autocomplete-wrapper-js' {{#id}}id='{{id}}'{{/id}}></div>";
+                var wrapper = "<div tabindex='0' class='well autocomplete-wrapper autocomplete-wrapper-js' {{#id}}id='{{id}}'{{/id}}></div>";
 
                 this.state = completions.HIDDEN;
 
