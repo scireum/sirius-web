@@ -636,12 +636,9 @@
         });
 
         tokenfield.on('onBeforeCreateToken', function (token) {
-            if (autocomplete.getSelectedRow()) {
-                if (token.value === autocomplete.getInput().val()) {
-                    // if a row was selected, we do not wan't to add the data of the inputfield, but the selected row
-                    autocomplete.getInput().val('');
-                    return false;
-                }
+            if (autocomplete.isPreventCreateToken()) {
+                autocomplete.setPreventCreateToken(false);
+                return false;
             }
 
             if (tokenfield.hasToken(token)) {
@@ -658,6 +655,9 @@
                 token.label = suggestions.getTokenForValue(token.value).label;
             }
 
+            if (autocomplete.getInput()) {
+                autocomplete.getInput().val('');
+            }
             tokenfield.getTokenfieldInputField()[0].placeholder = '';
             return true;
         });
