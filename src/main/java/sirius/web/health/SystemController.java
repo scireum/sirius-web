@@ -9,9 +9,7 @@
 package sirius.web.health;
 
 import com.google.common.base.Charsets;
-import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpServerExpectContinueHandler;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Strings;
