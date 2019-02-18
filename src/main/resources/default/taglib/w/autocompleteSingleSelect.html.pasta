@@ -3,6 +3,7 @@
 <i:arg name="name" type="String" />
 <i:arg name="type" type="String" default="" />
 <i:arg name="serviceUri" type="String" />
+<i:arg name="searchKey" type="String" default="" />
 <i:arg name="strict" type="boolean" default="false" />
 <i:arg name="labelKey" type="String" default="" />
 <i:arg name="label" type="String" default="@i18n(labelKey)" />
@@ -40,6 +41,7 @@
             noMatchesText : '@i18n("template.html.selects.noMatches")',
             readonly: @readonly,
             placeholder: '@i18n('template.html.selects.selection')',
+            searchKey: @if(isFilled(searchKey)){'@i18n(searchKey)'}else{undefined},
             maxItems: 1,
             allowCustomEntries: !@strict,
             optional: @optional,

@@ -693,10 +693,11 @@
                             tokenfield.getTokenfieldInputField().val('');
                         }
                         autocomplete.off('onHide', reAddToken);
+                        tokenfield.getTokenfieldInputField()[0].placeholder = args.placeholder;
                     });
                     tokenfield.clearTokens();
                     tokenfield.getTokenfieldInputField().show().focus();
-                    tokenfield.getTokenfieldInputField()[0].placeholder = args.placeholder;
+                    tokenfield.getTokenfieldInputField()[0].placeholder = args.searchKey || args.placeholder;
                 });
 
                 var $arrow = $('<span class="arrow arrow-down"/>');
