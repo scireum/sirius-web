@@ -128,6 +128,7 @@ public class MimeHelper {
         mimeTable.put("aif", "audio/x-aiff");
         mimeTable.put("aifc", "audio/x-aiff");
         mimeTable.put("aiff", "audio/x-aiff");
+        mimeTable.put("apk", "application/vnd.android.package-archive");
         mimeTable.put("asc", TEXT_PLAIN);
         mimeTable.put("atom", "application/atom+xml");
         mimeTable.put("au", "audio/basic");
