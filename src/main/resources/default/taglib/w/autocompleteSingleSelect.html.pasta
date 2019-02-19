@@ -13,8 +13,7 @@
 <i:arg name="required" type="boolean" default="false" />
 <i:arg name="readonly" type="boolean" default="false" />
 <i:arg name="adminOnly" type="boolean" default="false" />
-<i:arg name="multiLine" type="boolean" default="false" description="Controls if both the label and the description are shown for search results. Newlines inside the description will also be rendered." /> <!-- TODO what is this-->
-<i:arg name="enableCreateDynamicOption" type="boolean" default="false" description="Controls if the user can enter non suggested options" /> <!-- TODO WTF das ist doch STRICT! :///-->
+<i:arg name="multiLine" type="boolean" default="false" description="Controls if both the label and the description are shown for search results. Newlines inside the description will also be rendered." /> <!-- TODO implement-->
 <i:arg name="id" type="String" default="@apply('multiselect-%s', call.generateLocalId())" />
 
 <i:pragma name="inline" value="true" />
