@@ -1,0 +1,17 @@
+<i:arg name="align" type="String" default=""/>
+<i:arg name="valign" type="String" default=""/>
+<i:arg name="class" type="String" default=""/>
+<i:arg name="id" type="String" default=""/>
+<i:arg name="bgcolor" type="String" default=""/>
+<i:arg name="style" type="String" default=""/>
+<i:arg name="trClass" type="String" default=""/>
+
+<i:pragma name="inline" value="true"/>
+
+<tr class="@trClass">
+    <i:render name="th">
+        <th align="@align" valign="@valign" class="@class" id="@id" bgcolor="@bgcolor" style="@style">
+            <i:render name="body"/>
+        </th>
+    </i:render>
+</tr>

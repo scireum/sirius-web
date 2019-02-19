@@ -81,6 +81,7 @@
 
                 this.element.on('tokenfield:removedtoken', function (e) {
                     input.updateTokenRemovalVisibility();
+                    input.resizeInputField();
 
                     refreshHiddenInputs();
 
@@ -101,6 +102,8 @@
 
                 this.element.on('tokenfield:createdtoken', function (e) {
                     input.updateTokenRemovalVisibility();
+                    input.correctTokenRemovalPosition();
+                    input.resizeInputField();
                     refreshHiddenInputs();
 
                     events.onCreatedToken.forEach(function (handler) {
@@ -110,10 +113,27 @@
 
                 this.tokenElement.keydown(function (e) {
                     if (e.keyCode === sirius.keys.KEY_ENTER) {
+                        var allowPropagation = true;
                         events.onEnter.forEach(function (handler) {
-                            handler(e);
+                            if (handler(e) === false) {
+                                allowPropagation = false;
+                            }
                         });
+                        if (!allowPropagation) {
+                            // We don't want the tokenfield to handle this enter key event
+                            e.stopImmediatePropagation();
+                            return false;
+                        }
                     }
+                });
+
+                // TODO dont do this after bootstrap tokenfield dependency was replaced by own code
+                // We ensure our keydown listener gets called before the one of the tokenfield to be capable of preventing propagation
+                var listeners = $._data(this.tokenElement[0], "events").keydown;
+                listeners.unshift(listeners.pop());
+
+                this.tokenElement.focusin(function () {
+                    input.resizeInputField();
                 });
 
                 if (this.tokenRemovalElement) {
@@ -156,7 +176,73 @@
                 input.element.tokenfield('createToken', token);
             },
 
+            /**
+             * Corrects the position of the token removal element.
+             *
+             * It could be on the wrong position if tokenfield repositions the input field as last element.
+             */
+            correctTokenRemovalPosition: function () {
+                if (!input.tokenRemovalElement) {
+                    return;
+                }
+
+                var $parent = input.tokenElement.parent();
+                if ($parent.find("a .token-removal :last-child").length > 0) {
+                    // token removal is already the last element
+                    return;
+                }
+
+                // use the timeout as workaround for an unlucky tokenfield implementation
+                // the repositioning of the input field was not yet done.
+                // But there is no later point to catch this event and trigger the logic
+                setTimeout(function () {
+
+                    // tokenfield added the input after the removal
+                    // this happens if an existing token is edited (double click on token)
+
+                    input.tokenRemovalElement.remove();
+                    $parent.append(input.tokenRemovalElement);
+                }, 50);
+            },
+
+            /**
+             * Resizes the input field, so it takes all the available space right of the tokens.
+             */
+            resizeInputField: function () {
+                var $container = input.tokenElement.parent();
+
+                // calculate the width of the last row of tokens
+                var lastTokenTop;
+                var tokensWidth = 0;
+                $container.find('.token').each(function () {
+                    if (!lastTokenTop || this.getBoundingClientRect().top !== lastTokenTop) {
+                        // the current token is below the last token -> new row of tokens
+                        lastTokenTop = this.getBoundingClientRect().top;
+                        tokensWidth = 0;
+                    }
+                    // + 1 because outerWidth gets the width rounded and else it might not fit because of 1px
+                    tokensWidth += $(this).outerWidth(true) + 1;
+                });
+
+                var removalElementWidth = 0;
+                if (input.tokenRemovalElement) {
+                    // + 1 because outerWidth gets the width rounded and else it might not fit because of 1px
+                    removalElementWidth = input.tokenRemovalElement.outerWidth(true) + 1;
+                }
+
+                var inputWidth = $container.width() - tokensWidth - removalElementWidth;
+                var minWidth = parseInt(input.tokenElement.css('min-width'));
+                if (minWidth > inputWidth) {
+                    inputWidth = $container.width() - removalElementWidth;
+                }
+
+                input.tokenElement.css('max-width', inputWidth);
+                input.tokenElement.width(inputWidth);
+            },
+
             resize: function (e) {
+                input.resizeInputField();
+
                 events.onResize.forEach(function (handler) {
                     handler(e);
                 });
@@ -210,6 +296,7 @@
              */
             clearTokens: function () {
                 input.element.tokenfield("setTokens", []);
+                input.resizeInputField();
 
                 events.onClearTokens.forEach(function (handler) {
                     handler();

@@ -61,6 +61,11 @@ public class CSRFHelper {
                > 0;
     }
 
+    /**
+     * Forces an explicit recomputation of the CSRF token.
+     *
+     * @param ctx the web context to recompute the token for
+     */
     public void recomputeCSRFToken(WebContext ctx) {
         ctx.setSessionValue(PREVIOUS_CSRF_TOKEN, ctx.getSessionValue(CSRF_TOKEN).asString());
         ctx.setSessionValue(CSRF_TOKEN, UUID.randomUUID().toString());

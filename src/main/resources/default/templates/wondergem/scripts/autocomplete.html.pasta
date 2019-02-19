@@ -42,6 +42,7 @@
             element: undefined,
             spinnerElement: undefined,
             spinnerTemplate: '<a href="#" class="autocomplete-spinner hide" tabindex="-1"><i class="fa fa-spinner fa-spin"></i></a>',
+            preventCreateToken: false,
 
             /**
              * Shows a small spinner in the input field whenever the service loads data.
@@ -187,7 +188,11 @@
                 });
 
                 this.element.focusout(function (event) {
-                    if ($(event.relatedTarget).hasClass('autocomplete-wrapper')) {
+                    var $relatedTarget = $(event.relatedTarget);
+                    if ($relatedTarget.hasClass('autocomplete-wrapper') || $relatedTarget.hasClass('autocomplete-row-js')) {
+                        if (this.value.length) {
+                            input.preventCreateToken = true;
+                        }
                         this.focus();
                         return false;
                     }
@@ -237,7 +242,7 @@
              */
             init: function (config) {
                 this.config = config;
-                var wrapper = "<div class='well autocomplete-wrapper autocomplete-wrapper-js' {{#id}}id='{{id}}'{{/id}}></div>";
+                var wrapper = "<div tabindex='0' class='well autocomplete-wrapper autocomplete-wrapper-js' {{#id}}id='{{id}}'{{/id}}></div>";
 
                 this.state = completions.HIDDEN;
 
@@ -839,6 +844,14 @@
 
             getCompletionRows: function () {
                 return completions.rows || [];
+            },
+            
+            isPreventCreateToken: function () {
+                return input.preventCreateToken;
+            },
+
+            setPreventCreateToken: function (preventCreateToken) {
+                input.preventCreateToken = preventCreateToken;
             }
         };
     };

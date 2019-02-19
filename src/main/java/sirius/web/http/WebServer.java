@@ -154,7 +154,14 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     private static HttpDataFactory httpDataFactory;
 
     private static final String UNKNOWN_FORWARDED_FOR_HOST = "unknown";
-    private static final String HEADER_X_FORWARDED_FOR = "X-Forwarded-For";
+
+    /**
+     * Contains the header name which contains the original IP for a request.
+     * <p>
+     * This is supplied by a proxy or load balancer, as the remote ip of the TCP/IP connection is always the proxy
+     * or lb itself.
+     */
+    public static final String HEADER_X_FORWARDED_FOR = "X-Forwarded-For";
 
     /**
      * Indicates that netty itself will compute the optimal number of threads in the event loop

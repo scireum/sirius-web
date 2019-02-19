@@ -1,0 +1,14 @@
+<i:arg name="href" type="String" default=""/>
+<i:arg name="labelKey" type="String" default=""/>
+<i:arg name="label" type="String" default="@i18n(labelKey)"/>
+<i:arg name="align" type="String" default=""/>
+<i:arg name="class" type="String" default=""/>
+<i:arg name="style" type="String" default=""/>
+
+<i:pragma name="inline" value="true"/>
+
+<mail:tableInline>
+    <mail:tableContent align="@align" valign="middle" class="mcnButtonContent">
+        <a href="@href" target="_blank" class="btn @class" style="@style" title="@label" rel="notrack"><b>@label</b></a>
+    </mail:tableContent>
+</mail:tableInline>
