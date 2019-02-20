@@ -133,9 +133,7 @@ public class AutocompleteHelper {
         }
 
         /**
-         * Sets if the suggestion should be disabled
-         * <p>
-         * Uses standard select2 functionality to have entries in the select, that can't be selected.
+         * Sets if the suggestion should be disabled in the autocomplete in JavaScript.
          *
          * @param disabled <tt>true</tt> if the suggestion is disabled, <tt>false</tt> otherwise
          * @return the completion itself for fluent method calls
@@ -175,7 +173,7 @@ public class AutocompleteHelper {
     }
 
     /**
-     * Handles the given request and generates the appropriate JSON as expected by the select2 binding.
+     * Handles the given request and generates the appropriate JSON as expected by the autocomplete in JavaScript.
      *
      * @param ctx    the request to handle
      * @param search the handler to generate suggestions
