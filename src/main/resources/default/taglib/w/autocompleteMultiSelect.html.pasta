@@ -19,7 +19,7 @@
 
 <i:local name="id" value="@apply('multiselect-%s', call.generateLocalId())"/>
 
-<div id="@id" class="multiselect">
+<div id="@id" class="sirius-select multi-select">
     <w:textfield id="@apply('%s-input',id)" name="@apply('%s-input', name)" span="@span" smallSpan="@smallSpan"
                  value="" label="@label" help="@help" adminOnly="@adminOnly" readonly="@readonly" required="@required"/>
 </div>

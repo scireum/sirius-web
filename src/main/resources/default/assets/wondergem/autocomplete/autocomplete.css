@@ -41,25 +41,25 @@
     background-color: #E8E8EA
 }
 
-.multiselect .autocomplete-row.autocomplete-selected-element,
-.multiselect .autocomplete-row.in-token-field.autocomplete-selected-element {
+.sirius-select .autocomplete-row.autocomplete-selected-element,
+.sirius-select .autocomplete-row.in-token-field.autocomplete-selected-element {
     background-color: #66afe9;
     color: #ffffff;
 }
 
-.multiselect .autocomplete-row.in-token-field {
+.sirius-select .autocomplete-row.in-token-field {
     background-color: #ededed;
     border-top: 1px solid #d9d9d9;
     border-bottom: 1px solid #d9d9d9;
     margin: 2px 0;
 }
 
-.multiselect.singleselect .tokenfield {
+.single-select .tokenfield {
     cursor: pointer;
     position: relative;
 }
 
-.multiselect.singleselect .token {
+.single-select .token {
     cursor: pointer;
     width: 100%;
     background-color: white;
@@ -67,11 +67,11 @@
     margin: 0;
 }
 
-.multiselect.singleselect .token .token-label {
+.single-select .token .token-label {
     padding: 0;
 }
 
-.multiselect.singleselect .token .close {
+.single-select .token .close {
     float: right;
     color: #888;
     text-shadow: none;
@@ -80,11 +80,11 @@
     padding: 0px 8px 0px 10px;
 }
 
-.multiselect.singleselect.required .token .close {
+.single-select.required .token .close {
     display: none;
 }
 
-.multiselect.singleselect .arrow {
+.single-select .arrow {
     border-style: solid;
     border-width: 0;
     height: 0;
@@ -93,12 +93,12 @@
     right: 5px;
 }
 
-.multiselect.singleselect .arrow.arrow-down {
+.single-select .arrow.arrow-down {
     border-color: #888 transparent transparent transparent;
     border-width: 5px 4px 0 4px;
 }
 
-.multiselect.singleselect .arrow.arrow-up {
+.single-select .arrow.arrow-up {
     border-color: transparent transparent #888 transparent;
     border-width: 0 4px 5px 4px;
 }
