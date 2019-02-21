@@ -62,7 +62,7 @@
 .single-select .token {
     cursor: pointer;
     width: 100%;
-    background-color: white;
+    background-color: inherit;
     border: none;
     margin: 0;
 }
