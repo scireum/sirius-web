@@ -841,6 +841,10 @@
             hide: function () {
                 completions.hideImmediate();
             },
+
+            getCompletionRows: function () {
+                return completions.rows || [];
+            },
             
             isPreventCreateToken: function () {
                 return input.preventCreateToken;

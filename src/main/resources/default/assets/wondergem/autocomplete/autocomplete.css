@@ -41,15 +41,64 @@
     background-color: #E8E8EA
 }
 
-.multiselect .autocomplete-row.autocomplete-selected-element,
-.multiselect .autocomplete-row.in-token-field.autocomplete-selected-element {
+.sirius-select .autocomplete-row.autocomplete-selected-element,
+.sirius-select .autocomplete-row.in-token-field.autocomplete-selected-element {
     background-color: #66afe9;
     color: #ffffff;
 }
 
-.multiselect .autocomplete-row.in-token-field {
+.sirius-select .autocomplete-row.in-token-field {
     background-color: #ededed;
     border-top: 1px solid #d9d9d9;
     border-bottom: 1px solid #d9d9d9;
     margin: 2px 0;
+}
+
+.single-select .tokenfield {
+    cursor: pointer;
+    position: relative;
+}
+
+.single-select .token {
+    cursor: pointer;
+    width: 100%;
+    background-color: inherit;
+    border: none;
+    margin: 0;
+}
+
+.single-select .token .token-label {
+    padding: 0;
+}
+
+.single-select .token .close {
+    float: right;
+    color: #888;
+    text-shadow: none;
+    opacity: 1;
+    font-size: 1em;
+    padding: 0px 8px 0px 10px;
+}
+
+.single-select.required .token .close {
+    display: none;
+}
+
+.single-select .arrow {
+    border-style: solid;
+    border-width: 0;
+    height: 0;
+    position: absolute;
+    top: 13px;
+    right: 5px;
+}
+
+.single-select .arrow.arrow-down {
+    border-color: #888 transparent transparent transparent;
+    border-width: 5px 4px 0 4px;
+}
+
+.single-select .arrow.arrow-up {
+    border-color: transparent transparent #888 transparent;
+    border-width: 0 4px 5px 4px;
 }

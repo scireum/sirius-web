@@ -18,40 +18,6 @@
 }
 
 //
-// select2
-// --------------------------------------------------
-.select2 {
-  margin-bottom: 10px;
-
-  &-container.input-block-level {
-    margin-bottom: 10px;
-  }
-
-  &-container .select2-choice {
-    background-image: none;
-  }
-
-  &-search--dropdown {
-    padding: 8px;
-  }
-
-  &-results__option {
-    padding: 6px 10px;
-  }
-
-  &-results .suggestion-description {
-    font-size: $fontSizeSmall;
-    color: $muted;
-  }
-
-  &-results__option--highlighted[aria-selected] .suggestion-description {
-    color: $whiteDark;
-  }
-}
-
-
-
-//
 // Password
 // --------------------------------------------------
 .password-security-info h4 {

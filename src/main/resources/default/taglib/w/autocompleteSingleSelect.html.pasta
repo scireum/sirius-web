@@ -13,39 +13,37 @@
 <i:arg name="required" type="boolean" default="false" />
 <i:arg name="readonly" type="boolean" default="false" />
 <i:arg name="adminOnly" type="boolean" default="false" />
-<i:arg name="forceFullWidth" type="boolean" default="false" />
-<i:arg name="multiLine" type="boolean" default="false" description="Controls if both the label and the description are shown for search results. Newlines inside the description will also be rendered." />
-<i:arg name="enableCreateDynamicOption" type="boolean" default="false" description="Controls if the user can enter non suggested options" />
-<i:arg name="id" type="String" default="" />
+<i:arg name="id" type="String" default="@apply('multiselect-%s', call.generateLocalId())" />
 
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders an autocomplete select field within a Wondergem template" />
 
-<div class="col-xs-@smallSpan col-md-@span form-group @user.signalFieldError(name)">
-    <i:if test="isFilled(label)">
-        <label>
-            <span class="@if (required) { input-required } @if (adminOnly) { admin-link }">
-                @label
-            </span>
-        </label>
-    </i:if>
-
-    <select name="@name" @if(isFilled(id)) { id="@id" } class="form-control @user.signalFieldError(name)"
-            @if (isFilled(type)) { data-type="@type" }
-            @if (isFilled(searchKey)) { data-searchtext="@i18n(searchKey)" }
-            @if (strict) { data-strict="true" }
-            @if (optional) { data-optional="true" }
-            @if (forceFullWidth) { style="width: 100%;" }
-            @if (multiLine) { data-multiline="true" }
-            @if (enableCreateDynamicOption) { data-dynamic-option="true" }
-            data-autocomplete="@serviceUri">
-        <i:render name="body" />
-    </select>
-
-    <i:if test="isFilled(help)">
-        <span class="help-block">@help</span>
-    </i:if>
-    <i:if test="user.hasError(name)">
-        <span class="error-block help-block">@user.getFieldErrorMessage(name)</span>
-    </i:if>
+<div id="@id" class="sirius-select single-select @if(!optional || required){ required }">
+    <w:textfield id="@apply('%s-input',id)" name="@apply('%s-input', name)" span="@span" smallSpan="@smallSpan"
+                 value="" label="@label" help="@help" adminOnly="@adminOnly" readonly="@readonly" required="@required"/>
 </div>
+
+<select id="@id-suggestions-select" style="display: none" multiple="multiple">
+    <i:render name="body"/>
+</select>
+
+<i:if test="optional">
+    <input name="@name" type="hidden" value=""/>
+</i:if>
+
+<script>
+    $(document).ready(function () {
+        multiSelect({
+            id: '@id',
+            name: '@name',
+            noMatchesText : '@i18n("template.html.selects.noMatches")',
+            readonly: @readonly,
+            placeholder: '@i18n('template.html.selects.selection')',
+            searchKey: @if(isFilled(searchKey)){'@i18n(searchKey)'}else{undefined},
+            maxItems: 1,
+            allowCustomEntries: !@strict,
+            optional: @optional,
+            serviceUri: '@serviceUri'
+        });
+    });
+</script>
