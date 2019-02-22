@@ -17,3 +17,5 @@
 <i:include name="/assets/wondergem/sparklines/sparkline.js"/>
 
 <i:include name="/assets/wondergem/bootstrap-tokenfield/bootstrap-tokenfield.js"/>
+
+<i:include name="/assets/wondergem/autocomplete/multiselect.js"/>
