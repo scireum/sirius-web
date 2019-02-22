@@ -202,6 +202,11 @@
 
                     input.tokenRemovalElement.remove();
                     $parent.append(input.tokenRemovalElement);
+                    
+                    input.tokenRemovalElement.click(function () {
+                        input.clearTokens();
+                        input.hideTokenRemoval();
+                    });
                 }, 50);
             },
 
