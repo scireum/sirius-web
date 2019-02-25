@@ -148,9 +148,9 @@
                 });
 
                 // resizes the input field after the tokenfield init process is done
-                // for some reason the tokenfield init event is called to soon and the internal resizing is not yet
+                // for some reason the tokenfield init event is called too soon and the internal resizing is not yet
                 // done.
-                // this will fix make the tokenRemovalElement clickable right from the beginning rather from the first
+                // this will make the tokenRemovalElement clickable right from the beginning rather from the first
                 // focusin event of the input field
                 setTimeout(input.resize, 50);
             },
@@ -232,15 +232,15 @@
                 });
 
                 // + 1 because outerWidth gets the width rounded and else it might not fit because of 1px
-                var removalElementWidth = 1;
+                var additionalElementsWidth = 1;
                 $(".input-width-js").each(function () {
-                    removalElementWidth += $(this).outerWidth(true);
+                    additionalElementsWidth += $(this).outerWidth(true);
                 });
 
-                var inputWidth = $container.width() - tokensWidth - removalElementWidth;
+                var inputWidth = $container.width() - tokensWidth - additionalElementsWidth;
                 var minWidth = parseInt(input.tokenElement.css('min-width'));
                 if (minWidth > inputWidth) {
-                    inputWidth = $container.width() - removalElementWidth;
+                    inputWidth = $container.width() - additionalElementsWidth;
                 }
 
                 input.tokenElement.css('max-width', inputWidth);
