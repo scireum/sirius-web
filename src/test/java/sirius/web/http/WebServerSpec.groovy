@@ -335,7 +335,7 @@ class WebServerSpec extends BaseSpecification {
         and:
         u.setChunkedStreamingMode(1024)
         and:
-        def testByteArray = "Hello Service".getBytes()
+        def testByteArray = "X".getBytes()
         when:
         u.setRequestMethod("POST")
         u.setDoInput(true)
@@ -343,8 +343,15 @@ class WebServerSpec extends BaseSpecification {
 
         def out = u.getOutputStream()
         // Write some data to ensure the connection happens
-        for (int i = 0; i < 1024; i++) {
-            out.write(testByteArray)
+        try {
+            for (int i = 0; i < 1024; i++) {
+                out.write(testByteArray)
+            }
+        } catch (IOException e) {
+            // An exception might already occur here, if the client deciedes to submit the request the
+            // server will immediatelly close the connection - which is to be expected and totally fine
+            // for the test - we then simply continue...
+            Exceptions.ignore(e)
         }
         out.flush()
 
