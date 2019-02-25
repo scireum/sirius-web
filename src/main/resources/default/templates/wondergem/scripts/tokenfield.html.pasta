@@ -146,6 +146,13 @@
                 $(window).resize(function (e) {
                     input.resize(e);
                 });
+
+                // resizes the input field after the tokenfield init process is done
+                // for some reason the tokenfield init event is called to soon and the internal resizing is not yet
+                // done.
+                // this will fix make the tokenRemovalElement clickable right from the beginning rather from the first
+                // focusin event of the input field
+                setTimeout(input.resize, 50);
             },
 
             /**
