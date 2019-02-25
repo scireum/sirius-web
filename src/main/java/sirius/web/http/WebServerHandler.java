@@ -300,7 +300,9 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                 return;
             }
             boolean last = msg instanceof LastHttpContent;
-            if (!last) {
+            if (last) {
+                currentContext.requestFullyRead = true;
+            } else {
                 if (WebServer.chunks.incrementAndGet() < 0) {
                     WebServer.chunks.set(0);
                 }
