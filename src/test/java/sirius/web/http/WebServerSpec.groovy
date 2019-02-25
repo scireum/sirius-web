@@ -21,6 +21,8 @@ import io.netty.handler.codec.http.*
 import org.apache.log4j.Level
 import sirius.kernel.BaseSpecification
 import sirius.kernel.commons.Strings
+import sirius.kernel.commons.Wait
+import sirius.kernel.health.Exceptions
 import sirius.kernel.health.LogHelper
 
 /**
@@ -299,6 +301,8 @@ class WebServerSpec extends BaseSpecification {
 
     /**
      * Call a controller which uses predispatching
+     * <p>
+     * Also expects that the controller support keepalive after a successful request/response.
      */
     def "Invoke /test/predispatch with POST"() {
         given:
@@ -317,6 +321,52 @@ class WebServerSpec extends BaseSpecification {
         def result = new String(ByteStreams.toByteArray(u.getInputStream()), Charsets.UTF_8)
         then:
         String.valueOf(testByteArray.length * 1024) == result
+        and:
+        u.getHeaderField(HttpHeaderNames.CONNECTION.toString()) == HttpHeaderNames.KEEP_ALIVE.toString()
+    }
+
+    /**
+     * Call a controller which uses predispatching but responds before the content has been read.
+     *
+     */
+    def "/test/predispatch/abort aborts an upload and closes the connection"() {
+        given:
+        HttpURLConnection u = new URL("http://localhost:9999/test/predispatch/abort").openConnection()
+        and:
+        u.setChunkedStreamingMode(1024)
+        and:
+        def testByteArray = "Hello Service".getBytes()
+        when:
+        u.setRequestMethod("POST")
+        u.setDoInput(true)
+        u.setDoOutput(true)
+
+        def out = u.getOutputStream()
+        // Write some data to ensure the connection happens
+        for (int i = 0; i < 1024; i++) {
+            out.write(testByteArray)
+        }
+        out.flush()
+
+        // Slow down to ensure that the response is created and sent
+        Wait.millis(200)
+        try {
+            for (int i = 0; i < 1024; i++) {
+                out.write(testByteArray)
+            }
+        } catch (IOException e) {
+            // We expect an exception here, as the server immediatelly closes the connection to prevent further
+            // uploads
+            Exceptions.ignore(e)
+        }
+
+        def result = new String(ByteStreams.toByteArray(u.getInputStream()), Charsets.UTF_8)
+        then:
+        // We still expect a proper response
+        "ABORT" == result
+        and:
+        // We also expect the server to announce that the connection was closed and that no keepalive will be supported
+        u.getHeaderField(HttpHeaderNames.CONNECTION.toString()) == "close"
     }
 
     /**
