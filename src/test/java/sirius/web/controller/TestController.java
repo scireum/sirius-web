@@ -133,6 +133,11 @@ public class TestController implements Controller {
         ctx.respondWith().direct(HttpResponseStatus.OK, String.valueOf(size));
     }
 
+    @Routed(value = "/test/predispatch/abort", preDispatchable = true)
+    public void testPredispatchAbort(WebContext ctx, InputStreamHandler in) throws Exception {
+        ctx.respondWith().direct(HttpResponseStatus.OK, "ABORT");
+    }
+
     @Routed("/test/os")
     public void testOutputStream(WebContext ctx) throws IOException {
         OutputStream out = ctx.respondWith().outputStream(HttpResponseStatus.OK, "text/plain");

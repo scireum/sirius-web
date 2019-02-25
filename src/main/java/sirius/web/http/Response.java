@@ -239,7 +239,7 @@ public class Response {
         }
 
         // Add keepalive header if required
-        if (responseKeepalive && keepalive && isKeepalive()) {
+        if (responseKeepalive && keepalive && isKeepalive() && wc.requestFullyRead) {
             response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
         } else {
             if (!HttpVersion.HTTP_1_0.equals(wc.getRequest().protocolVersion())) {
