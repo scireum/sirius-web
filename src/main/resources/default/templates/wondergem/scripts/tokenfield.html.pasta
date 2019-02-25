@@ -27,7 +27,7 @@
             tokenElement: undefined,
 
             tokenRemovalElement: undefined,
-            tokenRemovalTemplate: '<a href="#" class="token-removal hide" tabindex="-1"><i class="fa fa-times fa-lg"></i></a>',
+            tokenRemovalTemplate: '<a href="#" class="token-removal input-width-js hide" tabindex="-1"><i class="fa fa-times fa-lg"></i></a>',
 
             /**
              * Keys of the config object are:
@@ -224,11 +224,11 @@
                     tokensWidth += $(this).outerWidth(true) + 1;
                 });
 
-                var removalElementWidth = 0;
-                if (input.tokenRemovalElement) {
-                    // + 1 because outerWidth gets the width rounded and else it might not fit because of 1px
-                    removalElementWidth = input.tokenRemovalElement.outerWidth(true) + 1;
-                }
+                // + 1 because outerWidth gets the width rounded and else it might not fit because of 1px
+                var removalElementWidth = 1;
+                $(".input-width-js").each(function () {
+                    removalElementWidth += $(this).outerWidth(true);
+                });
 
                 var inputWidth = $container.width() - tokensWidth - removalElementWidth;
                 var minWidth = parseInt(input.tokenElement.css('min-width'));
@@ -473,6 +473,10 @@
              */
             getTokens: function () {
                 return input.getTokens();
+            },
+
+            resize: function () {
+                input.resize();
             }
         };
     };
