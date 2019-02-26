@@ -41,7 +41,7 @@
             name: "autocomplete-input",
             element: undefined,
             spinnerElement: undefined,
-            spinnerTemplate: '<a href="#" class="autocomplete-spinner hide" tabindex="-1"><i class="fa fa-spinner fa-spin"></i></a>',
+            spinnerTemplate: '<a href="#" class="autocomplete-spinner input-width-js hide" tabindex="-1"><i class="fa fa-spinner fa-spin"></i></a>',
             preventCreateToken: false,
 
             /**

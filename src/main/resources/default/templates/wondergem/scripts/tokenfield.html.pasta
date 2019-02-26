@@ -27,7 +27,7 @@
             tokenElement: undefined,
 
             tokenRemovalElement: undefined,
-            tokenRemovalTemplate: '<a href="#" class="token-removal hide" tabindex="-1"><i class="fa fa-times fa-lg"></i></a>',
+            tokenRemovalTemplate: '<a href="#" class="token-removal input-width-js hide" tabindex="-1"><i class="fa fa-times fa-lg"></i></a>',
 
             /**
              * Keys of the config object are:
@@ -146,6 +146,13 @@
                 $(window).resize(function (e) {
                     input.resize(e);
                 });
+
+                // resizes the input field after the tokenfield init process is done
+                // for some reason the tokenfield init event is called too soon and the internal resizing is not yet
+                // done.
+                // this will make the tokenRemovalElement clickable right from the beginning rather from the first
+                // focusin event of the input field
+                setTimeout(input.resize, 50);
             },
 
             /**
@@ -229,16 +236,16 @@
                     tokensWidth += $(this).outerWidth(true) + 1;
                 });
 
-                var removalElementWidth = 0;
-                if (input.tokenRemovalElement) {
-                    // + 1 because outerWidth gets the width rounded and else it might not fit because of 1px
-                    removalElementWidth = input.tokenRemovalElement.outerWidth(true) + 1;
-                }
+                // + 1 because outerWidth gets the width rounded and else it might not fit because of 1px
+                var additionalElementsWidth = 1;
+                $(".input-width-js").each(function () {
+                    additionalElementsWidth += $(this).outerWidth(true);
+                });
 
-                var inputWidth = $container.width() - tokensWidth - removalElementWidth;
+                var inputWidth = $container.width() - tokensWidth - additionalElementsWidth;
                 var minWidth = parseInt(input.tokenElement.css('min-width'));
                 if (minWidth > inputWidth) {
-                    inputWidth = $container.width() - removalElementWidth;
+                    inputWidth = $container.width() - additionalElementsWidth;
                 }
 
                 input.tokenElement.css('max-width', inputWidth);
@@ -478,6 +485,10 @@
              */
             getTokens: function () {
                 return input.getTokens();
+            },
+
+            resize: function () {
+                input.resize();
             }
         };
     };
