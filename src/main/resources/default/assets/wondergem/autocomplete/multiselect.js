@@ -180,11 +180,6 @@ var multiSelect = function (args) {
                 $arrow.removeClass('arrow-up').addClass('arrow-down');
             });
         }
-
-        if (!args.optional && suggestions.getInitialSelection().length === 0 && suggestions.getAllSuggestions().length !== 0) {
-            // if the field is not optional, has no initial selection and a token can be added initially, add the token
-            tokenfield.addToken(suggestions.getAllSuggestions()[0]);
-        }
     }
 
     tokenfield.appendTokens(suggestions.getInitialSelection());
