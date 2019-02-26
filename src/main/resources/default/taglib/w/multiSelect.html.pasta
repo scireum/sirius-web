@@ -22,7 +22,7 @@
                  value="" label="@label" help="@help" adminOnly="@adminOnly" readonly="@readonly" required="@required"/>
 </div>
 
-<select id="@id-suggestions-select" style="display: none" multiple="multiple">
+<select id="@id-suggestions-select" name="@name" style="display: none" multiple="multiple">
     <i:render name="body"/>
 </select>
 
@@ -34,7 +34,8 @@
             readonly: @readonly,
             placeholder: '@i18n('template.html.selects.selection')',
             maxItems: @maxItems,
-            allowCustomEntries: @allowCustomEntries
+            allowCustomEntries: @allowCustomEntries,
+            optional: @optional
         });
     });
 </script>

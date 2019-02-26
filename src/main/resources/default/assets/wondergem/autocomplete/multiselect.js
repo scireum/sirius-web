@@ -59,6 +59,24 @@ var multiSelect = function (args) {
         }
     }
 
+    /**
+     * Updates the original select object to represent the active tokens as we use it to transfer the selection.
+     */
+    var updateSelectObject = function () {
+        $select.children('option').remove();
+
+        var tokens = tokenfield.getTokens();
+
+        tokens.forEach(function (token) {
+            $('<option></option>').text(token.label).val(token.value).attr('selected', 'selected').appendTo($select);
+        });
+
+        // Needed to still transfer the field if nothing is selected
+        if (tokens.length === 0 && args.optional) {
+            $('<option></option>').val('').attr('selected', 'selected').appendTo($select);
+        }
+    }
+
     var autocompleteTemplates = {
         basic:
             '<div tabindex="0" class="autocomplete-row autocomplete-selectable-element autocomplete-row-js' +
@@ -134,6 +152,9 @@ var multiSelect = function (args) {
         return true;
     });
 
+    tokenfield.on('onCreatedToken', updateSelectObject);
+    tokenfield.on('onRemovedToken', updateSelectObject);
+
     tokenfield.start({
         id: args.id + '-input',
         showRemovalElement: false,
@@ -183,6 +204,7 @@ var multiSelect = function (args) {
     }
 
     tokenfield.appendTokens(suggestions.getInitialSelection());
+    updateSelectObject();
 
     if (!tokenfield.hasTokens()) {
         tokenfield.getTokenfieldInputField()[0].placeholder = args.placeholder;
