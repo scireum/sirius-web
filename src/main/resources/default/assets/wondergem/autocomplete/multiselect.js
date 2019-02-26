@@ -7,11 +7,12 @@
  */
 
 var multiSelect = function (args) {
-    var createSuggestionsObject = function (selectId) {
+    var $select = $('#' + args.id + '-suggestions-select');
+
+    var createSuggestionsObject = function () {
         var allSuggestions = [];
         var initialSelection = [];
 
-        var $select = $('#' + selectId);
         for (var i = 0; i < $select[0].options.length; i++) {
             var option = $select[0].options[i];
             var token = {
@@ -23,7 +24,6 @@ var multiSelect = function (args) {
                 initialSelection.push(token);
             }
         }
-        $select.remove();
 
         return {
             getAllSuggestions: function () {
@@ -59,6 +59,24 @@ var multiSelect = function (args) {
         }
     }
 
+    /**
+     * Updates the original select object to represent the active tokens as we use it to transfer the selection.
+     */
+    var updateSelectObject = function () {
+        $select.children('option').remove();
+
+        var tokens = tokenfield.getTokens();
+
+        tokens.forEach(function (token) {
+            $('<option></option>').text(token.label).val(token.value).attr('selected', 'selected').appendTo($select);
+        });
+
+        // Needed to still transfer the field if nothing is selected
+        if (tokens.length === 0 && args.optional) {
+            $('<option></option>').val('').attr('selected', 'selected').appendTo($select);
+        }
+    }
+
     var autocompleteTemplates = {
         basic:
             '<div tabindex="0" class="autocomplete-row autocomplete-selectable-element autocomplete-row-js' +
@@ -68,7 +86,7 @@ var multiSelect = function (args) {
             '</div>'
     }
 
-    var suggestions = createSuggestionsObject(args.id + '-suggestions-select');
+    var suggestions = createSuggestionsObject();
 
     var tokenfield = sirius.createTokenfield();
     var autocomplete = sirius.createAutocomplete();
@@ -134,10 +152,12 @@ var multiSelect = function (args) {
         return true;
     });
 
+    tokenfield.on('onCreatedToken', updateSelectObject);
+    tokenfield.on('onRemovedToken', updateSelectObject);
+
     tokenfield.start({
         id: args.id + '-input',
         showRemovalElement: false,
-        hiddenInputsName: args.name,
         tokenfield: {
             delimiter: '|',
             createTokensOnBlur: true,
@@ -181,14 +201,10 @@ var multiSelect = function (args) {
                 $arrow.removeClass('arrow-up').addClass('arrow-down');
             });
         }
-
-        if (!args.optional && suggestions.getInitialSelection().length === 0 && suggestions.getAllSuggestions().length !== 0) {
-            // if the field is not optional, has no initial selection and a token can be added initially, add the token
-            tokenfield.addToken(suggestions.getAllSuggestions()[0]);
-        }
     }
 
     tokenfield.appendTokens(suggestions.getInitialSelection());
+    updateSelectObject();
 
     if (!tokenfield.hasTokens()) {
         tokenfield.getTokenfieldInputField()[0].placeholder = args.placeholder;
