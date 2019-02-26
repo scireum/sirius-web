@@ -26,15 +26,10 @@
     <i:render name="body"/>
 </select>
 
-<i:if test="optional">
-    <input name="@name" type="hidden" value=""/>
-</i:if>
-
 <script>
     $(document).ready(function () {
         multiSelect({
             id: '@id',
-            name: '@name',
             noMatchesText : '@i18n("template.html.selects.noMatches")',
             readonly: @readonly,
             placeholder: '@i18n('template.html.selects.selection')',

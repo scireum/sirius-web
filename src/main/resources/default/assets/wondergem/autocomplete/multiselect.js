@@ -7,11 +7,12 @@
  */
 
 var multiSelect = function (args) {
-    var createSuggestionsObject = function (selectId) {
+    var $select = $('#' + args.id + '-suggestions-select');
+
+    var createSuggestionsObject = function () {
         var allSuggestions = [];
         var initialSelection = [];
 
-        var $select = $('#' + selectId);
         for (var i = 0; i < $select[0].options.length; i++) {
             var option = $select[0].options[i];
             var token = {
@@ -23,7 +24,6 @@ var multiSelect = function (args) {
                 initialSelection.push(token);
             }
         }
-        $select.remove();
 
         return {
             getAllSuggestions: function () {
@@ -68,7 +68,7 @@ var multiSelect = function (args) {
             '</div>'
     }
 
-    var suggestions = createSuggestionsObject(args.id + '-suggestions-select');
+    var suggestions = createSuggestionsObject();
 
     var tokenfield = sirius.createTokenfield();
     var autocomplete = sirius.createAutocomplete();
@@ -137,7 +137,6 @@ var multiSelect = function (args) {
     tokenfield.start({
         id: args.id + '-input',
         showRemovalElement: false,
-        hiddenInputsName: args.name,
         tokenfield: {
             delimiter: '|',
             createTokensOnBlur: true,
