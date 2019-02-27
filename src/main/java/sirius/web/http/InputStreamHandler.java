@@ -10,6 +10,7 @@ package sirius.web.http;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
+import com.google.common.io.ByteStreams;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import sirius.kernel.commons.Explain;
@@ -297,7 +298,13 @@ public class InputStreamHandler extends InputStream implements ContentHandler {
 
     @Override
     public void exhaust() {
-        //TODO be smart here
+        try {
+            if (!eof && !error) {
+                ByteStreams.exhaust(this);
+            }
+        } catch (IOException e) {
+            Exceptions.ignore(e);
+        }
     }
 
     private ByteBuf getBuffer() throws IOException {
