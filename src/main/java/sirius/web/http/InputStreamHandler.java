@@ -295,6 +295,11 @@ public class InputStreamHandler extends InputStream implements ContentHandler {
         return error;
     }
 
+    @Override
+    public void exhaust() {
+        //TODO be smart here
+    }
+
     private ByteBuf getBuffer() throws IOException {
         try {
             if (error) {

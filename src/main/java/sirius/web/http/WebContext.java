@@ -1369,6 +1369,9 @@ public class WebContext implements SubContext {
      * @return a new response used to send data to the client.
      */
     public Response respondWith() {
+        if (contentHandler != null) {
+            contentHandler.exhaust();
+        }
         return new Response(this);
     }
 
