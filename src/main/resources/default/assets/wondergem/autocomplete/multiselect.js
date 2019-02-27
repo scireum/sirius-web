@@ -100,6 +100,10 @@ var multiSelect = function (args) {
         // e.g. data-autocomplete="123" would be converted to the number 123 by .data("autocomplete").
         tokenfield.addToken(selectedRow.find('.autocomplete-data').attr('data-autocomplete'));
         tokenfield.getTokenfieldInputField().focus();
+
+        // Trigger the change-event on the original select
+        // send additional data so we know that we don't need to react to it
+        $select.trigger('change', { source: 'multiselect' });
     });
 
     autocomplete.on('beforeRenderRow', function (row) {
@@ -154,6 +158,24 @@ var multiSelect = function (args) {
 
     tokenfield.on('onCreatedToken', updateSelectObject);
     tokenfield.on('onRemovedToken', updateSelectObject);
+
+    // Update the tokenfield if the selection in the original select is changed
+    $select.on('change', function (event, data) {
+        if (typeof data == 'undefined' || data.source !== 'multiselect') {
+            var $selectedOptions = $select.children(':selected');
+            var newTokens = [];
+
+            $selectedOptions.each(function () {
+                newTokens.push({
+                    label: $(this).text(),
+                    value: $(this).val()
+                });
+            });
+
+            tokenfield.clearTokens();
+            tokenfield.appendTokens(newTokens);
+        }
+    });
 
     tokenfield.start({
         id: args.id + '-input',
@@ -214,6 +236,10 @@ var multiSelect = function (args) {
         if (!tokenfield.hasTokens()) {
             tokenfield.getTokenfieldInputField()[0].placeholder = args.placeholder;
         }
+
+        // Trigger the change-event on the original select
+        // send additional data so we know that we don't need to react to it
+        $select.trigger('change', { source: 'multiselect' });
     });
 
     if (!args.readonly) {
