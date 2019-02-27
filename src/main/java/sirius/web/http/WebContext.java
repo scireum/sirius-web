@@ -208,11 +208,6 @@ public class WebContext implements SubContext {
     /*
      * Used by Response - but stored here, since a new Response might be created....
      */
-    protected volatile boolean requestFullyRead;
-
-    /*
-     * Used by Response - but stored here, since a new Response might be created....
-     */
     protected volatile boolean responseCommitted;
 
     /*
