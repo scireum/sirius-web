@@ -57,6 +57,11 @@ public class TestController implements Controller {
         out.property("test", ctx.getParameter("test"));
     }
 
+    @Routed("/rewrite")
+    public void testReqriting(WebContext ctx) {
+        ctx.respondWith().direct(HttpResponseStatus.OK, "OK");
+    }
+
     @Routed("/test/cookieCacheTest")
     public void testCookieCacheTest(WebContext ctx) {
         ctx.setCookie("Test", "1", 3600);
