@@ -46,7 +46,6 @@ public class Route {
     private static final Pattern EXPR = Pattern.compile("([:#$])\\{?(.+?)}?");
 
     private String label;
-    private String format;
     private Pattern pattern;
     private List<Tuple<String, Object>> expressions = Lists.newArrayList();
     private Method method;
@@ -73,7 +72,6 @@ public class Route {
         result.label = result.uri + " -> " + method.getDeclaringClass().getName() + "#" + method.getName();
         result.jsonCall = routed.jsonCall();
         result.preDispatchable = routed.preDispatchable();
-        result.format = routed.value();
         result.permissions = Permissions.computePermissionsFromAnnotations(method);
         List<Class<?>> parameterTypes = Lists.newArrayList(Arrays.asList(method.getParameterTypes()));
 
@@ -187,7 +185,7 @@ public class Route {
         if (m.matches()) {
             List<Object> result = extractRouteParameters(ctx, m);
             if (!result.equals(NO_MATCH)) {
-                CallContext.getCurrent().addToMDC("route", format);
+                CallContext.getCurrent().addToMDC("route", uri);
             }
             return result;
         }
