@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 public class Route {
 
     protected static final List<Object> NO_MATCH = new ArrayList<>();
+    private static final Class<?>[] CLASS_ARRAY = new Class[0];
 
     private static final Pattern EXPR = Pattern.compile("([:#$])\\{?(.+?)}?");
 
@@ -103,7 +104,7 @@ public class Route {
             finalPattern = new StringBuilder("/");
         }
 
-        result.parameterTypes = parameterTypes.toArray(new Class[parameterTypes.size()]);
+        result.parameterTypes = parameterTypes.toArray(CLASS_ARRAY);
         result.pattern = Pattern.compile(finalPattern.toString());
         return result;
     }
