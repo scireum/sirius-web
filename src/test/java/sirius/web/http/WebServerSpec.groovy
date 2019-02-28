@@ -51,6 +51,18 @@ class WebServerSpec extends BaseSpecification {
     }
 
     /**
+     * Ensures that re-writing or controller URIs works
+     */
+    def "Invoke /rewritten to check if re-writing works"() {
+        given:
+        def uri = "/rewritten"
+        when:
+        def data = callAndRead(uri, null, null)
+        then:
+        data == "OK"
+    }
+
+    /**
      * Ensures that set-cookie and caching headers aren't mixed.
      */
     def "Invoke /test/cookieCacheTest"() {
