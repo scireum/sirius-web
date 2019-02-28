@@ -10,6 +10,7 @@ package sirius.web.controller;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
+import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
@@ -69,7 +70,7 @@ public class Route {
         Route result = new Route();
         result.controller = controller;
         result.method = method;
-        result.uri = routed.value();
+        result.uri = applyRewrites(controller, routed.value());
         result.label = result.uri + " -> " + method.getDeclaringClass().getName() + "#" + method.getName();
         result.jsonCall = routed.jsonCall();
         result.preDispatchable = routed.preDispatchable();
@@ -80,7 +81,7 @@ public class Route {
             throw new IllegalArgumentException("Route does not start with /");
         }
 
-        String[] elements = routed.value().substring(1).split("/");
+        String[] elements = result.uri.substring(1).split("/");
         StringBuilder finalPattern = new StringBuilder();
         int params = compileRouteURI(result, elements, finalPattern);
 
@@ -107,6 +108,25 @@ public class Route {
         result.parameterTypes = parameterTypes.toArray(CLASS_ARRAY);
         result.pattern = Pattern.compile(finalPattern.toString());
         return result;
+    }
+
+    private static String applyRewrites(Controller controller, String uri) {
+        String rewrittenUri = Sirius.getSettings()
+                                    .getExtensions("controller.rewrites")
+                                    .stream()
+                                    .filter(ext -> controller.getClass()
+                                                             .getName()
+                                                             .contains(ext.get("controller").asString()))
+                                    .filter(ext -> ext.get("uri").asString().equals(uri))
+                                    .map(ext -> ext.get("rewrite").asString())
+                                    .findFirst()
+                                    .orElse(null);
+        if (rewrittenUri != null) {
+            ControllerDispatcher.LOG.INFO("Rewriting uri %s -> %s", uri, rewrittenUri);
+            return rewrittenUri;
+        }
+
+        return uri;
     }
 
     private static void failForInvalidParameterCount(Routed routed, List<Class<?>> parameterTypes, int params) {
