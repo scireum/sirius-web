@@ -363,6 +363,15 @@ public class Response {
         if (WebServer.LOG.isFINE()) {
             WebServer.LOG.FINE("COMMITTING: " + wc.getRequestedURI());
         }
+
+        // If the request has not been fully read, now is the time to discard all
+        // data, as most HTTP clients do not accept a response while uploading data.
+        // -> This mostly happend when handling an exception in a pre-dispatchable
+        // controller...
+        if (wc.contentHandler != null) {
+            wc.contentHandler.exhaust();
+        }
+
         wc.responseCommitted = true;
         wc.committed = System.currentTimeMillis();
         wc.releaseContentHandler();
