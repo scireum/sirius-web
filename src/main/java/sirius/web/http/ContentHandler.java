@@ -37,6 +37,14 @@ public interface ContentHandler {
     void handle(ByteBuf content, boolean last) throws IOException;
 
     /**
+     * Signals the handler to discard all incoming data.
+     * <p>
+     * This method will block until all data has been processed and the client has signalled that no further data is
+     * transmitted.
+     */
+    void exhaust();
+
+    /**
      * Invoked once the request is completely handled or the underlying channel was closed.
      * <p>
      * Can be used to release all internal buffers.

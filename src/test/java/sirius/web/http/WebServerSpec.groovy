@@ -22,7 +22,6 @@ import org.apache.log4j.Level
 import sirius.kernel.BaseSpecification
 import sirius.kernel.commons.Strings
 import sirius.kernel.commons.Wait
-import sirius.kernel.health.Exceptions
 import sirius.kernel.health.LogHelper
 
 /**
@@ -329,7 +328,7 @@ class WebServerSpec extends BaseSpecification {
      * Call a controller which uses predispatching but responds before the content has been read.
      *
      */
-    def "/test/predispatch/abort aborts an upload and closes the connection"() {
+    def "/test/predispatch/abort discards an upload and then generates an error as response"() {
         given:
         HttpURLConnection u = new URL("http://localhost:9999/test/predispatch/abort").openConnection()
         and:
@@ -341,39 +340,24 @@ class WebServerSpec extends BaseSpecification {
         u.setDoInput(true)
         u.setDoOutput(true)
 
+        // Write some data and flush so that the server triggers a response
         def out = u.getOutputStream()
-        // Write some data to ensure the connection happens
-        try {
-            for (int i = 0; i < 1024; i++) {
-                out.write(testByteArray)
-            }
-        } catch (IOException e) {
-            // An exception might already occur here, if the client deciedes to submit the request the
-            // server will immediatelly close the connection - which is to be expected and totally fine
-            // for the test - we then simply continue...
-            Exceptions.ignore(e)
+        for (int i = 0; i < 1024; i++) {
+            out.write(testByteArray)
         }
         out.flush()
 
         // Slow down to ensure that the response is created and sent
+        // Still no IOException is expected, as the server will discard all data..
         Wait.millis(200)
-        try {
-            for (int i = 0; i < 1024; i++) {
-                out.write(testByteArray)
-            }
-        } catch (IOException e) {
-            // We expect an exception here, as the server immediatelly closes the connection to prevent further
-            // uploads
-            Exceptions.ignore(e)
+        for (int i = 0; i < 1024; i++) {
+            out.write(testByteArray)
         }
 
         def result = new String(ByteStreams.toByteArray(u.getInputStream()), Charsets.UTF_8)
         then:
         // We still expect a proper response
         "ABORT" == result
-        and:
-        // We also expect the server to announce that the connection was closed and that no keepalive will be supported
-        u.getHeaderField(HttpHeaderNames.CONNECTION.toString()) == "close"
     }
 
     /**
