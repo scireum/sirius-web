@@ -225,6 +225,10 @@ var multiSelect = function (args) {
         }
     }
 
+    // clear tokens before appending the initial selection, because clicking back in the browser will add the old inputs
+    // into the input-fields and this adds the tokens, but without the correct labels, so clear those incorrect tokens
+    tokenfield.clearTokens();
+
     tokenfield.appendTokens(suggestions.getInitialSelection());
     updateSelectObject();
 
