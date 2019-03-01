@@ -19,6 +19,9 @@ var multiSelect = function (args) {
                 label: option.text,
                 value: option.value
             };
+            if (token.label === "" && token.value === "") {
+                continue;
+            }
             allSuggestions.push(token);
             if (option.selected) {
                 initialSelection.push(token);
@@ -103,7 +106,7 @@ var multiSelect = function (args) {
 
         // Trigger the change-event on the original select
         // send additional data so we know that we don't need to react to it
-        $select.trigger('change', { source: 'multiselect' });
+        $select.trigger('change', {source: 'multiselect'});
     });
 
     autocomplete.on('beforeRenderRow', function (row) {
@@ -243,7 +246,7 @@ var multiSelect = function (args) {
 
         // Trigger the change-event on the original select
         // send additional data so we know that we don't need to react to it
-        $select.trigger('change', { source: 'multiselect' });
+        $select.trigger('change', {source: 'multiselect'});
     });
 
     if (!args.readonly) {
