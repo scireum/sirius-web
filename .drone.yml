@@ -6,20 +6,20 @@ scireum_volumes: &scireum_volumes
 clone:
   git:
     image: plugins/git
-    volumes: &scireum_volumes
+    volumes: *scireum_volumes
 pipeline:
   compile:
     image: scireum/sirius-build
     commands:
       - mvn clean compile
-    volumes: &scireum_volumes
+    volumes: *scireum_volumes
     when:
       event: push
   test:
     image: scireum/sirius-build
     commands:
       - mvn clean test
-    volumes: &scireum_volumes
+    volumes: *scireum_volumes
     when:
       event: pull_request
   sonar:
@@ -27,7 +27,7 @@ pipeline:
     commands:
       - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' pom.xml
       - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent test sonar:sonar -Dsonar.projectKey=${DRONE_REPO_NAME}
-    volumes: &scireum_volumes
+    volumes: *scireum_volumes
     when:
       event: tag
   deploy:
@@ -35,6 +35,6 @@ pipeline:
     commands:
       - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' pom.xml
       - mvn clean deploy -DskipTests
-    volumes: &scireum_volumes
+    volumes: *scireum_volumes
     when:
       event: tag
