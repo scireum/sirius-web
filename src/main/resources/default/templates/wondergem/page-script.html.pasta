@@ -59,12 +59,19 @@
         createConfirmForDangerousLinks();
         instanciateColorPickers();
 
-        $('.date-picker').datepicker({
-            format: '@dateFormat',
-            todayBtn: true,
-            language: "@lang",
-            autoclose: true,
-            todayHighlight: true
+        $('.date-picker').datetimepicker({
+            locale: "@lang",
+            icons: {
+                time: 'fa fa-clock-o',
+                date: 'fa fa-calendar',
+                up: 'fa fa-chevron-up',
+                down: 'fa fa-chevron-down',
+                previous: 'fa fa-chevron-left',
+                next: 'fa fa-chevron-right',
+                today: 'fa fa-history',
+                clear: 'fa fa-trash',
+                close: 'fa fa-remove'
+            }
         });
 
         $(window).resize(invokeResizeHandler);
