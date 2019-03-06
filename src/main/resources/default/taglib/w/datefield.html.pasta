@@ -10,6 +10,7 @@
 <i:arg name="readonly" type="boolean" default="false" />
 <i:arg name="adminOnly" type="boolean" default="false" />
 <i:arg name="noPastDates" type="boolean" default="false" />
+<i:arg name="format" type="String" default="L" description="Defines the date format for the field. Valid formats can be found at http://momentjs.com/docs/#/displaying/format/" />
 <i:arg name="id" type="String" default="" />
 
 <i:pragma name="inline" value="true" />
@@ -27,7 +28,9 @@
            @if(isFilled(id)) { id="@id" }
            type="text"
            value="@user.getFieldValue(name, value)"
-           data-no-past="@noPastDates"
+           @if (noPastDates) { data-date-mindate="@now" }
+           data-date-format="@format"
+           autocomplete="off"
            class="form-control input-block-level date-picker"
            @if (readonly) { readonly } />
 

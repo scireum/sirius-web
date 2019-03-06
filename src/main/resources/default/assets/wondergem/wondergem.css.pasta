@@ -4,7 +4,7 @@
 
 <i:include name="/assets/wondergem/fileupload/fileuploader.sirius.css"/>
 
-<i:include name="/assets/wondergem/datepicker/css/datepicker.css"/>
+<i:include name="/assets/wondergem/datetimepicker/css/bootstrap-datetimepicker.min.css"/>
 
 <i:include name="/assets/wondergem/bootstrap/css/bootstrap.min.css"/>
 
