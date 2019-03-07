@@ -256,7 +256,6 @@
                 this.state = completions.HIDDEN;
 
                 this.element = $(Mustache.render(wrapper, config));
-                this.rePosition();
 
 
                 this.element.on("mouseup.sirius-autocomplete", ".autocomplete-row-js", function () {
