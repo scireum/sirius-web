@@ -61,6 +61,7 @@
 
         $('.date-picker').datetimepicker({
             locale: "@lang",
+            ignoreReadonly: true,
             icons: {
                 time: 'fa fa-clock-o',
                 date: 'fa fa-calendar',
