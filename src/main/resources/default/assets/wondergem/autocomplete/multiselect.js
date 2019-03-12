@@ -193,10 +193,12 @@ var multiSelect = function (args) {
     if (args.maxItems === 1) {
         tokenfield.on('onCreatedToken', function (token) {
             tokenfield.getTokenfieldInputField().hide();
+            $('#' + args.id).find('.tokenfield').attr("tabindex", "0");
         });
 
         tokenfield.on('onRemovedToken', function () {
             tokenfield.getTokenfieldInputField().show();
+            $('#' + args.id).find('.tokenfield').removeAttr("tabindex");
         });
 
         if (!args.readonly) {
@@ -213,6 +215,34 @@ var multiSelect = function (args) {
                 tokenfield.clearTokens();
                 tokenfield.getTokenfieldInputField().show().focus();
                 tokenfield.getTokenfieldInputField()[0].placeholder = args.searchKey || args.placeholder;
+            });
+
+            $('#' + args.id).on('keyup', '.tokenfield', function (e) {
+                if (e.target !== e.currentTarget) {
+                    // only responde to key-events off the container
+                    return;
+                }
+                if (e.keyCode !== sirius.keys.KEY_ENTER
+                    && e.keyCode !== sirius.keys.KEY_ARROW_DOWN
+                    && e.keyCode !== sirius.keys.KEY_SPACE) {
+                    return;
+                }
+
+                // when a singleselect is selected via tab, then the keys enter, space and arrow down should open the
+                // autocomplete and make the field editable, just like clicking on the field
+                $('#' + args.id).find('.tokenfield').click();
+            });
+
+            $('#' + args.id).on('keydown', '.tokenfield', function (e) {
+                if (e.target !== e.currentTarget) {
+                    // only responde to key-events off the container
+                    return;
+                }
+                if (e.keyCode === sirius.keys.KEY_ARROW_DOWN || e.keyCode === sirius.keys.KEY_SPACE) {
+                    // prevent scrolling the page when the field is selected via tab.
+                    // this would happen by default on space or arrow down or up.
+                    e.preventDefault();
+                }
             });
 
             var $arrow = $('<span class="arrow arrow-down"/>');

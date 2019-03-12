@@ -45,6 +45,7 @@
             KEY_ESC: 27,
             KEY_ARROW_UP: 38,
             KEY_ARROW_DOWN: 40,
+            KEY_SPACE: 32,
 
             KEY_SEMICOLON: 186,
             KEY_COMMA: 188,
