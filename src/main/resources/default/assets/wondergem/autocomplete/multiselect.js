@@ -291,7 +291,7 @@ var multiSelect = function (args) {
                 height: '300px'
             },
             input: {
-                noSpiner: !args.serviceUri
+                noSpinner: !args.serviceUri
             }
         };
 
