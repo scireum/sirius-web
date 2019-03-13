@@ -289,10 +289,20 @@ var multiSelect = function (args) {
             completions: {
                 id: args.id + '-completion',
                 height: '300px'
+            },
+            input: {
+                noSpiner: !args.serviceUri
             }
         };
 
         if (args.serviceUri) {
+            autocomplete.on('onSpinnerShow', function () {
+                tokenfield.resizeInputField();
+            });
+            autocomplete.on('onSpinnerHide', function () {
+                tokenfield.resizeInputField();
+            });
+
             autocomplete.on("afterLoad", function (value, response) {
                 var responseTokens = [];
                 response.completions.forEach(function (completion) {

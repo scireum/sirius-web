@@ -187,7 +187,7 @@
 
                     input.tokenRemovalElement.remove();
                     $parent.append(input.tokenRemovalElement);
-                    
+
                     input.tokenRemovalElement.click(function () {
                         input.clearTokens();
                         input.hideTokenRemoval();
@@ -216,7 +216,7 @@
 
                 // + 1 because outerWidth gets the width rounded and else it might not fit because of 1px
                 var additionalElementsWidth = 1;
-                $(".input-width-js").each(function () {
+                $container.find(".input-width-js").each(function () {
                     additionalElementsWidth += $(this).outerWidth(true);
                 });
 
@@ -467,6 +467,10 @@
 
             resize: function () {
                 input.resize();
+            },
+
+            resizeInputField: function () {
+                input.resizeInputField();
             }
         };
     };
