@@ -87,8 +87,6 @@
                 if (localSource.configured) {
                     localSource.load(value);
                 }
-
-                completions.update();
             },
 
             /**
@@ -104,10 +102,9 @@
 
                 if (event.keyCode === sirius.keys.KEY_ARROW_DOWN) {
                     if (!completions.isVisible()) {
-                        if (localSource.configured) {
-                            localSource.load(this.element.val());
-                        }
-                        completions.show();
+                        // completions are not loaded yet, just wait untill the service.load() function calls
+                        // completions.show()
+                        return false;
                     }
 
                     if (completions.selectedRow === undefined) {
@@ -202,9 +199,11 @@
                 this.element.focusin(function () {
                     if (localSource.configured) {
                         localSource.load($(this).val());
+                        return;
                     }
                     if (service.configured && service.minSize === 0) {
                         service.load($(this).val());
+                        return;
                     }
                     completions.show();
                 });
@@ -215,9 +214,11 @@
                     }
                     if (localSource.configured) {
                         localSource.load($(this).val());
+                        return;
                     }
                     if (service.configured && service.minSize === 0) {
                         service.load($(this).val());
+                        return;
                     }
                     completions.show();
                 });
@@ -634,7 +635,6 @@
                 input.hideSpinner();
 
                 if (completions.rows.length > 0) {
-                    completions.update();
                     completions.show();
                 } else {
                     completions.hide();
@@ -693,7 +693,6 @@
                 completions.rows = this.callback(value);
 
                 if (completions.rows.length > 0) {
-                    completions.update();
                     completions.show();
                 } else {
                     completions.hide();
@@ -853,7 +852,7 @@
             getCompletionRows: function () {
                 return completions.rows || [];
             },
-            
+
             isPreventCreateToken: function () {
                 return input.preventCreateToken;
             },
