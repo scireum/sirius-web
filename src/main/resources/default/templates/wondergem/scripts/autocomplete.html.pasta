@@ -199,13 +199,10 @@
                 this.element.focusin(function () {
                     if (localSource.configured) {
                         localSource.load($(this).val());
-                        return;
                     }
-                    if (service.configured && service.minSize === 0) {
+                    if (service.configured) {
                         service.load($(this).val());
-                        return;
                     }
-                    completions.show();
                 });
 
                 this.element.click(function () {
@@ -214,13 +211,10 @@
                     }
                     if (localSource.configured) {
                         localSource.load($(this).val());
-                        return;
                     }
-                    if (service.configured && service.minSize === 0) {
+                    if (service.configured) {
                         service.load($(this).val());
-                        return;
                     }
-                    completions.show();
                 });
             }
         };
