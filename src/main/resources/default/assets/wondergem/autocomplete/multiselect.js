@@ -327,6 +327,10 @@ var multiSelect = function (args) {
                 return responseTokens;
             });
 
+            autocomplete.on('onServiceError', function (request) {
+                return [noMatchesToken];
+            });
+
             autocompleteArgs.service = {
                 serviceUri: args.serviceUri,
                 minSize: 0,
