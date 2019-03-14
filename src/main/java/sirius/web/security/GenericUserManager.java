@@ -378,7 +378,7 @@ public abstract class GenericUserManager implements UserManager {
             return null;
         }
 
-        if (!userId.isFilled() || !isUserStillValid(userId.asString())) {
+        if (!userId.isFilled() || !isUserStillValid(userId.asString(), ctx)) {
             return null;
         }
 
@@ -404,9 +404,10 @@ public abstract class GenericUserManager implements UserManager {
      * The method has to check the session data by itself.
      *
      * @param userId the user id to check
+     * @param ctx    the current request for which the check is performed
      * @return <tt>true</tt> if the user is still valid, false otherwise
      */
-    protected boolean isUserStillValid(String userId) {
+    protected boolean isUserStillValid(String userId, WebContext ctx) {
         return true;
     }
 
