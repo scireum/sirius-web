@@ -327,6 +327,11 @@ var multiSelect = function (args) {
                 return responseTokens;
             });
 
+            autocomplete.on('onServiceError', function (request) {
+                // display the dropdown with the "no search results" text
+                return [noMatchesToken];
+            });
+
             autocompleteArgs.service = {
                 serviceUri: args.serviceUri,
                 minSize: 0,

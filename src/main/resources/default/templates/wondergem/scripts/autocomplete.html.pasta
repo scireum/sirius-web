@@ -548,6 +548,11 @@
             afterLoad: undefined,
 
             /**
+             * Called when the request to the service returned an error.
+             */
+            onServiceError: undefined,
+
+            /**
              * Is called before a row of the autocomplete is rendered.
              *
              * Called with the 'row'-object, which can be changed inside the handler.
@@ -614,6 +619,11 @@
                         } else {
                             // successful response
                             service.responseCache[request.query] = events.afterLoad(value, response);
+                            service.afterLoad(request);
+                        }
+                    }).error(function () {
+                        if (events.onServiceError) {
+                            service.responseCache[request.query] = events.onServiceError(request);
                             service.afterLoad(request);
                         }
                     });
