@@ -667,7 +667,7 @@
                     this.responseCache = config.cache;
                 }
 
-                if (typeof config.delayTime !== "undefined") {
+                if (typeof config.delayTime !== 'undefined') {
                     this.delay = config.delayTime;
                 }
             }
