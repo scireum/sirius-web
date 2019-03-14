@@ -551,6 +551,7 @@
              * Called when the request to the service returned an error.
              */
             onServiceError: undefined,
+
             /**
              * Is called before a row of the autocomplete is rendered.
              *
