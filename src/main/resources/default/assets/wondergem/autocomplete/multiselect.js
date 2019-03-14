@@ -330,7 +330,7 @@ var multiSelect = function (args) {
             autocompleteArgs.service = {
                 serviceUri: args.serviceUri,
                 minSize: 0,
-                delay: 0,
+                delayTime: 0,
                 getRequest: function (inputValue) {
                     var requestParams = {query: inputValue || '', strict: !args.allowCustomEntries};
                     if (args.type) {

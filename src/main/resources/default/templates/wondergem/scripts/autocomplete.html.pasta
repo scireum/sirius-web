@@ -667,7 +667,9 @@
                     this.responseCache = config.cache;
                 }
 
-                this.delay = config.delayTime || this.delay;
+                if (typeof config.delayTime !== 'undefined') {
+                    this.delay = config.delayTime;
+                }
             }
         };
 
