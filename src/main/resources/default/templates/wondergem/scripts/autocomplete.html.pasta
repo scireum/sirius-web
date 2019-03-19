@@ -190,7 +190,15 @@
                         if (this.value.length) {
                             input.preventCreateToken = true;
                         }
-                        this.focus();
+
+                        // focus has to be called in setTimeout because of 19+ years old firefox bug..
+                        // else the input field will not be re-focused in firefox
+                        // https://bugzilla.mozilla.org/show_bug.cgi?id=53579
+                        var that = this;
+                        setTimeout(function () {
+                            that.focus();
+                        });
+
                         return false;
                     }
                     completions.hide();
