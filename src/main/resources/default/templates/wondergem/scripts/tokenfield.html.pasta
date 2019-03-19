@@ -111,7 +111,9 @@
                 listeners.unshift(listeners.pop());
 
                 this.tokenElement.focusin(function () {
-                    input.resizeInputField();
+                    setTimeout(function(){
+                        input.resizeInputField();
+                    });
                 });
 
                 if (this.tokenRemovalElement) {
