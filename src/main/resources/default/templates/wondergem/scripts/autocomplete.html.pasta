@@ -157,8 +157,6 @@
                 if (config && !config.noSpinner) {
                     input.spinnerElement = $(input.spinnerTemplate);
                     input.spinnerElement.insertAfter(input.element);
-
-                    window.dispatchEvent(new Event('resize'));
                 }
 
                 this.element.keyup(function (event) {
