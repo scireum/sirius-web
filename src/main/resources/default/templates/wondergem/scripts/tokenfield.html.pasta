@@ -111,7 +111,7 @@
                 listeners.unshift(listeners.pop());
 
                 this.tokenElement.focusin(function () {
-                    setTimeout(function(){
+                    setTimeout(function () {
                         input.resizeInputField();
                     });
                 });
@@ -281,6 +281,11 @@
                     return tokenToRemove.value !== token.value;
                 });
                 input.element.tokenfield("setTokens", newTokens);
+
+                var event = {attrs: tokenToRemove};
+                events.onRemovedToken.forEach(function (handler) {
+                    handler(event);
+                });
             },
 
             /**
