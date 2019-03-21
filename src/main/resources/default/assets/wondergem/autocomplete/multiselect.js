@@ -192,7 +192,7 @@ var multiSelect = function (args) {
 
     if (args.maxItems === 1) {
         tokenfield.on('onCreatedToken', function (token) {
-            tokenfield.getTokenfieldInputField().hide();
+            tokenfield.getTokenfieldInputField().hide().blur();
             $('#' + args.id).find('.tokenfield').attr("tabindex", "0");
         });
 
