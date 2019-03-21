@@ -365,7 +365,7 @@
             },
 
             show: function () {
-                if (this.rows.length > 0 && input.element.is(":focus")) {
+                if (this.rows.length > 0 && document.activeElement === input.element.get(0)) {
                     this.update();
                     completions.element.show();
                     this.state = completions.VISIBLE;
