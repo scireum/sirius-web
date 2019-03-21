@@ -282,8 +282,9 @@
                 });
                 input.element.tokenfield("setTokens", newTokens);
 
+                var event = {attrs: tokenToRemove};
                 events.onRemovedToken.forEach(function (handler) {
-                    handler();
+                    handler(event);
                 });
             },
 
