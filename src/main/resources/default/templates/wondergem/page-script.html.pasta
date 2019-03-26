@@ -63,6 +63,8 @@
             locale: "@lang",
             ignoreReadonly: true,
             keepInvalid: true,
+            useCurrent: false,
+            showTodayButton: true,
             icons: {
                 time: 'fa fa-clock-o',
                 date: 'fa fa-calendar',
