@@ -28,7 +28,7 @@
            @if(isFilled(id)) { id="@id" }
            type="text"
            value="@user.getFieldValue(name, value)"
-           @if (noPastDates) { data-date-mindate="@now" }
+           @if (noPastDates) { data-date-mindate="@today" }
            data-date-format="@format"
            autocomplete="off"
            class="form-control input-block-level date-picker"
