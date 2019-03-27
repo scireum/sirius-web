@@ -16,7 +16,7 @@
 <i:pragma name="description" value="Renders a dropdown field within a Wondergem template" />
 
 <div id="@id" class="sirius-select single-select @if(!optional || required){ required }">
-    <w:textfield id="@apply('%s-input',id)" name="@apply('%s-input', name)" span="@span" smallSpan="@smallSpan"
+    <w:textfield id="@apply('%s-input',id)" span="@span" smallSpan="@smallSpan"
                  value="" label="@label" help="@help" adminOnly="@adminOnly" readonly="@readonly" required="@required"/>
 </div>
 
