@@ -157,11 +157,6 @@
                 if (config && !config.noSpinner) {
                     input.spinnerElement = $(input.spinnerTemplate);
                     input.spinnerElement.insertAfter(input.element);
-
-                    // this is needed to display the spinner in the same row as the input field
-                    // the spinner holds the class .fa which defines the size to 14
-                    // because jquery width rounds up or down we need to make provisions for these cases using a 2px margin
-                    input.element.css("max-width", input.element.width() - 16);
                 }
 
                 this.element.keyup(function (event) {
@@ -190,7 +185,15 @@
                         if (this.value.length) {
                             input.preventCreateToken = true;
                         }
-                        this.focus();
+
+                        // focus has to be called in setTimeout because of 19+ years old firefox bug..
+                        // else the input field will not be re-focused in firefox
+                        // https://bugzilla.mozilla.org/show_bug.cgi?id=53579
+                        var that = this;
+                        setTimeout(function () {
+                            that.focus();
+                        });
+
                         return false;
                     }
                     completions.hide();
@@ -362,7 +365,7 @@
             },
 
             show: function () {
-                if (this.rows.length > 0 && input.element.is(":focus")) {
+                if (this.rows.length > 0 && document.activeElement === input.element.get(0)) {
                     this.update();
                     completions.element.show();
                     this.state = completions.VISIBLE;

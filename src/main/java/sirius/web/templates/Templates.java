@@ -27,12 +27,6 @@ import java.util.Map;
 /**
  * Content generator which generates output based on templates.
  * <p>
- * In contrast to the web server and its handlers Velocity is used here as template engine. This is because
- * these templates are easier to write as they don't need andy type information. as these templates are less
- * frequently executed the lower performance does not matter. The language reference of velocity, which is one of the
- * most commonly used language for templates can be found here:
- * http://velocity.apache.org/engine/devel/vtl-reference-guide.html
- * <p>
  * The template sources are loaded via {@link Resources#resolve(String)}. If no resolver is available or none of the
  * available ones can load the template, it is tried to load the template from the classpath.
  * <p>
