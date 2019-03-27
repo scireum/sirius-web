@@ -1,6 +1,6 @@
 <i:arg name="span" type="int" default="6"/>
 <i:arg name="smallSpan" type="int" default="12" description="Defines the span for mobile devices"/>
-<i:arg name="name" type="String"/>
+<i:arg name="name" type="String" default=""/>
 <i:arg name="value" type="String"/>
 <i:arg name="labelKey" type="String" default=""/>
 <i:arg name="label" type="String" default="@i18n(labelKey)"/>
