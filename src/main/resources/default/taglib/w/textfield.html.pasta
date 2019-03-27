@@ -14,6 +14,7 @@
 <i:arg name="type" type="String" default="text"/>
 <i:arg name="id" type="String" default=""/>
 <i:arg name="placeholder" type="String" default=""/>
+<i:arg name="tabindex" type="String" default=""/>
 
 <i:pragma name="inline" value="true"/>
 <i:pragma name="description" value="Renders a text input field within a Wondergem template"/>
@@ -31,7 +32,8 @@
             <input name="@name" @if(isFilled(id)) { id="@id" } type="@type" value="@user.getFieldValue(name, value)"
                    class="form-control input-block-level"
                    @if (isFilled(placeholder)) { placeholder="@placeholder" }
-                   @if (readonly) { readonly } @if (autofocus) { autofocus }/>
+                   @if (readonly) { readonly } @if (autofocus) { autofocus }
+                   @if (isFilled(tabindex)) { tabindex="@tabindex" } />
 
             <span class="input-group-addon"><i:raw>@addonText</i:raw></span>
         </div>
@@ -40,7 +42,8 @@
             <input name="@name" @if(isFilled(id)) { id="@id" } type="@type" value="@user.getFieldValue(name, value)"
                    class="form-control input-block-level"
                    @if (isFilled(placeholder)) { placeholder="@placeholder" }
-                   @if (readonly) { readonly } @if (autofocus) { autofocus }/>
+                   @if (readonly) { readonly } @if (autofocus) { autofocus }
+                   @if (isFilled(tabindex)) { tabindex="@tabindex" } />
         </i:else>
     </i:if>
 
