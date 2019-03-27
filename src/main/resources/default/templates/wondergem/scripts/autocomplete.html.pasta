@@ -80,7 +80,7 @@
                     handler(value);
                 });
 
-                if (service.configured && service.minSize === 0) {
+                if (service.configured) {
                     service.load(value);
                 }
 
