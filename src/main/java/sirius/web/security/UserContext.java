@@ -208,14 +208,11 @@ public class UserContext implements SubContext {
      * Loads the current user from the given web context.
      */
     private void bindUserToRequest(WebContext ctx) {
-        UserInfo user;
         if (ctx != null && ctx.isValid()) {
-            user = getUserManager().bindToRequest(ctx);
+            installUserIntoContext(getUserManager().bindToRequest(ctx));
         } else {
-            user = UserInfo.NOBODY;
+            installUserIntoContext(UserInfo.NOBODY);
         }
-
-        installUserIntoContext(user);
     }
 
     /**
