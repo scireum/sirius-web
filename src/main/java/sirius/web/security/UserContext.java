@@ -208,21 +208,26 @@ public class UserContext implements SubContext {
      * Loads the current user from the given web context.
      */
     private void bindUserToRequest(WebContext ctx) {
-        UserManager manager = getUserManager();
-        UserInfo user;
-
         if (ctx != null && ctx.isValid()) {
-            user = manager.bindToRequest(ctx);
+            installUserIntoContext(getUserManager().bindToRequest(ctx));
         } else {
-            user = UserInfo.NOBODY;
+            installUserIntoContext(UserInfo.NOBODY);
         }
+    }
 
+    /**
+     * Verifies and installs the given {@link UserInfo user} into the current {@link UserContext context}.
+     * <p>
+     * We first have to set the user into the context since some verifies might depend on a fully populated context.
+     *
+     * @param user the userinfo
+     */
+    public void installUserIntoContext(UserInfo user) {
         // Install the user to perform the verification on a fully populated context
         setCurrentUser(user);
-        user = manager.verifyUser(user);
 
         // Install the effective user - which might be NOBODY to signal that the current user was blocked
-        setCurrentUser(user);
+        setCurrentUser(getUserManager().verifyUser(user));
     }
 
     /**
