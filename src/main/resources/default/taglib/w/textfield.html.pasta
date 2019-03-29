@@ -14,7 +14,7 @@
 <i:arg name="type" type="String" default="text"/>
 <i:arg name="id" type="String" default=""/>
 <i:arg name="placeholder" type="String" default=""/>
-<i:arg name="tabindex" type="String" default=""/>
+<i:arg name="tabIndex" type="String" default=""/>
 
 <i:pragma name="inline" value="true"/>
 <i:pragma name="description" value="Renders a text input field within a Wondergem template"/>
