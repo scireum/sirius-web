@@ -33,7 +33,7 @@
                    class="form-control input-block-level"
                    @if (isFilled(placeholder)) { placeholder="@placeholder" }
                    @if (readonly) { readonly } @if (autofocus) { autofocus }
-                   @if (isFilled(tabindex)) { tabindex="@tabindex" } />
+                   @if (isFilled(tabIndex)) { tabindex="@tabIndex" } />
 
             <span class="input-group-addon"><i:raw>@addonText</i:raw></span>
         </div>
@@ -43,7 +43,7 @@
                    class="form-control input-block-level"
                    @if (isFilled(placeholder)) { placeholder="@placeholder" }
                    @if (readonly) { readonly } @if (autofocus) { autofocus }
-                   @if (isFilled(tabindex)) { tabindex="@tabindex" } />
+                   @if (isFilled(tabIndex)) { tabindex="@tabIndex" } />
         </i:else>
     </i:if>
 
