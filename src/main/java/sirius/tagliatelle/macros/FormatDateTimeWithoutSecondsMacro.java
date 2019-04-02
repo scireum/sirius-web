@@ -71,6 +71,6 @@ public class FormatDateTimeWithoutSecondsMacro implements Macro {
 
     @Override
     public String getDescription() {
-        return "Formats the given parameter as date.";
+        return "Formats the given parameter as date with time but without seconds.";
     }
 }
