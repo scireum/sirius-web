@@ -47,6 +47,8 @@ public class MailSender {
     protected String senderName;
     protected String receiverEmail;
     protected String receiverName;
+    protected String replyToEmail;
+    protected String replyToName;
     protected String subject;
     protected String subjectKey;
     protected Map<String, Object> subjectParams;
@@ -152,10 +154,23 @@ public class MailSender {
      *
      * @param receiverEmail the email address which should receive the email
      * @param receiverName  the name of the receiver of the email
-     * @return the buidler itself
+     * @return the builder itself
      */
     public MailSender to(String receiverEmail, String receiverName) {
         return toEmail(receiverEmail).toName(receiverName);
+    }
+
+    /**
+     * Specifies both, the reply-to email and name.
+     *
+     * @param replyToEmail the email address which should be used as reply-to
+     * @param replyToName  the name of the reply-to address
+     * @return the builder itself
+     */
+    public MailSender replyTo(String replyToEmail, String replyToName) {
+        this.replyToEmail = replyToEmail;
+        this.replyToName = replyToName;
+        return this;
     }
 
     /**
@@ -481,6 +496,12 @@ public class MailSender {
     }
 
     private void check() {
+        checkReceiver();
+        checkSender();
+        checkReplyTo();
+    }
+
+    private void checkReceiver() {
         try {
             if (Strings.isFilled(receiverName)) {
                 new InternetAddress(receiverEmail, receiverName).validate();
@@ -498,7 +519,9 @@ public class MailSender {
                                  receiverEmail)
                             .handle();
         }
+    }
 
+    private void checkSender() {
         try {
             if (Strings.isFilled(senderEmail)) {
                 if (Strings.isFilled(senderName)) {
@@ -518,6 +541,26 @@ public class MailSender {
         }
     }
 
+    private void checkReplyTo() {
+        try {
+            if (Strings.isFilled(replyToEmail)) {
+                if (Strings.isFilled(replyToName)) {
+                    new InternetAddress(replyToEmail, replyToName).validate();
+                } else {
+                    new InternetAddress(replyToEmail).validate();
+                }
+            }
+        } catch (Exception e) {
+            throw Exceptions.handle()
+                            .to(Mails.LOG)
+                            .error(e)
+                            .withNLSKey("MailService.invalidReplyTo")
+                            .set("address",
+                                 Strings.isFilled(replyToName) ? replyToEmail + " (" + replyToName + ")" : replyToEmail)
+                            .handle();
+        }
+    }
+
     private void sanitize() {
         if (Strings.isFilled(senderEmail)) {
             senderEmail = senderEmail.replaceAll("\\s", "");
@@ -530,6 +573,12 @@ public class MailSender {
         }
         if (Strings.isFilled(receiverName)) {
             receiverName = receiverName.trim();
+        }
+        if (Strings.isFilled(replyToEmail)) {
+            replyToEmail = replyToEmail.replaceAll("\\s", "");
+        }
+        if (Strings.isFilled(replyToName)) {
+            replyToName = replyToName.trim();
         }
     }
 }

@@ -231,6 +231,7 @@ class SendMailTask implements Runnable {
         msg.setSubject(mail.subject);
         msg.setRecipients(Message.RecipientType.TO,
                           new InternetAddress[]{new InternetAddress(mail.receiverEmail, mail.receiverName)});
+        setupReplyTo(msg);
         setupSender(msg);
         if (Strings.isFilled(mail.html) || !mail.attachments.isEmpty()) {
             MimeMultipart content = createContent(mail.text, mail.html, mail.attachments);
@@ -304,6 +305,17 @@ class SendMailTask implements Runnable {
         }
 
         return message;
+    }
+
+    private void setupReplyTo(com.sun.mail.smtp.SMTPMessage msg)
+            throws UnsupportedEncodingException, MessagingException {
+        if (Strings.isFilled(mail.replyToEmail)) {
+            if (Strings.isFilled(mail.replyToName)) {
+                msg.setReplyTo(new InternetAddress[]{new InternetAddress(mail.replyToEmail, mail.replyToName)});
+            } else {
+                msg.setReplyTo(new InternetAddress[]{new InternetAddress(mail.replyToEmail)});
+            }
+        }
     }
 
     private void setupSender(com.sun.mail.smtp.SMTPMessage msg)
