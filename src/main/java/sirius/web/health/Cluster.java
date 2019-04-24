@@ -9,6 +9,7 @@
 package sirius.web.health;
 
 import sirius.kernel.async.Tasks;
+import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Log;
@@ -17,6 +18,7 @@ import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.health.metrics.Metrics;
 import sirius.kernel.timer.EveryMinute;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -57,6 +59,25 @@ public class Cluster implements EveryMinute {
      * Determines if an alarm is currently present
      */
     private boolean alarmPresent = false;
+
+    /**
+     * Keeps a history of cluster states to determine if an errorneous state is present.
+     * <p>
+     * As some metrics tend to quickly jump to RED and back, we use some avaraging to make the alerting system less
+     * nervous.
+     */
+    private MetricState[] clusterStateHistory;
+
+    /**
+     * Contains the write index of the clusterStateHistory which is a circular buffer.
+     */
+    private int clusterStateHistoryWriteIndex = 0;
+
+    @ConfigValue("health.monitoring-intervals")
+    private int monitoringIntervals;
+
+    @ConfigValue("health.critical-intervals")
+    private int criticalIntervals;
 
     /**
      * Contains a list of all cluster members.
@@ -123,12 +144,36 @@ public class Cluster implements EveryMinute {
 
         nodeState = computeNodeState();
 
-        MetricState lastClusterState = clusterState;
         clusterState = getNodeInfos().stream()
                                      .map(NodeInfo::getNodeState)
                                      .reduce(nodeState, (a, b) -> a.ordinal() > b.ordinal() ? a : b);
 
-        alarmPresent = lastClusterState == MetricState.RED && clusterState == MetricState.RED;
+        updateClusterStateHistory();
+    }
+
+    private void updateClusterStateHistory() {
+        if (clusterStateHistory == null) {
+            // Check if the config is present yet, abort otherwise...
+            if (monitoringIntervals == 0) {
+                return;
+            }
+
+            clusterStateHistory = new MetricState[monitoringIntervals];
+        }
+
+        // Add the current state to the circular buffer and advance the index
+        clusterStateHistory[clusterStateHistoryWriteIndex] = clusterState;
+        clusterStateHistoryWriteIndex = (clusterStateHistoryWriteIndex + 1) % clusterStateHistory.length;
+
+        // If the state currently isn't RED, no alarm is present...
+        if (clusterState != MetricState.RED) {
+            alarmPresent = false;
+        }
+
+        // ...otherwise an alarm is present, if "enough" critical (State=RED) entries are in the buffer.
+        long numberOfFailedIntervals =
+                Arrays.stream(clusterStateHistory).filter(state -> state == MetricState.RED).count();
+        alarmPresent = numberOfFailedIntervals >= criticalIntervals;
     }
 
     private MetricState computeNodeState() {
