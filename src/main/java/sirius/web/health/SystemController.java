@@ -34,6 +34,7 @@ import sirius.web.http.WebContext;
 import sirius.web.http.WebServer;
 import sirius.web.security.Permission;
 
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.Collection;
@@ -113,15 +114,33 @@ public class SystemController extends BasicController {
     /**
      * Determines if there is currently an ALARM present or not for: <tt>/system/monitor</tt>
      * <p>
-     * Either reports OK or ERROR, if the cluster state is RED for at least two intervals (minutes).
+     * Either reports OK or ERROR, if an cluster alarm is present.
      *
      * @param ctx the request being handled
      */
     @Routed("/system/monitor")
     public void monitorNode(WebContext ctx) {
-        ctx.respondWith()
-           .direct(HttpResponseStatus.OK,
-                   cluster.getNodeState() == MetricState.RED && cluster.isAlarmPresent() ? "ERROR" : "OK");
+        if (!cluster.isAlarmPresent()) {
+            ctx.respondWith().direct(HttpResponseStatus.OK, "OK");
+            return;
+        }
+
+        try (PrintWriter writer = createSimpleErrorResponse(ctx)) {
+            writer.println("ERROR");
+            writer.println();
+            writer.println("Failing Metrics on this node:");
+            metrics.getMetrics().stream().filter(metric -> metric.getState() == MetricState.RED).forEach(metric -> {
+                writer.println(Strings.apply("%-30s %15s",
+                                             metric.getLabel().toLowerCase(),
+                                             metric.getValueAsString().toLowerCase()));
+            });
+            writer.println();
+        }
+    }
+
+    private PrintWriter createSimpleErrorResponse(WebContext ctx) {
+        OutputStream os = ctx.respondWith().outputStream(HttpResponseStatus.EXPECTATION_FAILED, null);
+        return new PrintWriter(new OutputStreamWriter(os, Charsets.UTF_8));
     }
 
     /**
