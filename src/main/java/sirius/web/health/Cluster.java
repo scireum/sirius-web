@@ -63,7 +63,7 @@ public class Cluster implements EveryMinute {
     /**
      * Keeps a history of cluster states to determine if an errorneous state is present.
      * <p>
-     * As some metrics tend to quickly jump to RED and back, we use some avaraging to make the alerting system less
+     * As some metrics tend to quickly jump to RED and back, we use some averaging to make the alerting system less
      * nervous.
      */
     private MetricState[] clusterStateHistory;
