@@ -18,10 +18,13 @@ import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.Drawing;
 import org.apache.poi.ss.usermodel.Picture;
 import org.apache.poi.ss.usermodel.PrintSetup;
+import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
+import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import sirius.kernel.commons.Amount;
 import sirius.kernel.health.Exceptions;
@@ -227,7 +230,7 @@ public class ExcelExport {
         Cell cell = row.createCell(columnIndex);
         cell.setCellStyle(style);
         if (obj instanceof String) {
-            cell.setCellValue(new HSSFRichTextString((String) obj));
+            cell.setCellValue(createRichTextString((String) obj));
             return;
         }
         if (obj instanceof LocalDateTime) {
@@ -239,7 +242,7 @@ public class ExcelExport {
             return;
         }
         if (obj instanceof Boolean) {
-            cell.setCellValue(new HSSFRichTextString(NLS.toUserString(obj)));
+            cell.setCellValue(createRichTextString(NLS.toUserString(obj)));
             return;
         }
         if (obj instanceof Double) {
@@ -270,7 +273,15 @@ public class ExcelExport {
             addImageCell(row, (ImageCell) obj, columnIndex);
             return;
         }
-        cell.setCellValue(new HSSFRichTextString(obj.toString()));
+        cell.setCellValue(createRichTextString(obj.toString()));
+    }
+
+    private RichTextString createRichTextString(String string) {
+        if (workbook instanceof HSSFWorkbook) {
+            return new HSSFRichTextString(string);
+        }
+
+        return new XSSFRichTextString(string);
     }
 
     private void addImageCell(Row row, ImageCell imageCell, int columnIndex) {
@@ -283,7 +294,15 @@ public class ExcelExport {
             pictureCols.add((short) columnIndex);
         }
         int iconIndex = workbook.addPicture(imageCell.fileData, imageCell.pictureType);
-        ClientAnchor anchor = new HSSFClientAnchor();
+
+        ClientAnchor anchor;
+
+        if (workbook instanceof HSSFWorkbook) {
+            anchor = new HSSFClientAnchor();
+        } else {
+            anchor = new XSSFClientAnchor();
+        }
+
         anchor.setCol1(columnIndex);
         anchor.setRow1(row.getRowNum());
         Picture picture = drawing.createPicture(anchor, iconIndex);
