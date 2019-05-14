@@ -223,12 +223,10 @@ public class Cluster implements EveryMinute {
         // If the state currently isn't RED, no alarm is present...
         if (clusterState != MetricState.RED) {
             alarmPresent = false;
+        } else {
+            // ...otherwise an alarm is present, if "enough" critical (State=RED) entries are in the buffer.
+            alarmPresent = countFailedIntervals() >= getCriticalIntervalLimit();
         }
-
-        // ...otherwise an alarm is present, if "enough" critical (State=RED) entries are in the buffer.
-        long numberOfFailedIntervals =
-                Arrays.stream(clusterStateHistory).filter(state -> state == MetricState.RED).count();
-        alarmPresent = numberOfFailedIntervals >= criticalIntervals;
     }
 
     private MetricState computeNodeState() {
