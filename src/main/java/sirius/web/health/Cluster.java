@@ -132,6 +132,61 @@ public class Cluster implements EveryMinute {
         return alarmPresent;
     }
 
+    /**
+     * Returns the number of intervals which are kept in the state history.
+     * <p>
+     * This is used to smooth out intermittend faults which cause a RED system state.
+     *
+     * @return the number of cluster states kept in the history
+     */
+    public int getMonitoringIntervals() {
+        return monitoringIntervals;
+    }
+
+    /**
+     * Returns the maximal number of "RED" intervals upon which an ALARM is triggered.
+     *
+     * @return limit of failed (RED) states in the history to consider the state problematic
+     * @see #isAlarmPresent()
+     * @see SystemController#monitorNode(sirius.web.http.WebContext)
+     */
+    public int getCriticalIntervalLimit() {
+        return criticalIntervals;
+    }
+
+    /**
+     * Returns the actual number of failed (RED) intervals in the monitoring history.
+     *
+     * @return the number of failed intervals
+     */
+    public int countFailedIntervals() {
+        if (clusterStateHistory == null) {
+            return 0;
+        }
+
+        return (int) Arrays.stream(clusterStateHistory).filter(state -> state == MetricState.RED).count();
+    }
+
+    /**
+     * Returns the alarm state as metric.
+     *
+     * @return <tt>RED</tt> if an alarm is present, <tt>YELLOW</tt> if no alarm is present but some RED intervals are
+     * in the history or <tt>GREEN</tt> if the system was behaving normally within the observed history.
+     */
+    public MetricState getAlarmState() {
+        if (clusterStateHistory == null) {
+            return MetricState.GRAY;
+        }
+
+        if (alarmPresent) {
+            return MetricState.RED;
+        } else if (countFailedIntervals() == 0) {
+            return MetricState.GREEN;
+        } else {
+            return MetricState.YELLOW;
+        }
+    }
+
     @Override
     public void runTimer() throws Exception {
         tasks.defaultExecutor().fork(this::updateClusterState);
