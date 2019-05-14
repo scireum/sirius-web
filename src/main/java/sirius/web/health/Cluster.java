@@ -222,11 +222,30 @@ public class Cluster implements EveryMinute {
 
         // If the state currently isn't RED, no alarm is present...
         if (clusterState != MetricState.RED) {
-            alarmPresent = false;
+            updateAlarm(false);
         } else {
             // ...otherwise an alarm is present, if "enough" critical (State=RED) entries are in the buffer.
-            alarmPresent = countFailedIntervals() >= getCriticalIntervalLimit();
+            updateAlarm(countFailedIntervals() >= getCriticalIntervalLimit());
         }
+    }
+
+    private void updateAlarm(boolean alarmIsPresentNow) {
+        // We only need to log or change something if the state changes...
+        if (alarmIsPresentNow == alarmPresent) {
+            return;
+        }
+
+        // Provide appropriate logs to support determining the downtime of a system or at least the
+        // duration of an incident.
+        if (alarmIsPresentNow) {
+            LOG.WARN("PROBLEM: The cluster state was RED in %s out of %s intervals.",
+                     countFailedIntervals(),
+                     getMonitoringIntervals());
+        } else {
+            LOG.INFO("OK: The cluster state returned to GREEN.");
+        }
+
+        alarmPresent = alarmIsPresentNow;
     }
 
     private MetricState computeNodeState() {
