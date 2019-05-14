@@ -29,8 +29,8 @@
     </i:block>
 
     <w:pageHeader>
-        <span class="@cluster.getNodeState()">System State</span>
-        <small>@nodeName</small>
+        <span class="@cluster.getClusterState()">System State</span>
+
         <div class="pull-right">
             <i:if test="all">
                 <a href="/system/state" class="btn btn-primary"><i class="fa fa-minus"></i> Less</a>
@@ -43,6 +43,45 @@
         </div>
         <div class="clearfix"></div>
     </w:pageHeader>
+
+    <table class="table table-striped">
+        <tr>
+            <td class="@cluster.getAlarmState()">
+                Alarm Present
+            </td>
+            <td class="align-right @cluster.getAlarmState()">
+                @toUserString(cluster.isAlarmPresent())
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Monitoring Intervals
+            </td>
+            <td class="align-right">
+                @cluster.getMonitoringIntervals()
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Critical Intervals
+            </td>
+            <td class="align-right">
+                @cluster.getCriticalIntervalLimit()
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Failed Intervals
+            </td>
+            <td class="align-right">
+                @cluster.countFailedIntervals()
+            </td>
+        </tr>
+    </table>
+    <w:heading>
+        <span class="@cluster.getNodeState()">Node State</span>
+        <small>@nodeName</small>
+    </w:heading>
 
     <table class="table table-striped">
         <tr>

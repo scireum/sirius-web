@@ -132,6 +132,61 @@ public class Cluster implements EveryMinute {
         return alarmPresent;
     }
 
+    /**
+     * Returns the number of intervals which are kept in the state history.
+     * <p>
+     * This is used to smooth out intermittend faults which cause a RED system state.
+     *
+     * @return the number of cluster states kept in the history
+     */
+    public int getMonitoringIntervals() {
+        return monitoringIntervals;
+    }
+
+    /**
+     * Returns the maximal number of "RED" intervals upon which an ALARM is triggered.
+     *
+     * @return limit of failed (RED) states in the history to consider the state problematic
+     * @see #isAlarmPresent()
+     * @see SystemController#monitorNode(sirius.web.http.WebContext)
+     */
+    public int getCriticalIntervalLimit() {
+        return criticalIntervals;
+    }
+
+    /**
+     * Returns the actual number of failed (RED) intervals in the monitoring history.
+     *
+     * @return the number of failed intervals
+     */
+    public int countFailedIntervals() {
+        if (clusterStateHistory == null) {
+            return 0;
+        }
+
+        return (int) Arrays.stream(clusterStateHistory).filter(state -> state == MetricState.RED).count();
+    }
+
+    /**
+     * Returns the alarm state as metric.
+     *
+     * @return <tt>RED</tt> if an alarm is present, <tt>YELLOW</tt> if no alarm is present but some RED intervals are
+     * in the history or <tt>GREEN</tt> if the system was behaving normally within the observed history.
+     */
+    public MetricState getAlarmState() {
+        if (clusterStateHistory == null) {
+            return MetricState.GRAY;
+        }
+
+        if (alarmPresent) {
+            return MetricState.RED;
+        } else if (countFailedIntervals() == 0) {
+            return MetricState.GREEN;
+        } else {
+            return MetricState.YELLOW;
+        }
+    }
+
     @Override
     public void runTimer() throws Exception {
         tasks.defaultExecutor().fork(this::updateClusterState);
@@ -167,13 +222,30 @@ public class Cluster implements EveryMinute {
 
         // If the state currently isn't RED, no alarm is present...
         if (clusterState != MetricState.RED) {
-            alarmPresent = false;
+            updateAlarm(false);
+        } else {
+            // ...otherwise an alarm is present, if "enough" critical (State=RED) entries are in the buffer.
+            updateAlarm(countFailedIntervals() >= getCriticalIntervalLimit());
+        }
+    }
+
+    private void updateAlarm(boolean alarmIsPresentNow) {
+        // We only need to log or change something if the state changes...
+        if (alarmIsPresentNow == alarmPresent) {
+            return;
         }
 
-        // ...otherwise an alarm is present, if "enough" critical (State=RED) entries are in the buffer.
-        long numberOfFailedIntervals =
-                Arrays.stream(clusterStateHistory).filter(state -> state == MetricState.RED).count();
-        alarmPresent = numberOfFailedIntervals >= criticalIntervals;
+        // Provide appropriate logs to support determining the downtime of a system or at least the
+        // duration of an incident.
+        if (alarmIsPresentNow) {
+            LOG.WARN("PROBLEM: The cluster state was RED in %s out of %s intervals.",
+                     countFailedIntervals(),
+                     getMonitoringIntervals());
+        } else {
+            LOG.INFO("OK: The cluster state returned to GREEN.");
+        }
+
+        alarmPresent = alarmIsPresentNow;
     }
 
     private MetricState computeNodeState() {
