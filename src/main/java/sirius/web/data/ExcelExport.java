@@ -182,24 +182,6 @@ public class ExcelExport {
         this(true);
     }
 
-    /**
-     * Creates a new export which uses the legacy Excel'97 format (.xls).
-     *
-     * @return a new exporter using the Excel'97 format
-     */
-    public static ExcelExport asXLS() {
-        return new ExcelExport(true);
-    }
-
-    /**
-     * Creates a new export which uses the modern Excel format (.xlsx).
-     *
-     * @return a new exporter using the modern Excel format
-     */
-    public static ExcelExport asXSLX() {
-        return new ExcelExport(false);
-    }
-
     protected ExcelExport(boolean useHSSF) {
         workbook = useHSSF ? new HSSFWorkbook() : new XSSFWorkbook();
         sheet = workbook.createSheet();
@@ -221,6 +203,24 @@ public class ExcelExport {
         ps.setFitHeight((short) 0);
         sheet.setAutobreaks(true);
         sheet.setRepeatingRows(new CellRangeAddress(0, 0, -1, -1));
+    }
+
+    /**
+     * Creates a new export which uses the legacy Excel'97 format (.xls).
+     *
+     * @return a new exporter using the Excel'97 format
+     */
+    public static ExcelExport asXLS() {
+        return new ExcelExport(true);
+    }
+
+    /**
+     * Creates a new export which uses the modern Excel format (.xlsx).
+     *
+     * @return a new exporter using the modern Excel format
+     */
+    public static ExcelExport asXSLX() {
+        return new ExcelExport(false);
     }
 
     private void addCell(Row row, Object obj, int columnIndex, CellStyle style) {
