@@ -1,0 +1,40 @@
+<i:arg name="span" type="int" default="6" />
+<i:arg name="smallSpan" type="int" default="12" description="Defines the span for mobile devices" />
+<i:arg name="name" type="String" />
+<i:arg name="value" type="boolean" />
+<i:arg name="labelKey" type="String" default="" />
+<i:arg name="label" type="String" default="@i18n(labelKey)" />
+<i:arg name="trueLabelKey" type="String" default="booleanfield.html.trueLabel" />
+<i:arg name="trueLabel" type="String" default="@i18n(trueLabelKey)" />
+<i:arg name="falseLabelKey" type="String" default="booleanfield.html.falseLabel" />
+<i:arg name="falseLabel" type="String" default="@i18n(falseLabelKey)" />
+<i:arg name="helpKey" type="String" default="" />
+<i:arg name="help" type="String" default="@i18n(helpKey)" />
+<i:arg name="readonly" type="boolean" default="false" />
+<i:arg name="adminOnly" type="boolean" default="false" />
+
+<i:pragma name="inline" value="true" />
+<i:pragma name="description" value="Renders a dropdown for boolean values within a Wondergem template" />
+
+<i:if test="readonly">
+    <w:textfield span="@span"
+                 smallSpan="@smallSpan"
+                 value="value ? trueLabel : falseLabel"
+                 label="@label"
+                 help="@help"
+                 adminOnly="@adminOnly"
+                 readonly="true"/>
+    <i:else>
+        <w:singleSelect span="@span"
+                        smallSpan="@smallSpan"
+                        name="@name"
+                        label="@label"
+                        help="@help"
+                        required="true"
+                        optional="false"
+                        adminOnly="@adminOnly">
+            <option value="true" @selected="@value">@trueLabel</option>
+            <option value="false" @selected="@!value">@falseLabel</option>
+        </w:singleSelect>
+    </i:else>
+</i:if>
