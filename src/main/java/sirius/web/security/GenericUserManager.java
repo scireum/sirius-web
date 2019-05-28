@@ -483,4 +483,10 @@ public abstract class GenericUserManager implements UserManager {
     public boolean isKeepLoginSupported() {
         return keepLoginEnabled;
     }
+
+    @Nonnull
+    @Override
+    public List<String> getAvailableLanguages() {
+        return Collections.singletonList(NLS.getDefaultLanguage());
+    }
 }

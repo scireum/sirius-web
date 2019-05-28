@@ -12,6 +12,7 @@ import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Responsible for authentication and session management.
@@ -124,4 +125,12 @@ public interface UserManager {
      * @return <tt>true</tt> if a "keep me logged in" function is available, <tt>false</tt> otherwise.
      */
     boolean isKeepLoginSupported();
+
+    /**
+     * Returns the available languages for this scope.
+     *
+     * @return the available languages for this scope
+     */
+    @Nonnull
+    List<String> getAvailableLanguages();
 }
