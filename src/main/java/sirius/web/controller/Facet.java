@@ -105,7 +105,7 @@ public class Facet {
      * @return a link which contains all parameters of the surrounding {@link Page} (other facets, query) but which toggles
      * the value for this face. Also the start will be reset, as everything else would be counter intuitive
      */
-    public String linkToPageWithToggeledItem(String baseUrl, FacetItem item) {
+    public String linkToPageWithToggledItem(String baseUrl, FacetItem item) {
         return parent.addFacetsAndQuery(baseUrl, name)
                      .appendIfFilled(name, item.isActive() ? "" : item.getKey())
                      .toString();
