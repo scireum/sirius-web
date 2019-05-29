@@ -1,6 +1,5 @@
 <i:arg type="Page" name="page" />
 <i:arg type="String" name="baseUrl" />
-<i:arg type="String" name="type" default="" />
 
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders a pagination box below a table within a Wondergem template" />
@@ -10,12 +9,8 @@
     <nav class="text-center">
         <ul class="pagination">
             <i:if test="page.hasLess()">
-                <i:if test="isFilled(type)">
-                    <li><a href="@baseUrl?@page.createPrevPageQueryString()&pageType=@type">&#8592;</a></li>
-                    <i:else>
-                        <li><a href="@baseUrl?@page.createPrevPageQueryString()">&#8592;</a></li>
-                    </i:else>
-                </i:if>
+                <li><a href="@page.linkToPreviousPage(baseUrl)">&#8592;</a></li>
+
                 <i:else>
                     <li class="disabled"><span>&#8592;</span></li>
                 </i:else>
@@ -28,11 +23,8 @@
                         $("input:text.jump-to").keyup(function (e) {
                             var startIndex = $(this).val();
                             var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
-                            if (key == 13 && /^\d+$/.test(startIndex)) {
-                                var location = "@baseUrl?@page.createQueryStringForConfigurableStart()" + startIndex;
-                                @if (isFilled(type)) {
-                                    location += "&pageType=@type";
-                                }
+                            if (key === 13 && /^\d+$/.test(startIndex)) {
+                                var location = '@raw {@page.linkToPageWithConfigurableStart(baseUrl)}' + startIndex;
                                 window.location.replace(location);
                             }
                         });
@@ -40,11 +32,7 @@
                         @if (page.hasLess()) {
                             $(document).keyup(function (e) {
                                 if (e.shiftKey && (e.which === 37)) {
-                                    @if (isFilled(type)) {
-                                        var location = '@baseUrl?@page.createPrevPageQueryString()&pageType=@type';
-                                    } else {
-                                        var location = '@baseUrl?@page.createPrevPageQueryString()';
-                                    }
+                                    var location = '@raw {@page.linkToPreviousPage(baseUrl)}';
                                     window.location.replace(location);
                                 }
                             });
@@ -52,11 +40,7 @@
                         @if (page.hasMore()) {
                             $(document).keyup(function (e) {
                                 if (e.shiftKey && (e.which === 39)) {
-                                    @if (isFilled(type)) {
-                                        var location = '@baseUrl?@page.createNextPageQueryString()&pageType=@type';
-                                    } else {
-                                        var location = '@baseUrl?@page.createNextPageQueryString()';
-                                    }
+                                    var location = '@raw {@page.linkToNextPage(baseUrl)}';
                                     window.location.replace(location);
                                 }
                             });
@@ -66,12 +50,7 @@
             </li>
 
             <i:if test="page.hasMore()">
-                <i:if test="isFilled(type)">
-                    <li><a href="@baseUrl?@page.createNextPageQueryString()&pageType=@type">&#8594;</a></li>
-                    <i:else>
-                        <li><a href="@baseUrl?@page.createNextPageQueryString()">&#8594;</a></li>
-                    </i:else>
-                </i:if>
+                <li><a href="@page.linkToNextPage(baseUrl)">&#8594;</a></li>
                 <i:else>
                     <li class="disabled"><span>&#8594;</span></li>
                 </i:else>

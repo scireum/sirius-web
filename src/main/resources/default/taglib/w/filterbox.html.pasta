@@ -12,7 +12,7 @@
                     <li class="nav-header">@facet.getTitle()</li>
                     <i:for type="sirius.web.controller.FacetItem" var="item" items="facet.getItems()">
                         <li @if (item.isActive()) { class="active" }>
-                            <a href="@baseUrl?@facet.createToggleQueryString(item)" class="row">
+                            <a href="@facet.linkToPageWithToggeledItem(baseUrl, item)" class="row">
                                 <span class="filter-title word-wrap">
                                     <i @if (item.isActive()) { class="fa fa-check-square-o" } else { class="fa fa-square-o" }></i>
                                     <span class="filter-title-inner">@item.getTitle()</span>
@@ -27,8 +27,4 @@
             </i:for>
         </ul>
     </div>
-    <i:else>
-        <p class="muted" style="padding: 0px 8px"><i>@i18n("Filterbox.noItems")</i></p>
-        <div class="clearfix">&nbsp;</div>
-    </i:else>
 </i:if>

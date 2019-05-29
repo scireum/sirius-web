@@ -7,7 +7,7 @@
 
 <i:local name="deleteFormId" value="@apply('deleteForm-%s', call.generateLocalId())"/>
 
-<form id="@deleteFormId" method="post" action="@if(page != null) {@url?@page.createQueryString()} else {@url}">
+<form id="@deleteFormId" method="post" action="@if(page != null) {@page.linkToCurrentPage(url)} else {@url}">
     <i class="fa fa-trash"></i>
     <a role="button" class="link link-danger guarded-link @if (adminOnly) {admin-link}" data-deleteid="@deleteFormId">
         @i18n("NLS.delete")
