@@ -283,7 +283,7 @@ public class MailSender {
     /**
      * Adds an attachment to the email.
      * <p>
-     * Use {@link Generator#generateAttachment(String)} to directly generate an attachment from ast
+     * Use {@link Generator#generateAttachment(String)} to directly generate an attachment from a
      * template.
      *
      * @param attachment the attachment to add to the email
@@ -509,16 +509,17 @@ public class MailSender {
                 new InternetAddress(receiverEmail).validate();
             }
         } catch (Exception e) {
-            throw Exceptions.handle()
-                            .to(Mails.LOG)
-                            .error(e)
-                            .withNLSKey("MailService.invalidReceiver")
-                            .set("address",
-                                 Strings.isFilled(receiverName) ?
-                                 receiverEmail + " (" + receiverName + ")" :
-                                 receiverEmail)
-                            .handle();
+            logInvalidAddress(e, "MailService.invalidReceiver", receiverName, receiverEmail);
         }
+    }
+
+    private void logInvalidAddress(Exception e, String nlsKey, String name, String email) {
+        throw Exceptions.handle()
+                        .to(Mails.LOG)
+                        .error(e)
+                        .withNLSKey(nlsKey)
+                        .set("address", Strings.isFilled(name) ? email + " (" + name + ")" : email)
+                        .handle();
     }
 
     private void checkSender() {
@@ -531,13 +532,7 @@ public class MailSender {
                 }
             }
         } catch (Exception e) {
-            throw Exceptions.handle()
-                            .to(Mails.LOG)
-                            .error(e)
-                            .withNLSKey("MailService.invalidSender")
-                            .set("address",
-                                 Strings.isFilled(senderName) ? senderEmail + " (" + senderName + ")" : senderEmail)
-                            .handle();
+            logInvalidAddress(e, "MailService.invalidSender", senderName, senderEmail);
         }
     }
 
@@ -551,13 +546,7 @@ public class MailSender {
                 }
             }
         } catch (Exception e) {
-            throw Exceptions.handle()
-                            .to(Mails.LOG)
-                            .error(e)
-                            .withNLSKey("MailService.invalidReplyTo")
-                            .set("address",
-                                 Strings.isFilled(replyToName) ? replyToEmail + " (" + replyToName + ")" : replyToEmail)
-                            .handle();
+            logInvalidAddress(e, "MailService.invalidReplyTo", replyToName, replyToEmail);
         }
     }
 
