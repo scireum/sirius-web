@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Helper class to parse permission based annotations and the expand permission profiles.
@@ -37,14 +38,14 @@ import java.util.Set;
 public class Permissions {
 
     /**
-     * Represents a special permission which is never granted - therefore {@link #hasPermission(String, Set)} will
+     * Represents a special permission which is never granted - therefore {@link #hasPermission(String, Predicate)} will
      * always return false.
      */
     private static final String DISABLED = "disabled";
 
     /**
-     * Represents a special permission which is always granted - therefore {@link #hasPermission(String, Set)} will
-     * always return true.
+     * Represents a special permission which is always granted - therefore {@link #hasPermission(String, Predicate)}
+     * will always return true.
      */
     private static final String ENABLED = "enabled";
 
@@ -174,7 +175,7 @@ public class Permissions {
     }
 
     /**
-     * Determines if the permission expression is contained in the given permissions.
+     * Determines if the permission expression is contained for an object.
      * <p>
      * Next to plain permission names, permissions can also negated using <tt>!permission</tt> and on top of that,
      * whole logical expressions in DNF (disjuctive normal form) can be passed in.
@@ -184,12 +185,13 @@ public class Permissions {
      * to be logged in or it has to be an important customer and not be locked".
      *
      * @param permissionExpression the permission expression to check
-     * @param permissions          all permissions as set
+     * @param containsPermission   determines if a single permission is contained in the object
      * @return <tt>true</tt> if the given permissions contains the permission expression, <tt>false</tt> otherwise
      */
     @SuppressWarnings("squid:S2259")
     @Explain("permissionExpression can not be null due to Strings.isEmpty")
-    public static boolean hasPermission(@Nullable String permissionExpression, @Nullable Set<String> permissions) {
+    public static boolean hasPermission(@Nullable String permissionExpression,
+                                        @Nullable Predicate<String> containsPermission) {
         if (Strings.isEmpty(permissionExpression)) {
             return true;
         }
@@ -203,7 +205,7 @@ public class Permissions {
         }
 
         for (String orClause : permissionExpression.split(",")) {
-            if (permissionsFullfilled(orClause, permissions)) {
+            if (permissionsFullfilled(orClause, containsPermission)) {
                 return true;
             }
         }
@@ -211,20 +213,20 @@ public class Permissions {
         return false;
     }
 
-    protected static boolean permissionsFullfilled(String permisssionString, Set<String> permissions) {
+    protected static boolean permissionsFullfilled(String permisssionString, Predicate<String> containsPermission) {
         for (String permission : permisssionString.split("\\+")) {
-            if (!permissionFullfilled(permission, permissions)) {
+            if (!permissionFullfilled(permission, containsPermission)) {
                 return false;
             }
         }
         return true;
     }
 
-    protected static boolean permissionFullfilled(String permission, Set<String> permissions) {
+    protected static boolean permissionFullfilled(String permission, Predicate<String> containsPermission) {
         if (permission.startsWith("!")) {
-            return permissions == null || !permissions.contains(permission.substring(1));
+            return containsPermission == null || !containsPermission.test(permission.substring(1));
         } else {
-            return permissions != null && permissions.contains(permission);
+            return containsPermission != null && containsPermission.test(permission);
         }
     }
 }

@@ -81,13 +81,12 @@ public class UserInfo extends Composable {
          * @return the builder itself for fluent method calls
          */
         public static Builder withUser(@Nonnull UserInfo info) {
-            return createUser(info.getUserId())
-                    .withLang(info.getLang())
-                    .withUsername(info.getUserName())
-                    .withTenantId(info.getTenantId())
-                    .withTenantName(info.getTenantName())
-                    .withSettingsSupplier(info.settingsSupplier)
-                    .withUserSupplier(info.userSupplier);
+            return createUser(info.getUserId()).withLang(info.getLang())
+                                               .withUsername(info.getUserName())
+                                               .withTenantId(info.getTenantId())
+                                               .withTenantName(info.getTenantName())
+                                               .withSettingsSupplier(info.settingsSupplier)
+                                               .withUserSupplier(info.userSupplier);
         }
 
         /**
@@ -273,7 +272,7 @@ public class UserInfo extends Composable {
      * @return <tt>true</tt> if the user has the permission, <tt>false</tt> otherwise
      */
     public boolean hasPermission(String permission) {
-        return Permissions.hasPermission(permission, permissions);
+        return Permissions.hasPermission(permission, permissions == null ? s -> false : permission::contains);
     }
 
     /**
