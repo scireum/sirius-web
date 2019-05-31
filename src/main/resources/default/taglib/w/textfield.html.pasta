@@ -30,7 +30,7 @@
     </i:if>
     <i:if test="isFilled(addonText)">
         <div class="input-group">
-            <input @if(isFilled(fieldName)) {n ame="@fieldName" }
+            <input @if(isFilled(fieldName)) { name="@fieldName" }
                    @if(isFilled(id)) { id="@id" }
                    type="@type"
                    value="@user.getFieldValue(name, value)"
@@ -43,7 +43,7 @@
         </div>
 
         <i:else>
-            <input @if(isFilled(fieldName)) {n ame="@fieldName" }
+            <input @if(isFilled(fieldName)) { name="@fieldName" }
                    @if(isFilled(id)) { id="@id" }
                    type="@type"
                    value="@user.getFieldValue(name, value)"
