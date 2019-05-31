@@ -1,6 +1,7 @@
 <i:arg name="span" type="int" default="6"/>
 <i:arg name="smallSpan" type="int" default="12" description="Defines the span for mobile devices"/>
 <i:arg name="name" type="String" default=""/>
+<i:arg name="fieldName" type="String" default="@name"/>
 <i:arg name="value" type="String"/>
 <i:arg name="labelKey" type="String" default=""/>
 <i:arg name="label" type="String" default="@i18n(labelKey)"/>
@@ -29,7 +30,10 @@
     </i:if>
     <i:if test="isFilled(addonText)">
         <div class="input-group">
-            <input name="@name" @if(isFilled(id)) { id="@id" } type="@type" value="@user.getFieldValue(name, value)"
+            <input @if(isFilled(fieldName)) {n ame="@fieldName" }
+                   @if(isFilled(id)) { id="@id" }
+                   type="@type"
+                   value="@user.getFieldValue(name, value)"
                    class="form-control input-block-level"
                    @if (isFilled(placeholder)) { placeholder="@placeholder" }
                    @if (readonly) { readonly } @if (autofocus) { autofocus }
@@ -39,7 +43,10 @@
         </div>
 
         <i:else>
-            <input name="@name" @if(isFilled(id)) { id="@id" } type="@type" value="@user.getFieldValue(name, value)"
+            <input @if(isFilled(fieldName)) {n ame="@fieldName" }
+                   @if(isFilled(id)) { id="@id" }
+                   type="@type"
+                   value="@user.getFieldValue(name, value)"
                    class="form-control input-block-level"
                    @if (isFilled(placeholder)) { placeholder="@placeholder" }
                    @if (readonly) { readonly } @if (autofocus) { autofocus }
