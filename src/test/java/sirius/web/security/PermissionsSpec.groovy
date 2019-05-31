@@ -32,4 +32,16 @@ class PermissionsSpec extends BaseSpecification {
         !roles.contains("test-B")
     }
 
+    def "test hasPermission"() {
+        expect:
+        Permissions.hasPermission(permissionExpression, actualPermissions) == expectedResult
+        where:
+        permissionExpression | actualPermissions      | expectedResult
+        "a"                  | ["a", "b", "c"] as Set | true
+        "d"                  | ["a", "b", "c"] as Set | false
+        "a+c"                | ["a", "b", "c"] as Set | true
+        "a+d"                | ["a", "b", "c"] as Set | false
+        "a,d"                | ["a", "b", "c"] as Set | true
+        "d,e"                | ["a", "b", "c"] as Set | false
+    }
 }

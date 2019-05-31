@@ -8,7 +8,6 @@
 
 package sirius.web.security;
 
-import sirius.kernel.commons.Strings;
 import sirius.kernel.di.transformers.Composable;
 import sirius.kernel.di.transformers.Transformable;
 import sirius.kernel.health.Exceptions;
@@ -38,18 +37,6 @@ public class UserInfo extends Composable {
      * Fallback user if no user is currently available. This user has no permissions.
      */
     public static final UserInfo NOBODY = Builder.createUser("ANONYMOUS").withUsername("(no user)").build();
-
-    /**
-     * Represents a special permission which is never granted - therefore {@link #hasPermission(String)} will always
-     * return false.
-     */
-    private static final String DISABLED = "disabled";
-
-    /**
-     * Represents a special permission which is always granted - therefore {@link #hasPermission(String)} will always
-     * return true.
-     */
-    private static final String ENABLED = "enabled";
 
     protected String tenantId;
     protected String tenantName;
@@ -286,42 +273,7 @@ public class UserInfo extends Composable {
      * @return <tt>true</tt> if the user has the permission, <tt>false</tt> otherwise
      */
     public boolean hasPermission(String permission) {
-        if (Strings.isEmpty(permission)) {
-            return true;
-        }
-
-        if (DISABLED.equals(permission)) {
-            return false;
-        }
-
-        if (ENABLED.equals(permission)) {
-            return true;
-        }
-
-        for (String orClause : permission.split(",")) {
-            if (permissionsFullfilled(orClause)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    protected boolean permissionsFullfilled(String permissions) {
-        for (String permission : permissions.split("\\+")) {
-            if (!permissionFullfilled(permission)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    protected boolean permissionFullfilled(String permission) {
-        if (permission.startsWith("!")) {
-            return permissions == null || !permissions.contains(permission.substring(1));
-        } else {
-            return permissions != null && permissions.contains(permission);
-        }
+        return Permissions.hasPermission(permission, permissions);
     }
 
     /**

@@ -11,10 +11,13 @@ package sirius.web.security;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import sirius.kernel.Sirius;
+import sirius.kernel.commons.Explain;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.settings.Extension;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.AnnotatedElement;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,6 +35,18 @@ import java.util.Set;
  * list of permissions.
  */
 public class Permissions {
+
+    /**
+     * Represents a special permission which is never granted - therefore {@link #hasPermission(String, Set)} will
+     * always return false.
+     */
+    private static final String DISABLED = "disabled";
+
+    /**
+     * Represents a special permission which is always granted - therefore {@link #hasPermission(String, Set)} will
+     * always return true.
+     */
+    private static final String ENABLED = "enabled";
 
     protected static Map<String, Set<String>> profilesCache;
 
@@ -156,5 +171,60 @@ public class Permissions {
         }
 
         return object.isAnnotationPresent(LoginRequired.class);
+    }
+
+    /**
+     * Determines if the permission expression is contained in the given permissions.
+     * <p>
+     * Next to plain permission names, permissions can also negated using <tt>!permission</tt> and on top of that,
+     * whole logical expressions in DNF (disjuctive normal form) can be passed in.
+     * <p>
+     * Such a formula is a set of expressions where a <b>,</b> represents an <tt>or</tt> and a <b>+</b> represents an
+     * <tt>and</tt>. An example would be "logged-in,important-customer+!locked". This would translate to "the user has
+     * to be logged in or it has to be an important customer and not be locked".
+     *
+     * @param permissionExpression the permission expression to check
+     * @param permissions          all permissions as set
+     * @return <tt>true</tt> if the given permissions contains the permission expression, <tt>false</tt> otherwise
+     */
+    @SuppressWarnings("squid:S2259")
+    @Explain("permissionExpression can not be null due to Strings.isEmpty")
+    public static boolean hasPermission(@Nullable String permissionExpression, @Nullable Set<String> permissions) {
+        if (Strings.isEmpty(permissionExpression)) {
+            return true;
+        }
+
+        if (DISABLED.equals(permissionExpression)) {
+            return false;
+        }
+
+        if (ENABLED.equals(permissionExpression)) {
+            return true;
+        }
+
+        for (String orClause : permissionExpression.split(",")) {
+            if (permissionsFullfilled(orClause, permissions)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected static boolean permissionsFullfilled(String permisssionString, Set<String> permissions) {
+        for (String permission : permisssionString.split("\\+")) {
+            if (!permissionFullfilled(permission, permissions)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    protected static boolean permissionFullfilled(String permission, Set<String> permissions) {
+        if (permission.startsWith("!")) {
+            return permissions == null || !permissions.contains(permission.substring(1));
+        } else {
+            return permissions != null && permissions.contains(permission);
+        }
     }
 }
