@@ -347,6 +347,9 @@ public class UserInfo extends Composable {
      * @return all permissions granted to the user.
      */
     public Set<String> getPermissions() {
+        if (permissions == null) {
+            return Collections.emptySet();
+        }
         return Collections.unmodifiableSet(permissions);
     }
 
