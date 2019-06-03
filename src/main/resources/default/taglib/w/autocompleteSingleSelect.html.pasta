@@ -19,8 +19,17 @@
 <i:pragma name="description" value="Renders an autocomplete select field within a Wondergem template" />
 
 <div id="@id" class="sirius-select single-select @if(!optional || required){ required }">
-    <w:textfield id="@apply('%s-input',id)" span="@span" smallSpan="@smallSpan"
-                 value="" label="@label" help="@help" adminOnly="@adminOnly" readonly="@readonly" required="@required"/>
+    <w:textfield name="@name"
+                 fieldName=""
+                 id="@apply('%s-input',id)"
+                 span="@span"
+                 smallSpan="@smallSpan"
+                 value=""
+                 label="@label"
+                 help="@help"
+                 adminOnly="@adminOnly"
+                 readonly="@readonly"
+                 required="@required"/>
 </div>
 
 <select id="@id-suggestions-select" name="@name" style="display: none">
