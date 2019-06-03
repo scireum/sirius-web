@@ -272,7 +272,7 @@ public class UserInfo extends Composable {
      * @return <tt>true</tt> if the user has the permission, <tt>false</tt> otherwise
      */
     public boolean hasPermission(String permission) {
-        return Permissions.hasPermission(permission, permissions == null ? s -> false : permission::contains);
+        return Permissions.hasPermission(permission, permissions == null ? s -> false : permissions::contains);
     }
 
     /**
