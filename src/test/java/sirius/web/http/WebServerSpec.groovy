@@ -20,6 +20,7 @@ import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.http.*
 import org.apache.log4j.Level
 import sirius.kernel.BaseSpecification
+import sirius.kernel.Scope
 import sirius.kernel.commons.Strings
 import sirius.kernel.commons.Wait
 import sirius.kernel.health.LogHelper
@@ -453,6 +454,7 @@ class WebServerSpec extends BaseSpecification {
      * Therefore the event loop can shovel away the data in the output buffer of the channel
      * and the future will eventually fullfilled.
      */
+    @Scope(Scope.SCOPE_NIGHTLY)
     def "Invoke /large-blocking-calls with GET"() {
         given:
         HttpURLConnection u = new URL("http://localhost:9999/large-blocking-calls").openConnection()
@@ -476,6 +478,7 @@ class WebServerSpec extends BaseSpecification {
         return counter
     }
 
+    @Scope(Scope.SCOPE_NIGHTLY)
     def "HTTP pipelining is supported correctly"() {
         given:
         List<HttpResponse> responses = Lists.newArrayList()
@@ -650,6 +653,7 @@ class WebServerSpec extends BaseSpecification {
         JSON.parseObject(data).get("test") == '   '
     }
 
+    @Scope(Scope.SCOPE_NIGHTLY)
     def "async JSON calls work"() {
         given:
         def uri = "/test/json/async"
