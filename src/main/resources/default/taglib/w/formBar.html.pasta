@@ -1,5 +1,5 @@
 <i:arg name="backUrl" type="String" default="" />
-<i:arg name="singleClick" type="boolean" default="false" />
+<i:arg name="singleClick" type="boolean" default="true" />
 
 <i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders a footer bar for forms within a Wondergem template" />
