@@ -345,10 +345,10 @@ public abstract class GenericUserManager implements UserManager {
      * Tries to perform a login using "user" and "password".
      */
     private UserInfo loginViaUsernameAndPassword(WebContext ctx) {
-        if (ctx.get("user").isFilled() && ctx.get("password").isFilled()) {
+        if (ctx.get("user").isFilled() && ctx.getFirstFilled("password", "token").isFilled()) {
             ctx.hidePost();
             String user = ctx.get("user").trim();
-            String password = ctx.get("password").trim();
+            String password = ctx.getFirstFilled("password", "token").trim();
 
             UserInfo result = findUserByCredentials(ctx, user, password);
             if (result != null) {
