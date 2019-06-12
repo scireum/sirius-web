@@ -3,6 +3,7 @@
 <i:arg type="String" name="title" default="@i18n(titleKey)"/>
 <i:arg type="String" name="data"/>
 <i:arg type="String" name="labels"/>
+<i:arg type="String" name="dataUnit" default=""/>
 
 <i:pragma name="inline" value="true"/>
 <i:pragma name="description"
@@ -15,7 +16,7 @@
 <script type="text/javascript">
     $(document).ready(function () {
         @raw {
-            polarAreaChart('#@name', [ @labels ], [ @data ]);
+            polarAreaChart('#@name', [ @labels ], [ @data ], '@dataUnit');
         }
     });
 </script>
