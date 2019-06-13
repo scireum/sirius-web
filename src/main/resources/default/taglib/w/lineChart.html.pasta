@@ -15,7 +15,7 @@
 <script type="text/javascript">
     $(document).ready(function () {
         @raw {
-            lineChart('#@name', [ @labels ], [ {data: @data } ]);
+            lineChart('#@name', [ @labels ], [ {data: [ @data ] } ]);
         }
     });
 </script>
