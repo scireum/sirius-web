@@ -85,7 +85,7 @@ public class UserInfo extends Composable {
         public static Builder withUser(@Nonnull UserInfo info) {
             return createUser(info.getUserId()).withLang(info.getLang())
                                                .withUsername(info.getUserName())
-                                               .withProtocolUsernameAppendix(info.getProtocolUsername())
+                                               .withProtocolUsernameAppendix(info.getProtocolUserNameAppendix())
                                                .withTenantId(info.getTenantId())
                                                .withTenantName(info.getTenantName())
                                                .withSettingsSupplier(info.settingsSupplier)
