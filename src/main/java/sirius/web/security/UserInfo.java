@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Represents an user.
@@ -43,9 +44,9 @@ public class UserInfo extends Composable {
     protected String tenantName;
     protected String userId;
     protected String username;
-    protected String protocolUserNameAppendix;
     protected String lang;
     protected Set<String> permissions = null;
+    protected Supplier<String> nameAppendixSupplier;
     protected Function<UserInfo, UserSettings> settingsSupplier;
     protected Function<UserInfo, Object> userSupplier;
 
@@ -85,7 +86,7 @@ public class UserInfo extends Composable {
         public static Builder withUser(@Nonnull UserInfo info) {
             return createUser(info.getUserId()).withLang(info.getLang())
                                                .withUsername(info.getUserName())
-                                               .withProtocolUsernameAppendix(info.getProtocolUserNameAppendix())
+                                               .withNameAppendixSupplier(info.getNameAppendixSupplier())
                                                .withTenantId(info.getTenantId())
                                                .withTenantName(info.getTenantName())
                                                .withSettingsSupplier(info.settingsSupplier)
@@ -105,15 +106,15 @@ public class UserInfo extends Composable {
         }
 
         /**
-         * Contain additional info, added to the Username to be used in Protocols. See {@link #getProtocolUsername()}.
+         * Contains a supplier for additional info, added to the Username to be used in Protocols. See {@link #getProtocolUsername()}.
          * This should be filled if multiple users can have the same {@link #username}s or if a user acts on the behalf of another user.
          *
-         * @param appendix the additional info about the user.
+         * @param appendixSupplier the supplier for additional info about the user.
          * @return the builder itself for fluent method calls
          */
-        public Builder withProtocolUsernameAppendix(String appendix) {
+        public Builder withNameAppendixSupplier(Supplier<String> appendixSupplier) {
             verifyState();
-            user.protocolUserNameAppendix = appendix;
+            user.nameAppendixSupplier = appendixSupplier;
             return this;
         }
 
@@ -229,12 +230,12 @@ public class UserInfo extends Composable {
     }
 
     /**
-     * Returns additional info added to the descriptive name of the user used in Protocols.
+     * Returns the supplier for additional info added to the descriptive name of the user used in Protocols.
      *
-     * @return the appendix for the user name
+     * @return the supplier for the appendix @ the user name
      */
-    public String getProtocolUserNameAppendix() {
-        return protocolUserNameAppendix;
+    public Supplier<String> getNameAppendixSupplier() {
+        return nameAppendixSupplier;
     }
 
     /**
@@ -327,15 +328,15 @@ public class UserInfo extends Composable {
 
     /**
      * Returns the login or descriptive name of the user used in Protocols.
-     * Contains additional info given in {@link #protocolUserNameAppendix} to further identify the user.
+     * Contains additional info given via {@link #nameAppendixSupplier} to further identify the user.
      *
      * @return the name of the user
      */
     public String getProtocolUsername() {
-        if (Strings.isEmpty(protocolUserNameAppendix)) {
+        if (nameAppendixSupplier == null) {
             return username;
         }
-        return Strings.apply("%s (%s)", username, protocolUserNameAppendix);
+        return Strings.apply("%s (%s)", username, nameAppendixSupplier.get());
     }
 
     /**
