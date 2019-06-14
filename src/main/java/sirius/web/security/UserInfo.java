@@ -8,6 +8,7 @@
 
 package sirius.web.security;
 
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.transformers.Composable;
 import sirius.kernel.di.transformers.Transformable;
 import sirius.kernel.health.Exceptions;
@@ -19,6 +20,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Represents an user.
@@ -44,6 +46,7 @@ public class UserInfo extends Composable {
     protected String username;
     protected String lang;
     protected Set<String> permissions = null;
+    protected Supplier<String> nameAppendixSupplier;
     protected Function<UserInfo, UserSettings> settingsSupplier;
     protected Function<UserInfo, Object> userSupplier;
 
@@ -83,6 +86,7 @@ public class UserInfo extends Composable {
         public static Builder withUser(@Nonnull UserInfo info) {
             return createUser(info.getUserId()).withLang(info.getLang())
                                                .withUsername(info.getUserName())
+                                               .withNameAppendixSupplier(info.getNameAppendixSupplier())
                                                .withTenantId(info.getTenantId())
                                                .withTenantName(info.getTenantName())
                                                .withSettingsSupplier(info.settingsSupplier)
@@ -98,6 +102,19 @@ public class UserInfo extends Composable {
         public Builder withUsername(String name) {
             verifyState();
             user.username = name;
+            return this;
+        }
+
+        /**
+         * Contains a supplier for additional info, added to the Username to be used in Protocols. See {@link #getProtocolUsername()}.
+         * This should be filled if multiple users can have the same {@link #username}s or if a user acts on the behalf of another user.
+         *
+         * @param appendixSupplier the supplier for additional info about the user.
+         * @return the builder itself for fluent method calls
+         */
+        public Builder withNameAppendixSupplier(Supplier<String> appendixSupplier) {
+            verifyState();
+            user.nameAppendixSupplier = appendixSupplier;
             return this;
         }
 
@@ -213,6 +230,15 @@ public class UserInfo extends Composable {
     }
 
     /**
+     * Returns the supplier for additional info added to the descriptive name of the user used in Protocols.
+     *
+     * @return the supplier for the appendix @ the user name
+     */
+    public Supplier<String> getNameAppendixSupplier() {
+        return nameAppendixSupplier;
+    }
+
+    /**
      * The unique ID of the tenant.
      *
      * @return the unique ID the tenant the user belongs to
@@ -298,6 +324,23 @@ public class UserInfo extends Composable {
      */
     public boolean isLoggedIn() {
         return hasPermission(PERMISSION_LOGGED_IN);
+    }
+
+    /**
+     * Returns the login or descriptive name of the user used in Protocols.
+     * Contains additional info given via {@link #nameAppendixSupplier} to further identify the user.
+     *
+     * @return the name of the user
+     */
+    public String getProtocolUsername() {
+        if (nameAppendixSupplier != null) {
+            String appendix = nameAppendixSupplier.get();
+            if (Strings.isFilled(appendix)) {
+                return Strings.apply("%s (%s)", username, nameAppendixSupplier.get());
+            }
+        }
+        
+        return username;
     }
 
     /**

@@ -372,7 +372,21 @@
             });
     }
 
-    function polarAreaChart(selector, labels, data) {
+    function polarAreaChart(selector, labels, data, dataUnit) {
+        var options = {
+            startAngle: -0.55 * Math.PI
+        };
+
+        if (dataUnit) {
+            options.scale = {
+                ticks: {
+                    userCallback: function (value) {
+                        return Math.round(value * 10) / 10 + ' ' + dataUnit;
+                    }
+                }
+            }
+        }
+
         new Chart($(selector).get(0).getContext("2d"), {
             data: {
                 datasets: [{
@@ -382,9 +396,7 @@
                 labels: labels
             },
             type: 'polarArea',
-            options: {
-                startAngle: -0.55 * Math.PI
-            }
+            options: options
         });
     }
 
