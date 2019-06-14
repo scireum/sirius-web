@@ -8,6 +8,7 @@
 
 package sirius.web.security;
 
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.transformers.Composable;
 import sirius.kernel.di.transformers.Transformable;
 import sirius.kernel.health.Exceptions;
@@ -42,6 +43,7 @@ public class UserInfo extends Composable {
     protected String tenantName;
     protected String userId;
     protected String username;
+    protected String protocolUserNameAppendix;
     protected String lang;
     protected Set<String> permissions = null;
     protected Function<UserInfo, UserSettings> settingsSupplier;
@@ -83,6 +85,7 @@ public class UserInfo extends Composable {
         public static Builder withUser(@Nonnull UserInfo info) {
             return createUser(info.getUserId()).withLang(info.getLang())
                                                .withUsername(info.getUserName())
+                                               .withProtocolUsernameAppendix(info.getProtocolUsername())
                                                .withTenantId(info.getTenantId())
                                                .withTenantName(info.getTenantName())
                                                .withSettingsSupplier(info.settingsSupplier)
@@ -98,6 +101,19 @@ public class UserInfo extends Composable {
         public Builder withUsername(String name) {
             verifyState();
             user.username = name;
+            return this;
+        }
+
+        /**
+         * Contain additional info, added to the Username to be used in Protocols. See {@link #getProtocolUsername()}.
+         * This should be filled if multiple users can have the same {@link #username}s or if a user acts on the behalf of another user.
+         *
+         * @param appendix the additional info about the user.
+         * @return the builder itself for fluent method calls
+         */
+        public Builder withProtocolUsernameAppendix(String appendix) {
+            verifyState();
+            user.protocolUserNameAppendix = appendix;
             return this;
         }
 
@@ -213,6 +229,15 @@ public class UserInfo extends Composable {
     }
 
     /**
+     * Returns additional info added to the descriptive name of the user used in Protocols.
+     *
+     * @return the appendix for the user name
+     */
+    public String getProtocolUserNameAppendix() {
+        return protocolUserNameAppendix;
+    }
+
+    /**
      * The unique ID of the tenant.
      *
      * @return the unique ID the tenant the user belongs to
@@ -298,6 +323,19 @@ public class UserInfo extends Composable {
      */
     public boolean isLoggedIn() {
         return hasPermission(PERMISSION_LOGGED_IN);
+    }
+
+    /**
+     * Returns the login or descriptive name of the user used in Protocols.
+     * Contains additional info given in {@link #protocolUserNameAppendix} to further identify the user.
+     *
+     * @return the name of the user
+     */
+    public String getProtocolUsername() {
+        if (Strings.isEmpty(protocolUserNameAppendix)) {
+            return username;
+        }
+        return Strings.apply("%s (%s)", username, protocolUserNameAppendix);
     }
 
     /**
