@@ -334,16 +334,13 @@ public class UserInfo extends Composable {
      */
     public String getProtocolUsername() {
         if (nameAppendixSupplier != null) {
-           String appendix = nameAppendixSupplier.get();
-           if (Strings.isFilled(appendix)) {
-              return Strings.apply("%s (%s)", username, nameAppendixSupplier.get());
-           }
+            String appendix = nameAppendixSupplier.get();
+            if (Strings.isFilled(appendix)) {
+                return Strings.apply("%s (%s)", username, nameAppendixSupplier.get());
+            }
         }
         
         return username;
-            return username;
-        }
-        return Strings.apply("%s (%s)", username, nameAppendixSupplier.get());
     }
 
     /**
