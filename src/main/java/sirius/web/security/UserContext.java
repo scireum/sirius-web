@@ -24,7 +24,6 @@ import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -85,6 +84,7 @@ public class UserContext implements SubContext {
     private List<Message> msgList = Lists.newArrayList();
     private Map<String, String> fieldErrors = Maps.newHashMap();
     private Map<String, String> fieldErrorMessages = Maps.newHashMap();
+    private boolean addedAdditionalMessages = false;
 
     /**
      * Retrieves the current <b>UserContext</b> from the {@link sirius.kernel.async.CallContext}.
@@ -327,20 +327,19 @@ public class UserContext implements SubContext {
     public List<Message> getMessages() {
         userMessagesCache.restoreCachedUserMessages(CallContext.getCurrent().get(WebContext.class));
 
-        if (!Sirius.isStartedAsTest()) {
-            List<Message> messages = new ArrayList<>(msgList);
+        if (!Sirius.isStartedAsTest() && !addedAdditionalMessages) {
+            addedAdditionalMessages = true;
             getScope().tryAs(MaintenanceInfo.class)
                       .filter(info -> !info.isLocked())
                       .map(MaintenanceInfo::maintenanceMessage)
                       .filter(Objects::nonNull)
-                      .ifPresent(messages::add);
-            getScope().tryAs(MessageProvider.class).ifPresent(provider -> provider.addMessages(messages::add));
-            getUser().tryAs(MessageProvider.class).ifPresent(provider -> provider.addMessages(messages::add));
-            messageProviders.forEach(provider -> provider.addMessages(messages::add));
-            return messages;
+                      .ifPresent(this::addMessage);
+            getScope().tryAs(MessageProvider.class).ifPresent(provider -> provider.addMessages(this::addMessage));
+            getUser().tryAs(MessageProvider.class).ifPresent(provider -> provider.addMessages(this::addMessage));
+            messageProviders.forEach(provider -> provider.addMessages(this::addMessage));
         }
 
-        return msgList;
+        return Collections.unmodifiableList(msgList);
     }
 
     /**
