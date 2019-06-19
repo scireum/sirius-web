@@ -24,6 +24,7 @@ import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -327,14 +328,16 @@ public class UserContext implements SubContext {
         userMessagesCache.restoreCachedUserMessages(CallContext.getCurrent().get(WebContext.class));
 
         if (!Sirius.isStartedAsTest()) {
+            List<Message> messages = new ArrayList<>(msgList);
             getScope().tryAs(MaintenanceInfo.class)
                       .filter(info -> !info.isLocked())
                       .map(MaintenanceInfo::maintenanceMessage)
                       .filter(Objects::nonNull)
-                      .ifPresent(this::addMessage);
-            getScope().tryAs(MessageProvider.class).ifPresent(provider -> provider.addMessages(this::addMessage));
-            getUser().tryAs(MessageProvider.class).ifPresent(provider -> provider.addMessages(this::addMessage));
-            messageProviders.forEach(provider -> provider.addMessages(this::addMessage));
+                      .ifPresent(messages::add);
+            getScope().tryAs(MessageProvider.class).ifPresent(provider -> provider.addMessages(messages::add));
+            getUser().tryAs(MessageProvider.class).ifPresent(provider -> provider.addMessages(messages::add));
+            messageProviders.forEach(provider -> provider.addMessages(messages::add));
+            return messages;
         }
 
         return msgList;
