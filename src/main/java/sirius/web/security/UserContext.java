@@ -84,6 +84,7 @@ public class UserContext implements SubContext {
     private List<Message> msgList = Lists.newArrayList();
     private Map<String, String> fieldErrors = Maps.newHashMap();
     private Map<String, String> fieldErrorMessages = Maps.newHashMap();
+    private boolean addedAdditionalMessages = false;
 
     /**
      * Retrieves the current <b>UserContext</b> from the {@link sirius.kernel.async.CallContext}.
@@ -326,7 +327,8 @@ public class UserContext implements SubContext {
     public List<Message> getMessages() {
         userMessagesCache.restoreCachedUserMessages(CallContext.getCurrent().get(WebContext.class));
 
-        if (!Sirius.isStartedAsTest()) {
+        if (!Sirius.isStartedAsTest() && !addedAdditionalMessages) {
+            addedAdditionalMessages = true;
             getScope().tryAs(MaintenanceInfo.class)
                       .filter(info -> !info.isLocked())
                       .map(MaintenanceInfo::maintenanceMessage)
@@ -337,7 +339,7 @@ public class UserContext implements SubContext {
             messageProviders.forEach(provider -> provider.addMessages(this::addMessage));
         }
 
-        return msgList;
+        return Collections.unmodifiableList(msgList);
     }
 
     /**
