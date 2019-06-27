@@ -174,36 +174,19 @@ public class CompilationContext {
     }
 
     /**
-     * Pops a local off the stack.
-     * <p>
-     * Note that this will only reduce the visibility of the variable but not free up the technical stack location. We
-     * only used each stack location once, to greatly simplify inlining.
-     *
-     * @param position the position which caused the pop - mainly used for error reporting
-     */
-    public void pop(Position position) {
-        if (!stack.isEmpty()) {
-            stack.remove(stack.size() - 1);
-        } else {
-            error(position, "Cannot pop from empty stack");
-        }
-    }
-
-    /**
      * Pops locals off the stack as long as their <tt>stackIndex</tt> is greater or equal than the one provided.
      * <p>
      * Note that this will only reduce the visibility of the variables but not free up the technical stack location. We
      * only used each stack location once, to greatly simplify inlining.
      *
-     * @param position the position which caused the popUntil - mainly used for error reporting
+     * @param position   the position which caused the popUntil - mainly used for error reporting
      * @param localIndex the limit to pop off to
      */
     public void popUntil(Position position, int localIndex) {
-        if (!stack.isEmpty()) {
-            while (!stack.isEmpty() && stack.get(stack.size() - 1).stackIndex >= localIndex) {
-                stack.remove(stack.size() - 1);
-            }
-        } else {
+        while (stack.size() > localIndex) {
+            stack.remove(stack.size() - 1);
+        }
+        if (stack.size() < localIndex) {
             error(position, "Cannot pop from empty stack");
         }
     }
@@ -215,6 +198,17 @@ public class CompilationContext {
      */
     public int getStackDepth() {
         return stackDepth;
+    }
+
+    /**
+     * Returns the "real" and visible stack depth.
+     * <p>
+     * In contrast to {@link #getStackDepth()} this grows <b>and shrinks</b> if a variable goes out of scope.
+     *
+     * @return the current number of visible arguments and local variables.
+     */
+    public int getVisibleStackDepth() {
+        return stack.size();
     }
 
     /**
@@ -259,6 +253,11 @@ public class CompilationContext {
      * @param params  the formatting parameters applied to the message
      */
     public void error(Position pos, String message, Object... params) {
+        if (!Sirius.isStartedAsTest()
+            && !errors.isEmpty()
+            && errors.get(errors.size() - 1).getPosition().getLine() == pos.getLine()) {
+            return;
+        }
         errors.add(ParseError.error(pos, Strings.apply(message, params)));
         if (errors.size() > MAX_ERRORS) {
             throw Exceptions.createHandled()

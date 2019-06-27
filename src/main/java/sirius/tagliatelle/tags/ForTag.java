@@ -91,7 +91,6 @@ public class ForTag extends TagHandler {
         result.setLoopStateIndex(loopStateIndex);
         result.verify(getCompilationContext());
         targetBlock.addChild(result);
-        getCompilationContext().popUntil(getStartOfTag(), localIndex);
     }
 
     @Override

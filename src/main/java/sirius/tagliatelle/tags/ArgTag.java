@@ -101,6 +101,7 @@ public class ArgTag extends TagHandler {
         }
 
         getCompilationContext().push(getStartOfTag(), name, type);
+        baselineLocalIndex = getCompilationContext().getVisibleStackDepth();
         getCompilationContext().getTemplate()
                                .addArgument(new TemplateArgument(type,
                                                                  name,
