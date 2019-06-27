@@ -66,6 +66,8 @@ class Parser extends InputProcessor {
      */
     private boolean canSkipWhitespace = false;
 
+    private boolean errorReported = false;
+
     @Part
     private static Tagliatelle engine;
 
@@ -87,6 +89,15 @@ class Parser extends InputProcessor {
      */
     protected Expression parse(boolean skipWhitespaces) {
         return parseExpression(skipWhitespaces).reduce();
+    }
+
+    private void error(Position pos, String message, Object... params) {
+        if (errorReported) {
+            return;
+        }
+
+        context.error(pos, Strings.apply(message, params));
+        errorReported = true;
     }
 
     /**
@@ -210,7 +221,7 @@ class Parser extends InputProcessor {
 
     private void assertType(Position pos, Expression expression, Class<?> expectedType) {
         if (!Tagliatelle.isAssignableTo(expression.getType(), expectedType)) {
-            context.error(pos, "Expected an expression of type %s but got %s", expectedType, expression.getType());
+            error(pos, "Expected an expression of type %s but got %s", expectedType, expression.getType());
         }
     }
 
@@ -308,11 +319,11 @@ class Parser extends InputProcessor {
                 } else if (result.getType() == String.class || right.getType() == String.class) {
                     result = new ConcatExpression(result, right);
                 } else {
-                    context.error(operator,
-                                  "Both operands of '+' must be either an int or one of both must be a String."
-                                  + " Types are: %s, %s",
-                                  result.getType(),
-                                  right.getType());
+                    error(operator,
+                          "Both operands of '+' must be either an int or one of both must be a String."
+                          + " Types are: %s, %s",
+                          result.getType(),
+                          right.getType());
                 }
             } else if (reader.current().is('-')) {
                 Position pos = reader.current();
@@ -397,7 +408,7 @@ class Parser extends InputProcessor {
     private Expression call(Expression self) {
         skipWhitespaces();
         if (!isAtIdentifier()) {
-            context.error(reader.current(), "Expected a method name.");
+            error(reader.current(), "Expected a method name.");
         }
         Char position = reader.current();
         String methodName = readIdentifier();
@@ -494,7 +505,7 @@ class Parser extends InputProcessor {
             Position pos = reader.consume();
             Expression target = chain();
             if (target.getType() != boolean.class) {
-                context.error(pos, "Expected a boolean expression here!");
+                error(pos, "Expected a boolean expression here!");
             }
             return new Negation(target);
         }
@@ -628,7 +639,7 @@ class Parser extends InputProcessor {
             return new ReadGlobal(variable.get().getFirst(), variable.get().getSecond());
         }
 
-        context.error(pos, "Unknown variable %s", variableName);
+        error(pos, "Unknown variable %s", variableName);
         return ConstantNull.NULL;
     }
 
@@ -648,7 +659,7 @@ class Parser extends InputProcessor {
             return number();
         }
 
-        context.error(reader.current(), "Unexpected Token: %s", reader.current().getValue());
+        error(reader.current(), "Unexpected Token: %s", reader.current().getValue());
         return ConstantNull.NULL;
     }
 
