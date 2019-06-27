@@ -131,15 +131,6 @@ public class CompositeEmitter extends Emitter {
     }
 
     @Override
-    public Emitter propagateVisitor(EmitterVisitor visitor) {
-        for (int i = 0; i < children.size(); i++) {
-            children.set(i, children.get(i).propagateVisitor(visitor));
-        }
-
-        return visitor.visitThis(this);
-    }
-
-    @Override
     public void visitExpressions(Function<Position, ExpressionVisitor> visitorSupplier) {
         for (Emitter expr : children) {
             expr.visitExpressions(visitorSupplier);

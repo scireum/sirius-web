@@ -63,14 +63,6 @@ public class BlockEmitter extends Emitter {
     }
 
     @Override
-    public Emitter propagateVisitor(EmitterVisitor visitor) {
-        if (alternative != null) {
-            this.alternative = alternative.propagateVisitor(visitor);
-        }
-        return visitor.visitThis(this);
-    }
-
-    @Override
     public void visitExpressions(Function<Position, ExpressionVisitor> visitorSupplier) {
         if (alternative != null) {
             alternative.visitExpressions(visitorSupplier);
