@@ -9,7 +9,10 @@
 
     <w:pageHeader>
         Tagliatelle - State
-        <span class="pull-right"><a href="/system/tags/state" class="btn"><i class="fa fa-refresh"></i> @i18n("NLS.refresh")</a></span>
+        <span class="pull-right">
+            <a href="/system/tags/state" class="btn"><i class="fa fa-refresh"></i> @i18n("NLS.refresh")</a>
+            <a href="/system/tags/state?reset" class="btn btn-danger"><i class="fa fa-trash"></i> Reset Statistics</a>
+        </span>
     </w:pageHeader>
 
     <table class="table table-striped">
@@ -18,10 +21,6 @@
             <td class="align-right">
                 Compiled<br>
                 Last Changed
-            </td>
-            <td class="align-right">
-                Complexity<br>
-                <small class="muted">Emitters (Expressions)</small>
             </td>
             <td class="align-right">Invocations</td>
             <td class="align-right">Avg. Rendertime</td>
@@ -36,7 +35,6 @@
                     @toUserString(template.getCompilationTime())<br>
                     @toUserString(template.getResourceLastChanged())
                 </td>
-                <td class="align-right">@template.getComplexity()</td>
                 <td class="align-right">@template.getNumInvocations()</td>
                 <td class="align-right">@toUserString(template.getAverageRenderTime()) ms</td>
             </tr>

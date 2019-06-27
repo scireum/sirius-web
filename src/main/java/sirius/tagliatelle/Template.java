@@ -330,6 +330,7 @@ public class Template {
      * The complexity is simply the number of emitters and number of expressions in a template.
      *
      * @return the complexity as string
+     * Resets the internal performance counters.
      */
     public String getComplexity() {
         if (emitterCount == null) {
@@ -349,6 +350,8 @@ public class Template {
         }
 
         return emitterCount + " (" + expressionCount + ")";
+    public void resetAverageRenderTime() {
+        renderTime.getAndClear();
     }
 
     @Override
