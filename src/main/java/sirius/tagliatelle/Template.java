@@ -325,31 +325,8 @@ public class Template {
     }
 
     /**
-     * Returns the complexity of the template.
-     * <p>
-     * The complexity is simply the number of emitters and number of expressions in a template.
-     *
-     * @return the complexity as string
      * Resets the internal performance counters.
      */
-    public String getComplexity() {
-        if (emitterCount == null) {
-            AtomicInteger emitters = new AtomicInteger(0);
-            AtomicInteger expressions = new AtomicInteger(0);
-            emitter.propagateVisitor(e -> {
-                emitters.incrementAndGet();
-                return e;
-            });
-            emitter.visitExpressions(pos -> e -> {
-                expressions.incrementAndGet();
-                return e;
-            });
-
-            emitterCount = emitters.get();
-            expressionCount = expressions.get();
-        }
-
-        return emitterCount + " (" + expressionCount + ")";
     public void resetAverageRenderTime() {
         renderTime.getAndClear();
     }
