@@ -1,0 +1,8 @@
+<i:arg type="String" name="block" />
+<i:pragma name="inline" value="true" />
+
+<i:switch test="@block">
+    <i:block name="a">a</i:block>
+    <i:block name="b">b</i:block>
+    <i:block name="c">c</i:block>
+</i:switch>
