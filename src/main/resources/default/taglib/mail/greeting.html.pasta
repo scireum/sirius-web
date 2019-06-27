@@ -1,0 +1,9 @@
+<i:pragma name="inline" value="true"/>
+
+<mail:table class="greeting">
+    <mail:tableContent bgcolor="#ffffff">
+        <h1>
+            <i:render name="body"/>
+        </h1>
+    </mail:tableContent>
+</mail:table>

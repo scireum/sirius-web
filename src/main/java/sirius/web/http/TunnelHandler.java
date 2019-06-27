@@ -25,14 +25,18 @@ import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.LastHttpContent;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Watch;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
+import sirius.kernel.nls.NLS;
 
 import java.nio.channels.ClosedChannelException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Performs tunneling into a request by reading from another.
@@ -54,6 +58,7 @@ class TunnelHandler implements AsyncHandler<String> {
     private int responseCode = HttpResponseStatus.OK.code();
     private boolean contentLengthKnown;
     private volatile boolean failed;
+    private Watch watch;
 
     TunnelHandler(Response response, String url, Consumer<Integer> failureHandler) {
         this.response = response;
@@ -61,10 +66,13 @@ class TunnelHandler implements AsyncHandler<String> {
         this.url = url;
         this.failureHandler = failureHandler;
         this.cc = CallContext.getCurrent();
+        this.watch = Watch.start();
     }
 
     @Override
     public STATE onStatusReceived(com.ning.http.client.HttpResponseStatus status) throws Exception {
+        logTiming();
+
         CallContext.setCurrent(cc);
 
         if (WebServer.LOG.isFINE()) {
@@ -255,6 +263,38 @@ class TunnelHandler implements AsyncHandler<String> {
             response.complete(writeFuture);
         }
         return "";
+    }
+
+    private void logTiming() {
+        try {
+            if (webContext.isLongCall() || webContext.scheduled == 0) {
+                // No response time measurement for long running or aborted requests...
+                return;
+            }
+            long ttfbMillis = watch.elapsedMillis();
+
+            if (ttfbMillis > WebServer.getMaxTimeToFirstByte() && WebServer.getMaxTimeToFirstByte() > 0) {
+                WebServer.LOG.WARN("Long running tunneling: %s (TTFB: %s)"
+                                   + "%nURL:%s"
+                                   + "%nTunnel URL:%s"
+                                   + "%nParameters:"
+                                   + "%n%s"
+                                   + "%nMDC:"
+                                   + "%n%s%n",
+                                   webContext.getRequestedURI(),
+                                   NLS.convertDuration(ttfbMillis, true, true),
+                                   webContext.getRequestedURL(),
+                                   Strings.split(url, "?").getFirst(),
+                                   webContext.getParameterNames()
+                                             .stream()
+                                             .map(param -> param + ": " + Strings.limit(webContext.get(param)
+                                                                                                  .asString(), 50))
+                                             .collect(Collectors.joining("\n")),
+                                   cc);
+            }
+        } catch (Exception e) {
+            Exceptions.handle(e);
+        }
     }
 
     @Override

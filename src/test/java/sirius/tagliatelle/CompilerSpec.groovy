@@ -11,14 +11,15 @@ package sirius.tagliatelle
 import parsii.tokenizer.ParseError
 import sirius.kernel.BaseSpecification
 import sirius.kernel.commons.Amount
+import sirius.kernel.commons.Tuple
 import sirius.kernel.commons.Value
 import sirius.kernel.di.std.Part
 import sirius.tagliatelle.compiler.CompilationContext
 import sirius.tagliatelle.compiler.CompileError
 import sirius.tagliatelle.compiler.CompileException
 import sirius.tagliatelle.compiler.Compiler
+import sirius.tagliatelle.emitter.ConstantEmitter
 import sirius.web.resources.Resources
-import sirius.kernel.commons.Tuple
 
 import java.time.LocalDate
 
@@ -36,7 +37,9 @@ class CompilerSpec extends BaseSpecification {
     def "vararg detection doesn't crash when a non-vararg method is invoked with null"() {
         when:
         def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx, "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" /> @test.asLocalDate(null)").compile()
+        List<CompileError> errors = new Compiler(ctx,
+                                                 "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" /> @test.asLocalDate(null)").
+                compile()
         then:
         errors.size() == 0
         and:
@@ -46,7 +49,9 @@ class CompilerSpec extends BaseSpecification {
     def "vararg detection works without parameters"() {
         when:
         def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx, "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore().asString()").compile()
+        List<CompileError> errors = new Compiler(ctx,
+                                                 "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore().asString()").
+                compile()
         then:
         errors.size() == 0
         and:
@@ -56,7 +61,9 @@ class CompilerSpec extends BaseSpecification {
     def "vararg detection works with a single parameter"() {
         when:
         def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx, "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore('test').asString()").compile()
+        List<CompileError> errors = new Compiler(ctx,
+                                                 "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore('test').asString()").
+                compile()
         then:
         errors.size() == 0
         and:
@@ -66,7 +73,9 @@ class CompilerSpec extends BaseSpecification {
     def "vararg detection works with null as parameter"() {
         when:
         def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx, "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore(null).asString()").compile()
+        List<CompileError> errors = new Compiler(ctx,
+                                                 "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore(null).asString()").
+                compile()
         then:
         errors.size() == 0
         and:
@@ -88,7 +97,9 @@ class CompilerSpec extends BaseSpecification {
     def "vararg detection works with several parameters"() {
         when:
         def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx, "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore('a', 'test').asString()").compile()
+        List<CompileError> errors = new Compiler(ctx,
+                                                 "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore('a', 'test').asString()").
+                compile()
         then:
         errors.size() == 0
         and:
@@ -98,7 +109,9 @@ class CompilerSpec extends BaseSpecification {
     def "vararg detection works without vararg parameters"() {
         when:
         def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx, "<i:arg type=\"sirius.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('X')").compile()
+        List<CompileError> errors = new Compiler(ctx,
+                                                 "<i:arg type=\"sirius.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('X')").
+                compile()
         then:
         errors.size() == 0
         and:
@@ -108,7 +121,9 @@ class CompilerSpec extends BaseSpecification {
     def "vararg detection works with a single vararg parameter"() {
         when:
         def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx, "<i:arg type=\"sirius.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('%s','X')").compile()
+        List<CompileError> errors = new Compiler(ctx,
+                                                 "<i:arg type=\"sirius.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('%s','X')").
+                compile()
         then:
         errors.size() == 0
         and:
@@ -118,7 +133,9 @@ class CompilerSpec extends BaseSpecification {
     def "vararg detection works with null as a vararg parameter"() {
         when:
         def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx, "<i:arg type=\"sirius.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('%s', null)").compile()
+        List<CompileError> errors = new Compiler(ctx,
+                                                 "<i:arg type=\"sirius.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('%s', null)").
+                compile()
         then:
         errors.size() == 0
         and:
@@ -128,7 +145,9 @@ class CompilerSpec extends BaseSpecification {
     def "vararg detection works with several vararg parameters"() {
         when:
         def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx, "<i:arg type=\"sirius.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('%s %s', 'X', 'Y')").compile()
+        List<CompileError> errors = new Compiler(ctx,
+                                                 "<i:arg type=\"sirius.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('%s %s', 'X', 'Y')").
+                compile()
         then:
         errors.size() == 0
         and:
@@ -148,9 +167,38 @@ class CompilerSpec extends BaseSpecification {
         given:
         String expectedResult = resources.resolve("templates/loop.html").get().getContentAsString()
         when:
-        String result = tagliatelle.resolve("templates/loop.html.pasta").get().renderToString(Arrays.asList(1, 2, 3, 4, 5))
+        String result = tagliatelle.resolve("templates/loop.html.pasta").
+                get().
+                renderToString(Arrays.asList(1, 2, 3, 4, 5))
         then:
         test.basicallyEqual(result, expectedResult)
+    }
+
+    def "switch works as expected"() {
+        when:
+        String a = tagliatelle.resolve("templates/switch.html.pasta").get().renderToString("a")
+        String b = tagliatelle.resolve("templates/switch.html.pasta").get().renderToString("b")
+        String c = tagliatelle.resolve("templates/switch.html.pasta").get().renderToString("c")
+        then:
+        test.basicallyEqual(a, "a")
+        test.basicallyEqual(b, "b")
+        test.basicallyEqual(c, "c")
+    }
+
+    def "constant switch is optimized"() {
+        when:
+        Template template = tagliatelle.resolve("templates/constant-switch.html.pasta").get()
+        then:
+        template.getEmitter() instanceof ConstantEmitter
+    }
+
+    def "extensions get linine and optimized"() {
+        when:
+        Template template = tagliatelle.resolve("templates/extended.html.pasta").get()
+        then:
+        template.getEmitter() instanceof ConstantEmitter
+        and:
+        template.getEmitter().toString() == "b"
     }
 
     def "dynamicInvoke works"() {
@@ -233,7 +281,10 @@ class CompilerSpec extends BaseSpecification {
         then:
         errors.size() == 2
         errors.get(0).getError().getSeverity() == ParseError.Severity.ERROR
-        errors.get(0).toString().contains("Incompatible attribute types. e:invalidArgumentTaglib expects int for 'invalidArgument', but class java.lang.String was given.")
+        errors.get(0).
+                toString().
+                contains(
+                        "Incompatible attribute types. e:invalidArgumentTaglib expects int for 'invalidArgument', but class java.lang.String was given.")
         !errors.get(1).toString().contains("NullPointerException")
     }
 
@@ -289,7 +340,9 @@ class CompilerSpec extends BaseSpecification {
     def "horror whitespaces don't crash the compiler"() {
         when:
         def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx, "<i:invoke\u00A0template=\"templates/attribute-expressions.html.pasta\"/>").compile()
+        List<CompileError> errors = new Compiler(ctx,
+                                                 "<i:invoke\u00A0template=\"templates/attribute-expressions.html.pasta\"/>").
+                compile()
         then:
         errors.size() == 1
     }

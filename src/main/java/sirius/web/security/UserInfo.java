@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Represents an user.
@@ -39,24 +40,13 @@ public class UserInfo extends Composable {
      */
     public static final UserInfo NOBODY = Builder.createUser("ANONYMOUS").withUsername("(no user)").build();
 
-    /**
-     * Represents a special permission which is never granted - therefore {@link #hasPermission(String)} will always
-     * return false.
-     */
-    private static final String DISABLED = "disabled";
-
-    /**
-     * Represents a special permission which is always granted - therefore {@link #hasPermission(String)} will always
-     * return true.
-     */
-    private static final String ENABLED = "enabled";
-
     protected String tenantId;
     protected String tenantName;
     protected String userId;
     protected String username;
     protected String lang;
     protected Set<String> permissions = null;
+    protected Supplier<String> nameAppendixSupplier;
     protected Function<UserInfo, UserSettings> settingsSupplier;
     protected Function<UserInfo, Object> userSupplier;
 
@@ -94,13 +84,13 @@ public class UserInfo extends Composable {
          * @return the builder itself for fluent method calls
          */
         public static Builder withUser(@Nonnull UserInfo info) {
-            return createUser(info.getUserId())
-                    .withLang(info.getLang())
-                    .withUsername(info.getUserName())
-                    .withTenantId(info.getTenantId())
-                    .withTenantName(info.getTenantName())
-                    .withSettingsSupplier(info.settingsSupplier)
-                    .withUserSupplier(info.userSupplier);
+            return createUser(info.getUserId()).withLang(info.getLang())
+                                               .withUsername(info.getUserName())
+                                               .withNameAppendixSupplier(info.getNameAppendixSupplier())
+                                               .withTenantId(info.getTenantId())
+                                               .withTenantName(info.getTenantName())
+                                               .withSettingsSupplier(info.settingsSupplier)
+                                               .withUserSupplier(info.userSupplier);
         }
 
         /**
@@ -112,6 +102,19 @@ public class UserInfo extends Composable {
         public Builder withUsername(String name) {
             verifyState();
             user.username = name;
+            return this;
+        }
+
+        /**
+         * Contains a supplier for additional info, added to the Username to be used in Protocols. See {@link #getProtocolUsername()}.
+         * This should be filled if multiple users can have the same {@link #username}s or if a user acts on the behalf of another user.
+         *
+         * @param appendixSupplier the supplier for additional info about the user.
+         * @return the builder itself for fluent method calls
+         */
+        public Builder withNameAppendixSupplier(Supplier<String> appendixSupplier) {
+            verifyState();
+            user.nameAppendixSupplier = appendixSupplier;
             return this;
         }
 
@@ -227,6 +230,15 @@ public class UserInfo extends Composable {
     }
 
     /**
+     * Returns the supplier for additional info added to the descriptive name of the user used in Protocols.
+     *
+     * @return the supplier for the appendix @ the user name
+     */
+    public Supplier<String> getNameAppendixSupplier() {
+        return nameAppendixSupplier;
+    }
+
+    /**
      * The unique ID of the tenant.
      *
      * @return the unique ID the tenant the user belongs to
@@ -286,42 +298,7 @@ public class UserInfo extends Composable {
      * @return <tt>true</tt> if the user has the permission, <tt>false</tt> otherwise
      */
     public boolean hasPermission(String permission) {
-        if (Strings.isEmpty(permission)) {
-            return true;
-        }
-
-        if (DISABLED.equals(permission)) {
-            return false;
-        }
-
-        if (ENABLED.equals(permission)) {
-            return true;
-        }
-
-        for (String orClause : permission.split(",")) {
-            if (permissionsFullfilled(orClause)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    protected boolean permissionsFullfilled(String permissions) {
-        for (String permission : permissions.split("\\+")) {
-            if (!permissionFullfilled(permission)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    protected boolean permissionFullfilled(String permission) {
-        if (permission.startsWith("!")) {
-            return permissions == null || !permissions.contains(permission.substring(1));
-        } else {
-            return permissions != null && permissions.contains(permission);
-        }
+        return Permissions.hasPermission(permission, permissions == null ? s -> false : permissions::contains);
     }
 
     /**
@@ -347,6 +324,23 @@ public class UserInfo extends Composable {
      */
     public boolean isLoggedIn() {
         return hasPermission(PERMISSION_LOGGED_IN);
+    }
+
+    /**
+     * Returns the login or descriptive name of the user used in Protocols.
+     * Contains additional info given via {@link #nameAppendixSupplier} to further identify the user.
+     *
+     * @return the name of the user
+     */
+    public String getProtocolUsername() {
+        if (nameAppendixSupplier != null) {
+            String appendix = nameAppendixSupplier.get();
+            if (Strings.isFilled(appendix)) {
+                return Strings.apply("%s (%s)", username, nameAppendixSupplier.get());
+            }
+        }
+        
+        return username;
     }
 
     /**
@@ -396,6 +390,9 @@ public class UserInfo extends Composable {
      * @return all permissions granted to the user.
      */
     public Set<String> getPermissions() {
+        if (permissions == null) {
+            return Collections.emptySet();
+        }
         return Collections.unmodifiableSet(permissions);
     }
 

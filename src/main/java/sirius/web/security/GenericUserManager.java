@@ -134,11 +134,6 @@ public abstract class GenericUserManager implements UserManager {
         return defaultUser;
     }
 
-    @Override
-    public UserInfo verifyUser(UserInfo userInfo) {
-        return userInfo;
-    }
-
     @Nonnull
     @Override
     public UserInfo findUserForRequest(@Nonnull WebContext ctx) {
@@ -345,10 +340,10 @@ public abstract class GenericUserManager implements UserManager {
      * Tries to perform a login using "user" and "password".
      */
     private UserInfo loginViaUsernameAndPassword(WebContext ctx) {
-        if (ctx.get("user").isFilled() && ctx.get("password").isFilled()) {
+        if (ctx.get("user").isFilled() && ctx.getFirstFilled("password", "token").isFilled()) {
             ctx.hidePost();
             String user = ctx.get("user").trim();
-            String password = ctx.get("password").trim();
+            String password = ctx.getFirstFilled("password", "token").trim();
 
             UserInfo result = findUserByCredentials(ctx, user, password);
             if (result != null) {
@@ -378,7 +373,7 @@ public abstract class GenericUserManager implements UserManager {
             return null;
         }
 
-        if (!userId.isFilled() || !isUserStillValid(userId.asString())) {
+        if (!userId.isFilled() || !isUserStillValid(userId.asString(), ctx)) {
             return null;
         }
 
@@ -404,9 +399,10 @@ public abstract class GenericUserManager implements UserManager {
      * The method has to check the session data by itself.
      *
      * @param userId the user id to check
+     * @param ctx    the current request for which the check is performed
      * @return <tt>true</tt> if the user is still valid, false otherwise
      */
-    protected boolean isUserStillValid(String userId) {
+    protected boolean isUserStillValid(String userId, WebContext ctx) {
         return true;
     }
 

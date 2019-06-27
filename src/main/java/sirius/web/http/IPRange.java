@@ -140,7 +140,7 @@ public class IPRange {
      * @return a RangeSet representing the given input. If the input was empty, a "no filter" set is returned, which
      * accepts all IPs.
      */
-    public static RangeSet paraseRangeSet(String commaSeparatedListOfRanges) {
+    public static RangeSet parseRangeSet(String commaSeparatedListOfRanges) {
         RangeSet result = new RangeSet();
         if (Strings.isFilled(commaSeparatedListOfRanges)) {
             result.ranges = Lists.newArrayList();

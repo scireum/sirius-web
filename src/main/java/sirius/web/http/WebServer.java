@@ -128,9 +128,9 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     /**
      * Contains a list of IP ranges which are permitted to access this server. Access from unauthorized IPs will be
      * blocked at the lowest level possible (probably no connection will be accepted). The format accepted by this
-     * field is defined by {@link IPRange#paraseRangeSet(String)}.
+     * field is defined by {@link IPRange#parseRangeSet(String)}.
      *
-     * @see IPRange#paraseRangeSet(String)
+     * @see IPRange#parseRangeSet(String)
      */
     @ConfigValue("http.firewall.filterIPs")
     private static String ipFilter;
@@ -154,7 +154,14 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     private static HttpDataFactory httpDataFactory;
 
     private static final String UNKNOWN_FORWARDED_FOR_HOST = "unknown";
-    private static final String HEADER_X_FORWARDED_FOR = "X-Forwarded-For";
+
+    /**
+     * Contains the header name which contains the original IP for a request.
+     * <p>
+     * This is supplied by a proxy or load balancer, as the remote ip of the TCP/IP connection is always the proxy
+     * or lb itself.
+     */
+    public static final String HEADER_X_FORWARDED_FOR = "X-Forwarded-For";
 
     /**
      * Indicates that netty itself will compute the optimal number of threads in the event loop
@@ -198,7 +205,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     protected static IPRange.RangeSet getIPFilter() {
         if (filterRanges == null) {
             try {
-                filterRanges = IPRange.paraseRangeSet(ipFilter);
+                filterRanges = IPRange.parseRangeSet(ipFilter);
             } catch (Exception e) {
                 Exceptions.handle()
                           .to(LOG)
@@ -223,7 +230,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     protected static IPRange.RangeSet getProxyIPs() {
         if (proxyRanges == null) {
             try {
-                proxyRanges = IPRange.paraseRangeSet(proxyIPs);
+                proxyRanges = IPRange.parseRangeSet(proxyIPs);
             } catch (Exception e) {
                 Exceptions.handle()
                           .to(LOG)

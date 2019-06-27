@@ -31,6 +31,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.mail.internet.InternetAddress;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -46,7 +47,11 @@ public class MailSender {
     protected String senderName;
     protected String receiverEmail;
     protected String receiverName;
+    protected String replyToEmail;
+    protected String replyToName;
     protected String subject;
+    protected String subjectKey;
+    protected Map<String, Object> subjectParams;
     protected Context textContext;
     protected Context htmlContext;
     protected String textTemplate;
@@ -149,10 +154,23 @@ public class MailSender {
      *
      * @param receiverEmail the email address which should receive the email
      * @param receiverName  the name of the receiver of the email
-     * @return the buidler itself
+     * @return the builder itself
      */
     public MailSender to(String receiverEmail, String receiverName) {
         return toEmail(receiverEmail).toName(receiverName);
+    }
+
+    /**
+     * Specifies both, the reply-to email and name.
+     *
+     * @param replyToEmail the email address which should be used as reply-to
+     * @param replyToName  the name of the reply-to address
+     * @return the builder itself
+     */
+    public MailSender replyTo(String replyToEmail, String replyToName) {
+        this.replyToEmail = replyToEmail;
+        this.replyToName = replyToName;
+        return this;
     }
 
     /**
@@ -163,6 +181,31 @@ public class MailSender {
      */
     public MailSender subject(String subject) {
         this.subject = subject;
+        return this;
+    }
+
+    /**
+     * Specifies the NLS key used to generate the subject line of the mail.
+     * This uses the language specified in {@link #setLang(String...)} if provided
+     *
+     * @param subjectKey the NLS key for the subject line to use.
+     * @return the builder itself
+     */
+    public MailSender nlsSubject(String subjectKey) {
+        return nlsSubject(subjectKey, null);
+    }
+
+    /**
+     * Specifies the NLS key and optional parameters used to generate the subject line of the mail.
+     * This uses the language specified in {@link #setLang(String...)} if provided
+     *
+     * @param subjectKey    the NLS key for the subject line to use.
+     * @param subjectParams the parameters used to format the subject line
+     * @return the builder itself
+     */
+    public MailSender nlsSubject(String subjectKey, @Nullable Map<String, Object> subjectParams) {
+        this.subjectKey = subjectKey;
+        this.subjectParams = subjectParams == null ? Collections.emptyMap() : subjectParams;
         return this;
     }
 
@@ -390,6 +433,7 @@ public class MailSender {
                     CallContext.getCurrent().setLang(lang);
                 }
                 render();
+                buildSubject();
                 sanitize();
                 check();
                 sendMailAsync(smtpConfiguration != null ?
@@ -434,6 +478,12 @@ public class MailSender {
         }
     }
 
+    private void buildSubject() {
+        if (Strings.isFilled(subjectKey)) {
+            subject = NLS.fmtr(subjectKey).set(subjectParams).format();
+        }
+    }
+
     protected void sendMailAsync(SMTPConfiguration config) {
         if (Strings.isEmpty(config.getMailHost())) {
             Mails.LOG.WARN("Not going to send an email to '%s' with subject '%s' as no mail server is configured...",
@@ -446,6 +496,12 @@ public class MailSender {
     }
 
     private void check() {
+        checkReceiver();
+        checkSender();
+        checkReplyTo();
+    }
+
+    private void checkReceiver() {
         try {
             if (Strings.isFilled(receiverName)) {
                 new InternetAddress(receiverEmail, receiverName).validate();
@@ -453,17 +509,20 @@ public class MailSender {
                 new InternetAddress(receiverEmail).validate();
             }
         } catch (Exception e) {
-            throw Exceptions.handle()
-                            .to(Mails.LOG)
-                            .error(e)
-                            .withNLSKey("MailService.invalidReceiver")
-                            .set("address",
-                                 Strings.isFilled(receiverName) ?
-                                 receiverEmail + " (" + receiverName + ")" :
-                                 receiverEmail)
-                            .handle();
+            logInvalidAddress(e, "MailService.invalidReceiver", receiverName, receiverEmail);
         }
+    }
 
+    private void logInvalidAddress(Exception e, String nlsKey, String name, String email) {
+        throw Exceptions.handle()
+                        .to(Mails.LOG)
+                        .error(e)
+                        .withNLSKey(nlsKey)
+                        .set("address", Strings.isFilled(name) ? email + " (" + name + ")" : email)
+                        .handle();
+    }
+
+    private void checkSender() {
         try {
             if (Strings.isFilled(senderEmail)) {
                 if (Strings.isFilled(senderName)) {
@@ -473,13 +532,21 @@ public class MailSender {
                 }
             }
         } catch (Exception e) {
-            throw Exceptions.handle()
-                            .to(Mails.LOG)
-                            .error(e)
-                            .withNLSKey("MailService.invalidSender")
-                            .set("address",
-                                 Strings.isFilled(senderName) ? senderEmail + " (" + senderName + ")" : senderEmail)
-                            .handle();
+            logInvalidAddress(e, "MailService.invalidSender", senderName, senderEmail);
+        }
+    }
+
+    private void checkReplyTo() {
+        try {
+            if (Strings.isFilled(replyToEmail)) {
+                if (Strings.isFilled(replyToName)) {
+                    new InternetAddress(replyToEmail, replyToName).validate();
+                } else {
+                    new InternetAddress(replyToEmail).validate();
+                }
+            }
+        } catch (Exception e) {
+            logInvalidAddress(e, "MailService.invalidReplyTo", replyToName, replyToEmail);
         }
     }
 
@@ -495,6 +562,12 @@ public class MailSender {
         }
         if (Strings.isFilled(receiverName)) {
             receiverName = receiverName.trim();
+        }
+        if (Strings.isFilled(replyToEmail)) {
+            replyToEmail = replyToEmail.replaceAll("\\s", "");
+        }
+        if (Strings.isFilled(replyToName)) {
+            replyToName = replyToName.trim();
         }
     }
 }

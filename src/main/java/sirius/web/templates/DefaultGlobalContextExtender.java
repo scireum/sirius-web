@@ -64,8 +64,6 @@ public class DefaultGlobalContextExtender implements GlobalContextExtender {
         parameterCollector.accept("wondergemRoot", wondergemRoot);
         parameterCollector.accept("tagLine", tagLine);
         parameterCollector.accept("contentSecurityPolicy", contentSecurityPolicy);
-        parameterCollector.accept("dateFormat", NLS.get("RythmConfig.jsDateFormat"));
-        parameterCollector.accept("timeFormat", NLS.get("RythmConfig.jsTimeFormat"));
         parameterCollector.accept("saml", saml);
         parameterCollector.accept("csrf", csrfHelper);
     }

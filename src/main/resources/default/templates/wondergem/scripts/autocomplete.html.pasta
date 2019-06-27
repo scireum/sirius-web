@@ -5,7 +5,7 @@
         return typeof possibleFunction === "function" ? possibleFunction : Function();
     }
 
-    sirius.createAutocomplete = (function () {
+    sirius.createAutocomplete = function () {
 
         /**
          * Small object which defines some properties (width & position) of the completion div.
@@ -41,7 +41,8 @@
             name: "autocomplete-input",
             element: undefined,
             spinnerElement: undefined,
-            spinnerTemplate: '<a href="#" class="autocomplete-spinner hide" tabindex="-1"><i class="fa fa-spinner fa-spin"></i></a>',
+            spinnerTemplate: '<a href="#" class="autocomplete-spinner input-width-js hide" tabindex="-1"><i class="fa fa-spinner fa-spin"></i></a>',
+            preventCreateToken: false,
 
             /**
              * Shows a small spinner in the input field whenever the service loads data.
@@ -86,8 +87,6 @@
                 if (localSource.configured) {
                     localSource.load(value);
                 }
-
-                completions.update();
             },
 
             /**
@@ -103,7 +102,9 @@
 
                 if (event.keyCode === sirius.keys.KEY_ARROW_DOWN) {
                     if (!completions.isVisible()) {
-                        completions.show();
+                        // completions are not loaded yet, just wait untill the service.load() function calls
+                        // completions.show()
+                        return false;
                     }
 
                     if (completions.selectedRow === undefined) {
@@ -156,11 +157,6 @@
                 if (config && !config.noSpinner) {
                     input.spinnerElement = $(input.spinnerTemplate);
                     input.spinnerElement.insertAfter(input.element);
-
-                    // this is needed to display the spinner in the same row as the input field
-                    // the spinner holds the class .fa which defines the size to 14
-                    // because jquery width rounds up or down we need to make provisions for these cases using a 2px margin
-                    input.element.css("max-width", input.element.width() - 16);
                 }
 
                 this.element.keyup(function (event) {
@@ -183,7 +179,23 @@
                     }
                 });
 
-                this.element.focusout(function () {
+                this.element.focusout(function (event) {
+                    var $relatedTarget = $(event.relatedTarget);
+                    if ($relatedTarget.hasClass('autocomplete-wrapper') || $relatedTarget.hasClass('autocomplete-row-js')) {
+                        if (this.value.length) {
+                            input.preventCreateToken = true;
+                        }
+
+                        // focus has to be called in setTimeout because of 19+ years old firefox bug..
+                        // else the input field will not be re-focused in firefox
+                        // https://bugzilla.mozilla.org/show_bug.cgi?id=53579
+                        var that = this;
+                        setTimeout(function () {
+                            that.focus();
+                        });
+
+                        return false;
+                    }
                     completions.hide();
                 });
 
@@ -191,11 +203,21 @@
                     if (localSource.configured) {
                         localSource.load($(this).val());
                     }
-                    completions.show();
+                    if (service.configured && service.minSize === 0) {
+                        service.load($(this).val());
+                    }
                 });
 
                 this.element.click(function () {
-                    completions.show();
+                    if (completions.isVisible()) {
+                        return;
+                    }
+                    if (localSource.configured) {
+                        localSource.load($(this).val());
+                    }
+                    if (service.configured) {
+                        service.load($(this).val());
+                    }
                 });
             }
         };
@@ -216,27 +238,29 @@
             state: undefined,
 
             config: undefined,
+
             /**
              * Initializes the completions element.
              *
              * Keys of the config object are:
              * - id: the id of the autocomplete wrapper div
+             * - width: the width for the element if it should differ from the anchor
+             * - height: the max-height of the element
              */
             init: function (config) {
                 this.config = config;
-                var wrapper = "<div class='well autocomplete-wrapper autocomplete-wrapper-js' {{#id}}id='{{id}}'{{/id}}></div>";
+                var wrapper = "<div tabindex='0' class='well autocomplete-wrapper autocomplete-wrapper-js' {{#id}}id='{{id}}'{{/id}}></div>";
 
                 this.state = completions.HIDDEN;
 
                 this.element = $(Mustache.render(wrapper, config));
-                this.rePosition();
 
 
                 this.element.on("mouseup.sirius-autocomplete", ".autocomplete-row-js", function () {
                     completions.select($(this));
                 });
 
-                $("body").append(this.element);
+                anchor.element.after(this.element);
             },
 
             rePosition: function () {
@@ -244,6 +268,11 @@
                     this.element.width(this.config.width);
                 } else {
                     this.element.width(anchor.element.outerWidth());
+                }
+
+                if (this.config.height) {
+                    this.element.css('max-height', this.config.height);
+                    this.element.css('overflow', 'auto');
                 }
 
                 var offset = this.element.offset();
@@ -282,6 +311,38 @@
             hoverRow: function ($row) {
                 completions.selectedRow = $row;
                 $row.addClass("autocomplete-selected-element");
+                completions.scrollRowIntoView($row.get(0));
+
+                events.onHoverRow.forEach(function (handler) {
+                    handler($row);
+                });
+            },
+
+            /**
+             * If the given row is outside the view, scroll it into view.
+             *
+             * Only used if the completions.height config is set, or else the element will just be as high as it
+             * needs to be to display all completions without scrolling.
+             *
+             * @@param row the row to be scrolled into the view
+             */
+            scrollRowIntoView: function (row) {
+                var container = row.parentNode;
+
+                if (container.scrollTop > row.offsetTop) {
+                    // row is above the position the container scrolled to
+                    // -> we should scroll up so the row is on the top of the viewable space
+                    container.scrollTop = row.offsetTop;
+                    return;
+                }
+
+                var containerBottom = container.scrollTop + container.offsetHeight;
+                var rowBottom = row.offsetTop + row.offsetHeight;
+                if (containerBottom < rowBottom) {
+                    // row is below the bottom position the container scrolled to
+                    // -> we should scroll down so the row is on the bottom of the viewable space
+                    container.scrollTop = rowBottom - container.offsetHeight;
+                }
             },
 
             unHoverRow: function ($row) {
@@ -289,6 +350,10 @@
                     $row.removeClass("autocomplete-selected-element");
                 }
                 completions.selectedRow = undefined;
+
+                events.onUnhoverRow.forEach(function (handler) {
+                    handler($row);
+                });
             },
 
             setTemplates: function (templates) {
@@ -300,8 +365,7 @@
             },
 
             show: function () {
-                if (this.rows.length > 0 && input.element.is(":focus")) {
-                    completions.selectedRow = undefined;
+                if (this.rows.length > 0 && document.activeElement === input.element.get(0)) {
                     this.update();
                     completions.element.show();
                     this.state = completions.VISIBLE;
@@ -345,6 +409,11 @@
                     return;
                 }
                 completions.state = completions.HIDDEN;
+                if (completions.selectedRow) {
+                    events.onBeforeHide.forEach(function (handler) {
+                        handler(completions.selectedRow);
+                    });
+                }
                 completions.unHoverRow(completions.selectedRow);
 
                 completions.element.hide();
@@ -386,6 +455,10 @@
 
                 $.each(this.rows, function (index, row) {
                     var template = completions.templateForType(row.type);
+
+                    events.beforeRenderRow.forEach(function (handler) {
+                        handler(row);
+                    });
 
                     var $row = $(Mustache.render(template, row));
                     completions.addHoverRowEvent($row);
@@ -437,6 +510,7 @@
             onReady: [],
             onShow: [],
             onHide: [],
+            onBeforeHide: [],
 
             /**
              * Handle the selection of a row element.
@@ -452,6 +526,20 @@
             beforeLoad: [],
 
             /**
+             * Called when the user hovers over a row of the sugestions or jumps to a row with the arrow keys.
+             *
+             * Called with the jQuery object of the hovered row.
+             */
+            onHoverRow: [],
+
+            /**
+             * Called when the user stops hovering over a certain row or jumps to another row with the arrow keys.
+             *
+             * Called with the jQuery object of the now unhovered row.
+             */
+            onUnhoverRow: [],
+
+            /**
              * Handles the loaded autocompletion data, after a successful request.
              * <p>
              * Allows only one handler.
@@ -461,6 +549,18 @@
              * @@return an array of row objects.
              */
             afterLoad: undefined,
+
+            /**
+             * Called when the request to the service returned an error.
+             */
+            onServiceError: undefined,
+
+            /**
+             * Is called before a row of the autocomplete is rendered.
+             *
+             * Called with the 'row'-object, which can be changed inside the handler.
+             */
+            beforeRenderRow: [],
             afterRenderRow: [],
             afterRender: []
         };
@@ -524,6 +624,11 @@
                             service.responseCache[request.query] = events.afterLoad(value, response);
                             service.afterLoad(request);
                         }
+                    }).error(function () {
+                        if (events.onServiceError) {
+                            service.responseCache[request.query] = events.onServiceError(request);
+                            service.afterLoad(request);
+                        }
                     });
                 } else {
                     service.afterLoad(request);
@@ -537,7 +642,6 @@
                 input.hideSpinner();
 
                 if (completions.rows.length > 0) {
-                    completions.update();
                     completions.show();
                 } else {
                     completions.hide();
@@ -560,7 +664,7 @@
                     throw "The event afterLoad must be set.";
                 }
 
-                configured = true;
+                this.configured = true;
 
                 this.uri = config.serviceUri;
 
@@ -576,7 +680,9 @@
                     this.responseCache = config.cache;
                 }
 
-                this.delay = config.delayTime || this.delay;
+                if (typeof config.delayTime !== 'undefined') {
+                    this.delay = config.delayTime;
+                }
             }
         };
 
@@ -596,7 +702,6 @@
                 completions.rows = this.callback(value);
 
                 if (completions.rows.length > 0) {
-                    completions.update();
                     completions.show();
                 } else {
                     completions.hide();
@@ -742,14 +847,30 @@
                 return this.isVisible() ? completions.selectedRow : undefined;
             },
 
+            getSelectedRow: function () {
+                return completions.selectedRow;
+            },
+
             /**
              * Hides the suggested completions.
              */
             hide: function () {
                 completions.hideImmediate();
+            },
+
+            getCompletionRows: function () {
+                return completions.rows || [];
+            },
+
+            isPreventCreateToken: function () {
+                return input.preventCreateToken;
+            },
+
+            setPreventCreateToken: function (preventCreateToken) {
+                input.preventCreateToken = preventCreateToken;
             }
         };
-    });
+    };
 
     sirius.autocomplete = sirius.createAutocomplete();
 </script>

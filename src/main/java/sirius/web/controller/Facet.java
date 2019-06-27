@@ -11,6 +11,7 @@ package sirius.web.controller;
 import sirius.kernel.cache.ValueComputer;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.health.Exceptions;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -88,13 +89,26 @@ public class Facet {
     }
 
     /**
-     * Creates a query string which can be appended to a link in order to toggle the given item.
-     *
-     * @param item the item to toggle
-     * @return a query string (?x=y..) used to toggle the given facet item
+     * @deprecated Convoluted logic. Use <tt>linkTo...</tt> method...
      */
+    @Deprecated
     public String createToggleQueryString(FacetItem item) {
+        Exceptions.logDeprecatedMethodUse();
         return parent.createQueryString(name, item.isActive() ? "" : item.getKey(), true);
+    }
+
+    /**
+     * Creates a link based on the given baseUrl which toggles the given item.
+     *
+     * @param baseUrl the base url to use for the link
+     * @param item    the item to toggle
+     * @return a link which contains all parameters of the surrounding {@link Page} (other facets, query) but which toggles
+     * the value for this face. Also the start will be reset, as everything else would be counter intuitive
+     */
+    public String linkToPageWithToggledItem(String baseUrl, FacetItem item) {
+        return parent.addFacetsAndQuery(baseUrl, name)
+                     .appendIfFilled(name, item.isActive() ? "" : item.getKey())
+                     .toString();
     }
 
     /**

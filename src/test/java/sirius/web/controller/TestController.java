@@ -57,6 +57,11 @@ public class TestController implements Controller {
         out.property("test", ctx.getParameter("test"));
     }
 
+    @Routed("/rewrite")
+    public void testReqriting(WebContext ctx) {
+        ctx.respondWith().direct(HttpResponseStatus.OK, "OK");
+    }
+
     @Routed("/test/cookieCacheTest")
     public void testCookieCacheTest(WebContext ctx) {
         ctx.setCookie("Test", "1", 3600);
@@ -131,6 +136,11 @@ public class TestController implements Controller {
         }
         in.close();
         ctx.respondWith().direct(HttpResponseStatus.OK, String.valueOf(size));
+    }
+
+    @Routed(value = "/test/predispatch/abort", preDispatchable = true)
+    public void testPredispatchAbort(WebContext ctx, InputStreamHandler in) throws Exception {
+        ctx.respondWith().direct(HttpResponseStatus.OK, "ABORT");
     }
 
     @Routed("/test/os")

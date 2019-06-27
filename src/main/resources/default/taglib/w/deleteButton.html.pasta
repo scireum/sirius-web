@@ -3,11 +3,13 @@
 <i:arg type="Page" name="page" default=""/>
 
 <i:pragma name="inline" value="true"/>
-<i:pragma name="description" value="Renders a delete/dangerous link within a Wondergem template"/>
+<i:pragma name="description" value="Renders a delete/dangerous link as button within a Wondergem template"/>
 
 <i:local name="deleteFormId" value="@apply('deleteForm-%s', call.generateLocalId())"/>
 
-<form id="@deleteFormId" method="post" action="@if(page != null) {@url?@page.createQueryString()} else {@url}"
+<form id="@deleteFormId"
+      method="post"
+      action="@if(page != null) {@page.linkToCurrentPage(url)} else {@url}"
       style="display: inline-block">
     <a role="button" class="btn btn-danger button-danger-ask guarded-link @if (adminOnly) {admin-link}"
        data-deleteid="@deleteFormId">

@@ -20,7 +20,9 @@ import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.http.*
 import org.apache.log4j.Level
 import sirius.kernel.BaseSpecification
+import sirius.kernel.Scope
 import sirius.kernel.commons.Strings
+import sirius.kernel.commons.Wait
 import sirius.kernel.health.LogHelper
 
 /**
@@ -47,6 +49,18 @@ class WebServerSpec extends BaseSpecification {
         }
 
         return result
+    }
+
+    /**
+     * Ensures that re-writing or controller URIs works
+     */
+    def "Invoke /rewritten to check if re-writing works"() {
+        given:
+        def uri = "/rewritten"
+        when:
+        def data = callAndRead(uri, null, null)
+        then:
+        data == "OK"
     }
 
     /**
@@ -299,6 +313,8 @@ class WebServerSpec extends BaseSpecification {
 
     /**
      * Call a controller which uses predispatching
+     * <p>
+     * Also expects that the controller support keepalive after a successful request/response.
      */
     def "Invoke /test/predispatch with POST"() {
         given:
@@ -317,6 +333,44 @@ class WebServerSpec extends BaseSpecification {
         def result = new String(ByteStreams.toByteArray(u.getInputStream()), Charsets.UTF_8)
         then:
         String.valueOf(testByteArray.length * 1024) == result
+        and:
+        u.getHeaderField(HttpHeaderNames.CONNECTION.toString()) == HttpHeaderNames.KEEP_ALIVE.toString()
+    }
+
+    /**
+     * Call a controller which uses predispatching but responds before the content has been read.
+     *
+     */
+    def "/test/predispatch/abort discards an upload and then generates an error as response"() {
+        given:
+        HttpURLConnection u = new URL("http://localhost:9999/test/predispatch/abort").openConnection()
+        and:
+        u.setChunkedStreamingMode(1024)
+        and:
+        def testByteArray = "X".getBytes()
+        when:
+        u.setRequestMethod("POST")
+        u.setDoInput(true)
+        u.setDoOutput(true)
+
+        // Write some data and flush so that the server triggers a response
+        def out = u.getOutputStream()
+        for (int i = 0; i < 1024; i++) {
+            out.write(testByteArray)
+        }
+        out.flush()
+
+        // Slow down to ensure that the response is created and sent
+        // Still no IOException is expected, as the server will discard all data..
+        Wait.millis(200)
+        for (int i = 0; i < 1024; i++) {
+            out.write(testByteArray)
+        }
+
+        def result = new String(ByteStreams.toByteArray(u.getInputStream()), Charsets.UTF_8)
+        then:
+        // We still expect a proper response
+        "ABORT" == result
     }
 
     /**
@@ -400,6 +454,7 @@ class WebServerSpec extends BaseSpecification {
      * Therefore the event loop can shovel away the data in the output buffer of the channel
      * and the future will eventually fullfilled.
      */
+    @Scope(Scope.SCOPE_NIGHTLY)
     def "Invoke /large-blocking-calls with GET"() {
         given:
         HttpURLConnection u = new URL("http://localhost:9999/large-blocking-calls").openConnection()
@@ -423,6 +478,7 @@ class WebServerSpec extends BaseSpecification {
         return counter
     }
 
+    @Scope(Scope.SCOPE_NIGHTLY)
     def "HTTP pipelining is supported correctly"() {
         given:
         List<HttpResponse> responses = Lists.newArrayList()
@@ -597,6 +653,7 @@ class WebServerSpec extends BaseSpecification {
         JSON.parseObject(data).get("test") == '   '
     }
 
+    @Scope(Scope.SCOPE_NIGHTLY)
     def "async JSON calls work"() {
         given:
         def uri = "/test/json/async"

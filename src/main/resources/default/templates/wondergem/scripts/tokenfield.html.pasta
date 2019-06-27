@@ -5,7 +5,6 @@
         return typeof possibleFunction === "function" ? possibleFunction : Function();
     }
 
-
     /**
      * Provides a simple api to use the tokenfield lib.
      *
@@ -13,271 +12,475 @@
      *
      * @@type {{eventNames, on, start, getInput, appendTokens, getInputFieldId, hasTokens, updateTokenRemovalVisibility, hideTokenRemoval, clearTokens}}
      */
-    sirius.tokenfield = (function () {
-            var input = {
-                id: undefined,
+    sirius.createTokenfield = function () {
+        var input = {
+            id: undefined,
 
-                /**
-                 * the actual input field
-                 */
-                element: undefined,
+            /**
+             * the actual input field
+             */
+            element: undefined,
 
-                /**
-                 * the generated input field by the tokenfield library
-                 */
-                tokenElement: undefined,
+            /**
+             * the generated input field by the tokenfield library
+             */
+            tokenElement: undefined,
 
-                value: "",
-                allTokens: undefined,
+            tokenRemovalElement: undefined,
+            tokenRemovalTemplate: '<a href="#" class="token-removal input-width-js hide" tabindex="-1"><i class="fa fa-times fa-lg"></i></a>',
 
-                tokenRemovalElement: undefined,
-                tokenRemovalTemplate: '<a href="#" class="token-removal hide" tabindex="-1"><i class="fa fa-times fa-lg"></i></a>',
+            /**
+             * Keys of the config object are:
+             * - id (of the input field)
+             * - tokenfield: the tokenfield config object: see http://sliptree.github.io/bootstrap-tokenfield/
+             * - showRemovalElement: if true the button to delete all tokens is shown (default). if false it's hidden.
+             */
+            init: function (config) {
+                this.id = config.id;
 
-                /**
-                 * Keys of the config object are:
-                 * - id (of the input field)
-                 * - tokenfield: the tokenfield config object: see http://sliptree.github.io/bootstrap-tokenfield/
-                 * - showRemovalElement: if true the button to delete all tokens is shown (default). if false it's hidden.
-                 */
-                init: function (config) {
-                    this.id = config.id;
+                if (this.id === undefined) {
+                    throw "The start config must define the property 'id'";
+                }
 
-                    if (this.id === undefined) {
-                        throw "The start config must define the property 'id'";
-                    }
+                this.element = $("#" + this.id);
+                var tokenfieldConfig = $.extend({delimiter: " "}, config.tokenfield);
+                this.element.tokenfield(tokenfieldConfig);
 
-                    this.element = $("#" + this.id);
-                    this.value = this.element.val();
-                    var tokenfieldConfig = $.extend({delimiter: " "}, config.tokenfield);
-                    this.element.tokenfield(tokenfieldConfig);
+                this.tokenElement = $("#" + this.id + "-tokenfield");
 
-                    this.tokenElement = $("#" + this.id + "-tokenfield");
+                if (config.showRemovalElement !== false) {
+                    this.tokenRemovalElement = $(input.tokenRemovalTemplate);
+                    this.tokenRemovalElement.insertAfter(this.tokenElement);
+                }
 
-                    if (config.showRemovalElement !== false) {
-                        this.tokenRemovalElement = $(input.tokenRemovalTemplate);
-                        this.tokenRemovalElement.insertAfter(this.tokenElement);
-                    }
+                // this is needed to display the token removal icon in the same row as the input field
+                // the spinner holds the class .fa which defines the size to 14
+                // because jquery width rounds up or down we need to make provisions for these cases using a 2px margin
+                this.tokenElement.css("max-width", (this.tokenElement.width() - 16) + "px");
 
-                    // delete the element value because they are tokens now and the value should not be displayed twice
-                    this.tokenElement.val("");
+                input.updateTokenRemovalVisibility();
 
-                    // this is needed to display the token removal icon in the same row as the input field
-                    // the spinner holds the class .fa which defines the size to 14
-                    // because jquery width rounds up or down we need to make provisions for these cases using a 2px margin
-                    this.tokenElement.css("max-width", (this.tokenElement.width() - 16) + "px");
-
-
-                    // create initial tokens
-                    input.allTokens = [];
-                    $.each(this.value.split(tokenfieldConfig.delimiter), function (index, element) {
-                        input.allTokens.push({label: element, value: element, initialQueryIdentifier: true});
-                    });
-
+                this.element.on('tokenfield:removedtoken', function (e) {
                     input.updateTokenRemovalVisibility();
+                    input.resizeInputField();
 
-                    this.element.on('tokenfield:removedtoken', function (e) {
-                        var identifier = e.attrs.value;
-                        $('input[data-identifier="' + identifier + '"]').remove();
-
-                        if (e.attrs.initialQueryIdentifier) {
-                            input.value = "";
-                        }
-
-                        // remove the token from the tokens array as well
-                        input.allTokens = $.grep(input.allTokens, function (token) {
-                            return identifier !== token.value;
-                        });
-
-                        input.updateTokenRemovalVisibility();
-
-                        events.onRemovedToken.forEach(function (handler) {
-                            handler(e);
-                        });
-                    });
-
-                    this.tokenElement.keydown(function (e) {
-                        if (e.keyCode === sirius.keys.KEY_ENTER) {
-                            events.onEnter.forEach(function (handler) {
-                                handler(e);
-                            });
-                        }
-                    });
-
-                    if (this.tokenRemovalElement) {
-                        this.tokenRemovalElement.click(function () {
-                            input.clearTokens();
-                            input.hideTokenRemoval();
-                        });
-                    }
-
-                    $(window).resize(function (e) {
-                        input.resize(e);
-                    });
-                },
-
-                /**
-                 * Returns the full value of the input field.
-                 *
-                 * This includes the current user input and the tokenized value.
-                 */
-                getValue: function () {
-                    return this.value + " " + this.tokenElement.val();
-                },
-
-                /**
-                 * Adds a list of tokens to the already existing once.
-                 *
-                 * @@param tokens array of tokens to be added
-                 */
-                appendTokens: function (tokens) {
-                    this.allTokens = this.allTokens.concat(tokens);
-                    this.element.tokenfield("setTokens", this.allTokens);
-
-                    input.updateTokenRemovalVisibility();
-                },
-
-                resize: function (e) {
-                    events.onResize.forEach(function (handler) {
+                    events.onRemovedToken.forEach(function (handler) {
                         handler(e);
                     });
-                },
+                });
 
-                /**
-                 * Shows a small token removal icon in the input field.
-                 */
-                showTokenRemoval: function () {
-                    if (input.tokenRemovalElement) {
-                        input.tokenRemovalElement.removeClass("hide");
-                    }
-                },
-
-                /**
-                 * Hides the token removal icon.
-                 */
-                hideTokenRemoval: function () {
-                    if (input.tokenRemovalElement) {
-                        input.tokenRemovalElement.addClass("hide");
-                    }
-                },
-
-                hasTokens: function () {
-                    return input.element.tokenfield('getTokens').length > 0;
-                },
-
-                /**
-                 * Cleares the token field of all entries. Also resets the value.
-                 */
-                clearTokens: function () {
-                    input.element.tokenfield("setTokens", []);
-                    input.value = "";
-                    input.allTokens = [];
-
-                    events.onClearTokens.forEach(function (handler) {
-                        handler();
+                this.element.on('tokenfield:createtoken', function (e) {
+                    var addToken = true;
+                    events.onBeforeCreateToken.forEach(function (handler) {
+                        if (handler(e.attrs) === false) {
+                            addToken = false;
+                        }
                     });
-                },
+                    return addToken;
+                });
 
-                /**
-                 * Hides the token removal icon if there are no tokens left, else the icon is shown.
-                 */
-                updateTokenRemovalVisibility: function () {
-                    if (input.hasTokens()) {
-                        input.showTokenRemoval();
-                    } else {
-                        input.hideTokenRemoval();
-                    }
-                },
-            };
-
-            var events = {
-                onEnter: [],
-                onRemovedToken: [],
-                onResize: [],
-                onClearTokens: []
-            };
-
-            return {
-                eventNames: function () {
-                    return Object.keys(events);
-                },
-
-                /**
-                 * Adds event handlers.
-                 *
-                 * @@param name of the event
-                 * @@param callback the function to be executed if the event is triggered
-                 */
-                on: function (name, callback) {
-                    if (this.eventNames().includes(name)) {
-                        events[name].push(asFunction(callback));
-                    } else {
-                        throw "Callback " + name + " is no valid event.";
-                    }
-                },
-
-                /**
-                 * Unbinds one or all event handlers.
-                 *
-                 * @@param name of the event
-                 * @@param callback the function to unbind, if left empty all handlers are removed
-                 */
-                off: function (name, callback) {
-                    if (!this.eventNames().includes(name)) {
-                        throw "Callback " + name + " is no valid event.";
-                    }
-
-                    if (callback === undefined) {
-                        events[name] = [];
-                        return;
-                    }
-
-                    var remainingHandlers = events[name].filter(function (value) {
-                        return value !== asFunction(callback);
-                    });
-
-                    events[name] = remainingHandlers;
-                },
-
-                start: function (config) {
-                    input.init(config);
-                },
-
-                getInput: function () {
-                    return input.getValue();
-                },
-
-                appendTokens: function (tokens) {
-                    input.appendTokens(tokens);
-                },
-
-                getInputFieldId: function () {
-                    return input.tokenElement.prop("id");
-                },
-
-                getInputField: function () {
-                    return input.element;
-                },
-
-                getTokenfieldInputField: function () {
-                    return input.tokenElement;
-                },
-
-                hasTokens: function () {
-                    return input.hasTokens();
-                },
-
-                updateTokenRemovalVisibility: function () {
+                this.element.on('tokenfield:createdtoken', function (e) {
                     input.updateTokenRemovalVisibility();
-                },
+                    input.correctTokenRemovalPosition();
+                    input.resizeInputField();
 
-                hideTokenRemoval: function () {
-                    input.hideTokenRemoval();
-                },
+                    events.onCreatedToken.forEach(function (handler) {
+                        handler(e);
+                    });
+                });
 
-                clearTokens: function () {
-                    input.clearTokens();
+                this.tokenElement.keydown(function (e) {
+                    if (e.keyCode === sirius.keys.KEY_ENTER) {
+                        var allowPropagation = true;
+                        events.onEnter.forEach(function (handler) {
+                            if (handler(e) === false) {
+                                allowPropagation = false;
+                            }
+                        });
+                        if (!allowPropagation) {
+                            // We don't want the tokenfield to handle this enter key event
+                            e.stopImmediatePropagation();
+                            return false;
+                        }
+                    }
+                });
+
+                // TODO dont do this after bootstrap tokenfield dependency was replaced by own code
+                // We ensure our keydown listener gets called before the one of the tokenfield to be capable of preventing propagation
+                var listeners = $._data(this.tokenElement[0], "events").keydown;
+                listeners.unshift(listeners.pop());
+
+                this.tokenElement.focusin(function () {
+                    setTimeout(function () {
+                        input.resizeInputField();
+                    });
+                });
+
+                if (this.tokenRemovalElement) {
+                    this.tokenRemovalElement.click(function () {
+                        input.clearTokens();
+                        input.hideTokenRemoval();
+                    });
                 }
-            };
-        }
-    )();
+
+                $(window).resize(function (e) {
+                    input.resize(e);
+                });
+
+                // resizes the input field after the tokenfield init process is done
+                // for some reason the tokenfield init event is called too soon and the internal resizing is not yet
+                // done.
+                // this will make the tokenRemovalElement clickable right from the beginning rather from the first
+                // focusin event of the input field
+                setTimeout(input.resize, 50);
+            },
+
+            /**
+             * Returns the full value of the input field.
+             *
+             * This includes the current user input and the tokenized value.
+             */
+            getValue: function () {
+                return this.element.tokenfield('getTokensList', ' ') + " " + this.tokenElement.val();
+            },
+
+            /**
+             * Adds a list of tokens to the already existing ones.
+             *
+             * @@param tokens array of tokens to be added
+             */
+            appendTokens: function (tokens) {
+                $.each(tokens, function (i, token) {
+                    input.element.tokenfield('createToken', token);
+                });
+            },
+            /**
+             * Adds a single token to the already existing ones.
+             *
+             * @@param token the token to be added
+             */
+            addToken: function (token) {
+                input.element.tokenfield('createToken', token);
+            },
+
+            /**
+             * Corrects the position of the token removal element.
+             *
+             * It could be on the wrong position if tokenfield repositions the input field as last element.
+             */
+            correctTokenRemovalPosition: function () {
+                if (!input.tokenRemovalElement) {
+                    return;
+                }
+
+                var $parent = input.tokenElement.parent();
+                if ($parent.find("a .token-removal :last-child").length > 0) {
+                    // token removal is already the last element
+                    return;
+                }
+
+                // use the timeout as workaround for an unlucky tokenfield implementation
+                // the repositioning of the input field was not yet done.
+                // But there is no later point to catch this event and trigger the logic
+                setTimeout(function () {
+
+                    // tokenfield added the input after the removal
+                    // this happens if an existing token is edited (double click on token)
+
+                    input.tokenRemovalElement.remove();
+                    $parent.append(input.tokenRemovalElement);
+
+                    input.tokenRemovalElement.click(function () {
+                        input.clearTokens();
+                        input.hideTokenRemoval();
+                    });
+                }, 50);
+            },
+
+            /**
+             * Resizes the input field, so it takes all the available space right of the tokens.
+             */
+            resizeInputField: function () {
+                var $container = input.tokenElement.parent();
+
+                // calculate the width of the last row of tokens
+                var lastTokenTop;
+                var tokensWidth = 0;
+                $container.find('.token').each(function () {
+                    if (!lastTokenTop || this.getBoundingClientRect().top !== lastTokenTop) {
+                        // the current token is below the last token -> new row of tokens
+                        lastTokenTop = this.getBoundingClientRect().top;
+                        tokensWidth = 0;
+                    }
+                    // + 1 because outerWidth gets the width rounded and else it might not fit because of 1px
+                    tokensWidth += $(this).outerWidth(true) + 1;
+                });
+
+                // + 1 because outerWidth gets the width rounded and else it might not fit because of 1px
+                var additionalElementsWidth = 1;
+                $container.find(".input-width-js").each(function () {
+                    additionalElementsWidth += $(this).outerWidth(true);
+                });
+
+                var inputWidth = $container.width() - tokensWidth - additionalElementsWidth;
+                var minWidth = parseInt(input.tokenElement.css('min-width'));
+                if (minWidth > inputWidth) {
+                    inputWidth = $container.width() - additionalElementsWidth;
+                }
+
+                input.tokenElement.css('max-width', inputWidth);
+                input.tokenElement.width(inputWidth);
+            },
+
+            resize: function (e) {
+                input.resizeInputField();
+
+                events.onResize.forEach(function (handler) {
+                    handler(e);
+                });
+            },
+
+            /**
+             * Shows a small token removal icon in the input field.
+             */
+            showTokenRemoval: function () {
+                if (input.tokenRemovalElement) {
+                    input.tokenRemovalElement.removeClass("hide");
+                }
+            },
+
+            /**
+             * Hides the token removal icon.
+             */
+            hideTokenRemoval: function () {
+                if (input.tokenRemovalElement) {
+                    input.tokenRemovalElement.addClass("hide");
+                }
+            },
+
+            hasTokens: function () {
+                return input.getTokens().length > 0;
+            },
+
+            hasToken: function (token) {
+                var contains = false;
+                $.each(input.getTokens(), function (i, element) {
+                    if (element.value === token.value) {
+                        contains = true;
+                    }
+                });
+                return contains;
+            },
+
+            getTokens: function () {
+                return input.element.tokenfield('getTokens');
+            },
+
+            removeToken: function (tokenToRemove) {
+                var newTokens = input.getTokens().filter(function (token) {
+                    return tokenToRemove.value !== token.value;
+                });
+                input.element.tokenfield("setTokens", newTokens);
+
+                var event = {attrs: tokenToRemove};
+                events.onRemovedToken.forEach(function (handler) {
+                    handler(event);
+                });
+            },
+
+            /**
+             * Cleares the token field of all entries.
+             */
+            clearTokens: function () {
+                input.element.tokenfield("setTokens", []);
+                input.resizeInputField();
+
+                events.onClearTokens.forEach(function (handler) {
+                    handler();
+                });
+            },
+
+            /**
+             * Hides the token removal icon if there are no tokens left, else the icon is shown.
+             */
+            updateTokenRemovalVisibility: function () {
+                if (input.hasTokens()) {
+                    input.showTokenRemoval();
+                } else {
+                    input.hideTokenRemoval();
+                }
+            },
+        };
+
+        var events = {
+            /**
+             * Handlers are called when user hits the enter key in the input field.
+             */
+            onEnter: [],
+            /**
+             * Handlers are called when a token is removed from the tokenfield.
+             *
+             * Called with the event object as parameter.
+             */
+            onRemovedToken: [],
+            onResize: [],
+            /**
+             * Handlers are called when all tokens are cleared from the tokenfield.
+             *
+             * Called with the event object as parameter.
+             */
+            onClearTokens: [],
+            /**
+             * Handlers will be called before the creation of a token.
+             *
+             * Called with the token as parameter. The token can be changed inside the handler and this will be carried
+             * over into the tokefield.
+             *
+             * Returning false will prevent the token from being created.
+             */
+            onBeforeCreateToken: [],
+
+            /**
+             * Will be called after tokenfield created a new token.
+             */
+            onCreatedToken: []
+        };
+
+        return {
+            eventNames: function () {
+                return Object.keys(events);
+            },
+
+            /**
+             * Adds event handlers.
+             *
+             * @@param name of the event
+             * @@param callback the function to be executed if the event is triggered
+             */
+            on: function (name, callback) {
+                if (this.eventNames().includes(name)) {
+                    events[name].push(asFunction(callback));
+                } else {
+                    throw "Callback " + name + " is no valid event.";
+                }
+            },
+
+            /**
+             * Unbinds one or all event handlers.
+             *
+             * @@param name of the event
+             * @@param callback the function to unbind, if left empty all handlers are removed
+             */
+            off: function (name, callback) {
+                if (!this.eventNames().includes(name)) {
+                    throw "Callback " + name + " is no valid event.";
+                }
+
+                if (callback === undefined) {
+                    events[name] = [];
+                    return;
+                }
+
+                var remainingHandlers = events[name].filter(function (value) {
+                    return value !== asFunction(callback);
+                });
+
+                events[name] = remainingHandlers;
+            },
+
+            start: function (config) {
+                input.init(config);
+            },
+
+            getInput: function () {
+                return input.getValue();
+            },
+
+            appendTokens: function (tokens) {
+                input.appendTokens(tokens);
+            },
+
+            addToken: function (token) {
+                input.addToken(token);
+            },
+
+            getInputFieldId: function () {
+                return input.tokenElement.prop("id");
+            },
+
+            getInputField: function () {
+                return input.element;
+            },
+
+            getTokenfieldInputField: function () {
+                return input.tokenElement;
+            },
+
+            /**
+             * Checks whether the tokenfield contains any token.
+             *
+             * @@return true if the tokenfield contains at least one token.
+             */
+            hasTokens: function () {
+                return input.hasTokens();
+            },
+
+            /**
+             * Checks whether the tokenfield contains the given token.
+             *
+             * Tokens are equal if they have the same value-property.
+             *
+             * @@param token the given token
+             * @@return true if the token field contains the given token
+             */
+            hasToken: function (token) {
+                return input.hasToken(token);
+            },
+
+            updateTokenRemovalVisibility: function () {
+                input.updateTokenRemovalVisibility();
+            },
+
+            hideTokenRemoval: function () {
+                input.hideTokenRemoval();
+            },
+
+            /**
+             * Cleares the token field of all entries.
+             */
+            clearTokens: function () {
+                input.clearTokens();
+            },
+
+            /**
+             * Removes the token from the tokenfield.
+             *
+             * Tokens are equal if they have the same value-property.
+             *
+             * @@param token the token to remove
+             */
+            removeToken: function (token) {
+                input.removeToken(token);
+            },
+
+            /**
+             * Get all tokens in the tokenfield.
+             *
+             * @@return {*} a list of all tokens in the tokenfield.
+             */
+            getTokens: function () {
+                return input.getTokens();
+            },
+
+            resize: function () {
+                input.resize();
+            },
+
+            resizeInputField: function () {
+                input.resizeInputField();
+            }
+        };
+    };
+
+    sirius.tokenfield = sirius.createTokenfield();
 </script>

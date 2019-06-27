@@ -1,7 +1,7 @@
-<i:arg type="sirius.web.health.Cluster" name="cluster" />
-<i:arg type="sirius.kernel.health.metrics.Metrics" name="metrics" />
-<i:arg type="boolean" name="all" />
-<i:arg type="String" name="uptime" />
+<i:arg type="sirius.web.health.Cluster" name="cluster"/>
+<i:arg type="sirius.kernel.health.metrics.Metrics" name="metrics"/>
+<i:arg type="boolean" name="all"/>
+<i:arg type="String" name="uptime"/>
 
 <w:page title="@apply('[%s/%s] %s - Status', cluster.getClusterState(), cluster.getNodeState(), product)">
     <i:block name="head">
@@ -9,12 +9,15 @@
             .GRAY {
                 color: #555555;
             }
+
             .GREEN {
                 color: #168d12;
             }
+
             .RED {
                 color: #9f3d33;
             }
+
             .YELLOW {
                 color: rgb(209, 170, 0);
             }
@@ -26,18 +29,59 @@
     </i:block>
 
     <w:pageHeader>
-        <span class="@cluster.getNodeState()">System State</span> <small>@nodeName</small>
+        <span class="@cluster.getClusterState()">System State</span>
+
         <div class="pull-right">
-            @if (all) {
-            <a href="/system/state" class="btn btn-primary"><i class="fa fa-minus"></i> Less</a>
-            <a class="btn btn-default" href="/system/state?all=true"><i class="fa fa-refresh"></i></a>
-            } else {
-            <a href="/system/state?all=true" class="btn btn-primary"><i class="fa fa-plus"></i> More</a>
-            <a class="btn btn-default" href="/system/state"><i class="fa fa-refresh"></i></a>
-            }
+            <i:if test="all">
+                <a href="/system/state" class="btn btn-primary"><i class="fa fa-minus"></i> Less</a>
+                <a class="btn btn-default" href="/system/state?all=true"><i class="fa fa-refresh"></i></a>
+                <i:else>
+                    <a href="/system/state?all=true" class="btn btn-primary"><i class="fa fa-plus"></i> More</a>
+                    <a class="btn btn-default" href="/system/state"><i class="fa fa-refresh"></i></a>
+                </i:else>
+            </i:if>
         </div>
         <div class="clearfix"></div>
     </w:pageHeader>
+
+    <table class="table table-striped">
+        <tr>
+            <td class="@cluster.getAlarmState()">
+                Alarm Present
+            </td>
+            <td class="align-right @cluster.getAlarmState()">
+                @toUserString(cluster.isAlarmPresent())
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Monitoring Intervals
+            </td>
+            <td class="align-right">
+                @cluster.getMonitoringIntervals()
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Critical Intervals
+            </td>
+            <td class="align-right">
+                @cluster.getCriticalIntervalLimit()
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Failed Intervals
+            </td>
+            <td class="align-right">
+                @cluster.countFailedIntervals()
+            </td>
+        </tr>
+    </table>
+    <w:heading>
+        <span class="@cluster.getNodeState()">Node State</span>
+        <small>@nodeName</small>
+    </w:heading>
 
     <table class="table table-striped">
         <tr>

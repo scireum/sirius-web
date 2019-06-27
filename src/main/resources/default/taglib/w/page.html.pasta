@@ -24,11 +24,15 @@
     </i:render>
 
     <script src="/assets/wondergem/wondergem.js" type="text/javascript"></script>
-    <script src="/assets/wondergem/datepicker/js/locales/bootstrap-datepicker.@(lang).js"
-            type="text/javascript"></script>
 
-    <i:extensions name="templates-page-head"/>
+    <i:extensions point="head"/>
     <i:invoke template="/templates/wondergem/page-script.html.pasta" inline="true"/>
+
+    <i:invoke template="/templates/wondergem/scripts/polyfill.html.pasta" inline="true"/>
+    <i:invoke template="/templates/wondergem/scripts/event-keys.html.pasta" inline="true"/>
+    <i:invoke template="/templates/wondergem/scripts/autocomplete.html.pasta" inline="true"/>
+    <i:invoke template="/templates/wondergem/scripts/tokenfield.html.pasta" inline="true"/>
+
     <i:render name="head"/>
 </head>
 <body>
@@ -62,7 +66,6 @@
     </i:if>
 </div>
 
-
 <i:render name="footer">
     <i:invoke template="/templates/wondergem/page-footer.html.pasta" inline="true"/>
 </i:render>
@@ -70,6 +73,6 @@
 <i:render name="dialogs"/>
 
 <i:invoke template="/templates/wondergem/page-dialogs.html.pasta" inline="true"/>
-<i:extensions name="templates-page-footer"/>
+<i:extensions point="footer"/>
 </body>
 </html>

@@ -8,7 +8,10 @@
 
 package sirius.web.mails;
 
+import sirius.kernel.Sirius;
+import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.ConfigValue;
+import sirius.kernel.nls.NLS;
 import sirius.kernel.settings.Settings;
 import sirius.web.security.UserContext;
 
@@ -19,6 +22,7 @@ public class SMTPConfiguration {
 
     private String host;
     private String port;
+    private SMTPProtocol protocol;
     private String user;
     private String password;
     private String mailSender;
@@ -46,31 +50,58 @@ public class SMTPConfiguration {
     @ConfigValue("mail.smtp.useEnvelopeFrom")
     private static boolean smtpUseEnvelopeFrom;
 
+    private SMTPConfiguration() {
+    }
+
     /**
-     * Creates a new configuration based on fixed values.
+     * Creates a new {@link SMTPConfiguration} which can be used to configure
+     * the mail server to use.
      *
-     * @param host                     the mail server host
-     * @param port                     the mail server port
-     * @param user                     the mail account user
-     * @param password                 the mail account password
-     * @param mailSender               the sender address
-     * @param mailSenderName           the sender name
-     * @param useSenderAndEnvelopeFrom whether to fill the "Sender" and the "Envelope-From" header
+     * @return a {@link SMTPConfiguration} to fill with the settings of the mail
+     * server to use
      */
-    public SMTPConfiguration(String host,
-                             String port,
-                             String user,
-                             String password,
-                             String mailSender,
-                             String mailSenderName,
-                             boolean useSenderAndEnvelopeFrom) {
+    public static SMTPConfiguration create() {
+        return new SMTPConfiguration();
+    }
+
+    public SMTPConfiguration setHost(String host) {
         this.host = host;
+        return this;
+    }
+
+    public SMTPConfiguration setPort(String port) {
         this.port = port;
+        return this;
+    }
+
+    public SMTPConfiguration setProtocol(SMTPProtocol protocol) {
+        this.protocol = protocol;
+        return this;
+    }
+
+    public SMTPConfiguration setUser(String user) {
         this.user = user;
+        return this;
+    }
+
+    public SMTPConfiguration setPassword(String password) {
         this.password = password;
+        return this;
+    }
+
+    public SMTPConfiguration setMailSender(String mailSender) {
         this.mailSender = mailSender;
+        return this;
+    }
+
+    public SMTPConfiguration setMailSenderName(String mailSenderName) {
         this.mailSenderName = mailSenderName;
+        return this;
+    }
+
+    public SMTPConfiguration setUseSenderAndEnvelopeFrom(boolean useSenderAndEnvelopeFrom) {
         this.useSenderAndEnvelopeFrom = useSenderAndEnvelopeFrom;
+        return this;
     }
 
     /**
@@ -79,13 +110,15 @@ public class SMTPConfiguration {
      * @return a new configuration based on the config files.
      */
     public static SMTPConfiguration fromConfig() {
-        return new SMTPConfiguration(smtpHost,
-                                     smtpPort,
-                                     smtpUser,
-                                     smtpPassword,
-                                     smtpSender,
-                                     smtpSenderName,
-                                     smtpUseEnvelopeFrom);
+        return SMTPConfiguration.create()
+                                .setHost(smtpHost)
+                                .setPort(smtpPort)
+                                .setProtocol(asSMTPProtocol(Sirius.getSettings().get("mail.smtp.protocol")))
+                                .setUser(smtpUser)
+                                .setPassword(smtpPassword)
+                                .setMailSender(smtpSender)
+                                .setMailSenderName(smtpSenderName)
+                                .setUseSenderAndEnvelopeFrom(smtpUseEnvelopeFrom);
     }
 
     /**
@@ -104,13 +137,15 @@ public class SMTPConfiguration {
      * @return a new configuration based on the given settings.
      */
     public static SMTPConfiguration fromSettings(Settings settings) {
-        return new SMTPConfiguration(settings.get("mail.host").getString(),
-                                     settings.get("mail.port").getString(),
-                                     settings.get("mail.user").getString(),
-                                     settings.get("mail.password").getString(),
-                                     settings.get("mail.sender").getString(),
-                                     settings.get("mail.senderName").getString(),
-                                     settings.get("mail.useEnvelopeFrom").asBoolean());
+        return SMTPConfiguration.create()
+                                .setHost(settings.get("mail.host").getString())
+                                .setPort(settings.get("mail.port").getString())
+                                .setProtocol(asSMTPProtocol(settings.get("mail.protocol")))
+                                .setUser(settings.get("mail.user").getString())
+                                .setPassword(settings.get("mail.password").getString())
+                                .setMailSender(settings.get("mail.sender").getString())
+                                .setMailSenderName(settings.get("mail.senderName").getString())
+                                .setUseSenderAndEnvelopeFrom(settings.get("mail.useEnvelopeFrom").asBoolean());
     }
 
     /**
@@ -156,6 +191,15 @@ public class SMTPConfiguration {
      */
     public String getMailPort() {
         return port;
+    }
+
+    /**
+     * Returns the protocol used to connect to the mail server (which might be encrypted)
+     *
+     * @return the protocol used to connect to the mail server (which might be encrypted)
+     */
+    public SMTPProtocol getProtocol() {
+        return protocol;
     }
 
     /**
@@ -205,5 +249,63 @@ public class SMTPConfiguration {
      */
     public boolean isUseSenderAndEnvelopeFrom() {
         return useSenderAndEnvelopeFrom;
+    }
+
+    private static SMTPProtocol asSMTPProtocol(Value setting) {
+        return setting.getEnum(SMTPProtocol.class)
+                      .orElseGet(() -> Value.of(setting.toUpperCase())
+                                            .getEnum(SMTPProtocol.class)
+                                            .orElse(SMTPProtocol.SMTP));
+    }
+
+    /**
+     * Lists protocols and encryption methods for SMTP.
+     */
+    public enum SMTPProtocol {
+
+        /**
+         * SMTP over an unencrypted connection
+         */
+        SMTP("smtp", false),
+
+        /**
+         * SMTP over a connection that is encrypted on transport layer (TLS)
+         */
+        SMTPS("smtps", false),
+
+        /**
+         * SMTP over a connection that is encrypted with STARTTLS
+         */
+        STARTTLS("smtp", true);
+
+        private final String protocol;
+        private final boolean starttls;
+
+        SMTPProtocol(String protocol, boolean starttls) {
+            this.protocol = protocol;
+            this.starttls = starttls;
+        }
+
+        public String getProtocol() {
+            return protocol;
+        }
+
+        public boolean isStarttls() {
+            return starttls;
+        }
+
+        /**
+         * Determines if the protocol supports encryption.
+         *
+         * @return <tt>true</tt> if the protocol supports encryption, <tt>false</tt> otherwise
+         */
+        public boolean supportsEncryption() {
+            return starttls || "smtps".equals(protocol);
+        }
+
+        @Override
+        public String toString() {
+            return NLS.get(SMTPProtocol.class.getSimpleName() + "." + name());
+        }
     }
 }

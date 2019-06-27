@@ -13,10 +13,13 @@ import sirius.kernel.cache.ValueComputer;
 import sirius.kernel.commons.Limit;
 import sirius.kernel.commons.Monoflop;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 import sirius.web.http.WebContext;
+import sirius.web.util.LinkBuilder;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -72,7 +75,7 @@ public class Page<E> {
      * @return the page itself for fluent method calls
      */
     public Page<E> withItems(List<E> items) {
-        this.items = items;
+        this.items = new ArrayList<>(items);
         return this;
     }
 
@@ -267,7 +270,7 @@ public class Page<E> {
      * @return the list of items on this page
      */
     public List<E> getItems() {
-        return items;
+        return Collections.unmodifiableList(items);
     }
 
     /**
@@ -336,45 +339,151 @@ public class Page<E> {
         return duration;
     }
 
+    protected LinkBuilder addFacetsAndQuery(String baseUrl, String fieldToIgnore) {
+        LinkBuilder linkBuilder = new LinkBuilder(baseUrl);
+
+        linkBuilder.appendIfFilled(PARAM_QUERY, query);
+
+        for (Facet f : getFacets()) {
+            if (!Strings.areEqual(fieldToIgnore, f.getName())) {
+                linkBuilder.appendIfFilled(f.getName(), f.getValue());
+            }
+        }
+
+        return linkBuilder;
+    }
+
     /**
-     * Creates a query string containing all filters, the search query and a <tt>start</tt> parameter selecting the
-     * previous page.
+     * Generates a link to the current page using the given baseUrl.
      *
-     * @return a query string selecting the previous page
+     * @param baseUrl the base url to be used
+     * @return the base url extended with all parameters (facets, query, start) to render the current page again
      */
+    public String linkToCurrentPage(String baseUrl) {
+        return linkToGivenStart(baseUrl, start);
+    }
+
+    private String linkToGivenStart(String baseUrl, int explicitStart) {
+        return addFacetsAndQuery(baseUrl, null).appendIfFilled(PARAM_START, explicitStart <= 1 ? null : explicitStart)
+                                               .toString();
+    }
+
+    /**
+     * Generates a link to the previous page using the given baseUrl.
+     *
+     * @param baseUrl the base url to be used
+     * @return the base url extended with all parameters (facets, query, start) to render the previous page
+     */
+    public String linkToPreviousPage(String baseUrl) {
+        return linkToGivenStart(baseUrl, getPreviousStart());
+    }
+
+    /**
+     * Generates a link to the next page using the given baseUrl.
+     *
+     * @param baseUrl the base url to be used
+     * @return the base url extended with all parameters (facets, query, start) to render the next page
+     */
+    public String linkToNextPage(String baseUrl) {
+        return linkToGivenStart(baseUrl, getNextStart());
+    }
+
+    /**
+     * Generates a link to the given baseUrl with an unspecified <tt>start</tt> parameter.
+     *
+     * <p>
+     * The generated link will end with <tt>start=</tt> and therefore a JavaScript can add
+     * the desired value at runtime to link to the appropriate page.
+     *
+     * @param baseUrl the base url to be used
+     * @return the base url extended with all parameters (facets, query) to render a configurable page.
+     */
+    public String linkToPageWithConfigurableStart(String baseUrl) {
+        return addFacetsAndQuery(baseUrl, null).appendRaw(PARAM_START, "").toString();
+    }
+
+    /**
+     * Returns all filter facets available.
+     *
+     * @return all filter facets of the underlying result set
+     */
+    public List<Facet> getFacets() {
+        if (facetsSupplier != null) {
+            facets.addAll(facetsSupplier.get());
+            facetsSupplier = null;
+            hasFacets = null;
+        }
+        if (hasFacets == null) {
+            hasFacets = false;
+            for (Facet facet : facets) {
+                facet.parent = this;
+                if (facet.hasItems()) {
+                    hasFacets = true;
+                }
+            }
+        }
+
+        return Collections.unmodifiableList(facets);
+    }
+
+    /**
+     * Determines if there is at least one filter facet with filter items.
+     *
+     * @return <tt>true</tt> if there is at least one filter facet with items
+     */
+    public boolean hasFacets() {
+        if (hasFacets == null) {
+            getFacets();
+        }
+
+        return hasFacets;
+    }
+
+    /**
+     * Returns the total page size.
+     * <p>
+     * This not the number of items in the page but rather the general paging size currently being used.
+     *
+     * @return the max number of items in a page
+     * @see #DEFAULT_PAGE_SIZE
+     */
+    public int getPageSize() {
+        return pageSize;
+    }
+
+    /**
+     * @deprecated Convoluted logic. Use <tt>linkTo...</tt> method...
+     */
+    @Deprecated
     public String createPrevPageQueryString() {
+        Exceptions.logDeprecatedMethodUse();
         return createQueryString(PARAM_START, String.valueOf(getPreviousStart()), false);
     }
 
     /**
-     * Creates a query string containing all filters, the search query and a <tt>start</tt> parameter selecting the
-     * next page.
-     *
-     * @return a query string selecting the next page
+     * @deprecated Convoluted logic. Use <tt>linkTo...</tt> method...
      */
+    @Deprecated
     public String createNextPageQueryString() {
+        Exceptions.logDeprecatedMethodUse();
         return createQueryString(PARAM_START, String.valueOf(getNextStart()), false);
     }
 
     /**
-     * Creates a query string containing all filters and the search query and a <tt>start</tt> parameter selecting the
-     * current page.
-     *
-     * @return a query string selecting the current page
+     * @deprecated Convoluted logic. Use <tt>linkTo...</tt> method...
      */
+    @Deprecated
     public String createQueryString() {
+        Exceptions.logDeprecatedMethodUse();
         return createQueryString(null, null, false);
     }
 
     /**
-     * Creates a query string containing all filters and the search query along with a given custom field.
-     *
-     * @param field      the additional field to set
-     * @param value      the value of the field to set
-     * @param resetStart determines if the start value should be kept (<tt>false</tt>) or reset to 1 (<tt>true</tt>)
-     * @return a query string containing all filters, the query and the given parameter
+     * @deprecated Convoluted logic. Use <tt>linkTo...</tt> method...
      */
+    @Deprecated
     public String createQueryString(String field, String value, boolean resetStart) {
+        Exceptions.logDeprecatedMethodUse();
         StringBuilder queryStringBuilder = new StringBuilder();
         boolean fieldFound = false;
         Monoflop ampersandPlaced = Monoflop.create();
@@ -451,73 +560,16 @@ public class Page<E> {
     }
 
     /**
-     * Creates an incomplete query string to be completed by appending the start index.
-     * The Query String will contain all filters and the search query except 'start', for which the value must be
-     * appended.
-     * <p>
-     * ex.:
-     * <pre>
-     * var startIndex = "33";
-     * $('a.config-start').attr("href", "@prefix/@baseURL?@page.createQueryStringForConfigurableStart()" + startIndex);
-     * </pre>
-     *
-     * @return a query string missing the start value
+     * @deprecated Convoluted logic. Use <tt>linkTo...</tt> method...
      */
+    @Deprecated
     public String createQueryStringForConfigurableStart() {
+        Exceptions.logDeprecatedMethodUse();
         String result = createQueryString(null, null, true);
         if (Strings.isFilled(result)) {
             return result + "&start=";
         } else {
             return "start=";
         }
-    }
-
-    /**
-     * Returns all filter facets available.
-     *
-     * @return all filter facets of the underlying result set
-     */
-    public List<Facet> getFacets() {
-        if (facetsSupplier != null) {
-            facets.addAll(facetsSupplier.get());
-            facetsSupplier = null;
-            hasFacets = null;
-        }
-        if (hasFacets == null) {
-            hasFacets = false;
-            for (Facet facet : facets) {
-                facet.parent = this;
-                if (facet.hasItems()) {
-                    hasFacets = true;
-                }
-            }
-        }
-
-        return facets;
-    }
-
-    /**
-     * Determines if there is at least one filter facet with filter items.
-     *
-     * @return <tt>true</tt> if there is at least one filter facet with items
-     */
-    public boolean hasFacets() {
-        if (hasFacets == null) {
-            getFacets();
-        }
-
-        return hasFacets;
-    }
-
-    /**
-     * Returns the total page size.
-     * <p>
-     * This not the number of items in the page but rather the general paging size currently being used.
-     *
-     * @return the max number of items in a page
-     * @see #DEFAULT_PAGE_SIZE
-     */
-    public int getPageSize() {
-        return pageSize;
     }
 }

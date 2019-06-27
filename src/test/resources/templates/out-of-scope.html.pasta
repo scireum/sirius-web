@@ -13,3 +13,12 @@
 }
 @test
 @el
+
+<i:block name="x">
+    <i:local name="test" value="5"/>
+</i:block>
+
+<i:block name="y">
+    @test
+    <i:local name="test" value="5"/>
+</i:block>

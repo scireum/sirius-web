@@ -10,6 +10,7 @@ package sirius.web.controller;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
+import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
@@ -42,11 +43,11 @@ import java.util.stream.Collectors;
 public class Route {
 
     protected static final List<Object> NO_MATCH = new ArrayList<>();
+    private static final Class<?>[] CLASS_ARRAY = new Class[0];
 
     private static final Pattern EXPR = Pattern.compile("([:#$])\\{?(.+?)}?");
 
     private String label;
-    private String format;
     private Pattern pattern;
     private List<Tuple<String, Object>> expressions = Lists.newArrayList();
     private Method method;
@@ -69,11 +70,10 @@ public class Route {
         Route result = new Route();
         result.controller = controller;
         result.method = method;
-        result.uri = routed.value();
+        result.uri = applyRewrites(controller, routed.value());
         result.label = result.uri + " -> " + method.getDeclaringClass().getName() + "#" + method.getName();
         result.jsonCall = routed.jsonCall();
         result.preDispatchable = routed.preDispatchable();
-        result.format = routed.value();
         result.permissions = Permissions.computePermissionsFromAnnotations(method);
         List<Class<?>> parameterTypes = Lists.newArrayList(Arrays.asList(method.getParameterTypes()));
 
@@ -81,7 +81,7 @@ public class Route {
             throw new IllegalArgumentException("Route does not start with /");
         }
 
-        String[] elements = routed.value().substring(1).split("/");
+        String[] elements = result.uri.substring(1).split("/");
         StringBuilder finalPattern = new StringBuilder();
         int params = compileRouteURI(result, elements, finalPattern);
 
@@ -105,9 +105,28 @@ public class Route {
             finalPattern = new StringBuilder("/");
         }
 
-        result.parameterTypes = parameterTypes.toArray(new Class[parameterTypes.size()]);
+        result.parameterTypes = parameterTypes.toArray(CLASS_ARRAY);
         result.pattern = Pattern.compile(finalPattern.toString());
         return result;
+    }
+
+    private static String applyRewrites(Controller controller, String uri) {
+        String rewrittenUri = Sirius.getSettings()
+                                    .getExtensions("controller.rewrites")
+                                    .stream()
+                                    .filter(ext -> controller.getClass()
+                                                             .getName()
+                                                             .contains(ext.get("controller").asString()))
+                                    .filter(ext -> ext.get("uri").asString().equals(uri))
+                                    .map(ext -> ext.get("rewrite").asString())
+                                    .findFirst()
+                                    .orElse(null);
+        if (rewrittenUri != null) {
+            ControllerDispatcher.LOG.INFO("Rewriting uri %s -> %s", uri, rewrittenUri);
+            return rewrittenUri;
+        }
+
+        return uri;
     }
 
     private static void failForInvalidParameterCount(Routed routed, List<Class<?>> parameterTypes, int params) {
@@ -187,7 +206,7 @@ public class Route {
         if (m.matches()) {
             List<Object> result = extractRouteParameters(ctx, m);
             if (!result.equals(NO_MATCH)) {
-                CallContext.getCurrent().addToMDC("route", format);
+                CallContext.getCurrent().addToMDC("route", uri);
             }
             return result;
         }

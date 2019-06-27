@@ -25,6 +25,7 @@ import sirius.web.http.WebContext;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -83,6 +84,7 @@ public class UserContext implements SubContext {
     private List<Message> msgList = Lists.newArrayList();
     private Map<String, String> fieldErrors = Maps.newHashMap();
     private Map<String, String> fieldErrorMessages = Maps.newHashMap();
+    private boolean addedAdditionalMessages = false;
 
     /**
      * Retrieves the current <b>UserContext</b> from the {@link sirius.kernel.async.CallContext}.
@@ -207,21 +209,11 @@ public class UserContext implements SubContext {
      * Loads the current user from the given web context.
      */
     private void bindUserToRequest(WebContext ctx) {
-        UserManager manager = getUserManager();
-        UserInfo user;
-
         if (ctx != null && ctx.isValid()) {
-            user = manager.bindToRequest(ctx);
+            setCurrentUser(getUserManager().bindToRequest(ctx));
         } else {
-            user = UserInfo.NOBODY;
+            setCurrentUser(UserInfo.NOBODY);
         }
-
-        // Install the user to perform the verification on a fully populated context
-        setCurrentUser(user);
-        user = manager.verifyUser(user);
-
-        // Install the effective user - which might be NOBODY to signal that the current user was blocked
-        setCurrentUser(user);
     }
 
     /**
@@ -320,7 +312,8 @@ public class UserContext implements SubContext {
     public List<Message> getMessages() {
         userMessagesCache.restoreCachedUserMessages(CallContext.getCurrent().get(WebContext.class));
 
-        if (!Sirius.isStartedAsTest()) {
+        if (!Sirius.isStartedAsTest() && !addedAdditionalMessages) {
+            addedAdditionalMessages = true;
             getScope().tryAs(MaintenanceInfo.class)
                       .filter(info -> !info.isLocked())
                       .map(MaintenanceInfo::maintenanceMessage)
@@ -331,7 +324,7 @@ public class UserContext implements SubContext {
             messageProviders.forEach(provider -> provider.addMessages(this::addMessage));
         }
 
-        return msgList;
+        return Collections.unmodifiableList(msgList);
     }
 
     /**
@@ -430,6 +423,15 @@ public class UserContext implements SubContext {
      */
     public void addFieldErrorMessage(String field, String errorMessage) {
         fieldErrorMessages.put(field, errorMessage);
+    }
+
+    /**
+     * Returns all error message for all fields
+     *
+     * @return all field errors
+     */
+    public Map<String, String> getFieldErrors() {
+        return Collections.unmodifiableMap(fieldErrors);
     }
 
     /**

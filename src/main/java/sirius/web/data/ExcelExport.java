@@ -9,21 +9,23 @@
 package sirius.web.data;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
-import org.apache.poi.hssf.usermodel.HSSFPatriarch;
-import org.apache.poi.hssf.usermodel.HSSFPicture;
-import org.apache.poi.hssf.usermodel.HSSFPrintSetup;
 import org.apache.poi.hssf.usermodel.HSSFRichTextString;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.ClientAnchor;
+import org.apache.poi.ss.usermodel.Drawing;
+import org.apache.poi.ss.usermodel.Picture;
 import org.apache.poi.ss.usermodel.PrintSetup;
+import org.apache.poi.ss.usermodel.RichTextString;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
+import org.apache.poi.xssf.usermodel.XSSFRichTextString;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import sirius.kernel.commons.Amount;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
@@ -50,18 +52,19 @@ import java.util.Set;
  */
 public class ExcelExport {
 
-    private static final String MIME_TYPE_EXCEL = "application/ms-excel";
+    private static final String MIME_TYPE_XLS = "application/ms-excel";
+    private static final String MIME_TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
-    private final HSSFWorkbook workbook;
-    private final HSSFSheet sheet;
+    private final Workbook workbook;
+    private final Sheet sheet;
     private int rows = 0;
     private int maxCols = 0;
-    private HSSFCellStyle dateStyle;
-    private HSSFCellStyle numeric;
-    private HSSFCellStyle borderStyle;
-    private HSSFCellStyle normalStyle;
+    private CellStyle dateStyle;
+    private CellStyle numeric;
+    private CellStyle borderStyle;
+    private CellStyle normalStyle;
     private Set<Short> pictureCols = new HashSet<>();
-    private HSSFPatriarch drawing;
+    private Drawing drawing;
 
     /**
      * Represents a cell containing an image which should be inserted.
@@ -172,10 +175,15 @@ public class ExcelExport {
     }
 
     /**
-     * Generates a new Export
+     * @deprecated Use one of the static constructor methods to determine which format to use.
      */
+    @Deprecated
     public ExcelExport() {
-        workbook = new HSSFWorkbook();
+        this(true);
+    }
+
+    protected ExcelExport(boolean useHSSF) {
+        workbook = useHSSF ? new HSSFWorkbook() : new XSSFWorkbook();
         sheet = workbook.createSheet();
         // Setup styles
         dateStyle = workbook.createCellStyle();
@@ -188,7 +196,7 @@ public class ExcelExport {
         normalStyle = workbook.createCellStyle();
         // Setup layout
         sheet.createFreezePane(0, 1, 0, 1);
-        HSSFPrintSetup ps = sheet.getPrintSetup();
+        PrintSetup ps = sheet.getPrintSetup();
         ps.setPaperSize(PrintSetup.A4_PAPERSIZE);
         ps.setLandscape(false);
         ps.setFitWidth((short) 1);
@@ -197,14 +205,32 @@ public class ExcelExport {
         sheet.setRepeatingRows(new CellRangeAddress(0, 0, -1, -1));
     }
 
-    private void addCell(HSSFRow row, Object obj, int columnIndex, HSSFCellStyle style) {
+    /**
+     * Creates a new export which uses the legacy Excel'97 format (.xls).
+     *
+     * @return a new exporter using the Excel'97 format
+     */
+    public static ExcelExport asXLS() {
+        return new ExcelExport(true);
+    }
+
+    /**
+     * Creates a new export which uses the modern Excel format (.xlsx).
+     *
+     * @return a new exporter using the modern Excel format
+     */
+    public static ExcelExport asXSLX() {
+        return new ExcelExport(false);
+    }
+
+    private void addCell(Row row, Object obj, int columnIndex, CellStyle style) {
         if (obj == null) {
             return;
         }
-        HSSFCell cell = row.createCell(columnIndex);
+        Cell cell = row.createCell(columnIndex);
         cell.setCellStyle(style);
         if (obj instanceof String) {
-            cell.setCellValue(new HSSFRichTextString((String) obj));
+            cell.setCellValue(createRichTextString((String) obj));
             return;
         }
         if (obj instanceof LocalDateTime) {
@@ -216,7 +242,7 @@ public class ExcelExport {
             return;
         }
         if (obj instanceof Boolean) {
-            cell.setCellValue(new HSSFRichTextString(NLS.toUserString(obj)));
+            cell.setCellValue(createRichTextString(NLS.toUserString(obj)));
             return;
         }
         if (obj instanceof Double) {
@@ -247,10 +273,18 @@ public class ExcelExport {
             addImageCell(row, (ImageCell) obj, columnIndex);
             return;
         }
-        cell.setCellValue(new HSSFRichTextString(obj.toString()));
+        cell.setCellValue(createRichTextString(obj.toString()));
     }
 
-    private void addImageCell(HSSFRow row, ImageCell imageCell, int columnIndex) {
+    private RichTextString createRichTextString(String string) {
+        if (workbook instanceof HSSFWorkbook) {
+            return new HSSFRichTextString(string);
+        }
+
+        return new XSSFRichTextString(string);
+    }
+
+    private void addImageCell(Row row, ImageCell imageCell, int columnIndex) {
         row.setHeightInPoints(imageCell.getHeightInPoints());
         if (drawing == null) {
             drawing = sheet.createDrawingPatriarch();
@@ -260,10 +294,18 @@ public class ExcelExport {
             pictureCols.add((short) columnIndex);
         }
         int iconIndex = workbook.addPicture(imageCell.fileData, imageCell.pictureType);
-        ClientAnchor anchor = new HSSFClientAnchor();
+
+        ClientAnchor anchor;
+
+        if (workbook instanceof HSSFWorkbook) {
+            anchor = new HSSFClientAnchor();
+        } else {
+            anchor = new XSSFClientAnchor();
+        }
+
         anchor.setCol1(columnIndex);
         anchor.setRow1(row.getRowNum());
-        HSSFPicture picture = drawing.createPicture(anchor, iconIndex);
+        Picture picture = drawing.createPicture(anchor, iconIndex);
         picture.resize(imageCell.getScaleFactor());
     }
 
@@ -288,7 +330,7 @@ public class ExcelExport {
         if (row != null) {
             maxCols = Math.max(maxCols, row.size());
             int idx = 0;
-            HSSFRow r = sheet.createRow(rows++);
+            Row r = sheet.createRow(rows++);
             for (Object entry : row) {
                 addCell(r, entry, idx++, getCellStyleForObject(entry));
             }
@@ -303,9 +345,24 @@ public class ExcelExport {
      * @param ctx  the target context to create a response for
      */
     public void writeResponseTo(String name, WebContext ctx) {
-        OutputStream out =
-                ctx.respondWith().download(name).notCached().outputStream(HttpResponseStatus.OK, MIME_TYPE_EXCEL);
+        String filename = computeEffectiveFilename(name);
+        OutputStream out = ctx.respondWith()
+                              .download(filename)
+                              .notCached()
+                              .outputStream(HttpResponseStatus.OK,
+                                            workbook instanceof HSSFWorkbook ? MIME_TYPE_XLS : MIME_TYPE_XLSX);
         writeToStream(out);
+    }
+
+    private String computeEffectiveFilename(String name) {
+        if (!name.contains(".")) {
+            if (workbook instanceof HSSFWorkbook) {
+                return name + ".xls";
+            } else {
+                return name + ".xlsx";
+            }
+        }
+        return name;
     }
 
     /**
@@ -337,7 +394,7 @@ public class ExcelExport {
         }
     }
 
-    private HSSFCellStyle getCellStyleForObject(Object data) {
+    private CellStyle getCellStyleForObject(Object data) {
         if (data instanceof LocalDate || data instanceof LocalDateTime) {
             return dateStyle;
         }

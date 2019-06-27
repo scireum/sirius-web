@@ -13,34 +13,47 @@ import spock.lang.Specification
 
 class PageSpec extends Specification {
 
-    Page page = new Page()
 
-    def "createQueryStringForConfigurableStart() returns 'start=' if no filters are set"() {
+    def "linkToPageWithConfigurableStart() returns 'start=' if no filters are set"() {
+        given:
+        Page page = new Page()
         when:
-        def result = page.createQueryStringForConfigurableStart()
+        def result = page.linkToPageWithConfigurableStart('/test')
         then:
-        result == "start="
+        result == "/test?start="
     }
 
-
-    def "createQueryStringForConfigurableStart() returns a valid query string ending with start="() {
+    def "linkToCurrentPage() works with an URI that already contains a query string"() {
         given:
+        Page page = new Page()
+        when:
         page.withQuery("QUERY").
                 withFactes([
-                        facet("field1", "value1"),
-                        facet("field2", "value2")
+                        new Facet("", "field1", "value1", null),
+                        new Facet("", "field2", "value2", null)
                 ])
+        and:
+        def result = page.linkToCurrentPage('/test?hallo=welt')
+        then:
+        result == '/test?hallo=welt&query=QUERY&field1=value1&field2=value2'
+    }
+
+    def "linkToPageWithConfigurableStart() returns a valid query string ending with start="() {
+        given:
+        Page page = new Page()
         when:
-        def result = page.createQueryStringForConfigurableStart()
+        page.withQuery("QUERY").
+                withFactes([
+                        new Facet("", "field1", "value1", null),
+                        new Facet("", "field2", "value2", null)
+                ])
+        and:
+        def result = page.linkToPageWithConfigurableStart('/test')
         then:
         result.contains("field1=value1&")
         result.contains("field2=value2&")
         result.contains("query=QUERY&")
         result.endsWith("&start=")
-    }
-
-    static Facet facet(String field, String value) {
-        return new Facet("", field, value, null)
     }
 
     def "withLimitedItemsSupplier() removes elements which exceed the page size"() {
