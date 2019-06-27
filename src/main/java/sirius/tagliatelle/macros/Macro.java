@@ -66,16 +66,4 @@ public interface Macro extends Named {
      */
     String getDescription();
 
-    /**
-     * Replaces the call to this macro by an alternative expression if blocks are to be inlined.
-     *
-     * @param template the template for which the blocks are dereferenced
-     * @param blocks   the translator which resolves a block name into an {@link sirius.tagliatelle.emitter.Emitter}
-     * @param args     the macro arguments
-     * @return the replacement expression for this macro call or <tt>null</tt> to indicate tha the macro doesn't
-     * depent on any block
-     */
-    default Expression dereference(Template template, Function<String, Emitter> blocks, Expression[] args) {
-        return null;
-    }
 }

@@ -12,7 +12,7 @@
 <i:arg name="adminOnly" type="boolean" default="false"/>
 <i:arg name="allowCustomEntries" type="boolean" default="false"/>
 
-<i:pragma name="inline" value="true"/>
+
 <i:pragma name="description" value="Renders a multiselect dropdown field within a Wondergem template"/>
 
 <i:local name="id" value="@apply('multiselect-%s', call.generateLocalId())"/>

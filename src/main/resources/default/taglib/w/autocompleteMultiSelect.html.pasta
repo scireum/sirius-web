@@ -14,7 +14,7 @@
 <i:arg name="readonly" type="boolean" default="false"/>
 <i:arg name="adminOnly" type="boolean" default="false"/>
 
-<i:pragma name="inline" value="true"/>
+
 <i:pragma name="description" value="Renders an autocomplete for multiple values within a Wondergem template"/>
 
 <i:local name="id" value="@apply('multiselect-%s', call.generateLocalId())"/>

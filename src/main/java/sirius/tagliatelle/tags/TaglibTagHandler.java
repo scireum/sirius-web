@@ -34,17 +34,10 @@ public class TaglibTagHandler extends TagHandler {
 
     @Override
     public void apply(CompositeEmitter targetBlock) {
-        if (template.getPragma(InvokeTag.ATTR_INLINE).asBoolean()) {
-            targetBlock.addChild(getCompilationContext().inlineTemplate(getStartOfTag(),
-                                                                        template,
-                                                                        this::getAttribute,
-                                                                        this::getBlock));
-        } else {
-            targetBlock.addChild(getCompilationContext().invokeTemplate(getStartOfTag(),
-                                                                        template,
-                                                                        this::getAttribute,
-                                                                        blocks));
-        }
+        targetBlock.addChild(getCompilationContext().invokeTemplate(getStartOfTag(),
+                                                                    template,
+                                                                    this::getAttribute,
+                                                                    blocks));
     }
 
     @Override

@@ -5,7 +5,7 @@
 <i:arg type="String" name="labels"/>
 <i:arg type="String" name="dataUnit" default=""/>
 
-<i:pragma name="inline" value="true"/>
+
 <i:pragma name="description"
           value="Renders a polar area chart using Chart.js"/>
 

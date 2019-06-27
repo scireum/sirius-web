@@ -185,20 +185,11 @@ class CompilerSpec extends BaseSpecification {
         test.basicallyEqual(c, "c")
     }
 
-    def "constant switch is optimized"() {
+    def "extensions work"() {
         when:
-        Template template = tagliatelle.resolve("templates/constant-switch.html.pasta").get()
+        String result = tagliatelle.resolve("templates/extended.html.pasta").get().renderToString()
         then:
-        template.getEmitter() instanceof ConstantEmitter
-    }
-
-    def "extensions get linine and optimized"() {
-        when:
-        Template template = tagliatelle.resolve("templates/extended.html.pasta").get()
-        then:
-        template.getEmitter() instanceof ConstantEmitter
-        and:
-        template.getEmitter().toString() == "b"
+        result == "b"
     }
 
     def "dynamicInvoke works"() {

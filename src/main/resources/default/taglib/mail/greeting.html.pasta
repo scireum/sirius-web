@@ -1,4 +1,4 @@
-<i:pragma name="inline" value="true"/>
+
 
 <mail:table class="greeting">
     <mail:tableContent bgcolor="#ffffff">

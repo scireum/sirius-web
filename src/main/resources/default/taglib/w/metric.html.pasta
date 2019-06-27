@@ -5,7 +5,7 @@
 <i:arg type="String" name="color" default=""/>
 <i:arg type="boolean" name="nameAbove" default="true"/>
 
-<i:pragma name="inline" value="true"/>
+
 <i:pragma name="description"
           value="Renders a statictic / metric value. Most probably this will be contained in a well"/>
 

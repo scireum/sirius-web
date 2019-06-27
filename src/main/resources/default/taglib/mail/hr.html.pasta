@@ -1,5 +1,5 @@
 <i:arg name="class" type="String" default=""/>
 
-<i:pragma name="inline" value="true"/>
+
 
 <hr class="separator-line @class">

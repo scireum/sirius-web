@@ -147,21 +147,5 @@ public class MacroCall extends Call {
         }
     }
 
-    /**
-     * Transforms all macros that access blocks of the {@link LocalRenderContext} into alternative expressions.
-     *
-     * @param template the template for which the blocks are dereferenced
-     * @param blocks   the provider to resolve a block name into an {@link sirius.tagliatelle.emitter.Emitter}
-     * @return the replacement expression for the macro call
-     */
-    public Expression dereference(Template template, Function<String, Emitter> blocks) {
-        if (macro != null) {
-            Expression dereferenced = macro.dereference(template, blocks, parameterExpressions);
-            if (dereferenced != null) {
-                return dereferenced;
-            }
-        }
 
-        return this;
-    }
 }

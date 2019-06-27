@@ -67,10 +67,10 @@ public class ExtensionsTag extends InvokeTag {
         String target = getConstantAttribute(ATTR_TARGET).asString();
         if (Strings.isFilled(target)) {
             for (TemplateExtension extension : engine.getExtensions(target)) {
-                targetBlock.addChild(getCompilationContext().inlineTemplate(getStartOfTag(),
+                targetBlock.addChild(getCompilationContext().invokeTemplate(getStartOfTag(),
                                                                             extension.getTemplate(),
                                                                             this::getAttribute,
-                                                                            this::getBlock));
+                                                                            blocks));
             }
         }
     }

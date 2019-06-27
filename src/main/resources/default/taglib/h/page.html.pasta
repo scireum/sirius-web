@@ -7,7 +7,7 @@
 <i:arg type="boolean" name="showCurrentPageBreadcrumb" default="true"/>
 <i:arg type="String" name="span" default="9"/>
 
-<i:pragma name="inline" value="true"/>
+
 <i:pragma name="description" value="Provides the base layout topic within the help system"/>
 
 <w:page title="@apply('%s - %s', title, i18n('help'))" ignoreDisasteMode="true">
@@ -46,7 +46,7 @@
     </i:block>
 
     <i:block name="menu">
-        <i:invoke template="/help/menu.html.pasta" inline="true"/>
+        <i:invoke template="/help/menu.html.pasta" />
     </i:block>
 
     <i:block name="breadcrumbs">
@@ -80,7 +80,7 @@
     </div>
 
     <i:block name="footer">
-        <i:invoke template="/help/footer.html.pasta" inline="true"/>
+        <i:invoke template="/help/footer.html.pasta" />
     </i:block>
 
 </w:page>
