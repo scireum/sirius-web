@@ -11,7 +11,6 @@ package sirius.tagliatelle.tags;
 import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.TemplateArgument;
 import sirius.tagliatelle.emitter.CompositeEmitter;
-import sirius.tagliatelle.emitter.ConditionalEmitter;
 import sirius.tagliatelle.emitter.SwitchEmitter;
 
 import javax.annotation.Nonnull;

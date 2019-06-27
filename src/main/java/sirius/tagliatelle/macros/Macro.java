@@ -9,13 +9,10 @@
 package sirius.tagliatelle.macros;
 
 import sirius.kernel.di.std.Named;
-import sirius.tagliatelle.Template;
-import sirius.tagliatelle.emitter.Emitter;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * Represents a macro or constant function.
@@ -65,5 +62,4 @@ public interface Macro extends Named {
      * @return a short description of the macro
      */
     String getDescription();
-
 }

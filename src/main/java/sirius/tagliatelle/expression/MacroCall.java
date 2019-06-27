@@ -11,14 +11,11 @@ package sirius.tagliatelle.expression;
 import parsii.tokenizer.Position;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
-import sirius.tagliatelle.Template;
 import sirius.tagliatelle.compiler.CompilationContext;
-import sirius.tagliatelle.emitter.Emitter;
 import sirius.tagliatelle.macros.Macro;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
 import java.util.Arrays;
-import java.util.function.Function;
 
 /**
  * Invokes a {@link Macro} at runtime.
@@ -146,6 +143,4 @@ public class MacroCall extends Call {
             macro.verifyArguments(Arrays.asList(parameterExpressions));
         }
     }
-
-
 }

@@ -13,7 +13,6 @@ import sirius.kernel.cache.ValueComputer;
 import sirius.kernel.commons.Limit;
 import sirius.kernel.commons.Monoflop;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 import sirius.web.http.WebContext;
 import sirius.web.util.LinkBuilder;
@@ -451,56 +450,6 @@ public class Page<E> {
         return pageSize;
     }
 
-    /**
-     * @deprecated Convoluted logic. Use <tt>linkTo...</tt> method...
-     */
-    @Deprecated
-    public String createPrevPageQueryString() {
-        Exceptions.logDeprecatedMethodUse();
-        return createQueryString(PARAM_START, String.valueOf(getPreviousStart()), false);
-    }
-
-    /**
-     * @deprecated Convoluted logic. Use <tt>linkTo...</tt> method...
-     */
-    @Deprecated
-    public String createNextPageQueryString() {
-        Exceptions.logDeprecatedMethodUse();
-        return createQueryString(PARAM_START, String.valueOf(getNextStart()), false);
-    }
-
-    /**
-     * @deprecated Convoluted logic. Use <tt>linkTo...</tt> method...
-     */
-    @Deprecated
-    public String createQueryString() {
-        Exceptions.logDeprecatedMethodUse();
-        return createQueryString(null, null, false);
-    }
-
-    /**
-     * @deprecated Convoluted logic. Use <tt>linkTo...</tt> method...
-     */
-    @Deprecated
-    public String createQueryString(String field, String value, boolean resetStart) {
-        Exceptions.logDeprecatedMethodUse();
-        StringBuilder queryStringBuilder = new StringBuilder();
-        boolean fieldFound = false;
-        Monoflop ampersandPlaced = Monoflop.create();
-        fieldFound |= createQueryStringForFacets(field, value, queryStringBuilder, ampersandPlaced);
-        if (!resetStart) {
-            fieldFound |= addStartToQueryString(field, value, queryStringBuilder, ampersandPlaced);
-        }
-        fieldFound |= addQueryToQueryString(field, value, queryStringBuilder, ampersandPlaced);
-        if (!fieldFound && Strings.isFilled(value)) {
-            queryStringBuilder.append(ampersandPlaced.firstCall() ? "" : "&");
-            queryStringBuilder.append(field);
-            queryStringBuilder.append("=");
-            queryStringBuilder.append(Strings.urlEncode(value));
-        }
-        return queryStringBuilder.toString();
-    }
-
     private boolean addQueryToQueryString(String field,
                                           String value,
                                           StringBuilder queryStringBuilder,
@@ -557,19 +506,5 @@ public class Page<E> {
             }
         }
         return fieldFound;
-    }
-
-    /**
-     * @deprecated Convoluted logic. Use <tt>linkTo...</tt> method...
-     */
-    @Deprecated
-    public String createQueryStringForConfigurableStart() {
-        Exceptions.logDeprecatedMethodUse();
-        String result = createQueryString(null, null, true);
-        if (Strings.isFilled(result)) {
-            return result + "&start=";
-        } else {
-            return "start=";
-        }
     }
 }

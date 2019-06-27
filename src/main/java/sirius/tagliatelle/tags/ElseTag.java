@@ -22,8 +22,6 @@ import java.util.List;
  */
 public class ElseTag extends TagHandler {
 
-    private static final String EMPTY_STRING = "";
-
     /**
      * Creates new tags of the given type (name).
      */

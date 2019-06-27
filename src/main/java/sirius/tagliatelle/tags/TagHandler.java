@@ -32,6 +32,8 @@ public abstract class TagHandler {
 
     protected Map<String, Emitter> blocks = null;
     protected Map<String, Expression> attributes = null;
+    protected int baselineLocalIndex;
+
 
     /**
      * Adds a block of emitters being passed to the template.
@@ -216,8 +218,6 @@ public abstract class TagHandler {
      * @param targetBlock the outer block to which the output can be appended
      */
     public abstract void apply(CompositeEmitter targetBlock);
-
-    protected int baselineLocalIndex;
 
     protected void updateBaseLine() {
         baselineLocalIndex = getCompilationContext().getVisibleStackDepth();

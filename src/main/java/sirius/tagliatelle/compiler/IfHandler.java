@@ -20,8 +20,6 @@ import sirius.tagliatelle.emitter.Emitter;
 @Register(classes = ExpressionHandler.class)
 public class IfHandler extends ExpressionHandler {
 
-    private static final String EMPTY_STRING = "";
-
     @Override
     public boolean shouldProcess(Compiler compiler) {
         return compiler.isAtText(0, "if") && compiler.getReader().next(2).is(' ', '(');

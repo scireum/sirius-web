@@ -53,8 +53,6 @@ public class CompilationContext {
         String name;
     }
 
-    private static final int INLINE_LOCALS_SHIFT_OFFSET = 1000000;
-
     /**
      * Contains the context of the template which was being compiled and triggered the compilation of this template.
      * <p>

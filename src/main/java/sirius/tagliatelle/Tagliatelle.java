@@ -104,6 +104,7 @@ public class Tagliatelle {
     /**
      * Returns all extensions available for the given target.
      *
+     * @param target the target to lookup extensions for
      * @return a list of all extensions for the given target
      */
     public List<TemplateExtension> getExtensions(String target) {

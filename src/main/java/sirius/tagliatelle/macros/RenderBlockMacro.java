@@ -10,17 +10,11 @@ package sirius.tagliatelle.macros;
 
 import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.Tagliatelle;
-import sirius.tagliatelle.Template;
-import sirius.tagliatelle.emitter.ConstantEmitter;
-import sirius.tagliatelle.emitter.Emitter;
-import sirius.tagliatelle.expression.ConstantString;
 import sirius.tagliatelle.expression.Expression;
-import sirius.tagliatelle.expression.RenderEmitterExpression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * Returns the contents of the given block as string.
@@ -63,5 +57,4 @@ public class RenderBlockMacro implements Macro {
     public String getDescription() {
         return "Renders the block with the given name into a string.";
     }
-
 }
