@@ -61,6 +61,7 @@ public class DefineTag extends TagHandler {
     public void apply(CompositeEmitter targetBlock) {
         String name = getConstantAttribute(PARAM_NAME).asString();
         int variable = getCompilationContext().push(getStartOfTag(), name, String.class);
+        updateBaseLine();
         targetBlock.addChild(new PushLocalEmitter(startOfTag,
                                                   variable,
                                                   new RenderEmitterExpression(new InlineTemplateEmitter(getStartOfTag(),

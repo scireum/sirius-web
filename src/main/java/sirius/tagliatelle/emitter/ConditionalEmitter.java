@@ -29,7 +29,6 @@ public class ConditionalEmitter extends Emitter {
     protected Expression conditionExpression;
     protected Emitter whenTrue = ConstantEmitter.EMPTY;
     protected Emitter whenFalse = ConstantEmitter.EMPTY;
-    private int localIndex;
 
     /**
      * Creates a new emitter for the given position.
@@ -81,27 +80,6 @@ public class ConditionalEmitter extends Emitter {
         if (whenFalse != null) {
             this.whenFalse = whenFalse;
         }
-    }
-
-    /**
-     * Contains the stack index being written to.
-     *
-     * @return the target index to write to
-     */
-    public int getLocalIndex() {
-        return localIndex;
-    }
-
-    /**
-     * Updates the stack index being written to.
-     * <p>
-     * When inlining a template, the stack has to be transferred to the callee and therefore the
-     * stack indices might change.
-     *
-     * @param localIndex the new stack index to use
-     */
-    public void setLocalIndex(int localIndex) {
-        this.localIndex = localIndex;
     }
 
     @Override

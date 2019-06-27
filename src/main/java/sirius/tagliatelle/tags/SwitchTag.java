@@ -12,6 +12,7 @@ import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.TemplateArgument;
 import sirius.tagliatelle.emitter.CompositeEmitter;
 import sirius.tagliatelle.emitter.ConditionalEmitter;
+import sirius.tagliatelle.emitter.SwitchEmitter;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -20,7 +21,7 @@ import java.util.List;
 /**
  * Handles <tt>i:if</tt> which emits its body if a condition is met.
  */
-public class IfTag extends TagHandler {
+public class SwitchTag extends TagHandler {
 
     /**
      * Creates new tags of the given type (name).
@@ -31,12 +32,12 @@ public class IfTag extends TagHandler {
         @Nonnull
         @Override
         public String getName() {
-            return "i:if";
+            return "i:switch";
         }
 
         @Override
         public TagHandler createHandler() {
-            return new IfTag();
+            return new SwitchTag();
         }
 
         @Override
@@ -53,23 +54,20 @@ public class IfTag extends TagHandler {
         }
     }
 
-
     @Override
     public void apply(CompositeEmitter targetBlock) {
-        ConditionalEmitter result = new ConditionalEmitter(getStartOfTag());
-        result.setConditionExpression(getAttribute("test"));
-        result.setWhenTrue(getBlock("body"));
-        result.setWhenFalse(getBlock("else"));
+        SwitchEmitter result = new SwitchEmitter(getStartOfTag());
+        result.setSwitchExpression(getAttribute("test"));
+        result.setBlocks(blocks);
         targetBlock.addChild(result);
     }
 
     @Override
     public Class<?> getExpectedAttributeType(String name) {
         if ("test".equals(name)) {
-            return boolean.class;
+            return String.class;
         }
 
         return super.getExpectedAttributeType(name);
     }
-
 }

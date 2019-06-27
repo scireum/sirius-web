@@ -52,38 +52,22 @@ public class ElseTag extends TagHandler {
         }
     }
 
-    private int localIndex;
-
     @Override
     public void beforeBody() {
-        if (!checkParentHandler()) {
-            return;
+        if (!(getParentHandler() instanceof IfTag)) {
+            getCompilationContext().error(getStartOfTag(), "i:else must be defined within i:if!");
         }
 
-        ((IfTag) getParentHandler()).clearLocalsFromStack();
-        localIndex = getCompilationContext().push(getStartOfTag(), EMPTY_STRING, String.class);
+        getParentHandler().afterTag();
+        updateBaseLine();
     }
 
     @Override
     public void apply(CompositeEmitter targetBlock) {
-        if (!checkParentHandler()) {
-            return;
-        }
-
         Emitter body = getBlock("body");
         if (body != null) {
             getParentHandler().addBlock("else", body);
         }
-
-        getCompilationContext().popUntil(getStartOfTag(), localIndex);
     }
 
-    private boolean checkParentHandler() {
-        if (!(getParentHandler() instanceof IfTag)) {
-            getCompilationContext().error(getStartOfTag(), "i:else must be defined within i:if!");
-            return false;
-        }
-
-        return true;
-    }
 }

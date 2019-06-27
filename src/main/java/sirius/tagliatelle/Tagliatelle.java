@@ -21,6 +21,7 @@ import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.tagliatelle.compiler.CompilationContext;
 import sirius.tagliatelle.compiler.CompileError;
@@ -39,6 +40,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -80,6 +82,8 @@ public class Tagliatelle {
 
     private MultiMap<String, String> taglibTags;
 
+    private MultiMap<String, TemplateExtension> extensions;
+
     /**
      * Returns all taglibs and all tags within this taglib.
      *
@@ -87,7 +91,6 @@ public class Tagliatelle {
      */
     public MultiMap<String, String> getTagLibTags() {
         if (taglibTags == null) {
-
             MultiMap<String, String> result = MultiMap.createOrdered();
             Sirius.getClasspath()
                   .find(Pattern.compile("(default/)?taglib/([a-z]+)/(.*).html.pasta"))
@@ -96,6 +99,40 @@ public class Tagliatelle {
         }
 
         return taglibTags;
+    }
+
+    /**
+     * Returns all taglibs and all tags within this taglib.
+     *
+     * @return a multimap containing all taglibs (prefix) and their tags
+     */
+    public MultiMap<String, TemplateExtension> getExtensions() {
+        if (extensions == null) {
+            MultiMap<String, TemplateExtension> result = MultiMap.createOrdered();
+            Sirius.getClasspath()
+                  .find(Pattern.compile("(default/)?extensions/.*.html.pasta"))
+                  .map(m -> m.group(0))
+                  .map(this::resolveToTemplateExtension)
+                  .filter(Objects::nonNull)
+                  .sorted()
+                  .forEach(ext -> result.put(ext.getTarget(), ext));
+            extensions = result;
+        }
+
+        return extensions;
+    }
+
+    private TemplateExtension resolveToTemplateExtension(String path) {
+        try {
+            return new TemplateExtension(resolve(path).get());
+        } catch (CompileException e) {
+            Exceptions.handle()
+                      .to(LOG)
+                      .error(e)
+                      .withSystemErrorMessage("Failed to load extension %s: %s (%s)", path)
+                      .handle();
+            return null;
+        }
     }
 
     /**

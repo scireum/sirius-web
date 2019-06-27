@@ -65,6 +65,7 @@ public class LocalTag extends TagHandler {
         Expression value = getAttribute(PARAM_VALUE);
         if (value != null) {
             int variable = getCompilationContext().push(getStartOfTag(), name, value.getType());
+            this.baselineLocalIndex = getCompilationContext().getVisibleStackDepth();
             targetBlock.addChild(new PushLocalEmitter(startOfTag, variable, value));
         } else {
             compilationContext.error(startOfTag, "The attribute value is required.");

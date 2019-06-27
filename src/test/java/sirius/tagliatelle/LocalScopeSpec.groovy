@@ -42,7 +42,7 @@ class LocalScopeSpec extends BaseSpecification{
         test.basicallyEqual(ctx.getTemplate().renderToString(list), expectedResult)
     }
 
-    def "failing access out of scope for loops works"() {
+    def "failing access out of scope for loops and blocks works"() {
         given:
         List<String> list = ["a", "b", "c"]
         List<CompileError> errors
@@ -55,7 +55,7 @@ class LocalScopeSpec extends BaseSpecification{
             errors = err.getErrors()
         }
         then:
-        errors.size() == 4
+        errors.size() == 5
         errors.get(0).getError().getSeverity() == ParseError.Severity.ERROR
         errors.get(0).toString().contains("Unknown variable test")
         errors.get(1).getError().getSeverity() == ParseError.Severity.ERROR
@@ -64,6 +64,8 @@ class LocalScopeSpec extends BaseSpecification{
         errors.get(2).toString().contains("Unknown variable test")
         errors.get(3).getError().getSeverity() == ParseError.Severity.ERROR
         errors.get(3).toString().contains("Unknown variable el")
+        errors.get(4).getError().getSeverity() == ParseError.Severity.ERROR
+        errors.get(4).toString().contains("Unknown variable test")
     }
 
     def "failing access out of scope for if works"(){
