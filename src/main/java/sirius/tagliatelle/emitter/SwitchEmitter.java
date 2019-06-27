@@ -14,9 +14,9 @@ import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.expression.ExpressionVisitor;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Represents a conditional block which is only emitted if a given expression evaluates to <tt>true</tt>.
@@ -63,7 +63,13 @@ public class SwitchEmitter extends Emitter {
     public Emitter copy() {
         SwitchEmitter copy = new SwitchEmitter(startOfBlock);
         copy.switchExpression = switchExpression.copy();
-        copy.blocks = blocks.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().copy()));
+
+        if (blocks != null) {
+            copy.blocks = new HashMap<>();
+            for (Map.Entry<String, Emitter> e : blocks.entrySet()) {
+                copy.blocks.put(e.getKey(), e.getValue().copy());
+            }
+        }
 
         return copy;
     }
@@ -84,29 +90,42 @@ public class SwitchEmitter extends Emitter {
                 return ConstantEmitter.EMPTY;
             }
 
-            return blocks.get(value);
+            return blocks.get(value).reduce();
         }
 
-        this.blocks =
-                blocks.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().reduce()));
+        if (blocks != null) {
+            Map<String, Emitter> copy = new HashMap<>();
+            for (Map.Entry<String, Emitter> e : blocks.entrySet()) {
+                copy.put(e.getKey(), e.getValue().reduce());
+            }
+            this.blocks = copy;
+        }
 
         return this;
     }
 
     @Override
     public Emitter propagateVisitor(EmitterVisitor visitor) {
-        this.blocks.forEach((name, emitter) -> emitter.propagateVisitor(visitor));
+        if (blocks != null) {
+            Map<String, Emitter> copy = new HashMap<>();
+            for (Map.Entry<String, Emitter> e : blocks.entrySet()) {
+                copy.put(e.getKey(), e.getValue().propagateVisitor(visitor));
+            }
+            this.blocks = copy;
+        }
         return visitor.visitThis(this);
     }
 
     @Override
     public void visitExpressions(Function<Position, ExpressionVisitor> visitorSupplier) {
         switchExpression = switchExpression.propagateVisitor(visitorSupplier.apply(getStartOfBlock()));
-        this.blocks.forEach((name, emitter) -> emitter.visitExpressions(visitorSupplier));
+        if (blocks != null) {
+            this.blocks.values().forEach(e -> e.visitExpressions(visitorSupplier));
+        }
     }
 
     @Override
     public String toString() {
-        return "SWTICH";
+        return "switch on " + switchExpression;
     }
 }

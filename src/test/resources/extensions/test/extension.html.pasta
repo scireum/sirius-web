@@ -1,5 +1,4 @@
 <i:arg type="String" name="point"/>
-<i:pragma name="target" value="/templates/extended.html.pasta" />
 <i:switch test="@point">
     <i:block name="a">a</i:block>
     <i:block name="b">b</i:block>

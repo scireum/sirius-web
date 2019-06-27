@@ -1,1 +1,1 @@
-<i:extensions point="b" />
+<i:extensions target="test" point="b" />

@@ -28,18 +28,12 @@ public class TemplateExtension implements Comparable<TemplateExtension> {
 
     private final Template template;
     private String name;
-    private String target;
     private int priority;
 
     protected TemplateExtension(Template template) {
         this.template = template;
         this.name = template.getName();
-        this.target = template.getPragma("target").asString();
         this.priority = template.getPragma("priority").asInt(Priorized.DEFAULT_PRIORITY);
-    }
-
-    public String getTarget() {
-        return target;
     }
 
     public Template getTemplate() {
@@ -53,7 +47,7 @@ public class TemplateExtension implements Comparable<TemplateExtension> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(target, template, priority);
+        return Objects.hash(template, priority);
     }
 
     @Override

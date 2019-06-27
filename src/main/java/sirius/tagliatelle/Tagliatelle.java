@@ -82,7 +82,7 @@ public class Tagliatelle {
 
     private MultiMap<String, String> taglibTags;
 
-    private MultiMap<String, TemplateExtension> extensions;
+    private final Map<String, List<TemplateExtension>> extensions = new HashMap<>();
 
     /**
      * Returns all taglibs and all tags within this taglib.
@@ -102,36 +102,42 @@ public class Tagliatelle {
     }
 
     /**
-     * Returns all taglibs and all tags within this taglib.
+     * Returns all extensions available for the given target.
      *
-     * @return a multimap containing all taglibs (prefix) and their tags
+     * @return a list of all extensions for the given target
      */
-    public MultiMap<String, TemplateExtension> getExtensions() {
-        if (extensions == null) {
-            MultiMap<String, TemplateExtension> result = MultiMap.createOrdered();
-            Sirius.getClasspath()
-                  .find(Pattern.compile("(default/)?extensions/.*.html.pasta"))
-                  .map(m -> m.group(0))
-                  .map(this::resolveToTemplateExtension)
-                  .filter(Objects::nonNull)
-                  .sorted()
-                  .forEach(ext -> result.put(ext.getTarget(), ext));
-            extensions = result;
+    public List<TemplateExtension> getExtensions(String target) {
+        synchronized (extensions) {
+            return Collections.unmodifiableList(extensions.computeIfAbsent(target, this::loadExtensions));
         }
+    }
 
-        return extensions;
+    private List<TemplateExtension> loadExtensions(String target) {
+        return Sirius.getClasspath()
+                     .find(Pattern.compile("(default/)?extensions/" + Pattern.quote(target) + "/.*.html.pasta"))
+                     .map(m -> m.group(0))
+                     .map(this::resolveToTemplateExtension)
+                     .filter(Objects::nonNull)
+                     .sorted()
+                     .collect(Collectors.toList());
     }
 
     private TemplateExtension resolveToTemplateExtension(String path) {
         try {
-            return new TemplateExtension(resolve(path).get());
+            Optional<Template> template = resolve(path);
+            if (!template.isPresent()) {
+                throw Exceptions.handle()
+                                .to(LOG)
+                                .withSystemErrorMessage("Cannot resolve extension '%s' into a template!", path)
+                                .handle();
+            }
+            return new TemplateExtension(template.get());
         } catch (CompileException e) {
-            Exceptions.handle()
-                      .to(LOG)
-                      .error(e)
-                      .withSystemErrorMessage("Failed to load extension %s: %s (%s)", path)
-                      .handle();
-            return null;
+            throw Exceptions.handle()
+                            .to(LOG)
+                            .error(e)
+                            .withSystemErrorMessage("Failed to load extension %s: %s (%s)", path)
+                            .handle();
         }
     }
 
@@ -195,7 +201,7 @@ public class Tagliatelle {
             globalVariables = Collections.unmodifiableList(globals);
         }
 
-        return globalVariables;
+        return Collections.unmodifiableList(globalVariables);
     }
 
     /**

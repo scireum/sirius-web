@@ -8,6 +8,7 @@
 
 package sirius.tagliatelle.tags;
 
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.Tagliatelle;
@@ -25,6 +26,7 @@ import java.util.List;
  */
 public class ExtensionsTag extends InvokeTag {
 
+    private static final String ATTR_TARGET = "target";
     private static final String ATTR_POINT = "point";
 
     /**
@@ -62,17 +64,22 @@ public class ExtensionsTag extends InvokeTag {
 
     @Override
     public void apply(CompositeEmitter targetBlock) {
-        String name = getCompilationContext().getTemplate().getName();
-        for (TemplateExtension extension : engine.getExtensions().get(name)) {
-            targetBlock.addChild(getCompilationContext().inlineTemplate(getStartOfTag(),
-                                                                        extension.getTemplate(),
-                                                                        this::getAttribute,
-                                                                        this::getBlock));
+        String target = getConstantAttribute(ATTR_TARGET).asString();
+        if (Strings.isFilled(target)) {
+            for (TemplateExtension extension : engine.getExtensions(target)) {
+                targetBlock.addChild(getCompilationContext().inlineTemplate(getStartOfTag(),
+                                                                            extension.getTemplate(),
+                                                                            this::getAttribute,
+                                                                            this::getBlock));
+            }
         }
     }
 
     @Override
     public Class<?> getExpectedAttributeType(String name) {
+        if (ATTR_TARGET.equals(name)) {
+            return String.class;
+        }
         if (ATTR_POINT.equals(name)) {
             return String.class;
         }
