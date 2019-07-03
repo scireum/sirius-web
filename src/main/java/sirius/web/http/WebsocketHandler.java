@@ -23,7 +23,6 @@ import sirius.kernel.nls.NLS;
 
 import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
-import java.nio.channels.ClosedChannelException;
 
 /**
  * Inserted into the pipeline by the {@link WebServerInitializer} if an implementation of {@link WebsocketDispatcher}

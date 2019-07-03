@@ -11,7 +11,6 @@ package sirius.web.controller;
 import sirius.kernel.cache.ValueComputer;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.health.Exceptions;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -86,15 +85,6 @@ public class Facet {
         }
 
         return items.subList(maxVisibleFacetItems, items.size());
-    }
-
-    /**
-     * @deprecated Convoluted logic. Use <tt>linkTo...</tt> method...
-     */
-    @Deprecated
-    public String createToggleQueryString(FacetItem item) {
-        Exceptions.logDeprecatedMethodUse();
-        return parent.createQueryString(name, item.isActive() ? "" : item.getKey(), true);
     }
 
     /**

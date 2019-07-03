@@ -3,7 +3,7 @@
 <i:arg name="label" type="String" default="@i18n(labelKey)"/>
 <i:arg name="class" type="String" default=""/>
 
-<i:pragma name="inline" value="true"/>
+
 
 <mail:tableInline class="@class">
     <mail:tableContent align="center" class="link">

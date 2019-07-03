@@ -10,7 +10,6 @@ package sirius.tagliatelle.expression;
 
 import sirius.tagliatelle.emitter.ConstantEmitter;
 import sirius.tagliatelle.emitter.Emitter;
-import sirius.tagliatelle.emitter.InlineTemplateEmitter;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
 /**
@@ -20,14 +19,14 @@ import sirius.tagliatelle.rendering.LocalRenderContext;
  */
 public class RenderEmitterExpression implements Expression {
 
-    private InlineTemplateEmitter emitter;
+    private Emitter emitter;
 
     /**
      * Creates an expression which evaluates to the result of the given emitter.
      *
      * @param emitter the emitter to wrap
      */
-    public RenderEmitterExpression(InlineTemplateEmitter emitter) {
+    public RenderEmitterExpression(Emitter emitter) {
         this.emitter = emitter;
     }
 

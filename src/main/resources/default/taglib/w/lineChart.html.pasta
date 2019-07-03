@@ -4,7 +4,7 @@
 <i:arg type="String" name="data"/>
 <i:arg type="String" name="labels"/>
 
-<i:pragma name="inline" value="true"/>
+
 <i:pragma name="description"
           value="Renders a line chart using Chart.js"/>
 

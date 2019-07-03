@@ -174,14 +174,6 @@ public class ExcelExport {
         }
     }
 
-    /**
-     * @deprecated Use one of the static constructor methods to determine which format to use.
-     */
-    @Deprecated
-    public ExcelExport() {
-        this(true);
-    }
-
     protected ExcelExport(boolean useHSSF) {
         workbook = useHSSF ? new HSSFWorkbook() : new XSSFWorkbook();
         sheet = workbook.createSheet();

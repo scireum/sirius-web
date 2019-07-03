@@ -84,12 +84,6 @@ public class LoopEmitter extends Emitter {
     }
 
     @Override
-    public Emitter propagateVisitor(EmitterVisitor visitor) {
-        this.loop = loop.propagateVisitor(visitor);
-        return visitor.visitThis(this);
-    }
-
-    @Override
     public void visitExpressions(Function<Position, ExpressionVisitor> visitorSupplier) {
         ExpressionVisitor visitor = visitorSupplier.apply(getStartOfBlock());
         this.iterableExpression = iterableExpression.propagateVisitor(visitor);

@@ -95,15 +95,6 @@ public abstract class Emitter {
     public abstract Emitter reduce();
 
     /**
-     * Invokes the visitor on all sub emitters and on this emitter itself.
-     *
-     * @param visitor the visitor to invoke
-     * @return the resulting emitter returned by the visitor
-     */
-    @Nonnull
-    public abstract Emitter propagateVisitor(@Nonnull EmitterVisitor visitor);
-
-    /**
      * Visits all expressions contained in this emitter or its children.
      *
      * @param visitor a function which generates an {@link ExpressionVisitor} while supplying the current position (for

@@ -17,7 +17,7 @@
 <i:arg name="placeholder" type="String" default=""/>
 <i:arg name="tabIndex" type="String" default=""/>
 
-<i:pragma name="inline" value="true"/>
+
 <i:pragma name="description" value="Renders a text input field within a Wondergem template"/>
 
 <div class="col-xs-@smallSpan col-md-@span form-group @user.signalFieldError(name)">

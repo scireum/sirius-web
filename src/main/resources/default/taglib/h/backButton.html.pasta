@@ -2,7 +2,6 @@
 <i:arg type="String" name="title" default="@i18n(titleKey)"/>
 <i:arg type="String" name="backUrl" default="@apply('/help/%s', lang)"/>
 
-<i:pragma name="inline" value="true"/>
 <i:pragma name="description" value="Provides a back button for the help system"/>
 
 <div class="form-actions">

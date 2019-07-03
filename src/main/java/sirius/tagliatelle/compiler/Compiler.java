@@ -396,6 +396,7 @@ public class Compiler extends InputProcessor {
     private void handleTag(TagHandler handler, CompositeEmitter block) {
         parseAttributes(handler);
 
+        handler.beforeTag();
         handler.beforeBody();
 
         boolean selfClosed = reader.current().is('/');
@@ -410,6 +411,8 @@ public class Compiler extends InputProcessor {
         }
 
         handler.apply(block);
+
+        handler.afterTag();
     }
 
     /**

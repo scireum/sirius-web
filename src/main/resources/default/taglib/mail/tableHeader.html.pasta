@@ -6,7 +6,7 @@
 <i:arg name="style" type="String" default=""/>
 <i:arg name="trClass" type="String" default=""/>
 
-<i:pragma name="inline" value="true"/>
+
 
 <tr class="@trClass">
     <i:render name="th">

@@ -116,6 +116,9 @@ public class TagliatelleController implements Controller {
     @Routed("/system/tags/state")
     @Permission(PERMISSION_SYSTEM_TAGS_STATE)
     public void tagState(WebContext ctx) {
+        if (ctx.hasParameter("reset")) {
+            tagliatelle.getCompiledTemplates().forEach(Template::resetAverageRenderTime);
+        }
         ctx.respondWith().template("templates/system/tags-state.html.pasta", tagliatelle.getCompiledTemplates());
     }
 }

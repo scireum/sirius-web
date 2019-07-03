@@ -59,13 +59,6 @@ public class ExtraBlockEmitter extends Emitter {
         return this;
     }
 
-    @Nonnull
-    @Override
-    public Emitter propagateVisitor(@Nonnull EmitterVisitor visitor) {
-        body = body.propagateVisitor(visitor);
-        return visitor.visitThis(this);
-    }
-
     @Override
     public void visitExpressions(@Nonnull Function<Position, ExpressionVisitor> visitor) {
         body.visitExpressions(visitor);

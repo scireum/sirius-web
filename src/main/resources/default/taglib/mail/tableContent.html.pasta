@@ -5,7 +5,7 @@
 <i:arg name="style" type="String" default=""/>
 <i:arg name="id" type="String" default=""/>
 
-<i:pragma name="inline" value="true"/>
+
 
 <tr>
     <i:render name="td">

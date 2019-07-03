@@ -20,7 +20,7 @@ import java.text.StringCharacterIterator;
 import java.util.Optional;
 
 /**
- * Provides helper methods used in Velocity Macros.
+ * Provides helper methods used in templates.
  * <p>
  * The instance of this class is made available as <b>helper</b>
  * via {@link DefaultGlobalContextExtender}.
@@ -28,7 +28,7 @@ import java.util.Optional;
 public class ContentHelper {
 
     /**
-     * Contains the instance which is passed into the velocity context as "helper".
+     * Contains the instance which is passed into the global context as "contentHelper".
      */
     public static final ContentHelper INSTANCE = new ContentHelper();
 

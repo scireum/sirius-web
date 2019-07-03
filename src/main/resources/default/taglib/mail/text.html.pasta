@@ -4,7 +4,7 @@
 <i:arg type="String" name="class" default=""/>
 <i:arg type="boolean" name="showEmptyValue" default="false"/>
 
-<i:pragma name="inline" value="true"/>
+
 
 <i:if test="@isFilled(value) || showEmptyValue">
     <tr class="align-top @class">

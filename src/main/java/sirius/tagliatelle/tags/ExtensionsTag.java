@@ -8,14 +8,14 @@
 
 package sirius.tagliatelle.tags;
 
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.Tagliatelle;
-import sirius.tagliatelle.Template;
 import sirius.tagliatelle.TemplateArgument;
+import sirius.tagliatelle.TemplateExtension;
 import sirius.tagliatelle.emitter.CompositeEmitter;
 import sirius.tagliatelle.expression.Expression;
-import sirius.web.templates.Templates;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -26,7 +26,8 @@ import java.util.List;
  */
 public class ExtensionsTag extends InvokeTag {
 
-    private static final String ATTR_NAME = "name";
+    private static final String ATTR_TARGET = "target";
+    private static final String ATTR_POINT = "point";
 
     /**
      * Creates new tags of the given type (name).
@@ -48,7 +49,7 @@ public class ExtensionsTag extends InvokeTag {
         @Override
         public List<TemplateArgument> reportArguments() {
             return Collections.singletonList(new TemplateArgument(String.class,
-                                                                  ATTR_NAME,
+                                                                  ATTR_POINT,
                                                                   "Contains the name used to fetch all known extensions."));
         }
 
@@ -59,31 +60,28 @@ public class ExtensionsTag extends InvokeTag {
     }
 
     @Part
-    private static Templates templates;
-
-    @Part
     private static Tagliatelle engine;
 
     @Override
     public void apply(CompositeEmitter targetBlock) {
-        String name = getConstantAttribute(ATTR_NAME).asString();
-        for (String extension : templates.getExtensions(name)) {
-            Template template = resolveTemplate(extension);
-
-            if (template != null) {
-                invokeTemplate(template, targetBlock);
+        String target = getConstantAttribute(ATTR_TARGET).asString();
+        if (Strings.isFilled(target)) {
+            for (TemplateExtension extension : engine.getExtensions(target)) {
+                targetBlock.addChild(getCompilationContext().invokeTemplate(getStartOfTag(),
+                                                                            extension.getTemplate(),
+                                                                            this::getAttribute,
+                                                                            blocks));
             }
         }
     }
 
     @Override
     public Class<?> getExpectedAttributeType(String name) {
-        if (ATTR_NAME.equals(name)) {
+        if (ATTR_TARGET.equals(name)) {
             return String.class;
         }
-
-        if (ATTR_INLINE.equals(name)) {
-            return boolean.class;
+        if (ATTR_POINT.equals(name)) {
+            return String.class;
         }
 
         return Expression.class;

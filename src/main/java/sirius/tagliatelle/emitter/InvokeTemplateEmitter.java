@@ -83,18 +83,6 @@ public class InvokeTemplateEmitter extends Emitter {
     }
 
     @Override
-    public Emitter propagateVisitor(EmitterVisitor visitor) {
-        if (blocks != null) {
-            Map<String, Emitter> copy = new HashMap<>();
-            for (Map.Entry<String, Emitter> e : blocks.entrySet()) {
-                copy.put(e.getKey(), e.getValue().propagateVisitor(visitor));
-            }
-            this.blocks = copy;
-        }
-        return visitor.visitThis(this);
-    }
-
-    @Override
     public void visitExpressions(Function<Position, ExpressionVisitor> visitorSupplier) {
         ExpressionVisitor visitor = visitorSupplier.apply(getStartOfBlock());
         for (int i = 0; i < arguments.length; i++) {

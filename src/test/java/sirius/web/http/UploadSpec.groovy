@@ -12,10 +12,12 @@ import com.alibaba.fastjson.JSON
 import com.google.common.io.ByteStreams
 import org.apache.commons.io.Charsets
 import sirius.kernel.BaseSpecification
+import sirius.kernel.Scope
 
 /**
  * Simulates "real" uploads through netty and sirius.
  */
+@Scope(Scope.SCOPE_NIGHTLY)
 class UploadSpec extends BaseSpecification {
 
     String lineFeed = "\r\n"

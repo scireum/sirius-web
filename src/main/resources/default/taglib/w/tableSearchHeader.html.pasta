@@ -2,7 +2,7 @@
 <i:arg name="baseUrl" type="String"/>
 <i:arg name="hideSearchBox" type="boolean" default="false"/>
 
-<i:pragma name="inline" value="true"/>
+
 <i:pragma name="description" value="Renders a header above a table within a Wondergem template"/>
 
 

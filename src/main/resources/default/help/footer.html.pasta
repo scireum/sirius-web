@@ -1,1 +1,1 @@
-<i:invoke template="/templates/wondergem/page-footer.html.pasta" inline="true"/>
+<i:invoke template="/templates/wondergem/page-footer.html.pasta" />

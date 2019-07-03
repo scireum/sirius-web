@@ -1,0 +1,6 @@
+<i:arg type="String" name="point"/>
+<i:switch test="@point">
+    <i:block name="a">a</i:block>
+    <i:block name="b">b</i:block>
+    <i:block name="c">c</i:block>
+</i:switch>

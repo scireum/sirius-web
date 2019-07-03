@@ -46,6 +46,13 @@ public abstract class GenericUserManager implements UserManager {
     private static final String SUFFIX_USER_ID = "-user-id";
     private static final String SUFFIX_TENANT_ID = "-tenant-id";
     private static final String SUFFIX_TTL = "-ttl";
+    private static final String PARAM_TOKEN = "token";
+    private static final String PARAM_HASH = "hash";
+    private static final String PARAM_TIMESTAMP = "timestamp";
+    private static final String PARAM_USER = "user";
+    private static final String PARAM_PASSWORD = "password";
+    private static final String HASH_MD_5 = "md5";
+    private static final String HASH_SHA_1 = "sha1";
 
     protected final ScopeInfo scope;
     protected final Extension config;
@@ -64,7 +71,7 @@ public abstract class GenericUserManager implements UserManager {
         this.scope = scope;
         this.config = config;
         this.ssoSecret = config.get("ssoSecret").asString();
-        this.hashFunction = config.get("hashFunction").asString("md5");
+        this.hashFunction = config.get("hashFunction").asString(HASH_MD_5);
         this.ssoEnabled = Strings.isFilled(ssoSecret) && config.get("ssoEnabled").asBoolean(false);
         this.ssoGraceInterval = config.get("ssoGraceInterval").asLong(DEFAULT_SSO_GRACE_INTERVAL);
         this.keepLoginEnabled = config.get("keepLoginEnabled").asBoolean(true);
@@ -132,11 +139,6 @@ public abstract class GenericUserManager implements UserManager {
         }
 
         return defaultUser;
-    }
-
-    @Override
-    public UserInfo verifyUser(UserInfo userInfo) {
-        return userInfo;
     }
 
     @Nonnull
@@ -209,7 +211,7 @@ public abstract class GenericUserManager implements UserManager {
         if (!ssoEnabled) {
             return null;
         }
-        String user = ctx.get("user").trim();
+        String user = ctx.get(PARAM_USER).trim();
         if (Strings.isEmpty(user)) {
             return null;
         }
@@ -240,14 +242,14 @@ public abstract class GenericUserManager implements UserManager {
 
     protected Tuple<String, String> extractChallengeAndResponse(WebContext ctx) {
         // Supports the modern parameter token which contains TIMESTAMP:MD5
-        String token = ctx.get("token").trim();
+        String token = ctx.get(PARAM_TOKEN).trim();
         if (Strings.isFilled(token)) {
             return Strings.split(token, ":");
         }
 
         // Supports the legacy parameters hash and timestamp...
-        String hash = ctx.get("hash").trim();
-        String timestamp = ctx.get("timestamp").trim();
+        String hash = ctx.get(PARAM_HASH).trim();
+        String timestamp = ctx.get(PARAM_TIMESTAMP).trim();
         if (Strings.isFilled(hash) && Strings.isFilled(timestamp)) {
             return Tuple.create(timestamp, hash);
         }
@@ -286,9 +288,9 @@ public abstract class GenericUserManager implements UserManager {
      * @return the hash function to use for single sign-on tokens
      */
     protected HashFunction getSSOHashFunction() {
-        if ("md5".equalsIgnoreCase(hashFunction)) {
+        if (HASH_MD_5.equalsIgnoreCase(hashFunction)) {
             return Hashing.md5();
-        } else if ("sha1".equalsIgnoreCase(hashFunction)) {
+        } else if (HASH_SHA_1.equalsIgnoreCase(hashFunction)) {
             return Hashing.sha1();
         } else {
             throw Exceptions.handle()
@@ -345,10 +347,10 @@ public abstract class GenericUserManager implements UserManager {
      * Tries to perform a login using "user" and "password".
      */
     private UserInfo loginViaUsernameAndPassword(WebContext ctx) {
-        if (ctx.get("user").isFilled() && ctx.getFirstFilled("password", "token").isFilled()) {
+        if (ctx.get(PARAM_USER).isFilled() && ctx.getFirstFilled(PARAM_PASSWORD, PARAM_TOKEN).isFilled()) {
             ctx.hidePost();
-            String user = ctx.get("user").trim();
-            String password = ctx.getFirstFilled("password", "token").trim();
+            String user = ctx.get(PARAM_USER).trim();
+            String password = ctx.getFirstFilled(PARAM_PASSWORD, PARAM_TOKEN).trim();
 
             UserInfo result = findUserByCredentials(ctx, user, password);
             if (result != null) {

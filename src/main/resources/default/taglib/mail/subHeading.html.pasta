@@ -2,7 +2,7 @@
 <i:arg type="String" name="label" default="@i18n(labelKey)"/>
 <i:arg type="String" name="class" default=""/>
 
-<i:pragma name="inline" value="true"/>
+
 
 <h2 class="@class">
     <i:if test="@isFilled(label)">

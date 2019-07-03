@@ -14,11 +14,10 @@ import sirius.tagliatelle.Template;
 import sirius.tagliatelle.TemplateArgument;
 import sirius.tagliatelle.compiler.CompileException;
 import sirius.tagliatelle.emitter.CompositeEmitter;
-import sirius.tagliatelle.expression.ConstantBoolean;
 import sirius.tagliatelle.expression.Expression;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -27,7 +26,6 @@ import java.util.List;
 public class InvokeTag extends TagHandler {
 
     private static final String ATTR_TEMPLATE = "template";
-    protected static final String ATTR_INLINE = "inline";
 
     /**
      * Creates new tags of the given type (name).
@@ -48,15 +46,9 @@ public class InvokeTag extends TagHandler {
 
         @Override
         public List<TemplateArgument> reportArguments() {
-            return Arrays.asList(new TemplateArgument(String.class,
-                                                      ATTR_TEMPLATE,
-                                                      "Contains the path of the template to render."),
-                                 new TemplateArgument(boolean.class,
-                                                      ATTR_INLINE,
-                                                      "Determines if the invocation should be actually "
-                                                      + "inlined int othe calling template.",
-                                                      ConstantBoolean.FALSE,
-                                                      null));
+            return Collections.singletonList(new TemplateArgument(String.class,
+                                                                  ATTR_TEMPLATE,
+                                                                  "Contains the path of the template to render."));
         }
 
         @Override
@@ -80,17 +72,10 @@ public class InvokeTag extends TagHandler {
     }
 
     protected void invokeTemplate(Template template, CompositeEmitter targetBlock) {
-        if (template.getPragma(ATTR_INLINE).asBoolean() || getConstantAttribute(ATTR_INLINE).asBoolean()) {
-            targetBlock.addChild(getCompilationContext().inlineTemplate(getStartOfTag(),
-                                                                        template,
-                                                                        this::getAttribute,
-                                                                        this::getBlock));
-        } else {
-            targetBlock.addChild(getCompilationContext().invokeTemplate(getStartOfTag(),
-                                                                        template,
-                                                                        this::getAttribute,
-                                                                        blocks));
-        }
+        targetBlock.addChild(getCompilationContext().invokeTemplate(getStartOfTag(),
+                                                                    template,
+                                                                    this::getAttribute,
+                                                                    blocks));
     }
 
     protected Template resolveTemplate(String templateName) {
@@ -116,9 +101,6 @@ public class InvokeTag extends TagHandler {
     public Class<?> getExpectedAttributeType(String name) {
         if (ATTR_TEMPLATE.equals(name)) {
             return String.class;
-        }
-        if (ATTR_INLINE.equals(name)) {
-            return boolean.class;
         }
 
         if (ensureThatTemplateIsPresent()) {

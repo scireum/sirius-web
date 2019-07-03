@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,8 +46,6 @@ public class Template {
     private long compilationTimestamp = System.currentTimeMillis();
     private int stackDepth;
     private Average renderTime = new Average();
-    private Integer emitterCount;
-    private Integer expressionCount;
 
     private static final Pattern TAGLIB_NAME = Pattern.compile("/taglib/([^/]+)/([^/]+)\\.html\\.pasta");
 
@@ -325,30 +322,10 @@ public class Template {
     }
 
     /**
-     * Returns the complexity of the template.
-     * <p>
-     * The complexity is simply the number of emitters and number of expressions in a template.
-     *
-     * @return the complexity as string
+     * Resets the internal performance counters.
      */
-    public String getComplexity() {
-        if (emitterCount == null) {
-            AtomicInteger emitters = new AtomicInteger(0);
-            AtomicInteger expressions = new AtomicInteger(0);
-            emitter.propagateVisitor(e -> {
-                emitters.incrementAndGet();
-                return e;
-            });
-            emitter.visitExpressions(pos -> e -> {
-                expressions.incrementAndGet();
-                return e;
-            });
-
-            emitterCount = emitters.get();
-            expressionCount = expressions.get();
-        }
-
-        return emitterCount + " (" + expressionCount + ")";
+    public void resetAverageRenderTime() {
+        renderTime.getAndClear();
     }
 
     @Override

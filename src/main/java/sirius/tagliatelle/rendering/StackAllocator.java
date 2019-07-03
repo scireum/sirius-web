@@ -88,10 +88,12 @@ class StackAllocator {
             return EMPTY_VIEW;
         }
         if (stack == null) {
-            stack = new Object[8];
-        }
-        while (stack.length < freeIndex + size) {
-            Object[] newStack = new Object[stack.length + 16];
+            int requiredSize = Math.max(128, 16 * ((size / 16) + 1));
+            stack = new Object[requiredSize];
+        } else if (stack.length < freeIndex + size) {
+            int requiredSize = freeIndex + size;
+            requiredSize = 16 * ((requiredSize / 16) + 1);
+            Object[] newStack = new Object[requiredSize];
             System.arraycopy(stack, 0, newStack, 0, stack.length);
             stack = newStack;
         }

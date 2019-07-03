@@ -2,7 +2,7 @@
 <i:arg type="boolean" name="adminOnly" default="false"/>
 <i:arg type="Page" name="page" default=""/>
 
-<i:pragma name="inline" value="true"/>
+
 <i:pragma name="description" value="Renders a delete/dangerous link as button within a Wondergem template"/>
 
 <i:local name="deleteFormId" value="@apply('deleteForm-%s', call.generateLocalId())"/>
