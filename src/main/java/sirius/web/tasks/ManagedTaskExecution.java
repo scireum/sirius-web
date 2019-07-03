@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 /**
  * Internal implementation of {@link ManagedTask} and {@link ManagedTaskContext}.
@@ -131,6 +132,10 @@ class ManagedTaskExecution implements Runnable, ManagedTaskContext, ManagedTask 
         if (logLimit.check()) {
             log(TaskLogEntry.LogType.NORMAL, message);
         }
+    }
+
+    @Override
+    public void smartLogLimited(Supplier<Object> messageSupplier) {
     }
 
     private void log(TaskLogEntry.LogType type, Object message) {
