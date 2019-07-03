@@ -96,7 +96,7 @@ public class SystemController extends BasicController {
     @Routed("/system/console")
     @Permission(PERMISSION_SYSTEM_CONSOLE)
     public void console(WebContext ctx) {
-        ctx.respondWith().cached().template("templates/system/console.html.pasta");
+        ctx.respondWith().template("templates/system/console.html.pasta");
     }
 
     /**
