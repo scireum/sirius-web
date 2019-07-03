@@ -287,10 +287,13 @@ public class UserContext implements SubContext {
      */
     public void runAs(@Nullable UserInfo user, @Nonnull Runnable section) {
         UserInfo lastUser = getCurrentUser();
+        CallContext call = CallContext.getCurrent();
         try {
+            call.resetLang();
             setCurrentUser(user);
             section.run();
         } finally {
+            call.resetLang();
             setCurrentUser(lastUser);
         }
     }
