@@ -120,7 +120,7 @@ public class SystemController extends BasicController {
      */
     @Routed("/system/monitor")
     public void monitorNode(WebContext ctx) {
-        if (!cluster.isAlarmPresent()) {
+        if (!cluster.isAlarmPresent() || cluster.getNodeState() != MetricState.RED) {
             ctx.respondWith().direct(HttpResponseStatus.OK, "OK");
             return;
         }
