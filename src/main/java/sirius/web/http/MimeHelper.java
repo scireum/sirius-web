@@ -51,6 +51,11 @@ public class MimeHelper {
     public static final String APPLICATION_PDF = "application/pdf";
 
     /**
+     * Mime type of PostScript files
+     */
+    public static final String APPLICATION_POSTSCRIPT = "application/postscript";
+
+    /**
      * Mime type of plain text files
      */
     public static final String TEXT_PLAIN = "text/plain";
