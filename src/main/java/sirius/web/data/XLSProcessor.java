@@ -19,6 +19,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import sirius.kernel.async.TaskContext;
 import sirius.kernel.commons.Doubles;
+import sirius.kernel.commons.RateLimit;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Values;
 import sirius.kernel.nls.NLS;
@@ -52,6 +53,8 @@ public class XLSProcessor implements LineBasedProcessor {
         Iterator<Row> iter = sheet.rowIterator();
         int current = 0;
         TaskContext tc = TaskContext.get();
+        RateLimit stateUpdateLimiter = tc.shouldUpdateState();
+
         while (iter.hasNext() && tc.isActive()) {
             try {
                 current++;
@@ -65,7 +68,9 @@ public class XLSProcessor implements LineBasedProcessor {
                     values.add(value);
                 }
                 rowProcessor.handleRow(current, Values.of(values));
-                tc.setState(NLS.get("LineBasedProcessor.linesProcessed"), current);
+                if (stateUpdateLimiter.check()) {
+                    tc.setState(NLS.get("LineBasedProcessor.linesProcessed"), current);
+                }
             } catch (Exception e) {
                 if (!errorHandler.test(e)) {
                     throw e;
