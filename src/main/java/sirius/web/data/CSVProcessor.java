@@ -12,6 +12,7 @@ import com.google.common.base.Charsets;
 import sirius.kernel.async.TaskContext;
 import sirius.kernel.commons.BOMReader;
 import sirius.kernel.commons.CSVReader;
+import sirius.kernel.commons.RateLimit;
 import sirius.kernel.nls.NLS;
 
 import java.io.InputStream;
@@ -36,11 +37,14 @@ public class CSVProcessor implements LineBasedProcessor {
         CSVReader reader = new CSVReader(new BOMReader(new InputStreamReader(input, Charsets.UTF_8)));
         AtomicInteger rowCounter = new AtomicInteger(0);
         TaskContext tc = TaskContext.get();
+        RateLimit stateUpdateLimiter = tc.shouldUpdateState();
 
         reader.execute(row -> {
             try {
                 rowProcessor.handleRow(rowCounter.incrementAndGet(), row);
-                tc.setState(NLS.get("LineBasedProcessor.linesProcessed"), rowCounter.get());
+                if (stateUpdateLimiter.check()) {
+                    tc.setState(NLS.get("LineBasedProcessor.linesProcessed"), rowCounter.get());
+                }
             } catch (Exception e) {
                 if (!errorHandler.test(e)) {
                     throw e;
