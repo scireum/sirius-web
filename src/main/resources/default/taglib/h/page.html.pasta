@@ -10,7 +10,7 @@
 
 <i:pragma name="description" value="Provides the base layout topic within the help system"/>
 
-<w:page title="@apply('%s - %s', title, i18n('help'))" ignoreDisasteMode="true">
+<w:page title="@apply('%s - %s', title, i18n('help'))" ignoreDisasterMode="true">
 
     <i:block name="head">
         <meta property="og:title" content="@i18n('help'): @title">
