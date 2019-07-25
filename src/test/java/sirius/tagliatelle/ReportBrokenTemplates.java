@@ -11,6 +11,7 @@ package sirius.tagliatelle;
 import sirius.kernel.Sirius;
 import sirius.kernel.TestLifecycleParticipant;
 import sirius.kernel.di.std.Part;
+import sirius.kernel.di.std.Priorized;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.tagliatelle.compiler.CompilationContext;
@@ -29,6 +30,11 @@ public class ReportBrokenTemplates implements TestLifecycleParticipant {
 
     @Part
     private Resources resources;
+
+    @Override
+    public int getPriority() {
+        return Priorized.DEFAULT_PRIORITY;
+    }
 
     @Override
     public void beforeTests() {
