@@ -93,7 +93,7 @@ public class Tagliatelle {
         if (taglibTags == null) {
             MultiMap<String, String> result = MultiMap.createOrdered();
             Sirius.getClasspath()
-                  .find(Pattern.compile("(default/)?taglib/([a-z]+)/(.*).html.pasta"))
+                  .find(Pattern.compile("(default/|customizations/[^/]+/)?taglib/([a-z]+)/([^.]*).*.pasta"))
                   .forEach(m -> result.put(m.group(2), m.group(3)));
             taglibTags = result;
         }
@@ -115,7 +115,7 @@ public class Tagliatelle {
 
     private List<TemplateExtension> loadExtensions(String target) {
         return Sirius.getClasspath()
-                     .find(Pattern.compile("(default/)?extensions/" + Pattern.quote(target) + "/.*.html.pasta"))
+                     .find(Pattern.compile("(default/|customizations/[^/]+/)?extensions/" + Pattern.quote(target) + "/.*.pasta"))
                      .map(m -> m.group(0))
                      .map(this::resolveToTemplateExtension)
                      .filter(Objects::nonNull)
