@@ -1,3 +1,4 @@
+<i:pragma name="unchecked" value="true" />
 <i:arg type="String" name="deprecatedArg" deprecated="Do not use." />
 
 <e:secondTagWithDeprecation deprecatedArg="test" />

@@ -1,3 +1,4 @@
+<i:pragma name="unchecked" value="true" />
 This namespace is totally unknown and should be passed through:
 <xxx:test />
 

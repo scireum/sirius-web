@@ -1,3 +1,4 @@
+<i:pragma name="unchecked" value="true" />
 <i:arg type="List" name="iter"/>
 
 <i:for type="String" var="el" items="iter">
