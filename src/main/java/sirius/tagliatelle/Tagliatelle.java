@@ -93,7 +93,7 @@ public class Tagliatelle {
         if (taglibTags == null) {
             MultiMap<String, String> result = MultiMap.createOrdered();
             Sirius.getClasspath()
-                  .find(Pattern.compile("(default/|customizations/[^/]+/)?taglib/([a-z]+)/(.*).pasta"))
+                  .find(Pattern.compile("(default/|customizations/[^/]+/)?taglib/([a-z]+)/([^.]*).*.pasta"))
                   .forEach(m -> result.put(m.group(2), m.group(3)));
             taglibTags = result;
         }
