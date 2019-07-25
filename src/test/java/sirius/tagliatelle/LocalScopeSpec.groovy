@@ -34,7 +34,7 @@ class LocalScopeSpec extends BaseSpecification{
         String expectedResult = resources.resolve("templates/local-scope.html").get().getContentAsString()
         when:
         def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx, tagliatelle.resolve("templates/local-scope.html.pasta")
+        List<CompileError> errors = new Compiler(ctx, tagliatelle.resolve("/templates/local-scope.html.pasta")
                                                                  .get().getResource().getContentAsString()).compile()
         then:
         errors.size() == 0
@@ -49,7 +49,7 @@ class LocalScopeSpec extends BaseSpecification{
         when:
         try {
             def ctx = new CompilationContext(new Template("test", null), null)
-            new Compiler(ctx, tagliatelle.resolve("templates/out-of-scope.html.pasta")
+            new Compiler(ctx, tagliatelle.resolve("/templates/out-of-scope.html.pasta")
                                          .get().getResource().getContentAsString()).compile()
         } catch (CompileException err) {
             errors = err.getErrors()

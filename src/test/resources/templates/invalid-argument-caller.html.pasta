@@ -1,1 +1,2 @@
+<i:pragma name="unchecked" value="true" />
 <e:invalidArgumentTaglib invalidArgument="@apply('test123')"/>

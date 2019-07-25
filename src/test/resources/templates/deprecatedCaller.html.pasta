@@ -1,2 +1,3 @@
+<i:pragma name="unchecked" value="true" />
 <e:deprecated />
 <i:invoke template="/taglib/e/deprecated.html.pasta" />

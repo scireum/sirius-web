@@ -96,7 +96,7 @@ public class SystemController extends BasicController {
     @Routed("/system/console")
     @Permission(PERMISSION_SYSTEM_CONSOLE)
     public void console(WebContext ctx) {
-        ctx.respondWith().template("templates/system/console.html.pasta");
+        ctx.respondWith().template("/templates/system/console.html.pasta");
     }
 
     /**
@@ -253,7 +253,7 @@ public class SystemController extends BasicController {
      */
     @Routed("/system/info")
     public void info(WebContext ctx) {
-        ctx.respondWith().template("templates/system/info.html.pasta");
+        ctx.respondWith().template("/templates/system/info.html.pasta");
     }
 
     /**
@@ -278,7 +278,7 @@ public class SystemController extends BasicController {
     @Permission(PERMISSION_SYSTEM_STATE)
     public void state(WebContext ctx) {
         ctx.respondWith()
-           .template("templates/system/state.html.pasta",
+           .template("/templates/system/state.html.pasta",
                      cluster,
                      metrics,
                      ctx.get("all").asBoolean(false),
@@ -294,7 +294,7 @@ public class SystemController extends BasicController {
     @Permission(PERMISSION_SYSTEM_STATE)
     public void load(WebContext ctx) {
         ctx.respondWith()
-           .template("templates/system/load.html.pasta", loadInfoProviders.getParts(), ctx.get("all").asBoolean(false));
+           .template("/templates/system/load.html.pasta", loadInfoProviders.getParts(), ctx.get("all").asBoolean(false));
     }
 
     /**
@@ -320,7 +320,7 @@ public class SystemController extends BasicController {
         List<Tuple<String, Collection<Tuple<String, String>>>> timings = computeTimingInfos(page);
 
         ctx.respondWith()
-           .template("templates/system/timing.html.pasta", Microtiming.isEnabled(), timings, page, periodSinceReset);
+           .template("/templates/system/timing.html.pasta", Microtiming.isEnabled(), timings, page, periodSinceReset);
     }
 
     private List<Tuple<String, Collection<Tuple<String, String>>>> computeTimingInfos(Page<String> page) {
