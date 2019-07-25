@@ -115,7 +115,7 @@ public class Tagliatelle {
 
     private List<TemplateExtension> loadExtensions(String target) {
         return Sirius.getClasspath()
-                     .find(Pattern.compile("(default/|customizations/[^/]+/)?extensions/" + Pattern.quote(target) + "/.*.html.pasta"))
+                     .find(Pattern.compile("(default/|customizations/[^/]+/)?extensions/" + Pattern.quote(target) + "/.*.pasta"))
                      .map(m -> m.group(0))
                      .map(this::resolveToTemplateExtension)
                      .filter(Objects::nonNull)
