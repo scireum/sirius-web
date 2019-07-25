@@ -17,8 +17,8 @@
 
     <title>@title</title>
 
-    <i:invoke template="mail/mail-header-styles-default.html.pasta"/>
-    <i:invoke template="mail/mail-header-styles.html.pasta"/>
+    <i:invoke template="/mail/mail-header-styles-default.html.pasta"/>
+    <i:invoke template="/mail/mail-header-styles.html.pasta"/>
     <i:render name="styles"/>
 </head>
 
@@ -32,7 +32,7 @@
 
             <mail:tableContent align="center" valign="top" id="templateHeader" class="@headerClass">
                 <i:render name="header">
-                    <i:invoke template="mail/mail-header.html.pasta" mailContext="@mailContext"/>
+                    <i:invoke template="/mail/mail-header.html.pasta" mailContext="@mailContext"/>
                 </i:render>
             </mail:tableContent>
 
@@ -42,7 +42,7 @@
 
             <mail:tableContent align="center" valign="top" id="templateFooter" class="@footerClass">
                 <i:render name="footer">
-                    <i:invoke template="mail/mail-footer.html.pasta" mailContext="@mailContext"/>
+                    <i:invoke template="/mail/mail-footer.html.pasta" mailContext="@mailContext"/>
                 </i:render>
             </mail:tableContent>
         </mail:table>

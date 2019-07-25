@@ -158,7 +158,7 @@ class CompilerSpec extends BaseSpecification {
         given:
         String expectedResult = resources.resolve("templates/brackets.html").get().getContentAsString()
         when:
-        String result = tagliatelle.resolve("templates/brackets.html.pasta").get().renderToString()
+        String result = tagliatelle.resolve("/templates/brackets.html.pasta").get().renderToString()
         then:
         test.basicallyEqual(result, expectedResult)
     }
@@ -167,7 +167,7 @@ class CompilerSpec extends BaseSpecification {
         given:
         String expectedResult = resources.resolve("templates/loop.html").get().getContentAsString()
         when:
-        String result = tagliatelle.resolve("templates/loop.html.pasta").
+        String result = tagliatelle.resolve("/templates/loop.html.pasta").
                 get().
                 renderToString(Arrays.asList(1, 2, 3, 4, 5))
         then:
@@ -176,9 +176,9 @@ class CompilerSpec extends BaseSpecification {
 
     def "switch works as expected"() {
         when:
-        String a = tagliatelle.resolve("templates/switch.html.pasta").get().renderToString("a")
-        String b = tagliatelle.resolve("templates/switch.html.pasta").get().renderToString("b")
-        String c = tagliatelle.resolve("templates/switch.html.pasta").get().renderToString("c")
+        String a = tagliatelle.resolve("/templates/switch.html.pasta").get().renderToString("a")
+        String b = tagliatelle.resolve("/templates/switch.html.pasta").get().renderToString("b")
+        String c = tagliatelle.resolve("/templates/switch.html.pasta").get().renderToString("c")
         then:
         test.basicallyEqual(a, "a")
         test.basicallyEqual(b, "b")
@@ -187,7 +187,7 @@ class CompilerSpec extends BaseSpecification {
 
     def "extensions work"() {
         when:
-        String result = tagliatelle.resolve("templates/extended.html.pasta").get().renderToString()
+        String result = tagliatelle.resolve("/templates/extended.html.pasta").get().renderToString()
         then:
         result == "b"
     }
@@ -196,7 +196,7 @@ class CompilerSpec extends BaseSpecification {
         given:
         String expectedResult = resources.resolve("templates/dynamic-invoke.html").get().getContentAsString()
         when:
-        String result = tagliatelle.resolve("templates/dynamic-invoke-outer.html.pasta").get().renderToString()
+        String result = tagliatelle.resolve("/templates/dynamic-invoke-outer.html.pasta").get().renderToString()
         then:
         test.basicallyEqual(result, expectedResult)
     }
@@ -205,7 +205,7 @@ class CompilerSpec extends BaseSpecification {
         given:
         String expectedResult = resources.resolve("templates/render-to-string.html").get().getContentAsString()
         when:
-        String result = tagliatelle.resolve("templates/render-to-string.html.pasta").get().renderToString()
+        String result = tagliatelle.resolve("/templates/render-to-string.html.pasta").get().renderToString()
         then:
         test.basicallyEqual(result, expectedResult)
     }
@@ -214,7 +214,7 @@ class CompilerSpec extends BaseSpecification {
         given:
         String expectedResult = resources.resolve("templates/define.html").get().getContentAsString()
         when:
-        String result = tagliatelle.resolve("templates/define.html.pasta").get().renderToString()
+        String result = tagliatelle.resolve("/templates/define.html.pasta").get().renderToString()
         then:
         test.basicallyEqual(result, expectedResult)
     }
@@ -223,7 +223,7 @@ class CompilerSpec extends BaseSpecification {
         when:
         List<CompileError> errors = null
         try {
-            tagliatelle.resolve("templates/missing-tag.html.pasta").get()
+            tagliatelle.resolve("/templates/missing-tag.html.pasta").get()
         } catch (CompileException err) {
             errors = err.getErrors()
         }
@@ -237,7 +237,7 @@ class CompilerSpec extends BaseSpecification {
         when:
         List<CompileError> errors = null
         try {
-            tagliatelle.resolve("templates/deprecatedArgument.html.pasta").get()
+            tagliatelle.resolve("/templates/deprecatedArgument.html.pasta").get()
         } catch (CompileException err) {
             errors = err.getErrors()
         }
@@ -251,7 +251,7 @@ class CompilerSpec extends BaseSpecification {
         when:
         List<CompileError> errors = null
         try {
-            tagliatelle.resolve("templates/deprecatedCaller.html.pasta").get()
+            tagliatelle.resolve("/templates/deprecatedCaller.html.pasta").get()
         } catch (CompileException err) {
             errors = err.getErrors()
         }
@@ -265,7 +265,7 @@ class CompilerSpec extends BaseSpecification {
         when:
         List<CompileError> errors = null
         try {
-            tagliatelle.resolve("templates/invalid-argument-caller.html.pasta").get()
+            tagliatelle.resolve("/templates/invalid-argument-caller.html.pasta").get()
         } catch (CompileException err) {
             errors = err.getErrors()
         }
@@ -283,7 +283,7 @@ class CompilerSpec extends BaseSpecification {
         given:
         String expectedResult = resources.resolve("templates/timeMacros.html").get().getContentAsString()
         when:
-        String result = tagliatelle.resolve("templates/timeMacros.html.pasta").get().renderToString()
+        String result = tagliatelle.resolve("/templates/timeMacros.html.pasta").get().renderToString()
         then:
         test.basicallyEqual(result, expectedResult)
     }
@@ -292,7 +292,7 @@ class CompilerSpec extends BaseSpecification {
         given:
         String expectedResult = resources.resolve("templates/macroSyntax.html").get().getContentAsString()
         when:
-        String result = tagliatelle.resolve("templates/macroSyntax.html.pasta").get().renderToString()
+        String result = tagliatelle.resolve("/templates/macroSyntax.html.pasta").get().renderToString()
         then:
         test.basicallyEqual(result, expectedResult)
     }
@@ -301,7 +301,7 @@ class CompilerSpec extends BaseSpecification {
         given:
         String expectedResult = resources.resolve("templates/js-template.html").get().getContentAsString()
         when:
-        String result = tagliatelle.resolve("templates/js-template.html.pasta").get().renderToString()
+        String result = tagliatelle.resolve("/templates/js-template.html.pasta").get().renderToString()
         then:
         test.basicallyEqual(result, expectedResult)
     }
@@ -311,7 +311,7 @@ class CompilerSpec extends BaseSpecification {
         given:
         String expectedResult = resources.resolve("templates/attribute-expressions.html").get().getContentAsString()
         when:
-        String result = tagliatelle.resolve("templates/attribute-expressions.html.pasta").get().renderToString()
+        String result = tagliatelle.resolve("/templates/attribute-expressions.html.pasta").get().renderToString()
         then:
         test.basicallyEqual(result, expectedResult)
     }
@@ -320,7 +320,7 @@ class CompilerSpec extends BaseSpecification {
         given:
         String expectedResult = resources.resolve("templates/recursion.html").get().getContentAsString()
         when:
-        String result = tagliatelle.resolve("templates/recursion.html.pasta").get().renderToString()
+        String result = tagliatelle.resolve("/templates/recursion.html.pasta").get().renderToString()
         then:
         test.basicallyEqual(result, expectedResult)
     }
@@ -332,7 +332,7 @@ class CompilerSpec extends BaseSpecification {
         when:
         def ctx = new CompilationContext(new Template("test", null), null)
         List<CompileError> errors = new Compiler(ctx,
-                                                 "<i:invoke\u00A0template=\"templates/attribute-expressions.html.pasta\"/>").
+                                                 "<i:invoke\u00A0template=\"/templates/attribute-expressions.html.pasta\"/>").
                 compile()
         then:
         errors.size() == 1
@@ -342,8 +342,8 @@ class CompilerSpec extends BaseSpecification {
         given:
         String expectedResult = resources.resolve("templates/invoke-customized.html").get().getContentAsString()
         when:
-        String result = tagliatelle.resolve("templates/invoke-customized.html.pasta").get().renderToString()
-        String resultCached = tagliatelle.resolve("templates/invoke-customized.html.pasta").get().renderToString()
+        String result = tagliatelle.resolve("/templates/invoke-customized.html.pasta").get().renderToString()
+        String resultCached = tagliatelle.resolve("/templates/invoke-customized.html.pasta").get().renderToString()
         then:
         test.basicallyEqual(result, expectedResult)
         test.basicallyEqual(resultCached, expectedResult)
@@ -355,7 +355,7 @@ class CompilerSpec extends BaseSpecification {
         innerClass.setTest("test")
         String expectedResult = "test"
         when:
-        String result = tagliatelle.resolve("templates/inner-class.html.pasta")
+        String result = tagliatelle.resolve("/templates/inner-class.html.pasta")
                                    .get().renderToString(Tuple.create(innerClass, innerClass))
         then:
         test.basicallyEqual(result, expectedResult)

@@ -1,1 +1,1 @@
-<i:dynamicInvoke template="@'templates/dynamic-invoke-inner.html.pasta'" world="'Other Side'" />
+<i:dynamicInvoke template="@'/templates/dynamic-invoke-inner.html.pasta'" world="'Other Side'" />

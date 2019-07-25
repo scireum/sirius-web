@@ -232,7 +232,7 @@ public class TestController implements Controller {
 
     @Routed("/test/provide-security-token")
     public void provideSecurityToken(WebContext ctx) {
-        ctx.respondWith().template("templates/security-token.html.pasta");
+        ctx.respondWith().template("/templates/security-token.html.pasta");
     }
 
     @Routed("/test/expire-security-token")

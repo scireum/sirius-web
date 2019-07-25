@@ -66,7 +66,7 @@ public class TagliatelleController implements Controller {
                                              .collect(Collectors.toList());
 
         ctx.respondWith()
-           .template("templates/system/tags.html.pasta",
+           .template("/templates/system/tags.html.pasta",
                      macros,
                      tagliatelle.getGlobalVariables(),
                      builtIns,
@@ -89,7 +89,7 @@ public class TagliatelleController implements Controller {
             TagHandlerFactory handler = context.findPart("i:" + tag, TagHandlerFactory.class);
 
             ctx.respondWith()
-               .template("templates/system/tag.html.pasta",
+               .template("/templates/system/tag.html.pasta",
                          tagLib,
                          tag,
                          handler.reportArguments(),
@@ -99,7 +99,7 @@ public class TagliatelleController implements Controller {
             Template template = tagliatelle.resolve("/taglib/" + tagLib + "/" + tag + ".html.pasta")
                                            .orElseThrow(() -> new IllegalArgumentException(tag));
             ctx.respondWith()
-               .template("templates/system/tag.html.pasta",
+               .template("/templates/system/tag.html.pasta",
                          tagLib,
                          tag,
                          template.getArguments(),
@@ -119,6 +119,6 @@ public class TagliatelleController implements Controller {
         if (ctx.hasParameter("reset")) {
             tagliatelle.getCompiledTemplates().forEach(Template::resetAverageRenderTime);
         }
-        ctx.respondWith().template("templates/system/tags-state.html.pasta", tagliatelle.getCompiledTemplates());
+        ctx.respondWith().template("/templates/system/tags-state.html.pasta", tagliatelle.getCompiledTemplates());
     }
 }

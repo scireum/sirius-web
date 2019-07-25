@@ -125,7 +125,7 @@ public class Tagliatelle {
 
     private TemplateExtension resolveToTemplateExtension(String path) {
         try {
-            Optional<Template> template = resolve(path);
+            Optional<Template> template = resolve("/" + path);
             if (!template.isPresent()) {
                 throw Exceptions.handle()
                                 .to(LOG)
@@ -356,6 +356,15 @@ public class Tagliatelle {
     public static void ensureProperTemplatePath(String path) {
         if (!path.endsWith(".pasta")) {
             throw new IllegalArgumentException("Tagliatelle templates must end with '.pasta'. Invalid path: " + path);
+        }
+        
+        if (!path.startsWith("/") && !path.startsWith("/original:")) {
+            if (Sirius.isStartedAsTest() || Sirius.isDev()) {
+                throw new IllegalArgumentException("Tagliatelle templates should start with a '/'. Invalid path: "
+                                                   + path);
+            } else {
+                LOG.WARN("Tagliatelle templates should start with a '/'. Invalid path: " + path);
+            }
         }
     }
 
