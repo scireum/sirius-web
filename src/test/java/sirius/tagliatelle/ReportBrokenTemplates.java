@@ -22,6 +22,9 @@ import sirius.web.resources.Resources;
 
 import java.util.regex.Pattern;
 
+/**
+ * Tries to compile all visible tagliatelle templates and breaks the test run if compilation fails.
+ */
 @Register
 public class ReportBrokenTemplates implements TestLifecycleParticipant {
 
@@ -38,7 +41,7 @@ public class ReportBrokenTemplates implements TestLifecycleParticipant {
 
     @Override
     public void beforeTests() {
-
+        // No setup required
     }
 
     @Override
