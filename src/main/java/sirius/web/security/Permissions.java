@@ -116,8 +116,9 @@ public class Permissions {
     }
 
     /**
-     * Expands all permission profiles to obtain the effective set of permissions for a set list or permission and
-     * profile names.
+     * Applies all known profiles on the given set of roles/permissions.
+     * <p>
+     * Applies the profiles as defined in <tt>security.profiles</tt>.
      *
      * @param permissions the set of permissions and or profiles to expand
      */
@@ -128,8 +129,11 @@ public class Permissions {
     }
 
     /**
-     * Expands all permission profiles just like {@link #applyProfiles(java.util.Set)}. Also all public roles
-     * defined in <tt>security.publicRoles</tt> are included to the roles set before profiles are expanded.
+     * Adds all public roles and then applies all known profiles.
+     * <p>
+     * Applies all known profiles on the given set of roles/permissions just like {@link #applyProfiles(java.util.Set)}.
+     * Also all public roles defined in <tt>security.publicRoles</tt> are included to the roles set before profiles
+     * are expanded.
      *
      * @param roles the list of permissions and or profiles to expand
      * @return an effective list of permissions based on the profiles defined in <tt>security.profiles</tt> and the
