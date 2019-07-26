@@ -16,7 +16,9 @@ class PermissionsSpec extends BaseSpecification {
 
     def "applyProfiles keeps original roles"() {
         when:
-        def roles = Permissions.applyProfiles(["A", "B", "C"])
+        def roles = new HashSet<String>(["A", "B", "C" ])
+        and:
+        Permissions.applyProfiles(roles)
         then:
         roles.contains("A")
         and:
@@ -27,7 +29,9 @@ class PermissionsSpec extends BaseSpecification {
 
     def "applyProfiles expands known profiles"() {
         when:
-        def roles = Permissions.applyProfiles(["test-profile"])
+        def roles = new HashSet<String>(["test-profile"])
+        and:
+        Permissions.applyProfiles(roles)
         then:
         roles.contains("test-A")
         and:
