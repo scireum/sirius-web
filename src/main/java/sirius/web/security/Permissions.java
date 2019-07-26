@@ -8,19 +8,19 @@
 
 package sirius.web.security;
 
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.settings.Extension;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.AnnotatedElement;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,7 +49,32 @@ public class Permissions {
      */
     private static final String ENABLED = "enabled";
 
-    protected static Map<String, Set<String>> profilesCache;
+    private static class Profile {
+        private String name;
+        private Set<String> permissionsToAdd = new HashSet<>();
+        private Set<String> permissionsToRemove = new HashSet<>();
+
+        Profile(String name) {
+            this.name = name;
+        }
+
+        protected void addPermission(String permission) {
+            permissionsToAdd.add(permission);
+        }
+
+        protected void removePermission(String permission) {
+            permissionsToRemove.add(permission);
+        }
+
+        protected void apply(Set<String> permissions) {
+            if (hasPermission(name, permissions::contains)) {
+                permissions.addAll(permissionsToAdd);
+                permissions.removeAll(permissionsToRemove);
+            }
+        }
+    }
+
+    protected static List<Profile> profilesCache;
 
     @ConfigValue("security.publicRoles")
     protected static List<String> publicRoles;
@@ -57,62 +82,53 @@ public class Permissions {
     private Permissions() {
     }
 
-    private static Set<String> getProfile(String role) {
+    private static List<Profile> getProfiles() {
         if (profilesCache == null) {
-            buildProfileCache();
+            loadProfiles();
         }
 
-        return profilesCache.getOrDefault(role, Collections.emptySet());
+        return profilesCache;
     }
 
-    private static void buildProfileCache() {
-        Map<String, Set<String>> profiles = Maps.newHashMap();
+    private static void loadProfiles() {
+        List<Profile> profiles = new ArrayList<>();
 
         for (Extension ext : Sirius.getSettings().getExtensions("security.profiles")) {
-            Set<String> profile = compileProfile(ext);
-            profiles.put(ext.getId(), profile);
+            profiles.add(compileProfile(ext));
         }
 
         profilesCache = profiles;
     }
 
-    private static Set<String> compileProfile(Extension ext) {
-        Set<String> permissions = Sets.newTreeSet();
+    private static Profile compileProfile(Extension ext) {
+        Profile profile = new Profile(ext.getId());
+
         for (Map.Entry<String, Object> permission : ext.getContext().entrySet()) {
-            if (Value.of(permission.getValue()).asBoolean()) {
-                permissions.add(permission.getKey());
+            if (Boolean.TRUE.equals(permission.getValue())) {
+                profile.addPermission(permission.getKey());
+            }
+            if (Boolean.FALSE.equals(permission.getValue())) {
+                profile.removePermission(permission.getKey());
             }
         }
 
-        return permissions;
-    }
-
-    private static void expand(String role, Set<String> result) {
-        if (!result.contains(role)) {
-            result.add(role);
-            for (String subRole : getProfile(role)) {
-                expand(subRole, result);
-            }
-        }
+        return profile;
     }
 
     /**
-     * Expands all permission profiles to obtain the effective set of permissions for a given list or permission and
+     * Expands all permission profiles to obtain the effective set of permissions for a set list or permission and
      * profile names.
      *
-     * @param roles the list of permissions and or profiles to expand
-     * @return an effective list of permissions based on the profiles defined in <tt>security.profiles</tt>
+     * @param permissions the set of permissions and or profiles to expand
      */
-    public static Set<String> applyProfiles(Collection<String> roles) {
-        Set<String> result = Sets.newTreeSet();
-        for (String role : roles) {
-            expand(role, result);
+    public static void applyProfiles(Set<String> permissions) {
+        for (Profile profile : getProfiles()) {
+            profile.apply(permissions);
         }
-        return result;
     }
 
     /**
-     * Expands all permission profiles just like {@link #applyProfiles(java.util.Collection)}. Also all public roles
+     * Expands all permission profiles just like {@link #applyProfiles(java.util.Set)}. Also all public roles
      * defined in <tt>security.publicRoles</tt> are included to the roles set before profiles are expanded.
      *
      * @param roles the list of permissions and or profiles to expand
@@ -120,11 +136,13 @@ public class Permissions {
      * public roles defined in <tt>security.publicRoles</tt>
      */
     public static Set<String> applyProfilesAndPublicRoles(Collection<String> roles) {
-        Set<String> allRoles = Sets.newTreeSet(roles);
+        Set<String> allRoles = new HashSet<>(roles);
         if (publicRoles != null) {
             allRoles.addAll(publicRoles);
         }
-        return applyProfiles(allRoles);
+        applyProfiles(allRoles);
+
+        return allRoles;
     }
 
     /**
