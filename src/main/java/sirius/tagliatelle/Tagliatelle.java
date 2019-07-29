@@ -115,7 +115,9 @@ public class Tagliatelle {
 
     private List<TemplateExtension> loadExtensions(String target) {
         return Sirius.getClasspath()
-                     .find(Pattern.compile("(default/|customizations/[^/]+/)?extensions/" + Pattern.quote(target) + "/.*.pasta"))
+                     .find(Pattern.compile("(default/|customizations/[^/]+/)?extensions/"
+                                           + Pattern.quote(target)
+                                           + "/.*.pasta"))
                      .map(m -> m.group(0))
                      .map(this::resolveToTemplateExtension)
                      .filter(Objects::nonNull)
@@ -198,7 +200,11 @@ public class Tagliatelle {
     public List<Tuple<String, Class<?>>> getGlobalVariables() {
         if (globalVariables == null) {
             List<Tuple<String, Class<?>>> globals = new ArrayList<>();
-            templates.createGlobalContext().forEach((key, value) -> globals.add(Tuple.create(key, value.getClass())));
+            templates.createGlobalContext()
+                     .forEach((key, value) -> globals.add(Tuple.create(key,
+                                                                       value == null ?
+                                                                       Object.class :
+                                                                       value.getClass())));
             globalVariables = Collections.unmodifiableList(globals);
         }
 
@@ -357,7 +363,7 @@ public class Tagliatelle {
         if (!path.endsWith(".pasta")) {
             throw new IllegalArgumentException("Tagliatelle templates must end with '.pasta'. Invalid path: " + path);
         }
-        
+
         if (!path.startsWith("/") && !path.startsWith("/original:")) {
             if (Sirius.isStartedAsTest() || Sirius.isDev()) {
                 throw new IllegalArgumentException("Tagliatelle templates should start with a '/'. Invalid path: "
