@@ -1,5 +1,4 @@
 <i:arg type="String" name="block" />
-<i:pragma name="inline" value="true" />
 
 <i:switch test="@block">
     <i:block name="a">a</i:block>

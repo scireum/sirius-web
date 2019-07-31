@@ -13,7 +13,6 @@
 <i:arg name="format" type="String" default="L" description="Defines the date format for the field. Valid formats can be found at http://momentjs.com/docs/#/displaying/format/" />
 <i:arg name="id" type="String" default="" />
 
-<i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders a date picker within a Wondergem template" />
 
 <div class="datefield col-xs-@smallSpan col-md-@span form-group @user.signalFieldError(name)">

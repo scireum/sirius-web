@@ -3,7 +3,6 @@
 <i:arg type="String" name="allowedExtensions" default="[]" />
 <i:arg type="int" name="maxParallelConnections" default="3" />
 
-<i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders a file upload within a Wondergem template" />
 
 <div class="@name"></div>

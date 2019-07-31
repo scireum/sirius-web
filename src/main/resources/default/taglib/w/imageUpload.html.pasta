@@ -4,7 +4,6 @@
 <i:arg type="String" name="previewUrl" default="@imageUrl" />
 <i:arg type="String" name="allowedExtensions" default="'[]'" />
 
-<i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders an image upload within a Wondergem template" />
 
 <div class="@name"></div>
