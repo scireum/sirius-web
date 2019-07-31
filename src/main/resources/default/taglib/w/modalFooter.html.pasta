@@ -2,7 +2,6 @@
 <i:arg type="String" name="dangerKey" default="" />
 <i:arg type="String" name="cancelKey" default="" />
 
-<i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders a footer for a modal dialog within a Wondergem template" />
 
 <div class="modal-footer">

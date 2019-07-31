@@ -2,7 +2,6 @@
 <i:arg type="String" name="title" default="@i18n(titleKey)" />
 <i:arg type="String" name="color" default="" />
 
-<i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Provides an info box to output name/value pairs in a sidebar" />
 
 <div class="infobox">

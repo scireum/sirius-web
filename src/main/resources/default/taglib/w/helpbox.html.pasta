@@ -1,7 +1,6 @@
 <i:arg name="helpKey" type="String" default="" />
 <i:arg name="help" type="String" default="@i18n(helpKey)" />
 
-<i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders a help box within a Wondergem template" />
 
 <div class="well help-box">

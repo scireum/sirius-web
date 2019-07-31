@@ -195,6 +195,10 @@ $navbarLinkColorActive:         $white;
   color: #e7e7e7;
   font-size: 16px;
   padding: 20px 15px;
+  
+  > i {
+    color: inherit;
+  }
 }
 
 .navbar-default .navbar-nav > li > a,

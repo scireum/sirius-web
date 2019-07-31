@@ -2,7 +2,6 @@
 <i:arg name="label" type="String" default="@i18n(labelKey)" />
 <i:arg name="url" type="String" />
 
-<i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders a links in a table within a Wondergem template" />
 
 <i class="fa fa-angle-double-right "></i> <a href="@url" class="link">@label</a><br>

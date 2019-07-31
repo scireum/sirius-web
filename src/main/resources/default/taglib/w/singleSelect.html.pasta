@@ -12,7 +12,6 @@
 <i:arg name="id" type="String" default="@apply('multiselect-%s', call.generateLocalId())" />
 <i:arg name="allowCustomEntries" type="boolean" default="false" />
 
-<i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders a dropdown field within a Wondergem template" />
 
 <div id="@id" class="sirius-select single-select @if(!optional || required){ required }">

@@ -1,7 +1,6 @@
 <i:arg type="Page" name="page" />
 <i:arg type="String" name="baseUrl" />
 
-<i:pragma name="inline" value="true" />
 <i:pragma name="description"
           value="Takes care of the box sizing of a filterbox and the filtered content within a Wondergem template" />
 
