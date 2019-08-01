@@ -1,6 +1,6 @@
 <i:arg type="String" name="titleKey" default=""/>
 <i:arg type="String" name="title" default="@i18n(titleKey)"/>
-<i:arg type="String" name="iconClass" default=""/>
+<i:arg type="String" name="icon" default=""/>
 <i:arg type="String" name="permission" default=""/>
 <i:arg type="String" name="framework" default=""/>
 
@@ -13,8 +13,8 @@
         <w:permission permission="@permission">
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                    <i:if test="isFilled(iconClass)">
-                        <i class="@iconClass"></i>
+                    <i:if test="isFilled(icon)">
+                        <i class="fa fa-@icon"></i>
                     </i:if>
                     @title
                     <b class="caret"></b>
