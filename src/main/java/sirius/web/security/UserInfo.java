@@ -312,7 +312,7 @@ public class UserInfo extends Composable {
         if (!hasPermission(permission)) {
             throw Exceptions.createHandled()
                             .withNLSKey("UserInfo.missingPermission")
-                            .set("permission", permission)
+                            .set("permission", Permissions.getTranslatedPermission(permission))
                             .handle();
         }
     }
