@@ -199,13 +199,7 @@ public class Tagliatelle {
      */
     public List<Tuple<String, Class<?>>> getGlobalVariables() {
         if (globalVariables == null) {
-            List<Tuple<String, Class<?>>> globals = new ArrayList<>();
-            templates.createGlobalContext()
-                     .forEach((key, value) -> globals.add(Tuple.create(key,
-                                                                       value == null ?
-                                                                       Object.class :
-                                                                       value.getClass())));
-            globalVariables = Collections.unmodifiableList(globals);
+            globalVariables = Tuple.fromMap(templates.determineGlobalContextTypes());
         }
 
         return Collections.unmodifiableList(globalVariables);
