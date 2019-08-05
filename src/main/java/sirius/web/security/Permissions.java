@@ -260,8 +260,6 @@ public class Permissions {
      * @return the translated permission or the permission string if it could not be translated
      */
     public static String getTranslatedPermission(String permission) {
-        return NLS.getIfExists("Permission." + permission, null)
-                  .orElse(NLS.getIfExists("Role." + permission, null)
-                             .orElse(NLS.getIfExists("TenantPermission." + permission, null).orElse(permission)));
+        return NLS.getIfExists("Permission." + permission, null).orElse(permission);
     }
 }
