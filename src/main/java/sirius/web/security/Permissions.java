@@ -262,4 +262,14 @@ public class Permissions {
     public static String getTranslatedPermission(String permission) {
         return NLS.getIfExists("Permission." + permission, null).orElse(permission);
     }
+
+    /**
+     * Returns the description of the permission or an empty string.
+     *
+     * @param permission the permission to describe
+     * @return the permission description if available or an empty string
+     */
+    public static String getPermissionDescription(String permission) {
+        return NLS.getIfExists("Permission." + permission + ".description", null).orElse("");
+    }
 }
