@@ -19,6 +19,8 @@ import sirius.kernel.health.Log;
 import sirius.kernel.settings.Extension;
 import sirius.web.resources.Resources;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -78,7 +80,21 @@ public class Templates {
     public Map<String, Object> createGlobalContext() {
         Map<String, Object> result = new LinkedHashMap<>();
         for (GlobalContextExtender extender : extenders) {
-            extender.collectTemplate(result::put);
+            extender.collectTemplate((name, object, clazz) -> result.put(name, object));
+        }
+
+        return result;
+    }
+
+    /**
+     * Collects all global variables to be used when rendering templates or executing user scripts.
+     *
+     * @return a map of all globals used for templates.
+     */
+    public Map<String, Class<?>> determineGlobalContextTypes() {
+        Map<String, Class<?>> result = new LinkedHashMap<>();
+        for (GlobalContextExtender extender : extenders) {
+            extender.collectTemplate((name, object, clazz) -> result.put(name, clazz));
         }
 
         return result;
@@ -92,8 +108,8 @@ public class Templates {
     public Map<String, Object> createGlobalSystemScriptingContext() {
         Map<String, Object> result = new LinkedHashMap<>();
         for (GlobalContextExtender extender : extenders) {
-            extender.collectTemplate(result::put);
-            extender.collectScripting(result::put);
+            extender.collectTemplate((name, object, clazz) -> result.put(name, object));
+            extender.collectScripting((name, object, clazz) -> result.put(name, object));
         }
 
         return result;

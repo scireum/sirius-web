@@ -11,18 +11,16 @@ package sirius.tagliatelle;
 import sirius.kernel.di.std.Register;
 import sirius.web.templates.GlobalContextExtender;
 
-import java.util.function.BiConsumer;
-
 @Register
 public class TestGlobalContextExtender implements GlobalContextExtender {
 
     @Override
-    public void collectTemplate(BiConsumer<String, Object> globalParameterCollector) {
-        globalParameterCollector.accept("nil", null);
+    public void collectTemplate(Collector globalParameterCollector) {
+        globalParameterCollector.collect("nil", null, Object.class);
     }
 
     @Override
-    public void collectScripting(BiConsumer<String, Object> globalParameterCollector) {
-        globalParameterCollector.accept("nothing", null);
+    public void collectScripting(Collector globalParameterCollector) {
+        globalParameterCollector.collect("nothing", null, Object.class);
     }
 }
