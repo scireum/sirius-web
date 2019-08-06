@@ -8,6 +8,9 @@
 
 package sirius.web.templates;
 
+import sirius.kernel.commons.Explain;
+import sirius.kernel.commons.Strings;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -30,7 +33,18 @@ public interface GlobalContextExtender {
          * @param name   the name of the global variable
          * @param object the value of the global variable
          */
-        void collect(String name, @Nonnull Object object);
+        @SuppressWarnings("squid:S2583")
+        @Explain(
+                "The null check is added as it isn't enforced by the compiler and we'd rather have a readable error message than a NPE")
+        default void collect(String name, @Nonnull Object object) {
+            if (object == null) {
+                throw new IllegalArgumentException(Strings.apply(
+                        "Please provide a type when trying to support null values (%s) in the global context.",
+                        name));
+            }
+
+            collect(name, object, object.getClass());
+        }
 
         /**
          * Provides the given object as variable with the given name.

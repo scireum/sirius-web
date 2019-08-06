@@ -10,7 +10,6 @@ package sirius.web.templates;
 
 import com.google.common.collect.Lists;
 import sirius.kernel.Sirius;
-import sirius.kernel.commons.Strings;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
@@ -20,6 +19,8 @@ import sirius.kernel.health.Log;
 import sirius.kernel.settings.Extension;
 import sirius.web.resources.Resources;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -79,17 +80,7 @@ public class Templates {
     public Map<String, Object> createGlobalContext() {
         Map<String, Object> result = new LinkedHashMap<>();
         for (GlobalContextExtender extender : extenders) {
-            extender.collectTemplate(new GlobalContextExtender.Collector() {
-                @Override
-                public void collect(String name, Object object) {
-                    result.put(name, object);
-                }
-
-                @Override
-                public void collect(String name, Object object, Class<?> type) {
-                    result.put(name, object);
-                }
-            });
+            extender.collectTemplate((name, object, clazz) -> result.put(name, object));
         }
 
         return result;
@@ -103,23 +94,7 @@ public class Templates {
     public Map<String, Class<?>> determineGlobalContextTypes() {
         Map<String, Class<?>> result = new LinkedHashMap<>();
         for (GlobalContextExtender extender : extenders) {
-            extender.collectTemplate(new GlobalContextExtender.Collector() {
-                @Override
-                public void collect(String name, Object object) {
-                    if (object == null) {
-                        throw new IllegalArgumentException(Strings.apply(
-                                "Please provide a type when trying to support null values (%s) in the global context.",
-                                name));
-                    }
-
-                    result.put(name, object.getClass());
-                }
-
-                @Override
-                public void collect(String name, Object object, Class<?> type) {
-                    result.put(name, type);
-                }
-            });
+            extender.collectTemplate((name, object, clazz) -> result.put(name, clazz));
         }
 
         return result;
@@ -133,28 +108,8 @@ public class Templates {
     public Map<String, Object> createGlobalSystemScriptingContext() {
         Map<String, Object> result = new LinkedHashMap<>();
         for (GlobalContextExtender extender : extenders) {
-            extender.collectTemplate(new GlobalContextExtender.Collector() {
-                @Override
-                public void collect(String name, Object object) {
-                    result.put(name, object);
-                }
-
-                @Override
-                public void collect(String name, Object object, Class<?> type) {
-                    result.put(name, object);
-                }
-            });
-            extender.collectScripting(new GlobalContextExtender.Collector() {
-                @Override
-                public void collect(String name, Object object) {
-                    result.put(name, object);
-                }
-
-                @Override
-                public void collect(String name, Object object, Class<?> type) {
-                    result.put(name, object);
-                }
-            });
+            extender.collectTemplate((name, object, clazz) -> result.put(name, object));
+            extender.collectScripting((name, object, clazz) -> result.put(name, object));
         }
 
         return result;
