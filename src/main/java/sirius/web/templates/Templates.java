@@ -19,8 +19,6 @@ import sirius.kernel.health.Log;
 import sirius.kernel.settings.Extension;
 import sirius.web.resources.Resources;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;

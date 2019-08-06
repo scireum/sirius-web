@@ -22,7 +22,6 @@ import sirius.web.security.UserContext;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.function.BiConsumer;
 
 /**
  * Provides access to commonly used global variables.
