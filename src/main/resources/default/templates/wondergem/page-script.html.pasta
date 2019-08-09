@@ -322,6 +322,7 @@
 
     function lineChart(selector, labels, datasets) {
         var lineData = [];
+        var hasRightYAxis = false;
         for (var i = 0; i < datasets.length; i++) {
             var color = CHART_COLORS[i % CHART_COLORS.length];
             lineData.push({
@@ -332,9 +333,40 @@
                 pointHighlightFill: "#fff",
                 pointHighlightStroke: color,
                 label: datasets[i].label,
-                data: datasets[i].data
+                data: datasets[i].data,
+                yAxisID: datasets[i].axis,
             });
+
+            if (datasets[i].axis === 'right') {
+                hasRightYAxis = true;
+            }
         }
+
+        var customConfig = {
+            legend: {display: datasets.length > 1}
+        };
+
+        if (hasRightYAxis) {
+            customConfig.scales = {
+                yAxes: [
+                    {
+                        type: 'linear',
+                        position: 'left',
+                        ticks: {
+                            beginAtZero: true,
+                        }
+                    }, {
+                        id: 'right',
+                        type: 'linear',
+                        position: 'right',
+                        ticks: {
+                            beginAtZero: true,
+                        }
+                    }
+                ]
+            };
+        }
+
         new Chart($(selector).get(0).getContext("2d"),
             {
                 type: 'line',
@@ -342,12 +374,14 @@
                     labels: labels,
                     datasets: lineData
                 },
-                options: $.extend(LINE_CHART_DEFAULT_OPTIONS, {legend: {display: datasets.length > 1}})
+                options: $.extend(LINE_CHART_DEFAULT_OPTIONS, customConfig)
             });
     }
 
     function barChart(selector, labels, datasets) {
         var barData = [];
+        var hasRightYAxis = false;
+
         for (var i = 0; i < datasets.length; i++) {
             var color = CHART_COLORS[i % CHART_COLORS.length];
             barData.push({
@@ -360,7 +394,37 @@
                 label: datasets[i].label,
                 data: datasets[i].data
             });
+
+            if (datasets[i].axis === 'right') {
+                hasRightYAxis = true;
+            }
         }
+
+        var customConfig = {
+            legend: {display: datasets.length > 1}
+        };
+
+        if (hasRightYAxis) {
+            customConfig.scales = {
+                yAxes: [
+                    {
+                        type: 'linear',
+                        position: 'left',
+                        ticks: {
+                            beginAtZero: true,
+                        }
+                    }, {
+                        id: 'right',
+                        type: 'linear',
+                        position: 'right',
+                        ticks: {
+                            beginAtZero: true,
+                        }
+                    }
+                ]
+            };
+        }
+
         new Chart($(selector).get(0).getContext("2d"),
             {
                 type: 'bar',
@@ -368,7 +432,7 @@
                     labels: labels,
                     datasets: barData
                 },
-                options: $.extend(LINE_CHART_DEFAULT_OPTIONS, {legend: {display: datasets.length > 1}})
+                options: $.extend(LINE_CHART_DEFAULT_OPTIONS, customConfig)
             });
     }
 
