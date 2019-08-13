@@ -23,15 +23,18 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.WorkbookUtil;
 import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import sirius.kernel.commons.Amount;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 import sirius.web.http.MimeHelper;
 import sirius.web.http.WebContext;
 
+import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -56,7 +59,7 @@ public class ExcelExport {
     private static final String MIME_TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
     private final Workbook workbook;
-    private final Sheet sheet;
+    private Sheet currentSheet;
     private int rows = 0;
     private int maxCols = 0;
     private CellStyle dateStyle;
@@ -174,9 +177,8 @@ public class ExcelExport {
         }
     }
 
-    protected ExcelExport(boolean useHSSF) {
+    protected ExcelExport(boolean useHSSF, boolean createDefaultSheet) {
         workbook = useHSSF ? new HSSFWorkbook() : new XSSFWorkbook();
-        sheet = workbook.createSheet();
         // Setup styles
         dateStyle = workbook.createCellStyle();
         dateStyle.setDataFormat(workbook.createDataFormat().getFormat("dd.mm.yyyy"));
@@ -186,15 +188,37 @@ public class ExcelExport {
         borderStyle = workbook.createCellStyle();
         borderStyle.setBorderBottom(CellStyle.BORDER_THICK);
         normalStyle = workbook.createCellStyle();
-        // Setup layout
-        sheet.createFreezePane(0, 1, 0, 1);
-        PrintSetup ps = sheet.getPrintSetup();
+
+        if (createDefaultSheet) {
+            createSheet(null);
+        }
+    }
+
+    /**
+     * Creates an excel sheet, adds it to the current workbook and
+     *
+     * @param name the name of the worksheet, if <tt>null</tt> a default name is choosen
+     */
+    public void createSheet(@Nullable String name) {
+        if (currentSheet != null) {
+            autosizeColumns();
+            currentSheet.setAutoFilter(new CellRangeAddress(0, rows, 0, maxCols - 1));
+            rows = 0;
+            maxCols = 0;
+        }
+        if (Strings.isFilled(name)) {
+            currentSheet = workbook.createSheet(WorkbookUtil.createSafeSheetName(name));
+        } else {
+            currentSheet = workbook.createSheet();
+        }
+        currentSheet.createFreezePane(0, 1, 0, 1);
+        PrintSetup ps = currentSheet.getPrintSetup();
         ps.setPaperSize(PrintSetup.A4_PAPERSIZE);
         ps.setLandscape(false);
         ps.setFitWidth((short) 1);
         ps.setFitHeight((short) 0);
-        sheet.setAutobreaks(true);
-        sheet.setRepeatingRows(new CellRangeAddress(0, 0, -1, -1));
+        currentSheet.setAutobreaks(true);
+        currentSheet.setRepeatingRows(new CellRangeAddress(0, 0, -1, -1));
     }
 
     /**
@@ -203,7 +227,7 @@ public class ExcelExport {
      * @return a new exporter using the Excel'97 format
      */
     public static ExcelExport asXLS() {
-        return new ExcelExport(true);
+        return new ExcelExport(true, true);
     }
 
     /**
@@ -212,7 +236,35 @@ public class ExcelExport {
      * @return a new exporter using the modern Excel format
      */
     public static ExcelExport asXSLX() {
-        return new ExcelExport(false);
+        return new ExcelExport(false, true);
+    }
+
+    /**
+     * Creates a new export which uses the legacy Excel'97 format (.xls).
+     * <p>
+     * If the the export should create a excel sheet with an default name, set the parameter
+     * <tt>createDefaultSheet</tt> to true. Otherwise you must call {@link #createSheet(String)} with a name to create a
+     * named sheet before adding to the exporter.
+     *
+     * @param createDefaultSheet true if a sheet should be automatically created.
+     * @return a new exporter using the Excel'97 format
+     */
+    public static ExcelExport asXLS(boolean createDefaultSheet) {
+        return new ExcelExport(true, createDefaultSheet);
+    }
+
+    /**
+     * Creates a new export which uses the modern Excel format (.xlsx).
+     * <p>
+     * If the the export should create a excel sheet with an default name, set the parameter
+     * <tt>createDefaultSheet</tt> to true. Otherwise you must call {@link #createSheet(String)} with a name to create a
+     * named sheet before adding to the exporter.
+     *
+     * @param createDefaultSheet true if a sheet should be automatically created.
+     * @return a new exporter using the modern Excel format
+     */
+    public static ExcelExport asXSLX(boolean createDefaultSheet) {
+        return new ExcelExport(false, createDefaultSheet);
     }
 
     private void addCell(Row row, Object obj, int columnIndex, CellStyle style) {
@@ -279,10 +331,10 @@ public class ExcelExport {
     private void addImageCell(Row row, ImageCell imageCell, int columnIndex) {
         row.setHeightInPoints(imageCell.getHeightInPoints());
         if (drawing == null) {
-            drawing = sheet.createDrawingPatriarch();
+            drawing = currentSheet.createDrawingPatriarch();
         }
         if (!pictureCols.contains((short) columnIndex)) {
-            sheet.setColumnWidth(columnIndex, imageCell.getPOIWidth());
+            currentSheet.setColumnWidth(columnIndex, imageCell.getPOIWidth());
             pictureCols.add((short) columnIndex);
         }
         int iconIndex = workbook.addPicture(imageCell.fileData, imageCell.pictureType);
@@ -322,7 +374,7 @@ public class ExcelExport {
         if (row != null) {
             maxCols = Math.max(maxCols, row.size());
             int idx = 0;
-            Row r = sheet.createRow(rows++);
+            Row r = currentSheet.createRow(rows++);
             for (Object entry : row) {
                 addCell(r, entry, idx++, getCellStyleForObject(entry));
             }
@@ -369,7 +421,7 @@ public class ExcelExport {
                 autosizeColumns();
 
                 // Add autofilter...
-                sheet.setAutoFilter(new CellRangeAddress(0, rows, 0, maxCols - 1));
+                currentSheet.setAutoFilter(new CellRangeAddress(0, rows, 0, maxCols - 1));
                 workbook.write(out);
             }
         } catch (IOException e) {
@@ -381,7 +433,7 @@ public class ExcelExport {
         for (short col = 0; col < maxCols; col++) {
             // Don't distort images
             if (!pictureCols.contains(col)) {
-                sheet.autoSizeColumn(col);
+                currentSheet.autoSizeColumn(col);
             }
         }
     }
