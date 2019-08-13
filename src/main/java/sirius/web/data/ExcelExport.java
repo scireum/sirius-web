@@ -197,7 +197,7 @@ public class ExcelExport {
     /**
      * Creates an excel sheet, adds it to the current workbook and
      *
-     * @param name the name of the worksheet, when null a default name is choosen
+     * @param name the name of the worksheet, if <tt>null</tt> a default name is choosen
      */
     public void createSheet(@Nullable String name) {
         if (currentSheet != null) {
