@@ -195,7 +195,7 @@ public class ExcelExport {
     }
 
     /**
-     * Creates an ecxel sheet, adds it to the current workbook and
+     * Creates an excel sheet, adds it to the current workbook and
      *
      * @param name the name of the worksheet, when null a default name is choosen
      */
