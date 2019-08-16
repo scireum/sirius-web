@@ -22,7 +22,6 @@ import sirius.web.security.UserContext;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.function.BiConsumer;
 
 /**
  * Provides access to commonly used global variables.
@@ -48,28 +47,28 @@ public class DefaultGlobalContextExtender implements GlobalContextExtender {
     private CSRFHelper csrfHelper;
 
     @Override
-    public void collectTemplate(BiConsumer<String, Object> parameterCollector) {
+    public void collectTemplate(Collector parameterCollector) {
         CallContext ctx = CallContext.getCurrent();
-        parameterCollector.accept("user", ctx.get(UserContext.class));
-        parameterCollector.accept("product", Product.getProduct().getName());
-        parameterCollector.accept("now", LocalDateTime.now());
-        parameterCollector.accept("today", LocalDate.now());
-        parameterCollector.accept("detailedVersion", getDetailedVersion());
-        parameterCollector.accept("nodeName", CallContext.getNodeName());
-        parameterCollector.accept("isDev", Sirius.isDev());
-        parameterCollector.accept("call", ctx.get(WebContext.class));
-        parameterCollector.accept("watch", ctx.getWatch());
-        parameterCollector.accept("lang", NLS.getCurrentLang());
-        parameterCollector.accept("contentHelper", ContentHelper.INSTANCE);
-        parameterCollector.accept("wondergemRoot", wondergemRoot);
-        parameterCollector.accept("tagLine", tagLine);
-        parameterCollector.accept("contentSecurityPolicy", contentSecurityPolicy);
-        parameterCollector.accept("saml", saml);
-        parameterCollector.accept("csrf", csrfHelper);
+        parameterCollector.collect("user", ctx.get(UserContext.class));
+        parameterCollector.collect("product", Product.getProduct().getName());
+        parameterCollector.collect("now", LocalDateTime.now());
+        parameterCollector.collect("today", LocalDate.now());
+        parameterCollector.collect("detailedVersion", getDetailedVersion());
+        parameterCollector.collect("nodeName", CallContext.getNodeName());
+        parameterCollector.collect("isDev", Sirius.isDev());
+        parameterCollector.collect("call", ctx.get(WebContext.class));
+        parameterCollector.collect("watch", ctx.getWatch());
+        parameterCollector.collect("lang", NLS.getCurrentLang());
+        parameterCollector.collect("contentHelper", ContentHelper.INSTANCE);
+        parameterCollector.collect("wondergemRoot", wondergemRoot, String.class);
+        parameterCollector.collect("tagLine", tagLine, String.class);
+        parameterCollector.collect("contentSecurityPolicy", contentSecurityPolicy, String.class);
+        parameterCollector.collect("saml", saml, SAMLHelper.class);
+        parameterCollector.collect("csrf", csrfHelper, CSRFHelper.class);
     }
 
     @Override
-    public void collectScripting(BiConsumer<String, Object> globalParameterCollector) {
+    public void collectScripting(Collector globalParameterCollector) {
         // Nothing provided
     }
 

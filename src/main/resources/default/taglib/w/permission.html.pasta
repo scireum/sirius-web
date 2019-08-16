@@ -1,6 +1,5 @@
 <i:arg type="String" name="permission" default="" />
 
-<i:pragma name="inline" value="true" />
 <i:pragma name="description"
           value="Checks if the current user has the wanted permission within a Wondergem template" />
 

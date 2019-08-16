@@ -6,7 +6,6 @@
 <i:arg name="icon" type="String" default=""/>
 
 <i:pragma name="description" value="Renders navigation box link within a Wondergem template" />
-<i:pragma name="inline" value="true" />
 
 <i:if test="user.getUser().hasPermission(permission)">
     <li @if(active) { class="active" }>

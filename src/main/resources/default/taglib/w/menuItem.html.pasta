@@ -14,7 +14,7 @@
         <li>
             <a href="@url" class="@if (adminOnly) { admin-link }">
                 <i:if test="isFilled(icon)">
-                    <i class="fa fa-fw @icon"></i>
+                    <i class="fa fa-fw fa-@icon"></i>
                 </i:if>
                 @title
             </a>

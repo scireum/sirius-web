@@ -13,6 +13,7 @@ import sirius.kernel.Sirius;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
+import sirius.kernel.nls.NLS;
 import sirius.kernel.settings.Extension;
 
 import javax.annotation.Nullable;
@@ -250,5 +251,25 @@ public class Permissions {
         } else {
             return containsPermission != null && containsPermission.test(permission);
         }
+    }
+
+    /**
+     * Trys to translate the given permission.
+     *
+     * @param permission the permission to translate
+     * @return the translated permission or the permission string if it could not be translated
+     */
+    public static String getTranslatedPermission(String permission) {
+        return NLS.getIfExists("Permission." + permission, null).orElse(permission);
+    }
+
+    /**
+     * Returns the description of the permission or an empty string.
+     *
+     * @param permission the permission to describe
+     * @return the permission description if available or an empty string
+     */
+    public static String getPermissionDescription(String permission) {
+        return NLS.getIfExists("Permission." + permission + ".description", null).orElse("");
     }
 }

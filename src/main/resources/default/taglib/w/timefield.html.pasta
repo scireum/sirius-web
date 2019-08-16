@@ -13,7 +13,6 @@
 <i:arg name="adminOnly" type="boolean" default="false" />
 <i:arg name="id" type="String" default="" />
 
-<i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders a time text field within a Wondergem template" />
 
 <div class="timefield col-xs-@smallSpan col-md-@span form-group @user.signalFieldError(name)">

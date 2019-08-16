@@ -15,7 +15,6 @@
 <i:arg name="adminOnly" type="boolean" default="false" />
 <i:arg name="id" type="String" default="@apply('multiselect-%s', call.generateLocalId())" />
 
-<i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders an autocomplete select field within a Wondergem template" />
 
 <div id="@id" class="sirius-select single-select @if(!optional || required){ required }">

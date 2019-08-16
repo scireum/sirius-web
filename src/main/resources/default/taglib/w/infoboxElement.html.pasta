@@ -2,7 +2,6 @@
 <i:arg type="String" name="label" default="@i18n(labelKey)" />
 <i:arg type="Object" name="value" default="" />
 <i:arg type="Object" name="effectiveValue" default="value | renderToString('body')" />
-<i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Provides a line (key / value pair) within an infobox" />
 
 <i:if test="isFilled(effectiveValue)">

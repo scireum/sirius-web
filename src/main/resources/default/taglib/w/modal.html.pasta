@@ -2,7 +2,6 @@
 <i:arg name="titleKey" type="String" default="" />
 <i:arg name="title" type="String" default="@i18n(titleKey)" />
 
-<i:pragma name="inline" value="true" />
 <i:pragma name="description" value="Renders a body for a modal dialog within a Wondergem template" />
 
 <div id="@name" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="@(name + ' Title')">
