@@ -6,7 +6,6 @@
 <i:arg type="boolean" name="adminOnly" default="false"/>
 <i:arg type="String" name="url"/>
 
-<i:pragma name="inline" value="true"/>
 <i:pragma name="description" value="Renders menu entry within a Wondergem template"/>
 
 <i:if test="isFrameworkEnabled(framework)">

@@ -4,7 +4,6 @@
 <i:arg type="String" name="permission" default=""/>
 <i:arg type="String" name="framework" default=""/>
 
-<i:pragma name="inline" value="true"/>
 <i:pragma name="description" value="Renders menu dropdown within a Wondergem template"/>
 <i:local name="contents" value="@renderToString('body')"/>
 
