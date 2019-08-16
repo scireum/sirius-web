@@ -1,0 +1,22 @@
+<i:arg type="String" name="titleKey" default=""/>
+<i:arg type="String" name="title" default="@i18n(titleKey)"/>
+<i:arg type="String" name="icon" default=""/>
+
+<i:pragma name="description" value="Renders an inline dropdown within a Wondergem template"/>
+<i:local name="contents" value="@renderToString('body')"/>
+
+<i:if test="isFilled(contents)">
+    <span class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+            <i:if test="isFilled(icon)">
+                <i class="fa @icon"></i>
+            </i:if>
+            @title
+            <b class="caret"></b>
+        </a>
+
+        <ul class="dropdown-menu">
+            <i:raw>@contents</i:raw>
+        </ul>
+    </span>
+</i:if>

@@ -2,12 +2,10 @@
 <i:arg type="boolean" name="adminOnly" default="false"/>
 <i:arg type="Page" name="page" default=""/>
 
-
 <i:pragma name="description" value="Renders a delete/dangerous link within a Wondergem template"/>
-
 <i:local name="deleteFormId" value="@apply('deleteForm-%s', call.generateLocalId())"/>
 
-<form id="@deleteFormId" method="post" action="@if(page != null) {@page.linkToCurrentPage(url)} else {@url}">
+<form style="display: inline-block" id="@deleteFormId" method="post" action="@if(page != null) {@page.linkToCurrentPage(url)} else {@url}">
     <i class="fa fa-trash"></i>
     <a role="button" class="link link-danger guarded-link @if (adminOnly) {admin-link}" data-deleteid="@deleteFormId">
         @i18n("NLS.delete")
