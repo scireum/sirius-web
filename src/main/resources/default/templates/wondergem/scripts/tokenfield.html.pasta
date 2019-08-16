@@ -203,6 +203,13 @@
             resizeInputField: function () {
                 var $container = input.tokenElement.parent();
 
+                // If the input field is the only element, set it's width to 100%. Otherwise the parent container can't
+                // get smaller when scaling down the window. As a result the input field doesn't resize correctly.
+                if ($container.children(':not(input):not(.hide)').length === 0) {
+                    input.tokenElement.width('100%');
+                    return;
+                }
+
                 // calculate the width of the last row of tokens
                 var lastTokenTop;
                 var tokensWidth = 0;
