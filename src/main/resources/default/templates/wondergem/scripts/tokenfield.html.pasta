@@ -216,10 +216,10 @@
                     tokensWidth += $(this).outerWidth(true) + 1;
                 });
 
-                // + 1 because outerWidth gets the width rounded and else it might not fit because of 1px
-                var additionalElementsWidth = 1;
-                $container.find(".input-width-js").each(function () {
-                    additionalElementsWidth += $(this).outerWidth(true);
+                var additionalElementsWidth = 0;
+                $container.find(".input-width-js:not(.hide)").each(function () {
+                    // + 1 because outerWidth gets the width rounded and else it might not fit because of 1px
+                    additionalElementsWidth += $(this).outerWidth(true) + 1;
                 });
 
                 var inputWidth = $container.width() - tokensWidth - additionalElementsWidth;
