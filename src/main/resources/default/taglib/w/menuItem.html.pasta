@@ -1,15 +1,23 @@
-<i:arg type="String" name="titleKey" default="" />
-<i:arg type="String" name="title" default="@i18n(titleKey)" />
-<i:arg type="String" name="permission" default="" />
-<i:arg type="String" name="framework" default="" />
-<i:arg type="boolean" name="adminOnly" default="false" />
-<i:arg type="String" name="url" />
+<i:arg type="String" name="titleKey" default=""/>
+<i:arg type="String" name="title" default="@i18n(titleKey)"/>
+<i:arg type="String" name="icon" default=""/>
+<i:arg type="String" name="permission" default=""/>
+<i:arg type="String" name="framework" default=""/>
+<i:arg type="boolean" name="adminOnly" default="false"/>
+<i:arg type="String" name="url"/>
 
-<i:pragma name="inline" value="true" />
-<i:pragma name="description" value="Renders menu entry within a Wondergem template" />
+<i:pragma name="inline" value="true"/>
+<i:pragma name="description" value="Renders menu entry within a Wondergem template"/>
 
 <i:if test="isFrameworkEnabled(framework)">
     <w:permission permission="@permission">
-        <li><a href="@url" class="@if (adminOnly) { admin-link }">@title</a></li>
+        <li>
+            <a href="@url" class="@if (adminOnly) { admin-link }">
+                <i:if test="isFilled(icon)">
+                    <i class="fa fa-fw @icon"></i>
+                </i:if>
+                @title
+            </a>
+        </li>
     </w:permission>
 </i:if>
