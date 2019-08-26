@@ -10,7 +10,10 @@ package sirius.web.data;
 
 /**
  * Invoked by a {@link SmartLineBasedProcessor} to handle one row.
+ *
+ * @deprecated Replaced by ImportDictionary in sirius-biz
  */
+@Deprecated
 public interface NamedRowProcessor {
     /**
      * Called the handle a row of an input file.
