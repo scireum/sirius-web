@@ -205,7 +205,7 @@
         $('.img', container).css('max-width', maxWidth - 30 + 'px');
     }
 
-    function fileUpload(url, target, params, allowedExtensions, maxParallelConnections) {
+    function fileUpload(url, target, params, allowedExtensions, maxParallelConnections, customCallback) {
         var container = target;
 
         new qq.FileUploader({
@@ -215,6 +215,11 @@
             debug: false,
             maxConnections: maxParallelConnections || 3,
             onComplete: function (cmp_id, fileName, responseJSON) {
+                if (customCallback !== undefined && customCallback !== null) {
+                    customCallback(responseJSON);
+                    return;
+                }
+
                 clearMessages();
                 if (responseJSON.error) {
                     addError(responseJSON.message);
