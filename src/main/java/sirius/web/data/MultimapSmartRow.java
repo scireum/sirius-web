@@ -21,7 +21,10 @@ import java.util.function.Function;
 
 /**
  * A {@link SmartRow} that stores its row data in a {@link ListMultimap}
+ *
+ * @deprecated Replaced by ImportDictionary in sirius-biz
  */
+@Deprecated
 class MultimapSmartRow implements SmartRow {
 
     private final List<Tuple<String, String>> columnMapping;

@@ -25,7 +25,10 @@ import java.util.Map;
  * <p>
  * Based on a list of known columns and aliases and the first row of the input, an assignment map is computed to
  * transform an incoming row into a map of column names to values.
+ *
+ * @deprecated Use a LineBasedProcessor and ImportDictionaries provided in sirius-biz
  */
+@Deprecated
 public class SmartLineBasedProcessor implements RowProcessor {
 
     private Map<String, String> columnAliases = new HashMap<>();

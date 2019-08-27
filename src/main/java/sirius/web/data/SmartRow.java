@@ -20,7 +20,10 @@ import java.util.function.Function;
 
 /**
  * A row of a dataset that supports multiple same-named columns. Values of this columns can be retrieved by
+ *
+ * @deprecated Replaced by ImportDictionary in sirius-biz
  */
+@Deprecated
 public interface SmartRow {
 
     /**
