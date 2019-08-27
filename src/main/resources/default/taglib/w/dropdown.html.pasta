@@ -1,13 +1,14 @@
 <i:arg type="String" name="titleKey" default=""/>
 <i:arg type="String" name="title" default="@i18n(titleKey)"/>
 <i:arg type="String" name="icon" default=""/>
+<i:arg type="String" name="class" default=""/>
 
 <i:pragma name="description" value="Renders an inline dropdown within a Wondergem template"/>
 <i:local name="contents" value="@renderToString('body')"/>
 
 <i:if test="isFilled(contents)">
     <span class="dropdown">
-        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+        <a href="#" class="dropdown-toggle @class" data-toggle="dropdown">
             <i:if test="isFilled(icon)">
                 <i class="fa @icon"></i>
             </i:if>
