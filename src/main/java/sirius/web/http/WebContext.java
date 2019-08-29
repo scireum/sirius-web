@@ -2001,7 +2001,13 @@ public class WebContext implements SubContext {
 
     @Override
     public String toString() {
-        return "WebContext (Committed: " + responseCommitted + "): " + request.toString();
+        String result = "WebContext (Committed: " + responseCommitted + "): ";
+
+        if (request == null) {
+            return result;
+        }
+        
+        return result + request.toString();
     }
 
     @Override
