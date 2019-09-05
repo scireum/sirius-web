@@ -45,6 +45,13 @@ public class Message {
     private boolean actionJavascript;
 
     /**
+     * Id for the message to identify the message.
+     * <p>
+     * This is helpful to check if a message already exists.
+     */
+    private String uniqueMessageId = "";
+
+    /**
      * Creates a new message with the given content, details info and message type.
      *
      * @param message the message to show to the user
@@ -224,5 +231,13 @@ public class Message {
 
     public void setActionJavascript(boolean actionJavascript) {
         this.actionJavascript = actionJavascript;
+    }
+
+    public void setUniqueMessageId(String uniqueMessageId) {
+        this.uniqueMessageId = uniqueMessageId;
+    }
+
+    public String getUniqueMessageId() {
+        return uniqueMessageId;
     }
 }

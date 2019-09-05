@@ -304,6 +304,15 @@ public class UserContext implements SubContext {
      * @param msg the message to be shown to the user
      */
     public void addMessage(Message msg) {
+        if (Strings.isFilled(msg.getUniqueMessageId()) && msgList.stream()
+                                                                 .map(Message::getUniqueMessageId)
+                                                                 .filter(Strings::isFilled)
+                                                                 .anyMatch(uniqueMessageId -> Strings.areEqual(
+                                                                          uniqueMessageId,
+                                                                          msg.getUniqueMessageId()))) {
+            return;
+        }
+
         msgList.add(msg);
     }
 
