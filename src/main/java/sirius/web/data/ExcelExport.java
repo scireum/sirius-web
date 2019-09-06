@@ -110,7 +110,7 @@ public class ExcelExport {
                                 .handle();
             }
             this.pictureType = guessedPictureType;
-            this.fileData = fileData;
+            this.fileData = fileData.clone();
             this.colWidthInPixel = colWidthInPixel;
             try {
                 determineImageSize(fileData);
@@ -156,10 +156,7 @@ public class ExcelExport {
          */
         protected float getScaleFactor() {
             float scaleFactor = (float) colWidthInPixel / widthInPixel;
-            if (scaleFactor > 1f) {
-                return 1f;
-            }
-            return scaleFactor;
+            return Math.min(scaleFactor, 1f);
         }
 
         private static int determinePictureType(String fileName) {
@@ -235,8 +232,19 @@ public class ExcelExport {
      *
      * @return a new exporter using the modern Excel format
      */
-    public static ExcelExport asXSLX() {
+    public static ExcelExport asXLSX() {
         return new ExcelExport(false, true);
+    }
+
+    /**
+     * Creates a new export which uses the modern Excel format (.xlsx).
+     *
+     * @return a new exporter using the modern Excel format
+     * @deprecated There is a typo in the method name, use {@link #asXLSX()}
+     */
+    @Deprecated
+    public static ExcelExport asXSLX() {
+        return asXLSX();
     }
 
     /**
@@ -263,8 +271,24 @@ public class ExcelExport {
      * @param createDefaultSheet true if a sheet should be automatically created.
      * @return a new exporter using the modern Excel format
      */
-    public static ExcelExport asXSLX(boolean createDefaultSheet) {
+    public static ExcelExport asXLSX(boolean createDefaultSheet) {
         return new ExcelExport(false, createDefaultSheet);
+    }
+
+    /**
+     * Creates a new export which uses the modern Excel format (.xlsx).
+     * <p>
+     * If the the export should create a excel sheet with an default name, set the parameter
+     * <tt>createDefaultSheet</tt> to true. Otherwise you must call {@link #createSheet(String)} with a name to create a
+     * named sheet before adding to the exporter.
+     *
+     * @param createDefaultSheet true if a sheet should be automatically created.
+     * @return a new exporter using the modern Excel format
+     * @deprecated There is a typo in the method name, use {@link #asXLSX(boolean)}
+     */
+    @Deprecated
+    public static ExcelExport asXSLX(boolean createDefaultSheet) {
+        return asXLSX(createDefaultSheet);
     }
 
     private void addCell(Row row, Object obj, int columnIndex, CellStyle style) {
