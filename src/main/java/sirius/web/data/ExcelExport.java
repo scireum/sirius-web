@@ -110,7 +110,7 @@ public class ExcelExport {
                                 .handle();
             }
             this.pictureType = guessedPictureType;
-            this.fileData = fileData;
+            this.fileData = fileData.clone();
             this.colWidthInPixel = colWidthInPixel;
             try {
                 determineImageSize(fileData);
@@ -156,10 +156,7 @@ public class ExcelExport {
          */
         protected float getScaleFactor() {
             float scaleFactor = (float) colWidthInPixel / widthInPixel;
-            if (scaleFactor > 1f) {
-                return 1f;
-            }
-            return scaleFactor;
+            return Math.min(scaleFactor, 1f);
         }
 
         private static int determinePictureType(String fileName) {
