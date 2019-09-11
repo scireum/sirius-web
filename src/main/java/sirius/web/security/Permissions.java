@@ -11,8 +11,10 @@ package sirius.web.security;
 import com.google.common.collect.Sets;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Explain;
+import sirius.kernel.commons.Monoflop;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
+import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.settings.Extension;
 
@@ -49,6 +51,8 @@ public class Permissions {
      * will always return true.
      */
     private static final String ENABLED = "enabled";
+
+    private static final Log LOG = Log.get("permissions");
 
     private static class Profile {
         private String name;
@@ -96,6 +100,7 @@ public class Permissions {
 
         for (Extension ext : Sirius.getSettings().getExtensions("security.profiles")) {
             profiles.add(compileProfile(ext));
+            validateProfile(ext);
         }
 
         profilesCache = profiles;
@@ -114,6 +119,24 @@ public class Permissions {
         }
 
         return profile;
+    }
+
+    private static boolean validateProfile(Extension profile) {
+        Monoflop warningOccured = Monoflop.create();
+        for (String permission : profile.getContext().keySet()) {
+            Extension otherProfile = Sirius.getSettings().getExtension("security.profiles", permission);
+            if (otherProfile == null) {
+                continue;
+            }
+            if (otherProfile.compareTo(profile) < 0) {
+                warningOccured.toggle();
+                LOG.WARN("Profile '%s' refers to a profile wich is applied ealier than itself ('%s'). "
+                         + "Therefore the profiles will not be resolved completely. Fix this by adding priorities.",
+                         profile.getId(),
+                         otherProfile.getId());
+            }
+        }
+        return warningOccured.isToggled();
     }
 
     /**

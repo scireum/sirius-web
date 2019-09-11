@@ -9,6 +9,7 @@
 package sirius.web.security
 
 import sirius.kernel.BaseSpecification
+import sirius.kernel.Sirius
 
 import java.util.function.Predicate
 
@@ -16,7 +17,7 @@ class PermissionsSpec extends BaseSpecification {
 
     def "applyProfiles keeps original roles"() {
         when:
-        def roles = new HashSet<String>(["A", "B", "C" ])
+        def roles = new HashSet<String>(["A", "B", "C"])
         and:
         Permissions.applyProfiles(roles)
         then:
@@ -36,6 +37,30 @@ class PermissionsSpec extends BaseSpecification {
         roles.contains("test-A")
         and:
         !roles.contains("test-B")
+    }
+
+    def "profile cascading is invalid when cascading to lower priority"() {
+        when:
+        boolean warning = Permissions.validateProfile(Sirius.getSettings().getExtension("security.profiles",
+                                                                                        "test-cascade-to-target-with-lower-priority"))
+        then:
+        warning == true
+    }
+
+    def "profile cascading is invalid when cascading to equal priority"() {
+        when:
+        boolean warning = Permissions.validateProfile(Sirius.getSettings().getExtension("security.profiles",
+                                                                                        "test-cascade-to-target-with-equal-priority"))
+        then:
+        warning == true
+    }
+
+    def "profile cascading is valid when cascading to higher priority"() {
+        when:
+        boolean warning = Permissions.validateProfile(Sirius.getSettings().getExtension("security.profiles",
+                                                                                        "test-cascade-to-target-with-higher-priority"))
+        then:
+        warning == false
     }
 
     def "test hasPermission"() {
