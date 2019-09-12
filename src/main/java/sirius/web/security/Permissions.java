@@ -55,6 +55,8 @@ public class Permissions {
     private static final Log LOG = Log.get("permissions");
 
     private static class Profile {
+        public static final String SECURITY_PROFILES = "security.profiles";
+
         private final String name;
         private final Set<String> permissionsToAdd;
         private final Set<String> permissionsToRemove;
@@ -73,10 +75,10 @@ public class Permissions {
         }
 
         protected boolean validate() {
-            Extension thisProfile = Sirius.getSettings().getExtension("security.profiles", name);
+            Extension thisProfile = Sirius.getSettings().getExtension(SECURITY_PROFILES, name);
             Monoflop warningOccured = Monoflop.create();
             for (String permission : thisProfile.getContext().keySet()) {
-                Extension otherProfile = Sirius.getSettings().getExtension("security.profiles", permission);
+                Extension otherProfile = Sirius.getSettings().getExtension(SECURITY_PROFILES, permission);
                 if (otherProfile == null) {
                     continue;
                 }
@@ -127,7 +129,7 @@ public class Permissions {
     private static void loadProfiles() {
         List<Profile> profiles = new ArrayList<>();
 
-        for (Extension ext : Sirius.getSettings().getExtensions("security.profiles")) {
+        for (Extension ext : Sirius.getSettings().getExtensions(Profile.SECURITY_PROFILES)) {
             Profile profile = Profile.compile(ext);
             profiles.add(profile);
             profile.validate();
