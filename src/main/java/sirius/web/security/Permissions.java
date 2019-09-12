@@ -55,20 +55,14 @@ public class Permissions {
     private static final Log LOG = Log.get("permissions");
 
     private static class Profile {
-        private String name;
-        private Set<String> permissionsToAdd = new HashSet<>();
-        private Set<String> permissionsToRemove = new HashSet<>();
+        private final String name;
+        private final Set<String> permissionsToAdd;
+        private final Set<String> permissionsToRemove;
 
-        Profile(String name) {
+        Profile(String name, Set<String> permissionsToAdd, Set<String> permissionsToRemove) {
             this.name = name;
-        }
-
-        protected void addPermission(String permission) {
-            permissionsToAdd.add(permission);
-        }
-
-        protected void removePermission(String permission) {
-            permissionsToRemove.add(permission);
+            this.permissionsToAdd = permissionsToAdd;
+            this.permissionsToRemove = permissionsToRemove;
         }
 
         protected void apply(Set<String> permissions) {
@@ -76,6 +70,22 @@ public class Permissions {
                 permissions.addAll(permissionsToAdd);
                 permissions.removeAll(permissionsToRemove);
             }
+        }
+
+        protected static Profile compile(Extension extension) {
+            Set<String> permissionsToAdd = new HashSet<>();
+            Set<String> permissionsToRemove = new HashSet<>();
+
+            for (Map.Entry<String, Object> permission : extension.getContext().entrySet()) {
+                if (Boolean.TRUE.equals(permission.getValue())) {
+                    permissionsToAdd.add(permission.getKey());
+                }
+                if (Boolean.FALSE.equals(permission.getValue())) {
+                    permissionsToRemove.add(permission.getKey());
+                }
+            }
+
+            return new Profile(extension.getId(), permissionsToAdd, permissionsToRemove);
         }
     }
 
@@ -99,26 +109,11 @@ public class Permissions {
         List<Profile> profiles = new ArrayList<>();
 
         for (Extension ext : Sirius.getSettings().getExtensions("security.profiles")) {
-            profiles.add(compileProfile(ext));
+            profiles.add(Profile.compile(ext));
             validateProfile(ext);
         }
 
         profilesCache = profiles;
-    }
-
-    private static Profile compileProfile(Extension ext) {
-        Profile profile = new Profile(ext.getId());
-
-        for (Map.Entry<String, Object> permission : ext.getContext().entrySet()) {
-            if (Boolean.TRUE.equals(permission.getValue())) {
-                profile.addPermission(permission.getKey());
-            }
-            if (Boolean.FALSE.equals(permission.getValue())) {
-                profile.removePermission(permission.getKey());
-            }
-        }
-
-        return profile;
     }
 
     private static boolean validateProfile(Extension profile) {
