@@ -11,7 +11,6 @@ package sirius.web.security;
 import com.google.common.collect.Sets;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Explain;
-import sirius.kernel.commons.Monoflop;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.health.Log;
@@ -74,23 +73,21 @@ public class Permissions {
             }
         }
 
-        protected boolean validate() {
+        protected void validate() throws Exception {
             Extension thisProfile = Sirius.getSettings().getExtension(SECURITY_PROFILES, name);
-            Monoflop warningOccured = Monoflop.create();
             for (String permission : thisProfile.getContext().keySet()) {
                 Extension otherProfile = Sirius.getSettings().getExtension(SECURITY_PROFILES, permission);
                 if (otherProfile == null || otherProfile.isDefault()) {
                     continue;
                 }
                 if (otherProfile.compareTo(thisProfile) <= 0) {
-                    warningOccured.toggle();
-                    LOG.WARN("Profile '%s' refers to a profile wich is applied ealier than itself ('%s'). "
-                             + "Therefore the profiles will not be resolved completely. Fix this by adding priorities.",
-                             thisProfile.getId(),
-                             otherProfile.getId());
+                    throw new Exception(Strings.apply(
+                            "Profile '%s' refers to a profile wich is applied ealier than itself ('%s'). "
+                            + "Therefore the profiles will not be resolved completely. Fix this by adding priorities.",
+                            thisProfile.getId(),
+                            otherProfile.getId()));
                 }
             }
-            return warningOccured.isToggled();
         }
 
         protected static Profile compile(Extension extension) {
@@ -132,7 +129,11 @@ public class Permissions {
         for (Extension ext : Sirius.getSettings().getExtensions(Profile.SECURITY_PROFILES)) {
             Profile profile = Profile.compile(ext);
             profiles.add(profile);
-            profile.validate();
+            try {
+                profile.validate();
+            } catch (Exception e) {
+                LOG.WARN(e.getMessage());
+            }
         }
 
         profilesCache = profiles;

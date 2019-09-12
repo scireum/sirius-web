@@ -41,35 +41,41 @@ class PermissionsSpec extends BaseSpecification {
 
     def "profile cascading is invalid when cascading to lower priority"() {
         when:
-        boolean warning = Permissions
+        Permissions
                 .Profile
                 .compile(Sirius.getSettings().getExtension("security.profiles",
                                                            "test-cascade-to-target-with-lower-priority"))
                 .validate()
         then:
-        warning == true
+        def e = thrown(Exception)
+        e.getMessage() == "Profile 'test-cascade-to-target-with-lower-priority' refers to a profile wich is applied " +
+                "ealier than itself ('cascade-target'). Therefore the profiles will not be resolved completely. Fix " +
+                "this by adding priorities."
     }
 
     def "profile cascading is invalid when cascading to equal priority"() {
         when:
-        boolean warning = Permissions
+        Permissions
                 .Profile
                 .compile(Sirius.getSettings().getExtension("security.profiles",
                                                            "test-cascade-to-target-with-equal-priority"))
                 .validate()
         then:
-        warning == true
+        def e = thrown(Exception)
+        e.getMessage() == "Profile 'test-cascade-to-target-with-equal-priority' refers to a profile wich is applied " +
+                "ealier than itself ('cascade-target'). Therefore the profiles will not be resolved completely. Fix " +
+                "this by adding priorities."
     }
 
     def "profile cascading is valid when cascading to higher priority"() {
         when:
-        boolean warning = Permissions
+        Permissions
                 .Profile
                 .compile(Sirius.getSettings().getExtension("security.profiles",
                                                            "test-cascade-to-target-with-higher-priority"))
                 .validate()
         then:
-        warning == false
+        noExceptionThrown()
     }
 
     def "test hasPermission"() {
