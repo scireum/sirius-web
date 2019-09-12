@@ -53,6 +53,9 @@ public class Permissions {
 
     private static final Log LOG = Log.get("permissions");
 
+    /**
+     * Represents a profile defined in <tt>security.profiles</tt>.
+     */
     private static class Profile {
         public static final String SECURITY_PROFILES = "security.profiles";
 
@@ -60,12 +63,24 @@ public class Permissions {
         private final Set<String> permissionsToAdd;
         private final Set<String> permissionsToRemove;
 
+        /**
+         * Create a Profile with the given name, permissions this profiles adds and permissions this profile removes.
+         *
+         * @param name                the name of the profile
+         * @param permissionsToAdd    permissions this profile adds
+         * @param permissionsToRemove permission this profiles removes
+         */
         Profile(String name, Set<String> permissionsToAdd, Set<String> permissionsToRemove) {
             this.name = name;
             this.permissionsToAdd = permissionsToAdd;
             this.permissionsToRemove = permissionsToRemove;
         }
 
+        /**
+         * Applies the profile to the given set of permissions.
+         *
+         * @param permissions the permissions the profile should be applied to
+         */
         protected void apply(Set<String> permissions) {
             if (hasPermission(name, permissions::contains)) {
                 permissions.addAll(permissionsToAdd);
@@ -73,6 +88,13 @@ public class Permissions {
             }
         }
 
+        /**
+         * Validates this profile and throws exception if problems exist.
+         * <p>
+         * An exception will be thrown if the profile refers to another profile applied earlier than itself.
+         *
+         * @throws Exception if this profile is not valid
+         */
         protected void validate() throws Exception {
             Extension thisProfile = Sirius.getSettings().getExtension(SECURITY_PROFILES, name);
             for (String permission : thisProfile.getContext().keySet()) {
@@ -90,6 +112,12 @@ public class Permissions {
             }
         }
 
+        /**
+         * Compile the given extension into a {@link Profile}.
+         *
+         * @param extension the extension to compile
+         * @return the compiled {@link Profile}
+         */
         protected static Profile compile(Extension extension) {
             Set<String> permissionsToAdd = new HashSet<>();
             Set<String> permissionsToRemove = new HashSet<>();
