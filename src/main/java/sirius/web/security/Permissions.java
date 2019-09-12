@@ -82,7 +82,7 @@ public class Permissions {
                 }
                 if (otherProfile.compareTo(thisProfile) <= 0) {
                     throw new Exception(Strings.apply(
-                            "Profile '%s' refers to a profile wich is applied ealier than itself ('%s'). "
+                            "Profile '%s' refers to a profile which is applied earlier than itself ('%s'). "
                             + "Therefore the profiles will not be resolved completely. Fix this by adding priorities.",
                             thisProfile.getId(),
                             otherProfile.getId()));
