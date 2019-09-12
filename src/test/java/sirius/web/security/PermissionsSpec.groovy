@@ -47,7 +47,7 @@ class PermissionsSpec extends BaseSpecification {
                                                            "test-cascade-to-target-with-lower-priority"))
                 .validate()
         then:
-        def e = thrown(Exception)
+        def e = thrown(IllegalStateException)
         e.getMessage() == "Profile 'test-cascade-to-target-with-lower-priority' refers to a profile which is applied " +
                 "earlier than itself ('cascade-target'). Therefore the profiles will not be resolved completely. Fix " +
                 "this by adding priorities."
@@ -61,7 +61,7 @@ class PermissionsSpec extends BaseSpecification {
                                                            "test-cascade-to-target-with-equal-priority"))
                 .validate()
         then:
-        def e = thrown(Exception)
+        def e = thrown(IllegalStateException)
         e.getMessage() == "Profile 'test-cascade-to-target-with-equal-priority' refers to a profile which is applied " +
                 "earlier than itself ('cascade-target'). Therefore the profiles will not be resolved completely. Fix " +
                 "this by adding priorities."

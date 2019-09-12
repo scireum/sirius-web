@@ -92,10 +92,8 @@ public class Permissions {
          * Validates this profile and throws exception if problems exist.
          * <p>
          * An exception will be thrown if the profile refers to another profile applied earlier than itself.
-         *
-         * @throws Exception if this profile is not valid
          */
-        protected void validate() throws Exception {
+        protected void validate() {
             Extension thisProfile = Sirius.getSettings().getExtension(SECURITY_PROFILES, name);
             for (String permission : thisProfile.getContext().keySet()) {
                 Extension otherProfile = Sirius.getSettings().getExtension(SECURITY_PROFILES, permission);
@@ -103,7 +101,7 @@ public class Permissions {
                     continue;
                 }
                 if (otherProfile.compareTo(thisProfile) <= 0) {
-                    throw new Exception(Strings.apply(
+                    throw new IllegalStateException(Strings.apply(
                             "Profile '%s' refers to a profile which is applied earlier than itself ('%s'). "
                             + "Therefore the profiles will not be resolved completely. Fix this by adding priorities.",
                             thisProfile.getId(),
