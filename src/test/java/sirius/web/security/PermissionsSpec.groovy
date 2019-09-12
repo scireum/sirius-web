@@ -41,24 +41,33 @@ class PermissionsSpec extends BaseSpecification {
 
     def "profile cascading is invalid when cascading to lower priority"() {
         when:
-        boolean warning = Permissions.validateProfile(Sirius.getSettings().getExtension("security.profiles",
-                                                                                        "test-cascade-to-target-with-lower-priority"))
+        boolean warning = Permissions
+                .Profile
+                .compile(Sirius.getSettings().getExtension("security.profiles",
+                                                           "test-cascade-to-target-with-lower-priority"))
+                .validate()
         then:
         warning == true
     }
 
     def "profile cascading is invalid when cascading to equal priority"() {
         when:
-        boolean warning = Permissions.validateProfile(Sirius.getSettings().getExtension("security.profiles",
-                                                                                        "test-cascade-to-target-with-equal-priority"))
+        boolean warning = Permissions
+                .Profile
+                .compile(Sirius.getSettings().getExtension("security.profiles",
+                                                           "test-cascade-to-target-with-equal-priority"))
+                .validate()
         then:
         warning == true
     }
 
     def "profile cascading is valid when cascading to higher priority"() {
         when:
-        boolean warning = Permissions.validateProfile(Sirius.getSettings().getExtension("security.profiles",
-                                                                                        "test-cascade-to-target-with-higher-priority"))
+        boolean warning = Permissions
+                .Profile
+                .compile(Sirius.getSettings().getExtension("security.profiles",
+                                                           "test-cascade-to-target-with-higher-priority"))
+                .validate()
         then:
         warning == false
     }

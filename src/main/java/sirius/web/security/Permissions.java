@@ -72,6 +72,25 @@ public class Permissions {
             }
         }
 
+        protected boolean validate() {
+            Extension thisProfile = Sirius.getSettings().getExtension("security.profiles", name);
+            Monoflop warningOccured = Monoflop.create();
+            for (String permission : thisProfile.getContext().keySet()) {
+                Extension otherProfile = Sirius.getSettings().getExtension("security.profiles", permission);
+                if (otherProfile == null) {
+                    continue;
+                }
+                if (otherProfile.compareTo(thisProfile) < 0) {
+                    warningOccured.toggle();
+                    LOG.WARN("Profile '%s' refers to a profile wich is applied ealier than itself ('%s'). "
+                             + "Therefore the profiles will not be resolved completely. Fix this by adding priorities.",
+                             thisProfile.getId(),
+                             otherProfile.getId());
+                }
+            }
+            return warningOccured.isToggled();
+        }
+
         protected static Profile compile(Extension extension) {
             Set<String> permissionsToAdd = new HashSet<>();
             Set<String> permissionsToRemove = new HashSet<>();
@@ -109,29 +128,12 @@ public class Permissions {
         List<Profile> profiles = new ArrayList<>();
 
         for (Extension ext : Sirius.getSettings().getExtensions("security.profiles")) {
-            profiles.add(Profile.compile(ext));
-            validateProfile(ext);
+            Profile profile = Profile.compile(ext);
+            profiles.add(profile);
+            profile.validate();
         }
 
         profilesCache = profiles;
-    }
-
-    private static boolean validateProfile(Extension profile) {
-        Monoflop warningOccured = Monoflop.create();
-        for (String permission : profile.getContext().keySet()) {
-            Extension otherProfile = Sirius.getSettings().getExtension("security.profiles", permission);
-            if (otherProfile == null) {
-                continue;
-            }
-            if (otherProfile.compareTo(profile) < 0) {
-                warningOccured.toggle();
-                LOG.WARN("Profile '%s' refers to a profile wich is applied ealier than itself ('%s'). "
-                         + "Therefore the profiles will not be resolved completely. Fix this by adding priorities.",
-                         profile.getId(),
-                         otherProfile.getId());
-            }
-        }
-        return warningOccured.isToggled();
     }
 
     /**
