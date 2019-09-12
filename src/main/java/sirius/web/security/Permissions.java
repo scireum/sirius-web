@@ -79,10 +79,10 @@ public class Permissions {
             Monoflop warningOccured = Monoflop.create();
             for (String permission : thisProfile.getContext().keySet()) {
                 Extension otherProfile = Sirius.getSettings().getExtension(SECURITY_PROFILES, permission);
-                if (otherProfile == null) {
+                if (otherProfile == null || otherProfile.isDefault()) {
                     continue;
                 }
-                if (otherProfile.compareTo(thisProfile) < 0) {
+                if (otherProfile.compareTo(thisProfile) <= 0) {
                     warningOccured.toggle();
                     LOG.WARN("Profile '%s' refers to a profile wich is applied ealier than itself ('%s'). "
                              + "Therefore the profiles will not be resolved completely. Fix this by adding priorities.",
