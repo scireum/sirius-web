@@ -67,10 +67,7 @@ class Profile {
         Extension thisProfile = Sirius.getSettings().getExtension(SECURITY_PROFILES, name);
         for (String permission : thisProfile.getContext().keySet()) {
             Extension otherProfile = Sirius.getSettings().getExtension(SECURITY_PROFILES, permission);
-            if (otherProfile == null || otherProfile.isDefault()) {
-                continue;
-            }
-            if (otherProfile.compareTo(thisProfile) <= 0) {
+            if (otherProfile != null && !otherProfile.isDefault() && otherProfile.compareTo(thisProfile) <= 0) {
                 throw new IllegalStateException(Strings.apply(
                         "Profile '%s' refers to a profile which is applied earlier than itself ('%s'). "
                         + "Therefore the profiles will not be resolved completely. Fix this by adding priorities.",
