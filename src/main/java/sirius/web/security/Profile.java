@@ -61,7 +61,7 @@ class Profile {
     /**
      * Validates this profile and throws exception if problems exist.
      * <p>
-     * @throws HandledException if the profile refers to another profile applied earlier than itself.
+     * @throws IllegalStateException if the profile refers to another profile applied earlier than itself.
      */
     public void validate() {
         Extension thisProfile = Sirius.getSettings().getExtension(SECURITY_PROFILES, name);
