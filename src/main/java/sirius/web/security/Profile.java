@@ -19,7 +19,11 @@ import java.util.Set;
 /**
  * Represents a profile defined in <tt>security.profiles</tt>.
  */
-public class Profile {
+class Profile {
+
+    /**
+     * The key of the profiles-configuration in the '.conf'-files.
+     */
     public static final String SECURITY_PROFILES = "security.profiles";
 
     private final String name;
@@ -27,16 +31,19 @@ public class Profile {
     private final Set<String> permissionsToRemove;
 
     /**
-     * Create a Profile with the given name, permissions this profiles adds and permissions this profile removes.
+     * Creates a Profile with the given name, a set of permissions this profile adds and a set of permissions this
+     * profile removes.
+     * <p>
+     * This method is private, because profiles should be created via the {@link #compile(Extension)}-method.
      *
      * @param name                the name of the profile
      * @param permissionsToAdd    permissions this profile adds
      * @param permissionsToRemove permission this profiles removes
      */
-    public Profile(String name, Set<String> permissionsToAdd, Set<String> permissionsToRemove) {
+    private Profile(String name, Set<String> permissionsToAdd, Set<String> permissionsToRemove) {
         this.name = name;
-        this.permissionsToAdd = new HashSet<>(permissionsToAdd);
-        this.permissionsToRemove = new HashSet<>(permissionsToRemove);
+        this.permissionsToAdd = permissionsToAdd;
+        this.permissionsToRemove = permissionsToRemove;
     }
 
     /**
@@ -74,7 +81,7 @@ public class Profile {
     }
 
     /**
-     * Compile the given extension into a {@link Profile}.
+     * Compiles the given extension into a {@link Profile}.
      *
      * @param extension the extension to compile
      * @return the compiled {@link Profile}
