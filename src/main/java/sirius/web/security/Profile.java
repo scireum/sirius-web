@@ -33,7 +33,7 @@ public class Profile {
      * @param permissionsToAdd    permissions this profile adds
      * @param permissionsToRemove permission this profiles removes
      */
-    Profile(String name, Set<String> permissionsToAdd, Set<String> permissionsToRemove) {
+    public Profile(String name, Set<String> permissionsToAdd, Set<String> permissionsToRemove) {
         this.name = name;
         this.permissionsToAdd = new HashSet<>(permissionsToAdd);
         this.permissionsToRemove = new HashSet<>(permissionsToRemove);
@@ -44,7 +44,7 @@ public class Profile {
      *
      * @param permissions the permissions the profile should be applied to
      */
-    protected void apply(Set<String> permissions) {
+    public void apply(Set<String> permissions) {
         if (Permissions.hasPermission(name, permissions::contains)) {
             permissions.addAll(permissionsToAdd);
             permissions.removeAll(permissionsToRemove);
@@ -56,7 +56,7 @@ public class Profile {
      * <p>
      * An exception will be thrown if the profile refers to another profile applied earlier than itself.
      */
-    protected void validate() {
+    public void validate() {
         Extension thisProfile = Sirius.getSettings().getExtension(SECURITY_PROFILES, name);
         for (String permission : thisProfile.getContext().keySet()) {
             Extension otherProfile = Sirius.getSettings().getExtension(SECURITY_PROFILES, permission);
@@ -79,7 +79,7 @@ public class Profile {
      * @param extension the extension to compile
      * @return the compiled {@link Profile}
      */
-    protected static Profile compile(Extension extension) {
+    public static Profile compile(Extension extension) {
         Set<String> permissionsToAdd = new HashSet<>();
         Set<String> permissionsToRemove = new HashSet<>();
 
