@@ -62,13 +62,13 @@ public class Permissions {
 
     private static List<Profile> getProfiles() {
         if (profilesCache == null) {
-            loadProfiles();
+            profilesCache = loadProfiles();
         }
 
         return profilesCache;
     }
 
-    private static void loadProfiles() {
+    private static List<Profile> loadProfiles() {
         List<Profile> profiles = new ArrayList<>();
 
         for (Extension ext : Sirius.getSettings().getExtensions(Profile.SECURITY_PROFILES)) {
@@ -81,7 +81,7 @@ public class Permissions {
             }
         }
 
-        profilesCache = profiles;
+        return profiles;
     }
 
     /**
