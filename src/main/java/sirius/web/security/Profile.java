@@ -70,7 +70,8 @@ class Profile {
             if (otherProfile != null && !otherProfile.isDefault() && otherProfile.compareTo(thisProfile) <= 0) {
                 throw new IllegalStateException(Strings.apply(
                         "Profile '%s' refers to a profile which is applied earlier than itself ('%s'). "
-                        + "Therefore the profiles will not be resolved completely. Fix this by adding priorities.",
+                        + "Therefore the profiles will not be resolved completely. Fix this by adding or changing "
+                        + "priorities.",
                         thisProfile.getId(),
                         otherProfile.getId()));
             }
