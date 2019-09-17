@@ -12,7 +12,7 @@ import sirius.kernel.BaseSpecification
 import sirius.kernel.Sirius
 import sirius.kernel.commons.Strings
 
-class ProfileTest extends BaseSpecification {
+class ProfileSpec extends BaseSpecification {
 
     def "profile cascading is invalid when cascading to lower priority"() {
         when:
