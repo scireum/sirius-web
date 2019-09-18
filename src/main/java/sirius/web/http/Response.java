@@ -379,6 +379,15 @@ public class Response {
     }
 
     /**
+     * Provides access to the web context for which this response was created.
+     *
+     * @return the HTTP request for which this response was created
+     */
+    public WebContext getWebContext() {
+        return wc;
+    }
+
+    /**
      * Disables keep-alive protocol (even if it would have been otherwise supported).
      *
      * @return the response itself for fluent method calls
