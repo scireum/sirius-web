@@ -16,7 +16,7 @@ class PermissionsSpec extends BaseSpecification {
 
     def "applyProfiles keeps original roles"() {
         when:
-        def roles = new HashSet<String>(["A", "B", "C" ])
+        def roles = new HashSet<String>(["A", "B", "C"])
         and:
         Permissions.applyProfiles(roles)
         then:

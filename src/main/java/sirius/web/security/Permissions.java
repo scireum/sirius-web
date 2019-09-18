@@ -13,6 +13,7 @@ import sirius.kernel.Sirius;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
+import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.settings.Extension;
 
@@ -23,7 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -50,30 +50,7 @@ public class Permissions {
      */
     private static final String ENABLED = "enabled";
 
-    private static class Profile {
-        private String name;
-        private Set<String> permissionsToAdd = new HashSet<>();
-        private Set<String> permissionsToRemove = new HashSet<>();
-
-        Profile(String name) {
-            this.name = name;
-        }
-
-        protected void addPermission(String permission) {
-            permissionsToAdd.add(permission);
-        }
-
-        protected void removePermission(String permission) {
-            permissionsToRemove.add(permission);
-        }
-
-        protected void apply(Set<String> permissions) {
-            if (hasPermission(name, permissions::contains)) {
-                permissions.addAll(permissionsToAdd);
-                permissions.removeAll(permissionsToRemove);
-            }
-        }
-    }
+    private static final Log LOG = Log.get("permissions");
 
     protected static List<Profile> profilesCache;
 
@@ -85,35 +62,26 @@ public class Permissions {
 
     private static List<Profile> getProfiles() {
         if (profilesCache == null) {
-            loadProfiles();
+            profilesCache = loadProfiles();
         }
 
         return profilesCache;
     }
 
-    private static void loadProfiles() {
+    private static List<Profile> loadProfiles() {
         List<Profile> profiles = new ArrayList<>();
 
-        for (Extension ext : Sirius.getSettings().getExtensions("security.profiles")) {
-            profiles.add(compileProfile(ext));
-        }
-
-        profilesCache = profiles;
-    }
-
-    private static Profile compileProfile(Extension ext) {
-        Profile profile = new Profile(ext.getId());
-
-        for (Map.Entry<String, Object> permission : ext.getContext().entrySet()) {
-            if (Boolean.TRUE.equals(permission.getValue())) {
-                profile.addPermission(permission.getKey());
-            }
-            if (Boolean.FALSE.equals(permission.getValue())) {
-                profile.removePermission(permission.getKey());
+        for (Extension ext : Sirius.getSettings().getExtensions(Profile.SECURITY_PROFILES)) {
+            Profile profile = Profile.compile(ext);
+            profiles.add(profile);
+            try {
+                profile.validate();
+            } catch (Exception e) {
+                LOG.WARN(e.getMessage());
             }
         }
 
-        return profile;
+        return profiles;
     }
 
     /**
