@@ -10,14 +10,18 @@ package sirius.tagliatelle.emitter;
 
 import parsii.tokenizer.Position;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.health.Exceptions;
 import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.Template;
 import sirius.tagliatelle.TemplateArgument;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.expression.ExpressionVisitor;
+import sirius.tagliatelle.rendering.GlobalRenderContext;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
+import javax.annotation.Nonnull;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -109,9 +113,21 @@ public class InvokeTemplateEmitter extends Emitter {
                 index++;
             }
 
+            addTracingContents(context, "start rendering template " + templateName);
             template.renderWithContext(subContext);
+            addTracingContents(context, "finish rendering template " + templateName);
         } finally {
             subContext.release();
+        }
+    }
+
+    private void addTracingContents(@Nonnull LocalRenderContext context, String message) {
+        if (context.getGlobalContext().canEmitDebug(GlobalRenderContext.DebugLevel.DEBUG)) {
+            try {
+                context.outputDebug(Strings.apply("SIRIUS:%s - %s", context.getGlobalContext().getSiriusDebugLevel(), message));
+            } catch (IOException e) {
+                Exceptions.ignore(e);
+            }
         }
     }
 
