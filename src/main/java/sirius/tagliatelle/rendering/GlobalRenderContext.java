@@ -36,6 +36,21 @@ public class GlobalRenderContext {
     protected Function<String, String> escaper = GlobalRenderContext::escapeRAW;
 
     /**
+     * Cookie name to enable debugging of rendered contents
+     */
+    public static final String SIRIUS_DEBUG_COOKIE = "SIRIUS.WEB.DEBUG.LEVEL";
+
+    /**
+     * Debug levels used to render contents
+     */
+    public enum DebugLevel {
+        OFF, DEBUG, TRACE
+    }
+
+    // Stores the current debug level
+    protected DebugLevel debugLevel = DebugLevel.OFF;
+
+    /**
      * Creates a new render context.
      * <p>
      * Use {@link Tagliatelle#createRenderContext()} to obtain an instance.
@@ -233,5 +248,35 @@ public class GlobalRenderContext {
         }
 
         extraBlocks.put(name, contents);
+    }
+
+    /**
+     * Returns the current debug level for rendered contents.
+     */
+    public DebugLevel getSiriusDebugLevel() {
+        return this.debugLevel;
+    }
+
+    /**
+     * Sets the debug level for rendered contents
+     *
+     * @param debugLevel equivalent String to be resolved as a valid {@link DebugLevel}
+     */
+    public void setSiriusDebugLevel(@Nonnull String debugLevel) {
+        try {
+            this.debugLevel = DebugLevel.valueOf(debugLevel.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            this.debugLevel = DebugLevel.OFF;
+        }
+    }
+
+    /**
+     * Checks if the provided debug level should be emitted based on the current debug level
+     *
+     * @param levelToCompare log level for the message which wants to be emitted
+     * @return true when desired log level higher or equal to current log level
+     */
+    public boolean canEmitDebug(@Nonnull DebugLevel levelToCompare) {
+        return debugLevel.ordinal() >= levelToCompare.ordinal();
     }
 }

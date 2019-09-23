@@ -1157,6 +1157,7 @@ public class Response {
         try {
             Object[] effectiveParams = fixParams(params);
             GlobalRenderContext renderContext = engine.createRenderContext();
+            renderContext.setSiriusDebugLevel(fetchDebugLevel());
             template.render(renderContext, effectiveParams);
             sendTemplateContent(status, template.getEffectiveFileName(), renderContext.toString());
         } catch (Exception e) {
@@ -1368,5 +1369,9 @@ public class Response {
     @Override
     public String toString() {
         return "Response for: " + wc.toString();
+    }
+
+    private String fetchDebugLevel() {
+        return wc.getCookie(GlobalRenderContext.SIRIUS_DEBUG_COOKIE) != null ? wc.getCookie(GlobalRenderContext.SIRIUS_DEBUG_COOKIE).value() : "OFF";
     }
 }
