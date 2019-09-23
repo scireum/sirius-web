@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Represents the global context which is created to render a template.
@@ -49,6 +51,12 @@ public class GlobalRenderContext {
 
     // Stores the current debug level
     protected DebugLevel debugLevel = DebugLevel.OFF;
+
+    // Number of open <script> tags in the current buffer
+    protected int openScripts = 0;
+
+    // Number of open <style> tags in the current buffer
+    protected int openStyles = 0;
 
     /**
      * Creates a new render context.
@@ -103,6 +111,30 @@ public class GlobalRenderContext {
     protected void outputRaw(String string) {
         if (string != null) {
             buffer.append(string);
+
+            // do not waste time if not debugging
+            if (debugLevel != DebugLevel.OFF) {
+                Pattern pattern = Pattern.compile("<script.*?>");
+                Matcher matcher = pattern.matcher(string);
+                while (matcher.find()) {
+                    openScripts++;
+                }
+                pattern = Pattern.compile("</script>");
+                matcher = pattern.matcher(string);
+                while (matcher.find()) {
+                    openScripts--;
+                }
+                pattern = Pattern.compile("<style.*?>");
+                matcher = pattern.matcher(string);
+                while (matcher.find()) {
+                    openStyles++;
+                }
+                pattern = Pattern.compile("</style>");
+                matcher = pattern.matcher(string);
+                while (matcher.find()) {
+                    openStyles--;
+                }
+            }
         }
     }
 
@@ -116,7 +148,7 @@ public class GlobalRenderContext {
      */
     protected void outputEscaped(String string) {
         if (string != null) {
-            buffer.append(escaper.apply(string));
+            outputRaw(escaper.apply(string));
         }
     }
 
@@ -278,5 +310,20 @@ public class GlobalRenderContext {
      */
     public boolean canEmitDebug(@Nonnull DebugLevel levelToCompare) {
         return debugLevel.ordinal() >= levelToCompare.ordinal();
+    }
+
+    /**
+     * Prints comments properly escaping contents according to the current output being printed
+     *
+     * @param string message to output as comments
+     */
+    public void outputDebug(String string) {
+        if (string != null) {
+            if (openStyles > 0 || openScripts > 0) {
+                buffer.append("\n/* " + string + " */\n");
+            } else {
+                buffer.append("\n<!-- " + string + " -->\n");
+            }
+        }
     }
 }

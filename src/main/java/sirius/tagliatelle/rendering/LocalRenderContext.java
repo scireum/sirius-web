@@ -137,6 +137,19 @@ public class LocalRenderContext {
     }
 
     /**
+     * Adds commented output to the result buffer.
+     *
+     * @param content the string to output
+     * @throws IOException in case of an IO error
+     * @see GlobalRenderContext#outputDebug(String)
+     */
+    @SuppressWarnings("squid:RedundantThrowsDeclarationCheck")
+    @Explain("Sublclasses might throw an IOException here.")
+    public void outputDebug(String content) throws IOException {
+        globalContext.outputDebug(content);
+    }
+
+    /**
      * Assigns the given value to the given local variable.
      *
      * @param index    the index of the local to assign
