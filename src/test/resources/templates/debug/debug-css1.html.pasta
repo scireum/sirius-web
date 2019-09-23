@@ -1,0 +1,7 @@
+<style>
+    h1 {
+        color: red;
+        background-color: black;
+    }
+    <i:invoke template="/templates/debug/debug-css2.html.pasta" />
+</style>

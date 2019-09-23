@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <i:invoke template="/templates/debug/debug-css1.html.pasta" />
+    <i:invoke template="/templates/debug/debug-script1.html.pasta" />
+</head>
+</html>

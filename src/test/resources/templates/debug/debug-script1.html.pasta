@@ -1,0 +1,6 @@
+<script type="text/javascript">
+    function helloWorld() {
+        return "hello world"
+    }
+    <i:invoke template="/templates/debug/debug-script2.html.pasta" />
+</script>
