@@ -9,11 +9,15 @@
 package sirius.tagliatelle.emitter;
 
 import parsii.tokenizer.Position;
+import sirius.kernel.commons.Strings;
+import sirius.kernel.health.Exceptions;
 import sirius.tagliatelle.expression.ExpressionVisitor;
+import sirius.tagliatelle.rendering.GlobalRenderContext;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 import sirius.tagliatelle.rendering.RenderException;
 
 import javax.annotation.Nonnull;
+import java.io.IOException;
 import java.util.function.Function;
 
 /**
@@ -101,4 +105,21 @@ public abstract class Emitter {
      *                improved error messages).
      */
     public abstract void visitExpressions(@Nonnull Function<Position, ExpressionVisitor> visitor);
+
+    /**
+     * Emits escaped comments to the rendering context
+     *
+     * @param context the render context which provides access to the local and global environment and also the target
+     *                for the generated text
+     * @param message text to output
+     */
+    public void emitDebugMessage(@Nonnull LocalRenderContext context, String message) {
+        if (context.getGlobalContext().canEmitDebug(GlobalRenderContext.DebugLevel.DEBUG)) {
+            try {
+                context.outputDebug(Strings.apply("SIRIUS:%s - %s", context.getGlobalContext().getSiriusDebugLevel(), message));
+            } catch (IOException e) {
+                Exceptions.ignore(e);
+            }
+        }
+    }
 }
