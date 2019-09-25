@@ -111,12 +111,14 @@ public abstract class Emitter {
      *
      * @param context the render context which provides access to the local and global environment and also the target
      *                for the generated text
+     * @param level {@link GlobalRenderContext.DebugLevel} for the message to print which will be validated against the
+     *              current desired level set by the {@link GlobalRenderContext#SIRIUS_DEBUG_COOKIE}
      * @param message text to output
      */
-    public void emitDebugMessage(@Nonnull LocalRenderContext context, String message) {
-        if (context.getGlobalContext().canEmitDebug(GlobalRenderContext.DebugLevel.DEBUG)) {
+    public void emitDebugMessage(@Nonnull LocalRenderContext context, GlobalRenderContext.DebugLevel level, String message) {
+        if (context.getGlobalContext().canEmitDebug(level)) {
             try {
-                context.outputDebug(Strings.apply("SIRIUS:%s - %s", context.getGlobalContext().getSiriusDebugLevel(), message));
+                context.outputDebug(Strings.apply("SIRIUS:%s - %s", level.toString(), message));
             } catch (IOException e) {
                 Exceptions.ignore(e);
             }
