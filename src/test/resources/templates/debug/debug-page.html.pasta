@@ -4,4 +4,10 @@
     <i:invoke template="/templates/debug/debug-css1.html.pasta" />
     <i:invoke template="/templates/debug/debug-script1.html.pasta" />
 </head>
+<body>
+    <i:render name="header"/>
+    <i:render name="alt-header">
+        <h1>Alternative Header</h1>
+    </i:render>
+</body>
 </html>

@@ -1,1 +1,5 @@
-<i:invoke template="/templates/debug/debug-page.html.pasta" />
+<i:invoke template="/templates/debug/debug-page.html.pasta">
+    <i:block name="header">
+        <h1>Header</h1>
+    </i:block>
+</i:invoke>
