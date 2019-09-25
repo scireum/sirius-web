@@ -42,10 +42,20 @@ public class BlockEmitter extends Emitter {
 
     @Override
     protected void emitToContext(LocalRenderContext context) throws Exception {
+        if (context.blockExists(name)) {
+            emitDebugMessage(context, "start rendering block '" + name + "'");
+        } else {
+            emitDebugMessage(context, "requested block '" + name + "' does not exist");
+        }
+
         if (!context.emitBlock(name)) {
             if (alternative != null) {
+                emitDebugMessage(context, "start rendering alternative contents to block '" + name + "'");
                 alternative.emit(context);
+                emitDebugMessage(context, "finish rendering alternative contents to block '" + name + "'");
             }
+        } else {
+            emitDebugMessage(context, "finish rendering block '" + name + "'");
         }
     }
 
