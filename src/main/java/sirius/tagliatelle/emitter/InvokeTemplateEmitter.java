@@ -15,7 +15,6 @@ import sirius.tagliatelle.Template;
 import sirius.tagliatelle.TemplateArgument;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.expression.ExpressionVisitor;
-import sirius.tagliatelle.rendering.GlobalRenderContext;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
 import java.io.FileNotFoundException;
@@ -110,9 +109,9 @@ public class InvokeTemplateEmitter extends Emitter {
                 index++;
             }
 
-            emitDebugMessage(context, GlobalRenderContext.DebugLevel.DEBUG, "start rendering template " + templateName);
+            emitDebugMessage(context, "start rendering template " + templateName);
             template.renderWithContext(subContext);
-            emitDebugMessage(context, GlobalRenderContext.DebugLevel.DEBUG, "finish rendering template " + templateName);
+            emitDebugMessage(context, "finish rendering template " + templateName);
         } finally {
             subContext.release();
         }

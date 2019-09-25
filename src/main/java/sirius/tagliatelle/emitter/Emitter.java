@@ -107,15 +107,28 @@ public abstract class Emitter {
     public abstract void visitExpressions(@Nonnull Function<Position, ExpressionVisitor> visitor);
 
     /**
-     * Emits escaped comments to the rendering context
+     * Emits escaped comments to the rendering context with DEBUG level
      *
      * @param context the render context which provides access to the local and global environment and also the target
      *                for the generated text
-     * @param level {@link GlobalRenderContext.DebugLevel} for the message to print which will be validated against the
-     *              current desired level set by the {@link GlobalRenderContext#SIRIUS_DEBUG_COOKIE}
-     * @param message text to output
+     * @param message text to output with {@link GlobalRenderContext.DebugLevel#DEBUG}
      */
-    public void emitDebugMessage(@Nonnull LocalRenderContext context, GlobalRenderContext.DebugLevel level, String message) {
+    public void emitDebugMessage(@Nonnull LocalRenderContext context, String message) {
+        emitMessage(context, GlobalRenderContext.DebugLevel.DEBUG, message);
+    }
+
+    /**
+     * Emits escaped comments to the rendering context with TRACE level
+     *
+     * @param context the render context which provides access to the local and global environment and also the target
+     *                for the generated text
+     * @param message text to output with {@link GlobalRenderContext.DebugLevel#TRACE}
+     */
+    public void emitTraceMessage(@Nonnull LocalRenderContext context, String message) {
+        emitMessage(context, GlobalRenderContext.DebugLevel.TRACE, message);
+    }
+
+    private void emitMessage(@Nonnull LocalRenderContext context, GlobalRenderContext.DebugLevel level, String message) {
         if (context.getGlobalContext().canEmitDebug(level)) {
             try {
                 context.outputDebug(Strings.apply("SIRIUS:%s - %s", level.toString(), message));
