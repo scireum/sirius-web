@@ -57,7 +57,7 @@ public class IncludeTag extends TagHandler {
 
         @Override
         public String getDescription() {
-            return "Invokes a template. Note that all template arguments also have to be passed as tag attributes.";
+            return "Includes the contents of a template without any processing.";
         }
     }
 
