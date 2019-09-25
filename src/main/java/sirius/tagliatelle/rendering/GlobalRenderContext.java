@@ -322,7 +322,7 @@ public class GlobalRenderContext {
             if (openStyles > 0 || openScripts > 0) {
                 buffer.append("\n/* " + string + " */\n");
             } else {
-                buffer.append("\n<!-- " + string + " -->\n");
+                buffer.append("<!-- " + string + " -->");
             }
         }
     }
