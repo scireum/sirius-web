@@ -9,5 +9,7 @@
     <i:render name="alt-header">
         <h1>Alternative Header</h1>
     </i:render>
+    <div><i:dynamicInvoke template="'/templates/debug/debug-args.html.pasta'"/></div>
+    <div><i:dynamicInvoke template="'/templates/debug/debug-args.html.pasta'" arg1="'new-value-1'"/></div>
 </body>
 </html>
