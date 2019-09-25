@@ -268,4 +268,26 @@ public class LocalRenderContext {
     public GlobalRenderContext getGlobalContext() {
         return globalContext;
     }
+
+    /**
+     * Checks if the given block exists.
+     *
+     * @param name name of the block to check for existance
+     * @return true if block found otherwise false
+     */
+    public boolean blockExists(String name) {
+        if (blocks == null) {
+            return false;
+        }
+        return blocks.containsKey(name);
+    }
+
+    /**
+     * Provides access to the underlying template.
+     *
+     * @return the {@link Template}
+     */
+    public Template getTemplate() {
+        return this.template;
+    }
 }
