@@ -8,6 +8,7 @@
 
 package sirius.tagliatelle.rendering;
 
+import sirius.kernel.commons.Strings;
 import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.Template;
 import sirius.tagliatelle.compiler.CompileException;
@@ -297,6 +298,9 @@ public class GlobalRenderContext {
     public void setSiriusDebugLevel(@Nonnull String debugLevel) {
         try {
             this.debugLevel = DebugLevel.valueOf(debugLevel.toUpperCase());
+            if (this.debugLevel != DebugLevel.OFF) {
+                buffer.append(Strings.apply("<!-- SIRIUS Cookie %s=%s -->\n", GlobalRenderContext.SIRIUS_DEBUG_COOKIE, this.debugLevel.toString()));
+            }
         } catch (IllegalArgumentException e) {
             this.debugLevel = DebugLevel.OFF;
         }
