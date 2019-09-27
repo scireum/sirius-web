@@ -8,7 +8,6 @@
 
 package sirius.tagliatelle.rendering;
 
-import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.Template;
@@ -38,6 +37,10 @@ public class GlobalRenderContext {
     protected StringBuilder buffer;
     protected Map<String, String> extraBlocks;
     protected Function<String, String> escaper = GlobalRenderContext::escapeRAW;
+    private static final Pattern OPENING_SCRIPT_TAG = Pattern.compile("<script.*?>", Pattern.CASE_INSENSITIVE);
+    private static final Pattern CLOSING_SCRIPT_TAG = Pattern.compile("</script>", Pattern.CASE_INSENSITIVE);
+    private static final Pattern OPENING_STYLE_TAG = Pattern.compile("<style.*?>", Pattern.CASE_INSENSITIVE);
+    private static final Pattern CLOSING_STYLE_TAG = Pattern.compile("</style>", Pattern.CASE_INSENSITIVE);
 
     /**
      * The name of the Cookie that enables debugging of rendered contents.
@@ -121,23 +124,19 @@ public class GlobalRenderContext {
             buffer.append(string);
 
             if (debugLevel != DebugLevel.OFF) {
-                Pattern pattern = Pattern.compile("<script.*?>");
-                Matcher matcher = pattern.matcher(string);
+                Matcher matcher = OPENING_SCRIPT_TAG.matcher(string);
                 while (matcher.find()) {
                     openScripts++;
                 }
-                pattern = Pattern.compile("</script>");
-                matcher = pattern.matcher(string);
+                matcher = CLOSING_SCRIPT_TAG.matcher(string);
                 while (matcher.find()) {
                     openScripts--;
                 }
-                pattern = Pattern.compile("<style.*?>");
-                matcher = pattern.matcher(string);
+                matcher = OPENING_STYLE_TAG.matcher(string);
                 while (matcher.find()) {
                     openStyles++;
                 }
-                pattern = Pattern.compile("</style>");
-                matcher = pattern.matcher(string);
+                matcher = CLOSING_STYLE_TAG.matcher(string);
                 while (matcher.find()) {
                     openStyles--;
                 }
@@ -304,9 +303,6 @@ public class GlobalRenderContext {
     public void setSiriusDebugLevel(@Nonnull String debugLevel) {
         try {
             this.debugLevel = DebugLevel.valueOf(debugLevel.toUpperCase());
-            if (this.debugLevel != DebugLevel.OFF) {
-                buffer.append(Strings.apply("<!-- SIRIUS Cookie %s=%s -->\n", GlobalRenderContext.SIRIUS_DEBUG_COOKIE, this.debugLevel.toString()));
-            }
         } catch (IllegalArgumentException e) {
             this.debugLevel = DebugLevel.OFF;
             Exceptions.ignore(e);
