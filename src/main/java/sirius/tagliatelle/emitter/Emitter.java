@@ -107,7 +107,7 @@ public abstract class Emitter {
     public abstract void visitExpressions(@Nonnull Function<Position, ExpressionVisitor> visitor);
 
     /**
-     * Emits escaped comments to the rendering context with DEBUG level
+     * Emits escaped comments to the rendering context with {@link GlobalRenderContext.DebugLevel#DEBUG} level.
      *
      * @param context the render context which provides access to the local and global environment and also the target
      *                for the generated text
@@ -118,7 +118,7 @@ public abstract class Emitter {
     }
 
     /**
-     * Emits escaped comments to the rendering context with TRACE level
+     * Emits escaped comments to the rendering context with {@link GlobalRenderContext.DebugLevel#TRACE} level.
      *
      * @param context the render context which provides access to the local and global environment and also the target
      *                for the generated text

@@ -1372,6 +1372,6 @@ public class Response {
     }
 
     private String fetchDebugLevel() {
-        return wc.getCookie(GlobalRenderContext.SIRIUS_DEBUG_COOKIE) != null ? wc.getCookie(GlobalRenderContext.SIRIUS_DEBUG_COOKIE).value() : "OFF";
+        return Optional.ofNullable(wc.getCookie(GlobalRenderContext.SIRIUS_DEBUG_COOKIE)).map(Cookie::value).orElse("OFF");
     }
 }

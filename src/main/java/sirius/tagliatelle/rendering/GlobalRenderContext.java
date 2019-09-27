@@ -9,6 +9,7 @@
 package sirius.tagliatelle.rendering;
 
 import sirius.kernel.commons.Strings;
+import sirius.kernel.health.Exceptions;
 import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.Template;
 import sirius.tagliatelle.compiler.CompileException;
@@ -39,24 +40,30 @@ public class GlobalRenderContext {
     protected Function<String, String> escaper = GlobalRenderContext::escapeRAW;
 
     /**
-     * Cookie name to enable debugging of rendered contents
+     * The name of the Cookie that enables debugging of rendered contents.
      */
     public static final String SIRIUS_DEBUG_COOKIE = "SIRIUS.WEB.DEBUG.LEVEL";
 
     /**
-     * Debug levels used to render contents
+     * Contains different levels that represent debug message prevalence when rendering contents.
      */
     public enum DebugLevel {
         OFF, DEBUG, TRACE
     }
 
-    // Stores the current debug level
+    /**
+     * Stores the current debug level.
+     */
     protected DebugLevel debugLevel = DebugLevel.OFF;
 
-    // Number of open <script> tags in the current buffer
+    /**
+     * Number of open <script> tags in the current buffer.
+     */
     protected int openScripts = 0;
 
-    // Number of open <style> tags in the current buffer
+    /**
+     * Number of open <style> tags in the current buffer.
+     */
     protected int openStyles = 0;
 
     /**
@@ -113,7 +120,6 @@ public class GlobalRenderContext {
         if (string != null) {
             buffer.append(string);
 
-            // do not waste time if not debugging
             if (debugLevel != DebugLevel.OFF) {
                 Pattern pattern = Pattern.compile("<script.*?>");
                 Matcher matcher = pattern.matcher(string);
@@ -303,6 +309,7 @@ public class GlobalRenderContext {
             }
         } catch (IllegalArgumentException e) {
             this.debugLevel = DebugLevel.OFF;
+            Exceptions.ignore(e);
         }
     }
 
