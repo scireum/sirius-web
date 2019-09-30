@@ -32,7 +32,7 @@ class DebugSpec extends BaseSpecification {
         Template template = tagliatelle.resolve("/templates/debug/debug.html.pasta").get()
         GlobalRenderContext renderContext = tagliatelle.createRenderContext()
         LocalRenderContext localRenderContext = renderContext.createContext(template)
-        renderContext.setSiriusDebugLevel("TRACE")
+        renderContext.setSiriusDebugLevel(GlobalRenderContext.DebugLevel.TRACE)
         template.renderWithContext(localRenderContext)
         String result = renderContext.toString()
 

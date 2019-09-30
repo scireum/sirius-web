@@ -8,7 +8,6 @@
 
 package sirius.tagliatelle.rendering;
 
-import sirius.kernel.health.Exceptions;
 import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.Template;
 import sirius.tagliatelle.compiler.CompileException;
@@ -296,21 +295,16 @@ public class GlobalRenderContext {
     }
 
     /**
-     * Sets the debug level for rendered contents
+     * Sets the debug level for rendered contents.
      *
-     * @param debugLevel equivalent String to be resolved as a valid {@link DebugLevel}
+     * @param debugLevel {@link DebugLevel} to set
      */
-    public void setSiriusDebugLevel(@Nonnull String debugLevel) {
-        try {
-            this.debugLevel = DebugLevel.valueOf(debugLevel.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            this.debugLevel = DebugLevel.OFF;
-            Exceptions.ignore(e);
-        }
+    public void setSiriusDebugLevel(@Nonnull DebugLevel debugLevel) {
+        this.debugLevel = debugLevel;
     }
 
     /**
-     * Checks if the provided debug level should be emitted based on the current debug level
+     * Checks if the provided debug level should be emitted based on the current debug level.
      *
      * @param levelToCompare log level for the message which wants to be emitted
      * @return true when desired log level higher or equal to current log level
@@ -320,7 +314,7 @@ public class GlobalRenderContext {
     }
 
     /**
-     * Prints comments properly escaping contents according to the current output being printed
+     * Prints comments properly escaping contents according to the current output being printed.
      *
      * @param string message to output as comments
      */

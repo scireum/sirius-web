@@ -38,6 +38,7 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
@@ -1371,7 +1372,9 @@ public class Response {
         return "Response for: " + wc.toString();
     }
 
-    private String fetchDebugLevel() {
-        return Optional.ofNullable(wc.getCookie(GlobalRenderContext.SIRIUS_DEBUG_COOKIE)).map(Cookie::value).orElse("OFF");
+    private GlobalRenderContext.DebugLevel fetchDebugLevel() {
+        return Optional.ofNullable(wc.getCookie(GlobalRenderContext.SIRIUS_DEBUG_COOKIE))
+                       .map(cookie -> Value.of(cookie.value().toUpperCase()).asEnum(GlobalRenderContext.DebugLevel.class))
+                       .orElse(GlobalRenderContext.DebugLevel.OFF);
     }
 }
