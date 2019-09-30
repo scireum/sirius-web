@@ -37,9 +37,9 @@ public class GlobalRenderContext {
     protected StringBuilder buffer;
     protected Map<String, String> extraBlocks;
     protected Function<String, String> escaper = GlobalRenderContext::escapeRAW;
-    private static final Pattern OPENING_SCRIPT_TAG = Pattern.compile("<script.*?>", Pattern.CASE_INSENSITIVE);
+    private static final Pattern OPENING_SCRIPT_TAG = Pattern.compile("<script(\\s.*)?>", Pattern.CASE_INSENSITIVE);
     private static final Pattern CLOSING_SCRIPT_TAG = Pattern.compile("</script>", Pattern.CASE_INSENSITIVE);
-    private static final Pattern OPENING_STYLE_TAG = Pattern.compile("<style.*?>", Pattern.CASE_INSENSITIVE);
+    private static final Pattern OPENING_STYLE_TAG = Pattern.compile("<style(\\s.*)?>", Pattern.CASE_INSENSITIVE);
     private static final Pattern CLOSING_STYLE_TAG = Pattern.compile("</style>", Pattern.CASE_INSENSITIVE);
 
     /**
