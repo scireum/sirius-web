@@ -24,6 +24,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.WorkbookUtil;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -174,8 +175,8 @@ public class ExcelExport {
         }
     }
 
-    protected ExcelExport(boolean useHSSF, boolean createDefaultSheet) {
-        workbook = useHSSF ? new HSSFWorkbook() : new XSSFWorkbook();
+    protected ExcelExport(Workbook workbook, boolean createDefaultSheet) {
+        this.workbook = workbook;
         // Setup styles
         dateStyle = workbook.createCellStyle();
         dateStyle.setDataFormat(workbook.createDataFormat().getFormat("dd.mm.yyyy"));
@@ -224,7 +225,7 @@ public class ExcelExport {
      * @return a new exporter using the Excel'97 format
      */
     public static ExcelExport asXLS() {
-        return new ExcelExport(true, true);
+        return new ExcelExport(new HSSFWorkbook(), true);
     }
 
     /**
@@ -232,19 +233,20 @@ public class ExcelExport {
      *
      * @return a new exporter using the modern Excel format
      */
-    public static ExcelExport asXLSX() {
-        return new ExcelExport(false, true);
+    public static ExcelExport asStandardXLSX() {
+        return new ExcelExport(new XSSFWorkbook(), true);
     }
 
     /**
-     * Creates a new export which uses the modern Excel format (.xlsx).
+     * Creates a new export which uses the modern Excel format (.xlsx) in a special streaming mode.
+     * <p>
+     * This is usefull when writing large amounts of data with a limited heap size as written rows are periodically written to disk
+     * in contrast to the standard mode where all rows are kept in memory until the entire sheet is finalized.
      *
      * @return a new exporter using the modern Excel format
-     * @deprecated There is a typo in the method name, use {@link #asXLSX()}
      */
-    @Deprecated
-    public static ExcelExport asXSLX() {
-        return asXLSX();
+    public static ExcelExport asStreamingXLSX() {
+        return new ExcelExport(new SXSSFWorkbook(), true);
     }
 
     /**
@@ -258,7 +260,7 @@ public class ExcelExport {
      * @return a new exporter using the Excel'97 format
      */
     public static ExcelExport asXLS(boolean createDefaultSheet) {
-        return new ExcelExport(true, createDefaultSheet);
+        return new ExcelExport(new HSSFWorkbook(), createDefaultSheet);
     }
 
     /**
@@ -271,24 +273,24 @@ public class ExcelExport {
      * @param createDefaultSheet true if a sheet should be automatically created.
      * @return a new exporter using the modern Excel format
      */
-    public static ExcelExport asXLSX(boolean createDefaultSheet) {
-        return new ExcelExport(false, createDefaultSheet);
+    public static ExcelExport asStandardXLSX(boolean createDefaultSheet) {
+        return new ExcelExport(new XSSFWorkbook(), createDefaultSheet);
     }
 
     /**
-     * Creates a new export which uses the modern Excel format (.xlsx).
+     * Creates a new export which uses the modern Excel format (.xlsx) in a special streaming mode.
      * <p>
+     * This is usefull when writing large amounts of data with a limited heap size as written rows are periodically written to disk
+     * in contrast to the standard mode where all rows are kept in memory until the entire sheet is finalized.
      * If the the export should create a excel sheet with an default name, set the parameter
      * <tt>createDefaultSheet</tt> to true. Otherwise you must call {@link #createSheet(String)} with a name to create a
      * named sheet before adding to the exporter.
      *
      * @param createDefaultSheet true if a sheet should be automatically created.
      * @return a new exporter using the modern Excel format
-     * @deprecated There is a typo in the method name, use {@link #asXLSX(boolean)}
      */
-    @Deprecated
-    public static ExcelExport asXSLX(boolean createDefaultSheet) {
-        return asXLSX(createDefaultSheet);
+    public static ExcelExport asStreamingXLSX(boolean createDefaultSheet) {
+        return new ExcelExport(new SXSSFWorkbook(), createDefaultSheet);
     }
 
     private void addCell(Row row, Object obj, int columnIndex, CellStyle style) {
@@ -450,6 +452,10 @@ public class ExcelExport {
             }
         } catch (IOException e) {
             throw Exceptions.handle(e);
+        } finally {
+            if (workbook instanceof SXSSFWorkbook) {
+                ((SXSSFWorkbook) workbook).dispose();
+            }
         }
     }
 
