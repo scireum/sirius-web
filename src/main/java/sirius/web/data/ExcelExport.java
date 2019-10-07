@@ -250,17 +250,6 @@ public class ExcelExport {
     }
 
     /**
-     * Creates a new export which uses the modern Excel format (.xlsx).
-     *
-     * @return a new exporter using the modern Excel format
-     * @deprecated There is a typo in the method name, use {@link #asStandardXLSX()}
-     */
-    @Deprecated
-    public static ExcelExport asXSLX() {
-        return asStandardXLSX();
-    }
-
-    /**
      * Creates a new export which uses the legacy Excel'97 format (.xls).
      * <p>
      * If the the export should create a excel sheet with an default name, set the parameter
@@ -302,22 +291,6 @@ public class ExcelExport {
      */
     public static ExcelExport asStreamingXLSX(boolean createDefaultSheet) {
         return new ExcelExport(new SXSSFWorkbook(), createDefaultSheet);
-    }
-
-    /**
-     * Creates a new export which uses the modern Excel format (.xlsx).
-     * <p>
-     * If the the export should create a excel sheet with an default name, set the parameter
-     * <tt>createDefaultSheet</tt> to true. Otherwise you must call {@link #createSheet(String)} with a name to create a
-     * named sheet before adding to the exporter.
-     *
-     * @param createDefaultSheet true if a sheet should be automatically created.
-     * @return a new exporter using the modern Excel format
-     * @deprecated There is a typo in the method name, use {@link #asStandardXLSX(boolean)}
-     */
-    @Deprecated
-    public static ExcelExport asXSLX(boolean createDefaultSheet) {
-        return asStandardXLSX(createDefaultSheet);
     }
 
     private void addCell(Row row, Object obj, int columnIndex, CellStyle style) {
