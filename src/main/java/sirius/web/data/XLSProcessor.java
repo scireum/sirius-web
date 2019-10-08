@@ -8,10 +8,9 @@
 
 package sirius.web.data;
 
-import com.google.common.collect.Lists;
-import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -27,6 +26,7 @@ import sirius.kernel.nls.NLS;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -61,7 +61,7 @@ public class XLSProcessor implements LineBasedProcessor {
                 Row row = iter.next();
                 short first = 0;
                 short last = getLastFilledCell(row);
-                List<Object> values = Lists.newArrayList();
+                List<Object> values = new ArrayList<>();
                 for (int i = first; i <= last; i++) {
                     Cell cell = row.getCell(i);
                     Object value = extractCellValue(cell);
@@ -92,20 +92,20 @@ public class XLSProcessor implements LineBasedProcessor {
             return null;
         }
 
-        int cellType = cell.getCellType();
-        if (cellType == HSSFCell.CELL_TYPE_FORMULA) {
+        CellType cellType = cell.getCellType();
+        if (cellType == CellType.FORMULA) {
             cellType = cell.getCachedFormulaResultType();
         }
-        if (cellType == HSSFCell.CELL_TYPE_BOOLEAN) {
+        if (cellType == CellType.BOOLEAN) {
             return cell.getBooleanCellValue();
         }
-        if (cellType == HSSFCell.CELL_TYPE_NUMERIC) {
+        if (cellType == CellType.NUMERIC) {
             return extractNumericValue(cell);
         }
-        if (cellType == HSSFCell.CELL_TYPE_STRING) {
+        if (cellType == CellType.STRING) {
             return extractStringValue(cell);
         }
-        if (cellType == HSSFCell.CELL_TYPE_BLANK) {
+        if (cellType == CellType.BLANK) {
             return null;
         }
         throw new IllegalArgumentException(Strings.apply(
