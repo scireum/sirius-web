@@ -42,11 +42,6 @@ public class GlobalRenderContext {
     private static final Pattern CLOSING_STYLE_TAG = Pattern.compile("</style>", Pattern.CASE_INSENSITIVE);
 
     /**
-     * The name of the Cookie that enables debugging of rendered contents.
-     */
-    public static final String SIRIUS_DEBUG_COOKIE = "SIRIUS.WEB.DEBUG.LEVEL";
-
-    /**
      * Contains different levels that represent debug message prevalence when rendering contents.
      */
     public enum DebugLevel {
@@ -290,7 +285,7 @@ public class GlobalRenderContext {
     /**
      * Returns the current debug level for rendered contents.
      */
-    public DebugLevel getSiriusDebugLevel() {
+    public DebugLevel getDebugLevel() {
         return this.debugLevel;
     }
 
@@ -299,7 +294,7 @@ public class GlobalRenderContext {
      *
      * @param debugLevel {@link DebugLevel} to set
      */
-    public void setSiriusDebugLevel(@Nonnull DebugLevel debugLevel) {
+    public void setDebugLevel(@Nonnull DebugLevel debugLevel) {
         this.debugLevel = debugLevel;
     }
 

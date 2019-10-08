@@ -94,6 +94,11 @@ public class Response {
      */
     public static final int BUFFER_SIZE = 8192;
 
+    /**
+     * The name of the Cookie that enables debugging of rendered contents.
+     */
+    private static final String SIRIUS_DEBUG_COOKIE = "SIRIUS.WEB.DEBUG.LEVEL";
+
     /*
      * Caches the GMT TimeZone (lookup is synchronized)
      */
@@ -1158,7 +1163,7 @@ public class Response {
         try {
             Object[] effectiveParams = fixParams(params);
             GlobalRenderContext renderContext = engine.createRenderContext();
-            renderContext.setSiriusDebugLevel(fetchDebugLevel());
+            renderContext.setDebugLevel(fetchDebugLevel());
             template.render(renderContext, effectiveParams);
             sendTemplateContent(status, template.getEffectiveFileName(), renderContext.toString());
         } catch (Exception e) {
@@ -1373,7 +1378,7 @@ public class Response {
     }
 
     private GlobalRenderContext.DebugLevel fetchDebugLevel() {
-        return Optional.ofNullable(wc.getCookie(GlobalRenderContext.SIRIUS_DEBUG_COOKIE))
+        return Optional.ofNullable(wc.getCookie(SIRIUS_DEBUG_COOKIE))
                        .map(cookie -> Value.of(cookie.value().toUpperCase()).asEnum(GlobalRenderContext.DebugLevel.class))
                        .orElse(GlobalRenderContext.DebugLevel.OFF);
     }

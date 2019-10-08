@@ -112,9 +112,11 @@ public abstract class Emitter {
      * @param context the render context which provides access to the local and global environment and also the target
      *                for the generated text
      * @param message text to output with {@link GlobalRenderContext.DebugLevel#DEBUG}
+     * @param arguments the parameters for be used for replacement
+     * @see String#format(String, Object...)
      */
-    public void emitDebugMessage(@Nonnull LocalRenderContext context, String message) {
-        emitMessage(context, GlobalRenderContext.DebugLevel.DEBUG, message);
+    public void emitDebugMessage(@Nonnull LocalRenderContext context, String message, Object... arguments) {
+        emitMessage(context, GlobalRenderContext.DebugLevel.DEBUG, message, arguments);
     }
 
     /**
@@ -123,15 +125,17 @@ public abstract class Emitter {
      * @param context the render context which provides access to the local and global environment and also the target
      *                for the generated text
      * @param message text to output with {@link GlobalRenderContext.DebugLevel#TRACE}
+     * @param arguments the parameters for be used for replacement
+     * @see String#format(String, Object...)
      */
-    public void emitTraceMessage(@Nonnull LocalRenderContext context, String message) {
-        emitMessage(context, GlobalRenderContext.DebugLevel.TRACE, message);
+    public void emitTraceMessage(@Nonnull LocalRenderContext context, String message, Object... arguments) {
+        emitMessage(context, GlobalRenderContext.DebugLevel.TRACE, message, arguments);
     }
 
-    private void emitMessage(@Nonnull LocalRenderContext context, GlobalRenderContext.DebugLevel level, String message) {
+    private void emitMessage(@Nonnull LocalRenderContext context, GlobalRenderContext.DebugLevel level, String message, Object... arguments) {
         if (context.getGlobalContext().canEmitDebug(level)) {
             try {
-                context.outputDebug(Strings.apply("SIRIUS:%s - %s", level.toString(), message));
+                context.outputDebug(Strings.apply("SIRIUS:%s - %s", level.toString(), Strings.apply(message, arguments)));
             } catch (IOException e) {
                 Exceptions.ignore(e);
             }
