@@ -210,13 +210,10 @@ public class LocalRenderContext {
      * @throws RenderException in case of an error when emitting the block
      */
     public boolean emitBlock(String name) throws RenderException {
-        if (blocks == null) {
+        if (!blockExists(name)) {
             return false;
         }
         Emitter emitter = blocks.get(name);
-        if (emitter == null) {
-            return false;
-        }
 
         if (emitter instanceof ConstantEmitter) {
             emitter.emit(this);

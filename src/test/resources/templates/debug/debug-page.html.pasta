@@ -6,6 +6,7 @@
 </head>
 <body>
     <i:render name="header"/>
+    <i:render name="bad-header"/>
     <div>@renderToString('header')</div>
     <i:render name="alt-header">
         <h1>Alternative Header</h1>
