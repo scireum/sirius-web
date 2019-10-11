@@ -12,6 +12,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
 import org.apache.poi.hssf.usermodel.HSSFRichTextString;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.ClientAnchor;
@@ -184,7 +185,7 @@ public class ExcelExport {
         numeric.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
 
         borderStyle = workbook.createCellStyle();
-        borderStyle.setBorderBottom(CellStyle.BORDER_THICK);
+        borderStyle.setBorderBottom(BorderStyle.THICK);
         normalStyle = workbook.createCellStyle();
 
         if (createDefaultSheet) {
