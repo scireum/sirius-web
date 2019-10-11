@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <i:invoke template="/templates/debug/debug-css1.html.pasta" />
+    <i:invoke template="/templates/debug/debug-script1.html.pasta" />
+</head>
+<body>
+    <i:render name="header"/>
+    <i:render name="bad-header"/>
+    <div>@renderToString('header')</div>
+    <i:render name="alt-header">
+        <h1>Alternative Header</h1>
+    </i:render>
+    <div><i:dynamicInvoke template="'/templates/debug/debug-args.html.pasta'"/></div>
+    <div><i:dynamicInvoke template="'/templates/debug/debug-args.html.pasta'" arg1="'new-value-1'"/></div>
+</body>
+</html>

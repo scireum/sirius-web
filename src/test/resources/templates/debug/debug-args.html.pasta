@@ -1,0 +1,2 @@
+<i:arg type="String" name="arg1" default="value1"/>
+@arg1

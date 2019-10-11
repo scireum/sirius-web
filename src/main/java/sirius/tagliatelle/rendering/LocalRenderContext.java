@@ -137,6 +137,19 @@ public class LocalRenderContext {
     }
 
     /**
+     * Adds commented output to the result buffer.
+     *
+     * @param content the string to output
+     * @throws IOException in case of an IO error
+     * @see GlobalRenderContext#outputDebug(String)
+     */
+    @SuppressWarnings("squid:RedundantThrowsDeclarationCheck")
+    @Explain("Sublclasses might throw an IOException here.")
+    public void outputDebug(String content) throws IOException {
+        globalContext.outputDebug(content);
+    }
+
+    /**
      * Assigns the given value to the given local variable.
      *
      * @param index    the index of the local to assign
@@ -197,13 +210,10 @@ public class LocalRenderContext {
      * @throws RenderException in case of an error when emitting the block
      */
     public boolean emitBlock(String name) throws RenderException {
-        if (blocks == null) {
+        if (!blockExists(name)) {
             return false;
         }
         Emitter emitter = blocks.get(name);
-        if (emitter == null) {
-            return false;
-        }
 
         if (emitter instanceof ConstantEmitter) {
             emitter.emit(this);
@@ -254,5 +264,27 @@ public class LocalRenderContext {
      */
     public GlobalRenderContext getGlobalContext() {
         return globalContext;
+    }
+
+    /**
+     * Checks if the given block exists.
+     *
+     * @param name name of the block to check for existance
+     * @return true if block found otherwise false
+     */
+    public boolean blockExists(String name) {
+        if (blocks == null) {
+            return false;
+        }
+        return blocks.containsKey(name);
+    }
+
+    /**
+     * Provides access to the underlying template.
+     *
+     * @return the {@link Template}
+     */
+    public Template getTemplate() {
+        return this.template;
     }
 }

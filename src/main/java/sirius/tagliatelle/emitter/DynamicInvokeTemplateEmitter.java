@@ -100,7 +100,9 @@ public class DynamicInvokeTemplateEmitter extends Emitter {
             Map<String, Object> effectiveArgs = new HashMap<>();
             args.forEach((k, e) -> effectiveArgs.put(k, e.eval(context)));
             template.transferArguments(effectiveArgs, subContext);
+            emitDebugMessage(context, "start rendering dynamic template '%s'", effectiveTemplateName);
             template.renderWithContext(subContext);
+            emitDebugMessage(context, "finish rendering dynamic template '%s'", effectiveTemplateName);
         } finally {
             subContext.release();
         }

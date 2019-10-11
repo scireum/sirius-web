@@ -1,0 +1,34 @@
+<!-- SIRIUS:DEBUG - defining block 'header' from template '/templates/debug/debug.html.pasta' --><!-- SIRIUS:DEBUG - defining block 'body' from template '/templates/debug/debug.html.pasta' --><!-- SIRIUS:DEBUG - start rendering template '/templates/debug/debug-page.html.pasta' --><!DOCTYPE html>
+<html>
+<head>
+    <!-- SIRIUS:DEBUG - start rendering template '/templates/debug/debug-css1.html.pasta' --><style>
+    h1 {
+        color: red;
+        background-color: black;
+    }
+
+    /* SIRIUS:DEBUG - start rendering template '/templates/debug/debug-css2.html.pasta' */
+    h2 {
+        color: green;
+        background-color: white;
+    }
+    /* SIRIUS:DEBUG - finish rendering template '/templates/debug/debug-css2.html.pasta' */
+</style><!-- SIRIUS:DEBUG - finish rendering template '/templates/debug/debug-css1.html.pasta' -->    <!-- SIRIUS:DEBUG - start rendering template '/templates/debug/debug-script1.html.pasta' --><SCRIPT type="text/javascript">
+    function helloWorld() {
+        return "hello world"
+    }
+
+    /* SIRIUS:DEBUG - start rendering template '/templates/debug/debug-script2.html.pasta' */
+    function helloUniverse() {
+        return "hello universe"
+    }
+    /* SIRIUS:DEBUG - finish rendering template '/templates/debug/debug-script2.html.pasta' */
+</SCRIPT><!-- SIRIUS:DEBUG - finish rendering template '/templates/debug/debug-script1.html.pasta' --></head>
+<body>
+<!-- SIRIUS:DEBUG - start rendering block 'header' -->        <h1>Header</h1>
+<!-- SIRIUS:DEBUG - finish rendering block 'header' -->    <!-- SIRIUS:DEBUG - requested block 'bad-header' does not exist -->    <div><h1>Header</h1></div>
+<!-- SIRIUS:DEBUG - start rendering alternative contents to block 'alt-header' -->        <h1>Alternative Header</h1>
+<!-- SIRIUS:DEBUG - finish rendering alternative contents to block 'alt-header' -->    <div><!-- SIRIUS:DEBUG - start rendering dynamic template '/templates/debug/debug-args.html.pasta' -->value1<!-- SIRIUS:DEBUG - finish rendering dynamic template '/templates/debug/debug-args.html.pasta' --></div>
+<div><!-- SIRIUS:DEBUG - start rendering dynamic template '/templates/debug/debug-args.html.pasta' -->new-value-1<!-- SIRIUS:DEBUG - finish rendering dynamic template '/templates/debug/debug-args.html.pasta' --></div>
+</body>
+</html><!-- SIRIUS:DEBUG - finish rendering template '/templates/debug/debug-page.html.pasta' -->

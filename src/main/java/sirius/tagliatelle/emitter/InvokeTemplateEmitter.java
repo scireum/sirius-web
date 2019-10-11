@@ -100,6 +100,9 @@ public class InvokeTemplateEmitter extends Emitter {
     protected void emitToContext(LocalRenderContext context) throws Exception {
         Template template = context.resolve(templateName).orElseThrow(() -> new FileNotFoundException(templateName));
         LocalRenderContext subContext = context.createChildContext(template);
+        if (blocks != null) {
+            blocks.forEach((k, v) -> emitDebugMessage(context, "defining block '%s' from template '%s'", k, context.getTemplate().getName()));
+        }
         subContext.setBlocks(context, blocks);
 
         try {
@@ -109,7 +112,9 @@ public class InvokeTemplateEmitter extends Emitter {
                 index++;
             }
 
+            emitDebugMessage(context, "start rendering template '%s'", templateName);
             template.renderWithContext(subContext);
+            emitDebugMessage(context, "finish rendering template '%s'", templateName);
         } finally {
             subContext.release();
         }

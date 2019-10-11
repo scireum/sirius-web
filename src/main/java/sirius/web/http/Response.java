@@ -38,6 +38,7 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
@@ -92,6 +93,11 @@ public class Response {
      * Size of the internally used transfer buffers
      */
     public static final int BUFFER_SIZE = 8192;
+
+    /**
+     * The name of the Cookie that enables debugging of rendered contents.
+     */
+    private static final String SIRIUS_DEBUG_COOKIE = "SIRIUS.WEB.DEBUG.LEVEL";
 
     /*
      * Caches the GMT TimeZone (lookup is synchronized)
@@ -1157,6 +1163,7 @@ public class Response {
         try {
             Object[] effectiveParams = fixParams(params);
             GlobalRenderContext renderContext = engine.createRenderContext();
+            renderContext.setDebugLevel(fetchDebugLevel());
             template.render(renderContext, effectiveParams);
             sendTemplateContent(status, template.getEffectiveFileName(), renderContext.toString());
         } catch (Exception e) {
@@ -1368,5 +1375,11 @@ public class Response {
     @Override
     public String toString() {
         return "Response for: " + wc.toString();
+    }
+
+    private GlobalRenderContext.DebugLevel fetchDebugLevel() {
+        return Optional.ofNullable(wc.getCookie(SIRIUS_DEBUG_COOKIE))
+                       .map(cookie -> Value.of(cookie.value().toUpperCase()).asEnum(GlobalRenderContext.DebugLevel.class))
+                       .orElse(GlobalRenderContext.DebugLevel.OFF);
     }
 }

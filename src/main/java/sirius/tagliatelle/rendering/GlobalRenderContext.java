@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Represents the global context which is created to render a template.
@@ -34,6 +36,32 @@ public class GlobalRenderContext {
     protected StringBuilder buffer;
     protected Map<String, String> extraBlocks;
     protected Function<String, String> escaper = GlobalRenderContext::escapeRAW;
+    private static final Pattern OPENING_SCRIPT_TAG = Pattern.compile("<script(\\s.*)?>", Pattern.CASE_INSENSITIVE);
+    private static final Pattern CLOSING_SCRIPT_TAG = Pattern.compile("</script>", Pattern.CASE_INSENSITIVE);
+    private static final Pattern OPENING_STYLE_TAG = Pattern.compile("<style(\\s.*)?>", Pattern.CASE_INSENSITIVE);
+    private static final Pattern CLOSING_STYLE_TAG = Pattern.compile("</style>", Pattern.CASE_INSENSITIVE);
+
+    /**
+     * Contains different levels that represent debug message prevalence when rendering contents.
+     */
+    public enum DebugLevel {
+        OFF, DEBUG, TRACE
+    }
+
+    /**
+     * Stores the current debug level.
+     */
+    protected DebugLevel debugLevel = DebugLevel.OFF;
+
+    /**
+     * Number of open <script> tags in the current buffer.
+     */
+    protected int openScripts = 0;
+
+    /**
+     * Number of open <style> tags in the current buffer.
+     */
+    protected int openStyles = 0;
 
     /**
      * Creates a new render context.
@@ -88,6 +116,25 @@ public class GlobalRenderContext {
     protected void outputRaw(String string) {
         if (string != null) {
             buffer.append(string);
+
+            if (debugLevel != DebugLevel.OFF) {
+                Matcher matcher = OPENING_SCRIPT_TAG.matcher(string);
+                while (matcher.find()) {
+                    openScripts++;
+                }
+                matcher = CLOSING_SCRIPT_TAG.matcher(string);
+                while (matcher.find()) {
+                    openScripts--;
+                }
+                matcher = OPENING_STYLE_TAG.matcher(string);
+                while (matcher.find()) {
+                    openStyles++;
+                }
+                matcher = CLOSING_STYLE_TAG.matcher(string);
+                while (matcher.find()) {
+                    openStyles--;
+                }
+            }
         }
     }
 
@@ -101,7 +148,7 @@ public class GlobalRenderContext {
      */
     protected void outputEscaped(String string) {
         if (string != null) {
-            buffer.append(escaper.apply(string));
+            outputRaw(escaper.apply(string));
         }
     }
 
@@ -233,5 +280,46 @@ public class GlobalRenderContext {
         }
 
         extraBlocks.put(name, contents);
+    }
+
+    /**
+     * Returns the current debug level for rendered contents.
+     */
+    public DebugLevel getDebugLevel() {
+        return this.debugLevel;
+    }
+
+    /**
+     * Sets the debug level for rendered contents.
+     *
+     * @param debugLevel {@link DebugLevel} to set
+     */
+    public void setDebugLevel(@Nonnull DebugLevel debugLevel) {
+        this.debugLevel = debugLevel;
+    }
+
+    /**
+     * Checks if the provided debug level should be emitted based on the current debug level.
+     *
+     * @param levelToCompare log level for the message which wants to be emitted
+     * @return true when desired log level higher or equal to current log level
+     */
+    public boolean canEmitDebug(@Nonnull DebugLevel levelToCompare) {
+        return debugLevel.ordinal() >= levelToCompare.ordinal();
+    }
+
+    /**
+     * Prints comments properly escaping contents according to the current output being printed.
+     *
+     * @param string message to output as comments
+     */
+    public void outputDebug(String string) {
+        if (string != null) {
+            if (openStyles > 0 || openScripts > 0) {
+                buffer.append("\n/* " + string + " */\n");
+            } else {
+                buffer.append("<!-- " + string + " -->");
+            }
+        }
     }
 }
