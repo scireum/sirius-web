@@ -9,9 +9,34 @@
 
     <w:pageHeader>
         Tagliatelle - State
+        <script type="text/javascript">
+            function setDebugLevel(level) {
+                document.cookie = "SIRIUS.WEB.DEBUG.LEVEL=" + level;
+                document.getElementById('debug-text').innerHTML = ' Debug Level: ' + level;
+            }
+            window.addEventListener("load", function(event) {
+                var currentdebug = document.cookie.toUpperCase().match(/SIRIUS.WEB.DEBUG.LEVEL=(OFF|DEBUG|TRACE)/);
+                if (currentdebug == null) {
+                    setDebugLevel('OFF');
+                } else {
+                    setDebugLevel(currentdebug[1]);
+                }
+            });
+        </script>
         <span class="pull-right">
             <a href="/system/tags/state" class="btn"><i class="fa fa-refresh"></i> @i18n("NLS.refresh")</a>
             <a href="/system/tags/state?reset" class="btn btn-danger"><i class="fa fa-trash"></i> Reset Statistics</a>
+            <div class="btn-group">
+                <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="caret"></span> <span id="debug-text"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li class="dropdown-header">Select the desired debug level<br/>for rendered Tagliatelle templates</li>
+                    <li><a href="javascript:setDebugLevel('OFF')">OFF</a></li>
+                    <li><a href="javascript:setDebugLevel('DEBUG')">DEBUG</a></li>
+                    <li><a href="javascript:setDebugLevel('TRACE')">TRACE</a></li>
+                </ul>
+            </div>
         </span>
     </w:pageHeader>
 
