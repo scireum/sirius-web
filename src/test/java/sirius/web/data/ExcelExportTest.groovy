@@ -10,6 +10,8 @@ package sirius.web.data
 
 import sirius.kernel.BaseSpecification
 import sirius.kernel.commons.Files
+import sirius.kernel.nls.NLS
+import spock.lang.Ignore
 
 class ExcelExportSpec extends BaseSpecification {
 
@@ -51,6 +53,34 @@ class ExcelExportSpec extends BaseSpecification {
                                    lineNum, row ->
                                        assert lineNum == expectLineNum++
                                        assert row.asList() == expectedRow[lineNum - 1]
+                               },
+                               { e -> false })
+        cleanup:
+        Files.delete(testFile)
+    }
+
+    @Ignore
+    def "only allow 1 million in a excel sheet rows"() {
+        given:
+        File testFile = File.createTempFile("excel-output", ".xlsx")
+        when:
+        ExcelExport export = ExcelExport.asStreamingXLSX()
+        for (int i = 1; i <= ExcelExport.MAX_NUM_ROWS; i++) {
+            export.addRow("A-" + i)
+        }
+        export.addRow("A-" + (ExcelExport.MAX_NUM_ROWS + 1))
+        export.writeToStream(new FileOutputStream(testFile))
+        then:
+        LineBasedProcessor.create(testFile.getName(), new FileInputStream(testFile))
+                          .run({
+                                   lineNum, row ->
+                                       assert lineNum <= ExcelExport.MAX_NUM_ROWS + 1
+                                       if (lineNum <= (ExcelExport.MAX_NUM_ROWS)) {
+                                           assert row.at(0).asString() == "A-" + lineNum
+                                       } else {
+                                           assert row.at(0) == NLS.get("ExcelExport.maxRowsReached")
+                                           assert lineNum == ExcelExport.MAX_NUM_ROWS + 1
+                                       }
                                },
                                { e -> false })
         cleanup:

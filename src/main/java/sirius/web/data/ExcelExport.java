@@ -58,6 +58,8 @@ import java.util.Set;
  */
 public class ExcelExport {
 
+    public static final int MAX_NUM_ROWS = 1_000_000;
+
     private static final String MIME_TYPE_XLS = "application/ms-excel";
     private static final String MIME_TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
@@ -71,6 +73,7 @@ public class ExcelExport {
     private CellStyle normalStyle;
     private Set<Short> pictureCols = new HashSet<>();
     private Drawing drawing;
+    private String maxRowsReachedMessage;
 
     /**
      * Represents a cell containing an image which should be inserted.
@@ -402,6 +405,14 @@ public class ExcelExport {
      * @return the export itself for fluent method calls
      */
     public ExcelExport addRowAsList(Collection<?> row) {
+        if (rows > MAX_NUM_ROWS) {
+            return this;
+        }
+        if (rows == MAX_NUM_ROWS) {
+            Row r = currentSheet.createRow(rows++);
+            addCell(r, getMaxRowsReachedMessage(), 0, normalStyle);
+            return this;
+        }
         if (row != null) {
             maxCols = Math.max(maxCols, row.size());
             int idx = 0;
@@ -489,5 +500,13 @@ public class ExcelExport {
         }
 
         return (data instanceof Amount) && ((Amount) data).isFilled();
+    }
+
+    public String getMaxRowsReachedMessage() {
+        return Strings.firstFilled(NLS.smartGet(maxRowsReachedMessage), NLS.get("ExcelExport.maxRowsReached"));
+    }
+
+    public void setMaxRowsReachedMessage(String maxRowsReachedMessage) {
+        this.maxRowsReachedMessage = maxRowsReachedMessage;
     }
 }
