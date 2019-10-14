@@ -25,6 +25,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.WorkbookUtil;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
@@ -209,6 +210,9 @@ public class ExcelExport {
             currentSheet = workbook.createSheet(WorkbookUtil.createSafeSheetName(name));
         } else {
             currentSheet = workbook.createSheet();
+        }
+        if (currentSheet instanceof SXSSFSheet) {
+            ((SXSSFSheet) currentSheet).trackAllColumnsForAutoSizing();
         }
         currentSheet.createFreezePane(0, 1, 0, 1);
         PrintSetup ps = currentSheet.getPrintSetup();
