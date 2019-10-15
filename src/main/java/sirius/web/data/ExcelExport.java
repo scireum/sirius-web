@@ -25,6 +25,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.WorkbookUtil;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
@@ -461,6 +462,10 @@ public class ExcelExport {
     }
 
     private void autosizeColumns() {
+        if (currentSheet instanceof SXSSFSheet) {
+            // we do not want to autosize columns of streamed excel sheets, because of performance reasons
+            return;
+        }
         for (short col = 0; col < maxCols; col++) {
             // Don't distort images
             if (!pictureCols.contains(col)) {
