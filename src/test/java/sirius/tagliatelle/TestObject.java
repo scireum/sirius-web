@@ -20,4 +20,9 @@ public class TestObject extends GenericTestObject<String> {
     public String varArgTest(String input, Object... params) {
         return Strings.apply(input, params);
     }
+
+    @Deprecated
+    public void deprecatedMethod() {
+        // Nothing to do...
+    }
 }
