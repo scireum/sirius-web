@@ -125,6 +125,8 @@ public class MacroCall extends Call {
         this.macro = ctx.getPart(macroName, Macro.class);
         if (macro == null) {
             context.error(position, "Unknown macro: %s", macroName);
+        } else if (macro.getClass().isAnnotationPresent(Deprecated.class)) {
+            context.warning(position, "The macro %s (%s) is deprecated.", macro.getName(), macro.getClass().getName());
         }
     }
 
