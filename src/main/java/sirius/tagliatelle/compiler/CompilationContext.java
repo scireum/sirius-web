@@ -412,27 +412,16 @@ public class CompilationContext {
 
     private void outputArgumentDeprecationWarning(Position position, TemplateArgument arg) {
         if (arg.getDeprecationWarning() != null) {
-            if (this.parent == null && (Sirius.isDev() || Sirius.isStartedAsTest())) {
-                error(position, "The attribute '%s' is deprecated: %s", arg.getName(), arg.getDeprecationWarning());
-            } else {
-                warning(position, "The attribute '%s' is deprecated: %s", arg.getName(), arg.getDeprecationWarning());
-            }
+            warning(position, "The attribute '%s' is deprecated: %s", arg.getName(), arg.getDeprecationWarning());
         }
     }
 
     private void outputTemplateDeprecationWarning(Position position, Template template) {
         if (Strings.isFilled(template.getPragma(PRAGMA_DEPRECATED))) {
-            if (this.parent == null && (Sirius.isDev() || Sirius.isStartedAsTest())) {
-                error(position,
-                      "The template '%s' is deprecated: %s",
-                      template.getShortName(),
-                      template.getPragma(PRAGMA_DEPRECATED));
-            } else {
-                warning(position,
-                        "The template '%s' is deprecated: %s",
-                        template.getShortName(),
-                        template.getPragma(PRAGMA_DEPRECATED));
-            }
+            warning(position,
+                    "The template '%s' is deprecated: %s",
+                    template.getShortName(),
+                    template.getPragma(PRAGMA_DEPRECATED));
         }
     }
 
