@@ -404,7 +404,26 @@ public class Tagliatelle {
         CompilationContext compilationContext = createCompilationContext(path, resource, parentContext);
         Compiler compiler = new Compiler(compilationContext, resource.getContentAsString());
         compiler.compile();
+        writeWarningsToLog(compilationContext);
+
         return handleAliasing(compilationContext.getTemplate(), compilationContext);
+    }
+
+    private void writeWarningsToLog(CompilationContext compilationContext) {
+        StringBuilder message = new StringBuilder();
+        message.append("Warnings when compiling ").append(compilationContext.getTemplate().getShortName()).append(":\n");
+        compilationContext.getErrors().forEach(message::append);
+        message.append("Template: ");
+        message.append(compilationContext.getTemplate().getName());
+        message.append("\n");
+
+        if (compilationContext.getTemplate().getResource() != null) {
+            message.append("URL: ");
+            message.append(compilationContext.getTemplate().getResource().getUrl());
+            message.append("\n");
+        }
+
+        Tagliatelle.LOG.WARN(message);
     }
 
     private Template handleAliasing(Template template, CompilationContext compilationContext) throws CompileException {

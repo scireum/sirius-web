@@ -92,7 +92,7 @@ public class Compiler extends InputProcessor {
         context.getTemplate().setStackDepth(context.getStackDepth());
         reader = null;
 
-        return processCollectedErrrors();
+        return processCollectedErrors();
     }
 
     /**
@@ -101,7 +101,7 @@ public class Compiler extends InputProcessor {
      * @return a list of warnings as {@link CompileError} including the relevant source lines
      * @throws CompileException in case one or more errors were collected while compiling the source
      */
-    private List<CompileError> processCollectedErrrors() throws CompileException {
+    private List<CompileError> processCollectedErrors() throws CompileException {
         if (context.getErrors().isEmpty()) {
             return Collections.emptyList();
         }
@@ -127,27 +127,9 @@ public class Compiler extends InputProcessor {
             throw CompileException.create(context.getTemplate(), compileErrors);
         }
 
-        writeWarningsToLog(compileErrors);
-
         return compileErrors;
     }
 
-    private void writeWarningsToLog(List<CompileError> compileErrors) {
-        StringBuilder message = new StringBuilder();
-        message.append("Warnings when compiling ").append(context.getTemplate().getShortName()).append(":\n");
-        compileErrors.forEach(message::append);
-        message.append("Template: ");
-        message.append(context.getTemplate().getName());
-        message.append("\n");
-
-        if (context.getTemplate().getResource() != null) {
-            message.append("URL: ");
-            message.append(context.getTemplate().getResource().getUrl());
-            message.append("\n");
-        }
-
-        Tagliatelle.LOG.WARN(message);
-    }
 
     /**
      * Verifies all macro calls to ensure their integrity.
@@ -166,7 +148,7 @@ public class Compiler extends InputProcessor {
     private Expression verifyMacro(Position pos, Expression expr) {
         if (expr instanceof MacroCall) {
             try {
-                ((MacroCall) expr).verify();
+                ((MacroCall) expr).verify(context,pos);
             } catch (IllegalArgumentException ex) {
                 context.error(pos, "Invalid parameters for macro: %s: %s", expr, ex.getMessage());
             }

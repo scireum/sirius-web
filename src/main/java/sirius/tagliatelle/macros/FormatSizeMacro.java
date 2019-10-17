@@ -8,9 +8,11 @@
 
 package sirius.tagliatelle.macros;
 
+import parsii.tokenizer.Position;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.nls.NLS;
 import sirius.tagliatelle.Tagliatelle;
+import sirius.tagliatelle.compiler.CompilationContext;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
@@ -28,7 +30,7 @@ public class FormatSizeMacro implements Macro {
     }
 
     @Override
-    public void verifyArguments(List<Expression> args) {
+    public void verifyArguments(CompilationContext context, Position pos, List<Expression> args) {
         if (args.size() != 1 && !Tagliatelle.isAssignableTo(args.get(0).getType(), Long.class)) {
             throw new IllegalArgumentException("One parameter is expected");
         }

@@ -8,10 +8,12 @@
 
 package sirius.tagliatelle.macros;
 
+import parsii.tokenizer.Position;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.Tagliatelle;
+import sirius.tagliatelle.compiler.CompilationContext;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
@@ -32,7 +34,7 @@ public class SplitMacro implements Macro {
     }
 
     @Override
-    public void verifyArguments(List<Expression> args) {
+    public void verifyArguments(CompilationContext context, Position pos, List<Expression> args) {
         if (args.size() != 2
             || !Tagliatelle.isAssignableTo(args.get(0).getType(), String.class)
             || !Tagliatelle.isAssignableTo(args.get(1).getType(), String.class)) {

@@ -10,9 +10,11 @@ package sirius.tagliatelle.macros;
 
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
+import parsii.tokenizer.Position;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.xml.StructuredNode;
 import sirius.tagliatelle.Tagliatelle;
+import sirius.tagliatelle.compiler.CompilationContext;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
@@ -34,7 +36,7 @@ public class XMLMacro implements Macro {
     }
 
     @Override
-    public void verifyArguments(List<Expression> args) {
+    public void verifyArguments(CompilationContext context, Position pos, List<Expression> args) {
         if (args.size() != 1 || !Tagliatelle.isAssignableTo(args.get(0).getType(), String.class)) {
             throw new IllegalArgumentException("Expected a single String as argument.");
         }

@@ -8,8 +8,10 @@
 
 package sirius.tagliatelle.macros;
 
+import parsii.tokenizer.Position;
 import sirius.kernel.nls.NLS;
 import sirius.tagliatelle.Tagliatelle;
+import sirius.tagliatelle.compiler.CompilationContext;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
@@ -59,18 +61,16 @@ public abstract class DateComparingMacro implements Macro {
     protected abstract boolean compare(LocalDateTime firstDate, LocalDateTime secondDate);
 
     @Override
-    public void verifyArguments(List<Expression> args) {
+    public void verifyArguments(CompilationContext context, Position pos, List<Expression> args) {
         if (args.size() > 2 || args.isEmpty()) {
             throw new IllegalArgumentException(WRONG_ARGUMENT_EXCEPTION);
         }
 
         checkClassAssignable(args.get(0).getType());
 
-        if (args.size() == 1) {
-            return;
+        if (args.size() > 1) {
+            checkClassAssignable(args.get(1).getType());
         }
-
-        checkClassAssignable(args.get(1).getType());
     }
 
     private void checkClassAssignable(Class<?> type) {
