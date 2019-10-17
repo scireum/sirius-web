@@ -68,11 +68,9 @@ public abstract class DateComparingMacro implements Macro {
 
         checkClassAssignable(args.get(0).getType());
 
-        if (args.size() == 1) {
-            return;
+        if (args.size() > 1) {
+            checkClassAssignable(args.get(1).getType());
         }
-
-        checkClassAssignable(args.get(1).getType());
     }
 
     private void checkClassAssignable(Class<?> type) {
