@@ -37,16 +37,16 @@ public class SmartTranslateMacro implements Macro {
             throw new IllegalArgumentException("Expected a single String as argument.");
         }
 
-        Expression exp = args.get(0);
-        if (exp instanceof ConstantString) {
-            String key = (String) exp.eval(null);
+        Expression expression = args.get(0);
+        if (expression instanceof ConstantString) {
+            String key = (String) expression.eval(null);
             if (key == null || !key.startsWith("$")) {
                 return;
             }
             String effectiveKey = key.substring(1);
             if (Strings.isFilled(effectiveKey) && NLS.getTranslationEngine()
                                                      .getEntriesStartingWith(effectiveKey)
-                                                     .noneMatch(t -> effectiveKey.equals(t.getKey()))) {
+                                                     .noneMatch(entry -> effectiveKey.equals(entry.getKey()))) {
                 context.warning(pos, "No translation found for key: %s", key);
             }
         }

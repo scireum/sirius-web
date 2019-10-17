@@ -51,12 +51,12 @@ public class I18nMacro implements Macro {
             throw new IllegalArgumentException("Expected a String as first and an int as second argument.");
         }
 
-        Expression exp = args.get(0);
-        if (exp instanceof ConstantString) {
-            String key = (String) exp.eval(null);
+        Expression expression = args.get(0);
+        if (expression instanceof ConstantString) {
+            String key = (String) expression.eval(null);
             if (Strings.isFilled(key) && NLS.getTranslationEngine()
                                             .getEntriesStartingWith(key)
-                                            .noneMatch(t -> key.equals(t.getKey()))) {
+                                            .noneMatch(entry -> key.equals(entry.getKey()))) {
                 context.warning(pos, "No translation found for key: %s", key);
             }
         }
