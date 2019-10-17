@@ -137,12 +137,16 @@ public class MacroCall extends Call {
 
     /**
      * Permits the marco to verify its parameters.
-     * <p>
-     * If one or more arguments are invalid an {@link IllegalArgumentException} can be thrown.
+     *
+     * @param context the context which can be used to emit an error or warning
+     * @param pos     the position to be used when reporting an error or warning
+     * @throws IllegalArgumentException a quick way of reporting a generic error for an invalid parameter value
+     * @see CompilationContext#error(Position, String, Object...)
+     * @see CompilationContext#warning(Position, String, Object...)
      */
-    public void verify() {
+    public void verify(CompilationContext context, Position pos)  {
         if (macro != null) {
-            macro.verifyArguments(Arrays.asList(parameterExpressions));
+            macro.verifyArguments(context, pos, Arrays.asList(parameterExpressions));
         }
     }
 }

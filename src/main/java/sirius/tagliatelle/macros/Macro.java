@@ -8,7 +8,9 @@
 
 package sirius.tagliatelle.macros;
 
+import parsii.tokenizer.Position;
 import sirius.kernel.di.std.Named;
+import sirius.tagliatelle.compiler.CompilationContext;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
@@ -29,12 +31,15 @@ public interface Macro extends Named {
     /**
      * Verifies the arguments.
      * <p>
-     * This is used to verify the type and count of arguments at compile time. If one or more arguments are invalid an
-     * {@link IllegalArgumentException} can be thrown.
+     * This is used to verify the type and count of arguments at compile time. If invalid parameters are detected,
+     * either an {@link IllegalArgumentException} can be thrown to report a generic error or the given context can
+     * be used to either emit an error or warning.
      *
-     * @param args the expressions which will be passed in at runtime.
+     * @param context the compilation context which can be used to emit an error or warning
+     * @param pos     the position to use for the generated errors or warnings
+     * @param args    the expressions which will be passed in at runtime.
      */
-    void verifyArguments(List<Expression> args);
+    void verifyArguments(CompilationContext context, Position pos, List<Expression> args);
 
     /**
      * Evaluates the macro at runtime.

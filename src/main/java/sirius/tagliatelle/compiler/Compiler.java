@@ -148,7 +148,7 @@ public class Compiler extends InputProcessor {
     private Expression verifyMacro(Position pos, Expression expr) {
         if (expr instanceof MacroCall) {
             try {
-                ((MacroCall) expr).verify();
+                ((MacroCall) expr).verify(context,pos);
             } catch (IllegalArgumentException ex) {
                 context.error(pos, "Invalid parameters for macro: %s: %s", expr, ex.getMessage());
             }
