@@ -59,7 +59,6 @@ class ExcelExportSpec extends BaseSpecification {
         Files.delete(testFile)
     }
 
-    @Ignore
     def "only allow 1 million in a excel sheet rows"() {
         given:
         File testFile = File.createTempFile("excel-output", ".xlsx")
