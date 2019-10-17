@@ -422,6 +422,10 @@
                         id: 'right',
                         type: 'linear',
                         position: 'right',
+                        gridLines: {
+                            borderDash: [2, 1],
+                            color: 'rgba(0,0,0,0.3)'
+                        },
                         ticks: {
                             beginAtZero: true,
                         }
