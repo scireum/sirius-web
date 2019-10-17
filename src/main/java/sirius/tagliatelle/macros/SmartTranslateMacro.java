@@ -8,11 +8,12 @@
 
 package sirius.tagliatelle.macros;
 
-import sirius.kernel.Sirius;
+import parsii.tokenizer.Position;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.nls.NLS;
 import sirius.tagliatelle.Tagliatelle;
+import sirius.tagliatelle.compiler.CompilationContext;
 import sirius.tagliatelle.expression.ConstantString;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
@@ -30,32 +31,23 @@ public class SmartTranslateMacro implements Macro {
         return String.class;
     }
 
-    /**
-     * Verifies the argument type.
-     * <p>
-     * If the i18n key is constant, it also ensures that a matching translation is present.
-     *
-     * @param args the expressions which will be passed in at runtime.
-     */
     @Override
-    public void verifyArguments(List<Expression> args) {
+    public void verifyArguments(CompilationContext context, Position pos, List<Expression> args) {
         if (args.size() != 1 || !Tagliatelle.isAssignableTo(args.get(0).getType(), String.class)) {
             throw new IllegalArgumentException("Expected a single String as argument.");
         }
 
-        if (Sirius.isDev()) {
-            Expression exp = args.get(0);
-            if (exp instanceof ConstantString) {
-                String key = (String) exp.eval(null);
-                if (key == null || !key.startsWith("$")) {
-                    return;
-                }
-                String effectiveKey = key.substring(1);
-                if (Strings.isFilled(effectiveKey) && NLS.getTranslationEngine()
-                                                         .getEntriesStartingWith(effectiveKey)
-                                                         .noneMatch(t -> effectiveKey.equals(t.getKey()))) {
-                    throw new IllegalArgumentException(Strings.apply("No translation found for key: %s", effectiveKey));
-                }
+        Expression exp = args.get(0);
+        if (exp instanceof ConstantString) {
+            String key = (String) exp.eval(null);
+            if (key == null || !key.startsWith("$")) {
+                return;
+            }
+            String effectiveKey = key.substring(1);
+            if (Strings.isFilled(effectiveKey) && NLS.getTranslationEngine()
+                                                     .getEntriesStartingWith(effectiveKey)
+                                                     .noneMatch(t -> effectiveKey.equals(t.getKey()))) {
+                context.warning(pos, "No translation found for key: %s", key);
             }
         }
     }
