@@ -127,27 +127,9 @@ public class Compiler extends InputProcessor {
             throw CompileException.create(context.getTemplate(), compileErrors);
         }
 
-        writeWarningsToLog(compileErrors);
-
         return compileErrors;
     }
 
-    private void writeWarningsToLog(List<CompileError> compileErrors) {
-        StringBuilder message = new StringBuilder();
-        message.append("Warnings when compiling ").append(context.getTemplate().getShortName()).append(":\n");
-        compileErrors.forEach(message::append);
-        message.append("Template: ");
-        message.append(context.getTemplate().getName());
-        message.append("\n");
-
-        if (context.getTemplate().getResource() != null) {
-            message.append("URL: ");
-            message.append(context.getTemplate().getResource().getUrl());
-            message.append("\n");
-        }
-
-        Tagliatelle.LOG.WARN(message);
-    }
 
     /**
      * Verifies all macro calls to ensure their integrity.
