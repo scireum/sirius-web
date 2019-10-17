@@ -8,9 +8,11 @@
 
 package sirius.tagliatelle.macros;
 
+import parsii.tokenizer.Position;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.Tagliatelle;
+import sirius.tagliatelle.compiler.CompilationContext;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
@@ -30,7 +32,7 @@ public class ApplyMacro implements Macro {
     }
 
     @Override
-    public void verifyArguments(List<Expression> args) {
+    public void verifyArguments(CompilationContext context, Position pos, List<Expression> args) {
         if (args.isEmpty() || !Tagliatelle.isAssignableTo(args.get(0).getType(), String.class)) {
             throw new IllegalArgumentException("Expected at least a String as first argument.");
         }

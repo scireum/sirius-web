@@ -8,9 +8,11 @@
 
 package sirius.tagliatelle.macros;
 
+import parsii.tokenizer.Position;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.Tagliatelle;
+import sirius.tagliatelle.compiler.CompilationContext;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
@@ -32,7 +34,7 @@ public class LimitMacro implements Macro {
     }
 
     @Override
-    public void verifyArguments(List<Expression> args) {
+    public void verifyArguments(CompilationContext context, Position pos, List<Expression> args) {
         if (args.size() < 2 || args.size() > 3 || !Tagliatelle.isAssignableTo(args.get(1).getType(), int.class)) {
             throw new IllegalArgumentException(
                     "Expected the first argument to be an object and the second argument to be an integer.");
