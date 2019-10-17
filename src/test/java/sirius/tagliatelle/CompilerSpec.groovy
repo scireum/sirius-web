@@ -18,7 +18,7 @@ import sirius.tagliatelle.compiler.CompilationContext
 import sirius.tagliatelle.compiler.CompileError
 import sirius.tagliatelle.compiler.CompileException
 import sirius.tagliatelle.compiler.Compiler
-import sirius.tagliatelle.emitter.ConstantEmitter
+import sirius.web.resources.Resource
 import sirius.web.resources.Resources
 
 import java.time.LocalDate
@@ -233,32 +233,52 @@ class CompilerSpec extends BaseSpecification {
         errors.get(1).toString().contains("Cannot find a handler for the internal tag: i:unknown")
     }
 
+    private CompilationContext compile(String templateName) {
+        Resource resource = resources.resolve(templateName).orElse(null)
+        CompilationContext compilationContext = tagliatelle.createCompilationContext(templateName, resource, null)
+        Compiler compiler = new Compiler(compilationContext, resource.getContentAsString())
+        compiler.compile()
+        return compilationContext
+    }
+
     def "argument deprecation is detected"() {
         when:
-        List<CompileError> errors = null
-        try {
-            tagliatelle.resolve("/templates/deprecatedArgument.html.pasta").get()
-        } catch (CompileException err) {
-            errors = err.getErrors()
-        }
+        CompilationContext compilationContext = compile("/templates/deprecatedArgument.html.pasta")
+        List<ParseError> errors = compilationContext.getErrors()
         then:
         errors.size() == 1
-        errors.get(0).getError().getSeverity() == ParseError.Severity.ERROR
-        errors.get(0).toString().contains("The attribute 'deprecatedArg' is deprecated: Do not use")
+        errors.get(0).getSeverity() == ParseError.Severity.WARNING
+        errors.get(0).getMessage().contains("The attribute 'deprecatedArg' is deprecated: Do not use")
     }
 
     def "deprecation is detected"() {
         when:
-        List<CompileError> errors = null
-        try {
-            tagliatelle.resolve("/templates/deprecatedCaller.html.pasta").get()
-        } catch (CompileException err) {
-            errors = err.getErrors()
-        }
+        CompilationContext compilationContext = compile("/templates/deprecatedCaller.html.pasta")
+        List<ParseError> errors = compilationContext.getErrors()
         then:
         errors.size() == 2
-        errors.get(0).getError().getSeverity() == ParseError.Severity.ERROR
-        errors.get(0).toString().contains("The template '<e:deprecated>' is deprecated: Test of deprecated")
+        errors.get(0).getSeverity() == ParseError.Severity.WARNING
+        errors.get(0).getMessage().contains("The template '<e:deprecated>' is deprecated: Test of deprecated")
+    }
+
+    def "calling a deprecated method is detected"() {
+        when:
+        CompilationContext compilationContext = compile("/templates/deprecatedMethodCall.html.pasta")
+        List<ParseError> errors = compilationContext.getErrors()
+        then:
+        errors.size() == 1
+        errors.get(0).getSeverity() == ParseError.Severity.WARNING
+        errors.get(0).getMessage().contains("The method sirius.tagliatelle.TestObject.deprecatedMethod is marked as deprecated")
+    }
+
+    def "calling a deprecated macro is detected"() {
+        when:
+        CompilationContext compilationContext = compile("/templates/deprecatedMacroCall.html.pasta")
+        List<ParseError> errors = compilationContext.getErrors()
+        then:
+        errors.size() == 1
+        errors.get(0).getSeverity() == ParseError.Severity.WARNING
+        errors.get(0).getMessage().contains("The macro deprecatedMacro (sirius.tagliatelle.DeprecatedMacro) is deprecated.")
     }
 
     def "invalid varargs are detected"() {

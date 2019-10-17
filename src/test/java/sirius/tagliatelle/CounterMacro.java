@@ -8,8 +8,10 @@
 
 package sirius.tagliatelle;
 
+import parsii.tokenizer.Position;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Counter;
+import sirius.tagliatelle.compiler.CompilationContext;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.macros.Macro;
 import sirius.tagliatelle.rendering.LocalRenderContext;
@@ -28,7 +30,7 @@ public class CounterMacro implements Macro {
     }
 
     @Override
-    public void verifyArguments(List<Expression> args) {
+    public void verifyArguments(CompilationContext context, Position pos, List<Expression> args) {
 
     }
 
