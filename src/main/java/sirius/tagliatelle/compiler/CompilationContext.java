@@ -276,7 +276,7 @@ public class CompilationContext {
      * @return a list of all errors and warnings
      */
     public List<ParseError> getErrors() {
-        return errors;
+        return Collections.unmodifiableList(errors);
     }
 
     /**
