@@ -397,7 +397,8 @@
                 pointHighlightFill: "#fff",
                 pointHighlightStroke: color,
                 label: datasets[i].label,
-                data: datasets[i].data
+                data: datasets[i].data,
+                yAxisID: datasets[i].axis
             });
 
             if (datasets[i].axis === 'right') {
