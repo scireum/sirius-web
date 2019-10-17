@@ -92,7 +92,7 @@ public class Compiler extends InputProcessor {
         context.getTemplate().setStackDepth(context.getStackDepth());
         reader = null;
 
-        return processCollectedErrrors();
+        return processCollectedErrors();
     }
 
     /**
@@ -101,7 +101,7 @@ public class Compiler extends InputProcessor {
      * @return a list of warnings as {@link CompileError} including the relevant source lines
      * @throws CompileException in case one or more errors were collected while compiling the source
      */
-    private List<CompileError> processCollectedErrrors() throws CompileException {
+    private List<CompileError> processCollectedErrors() throws CompileException {
         if (context.getErrors().isEmpty()) {
             return Collections.emptyList();
         }
