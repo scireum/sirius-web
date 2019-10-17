@@ -214,9 +214,6 @@ public class ExcelExport {
         } else {
             currentSheet = workbook.createSheet();
         }
-        if (currentSheet instanceof SXSSFSheet) {
-            ((SXSSFSheet) currentSheet).trackAllColumnsForAutoSizing();
-        }
         currentSheet.createFreezePane(0, 1, 0, 1);
         PrintSetup ps = currentSheet.getPrintSetup();
         ps.setPaperSize(PrintSetup.A4_PAPERSIZE);
@@ -476,6 +473,10 @@ public class ExcelExport {
     }
 
     private void autosizeColumns() {
+        if (currentSheet instanceof SXSSFSheet) {
+            // we do not want to autosize columns of streamed excel sheets, because of performance reasons
+            return;
+        }
         for (short col = 0; col < maxCols; col++) {
             // Don't distort images
             if (!pictureCols.contains(col)) {
