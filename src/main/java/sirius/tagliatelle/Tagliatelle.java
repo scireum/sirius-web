@@ -410,6 +410,10 @@ public class Tagliatelle {
     }
 
     private void writeWarningsToLog(CompilationContext compilationContext) {
+        if (compilationContext.getErrors().isEmpty()) {
+            return;
+        }
+
         StringBuilder message = new StringBuilder();
         message.append("Warnings when compiling ").append(compilationContext.getTemplate().getShortName()).append(":\n");
         compilationContext.getErrors().forEach(message::append);
