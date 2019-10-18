@@ -64,12 +64,16 @@ class ExcelExportSpec extends BaseSpecification {
         File testFile = File.createTempFile("excel-output", ".xlsx")
         when:
         ExcelExport export = ExcelExport.asStreamingXLSX()
+        StringBuilder sheetWithError = new StringBuilder()
+        export.setMaxRowsReachedHandler({ sheetName -> sheetWithError.append(sheetName) })
         for (int i = 1; i <= ExcelExport.MAX_NUM_ROWS; i++) {
             export.addRow("A-" + i)
         }
         export.addRow("A-" + (ExcelExport.MAX_NUM_ROWS + 1))
         export.writeToStream(new FileOutputStream(testFile))
         then:
+        sheetWithError.toString() == "Sheet0"
+        and:
         Counter lineCounter = new Counter()
         LineBasedProcessor.create(testFile.getName(), new FileInputStream(testFile))
                           .run({

@@ -52,6 +52,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * Generates an Excel file which can be sent as a response for a {@link sirius.web.http.WebContext}
@@ -74,6 +75,7 @@ public class ExcelExport {
     private Set<Short> pictureCols = new HashSet<>();
     private Drawing drawing;
     private String maxRowsReachedMessage;
+    private Consumer<String> maxRowsReachedHandler;
 
     /**
      * Represents a cell containing an image which should be inserted.
@@ -408,6 +410,9 @@ public class ExcelExport {
         if (rows == MAX_NUM_ROWS) {
             Row r = currentSheet.createRow(rows++);
             addCell(r, getMaxRowsReachedMessage(), 0, normalStyle);
+            if (maxRowsReachedHandler != null) {
+                maxRowsReachedHandler.accept(currentSheet.getSheetName());
+            }
             return this;
         }
         if (row != null) {
@@ -509,5 +514,9 @@ public class ExcelExport {
 
     public void setMaxRowsReachedMessage(String maxRowsReachedMessage) {
         this.maxRowsReachedMessage = maxRowsReachedMessage;
+    }
+
+    public void setMaxRowsReachedHandler(Consumer<String> maxRowsReachedHandler) {
+        this.maxRowsReachedHandler = maxRowsReachedHandler;
     }
 }
