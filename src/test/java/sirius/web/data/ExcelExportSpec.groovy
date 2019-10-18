@@ -10,8 +10,8 @@ package sirius.web.data
 
 import sirius.kernel.BaseSpecification
 import sirius.kernel.commons.Files
+import sirius.kernel.health.Counter
 import sirius.kernel.nls.NLS
-import spock.lang.Ignore
 
 class ExcelExportSpec extends BaseSpecification {
 
@@ -70,9 +70,11 @@ class ExcelExportSpec extends BaseSpecification {
         export.addRow("A-" + (ExcelExport.MAX_NUM_ROWS + 1))
         export.writeToStream(new FileOutputStream(testFile))
         then:
+        Counter lineCounter = new Counter()
         LineBasedProcessor.create(testFile.getName(), new FileInputStream(testFile))
                           .run({
                                    lineNum, row ->
+                                       lineCounter.inc()
                                        assert lineNum <= ExcelExport.MAX_NUM_ROWS + 1
                                        if (lineNum <= (ExcelExport.MAX_NUM_ROWS)) {
                                            assert row.at(0).asString() == "A-" + lineNum
@@ -82,6 +84,7 @@ class ExcelExportSpec extends BaseSpecification {
                                        }
                                },
                                { e -> false })
+        lineCounter.getCount() == ExcelExport.MAX_NUM_ROWS + 1
         cleanup:
         Files.delete(testFile)
     }
