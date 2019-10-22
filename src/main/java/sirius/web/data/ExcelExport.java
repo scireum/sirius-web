@@ -59,6 +59,10 @@ import java.util.function.Consumer;
  */
 public class ExcelExport {
 
+    /**
+     * The maximum number of rows we allow in one sheet of an ExcelExport.
+     * This limit is necessary, because Excel itself only allows slightly more rows per sheet.
+     */
     public static final int MAX_NUM_ROWS = 1_000_000;
 
     private static final String MIME_TYPE_XLS = "application/ms-excel";
