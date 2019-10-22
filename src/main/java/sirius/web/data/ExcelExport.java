@@ -59,12 +59,6 @@ import java.util.function.Consumer;
  */
 public class ExcelExport {
 
-    /**
-     * The maximum number of rows we allow in one sheet of an ExcelExport.
-     * This limit is necessary, because Excel itself only allows slightly more rows per sheet.
-     */
-    public static final int MAX_NUM_ROWS = 1_000_000;
-
     private static final String MIME_TYPE_XLS = "application/ms-excel";
     private static final String MIME_TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
@@ -408,10 +402,10 @@ public class ExcelExport {
      * @return the export itself for fluent method calls
      */
     public ExcelExport addRowAsList(Collection<?> row) {
-        if (rows > MAX_NUM_ROWS) {
+        if (rows > workbook.getSpreadsheetVersion().getMaxRows() - 1) {
             return this;
         }
-        if (rows == MAX_NUM_ROWS) {
+        if (rows == workbook.getSpreadsheetVersion().getMaxRows() - 1) {
             if (Strings.isFilled(getMaxRowsReachedMessage())) {
                 Row r = currentSheet.createRow(rows);
                 addCell(r, getMaxRowsReachedMessage(), 0, normalStyle);
@@ -472,7 +466,7 @@ public class ExcelExport {
                 autosizeColumns();
 
                 // Add autofilter...
-                currentSheet.setAutoFilter(new CellRangeAddress(0, rows, 0, maxCols - 1));
+                currentSheet.setAutoFilter(new CellRangeAddress(0, rows - 1, 0, maxCols - 1));
                 workbook.write(out);
             }
         } catch (IOException e) {
@@ -520,7 +514,7 @@ public class ExcelExport {
     }
 
     /**
-     * The message to append at the end of an excel sheet which exceeds the {@link #MAX_NUM_ROWS}.
+     * The message to append at the end of an excel sheet which exceeds the maximum number of allowed rows.
      * <p>
      * When this is left empty, no message will be appended.
      *
