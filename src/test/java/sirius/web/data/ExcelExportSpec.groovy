@@ -9,6 +9,7 @@
 package sirius.web.data
 
 import sirius.kernel.BaseSpecification
+import sirius.kernel.Scope
 import sirius.kernel.commons.Files
 import sirius.kernel.health.Counter
 import sirius.kernel.nls.NLS
@@ -59,6 +60,7 @@ class ExcelExportSpec extends BaseSpecification {
         Files.delete(testFile)
     }
 
+    @Scope(Scope.SCOPE_NIGHTLY)
     def "only allow 1 million in a excel sheet rows"() {
         given:
         File testFile = File.createTempFile("excel-output", ".xlsx")
