@@ -12,7 +12,6 @@ import sirius.kernel.BaseSpecification
 import sirius.kernel.Scope
 import sirius.kernel.commons.Files
 import sirius.kernel.health.Counter
-import sirius.kernel.nls.NLS
 
 class ExcelExportSpec extends BaseSpecification {
 
@@ -67,7 +66,8 @@ class ExcelExportSpec extends BaseSpecification {
         when:
         ExcelExport export = ExcelExport.asStreamingXLSX()
         StringBuilder sheetWithError = new StringBuilder()
-        export.setMaxRowsReachedHandler({ sheetName -> sheetWithError.append(sheetName) })
+        export.withMaxRowsReachedHandler({ sheetName -> sheetWithError.append(sheetName) })
+        export.withMaxRowsReachedMessage("Max rows reached.")
         for (int i = 1; i <= ExcelExport.MAX_NUM_ROWS; i++) {
             export.addRow("A-" + i)
         }
@@ -85,7 +85,7 @@ class ExcelExportSpec extends BaseSpecification {
                                        if (lineNum <= (ExcelExport.MAX_NUM_ROWS)) {
                                            assert row.at(0).asString() == "A-" + lineNum
                                        } else {
-                                           assert row.at(0) == NLS.get("ExcelExport.maxRowsReached")
+                                           assert row.at(0) == "Max rows reached."
                                            assert lineNum == ExcelExport.MAX_NUM_ROWS + 1
                                        }
                                },

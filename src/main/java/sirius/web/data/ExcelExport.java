@@ -412,8 +412,11 @@ public class ExcelExport {
             return this;
         }
         if (rows == MAX_NUM_ROWS) {
-            Row r = currentSheet.createRow(rows++);
-            addCell(r, getMaxRowsReachedMessage(), 0, normalStyle);
+            if (Strings.isFilled(getMaxRowsReachedMessage())) {
+                Row r = currentSheet.createRow(rows);
+                addCell(r, getMaxRowsReachedMessage(), 0, normalStyle);
+            }
+            rows++;
             if (maxRowsReachedHandler != null) {
                 maxRowsReachedHandler.accept(currentSheet.getSheetName());
             }
@@ -513,14 +516,32 @@ public class ExcelExport {
     }
 
     public String getMaxRowsReachedMessage() {
-        return Strings.firstFilled(NLS.smartGet(maxRowsReachedMessage), NLS.get("ExcelExport.maxRowsReached"));
+        return NLS.smartGet(maxRowsReachedMessage);
     }
 
-    public void setMaxRowsReachedMessage(String maxRowsReachedMessage) {
+    /**
+     * The message to enter at the end of an excel sheet wich exceeds the {@link #MAX_NUM_ROWS}.
+     * <p>
+     * When this is left empty, no message will be displayed.
+     *
+     * @param maxRowsReachedMessage the message to add to the excel sheet
+     * @return the ExcelExport itself for fluent method calls
+     */
+    public ExcelExport withMaxRowsReachedMessage(String maxRowsReachedMessage) {
         this.maxRowsReachedMessage = maxRowsReachedMessage;
+        return this;
     }
 
-    public void setMaxRowsReachedHandler(Consumer<String> maxRowsReachedHandler) {
+    /**
+     * The handler which is called when the max numbers of rows is reached for a sheet.
+     * <p>
+     * The handler will be called with the name of the sheet as String parameter.
+     *
+     * @param maxRowsReachedHandler the handler
+     * @return the ExcelExport itself for fluent method calls
+     */
+    public ExcelExport withMaxRowsReachedHandler(Consumer<String> maxRowsReachedHandler) {
         this.maxRowsReachedHandler = maxRowsReachedHandler;
+        return this;
     }
 }
