@@ -520,9 +520,9 @@ public class ExcelExport {
     }
 
     /**
-     * The message to enter at the end of an excel sheet wich exceeds the {@link #MAX_NUM_ROWS}.
+     * The message to append at the end of an excel sheet which exceeds the {@link #MAX_NUM_ROWS}.
      * <p>
-     * When this is left empty, no message will be displayed.
+     * When this is left empty, no message will be appended.
      *
      * @param maxRowsReachedMessage the message to add to the excel sheet
      * @return the ExcelExport itself for fluent method calls
@@ -535,7 +535,7 @@ public class ExcelExport {
     /**
      * The handler which is called when the max numbers of rows is reached for a sheet.
      * <p>
-     * The handler will be called with the name of the sheet as String parameter.
+     * The handler will be called with the name of the sheet as a String parameter.
      *
      * @param maxRowsReachedHandler the handler
      * @return the ExcelExport itself for fluent method calls
