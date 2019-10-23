@@ -405,21 +405,11 @@ public class ExcelExport {
      * @return the export itself for fluent method calls
      */
     public ExcelExport addRowAsList(Collection<?> row) {
-        if (row == null) {
+        if (row == null || isRowLimitExceeded()) {
             return this;
         }
-        if (rows > workbook.getSpreadsheetVersion().getMaxRows() - 1) {
-            return this;
-        }
-        if (rows == workbook.getSpreadsheetVersion().getMaxRows() - 1) {
-            if (Strings.isFilled(determineMaxRowsReachedMessage())) {
-                Row r = currentSheet.createRow(rows);
-                addCell(r, determineMaxRowsReachedMessage(), 0, normalStyle);
-            }
-            rows++;
-            if (maxRowsReachedHandler != null) {
-                maxRowsReachedHandler.accept(currentSheet.getSheetName());
-            }
+        if (isLastRow()) {
+            handleLastRow();
             return this;
         }
 
@@ -431,6 +421,25 @@ public class ExcelExport {
         }
 
         return this;
+    }
+
+    private void handleLastRow() {
+        if (Strings.isFilled(determineMaxRowsReachedMessage())) {
+            Row r = currentSheet.createRow(rows);
+            addCell(r, determineMaxRowsReachedMessage(), 0, normalStyle);
+        }
+        rows++;
+        if (maxRowsReachedHandler != null) {
+            maxRowsReachedHandler.accept(currentSheet.getSheetName());
+        }
+    }
+
+    private boolean isRowLimitExceeded() {
+        return rows > workbook.getSpreadsheetVersion().getMaxRows() - 1;
+    }
+
+    private boolean isLastRow() {
+        return rows == workbook.getSpreadsheetVersion().getMaxRows() - 1;
     }
 
     /**
