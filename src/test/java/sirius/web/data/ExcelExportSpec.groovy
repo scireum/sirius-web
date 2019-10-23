@@ -156,4 +156,30 @@ class ExcelExportSpec extends BaseSpecification {
         cleanup:
         Files.delete(testFile)
     }
+
+    @Scope(Scope.SCOPE_NIGHTLY)
+    def "use last line before row limit for data if no 'maxRowsReachedMessage' is given"() {
+        given:
+        File testFile = File.createTempFile("excel-output", ".xls")
+        when:
+        ExcelExport export = ExcelExport.asXLS()
+        // overshoot the max num of rows a little for testing purposes
+        for (int i = 1; i <= XLS_MAX_ROWS + 100; i++) {
+            export.addRow("A-" + i)
+        }
+        export.writeToStream(new FileOutputStream(testFile))
+        then:
+        Counter lineCounter = new Counter()
+        LineBasedProcessor.create(testFile.getName(), new FileInputStream(testFile))
+                          .run({
+                                   lineNum, row ->
+                                       lineCounter.inc()
+                                       assert lineNum <= XLS_MAX_ROWS
+                                       assert row.at(0).asString() == "A-" + lineNum
+                               },
+                               { e -> false })
+        lineCounter.getCount() == XLS_MAX_ROWS
+        cleanup:
+        Files.delete(testFile)
+    }
 }

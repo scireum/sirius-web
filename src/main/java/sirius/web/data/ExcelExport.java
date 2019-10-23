@@ -408,8 +408,7 @@ public class ExcelExport {
         if (row == null || isRowLimitExceeded()) {
             return this;
         }
-        if (isLastRow()) {
-            handleLastRow();
+        if (isLastRow() && handleLastRow()) {
             return this;
         }
 
@@ -423,15 +422,26 @@ public class ExcelExport {
         return this;
     }
 
-    private void handleLastRow() {
-        if (Strings.isFilled(determineMaxRowsReachedMessage())) {
-            Row r = currentSheet.createRow(rows);
-            addCell(r, determineMaxRowsReachedMessage(), 0, normalStyle);
-        }
-        rows++;
+    /**
+     * Handles the last row of a sheet.
+     * <p>
+     * Returns <tt>true</tt> if the <tt>maxRowsReachedMessage</tt> was written in the last row, this means no more row
+     * should be written to this sheet. Returns <tt>false</tt> if the <tt>maxRowsReachedMessage</tt> was empty therefore
+     * no line was written and the last row can be filled with data.
+     *
+     * @return whether the <tt>maxRowsReachedMessage</tt> was written into the last line or not
+     */
+    private boolean handleLastRow() {
         if (maxRowsReachedHandler != null) {
             maxRowsReachedHandler.accept(currentSheet.getSheetName());
         }
+        if (Strings.isFilled(determineMaxRowsReachedMessage())) {
+            Row r = currentSheet.createRow(rows);
+            addCell(r, determineMaxRowsReachedMessage(), 0, normalStyle);
+            rows++;
+            return true;
+        }
+        return false;
     }
 
     private boolean isRowLimitExceeded() {
