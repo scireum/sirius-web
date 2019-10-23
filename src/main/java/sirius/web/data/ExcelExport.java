@@ -425,7 +425,7 @@ public class ExcelExport {
     /**
      * Handles the last row of a sheet.
      * <p>
-     * Returns <tt>true</tt> if the <tt>maxRowsReachedMessage</tt> was written in the last row, this means no more row
+     * Returns <tt>true</tt> if the <tt>maxRowsReachedMessage</tt> was written in the last row, this means no more rows
      * should be written to this sheet. Returns <tt>false</tt> if the <tt>maxRowsReachedMessage</tt> was empty therefore
      * no line was written and the last row can be filled with data.
      *
