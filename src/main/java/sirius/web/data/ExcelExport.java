@@ -406,9 +406,9 @@ public class ExcelExport {
             return this;
         }
         if (rows == workbook.getSpreadsheetVersion().getMaxRows() - 1) {
-            if (Strings.isFilled(getMaxRowsReachedMessage())) {
+            if (Strings.isFilled(determineMaxRowsReachedMessage())) {
                 Row r = currentSheet.createRow(rows);
-                addCell(r, getMaxRowsReachedMessage(), 0, normalStyle);
+                addCell(r, determineMaxRowsReachedMessage(), 0, normalStyle);
             }
             rows++;
             if (maxRowsReachedHandler != null) {
@@ -509,14 +509,15 @@ public class ExcelExport {
         return (data instanceof Amount) && ((Amount) data).isFilled();
     }
 
-    public String getMaxRowsReachedMessage() {
+    private String determineMaxRowsReachedMessage() {
         return NLS.smartGet(maxRowsReachedMessage);
     }
 
     /**
-     * The message to append at the end of an excel sheet which exceeds the maximum number of allowed rows.
+     * Sets the message to append at the end of an excel sheet which exceeds the maximum number of allowed rows.
      * <p>
-     * When this is left empty, no message will be appended.
+     * {@link NLS#smartGet(String)} will be applied to the message. When the message is left empty, no message will be
+     * appended.
      *
      * @param maxRowsReachedMessage the message to add to the excel sheet
      * @return the ExcelExport itself for fluent method calls
@@ -527,11 +528,11 @@ public class ExcelExport {
     }
 
     /**
-     * The handler which is called when the max numbers of rows is reached for a sheet.
+     * Sets the handler which is called when the max numbers of rows is reached for a sheet.
      * <p>
      * The handler will be called with the name of the sheet as a String parameter.
      *
-     * @param maxRowsReachedHandler the handler
+     * @param maxRowsReachedHandler the handler which is called
      * @return the ExcelExport itself for fluent method calls
      */
     public ExcelExport withMaxRowsReachedHandler(Consumer<String> maxRowsReachedHandler) {

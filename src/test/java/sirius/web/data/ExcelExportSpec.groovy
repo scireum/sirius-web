@@ -15,7 +15,7 @@ import sirius.kernel.health.Counter
 
 class ExcelExportSpec extends BaseSpecification {
 
-    public static final int XLSX_MAX_ROWS = 0x100000
+    private static final int XLSX_MAX_ROWS = 0x100000
 
     def "create simple excel sheet"() {
         given:
