@@ -18,6 +18,29 @@ class ExcelExportSpec extends BaseSpecification {
     private static final int XLS_MAX_ROWS = 0x10000
     private static final int XLSX_MAX_ROWS = 0x100000
 
+    def "ignores null inputs and does not write row"() {
+        given:
+        File testFile = File.createTempFile("excel-output", ".xlsx")
+        when:
+        ExcelExport export = ExcelExport.asStandardXLSX()
+        export.addRow(null)
+        export.addRowAsList(null)
+        export.addRow("A-1", "B-1", "C-1")
+        export.writeToStream(new FileOutputStream(testFile))
+        then:
+        def expectLineNum = 1
+        def expectedRow = [["A-1", "B-1", "C-1"]]
+        LineBasedProcessor.create(testFile.getName(), new FileInputStream(testFile))
+                          .run({
+                                   lineNum, row ->
+                                       assert lineNum == expectLineNum++
+                                       assert row.asList() == expectedRow[lineNum - 1]
+                               },
+                               { e -> false })
+        cleanup:
+        Files.delete(testFile)
+    }
+
     def "create simple excel sheet"() {
         given:
         File testFile = File.createTempFile("excel-output", ".xlsx")

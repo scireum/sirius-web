@@ -391,6 +391,9 @@ public class ExcelExport {
      * @return the export itself for fluent method calls
      */
     public ExcelExport addRow(Object... row) {
+        if (row == null) {
+            return this;
+        }
         addRowAsList(Arrays.asList(row));
         return this;
     }
@@ -402,6 +405,9 @@ public class ExcelExport {
      * @return the export itself for fluent method calls
      */
     public ExcelExport addRowAsList(Collection<?> row) {
+        if (row == null) {
+            return this;
+        }
         if (rows > workbook.getSpreadsheetVersion().getMaxRows() - 1) {
             return this;
         }
@@ -416,14 +422,14 @@ public class ExcelExport {
             }
             return this;
         }
-        if (row != null) {
-            maxCols = Math.max(maxCols, row.size());
-            int idx = 0;
-            Row r = currentSheet.createRow(rows++);
-            for (Object entry : row) {
-                addCell(r, entry, idx++, getCellStyleForObject(entry));
-            }
+
+        maxCols = Math.max(maxCols, row.size());
+        int idx = 0;
+        Row r = currentSheet.createRow(rows++);
+        for (Object entry : row) {
+            addCell(r, entry, idx++, getCellStyleForObject(entry));
         }
+
         return this;
     }
 
