@@ -15,6 +15,7 @@ import sirius.kernel.health.Counter
 
 class ExcelExportSpec extends BaseSpecification {
 
+    private static final int XLS_MAX_ROWS = 0x10000
     private static final int XLSX_MAX_ROWS = 0x100000
 
     def "create simple excel sheet"() {
@@ -62,7 +63,7 @@ class ExcelExportSpec extends BaseSpecification {
     }
 
     @Scope(Scope.SCOPE_NIGHTLY)
-    def "only allow 1 million in a excel sheet rows"() {
+    def "only allow 1 million rows in an xlsx excel sheet"() {
         given:
         File testFile = File.createTempFile("excel-output", ".xlsx")
         when:
@@ -93,6 +94,42 @@ class ExcelExportSpec extends BaseSpecification {
                                },
                                { e -> false })
         lineCounter.getCount() == XLSX_MAX_ROWS
+        cleanup:
+        Files.delete(testFile)
+    }
+
+    @Scope(Scope.SCOPE_NIGHTLY)
+    def "only allow 65k rows in an xls excel sheet"() {
+        given:
+        File testFile = File.createTempFile("excel-output", ".xls")
+        when:
+        ExcelExport export = ExcelExport.asXLS()
+        StringBuilder sheetWithError = new StringBuilder()
+        export.withMaxRowsReachedHandler({ sheetName -> sheetWithError.append(sheetName) })
+        export.withMaxRowsReachedMessage("Max rows reached.")
+        // overshoot the max num of rows a little for testing purposes
+        for (int i = 1; i <= XLS_MAX_ROWS + 100; i++) {
+            export.addRow("A-" + i)
+        }
+        export.writeToStream(new FileOutputStream(testFile))
+        then:
+        sheetWithError.toString() == "Sheet0"
+        and:
+        Counter lineCounter = new Counter()
+        LineBasedProcessor.create(testFile.getName(), new FileInputStream(testFile))
+                          .run({
+                                   lineNum, row ->
+                                       lineCounter.inc()
+                                       assert lineNum <= XLS_MAX_ROWS
+                                       if (lineNum < XLS_MAX_ROWS) {
+                                           assert row.at(0).asString() == "A-" + lineNum
+                                       } else {
+                                           assert row.at(0) == "Max rows reached."
+                                           assert lineNum == XLS_MAX_ROWS
+                                       }
+                               },
+                               { e -> false })
+        lineCounter.getCount() == XLS_MAX_ROWS
         cleanup:
         Files.delete(testFile)
     }
