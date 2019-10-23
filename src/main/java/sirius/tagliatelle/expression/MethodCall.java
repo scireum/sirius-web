@@ -20,7 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * Invokes a Java Method.
+ * Invokes a Java {@link Method}.
  */
 public class MethodCall extends Call {
 
@@ -192,6 +192,7 @@ public class MethodCall extends Call {
         if (parameterExpressions == NO_ARGS) {
             try {
                 this.method = selfExpression.getType().getMethod(name);
+                checkDeprecation(position, context);
                 return;
             } catch (NoSuchMethodException e) {
                 Exceptions.ignore(e);
@@ -205,9 +206,19 @@ public class MethodCall extends Call {
             }
 
             this.method = findMethod(selfExpression.getType(), name, parameterTypes);
+            checkDeprecation(position, context);
             setupVarArgs();
         } catch (NoSuchMethodException e) {
             context.error(position, "%s doesn't have a method '%s'", selfExpression.getType(), e.getMessage());
+        }
+    }
+
+    private void checkDeprecation(Char position, CompilationContext context) {
+        if (this.method.isAnnotationPresent(Deprecated.class)) {
+            context.warning(position,
+                            "The method %s.%s is marked as deprecated",
+                            this.method.getDeclaringClass().getName(),
+                            this.method.getName());
         }
     }
 

@@ -8,11 +8,12 @@
 
 package sirius.tagliatelle.macros;
 
-import sirius.kernel.Sirius;
+import parsii.tokenizer.Position;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.nls.NLS;
 import sirius.tagliatelle.Tagliatelle;
+import sirius.tagliatelle.compiler.CompilationContext;
 import sirius.tagliatelle.expression.ConstantString;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.rendering.LocalRenderContext;
@@ -25,20 +26,14 @@ import java.util.List;
  */
 @Register
 public class I18nMacro implements Macro {
+
     @Override
     public Class<?> getType() {
         return String.class;
     }
 
-    /**
-     * Verifies the argument type.
-     * <p>
-     * If the i18n key is constant, it also ensures that a matching translation is present.
-     *
-     * @param args the expressions which will be passed in at runtime.
-     */
     @Override
-    public void verifyArguments(List<Expression> args) {
+    public void verifyArguments(CompilationContext context, Position pos, List<Expression> args) {
         if (args.isEmpty()) {
             throw new IllegalArgumentException("Expected at least one String as argument.");
         }
@@ -56,15 +51,13 @@ public class I18nMacro implements Macro {
             throw new IllegalArgumentException("Expected a String as first and an int as second argument.");
         }
 
-        if (Sirius.isDev()) {
-            Expression exp = args.get(0);
-            if (exp instanceof ConstantString) {
-                String key = (String) exp.eval(null);
-                if (Strings.isFilled(key) && NLS.getTranslationEngine()
-                                                .getEntriesStartingWith(key)
-                                                .noneMatch(t -> key.equals(t.getKey()))) {
-                    throw new IllegalArgumentException(Strings.apply("No translation found for key: %s", key));
-                }
+        Expression expression = args.get(0);
+        if (expression instanceof ConstantString) {
+            String key = (String) expression.eval(null);
+            if (Strings.isFilled(key) && NLS.getTranslationEngine()
+                                            .getEntriesStartingWith(key)
+                                            .noneMatch(entry -> key.equals(entry.getKey()))) {
+                context.warning(pos, "No translation found for key: %s", key);
             }
         }
     }

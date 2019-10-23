@@ -1,0 +1,3 @@
+<i:pragma name="unchecked" value="true" />
+
+@deprecatedMacro()
