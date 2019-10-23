@@ -74,6 +74,12 @@ var multiSelect = function (args) {
             $('<option></option>').text(token.label).val(token.value).attr('selected', 'selected').appendTo($select);
         });
 
+        suggestions.getAllSuggestions().forEach(function (token) {
+            if ($select.children('option[value="' + token.value + '"]').length === 0) {
+                $('<option></option>').text(token.label).val(token.value).appendTo($select);
+            }
+        });
+
         // Needed to still transfer the field if nothing is selected
         if (tokens.length === 0 && args.optional) {
             $('<option></option>').val('').attr('selected', 'selected').appendTo($select);
