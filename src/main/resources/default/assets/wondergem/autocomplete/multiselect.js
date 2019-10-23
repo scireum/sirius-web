@@ -136,6 +136,7 @@ var multiSelect = function (args) {
         if (!suggestions.getTokenForValue(token.value)) {
             if (args.allowCustomEntries) {
                 suggestions.addSuggestion(token);
+                updateSelectObject();
             } else {
                 if (autocomplete.getCompletionRows().length !== 1) {
                     return false;
@@ -309,6 +310,7 @@ var multiSelect = function (args) {
 
             autocomplete.on("afterLoad", function (value, response) {
                 var responseTokens = [];
+                var suggestionAdded = false;
                 response.completions.forEach(function (completion) {
                     responseTokens.push({
                         // label is the text displayed in the dropdown. should be what is given as "description"
@@ -319,6 +321,7 @@ var multiSelect = function (args) {
                     });
 
                     if (!suggestions.getTokenForValue(completion.id)) {
+                        suggestionAdded = true;
                         suggestions.addSuggestion({
                             // label is the text displayed in the tokenfield. should be what is given as "text"
                             // by the service. but use other texts as fallback.
@@ -327,6 +330,9 @@ var multiSelect = function (args) {
                         });
                     }
                 });
+                if (suggestionAdded) {
+                    updateSelectObject();
+                }
                 if (responseTokens.length === 0) {
                     responseTokens.push(noMatchesToken);
                 }
