@@ -71,7 +71,7 @@ public class ExcelExport {
     private CellStyle borderStyle;
     private CellStyle normalStyle;
     private Set<Short> pictureCols = new HashSet<>();
-    private Drawing drawing;
+    private Drawing<?> drawing;
     private String maxRowsReachedMessage;
     private Consumer<String> maxRowsReachedHandler;
 
