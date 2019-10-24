@@ -52,6 +52,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * Generates an Excel file which can be sent as a response for a {@link sirius.web.http.WebContext}
@@ -70,7 +71,9 @@ public class ExcelExport {
     private CellStyle borderStyle;
     private CellStyle normalStyle;
     private Set<Short> pictureCols = new HashSet<>();
-    private Drawing drawing;
+    private Drawing<?> drawing;
+    private String maxRowsReachedMessage;
+    private Consumer<String> maxRowsReachedHandler;
 
     /**
      * Represents a cell containing an image which should be inserted.
@@ -388,6 +391,9 @@ public class ExcelExport {
      * @return the export itself for fluent method calls
      */
     public ExcelExport addRow(Object... row) {
+        if (row == null) {
+            return this;
+        }
         addRowAsList(Arrays.asList(row));
         return this;
     }
@@ -399,15 +405,51 @@ public class ExcelExport {
      * @return the export itself for fluent method calls
      */
     public ExcelExport addRowAsList(Collection<?> row) {
-        if (row != null) {
-            maxCols = Math.max(maxCols, row.size());
-            int idx = 0;
-            Row r = currentSheet.createRow(rows++);
-            for (Object entry : row) {
-                addCell(r, entry, idx++, getCellStyleForObject(entry));
-            }
+        if (row == null || isRowLimitExceeded()) {
+            return this;
         }
+        if (isLastRow() && handleLastRow()) {
+            return this;
+        }
+
+        maxCols = Math.max(maxCols, row.size());
+        int idx = 0;
+        Row r = currentSheet.createRow(rows++);
+        for (Object entry : row) {
+            addCell(r, entry, idx++, getCellStyleForObject(entry));
+        }
+
         return this;
+    }
+
+    /**
+     * Handles the last row of a sheet.
+     * <p>
+     * Returns <tt>true</tt> if the <tt>maxRowsReachedMessage</tt> was written in the last row, this means no more rows
+     * should be written to this sheet. Returns <tt>false</tt> if the <tt>maxRowsReachedMessage</tt> was empty therefore
+     * no line was written and the last row can be filled with data.
+     *
+     * @return whether the <tt>maxRowsReachedMessage</tt> was written into the last line or not
+     */
+    private boolean handleLastRow() {
+        if (maxRowsReachedHandler != null) {
+            maxRowsReachedHandler.accept(currentSheet.getSheetName());
+        }
+        if (Strings.isFilled(determineMaxRowsReachedMessage())) {
+            Row r = currentSheet.createRow(rows);
+            addCell(r, determineMaxRowsReachedMessage(), 0, normalStyle);
+            rows++;
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isRowLimitExceeded() {
+        return rows > workbook.getSpreadsheetVersion().getMaxRows() - 1;
+    }
+
+    private boolean isLastRow() {
+        return rows == workbook.getSpreadsheetVersion().getMaxRows() - 1;
     }
 
     /**
@@ -449,7 +491,7 @@ public class ExcelExport {
                 autosizeColumns();
 
                 // Add autofilter...
-                currentSheet.setAutoFilter(new CellRangeAddress(0, rows, 0, maxCols - 1));
+                currentSheet.setAutoFilter(new CellRangeAddress(0, rows - 1, 0, maxCols - 1));
                 workbook.write(out);
             }
         } catch (IOException e) {
@@ -490,5 +532,36 @@ public class ExcelExport {
         }
 
         return (data instanceof Amount) && ((Amount) data).isFilled();
+    }
+
+    private String determineMaxRowsReachedMessage() {
+        return NLS.smartGet(maxRowsReachedMessage);
+    }
+
+    /**
+     * Sets the message to append at the end of an excel sheet which exceeds the maximum number of allowed rows.
+     * <p>
+     * {@link NLS#smartGet(String)} will be applied to the message. When the message is left empty, no message will be
+     * appended.
+     *
+     * @param maxRowsReachedMessage the message to add to the excel sheet
+     * @return the ExcelExport itself for fluent method calls
+     */
+    public ExcelExport withMaxRowsReachedMessage(String maxRowsReachedMessage) {
+        this.maxRowsReachedMessage = maxRowsReachedMessage;
+        return this;
+    }
+
+    /**
+     * Sets the handler which is called when the max numbers of rows is reached for a sheet.
+     * <p>
+     * The handler will be called with the name of the sheet as a String parameter.
+     *
+     * @param maxRowsReachedHandler the handler which is called
+     * @return the ExcelExport itself for fluent method calls
+     */
+    public ExcelExport withMaxRowsReachedHandler(Consumer<String> maxRowsReachedHandler) {
+        this.maxRowsReachedHandler = maxRowsReachedHandler;
+        return this;
     }
 }
