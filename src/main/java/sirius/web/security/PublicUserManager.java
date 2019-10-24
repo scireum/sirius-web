@@ -56,17 +56,17 @@ public class PublicUserManager extends GenericUserManager {
 
     @Nonnull
     @Override
-    public UserInfo bindToRequest(@Nonnull WebContext ctx) {
+    public UserInfo bindToRequest(@Nonnull WebContext webContext) {
         return user;
     }
 
     @Override
-    public UserInfo findUserByName(@Nullable WebContext ctx, String user) {
+    public UserInfo findUserByName(@Nullable WebContext webContext, String user) {
         return null;
     }
 
     @Override
-    public UserInfo findUserByCredentials(@Nullable WebContext ctx, String user, String password) {
+    public UserInfo findUserByCredentials(@Nullable WebContext webContext, String user, String password) {
         return null;
     }
 
@@ -83,30 +83,30 @@ public class PublicUserManager extends GenericUserManager {
 
     @Nullable
     @Override
-    protected Set<String> computeRoles(@Nullable WebContext ctx, String userId) {
+    protected Set<String> computeRoles(@Nullable WebContext webContext, String userId) {
         return Collections.emptySet();
     }
 
     @Nonnull
     @Override
-    protected String computeUsername(@Nullable WebContext ctx, String userId) {
+    protected String computeUsername(@Nullable WebContext webContext, String userId) {
         return PUBLIC_PLACEHOLDER;
     }
 
     @Nonnull
     @Override
-    protected String computeTenantname(@Nullable WebContext ctx, String tenantId) {
+    protected String computeTenantname(@Nullable WebContext webContext, String tenantId) {
         return "";
     }
 
     @Nonnull
     @Override
-    protected String computeLang(WebContext ctx, String userId) {
+    protected String computeLang(WebContext webContext, String userId) {
         return NLS.getDefaultLanguage();
     }
 
     @Override
-    public void logout(@Nonnull WebContext ctx) {
+    public void logout(@Nonnull WebContext webContext) {
         // Not required - there is actually no user...
     }
 

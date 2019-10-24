@@ -30,31 +30,31 @@ public interface UserManager {
      * <p>
      * It is not safe to access {@link UserContext#getCurrentUser()} within this method.
      *
-     * @param ctx the request to attach to
+     * @param webContext the request to attach to
      * @return the user found in the session. If no user is available {@link UserInfo#NOBODY} can be used.
      */
     @Nonnull
-    UserInfo bindToRequest(@Nonnull WebContext ctx);
+    UserInfo bindToRequest(@Nonnull WebContext webContext);
 
     /**
      * Tries to find the current user in the current session. In contrast to {@link #bindToRequest(WebContext)} this
      * will not try to log a user in via credentials found in the request.
      *
-     * @param ctx the request to attach to
+     * @param webContext the request to attach to
      * @return the user found in the session. If no user is available {@link UserInfo#NOBODY} can be used.
      */
     @Nonnull
-    UserInfo findUserForRequest(@Nonnull WebContext ctx);
+    UserInfo findUserForRequest(@Nonnull WebContext webContext);
 
     /**
      * Tries to find a user with the given username.
      *
-     * @param ctx  the current HTTP request if one is present
-     * @param user the login name of the user to find
+     * @param webContext the current HTTP request if one is present
+     * @param user       the login name of the user to find
      * @return the user with the given login name or <tt>null</tt>  if no user is found
      */
     @Nullable
-    UserInfo findUserByName(@Nullable WebContext ctx, String user);
+    UserInfo findUserByName(@Nullable WebContext webContext, String user);
 
     /**
      * Tries to find a {@link UserInfo} for the given ({@link UserInfo#getUserId() user id}.
@@ -69,13 +69,13 @@ public interface UserManager {
     /**
      * Tries to find a user with the given credentials.
      *
-     * @param ctx      the current HTTP request if one is present
-     * @param user     the login name of the user to find
-     * @param password the password of the user to find
+     * @param webContext the current HTTP request if one is present
+     * @param user       the login name of the user to find
+     * @param password   the password of the user to find
      * @return the user with the given credentials or <tt>null</tt> if no user is found
      */
     @Nullable
-    UserInfo findUserByCredentials(@Nullable WebContext ctx, String user, String password);
+    UserInfo findUserByCredentials(@Nullable WebContext webContext, String user, String password);
 
     /**
      * Creates a copy of the given <tt>UserInfo</tt> with a new tenant id.
@@ -96,9 +96,9 @@ public interface UserManager {
     /**
      * Removes all stored data from the session
      *
-     * @param ctx the request containing the session
+     * @param webContext the request containing the session
      */
-    void logout(@Nonnull WebContext ctx);
+    void logout(@Nonnull WebContext webContext);
 
     /**
      * Determines if a login via username and password is possible.
