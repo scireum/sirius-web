@@ -343,23 +343,43 @@ public abstract class GenericUserManager implements UserManager {
                              Strings.apply(pattern, params));
     }
 
-    /*
+    /**
      * Tries to perform a login using "user" and "password".
+     *
+     * @param ctx the request the read the parameters from
      */
     private UserInfo loginViaUsernameAndPassword(WebContext ctx) {
-        if (ctx.get(PARAM_USER).isFilled() && ctx.getFirstFilled(PARAM_PASSWORD, PARAM_TOKEN).isFilled()) {
-            ctx.hidePost();
-            String user = ctx.get(PARAM_USER).trim();
-            String password = ctx.getFirstFilled(PARAM_PASSWORD, PARAM_TOKEN).trim();
+        if (!ctx.get(PARAM_USER).isFilled()) {
+            return null;
+        }
+        boolean passwordPresent = ctx.get(PARAM_PASSWORD).isFilled();
+        boolean tokenPresent = ctx.get(PARAM_TOKEN).isFilled();
 
-            UserInfo result = findUserByCredentials(ctx, user, password);
-            if (result != null) {
+        if (!passwordPresent && !tokenPresent) {
+            return null;
+        }
+
+        ctx.hidePost();
+
+        String user = ctx.get(PARAM_USER).trim();
+        String passwordOrToken = ctx.getFirstFilled(PARAM_PASSWORD, PARAM_TOKEN).trim();
+
+        UserInfo result = findUserByCredentials(ctx, user, passwordOrToken);
+        if (result != null) {
+            if (passwordPresent) {
                 log("Login of %s succeeded using password", user);
-                return result;
+            } else {
+                log("Login of %s succeeded using an API token", user);
             }
+
+            return result;
+        }
+
+        if (passwordPresent) {
             log("Login of %s failed using password", user);
             UserContext.message(Message.error(NLS.get("GenericUserManager.invalidLogin")));
         }
+
         return null;
     }
 
