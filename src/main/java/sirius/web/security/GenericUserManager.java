@@ -126,16 +126,18 @@ public abstract class GenericUserManager implements UserManager {
                 onLogin(ctx, result);
                 return result;
             }
+
+            result = loginViaSSOToken(ctx);
+            if (result != null) {
+                onLogin(ctx, result);
+                return result;
+            }
+
+            UserContext.message(Message.error(NLS.get("GenericUserManager.invalidLogin")));
         } catch (HandledException e) {
             UserContext.message(Message.error(e.getMessage()));
         } catch (Exception e) {
             UserContext.message(Message.error(Exceptions.handle(UserContext.LOG, e)));
-        }
-
-        result = loginViaSSOToken(ctx);
-        if (result != null) {
-            onLogin(ctx, result);
-            return result;
         }
 
         return defaultUser;
@@ -358,7 +360,6 @@ public abstract class GenericUserManager implements UserManager {
                 return result;
             }
             log("Login of %s failed using password", user);
-            UserContext.message(Message.error(NLS.get("GenericUserManager.invalidLogin")));
         }
         return null;
     }
