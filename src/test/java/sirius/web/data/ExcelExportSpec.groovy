@@ -182,4 +182,23 @@ class ExcelExportSpec extends BaseSpecification {
         cleanup:
         Files.delete(testFile)
     }
+
+    @Scope(Scope.SCOPE_NIGHTLY)
+    def "creation of new work sheet works correctly when max number of rows is reached in the current sheet"() {
+        given:
+        File testFile = File.createTempFile("excel-output", ".xls")
+        when:
+        ExcelExport export = ExcelExport.asStreamingXLSX()
+        // overshoot the max num of rows a little for testing purposes
+        for (int i = 1; i <= XLSX_MAX_ROWS + 100; i++) {
+            export.addRow("A-" + i)
+        }
+        export.createSheet("Sheet1")
+        export.addRow("A row on Sheet1")
+        export.writeToStream(new FileOutputStream(testFile))
+        then:
+        noExceptionThrown()
+        cleanup:
+        Files.delete(testFile)
+    }
 }
