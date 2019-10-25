@@ -114,16 +114,16 @@ public abstract class GenericUserManager implements UserManager {
 
     @Nonnull
     @Override
-    public UserInfo bindToRequest(@Nonnull WebContext ctx) {
-        UserInfo result = findUserInSession(ctx);
+    public UserInfo bindToRequest(@Nonnull WebContext webContext) {
+        UserInfo result = findUserInSession(webContext);
         if (result != null) {
             return result;
         }
 
         try {
-            result = loginViaUsernameAndPassword(ctx);
+            result = loginViaUsernameAndPassword(webContext);
             if (result != null) {
-                onLogin(ctx, result);
+                onLogin(webContext, result);
                 return result;
             }
         } catch (HandledException e) {
@@ -132,9 +132,9 @@ public abstract class GenericUserManager implements UserManager {
             UserContext.message(Message.error(Exceptions.handle(UserContext.LOG, e)));
         }
 
-        result = loginViaSSOToken(ctx);
+        result = loginViaSSOToken(webContext);
         if (result != null) {
-            onLogin(ctx, result);
+            onLogin(webContext, result);
             return result;
         }
 
@@ -143,8 +143,8 @@ public abstract class GenericUserManager implements UserManager {
 
     @Nonnull
     @Override
-    public UserInfo findUserForRequest(@Nonnull WebContext ctx) {
-        UserInfo result = findUserInSession(ctx);
+    public UserInfo findUserForRequest(@Nonnull WebContext webContext) {
+        UserInfo result = findUserInSession(webContext);
         if (result != null) {
             return result;
         } else {
@@ -155,21 +155,21 @@ public abstract class GenericUserManager implements UserManager {
     /**
      * Invoked once a user actually performs a login via the web interface.
      *
-     * @param ctx  the current request
-     * @param user the user which logged in
+     * @param webContext the current request
+     * @param user       the user which logged in
      */
-    private void onLogin(WebContext ctx, UserInfo user) {
-        updateLoginCookie(ctx, user);
-        recordUserLogin(ctx, user);
+    private void onLogin(WebContext webContext, UserInfo user) {
+        updateLoginCookie(webContext, user);
+        recordUserLogin(webContext, user);
     }
 
     /**
      * Provides a method which can track logins of users.
      *
-     * @param ctx  the current request
-     * @param user the user which logged in
+     * @param webContext the current request
+     * @param user       the user which logged in
      */
-    protected void recordUserLogin(WebContext ctx, UserInfo user) {
+    protected void recordUserLogin(WebContext webContext, UserInfo user) {
     }
 
     /**
@@ -178,18 +178,17 @@ public abstract class GenericUserManager implements UserManager {
      * Limits the lifetime to the browser session if the login should not be kept. Furthermore the time to life and
      * login information is stored in the session.
      *
-     * @param ctx       the current request
-     * @param user      the user that logged in
-     * @param keepLogin <tt>false</tt> if the session should be cleared when the browser session ends, <tt>true</tt>
-     *                  otherwise
+     * @param webContext the current request
+     * @param user       the user that logged in
+     * @param keepLogin  <tt>false</tt> if the session should be cleared when the browser session ends, <tt>true</tt>
      */
-    public void updateLoginCookie(WebContext ctx, UserInfo user, boolean keepLogin) {
-        ctx.setCustomSessionCookieTTL(keepLoginEnabled && keepLogin ? null : Duration.ZERO);
-        ctx.setSessionValue(scope.getScopeId() + SUFFIX_USER_ID, user.getUserId());
-        ctx.setSessionValue(scope.getScopeId() + SUFFIX_TENANT_ID, user.getTenantId());
-        ctx.setSessionValue(scope.getScopeId() + SUFFIX_TTL,
-                            TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-                            + loginTTL.getSeconds());
+    public void updateLoginCookie(WebContext webContext, UserInfo user, boolean keepLogin) {
+        webContext.setCustomSessionCookieTTL(keepLoginEnabled && keepLogin ? null : Duration.ZERO);
+        webContext.setSessionValue(scope.getScopeId() + SUFFIX_USER_ID, user.getUserId());
+        webContext.setSessionValue(scope.getScopeId() + SUFFIX_TENANT_ID, user.getTenantId());
+        webContext.setSessionValue(scope.getScopeId() + SUFFIX_TTL,
+                                   TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+                                   + loginTTL.getSeconds());
     }
 
     /**
@@ -197,31 +196,31 @@ public abstract class GenericUserManager implements UserManager {
      * <p>
      * Same as {@link #updateLoginCookie(WebContext, UserInfo)} but the 'keep login' flag is read from the context
      *
-     * @param ctx  the current request
-     * @param user the user that logged in
+     * @param webContext the current request
+     * @param user       the user that logged in
      */
-    protected void updateLoginCookie(WebContext ctx, UserInfo user) {
-        updateLoginCookie(ctx, user, ctx.get("keepLogin").asBoolean(false));
+    protected void updateLoginCookie(WebContext webContext, UserInfo user) {
+        updateLoginCookie(webContext, user, webContext.get("keepLogin").asBoolean(false));
     }
 
     /*
      * Tries to perform a login using "user" and "token" (single sign-on)
      */
-    private UserInfo loginViaSSOToken(WebContext ctx) {
+    private UserInfo loginViaSSOToken(WebContext webContext) {
         if (!ssoEnabled) {
             return null;
         }
-        String user = ctx.get(PARAM_USER).trim();
+        String user = webContext.get(PARAM_USER).trim();
         if (Strings.isEmpty(user)) {
             return null;
         }
-        Tuple<String, String> challengeResponse = extractChallengeAndResponse(ctx);
+        Tuple<String, String> challengeResponse = extractChallengeAndResponse(webContext);
         if (challengeResponse == null) {
             return null;
         }
 
-        ctx.hidePost();
-        UserInfo result = findUserByName(ctx, user);
+        webContext.hidePost();
+        UserInfo result = findUserByName(webContext, user);
         if (result == null) {
             UserContext.message(Message.error(NLS.get("GenericUserManager.invalidSSO")));
             return null;
@@ -240,16 +239,16 @@ public abstract class GenericUserManager implements UserManager {
         return null;
     }
 
-    protected Tuple<String, String> extractChallengeAndResponse(WebContext ctx) {
+    protected Tuple<String, String> extractChallengeAndResponse(WebContext webContext) {
         // Supports the modern parameter token which contains TIMESTAMP:MD5
-        String token = ctx.get(PARAM_TOKEN).trim();
+        String token = webContext.get(PARAM_TOKEN).trim();
         if (Strings.isFilled(token)) {
             return Strings.split(token, ":");
         }
 
         // Supports the legacy parameters hash and timestamp...
-        String hash = ctx.get(PARAM_HASH).trim();
-        String timestamp = ctx.get(PARAM_TIMESTAMP).trim();
+        String hash = webContext.get(PARAM_HASH).trim();
+        String timestamp = webContext.get(PARAM_TIMESTAMP).trim();
         if (Strings.isFilled(hash) && Strings.isFilled(timestamp)) {
             return Tuple.create(timestamp, hash);
         }
@@ -343,23 +342,43 @@ public abstract class GenericUserManager implements UserManager {
                              Strings.apply(pattern, params));
     }
 
-    /*
+    /**
      * Tries to perform a login using "user" and "password".
+     *
+     * @param webContext the request the read the parameters from
      */
-    private UserInfo loginViaUsernameAndPassword(WebContext ctx) {
-        if (ctx.get(PARAM_USER).isFilled() && ctx.getFirstFilled(PARAM_PASSWORD, PARAM_TOKEN).isFilled()) {
-            ctx.hidePost();
-            String user = ctx.get(PARAM_USER).trim();
-            String password = ctx.getFirstFilled(PARAM_PASSWORD, PARAM_TOKEN).trim();
+    private UserInfo loginViaUsernameAndPassword(WebContext webContext) {
+        if (!webContext.get(PARAM_USER).isFilled()) {
+            return null;
+        }
+        boolean passwordPresent = webContext.get(PARAM_PASSWORD).isFilled();
+        boolean tokenPresent = webContext.get(PARAM_TOKEN).isFilled();
 
-            UserInfo result = findUserByCredentials(ctx, user, password);
-            if (result != null) {
+        if (!passwordPresent && !tokenPresent) {
+            return null;
+        }
+
+        webContext.hidePost();
+
+        String user = webContext.get(PARAM_USER).trim();
+        String passwordOrToken = webContext.getFirstFilled(PARAM_PASSWORD, PARAM_TOKEN).trim();
+
+        UserInfo result = findUserByCredentials(webContext, user, passwordOrToken);
+        if (result != null) {
+            if (passwordPresent) {
                 log("Login of %s succeeded using password", user);
-                return result;
+            } else {
+                log("Login of %s succeeded using an API token", user);
             }
+
+            return result;
+        }
+
+        if (passwordPresent) {
             log("Login of %s failed using password", user);
             UserContext.message(Message.error(NLS.get("GenericUserManager.invalidLogin")));
         }
+
         return null;
     }
 
@@ -368,32 +387,32 @@ public abstract class GenericUserManager implements UserManager {
      * <p>
      * This can be either the client sided session (cookie) or the server session.
      *
-     * @param ctx the current request to use the session from
+     * @param webContext the current request to use the session from
      * @return the user in the session or <tt>null</tt> if no user is attached
      */
-    protected UserInfo findUserInSession(WebContext ctx) {
-        Value userId = ctx.getSessionValue(scope.getScopeId() + SUFFIX_USER_ID);
-        String tenantId = ctx.getSessionValue(scope.getScopeId() + SUFFIX_TENANT_ID).asString();
-        Long ttl = ctx.getSessionValue(scope.getScopeId() + SUFFIX_TTL).getLong();
+    protected UserInfo findUserInSession(WebContext webContext) {
+        Value userId = webContext.getSessionValue(scope.getScopeId() + SUFFIX_USER_ID);
+        String tenantId = webContext.getSessionValue(scope.getScopeId() + SUFFIX_TENANT_ID).asString();
+        Long ttl = webContext.getSessionValue(scope.getScopeId() + SUFFIX_TTL).getLong();
 
         if (ttl != null && ttl < TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)) {
             return null;
         }
 
-        if (!userId.isFilled() || !isUserStillValid(userId.asString(), ctx)) {
+        if (!userId.isFilled() || !isUserStillValid(userId.asString(), webContext)) {
             return null;
         }
 
-        Set<String> roles = computeRoles(ctx, userId.asString());
+        Set<String> roles = computeRoles(webContext, userId.asString());
         if (roles == null) {
             return null;
         }
 
         return UserInfo.Builder.createUser(userId.asString())
-                               .withUsername(computeUsername(ctx, userId.asString()))
+                               .withUsername(computeUsername(webContext, userId.asString()))
                                .withTenantId(tenantId)
-                               .withTenantName(computeTenantname(ctx, tenantId))
-                               .withLang(computeLang(ctx, userId.asString()))
+                               .withTenantName(computeTenantname(webContext, tenantId))
+                               .withLang(computeLang(webContext, userId.asString()))
                                .withPermissions(roles)
                                .withSettingsSupplier(ui -> getUserSettings(getScopeSettings(), ui))
                                .withUserSupplier(this::getUserObject)
@@ -405,11 +424,11 @@ public abstract class GenericUserManager implements UserManager {
      * <p>
      * The method has to check the session data by itself.
      *
-     * @param userId the user id to check
-     * @param ctx    the current request for which the check is performed
+     * @param userId     the user id to check
+     * @param webContext the current request for which the check is performed
      * @return <tt>true</tt> if the user is still valid, false otherwise
      */
-    protected boolean isUserStillValid(String userId, WebContext ctx) {
+    protected boolean isUserStillValid(String userId, WebContext webContext) {
         return true;
     }
 
@@ -427,53 +446,53 @@ public abstract class GenericUserManager implements UserManager {
      * <p>
      * If a server session is available, we try to load the roles from there.
      *
-     * @param ctx    the current request
-     * @param userId the id of the user to fetch roles for
+     * @param webContext the current request
+     * @param userId     the id of the user to fetch roles for
      * @return a set of roles granted to the user or an empty set if no roles were found
      */
     @Nullable
-    protected abstract Set<String> computeRoles(@Nullable WebContext ctx, String userId);
+    protected abstract Set<String> computeRoles(@Nullable WebContext webContext, String userId);
 
     /**
      * Compues the name of the given user and request.
      *
-     * @param ctx    the current request
-     * @param userId the id of the user to fetch the name for
+     * @param webContext the current request
+     * @param userId     the id of the user to fetch the name for
      * @return the name of the user
      */
     @Nonnull
-    protected abstract String computeUsername(@Nullable WebContext ctx, String userId);
+    protected abstract String computeUsername(@Nullable WebContext webContext, String userId);
 
     /**
      * Compues the name of the given tenant and request.
      *
-     * @param ctx      the current request
-     * @param tenantId the id of the tenant to fetch the name for
+     * @param webContext the current request
+     * @param tenantId   the id of the tenant to fetch the name for
      * @return the name of the tenant
      */
     @Nonnull
-    protected abstract String computeTenantname(@Nullable WebContext ctx, String tenantId);
+    protected abstract String computeTenantname(@Nullable WebContext webContext, String tenantId);
 
     /**
      * Compues the langange code of the given user and request.
      *
-     * @param ctx    the current request
-     * @param userId the id of the user to fetch the language for
+     * @param webContext the current request
+     * @param userId     the id of the user to fetch the language for
      * @return the language code for the user
      */
     @Nonnull
-    protected abstract String computeLang(WebContext ctx, String userId);
+    protected abstract String computeLang(WebContext webContext, String userId);
 
     /**
      * Removes all stored user information from the current session.
      *
-     * @param ctx the request to remove all data from
+     * @param webContext the request to remove all data from
      */
     @Override
-    public void logout(@Nonnull WebContext ctx) {
-        ctx.setSessionValue(scope.getScopeId() + SUFFIX_TENANT_ID, null);
-        ctx.setSessionValue(scope.getScopeId() + SUFFIX_USER_ID, null);
-        ctx.setSessionValue(scope.getScopeId() + SUFFIX_TTL, null);
+    public void logout(@Nonnull WebContext webContext) {
+        webContext.setSessionValue(scope.getScopeId() + SUFFIX_TENANT_ID, null);
+        webContext.setSessionValue(scope.getScopeId() + SUFFIX_USER_ID, null);
+        webContext.setSessionValue(scope.getScopeId() + SUFFIX_TTL, null);
     }
 
     @Override

@@ -15,6 +15,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
@@ -273,8 +274,9 @@ public class SAMLHelper {
      * @param signature the signature to parse
      * @return the effective reference URI
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","squid:S1905"})
     @Nonnull
+    @Explain("The cast helps the type-interference of the compiler - otherwise it sometimes reports an error")
     private String getReferenceBeingSigned(XMLSignature signature) {
         return ((List<Reference>) signature.getSignedInfo().getReferences()).stream()
                                                                             .findFirst()
