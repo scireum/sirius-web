@@ -205,7 +205,7 @@ public class ExcelExport {
     public void createSheet(@Nullable String name) {
         if (currentSheet != null) {
             autosizeColumns();
-            currentSheet.setAutoFilter(new CellRangeAddress(0, rows, 0, maxCols - 1));
+            addAutoFilter();
             rows = 0;
             maxCols = 0;
         }
@@ -436,9 +436,8 @@ public class ExcelExport {
             maxRowsReachedHandler.accept(currentSheet.getSheetName());
         }
         if (Strings.isFilled(determineMaxRowsReachedMessage())) {
-            Row r = currentSheet.createRow(rows);
+            Row r = currentSheet.createRow(rows++);
             addCell(r, determineMaxRowsReachedMessage(), 0, normalStyle);
-            rows++;
             return true;
         }
         return false;
@@ -491,7 +490,8 @@ public class ExcelExport {
                 autosizeColumns();
 
                 // Add autofilter...
-                currentSheet.setAutoFilter(new CellRangeAddress(0, rows - 1, 0, maxCols - 1));
+                addAutoFilter();
+
                 workbook.write(out);
             }
         } catch (IOException e) {
@@ -501,6 +501,10 @@ public class ExcelExport {
                 ((SXSSFWorkbook) workbook).dispose();
             }
         }
+    }
+
+    private void addAutoFilter() {
+        currentSheet.setAutoFilter(new CellRangeAddress(0, rows - 1, 0, maxCols - 1));
     }
 
     private void autosizeColumns() {
