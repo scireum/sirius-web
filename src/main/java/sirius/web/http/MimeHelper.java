@@ -420,4 +420,18 @@ public class MimeHelper {
 
         return COMPRESSABLE.matcher(contentType).matches();
     }
+
+    /**
+     * Determines if the given content type (MIME type) is probably an image of some kind.
+     *
+     * @param contentType the content type to check
+     * @return <tt>true</tt> if the given content type is probably an image, <tt>false</tt> otherwise
+     */
+    public static boolean isProbablyAnImage(@Nullable String contentType) {
+        if (contentType == null) {
+            return false;
+        }
+
+        return contentType.startsWith("image/");
+    }
 }
