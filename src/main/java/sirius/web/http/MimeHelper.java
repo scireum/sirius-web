@@ -8,8 +8,8 @@
 
 package sirius.web.http;
 
-import com.google.common.io.Files;
 import sirius.kernel.commons.Explain;
+import sirius.kernel.commons.Files;
 import sirius.kernel.commons.Strings;
 
 import javax.annotation.Nullable;
@@ -353,6 +353,7 @@ public class MimeHelper {
         if (Strings.isEmpty(name)) {
             return null;
         }
+
         // Fast lookup for common types....
         if (name.length() >= 4 && name.charAt(name.length() - 4) == '.') {
             String type = guessCommonType(name);
@@ -361,13 +362,15 @@ public class MimeHelper {
             }
         }
 
-        name = Files.getFileExtension(name).toLowerCase();
-        String result = mimeTable.get(name);
-        if (result == null) {
-            return "application/octet-stream";
-        } else {
-            return result;
+        String fileExtension = Files.getFileExtension(name);
+        if (fileExtension != null) {
+            String result = mimeTable.get(fileExtension.toLowerCase());
+            if (result != null) {
+                return result;
+            }
         }
+
+        return "application/octet-stream";
     }
 
     @SuppressWarnings("squid:S1698")
@@ -419,5 +422,19 @@ public class MimeHelper {
         }
 
         return COMPRESSABLE.matcher(contentType).matches();
+    }
+
+    /**
+     * Determines if the given content type (MIME type) is probably an image of some kind.
+     *
+     * @param contentType the content type to check
+     * @return <tt>true</tt> if the given content type is probably an image, <tt>false</tt> otherwise
+     */
+    public static boolean isProbablyAnImage(@Nullable String contentType) {
+        if (contentType == null) {
+            return false;
+        }
+
+        return contentType.startsWith("image/");
     }
 }
