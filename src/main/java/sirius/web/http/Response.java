@@ -57,6 +57,7 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.OutputStream;
 import java.net.URLConnection;
+import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -68,6 +69,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -1269,6 +1271,30 @@ public class Response {
      *                       yet.
      */
     public void tunnel(final String url, @Nullable Consumer<Integer> failureHandler) {
+        tunnel(url, null, failureHandler);
+    }
+
+    /**
+     * Tunnels the contents retrieved from the given URL as result of this response.
+     * <p>
+     * Caching and range headers will be forwarded and adhered.
+     * <p>
+     * Uses non-blocking APIs in order to maximize throughput. Therefore this can be called in an unforked
+     * dispatcher.
+     * <p>
+     * If the called URL returns an error (&gt;= 400) and the given failureHandler is non null, it is supplied
+     * with the status code and can re-try or answer the request by itself.
+     *
+     * @param url            the url to tunnel through
+     * @param transformer    the transformer which map / transformes the byte blocks being tunnelled
+     * @param failureHandler supplies a handler which is invoked if the called URL fails. The handler is provided with
+     *                       the HTTP status code and can (and must) handle the request on its own. It is save to
+     *                       call {@link WebContext#respondWith()} again for the request, as no response was created
+     *                       yet.
+     */
+    public void tunnel(final String url,
+                       @Nullable BiConsumer<ByteBuffer, Consumer<ByteBuf>> transformer,
+                       @Nullable Consumer<Integer> failureHandler) {
         try {
             AsyncHttpClient.BoundRequestBuilder brb = getAsyncClient().prepareGet(url);
             long ifModifiedSince = wc.getDateHeader(HttpHeaderNames.IF_MODIFIED_SINCE);
@@ -1287,7 +1313,7 @@ public class Response {
             }
 
             // Tunnel it through...
-            brb.execute(new TunnelHandler(this, url, failureHandler));
+            brb.execute(new TunnelHandler(this, url, transformer, failureHandler));
         } catch (Exception t) {
             internalServerError("Target-URL: " + url, t);
         }
@@ -1379,7 +1405,8 @@ public class Response {
 
     private GlobalRenderContext.DebugLevel fetchDebugLevel() {
         return Optional.ofNullable(wc.getCookie(SIRIUS_DEBUG_COOKIE))
-                       .map(cookie -> Value.of(cookie.value().toUpperCase()).asEnum(GlobalRenderContext.DebugLevel.class))
+                       .map(cookie -> Value.of(cookie.value().toUpperCase())
+                                           .asEnum(GlobalRenderContext.DebugLevel.class))
                        .orElse(GlobalRenderContext.DebugLevel.OFF);
     }
 }
