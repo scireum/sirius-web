@@ -222,6 +222,28 @@ class WebServerSpec extends BaseSpecification {
     }
 
     /**
+     * Call a controller which transforms a tunneled files
+     * <p>
+     * This matches the logic in <tt>TestController.tunnelTestTransform</tt>.
+     */
+    def "Invoke /tunnel/test_transform"() {
+        when: "we load the raw data"
+        def data = callAndRead("/tunnel/test_large", null, null)
+        and: "we load the transformed data which is byte shifted by +1"
+        HttpURLConnection c = new URL("http://localhost:9999/tunnel/test_transform").openConnection()
+        def transformedData = ByteStreams.toByteArray(c.getInputStream())
+        and: "we un-shift all bytes"
+        def reTransformedData = new byte[transformedData.length]
+        for (int i = 0; i < transformedData.length; i++) {
+            reTransformedData[i] = transformedData[i] == 0 ? 255 : transformedData[i] - 1
+        }
+        then: "Both should be equivalent in size..."
+        transformedData.length == data.length()
+        and: "And the re-transformed contents should match..."
+        new String(reTransformedData, Charsets.UTF_8) == data
+    }
+
+    /**
      * Call a controller which uses a fallback for a failed tunnel (404)
      */
     def "Invoke /tunnel/fallback_for_404 and expect the fallback to work"() {

@@ -9,6 +9,7 @@
 package sirius.web.controller;
 
 import com.google.common.io.ByteStreams;
+import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.async.Future;
@@ -126,6 +127,25 @@ public class TestController implements Controller {
     @Routed("/tunnel/test_large")
     public void tunnelTestLarge(WebContext ctx) {
         ctx.respondWith().tunnel("http://localhost:9999/service/json/test_large");
+    }
+
+    @Routed("/tunnel/test_transform")
+    public void tunnelTestTransform(WebContext ctx) {
+        ctx.respondWith().tunnel("http://localhost:9999/service/json/test_large", (buf, dest) -> {
+            byte[] array = buf.array();
+            // Transform all bytes by + 1
+            for (int i = 0; i < array.length; i++) {
+                array[i] = (byte) ((array[i] + 1) % 255);
+            }
+
+            // Split into 128 sub-buffers
+            int offset = 0;
+            while (offset < array.length) {
+                int length = Math.min(128, array.length - offset);
+                dest.accept(Unpooled.wrappedBuffer(array, offset, length));
+                offset += length;
+            }
+        }, null);
     }
 
     @Routed(value = "/test/predispatch", preDispatchable = true)
