@@ -258,9 +258,17 @@ class TunnelHandler implements AsyncHandler<String> {
     }
 
     private void transformLastContentAndComplete(HttpResponseBodyPart bodyPart) throws Exception {
-        ByteBuf lastResult = transformer.apply(Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer())).orElse(null);
-        ByteBuf completeResult = transformer.apply(Unpooled.EMPTY_BUFFER).orElse(null);
+        // If all previous buffers were non-empty - we have to process this buffer and finally an empty
+        // one to signal the transformer that processing has completed. If this buffer is already empty,
+        // we can skip this step...
+        ByteBuf lastBufferToProcess = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
+        boolean lastBufferWasNonEmpty = lastBufferToProcess.isReadable();
+        ByteBuf lastResult = transformer.apply(lastBufferToProcess).orElse(null);
+        ByteBuf completeResult = lastBufferWasNonEmpty ? transformer.apply(Unpooled.EMPTY_BUFFER).orElse(null) : null;
 
+        // Based on the processing above we might either end up with two buffers or with a single one.
+        // Now we figure out which is simply sent and which is sent while obtaining the completion future
+        // to finish the response...
         if (lastResult != null && completeResult != null) {
             response.contentionAwareWrite(new DefaultHttpContent(lastResult));
             ChannelFuture writeFuture = response.ctx.writeAndFlush(new DefaultLastHttpContent(completeResult));
