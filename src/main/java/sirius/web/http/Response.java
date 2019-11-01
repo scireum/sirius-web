@@ -37,6 +37,7 @@ import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.MultiMap;
+import sirius.kernel.commons.Processor;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Part;
@@ -57,7 +58,6 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.OutputStream;
 import java.net.URLConnection;
-import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -69,7 +69,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -1286,14 +1285,15 @@ public class Response {
      * with the status code and can re-try or answer the request by itself.
      *
      * @param url            the url to tunnel through
-     * @param transformer    the transformer which map / transformes the byte blocks being tunnelled
+     * @param transformer    the transformer which map / transformes the byte blocks being tunnelled. Note that once
+     *                       all data has been processed an empty buffer is sent to signal the end of the processing.
      * @param failureHandler supplies a handler which is invoked if the called URL fails. The handler is provided with
      *                       the HTTP status code and can (and must) handle the request on its own. It is save to
      *                       call {@link WebContext#respondWith()} again for the request, as no response was created
      *                       yet.
      */
     public void tunnel(final String url,
-                       @Nullable BiConsumer<ByteBuffer, Consumer<ByteBuf>> transformer,
+                       @Nullable Processor<ByteBuf, Optional<ByteBuf>> transformer,
                        @Nullable Consumer<Integer> failureHandler) {
         try {
             AsyncHttpClient.BoundRequestBuilder brb = getAsyncClient().prepareGet(url);

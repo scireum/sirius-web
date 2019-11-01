@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Optional;
 import java.util.zip.GZIPInputStream;
 
 @Register
@@ -131,20 +132,18 @@ public class TestController implements Controller {
 
     @Routed("/tunnel/test_transform")
     public void tunnelTestTransform(WebContext ctx) {
-        ctx.respondWith().tunnel("http://localhost:9999/service/json/test_large", (buf, dest) -> {
+        ctx.respondWith().tunnel("http://localhost:9999/service/json/test_large", buf -> {
+            if (buf.readableBytes() == 0) {
+                return Optional.empty();
+            }
+
             byte[] array = buf.array();
             // Transform all bytes by + 1
             for (int i = 0; i < array.length; i++) {
                 array[i] = (byte) ((array[i] + 1) % 255);
             }
 
-            // Split into 128 sub-buffers
-            int offset = 0;
-            while (offset < array.length) {
-                int length = Math.min(128, array.length - offset);
-                dest.accept(Unpooled.wrappedBuffer(array, offset, length));
-                offset += length;
-            }
+            return Optional.of(buf);
         }, null);
     }
 

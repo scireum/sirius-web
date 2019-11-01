@@ -25,6 +25,7 @@ import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.LastHttpContent;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.commons.Processor;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.ValueHolder;
 import sirius.kernel.commons.Watch;
@@ -32,12 +33,11 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.nls.NLS;
 
-import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -56,7 +56,7 @@ class TunnelHandler implements AsyncHandler<String> {
     private Response response;
     private WebContext webContext;
     private final String url;
-    private BiConsumer<ByteBuffer, Consumer<ByteBuf>> transformer;
+    private Processor<ByteBuf, Optional<ByteBuf>> transformer;
     private Consumer<Integer> failureHandler;
     private final CallContext cc;
     private int responseCode = HttpResponseStatus.OK.code();
@@ -66,7 +66,7 @@ class TunnelHandler implements AsyncHandler<String> {
 
     TunnelHandler(Response response,
                   String url,
-                  BiConsumer<ByteBuffer, Consumer<ByteBuf>> transformer,
+                  Processor<ByteBuf, Optional<ByteBuf>> transformer,
                   Consumer<Integer> failureHandler) {
         this.response = response;
         this.webContext = response.wc;
@@ -218,8 +218,9 @@ class TunnelHandler implements AsyncHandler<String> {
             if (bodyPart.isLast()) {
                 completeResponse(bodyPart);
             } else if (transformer != null) {
-                transformer.accept(bodyPart.getBodyByteBuffer(),
-                                   buf -> response.contentionAwareWrite(new DefaultHttpContent(buf)));
+                transformer.apply(Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer()))
+                           .map(DefaultHttpContent::new)
+                           .ifPresent(response::contentionAwareWrite);
             } else {
                 ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
                 Object msg = response.responseChunked ? new DefaultHttpContent(data) : data;
@@ -241,7 +242,7 @@ class TunnelHandler implements AsyncHandler<String> {
         response.complete(response.commit(res));
     }
 
-    private void completeResponse(HttpResponseBodyPart bodyPart) {
+    private void completeResponse(HttpResponseBodyPart bodyPart) throws Exception {
         if (transformer != null) {
             transformLastContentAndComplete(bodyPart);
         } else if (response.responseChunked) {
@@ -256,19 +257,18 @@ class TunnelHandler implements AsyncHandler<String> {
         }
     }
 
-    private void transformLastContentAndComplete(HttpResponseBodyPart bodyPart) {
-        // We need to buffer the (potentially) last ByteBuf for our last writeAndFlush call below.
-        // Therefore we use this single slot buffer to cycle the data through...
-        ValueHolder<ByteBuf> writeBuffer = ValueHolder.of(null);
-        transformer.accept(bodyPart.getBodyByteBuffer(), buf -> {
-            if (writeBuffer.get() != null) {
-                response.contentionAwareWrite(new DefaultLastHttpContent(buf));
-            }
-            writeBuffer.set(buf);
-        });
+    private void transformLastContentAndComplete(HttpResponseBodyPart bodyPart) throws Exception {
+        ByteBuf lastResult = transformer.apply(Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer())).orElse(null);
+        ByteBuf completeResult = transformer.apply(Unpooled.EMPTY_BUFFER).orElse(null);
 
-        if (writeBuffer.get() != null) {
-            ChannelFuture writeFuture = response.ctx.writeAndFlush(new DefaultLastHttpContent(writeBuffer.get()));
+        if (lastResult != null && completeResult != null) {
+            response.contentionAwareWrite(new DefaultHttpContent(lastResult));
+            ChannelFuture writeFuture = response.ctx.writeAndFlush(new DefaultLastHttpContent(completeResult));
+            response.complete(writeFuture);
+        } else if (completeResult != null) {
+            throw new IllegalStateException("lastResult was null but completeResult wasn't!");
+        } else if (lastResult != null) {
+            ChannelFuture writeFuture = response.ctx.writeAndFlush(new DefaultLastHttpContent(lastResult));
             response.complete(writeFuture);
         } else {
             ChannelFuture writeFuture = response.ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
