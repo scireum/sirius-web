@@ -143,6 +143,7 @@ public class TestController implements Controller {
                 array[i] = (byte) ((array[i] + 1) % 255);
             }
 
+            buf.retain();
             return Optional.of(buf);
         }, null);
     }
