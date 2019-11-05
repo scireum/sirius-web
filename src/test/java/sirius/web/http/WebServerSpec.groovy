@@ -222,7 +222,7 @@ class WebServerSpec extends BaseSpecification {
     }
 
     /**
-     * Call a controller which transforms a tunneled files
+     * Calls a controller which transforms a tunnelled file
      * <p>
      * This matches the logic in <tt>TestController.tunnelTestTransform</tt>.
      */

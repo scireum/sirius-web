@@ -1285,8 +1285,8 @@ public class Response {
      * with the status code and can re-try or answer the request by itself.
      *
      * @param url            the url to tunnel through
-     * @param transformer    the transformer which map / transformes the byte blocks being tunnelled. Note that once
-     *                       all data has been processed an empty buffer is sent to signal the end of the processing.
+     * @param transformer    the transformer which map / transforms the byte blocks being tunnelled. Note that once
+     *                       all data has been processed an empty buffer is sent to signalize the end of the processing.
      * @param failureHandler supplies a handler which is invoked if the called URL fails. The handler is provided with
      *                       the HTTP status code and can (and must) handle the request on its own. It is save to
      *                       call {@link WebContext#respondWith()} again for the request, as no response was created
