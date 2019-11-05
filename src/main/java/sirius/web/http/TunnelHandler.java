@@ -218,9 +218,11 @@ class TunnelHandler implements AsyncHandler<String> {
             if (bodyPart.isLast()) {
                 completeResponse(bodyPart);
             } else if (transformer != null) {
-                transformer.apply(Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer()))
+                ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
+                transformer.apply(data)
                            .map(DefaultHttpContent::new)
                            .ifPresent(response::contentionAwareWrite);
+                data.release();
             } else {
                 ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
                 Object msg = response.responseChunked ? new DefaultHttpContent(data) : data;
@@ -264,6 +266,7 @@ class TunnelHandler implements AsyncHandler<String> {
         ByteBuf lastBufferToProcess = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
         boolean lastBufferWasNonEmpty = lastBufferToProcess.isReadable();
         ByteBuf lastResult = transformer.apply(lastBufferToProcess).orElse(null);
+        lastBufferToProcess.release();
         ByteBuf completeResult = lastBufferWasNonEmpty ? transformer.apply(Unpooled.EMPTY_BUFFER).orElse(null) : null;
 
         // Based on the processing above we might either end up with two buffers or with a single one.
