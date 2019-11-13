@@ -75,8 +75,8 @@ public abstract class GenericUserManager implements UserManager {
         this.ssoEnabled = Strings.isFilled(ssoSecret) && config.get("ssoEnabled").asBoolean(false);
         this.ssoGraceInterval = config.get("ssoGraceInterval").asLong(DEFAULT_SSO_GRACE_INTERVAL);
         this.keepLoginEnabled = config.get("keepLoginEnabled").asBoolean(true);
-        this.publicRoles = config.get("publicRoles").get(List.class, Collections.emptyList());
-        this.defaultRoles = config.get("defaultRoles").get(List.class, Collections.emptyList());
+        this.publicRoles = Collections.unmodifiableList(config.get("publicRoles").get(List.class, Collections.emptyList()));
+        this.defaultRoles = Collections.unmodifiableList(config.get("defaultRoles").get(List.class, Collections.emptyList()));
         this.loginTTL = config.get("loginTTL").get(Duration.class, Duration.ofDays(90));
         this.defaultUser = buildDefaultUser();
     }
