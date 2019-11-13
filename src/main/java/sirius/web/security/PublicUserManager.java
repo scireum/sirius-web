@@ -24,9 +24,9 @@ import java.util.Set;
  * Essentially this user manager makes all functionality public accessible by always returning a user which has a
  * defined set of roles (therefore one can of course disable some functions entirely).
  * <p>
- * This roles granted can be controlled by two config entries. One is <tt>security.publicRoles</tt> which
- * also affects all other user managers. The other is <tt>defaultRoles</tt> which has to be defined within
- * the scope.
+ * This roles granted can be controlled by the two scope config entries <tt>defaultRoles</tt> and <tt>publicRoles</tt>.
+ * We simply combine both lists to be compatible with the config keys used by other user manages (e.g.
+ * one which extend the {@link GenericUserManager}).
  */
 public class PublicUserManager extends GenericUserManager {
 
@@ -50,7 +50,7 @@ public class PublicUserManager extends GenericUserManager {
         super(scope, config);
         this.user = UserInfo.Builder.createUser(PUBLIC_PLACEHOLDER)
                                     .withUsername(PUBLIC_PLACEHOLDER)
-                                    .withPermissions(transformRoles(Collections.emptyList()))
+                                    .withPermissions(transformRoles(publicRoles))
                                     .build();
     }
 
