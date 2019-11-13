@@ -54,9 +54,6 @@ public class Permissions {
 
     protected static List<Profile> profilesCache;
 
-    @ConfigValue("security.publicRoles")
-    protected static List<String> publicRoles;
-
     private Permissions() {
     }
 
@@ -98,21 +95,15 @@ public class Permissions {
     }
 
     /**
-     * Adds all public roles and then applies all known profiles.
+     * Adds all known profiles by creating and enhancing a new roles set.
      * <p>
      * Applies all known profiles on the given set of roles/permissions just like {@link #applyProfiles(java.util.Set)}.
-     * Also all public roles defined in <tt>security.publicRoles</tt> are included to the roles set before profiles
-     * are expanded.
      *
      * @param roles the list of permissions and or profiles to expand
-     * @return an effective list of permissions based on the profiles defined in <tt>security.profiles</tt> and the
-     * public roles defined in <tt>security.publicRoles</tt>
+     * @return an effective list of permissions based on the profiles defined in <tt>security.profiles</tt>
      */
-    public static Set<String> applyProfilesAndPublicRoles(Collection<String> roles) {
+    public static Set<String> copyAndApplyProfiles(Collection<String> roles) {
         Set<String> allRoles = new HashSet<>(roles);
-        if (publicRoles != null) {
-            allRoles.addAll(publicRoles);
-        }
         applyProfiles(allRoles);
 
         return allRoles;

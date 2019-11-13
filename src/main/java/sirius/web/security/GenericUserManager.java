@@ -89,7 +89,7 @@ public abstract class GenericUserManager implements UserManager {
     }
 
     protected Set<String> determineRolesOfDefaultUser() {
-        return Permissions.applyProfilesAndPublicRoles(publicRoles);
+        return Permissions.copyAndApplyProfiles(publicRoles);
     }
 
     /**
@@ -322,8 +322,9 @@ public abstract class GenericUserManager implements UserManager {
     protected Set<String> transformRoles(Collection<String> roles) {
         Set<String> allRoles = Sets.newTreeSet(roles);
         allRoles.addAll(defaultRoles);
+        Permissions.applyProfiles(allRoles);
 
-        return Permissions.applyProfilesAndPublicRoles(allRoles);
+        return allRoles;
     }
 
     /**
