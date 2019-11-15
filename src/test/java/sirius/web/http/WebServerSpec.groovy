@@ -685,4 +685,16 @@ class WebServerSpec extends BaseSpecification {
         then:
         JSON.parseObject(data).get("test") == '1'
     }
+    
+    def "testRequest follows redirects if instructed"() {
+        when:
+        def response1 = TestRequest.GET("/test/redirect-to-get").execute()
+        def response2 = TestRequest.GET("/test/redirect-to-get").followRedirect().execute()
+        then:
+        response1.getType() == TestResponse.ResponseType.TEMPORARY_REDIRECT
+        response1.getStatus() == HttpResponseStatus.FOUND
+        and:
+        response2.getType() == TestResponse.ResponseType.DIRECT
+        response2.getStatus() == HttpResponseStatus.OK
+    }
 }
