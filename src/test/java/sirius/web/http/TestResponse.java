@@ -50,6 +50,7 @@ public class TestResponse extends Response {
     protected TestResponse(TestRequest testRequest) {
         super(testRequest);
         responsePromise = testRequest.testResponsePromise;
+        followRedirect = testRequest.followRedirect;
     }
 
     /**
@@ -84,6 +85,7 @@ public class TestResponse extends Response {
     private JSONObject jsonContent;
     private XMLStructuredInput xmlContent;
     private CallContext innerCallContext;
+    private boolean followRedirect = false;
 
     /**
      * Returns the HTTP status set by the application.
@@ -275,6 +277,12 @@ public class TestResponse extends Response {
 
     @Override
     public void redirectToGet(String url) {
+        if (followRedirect) {
+            TestRequest redirectRequest = TestRequest.GET(url);
+            redirectRequest.testResponsePromise = responsePromise;
+            redirectRequest.execute();
+            return;
+        }
         type = ResponseType.TEMPORARY_REDIRECT;
         status = HttpResponseStatus.FOUND;
         redirectUrl = url;

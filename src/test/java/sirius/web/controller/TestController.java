@@ -276,4 +276,14 @@ public class TestController implements Controller {
 
         ctx.respondWith().direct(HttpResponseStatus.OK, "OK");
     }
+    
+    @Routed("/test/redirect-to-get")
+    public void redirect(WebContext ctx) {
+        ctx.respondWith().redirectToGet("/test/redirect-target");
+    }
+
+    @Routed("/test/redirect-target")
+    public void redirectTarget(WebContext ctx) {
+        ctx.respondWith().direct(HttpResponseStatus.OK, "target");
+    }
 }

@@ -69,6 +69,7 @@ public class TestRequest extends WebContext implements HttpRequest {
     protected Promise<TestResponse> testResponsePromise = new Promise<>();
     private DispatcherPipeline pipeline;
     private Map<String, String> testSession;
+    protected boolean followRedirect = false;
 
     protected TestRequest() {
         super();
@@ -240,6 +241,11 @@ public class TestRequest extends WebContext implements HttpRequest {
             testCookies.add(new DefaultCookie(name, value));
         }
         testHeaders.set(HttpHeaderNames.COOKIE, ClientCookieEncoder.STRICT.encode(testCookies));
+        return this;
+    }
+
+    public TestRequest followRedirect() {
+        followRedirect = true;
         return this;
     }
 
