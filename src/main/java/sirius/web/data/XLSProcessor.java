@@ -77,6 +77,10 @@ public class XLSProcessor implements LineBasedProcessor {
                 }
             }
         }
+
+        if (tc.isActive() && current > 0) {
+            tc.setState(NLS.get("LineBasedProcessor.linesProcessed"), current);
+        }
     }
 
     private short getLastFilledCell(Row row) {

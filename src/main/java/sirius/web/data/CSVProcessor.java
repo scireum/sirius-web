@@ -51,5 +51,9 @@ public class CSVProcessor implements LineBasedProcessor {
                 }
             }
         });
+
+        if (tc.isActive() && rowCounter.get() > 0) {
+            tc.setState(NLS.get("LineBasedProcessor.linesProcessed"), rowCounter.get());
+        }
     }
 }
