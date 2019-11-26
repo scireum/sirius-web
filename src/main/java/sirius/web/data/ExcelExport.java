@@ -524,14 +524,22 @@ public class ExcelExport {
         if (data instanceof LocalDate || data instanceof LocalDateTime) {
             return dateStyle;
         }
+
+        // Integer numbers are represented without any special formatting...
+        if (data instanceof Integer || data instanceof Long) {
+            return normalStyle;
+        }
+
+        // Every other number is formatted with two decimal digits...
         if (isNumeric(data)) {
             return numeric;
         }
+
         return normalStyle;
     }
 
     private boolean isNumeric(Object data) {
-        if (data instanceof Integer || data instanceof Double || data instanceof Long || data instanceof BigDecimal) {
+        if (data instanceof Double || data instanceof BigDecimal) {
             return true;
         }
 
