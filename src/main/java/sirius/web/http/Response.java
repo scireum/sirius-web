@@ -339,10 +339,8 @@ public class Response {
             if (WebServer.serverErrors.incrementAndGet() < 0) {
                 WebServer.serverErrors.set(0);
             }
-        } else if (status.code() >= 400) {
-            if (WebServer.clientErrors.incrementAndGet() < 0) {
-                WebServer.clientErrors.set(0);
-            }
+        } else if (status.code() >= 400 && WebServer.clientErrors.incrementAndGet() < 0) {
+            WebServer.clientErrors.set(0);
         }
     }
 
@@ -520,14 +518,12 @@ public class Response {
      */
     public boolean handleIfModifiedSince(long lastModifiedInMillis) {
         long ifModifiedSinceDateSeconds = wc.getDateHeader(HttpHeaderNames.IF_MODIFIED_SINCE) / 1000;
-        if (ifModifiedSinceDateSeconds > 0 && lastModifiedInMillis > 0) {
-            if (ifModifiedSinceDateSeconds >= lastModifiedInMillis / 1000) {
-                setDateAndCacheHeaders(lastModifiedInMillis,
-                                       cacheSeconds == null ? HTTP_CACHE : cacheSeconds,
-                                       isPrivate);
-                status(HttpResponseStatus.NOT_MODIFIED);
-                return true;
-            }
+        if (ifModifiedSinceDateSeconds > 0
+            && lastModifiedInMillis > 0
+            && ifModifiedSinceDateSeconds >= lastModifiedInMillis / 1000) {
+            setDateAndCacheHeaders(lastModifiedInMillis, cacheSeconds == null ? HTTP_CACHE : cacheSeconds, isPrivate);
+            status(HttpResponseStatus.NOT_MODIFIED);
+            return true;
         }
 
         return false;

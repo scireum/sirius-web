@@ -86,10 +86,8 @@ public class HelpDispatcher implements WebDispatcher {
         Tuple<String, String> langAndTopic = Strings.split(uri.substring(HELP_PREFIX_LENGTH), "/");
         boolean languageFound = setupLang(langAndTopic.getFirst());
 
-        if (!languageFound || Strings.isFilled(langAndTopic.getSecond())) {
-            if (serveTopic(ctx, uri)) {
-                return true;
-            }
+        if ((!languageFound || Strings.isFilled(langAndTopic.getSecond())) && serveTopic(ctx, uri)) {
+            return true;
         }
 
         if (!languageFound || Strings.areEqual(langAndTopic.getFirst(), NLS.getDefaultLanguage())) {

@@ -35,10 +35,11 @@ class SmartHttpContentCompressor extends HttpContentCompressor {
 
     @Override
     protected Result beginEncode(HttpResponse res, String acceptEncoding) throws Exception {
-        if (!(res instanceof FullHttpResponse)) {
-            if (!res.headers().contains(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED, true)) {
-                return null;
-            }
+        if (!(res instanceof FullHttpResponse) && !res.headers()
+                                                      .contains(HttpHeaderNames.TRANSFER_ENCODING,
+                                                                HttpHeaderValues.CHUNKED,
+                                                                true)) {
+            return null;
         }
 
         // If the content type is not compressable (jpg, png ...), we skip compression

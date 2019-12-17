@@ -454,11 +454,12 @@ class Parser extends InputProcessor {
             }
         }
 
-        if ("is".equals(methodName) && parameters.size() == 1 && (parameters.get(0) instanceof ConstantClass)) {
-            if (!Transformable.class.isAssignableFrom(self.getType())) {
-                Class<?> type = (Class<?>) parameters.get(0).eval(null);
-                return new InstanceCheck(self, type);
-            }
+        if ("is".equals(methodName)
+            && parameters.size() == 1
+            && (parameters.get(0) instanceof ConstantClass)
+            && !Transformable.class.isAssignableFrom(self.getType())) {
+            Class<?> type = (Class<?>) parameters.get(0).eval(null);
+            return new InstanceCheck(self, type);
         }
 
         return null;

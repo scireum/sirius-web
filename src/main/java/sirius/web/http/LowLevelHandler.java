@@ -35,15 +35,13 @@ class LowLevelHandler extends ChannelDuplexHandler {
             WebServer.connections.set(0);
         }
         IPRange.RangeSet filter = WebServer.getIPFilter();
-        if (!filter.isEmpty()) {
-            if (!filter.accepts(((InetSocketAddress) remoteAddress).getAddress())) {
-                if (WebServer.blocks.incrementAndGet() < 0) {
-                    WebServer.blocks.set(0);
-                }
-                ctx.channel().close();
-                future.setSuccess();
-                return;
+        if (!filter.isEmpty() && !filter.accepts(((InetSocketAddress) remoteAddress).getAddress())) {
+            if (WebServer.blocks.incrementAndGet() < 0) {
+                WebServer.blocks.set(0);
             }
+            ctx.channel().close();
+            future.setSuccess();
+            return;
         }
         super.connect(ctx, remoteAddress, localAddress, future);
     }

@@ -231,10 +231,9 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
      * @return <tt>true</tt> if keepalive is still supported, <tt>false</tt> otherwise.
      */
     public boolean shouldKeepAlive() {
-        if (!WebServer.getProxyIPs().isEmpty()) {
-            if (WebServer.getProxyIPs().accepts(((InetSocketAddress) this.remoteAddress).getAddress())) {
-                return true;
-            }
+        if (!WebServer.getProxyIPs().isEmpty() && WebServer.getProxyIPs()
+                                                           .accepts(((InetSocketAddress) this.remoteAddress).getAddress())) {
+            return true;
         }
 
         return numKeepAlive-- > 0;
@@ -300,10 +299,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                 return;
             }
             boolean last = msg instanceof LastHttpContent;
-            if (!last) {
-                if (WebServer.chunks.incrementAndGet() < 0) {
-                    WebServer.chunks.set(0);
-                }
+            if (!last && WebServer.chunks.incrementAndGet() < 0) {
+                WebServer.chunks.set(0);
             }
             if (currentContext.contentHandler != null) {
                 CallContext.setCurrent(currentCall);
@@ -561,13 +558,12 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                     File file = currentContext.content.getFile();
                     checkUploadFileLimits(file);
                 }
-            } else if (!(chunk instanceof LastHttpContent)) {
-                if (!HttpMethod.POST.equals(currentRequest.method())
-                    && !HttpMethod.PUT.equals(currentRequest.method())) {
-                    currentContext.respondWith()
-                                  .error(HttpResponseStatus.BAD_REQUEST, "Only POST or PUT may sent chunked data");
-                    currentRequest = null;
-                }
+            } else if (!(chunk instanceof LastHttpContent)
+                       && !HttpMethod.POST.equals(currentRequest.method())
+                       && !HttpMethod.PUT.equals(currentRequest.method())) {
+                currentContext.respondWith()
+                              .error(HttpResponseStatus.BAD_REQUEST, "Only POST or PUT may sent chunked data");
+                currentRequest = null;
             }
         } catch (Exception ex) {
             currentContext.respondWith()
@@ -627,12 +623,6 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         }
 
         return getPipeline().preDispatch(currentContext);
-    }
-
-    private void logPredispatched(String msg) {
-        if (WebServer.LOG.isFINE()) {
-            WebServer.LOG.FINE(msg);
-        }
     }
 
     /*

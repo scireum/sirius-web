@@ -102,14 +102,13 @@ public class ServiceDispatcher implements WebDispatcher {
     private void invokeService(WebContext ctx, ServiceCall call, StructuredService serv) {
         TaskContext.get().setSystem(SYSTEM_SERVICE).setSubSystem(serv.getClass().getSimpleName());
 
-        // Check firewall
-        if (firewall != null && !serv.getClass().isAnnotationPresent(Unlimited.class)) {
-            if (firewall.handleRateLimiting(ctx,
-                                            Optional.ofNullable(serv.getClass().getAnnotation(Limited.class))
-                                                    .map(Limited::value)
-                                                    .orElse(Limited.HTTP))) {
-                return;
-            }
+        if (firewall != null
+            && !serv.getClass().isAnnotationPresent(Unlimited.class)
+            && firewall.handleRateLimiting(ctx,
+                                           Optional.ofNullable(serv.getClass().getAnnotation(Limited.class))
+                                                   .map(Limited::value)
+                                                   .orElse(Limited.HTTP))) {
+            return;
         }
 
         // ... and check permissions

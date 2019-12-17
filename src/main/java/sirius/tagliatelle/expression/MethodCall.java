@@ -253,10 +253,8 @@ public class MethodCall extends Call {
 
         // Try to find an appropriate method using coercions known to the system...
         for (Method m : type.getMethods()) {
-            if (signatureMatch(m, name, parameterTypes)) {
-                if (checkSandbox(m)) {
-                    return m;
-                }
+            if (signatureMatch(m, name, parameterTypes) && checkSandbox(m)) {
+                return m;
             }
         }
 
@@ -306,11 +304,11 @@ public class MethodCall extends Call {
             if (i == method.getParameterCount() - 1 && method.getParameterTypes()[i].isArray()) {
                 varargType = method.getParameterTypes()[i].getComponentType();
             }
-            if (i >= method.getParameterCount() || !Tagliatelle.isAssignableTo(parameterType,
-                                                                               method.getParameterTypes()[i])) {
-                if (varargType == null || !Tagliatelle.isAssignableTo(parameterType, varargType)) {
-                    return false;
-                }
+            if ((i >= method.getParameterCount() || !Tagliatelle.isAssignableTo(parameterType,
+                                                                                method.getParameterTypes()[i])) && (
+                        varargType == null
+                        || !Tagliatelle.isAssignableTo(parameterType, varargType))) {
+                return false;
             }
         }
         return true;

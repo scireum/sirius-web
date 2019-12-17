@@ -1773,15 +1773,15 @@ public class WebContext implements SubContext {
                                 .withSystemErrorMessage("Expected a valid JSON map as body of this request.")
                                 .handle();
             }
-            if (!content.isInMemory()) {
-                if (content.getFile().length() > maxStructuredInputSize && maxStructuredInputSize > 0) {
-                    throw Exceptions.handle()
-                                    .to(WebServer.LOG)
-                                    .withSystemErrorMessage(
-                                            "Request body is too large to parse as JSON. The limit is %d bytes",
-                                            maxStructuredInputSize)
-                                    .handle();
-                }
+            if (!content.isInMemory()
+                && content.getFile().length() > maxStructuredInputSize
+                && maxStructuredInputSize > 0) {
+                throw Exceptions.handle()
+                                .to(WebServer.LOG)
+                                .withSystemErrorMessage(
+                                        "Request body is too large to parse as JSON. The limit is %d bytes",
+                                        maxStructuredInputSize)
+                                .handle();
             }
             return JSON.parseObject(content.getString(getRequestEncoding()));
         } catch (HandledException e) {

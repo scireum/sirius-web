@@ -121,13 +121,13 @@ public class ControllerDispatcher implements WebDispatcher {
                                      List<Object> params,
                                      InputStreamHandler inputStreamHandler) {
         try {
-            if (firewall != null && !route.getMethod().isAnnotationPresent(Unlimited.class)) {
-                if (firewall.handleRateLimiting(ctx,
-                                                Optional.ofNullable(route.getMethod().getAnnotation(Limited.class))
-                                                        .map(Limited::value)
-                                                        .orElse(Limited.HTTP))) {
-                    return;
-                }
+            if (firewall != null
+                && !route.getMethod().isAnnotationPresent(Unlimited.class)
+                && firewall.handleRateLimiting(ctx,
+                                               Optional.ofNullable(route.getMethod().getAnnotation(Limited.class))
+                                                       .map(Limited::value)
+                                                       .orElse(Limited.HTTP))) {
+                return;
             }
 
             // Inject WebContext as first parameter...

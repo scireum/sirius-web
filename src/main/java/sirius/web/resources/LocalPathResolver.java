@@ -86,10 +86,8 @@ public class LocalPathResolver implements Resolver {
                 baseDirFound = false;
             } else {
                 getBaseDir();
-                if (!baseDir.exists()) {
-                    if (!DEFAULT_BASE_DIR.equals(localResourcePath)) {
-                        Resources.LOG.WARN(CHECK_MSG, localResourcePath, baseDir.getAbsolutePath());
-                    }
+                if (!baseDir.exists() && !DEFAULT_BASE_DIR.equals(localResourcePath)) {
+                    Resources.LOG.WARN(CHECK_MSG, localResourcePath, baseDir.getAbsolutePath());
                 }
                 baseDirFound = baseDir.exists();
             }
