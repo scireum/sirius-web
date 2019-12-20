@@ -482,7 +482,7 @@ public class Response {
     }
 
     @Nonnull
-    private String censor(String parameterName) {
+    private String censor(@Nonnull String parameterName) {
         if (CENSORED_LOWERCASE_PARAMETER_NAMES.contains(parameterName.toLowerCase())) {
             return "(censored)";
         } else {
