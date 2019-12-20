@@ -179,7 +179,6 @@ public class ScopeInfo extends Composable {
         return super.is(type);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <A> Optional<A> tryAs(@Nonnull Class<A> adapterType) {
         Transformable userObject = getScopeObject(Transformable.class);
