@@ -1181,15 +1181,6 @@ public class Response {
         }
     }
 
-    private void setupContentType(Template template) {
-        String fileName = template.getEffectiveFileName();
-        if (fileName.endsWith(FILETYPE_HTML)) {
-            setHeader(HttpHeaderNames.CONTENT_TYPE, CONTENT_TYPE_HTML);
-        } else {
-            setContentTypeHeader(fileName);
-        }
-    }
-
     private void handleTemplateError(String name, Exception e) {
         throw Exceptions.handle()
                         .to(Tagliatelle.LOG)
