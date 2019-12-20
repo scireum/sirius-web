@@ -11,7 +11,6 @@ package sirius.web.controller;
 import com.google.common.collect.Lists;
 import sirius.kernel.cache.ValueComputer;
 import sirius.kernel.commons.Limit;
-import sirius.kernel.commons.Monoflop;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.nls.NLS;
 import sirius.web.http.WebContext;
@@ -448,63 +447,5 @@ public class Page<E> {
      */
     public int getPageSize() {
         return pageSize;
-    }
-
-    private boolean addQueryToQueryString(String field,
-                                          String value,
-                                          StringBuilder queryStringBuilder,
-                                          Monoflop ampersandPlaced) {
-        if (PARAM_QUERY.equals(field)) {
-            queryStringBuilder.append(ampersandPlaced.firstCall() ? "" : "&");
-            queryStringBuilder.append("query=");
-            queryStringBuilder.append(Strings.urlEncode(value));
-            return true;
-        }
-
-        if (Strings.isFilled(query)) {
-            queryStringBuilder.append(ampersandPlaced.firstCall() ? "" : "&");
-            queryStringBuilder.append("query=");
-            queryStringBuilder.append(Strings.urlEncode(query));
-        }
-        return false;
-    }
-
-    private boolean addStartToQueryString(String field,
-                                          String value,
-                                          StringBuilder queryStringBuilder,
-                                          Monoflop ampersandPlaced) {
-        queryStringBuilder.append(ampersandPlaced.firstCall() ? "" : "&");
-        queryStringBuilder.append("start=");
-        if (PARAM_START.equals(field)) {
-            queryStringBuilder.append(value);
-            return true;
-        } else {
-            queryStringBuilder.append(start);
-            return false;
-        }
-    }
-
-    private boolean createQueryStringForFacets(String field,
-                                               String value,
-                                               StringBuilder queryStringBuilder,
-                                               Monoflop ampersandPlaced) {
-        boolean fieldFound = false;
-        for (Facet f : getFacets()) {
-            if (Strings.areEqual(field, f.getName())) {
-                fieldFound = true;
-                if (Strings.isFilled(value)) {
-                    queryStringBuilder.append(ampersandPlaced.firstCall() ? "" : "&");
-                    queryStringBuilder.append(field);
-                    queryStringBuilder.append("=");
-                    queryStringBuilder.append(Strings.urlEncode(value));
-                }
-            } else if (Strings.isFilled(f.getValue())) {
-                queryStringBuilder.append(ampersandPlaced.firstCall() ? "" : "&");
-                queryStringBuilder.append(f.getName());
-                queryStringBuilder.append("=");
-                queryStringBuilder.append(Strings.urlEncode(f.getValue()));
-            }
-        }
-        return fieldFound;
     }
 }
