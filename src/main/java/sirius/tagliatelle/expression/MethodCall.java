@@ -9,6 +9,7 @@
 package sirius.tagliatelle.expression;
 
 import parsii.tokenizer.Char;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 import sirius.tagliatelle.Tagliatelle;
@@ -297,20 +298,39 @@ public class MethodCall extends Call {
         return ensureEnoughParameters(method, parameterTypes);
     }
 
+    @SuppressWarnings("squid:S3776")
+    @Explain("As this involves a stateful complex check, we rather keep all checks in one place.")
     private boolean checkParameterTypes(Method method, Class<?>[] parameterTypes) {
         Class<?> varargType = null;
         for (int i = 0; i < parameterTypes.length; i++) {
             Class<?> parameterType = parameterTypes[i];
-            if (i == method.getParameterCount() - 1 && method.getParameterTypes()[i].isArray()) {
-                varargType = method.getParameterTypes()[i].getComponentType();
-            }
-            if ((i >= method.getParameterCount() || !Tagliatelle.isAssignableTo(parameterType,
-                                                                                method.getParameterTypes()[i])) && (
-                        varargType == null
-                        || !Tagliatelle.isAssignableTo(parameterType, varargType))) {
+            Class<?> methodParameterType = i < method.getParameterCount() ? method.getParameterTypes()[i] : varargType;
+
+            // If the last parameter is an array, we have to determine its component type as this might be
+            // a var-arg call...
+            if (method.isVarArgs() && i == method.getParameterCount() - 1 && methodParameterType.isArray()) {
+                varargType = methodParameterType.getComponentType();
+
+                // For a var-arg parameter, the last parameter has either to be the exact same type (an array)
+                // or it has to match the vararg type
+                if (!Tagliatelle.isAssignableTo(parameterType, methodParameterType) && !Tagliatelle.isAssignableTo(
+                        parameterType,
+                        varargType)) {
+                    return false;
+                }
+
+                // If we matched the original array type, we cannot support additional vararg parameters,
+                // therefore the argument count must match...
+                if (!Tagliatelle.isAssignableTo(parameterType, varargType)
+                    && parameterTypes.length > method.getParameterCount()) {
+                    return false;
+                }
+            } else if (methodParameterType == null || !Tagliatelle.isAssignableTo(parameterType, methodParameterType)) {
+                // For all other parameters (than the last) we simply ensure, that the parameter type is assignable...
                 return false;
             }
         }
+
         return true;
     }
 
@@ -318,17 +338,11 @@ public class MethodCall extends Call {
         // The method accepts all given parameters, now ensure, that we also provide enough parameters for the method...
         if (!method.isVarArgs()) {
             // No varargs -> parameters must match exactly...
-            if (method.getParameterTypes().length != parameterTypes.length) {
-                return false;
-            }
+            return method.getParameterTypes().length == parameterTypes.length;
         } else {
             // Varary -> we can at most skip the last parameter...
-            if (parameterTypes.length < method.getParameterTypes().length - 1) {
-                return false;
-            }
+            return parameterTypes.length >= method.getParameterTypes().length - 1;
         }
-
-        return true;
     }
 
     @Override
