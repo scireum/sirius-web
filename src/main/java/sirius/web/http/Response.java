@@ -9,6 +9,7 @@
 package sirius.web.http;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableSet;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
 import io.netty.buffer.ByteBuf;
@@ -54,6 +55,7 @@ import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 import sirius.web.services.JSONStructuredOutput;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.OutputStream;
@@ -67,6 +69,7 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -100,15 +103,16 @@ public class Response {
      */
     private static final String SIRIUS_DEBUG_COOKIE = "SIRIUS.WEB.DEBUG.LEVEL";
 
+    /**
+     * Contains a set of parameter names which are censored in any output as we do not want to log user passwords etc.
+     */
+    private static final Set<String> CENSORED_LOWERCASE_PARAMETER_NAMES =
+            ImmutableSet.of("password", "passphrase", "secret", "secretKey");
+
     /*
      * Caches the GMT TimeZone (lookup is synchronized)
      */
     private static final TimeZone TIME_ZONE_GMT = TimeZone.getTimeZone("GMT");
-
-    /*
-     * Contains the file extension used by HTML
-     */
-    private static final String FILETYPE_HTML = ".html";
 
     /*
      * Contains the content type used for html
@@ -471,9 +475,18 @@ public class Response {
                                wc.getRequestedURL(),
                                wc.getParameterNames()
                                  .stream()
-                                 .map(param -> param + ": " + Strings.limit(wc.get(param).asString(), 50))
+                                 .map(param -> param + ": " + censor(param))
                                  .collect(Collectors.joining("\n")),
                                callContext);
+        }
+    }
+
+    @Nonnull
+    private String censor(String parameterName) {
+        if (CENSORED_LOWERCASE_PARAMETER_NAMES.contains(parameterName.toLowerCase())) {
+            return "(censored)";
+        } else {
+            return Strings.limit(wc.get(parameterName).asString(), 50);
         }
     }
 
