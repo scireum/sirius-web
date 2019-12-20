@@ -37,6 +37,7 @@ import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
 import sirius.kernel.commons.Callback;
+import sirius.kernel.commons.Files;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
@@ -1947,22 +1948,10 @@ public class WebContext implements SubContext {
         }
 
         for (File file : filesToCleanup) {
-            saveDeleteFile(file);
+            Files.delete(file);
         }
 
         filesToCleanup = null;
-    }
-
-    private void saveDeleteFile(File file) {
-        try {
-            if (file != null && file.exists()) {
-                if (!file.delete()) {
-                    WebServer.LOG.WARN("Cannot delete temporary file: %s", file.getAbsolutePath());
-                }
-            }
-        } catch (Exception e) {
-            Exceptions.handle(WebServer.LOG, e);
-        }
     }
 
     /**
@@ -2006,7 +1995,7 @@ public class WebContext implements SubContext {
         if (request == null) {
             return result;
         }
-        
+
         return result + request.toString();
     }
 
