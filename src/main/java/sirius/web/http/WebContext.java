@@ -15,7 +15,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
-import com.google.common.io.Files;
+import com.google.common.io.ByteStreams;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandlerContext;
@@ -1692,11 +1692,13 @@ public class WebContext implements SubContext {
         }
 
         File result = File.createTempFile("http", "");
-        if (!content.isInMemory()) {
-            Files.copy(content.getFile(), result);
-        } else {
-            try (FileOutputStream outputStream = new FileOutputStream(result)) {
+        try (FileOutputStream outputStream = new FileOutputStream(result)) {
+            if (content.isInMemory()) {
                 outputStream.write(content.get());
+            } else {
+                try (FileInputStream inputStream = new FileInputStream(content.getFile())) {
+                    ByteStreams.copy(inputStream, outputStream);
+                }
             }
         }
 
