@@ -419,9 +419,9 @@ public class ScopeInfo extends Composable {
     public UserSettings getSettings() {
         if (settings == null) {
             if (configSupplier != null) {
-                settings = new UserSettings(configSupplier.apply(this).withFallback(getScopeDefaultConfig()));
+                settings = new UserSettings(configSupplier.apply(this).withFallback(getScopeDefaultConfig()), false);
             } else {
-                settings = new UserSettings(getScopeDefaultConfig());
+                settings = new UserSettings(getScopeDefaultConfig(), false);
             }
         }
 
