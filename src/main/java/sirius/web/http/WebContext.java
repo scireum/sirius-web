@@ -15,7 +15,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
-import com.google.common.io.Files;
+import com.google.common.io.ByteStreams;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandlerContext;
@@ -37,6 +37,7 @@ import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
 import sirius.kernel.commons.Callback;
+import sirius.kernel.commons.Files;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
@@ -1691,11 +1692,13 @@ public class WebContext implements SubContext {
         }
 
         File result = File.createTempFile("http", "");
-        if (!content.isInMemory()) {
-            Files.copy(content.getFile(), result);
-        } else {
-            try (FileOutputStream outputStream = new FileOutputStream(result)) {
+        try (FileOutputStream outputStream = new FileOutputStream(result)) {
+            if (content.isInMemory()) {
                 outputStream.write(content.get());
+            } else {
+                try (FileInputStream inputStream = new FileInputStream(content.getFile())) {
+                    ByteStreams.copy(inputStream, outputStream);
+                }
             }
         }
 
@@ -1773,15 +1776,15 @@ public class WebContext implements SubContext {
                                 .withSystemErrorMessage("Expected a valid JSON map as body of this request.")
                                 .handle();
             }
-            if (!content.isInMemory()) {
-                if (content.getFile().length() > maxStructuredInputSize && maxStructuredInputSize > 0) {
-                    throw Exceptions.handle()
-                                    .to(WebServer.LOG)
-                                    .withSystemErrorMessage(
-                                            "Request body is too large to parse as JSON. The limit is %d bytes",
-                                            maxStructuredInputSize)
-                                    .handle();
-                }
+            if (!content.isInMemory()
+                && content.getFile().length() > maxStructuredInputSize
+                && maxStructuredInputSize > 0) {
+                throw Exceptions.handle()
+                                .to(WebServer.LOG)
+                                .withSystemErrorMessage(
+                                        "Request body is too large to parse as JSON. The limit is %d bytes",
+                                        maxStructuredInputSize)
+                                .handle();
             }
             return JSON.parseObject(content.getString(getRequestEncoding()));
         } catch (HandledException e) {
@@ -1947,22 +1950,10 @@ public class WebContext implements SubContext {
         }
 
         for (File file : filesToCleanup) {
-            saveDeleteFile(file);
+            Files.delete(file);
         }
 
         filesToCleanup = null;
-    }
-
-    private void saveDeleteFile(File file) {
-        try {
-            if (file != null && file.exists()) {
-                if (!file.delete()) {
-                    WebServer.LOG.WARN("Cannot delete temporary file: %s", file.getAbsolutePath());
-                }
-            }
-        } catch (Exception e) {
-            Exceptions.handle(WebServer.LOG, e);
-        }
     }
 
     /**
@@ -2006,7 +1997,7 @@ public class WebContext implements SubContext {
         if (request == null) {
             return result;
         }
-        
+
         return result + request.toString();
     }
 

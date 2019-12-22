@@ -9,6 +9,7 @@
 package sirius.web.http;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableSet;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
 import io.netty.buffer.ByteBuf;
@@ -54,6 +55,7 @@ import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 import sirius.web.services.JSONStructuredOutput;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.OutputStream;
@@ -67,6 +69,7 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -100,15 +103,16 @@ public class Response {
      */
     private static final String SIRIUS_DEBUG_COOKIE = "SIRIUS.WEB.DEBUG.LEVEL";
 
+    /**
+     * Contains a set of parameter names which are censored in any output as we do not want to log user passwords etc.
+     */
+    private static final Set<String> CENSORED_LOWERCASE_PARAMETER_NAMES =
+            ImmutableSet.of("password", "passphrase", "secret", "secretKey");
+
     /*
      * Caches the GMT TimeZone (lookup is synchronized)
      */
     private static final TimeZone TIME_ZONE_GMT = TimeZone.getTimeZone("GMT");
-
-    /*
-     * Contains the file extension used by HTML
-     */
-    private static final String FILETYPE_HTML = ".html";
 
     /*
      * Contains the content type used for html
@@ -339,10 +343,8 @@ public class Response {
             if (WebServer.serverErrors.incrementAndGet() < 0) {
                 WebServer.serverErrors.set(0);
             }
-        } else if (status.code() >= 400) {
-            if (WebServer.clientErrors.incrementAndGet() < 0) {
-                WebServer.clientErrors.set(0);
-            }
+        } else if (status.code() >= 400 && WebServer.clientErrors.incrementAndGet() < 0) {
+            WebServer.clientErrors.set(0);
         }
     }
 
@@ -473,9 +475,18 @@ public class Response {
                                wc.getRequestedURL(),
                                wc.getParameterNames()
                                  .stream()
-                                 .map(param -> param + ": " + Strings.limit(wc.get(param).asString(), 50))
+                                 .map(param -> param + ": " + censor(param))
                                  .collect(Collectors.joining("\n")),
                                callContext);
+        }
+    }
+
+    @Nonnull
+    private String censor(@Nonnull String parameterName) {
+        if (CENSORED_LOWERCASE_PARAMETER_NAMES.contains(parameterName.toLowerCase())) {
+            return "(censored)";
+        } else {
+            return Strings.limit(wc.get(parameterName).asString(), 50);
         }
     }
 
@@ -520,14 +531,12 @@ public class Response {
      */
     public boolean handleIfModifiedSince(long lastModifiedInMillis) {
         long ifModifiedSinceDateSeconds = wc.getDateHeader(HttpHeaderNames.IF_MODIFIED_SINCE) / 1000;
-        if (ifModifiedSinceDateSeconds > 0 && lastModifiedInMillis > 0) {
-            if (ifModifiedSinceDateSeconds >= lastModifiedInMillis / 1000) {
-                setDateAndCacheHeaders(lastModifiedInMillis,
-                                       cacheSeconds == null ? HTTP_CACHE : cacheSeconds,
-                                       isPrivate);
-                status(HttpResponseStatus.NOT_MODIFIED);
-                return true;
-            }
+        if (ifModifiedSinceDateSeconds > 0
+            && lastModifiedInMillis > 0
+            && ifModifiedSinceDateSeconds >= lastModifiedInMillis / 1000) {
+            setDateAndCacheHeaders(lastModifiedInMillis, cacheSeconds == null ? HTTP_CACHE : cacheSeconds, isPrivate);
+            status(HttpResponseStatus.NOT_MODIFIED);
+            return true;
         }
 
         return false;
@@ -1169,15 +1178,6 @@ public class Response {
             sendTemplateContent(status, template.getEffectiveFileName(), renderContext.toString());
         } catch (Exception e) {
             handleTemplateError(template.getEffectiveFileName(), e);
-        }
-    }
-
-    private void setupContentType(Template template) {
-        String fileName = template.getEffectiveFileName();
-        if (fileName.endsWith(FILETYPE_HTML)) {
-            setHeader(HttpHeaderNames.CONTENT_TYPE, CONTENT_TYPE_HTML);
-        } else {
-            setContentTypeHeader(fileName);
         }
     }
 

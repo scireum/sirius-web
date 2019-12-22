@@ -12,7 +12,6 @@ import com.google.common.collect.Sets;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.settings.Extension;

@@ -21,9 +21,11 @@ public class UserSettings extends ExtendedSettings {
      * Creates a new wrapper for the given config.
      *
      * @param config the config to wrap
+     * @param strict determines if the config is strict. A strict config will log an error if an unkown path is
+     *               requested
      */
-    public UserSettings(Config config) {
-        super(config);
+    public UserSettings(Config config, boolean strict) {
+        super(config, strict);
     }
 
     /**

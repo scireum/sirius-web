@@ -130,7 +130,6 @@ public class Compiler extends InputProcessor {
         return compileErrors;
     }
 
-
     /**
      * Verifies all macro calls to ensure their integrity.
      */
@@ -148,7 +147,7 @@ public class Compiler extends InputProcessor {
     private Expression verifyMacro(Position pos, Expression expr) {
         if (expr instanceof MacroCall) {
             try {
-                ((MacroCall) expr).verify(context,pos);
+                ((MacroCall) expr).verify(context, pos);
             } catch (IllegalArgumentException ex) {
                 context.error(pos, "Invalid parameters for macro: %s: %s", expr, ex.getMessage());
             }
@@ -195,11 +194,10 @@ public class Compiler extends InputProcessor {
                 return block;
             }
 
-            if (processTag(parentHandler, block, staticText) || processExpression(block)) {
-                if (!reader.current().isEndOfInput()) {
-                    staticText = new ConstantEmitter(reader.current());
-                    block.addChild(staticText);
-                }
+            if ((processTag(parentHandler, block, staticText) || processExpression(block)) && !reader.current()
+                                                                                                     .isEndOfInput()) {
+                staticText = new ConstantEmitter(reader.current());
+                block.addChild(staticText);
             }
         }
 
@@ -405,7 +403,7 @@ public class Compiler extends InputProcessor {
     private void parseAttributes(TagHandler handler) {
         while (true) {
             skipWhitespaces();
-            if (reader.current().isEndOfInput() || reader.current().is('>','/')) {
+            if (reader.current().isEndOfInput() || reader.current().is('>', '/')) {
                 break;
             }
             String name = parseName();

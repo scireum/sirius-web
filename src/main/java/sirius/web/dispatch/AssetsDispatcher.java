@@ -172,9 +172,7 @@ public class AssetsDispatcher implements WebDispatcher {
             try {
                 compileSASS(scssUri, file);
             } catch (Exception t) {
-                if (!file.delete()) {
-                    Templates.LOG.WARN("Cannot delete temporary file: %s", file.getAbsolutePath());
-                }
+                Files.delete(file);
                 ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(Templates.LOG, t));
                 return true;
             }
