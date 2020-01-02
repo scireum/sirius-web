@@ -28,7 +28,7 @@ class PageSpec extends Specification {
         Page page = new Page()
         when:
         page.withQuery("QUERY").
-                withFactes([
+                withFacets([
                         new Facet("", "field1", "value1", null),
                         new Facet("", "field2", "value2", null)
                 ])
@@ -43,7 +43,7 @@ class PageSpec extends Specification {
         Page page = new Page()
         when:
         page.withQuery("QUERY").
-                withFactes([
+                withFacets([
                         new Facet("", "field1", "value1", null),
                         new Facet("", "field2", "value2", null)
                 ])

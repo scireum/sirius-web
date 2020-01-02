@@ -122,7 +122,7 @@ public class Page<E> {
      * @param facets the facets available for further filtering
      * @return the page itself for fluent method calls
      */
-    public Page<E> withFactes(List<Facet> facets) {
+    public Page<E> withFacets(List<Facet> facets) {
         this.facets.addAll(facets);
         this.hasFacets = null;
         return this;
@@ -197,7 +197,7 @@ public class Page<E> {
      * @param facetsSupplier the facets supplier computing the facets available for further filtering
      * @return the page itself for fluent method calls
      */
-    public Page<E> withFactesSupplier(Supplier<List<Facet>> facetsSupplier) {
+    public Page<E> withFacetsSupplier(Supplier<List<Facet>> facetsSupplier) {
         this.facetsSupplier = facetsSupplier;
         return this;
     }
