@@ -26,10 +26,10 @@ public enum MessageLevel {
      */
     PROBLEM("alert-danger");
 
-    private String style;
+    private String cssClass;
 
-    MessageLevel(String style) {
-        this.style = style;
+    MessageLevel(String cssClass) {
+        this.cssClass = cssClass;
     }
 
     /**
@@ -37,7 +37,7 @@ public enum MessageLevel {
      *
      * @return the name of the css class used to render the message
      */
-    public String getStyle() {
-        return style;
+    public String getCssClass() {
+        return cssClass;
     }
 }

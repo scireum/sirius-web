@@ -1,7 +1,7 @@
 <div class="row">
     <div class="col-md-12" id="messageBox">
         <i:for type="sirius.web.controller.Message" var="msg" items="user.getMessages()">
-            <div class="alert @msg.getType().getStyle()">
+            <div class="alert @msg.getType().getCssClass()">
                 <i:raw>@msg.getMessage()</i:raw>
                 <i:if test="msg.getAction() != null">
                     <i:if test="msg.isActionJavascript()">
