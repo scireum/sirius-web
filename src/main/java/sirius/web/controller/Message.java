@@ -17,29 +17,9 @@ import sirius.web.security.UserContext;
  */
 public class Message {
 
-    /**
-     * Declares a message as success.
-     */
-    public static final String SUCCESS = "alert-success";
-
-    /**
-     * Declares a message as information.
-     */
-    public static final String INFO = "alert-info";
-
-    /**
-     * Declares a message as warning.
-     */
-    public static final String WARN = "alert-warning";
-
-    /**
-     * Declares a message as error.
-     */
-    public static final String ERROR = "alert-danger";
-
     private String messageText;
     private String details;
-    private String type;
+    private MessageLevel type = MessageLevel.INFO;
     private String action;
     private String actionLabel;
     private boolean actionJavascript;
@@ -51,7 +31,7 @@ public class Message {
      * @param details the details for this message
      * @param type    the type for the message
      */
-    public Message(String message, String details, String type) {
+    public Message(String message, String details, MessageLevel type) {
         this.messageText = message;
         this.details = details;
         this.type = type;
@@ -84,9 +64,9 @@ public class Message {
     /**
      * Returns the type of the message
      *
-     * @return the type (one of {@link #SUCCESS}, {@link #INFO}, {@link #WARN}, {@link #ERROR})
+     * @return the {@link MessageLevel type}
      */
-    public String getType() {
+    public MessageLevel getType() {
         return type;
     }
 
@@ -156,7 +136,7 @@ public class Message {
      * @return a new message with the given content and SUCCESS as type
      */
     public static Message success(String message) {
-        return new Message(message, null, SUCCESS);
+        return new Message(message, null, MessageLevel.SUCCESS);
     }
 
     /**
@@ -166,7 +146,7 @@ public class Message {
      * @return a new message with the given content and INFO as type
      */
     public static Message info(String message) {
-        return new Message(message, null, INFO);
+        return new Message(message, null, MessageLevel.INFO);
     }
 
     /**
@@ -176,7 +156,7 @@ public class Message {
      * @return a new message with the given content and WARN as type
      */
     public static Message warn(String message) {
-        return new Message(message, null, WARN);
+        return new Message(message, null, MessageLevel.WARNING);
     }
 
     /**
@@ -186,7 +166,7 @@ public class Message {
      * @return a new message with the given content and ERROR as type
      */
     public static Message error(String message) {
-        return new Message(message, null, ERROR);
+        return new Message(message, null, MessageLevel.PROBLEM);
     }
 
     /**
@@ -199,7 +179,7 @@ public class Message {
         if (t instanceof HandledException) {
             return error(t.getMessage());
         }
-        return new Message(Exceptions.handle(UserContext.LOG, t).getMessage(), null, ERROR);
+        return new Message(Exceptions.handle(UserContext.LOG, t).getMessage(), null, MessageLevel.PROBLEM);
     }
 
     public void setMessage(String message) {
@@ -210,7 +190,7 @@ public class Message {
         this.details = details;
     }
 
-    public void setType(String type) {
+    public void setType(MessageLevel type) {
         this.type = type;
     }
 
