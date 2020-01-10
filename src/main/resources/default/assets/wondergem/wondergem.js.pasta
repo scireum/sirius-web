@@ -21,7 +21,3 @@
 <i:include name="/assets/wondergem/bootstrap-tokenfield/bootstrap-tokenfield.js"/>
 
 <i:include name="/assets/wondergem/autocomplete/multiselect.js"/>
-
-<i:if test="@call.getUserAgent().contains('Trident')">
-    <i:include name="/assets/wondergem/es6-promise/es6-promise.min.js"/>
-</i:if>
