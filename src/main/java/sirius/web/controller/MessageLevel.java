@@ -26,7 +26,7 @@ public enum MessageLevel {
      */
     PROBLEM("alert-danger");
 
-    private String cssClass;
+    private final String cssClass;
 
     MessageLevel(String cssClass) {
         this.cssClass = cssClass;
