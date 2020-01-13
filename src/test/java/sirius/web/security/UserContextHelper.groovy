@@ -9,6 +9,7 @@
 package sirius.web.security
 
 import sirius.web.controller.Message
+import sirius.web.controller.MessageLevel
 import sirius.web.http.TestResponse
 
 /**
@@ -59,7 +60,7 @@ class UserContextHelper {
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
     static void expectNoErrorMessages(TestResponse response) {
-        expectNoMessagesOfType(response, Message.ERROR)
+        expectNoMessagesOfType(response, MessageLevel.PROBLEM)
     }
 
     /**
@@ -69,7 +70,7 @@ class UserContextHelper {
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
     static void expectErrorMessage(TestResponse response) {
-        expectMessageOfType(response, Message.ERROR)
+        expectMessageOfType(response, MessageLevel.PROBLEM)
     }
 
     /**
@@ -80,7 +81,7 @@ class UserContextHelper {
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
     static void expectErrorMessageContaining(TestResponse response, String textPart) {
-        expectMessageOfTypeContaining(response, Message.ERROR, textPart)
+        expectMessageOfTypeContaining(response, MessageLevel.PROBLEM, textPart)
     }
 
     /**
@@ -90,7 +91,7 @@ class UserContextHelper {
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
     static void expectNoWarnMessages(TestResponse response) {
-        expectNoMessagesOfType(response, Message.WARN)
+        expectNoMessagesOfType(response, MessageLevel.WARNING)
     }
 
     /**
@@ -100,7 +101,7 @@ class UserContextHelper {
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
     static void expectWarnMessage(TestResponse response) {
-        expectMessageOfType(response, Message.WARN)
+        expectMessageOfType(response, MessageLevel.WARNING)
     }
 
     /**
@@ -111,7 +112,7 @@ class UserContextHelper {
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
     static void expectWarnMessageContaining(TestResponse response, String textPart) {
-        expectMessageOfTypeContaining(response, Message.WARN, textPart)
+        expectMessageOfTypeContaining(response, MessageLevel.WARNING, textPart)
     }
 
     /**
@@ -121,7 +122,7 @@ class UserContextHelper {
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
     static void expectNoInfoMessages(TestResponse response) {
-        expectNoMessagesOfType(response, Message.INFO)
+        expectNoMessagesOfType(response, MessageLevel.INFO)
     }
 
     /**
@@ -131,7 +132,7 @@ class UserContextHelper {
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
     static void expectInfoMessage(TestResponse response) {
-        expectMessageOfType(response, Message.INFO)
+        expectMessageOfType(response, MessageLevel.INFO)
     }
 
     /**
@@ -142,7 +143,7 @@ class UserContextHelper {
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
     static void expectInfoMessageContaining(TestResponse response, String textPart) {
-        expectMessageOfTypeContaining(response, Message.INFO, textPart)
+        expectMessageOfTypeContaining(response, MessageLevel.INFO, textPart)
     }
 
 
@@ -153,7 +154,7 @@ class UserContextHelper {
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
     static void expectNoSuccessMessages(TestResponse response) {
-        expectNoMessagesOfType(response, Message.SUCCESS)
+        expectNoMessagesOfType(response, MessageLevel.SUCCESS)
     }
 
     /**
@@ -163,7 +164,7 @@ class UserContextHelper {
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
     static void expectSuccessMessage(TestResponse response) {
-        expectMessageOfType(response, Message.SUCCESS)
+        expectMessageOfType(response, MessageLevel.SUCCESS)
     }
 
     /**
@@ -174,7 +175,7 @@ class UserContextHelper {
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
     static void expectSuccessMessageContaining(TestResponse response, String textPart) {
-        expectMessageOfTypeContaining(response, Message.SUCCESS, textPart)
+        expectMessageOfTypeContaining(response, MessageLevel.SUCCESS, textPart)
     }
 
     /**
@@ -209,7 +210,7 @@ class UserContextHelper {
      * @param type the message type
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
-    private static void expectNoMessagesOfType(TestResponse response, String type) {
+    private static void expectNoMessagesOfType(TestResponse response, MessageLevel type) {
         def ctx = getUserContext(response)
         assert ctx.getMessages().every { msg -> msg.getType() != type }
     }
@@ -221,7 +222,7 @@ class UserContextHelper {
      * @param type the message type
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
-    private static void expectMessageOfType(TestResponse response, String type) {
+    private static void expectMessageOfType(TestResponse response, MessageLevel type) {
         assert getUserContext(response).getMessages().any { msg -> msg.getType() == type }
     }
 
@@ -233,7 +234,7 @@ class UserContextHelper {
      * @param textPart the text that the message must contain
      * @return <tt>true</tt> if the assertion is fulfilled, <tt>false</tt> otherwise
      */
-    private static void expectMessageOfTypeContaining(TestResponse response, String type, String textPart) {
+    private static void expectMessageOfTypeContaining(TestResponse response, MessageLevel type, String textPart) {
         assert getUserContext(response)
                 .getMessages()
                 .any { msg -> msg.getType() == type && msg.getMessage().contains(textPart) }
