@@ -25,6 +25,10 @@
 
     <script src="/assets/wondergem/wondergem.js" type="text/javascript"></script>
 
+    <i:if test="@call.getUserAgent().contains('Trident')">
+        <script src="/assets/wondergem/es6-promise/es6-promise.min.js"  type="text/javascript"></script>
+    </i:if>
+
     <i:extensions target="wondergem-page" point="head"/>
     <i:invoke template="/templates/wondergem/page-script.html.pasta" />
 
