@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
 
 /**
@@ -57,7 +57,7 @@ class TunnelHandler implements AsyncHandler<String> {
     private WebContext webContext;
     private final String url;
     private Processor<ByteBuf, Optional<ByteBuf>> transformer;
-    private Consumer<Integer> failureHandler;
+    private IntConsumer failureHandler;
     private final CallContext cc;
     private int responseCode = HttpResponseStatus.OK.code();
     private boolean contentLengthKnown;
@@ -67,7 +67,7 @@ class TunnelHandler implements AsyncHandler<String> {
     TunnelHandler(Response response,
                   String url,
                   Processor<ByteBuf, Optional<ByteBuf>> transformer,
-                  Consumer<Integer> failureHandler) {
+                  IntConsumer failureHandler) {
         this.response = response;
         this.webContext = response.wc;
         this.url = url;
@@ -219,9 +219,7 @@ class TunnelHandler implements AsyncHandler<String> {
                 completeResponse(bodyPart);
             } else if (transformer != null) {
                 ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
-                transformer.apply(data)
-                           .map(DefaultHttpContent::new)
-                           .ifPresent(response::contentionAwareWrite);
+                transformer.apply(data).map(DefaultHttpContent::new).ifPresent(response::contentionAwareWrite);
                 data.release();
             } else {
                 ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
