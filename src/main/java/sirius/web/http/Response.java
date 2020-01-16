@@ -1324,13 +1324,15 @@ public class Response {
      * <p>
      * By default, caching will be disabled. If the generated JSON is small enough, it will be transmitted in
      * one go. Otherwise a chunked response will be sent.
+     * If a callback parameter is given in the request, the output will automatically be boxed into that function as JSONP.
      *
      * @return a structured output which will be sent as JSON response
      */
     public JSONStructuredOutput json() {
         String callback = wc.get("callback").getString();
         String encoding = wc.get("encoding").first().asString(Charsets.UTF_8.name());
-        return new JSONStructuredOutput(outputStream(HttpResponseStatus.OK, "application/json;charset=" + encoding),
+        String mimeType = Strings.isFilled(callback) ? "application/javascript" : "application/json";
+        return new JSONStructuredOutput(outputStream(HttpResponseStatus.OK, mimeType + ";charset=" + encoding),
                                         callback,
                                         encoding);
     }
