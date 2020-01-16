@@ -3,6 +3,7 @@
 <i:arg type="String" name="imageUrl" default="" />
 <i:arg type="String" name="previewUrl" default="@imageUrl" />
 <i:arg type="String" name="allowedExtensions" default="'[]'" />
+<i:arg type="boolean" name="singleFile" default="false" />
 
 <i:pragma name="description" value="Renders an image upload within a Wondergem template" />
 
@@ -14,7 +15,8 @@
                 this,
                 '@previewUrl',
                 '@imageUrl',
-                 <i:raw>@allowedExtensions</i:raw>
+                 <i:raw>@allowedExtensions</i:raw>,
+                @singleFile
         );
         });
     });
