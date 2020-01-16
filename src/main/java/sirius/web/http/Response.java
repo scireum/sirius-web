@@ -8,7 +8,6 @@
 
 package sirius.web.http;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
@@ -61,6 +60,7 @@ import java.io.File;
 import java.io.OutputStream;
 import java.net.URLConnection;
 import java.nio.channels.ClosedChannelException;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
@@ -72,7 +72,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
 
 /**
@@ -1089,7 +1089,7 @@ public class Response {
     private ByteBuf wrapUTF8String(String content) {
         // Returns a heap buffer - but strings are almost always compressed (HTML templates etc.) so this
         // is probably faster
-        return Unpooled.copiedBuffer(content.toCharArray(), Charsets.UTF_8);
+        return Unpooled.copiedBuffer(content.toCharArray(), StandardCharsets.UTF_8);
     }
 
     /**
@@ -1269,7 +1269,7 @@ public class Response {
      *                       call {@link WebContext#respondWith()} again for the request, as no response was created
      *                       yet.
      */
-    public void tunnel(final String url, @Nullable Consumer<Integer> failureHandler) {
+    public void tunnel(final String url, @Nullable IntConsumer failureHandler) {
         tunnel(url, null, failureHandler);
     }
 
@@ -1294,7 +1294,7 @@ public class Response {
      */
     public void tunnel(final String url,
                        @Nullable Processor<ByteBuf, Optional<ByteBuf>> transformer,
-                       @Nullable Consumer<Integer> failureHandler) {
+                       @Nullable IntConsumer failureHandler) {
         try {
             AsyncHttpClient.BoundRequestBuilder brb = getAsyncClient().prepareGet(url);
             long ifModifiedSince = wc.getDateHeader(HttpHeaderNames.IF_MODIFIED_SINCE);
@@ -1324,13 +1324,16 @@ public class Response {
      * <p>
      * By default, caching will be disabled. If the generated JSON is small enough, it will be transmitted in
      * one go. Otherwise a chunked response will be sent.
+     * <p>
+     * If a callback parameter is given in the request, the output will automatically be boxed into that function as JSONP.
      *
      * @return a structured output which will be sent as JSON response
      */
     public JSONStructuredOutput json() {
         String callback = wc.get("callback").getString();
-        String encoding = wc.get("encoding").first().asString(Charsets.UTF_8.name());
-        return new JSONStructuredOutput(outputStream(HttpResponseStatus.OK, "application/json;charset=" + encoding),
+        String encoding = wc.get("encoding").first().asString(StandardCharsets.UTF_8.name());
+        String mimeType = Strings.isFilled(callback) ? "application/javascript" : "application/json";
+        return new JSONStructuredOutput(outputStream(HttpResponseStatus.OK, mimeType + ";charset=" + encoding),
                                         callback,
                                         encoding);
     }
