@@ -148,11 +148,12 @@
         return params;
     }
 
-    function imageUpload(url, target, defaultPreview, defaultImage, allowedExtensions) {
+    function imageUpload(url, target, defaultPreview, defaultImage, allowedExtensions, singleFile) {
         var container = target;
         new qq.FileUploader({
             element: target,
             action: url,
+            multiple: !singleFile,
             debug: false,
             onComplete: function (cmp_id, fileName, responseJSON) {
                 clearMessages();
