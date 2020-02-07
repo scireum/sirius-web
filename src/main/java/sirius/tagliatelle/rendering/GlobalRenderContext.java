@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,7 +35,7 @@ public class GlobalRenderContext {
     protected Tagliatelle engine;
     protected StringBuilder buffer;
     protected Map<String, String> extraBlocks;
-    protected Function<String, String> escaper = GlobalRenderContext::escapeRAW;
+    protected UnaryOperator<String> escaper = GlobalRenderContext::escapeRAW;
     private static final Pattern OPENING_SCRIPT_TAG = Pattern.compile("<script(\\s.*)?>", Pattern.CASE_INSENSITIVE);
     private static final Pattern CLOSING_SCRIPT_TAG = Pattern.compile("</script>", Pattern.CASE_INSENSITIVE);
     private static final Pattern OPENING_STYLE_TAG = Pattern.compile("<style(\\s.*)?>", Pattern.CASE_INSENSITIVE);
@@ -158,7 +158,7 @@ public class GlobalRenderContext {
      * @param escaper a mapping function to escape certain characters in strings being output using {@link
      *                #outputEscaped(String)}.
      */
-    public void setEscaper(@Nonnull Function<String, String> escaper) {
+    public void setEscaper(@Nonnull UnaryOperator<String> escaper) {
         this.escaper = escaper;
     }
 
@@ -167,7 +167,7 @@ public class GlobalRenderContext {
      *
      * @return the currently active escaper
      */
-    public Function<String, String> getEscaper() {
+    public UnaryOperator<String> getEscaper() {
         return escaper;
     }
 
