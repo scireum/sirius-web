@@ -100,58 +100,58 @@ public class WebContext implements SubContext {
     private static final Log SESSION_CHECK = Log.get("session-check");
     private static final long SESSION_PIN_COOKIE_TTL = TimeUnit.DAYS.toSeconds(10L * 365);
 
-    /*
+    /**
      * Underlying channel to send and receive data
      */
     private ChannelHandlerContext ctx;
 
-    /*
+    /**
      * Internal attributes which can be set and read back during processing. This will not contain any posted or
      * other parameters.
      */
     private Map<String, Object> attribute;
 
-    /*
+    /**
      * The underlying request created by netty
      */
     protected HttpRequest request;
 
-    /*
+    /**
      * The effective request uri (without the query string)
      */
     private String requestedURI;
 
-    /*
+    /**
      * The effective request uri (without the query string)
      */
     private String rawRequestedURI;
 
-    /*
+    /**
      * The base url (without the uri, like: http://myhost.com)
      */
     private String baseURL;
 
-    /*
+    /**
      * Contains the parameters submitted in the query string (?param=value...)
      */
     private Map<String, List<String>> queryString;
 
-    /*
+    /**
      * Contains decoded cookies which where sent by the client
      */
     private Map<String, Cookie> cookiesIn;
 
-    /*
+    /**
      * Contains cookies which will be sent to the client
      */
     protected Map<String, Cookie> cookiesOut;
 
-    /*
+    /**
      * Stores the decoder which was used to process a POST or PUT request
      */
     protected InterfaceHttpPostRequestDecoder postDecoder;
 
-    /*
+    /**
      * Sometimes it is usefult to "hide" the fact that this is a POST request.
      * One case are login-forms. There are submitted for any URL but must not
      * interact with other POST handlers. Therefore a user manager can
@@ -160,136 +160,136 @@ public class WebContext implements SubContext {
      */
     protected boolean hidePost = false;
 
-    /*
+    /**
      * A list of files to deleted once this call is handled
      */
     private List<File> filesToCleanup;
 
-    /*
+    /**
      * If the submitted data (from the client) was stored to a file, this will be stored here
      */
     private File contentAsFile;
 
-    /*
+    /**
      * Raw content submitted via POST or PUT
      */
     protected Attribute content;
 
-    /*
+    /**
      * Contains decoded data of the client session - this is sent back and forth using a cookie. This data
      * will not be stored on the server.
      */
     private Map<String, String> session;
 
-    /*
+    /**
      * Used to create IDs which are locally unique (for this web context).
      */
     private AtomicLong localIdGenerator;
 
-    /*
+    /**
      * Internal key used to keep track of the TTL of the client session cookie
      */
     private static final String TTL_SESSION_KEY = "_TTL";
 
-    /*
+    /**
      * Stores the effective session cookie TTL. If null "defaultSessionCookieTTL" is used.
      */
     private Long sessionCookieTTL;
 
-    /*
+    /**
      * Determines if the client session was modified and should be re-set via a cookie
      */
     private volatile boolean sessionModified;
 
-    /*
+    /**
      * Specifies the microtiming key used for this request. If null, no microtiming will be recorded.
      */
     protected String microtimingKey;
 
-    /*
+    /**
      * Used by Response - but stored here, since a new Response might be created....
      */
     protected volatile boolean responseCommitted;
 
-    /*
+    /**
      * Used by Response - but stored here, since a new Response might be created....
      */
     protected volatile boolean responseCompleted;
 
-    /*
+    /**
      * Invoked once the call is completely handled
      */
     protected Callback<CallContext> completionCallback;
 
-    /*
+    /**
      * Determines if the request is performed via a secured channel (SSL)
      */
     protected Boolean ssl;
 
-    /*
+    /**
      * Contains the remote IP. If a proxyIP is specified (WebServer#proxyIPs), a X-Forwarded-For header is checked
      */
     private InetAddress remoteIp;
 
-    /*
+    /**
      * If longCall is set to true (by the user), the idle-state handler is disabled for this request.
      */
     private volatile boolean longCall;
 
-    /*
+    /**
      * If set, will be supplied with all incoming content (instead of buffering on disk or in memory)
      */
     protected ContentHandler contentHandler;
 
-    /*
+    /**
      * Contains the timestamp this request was dispatched. (Will not be filled in predispatch, as we only
      * want to measure how long it takes to generate an "average" result, not how long an upload took....
      */
     protected volatile long started = 0;
 
-    /*
+    /**
      * Contains the timestamp this request was scheduled for execution.
      * This can be used to measure the actual execution time without the wait time if the thread pool
      * is fully utilized and requests are queued.
      */
     protected volatile long scheduled = 0;
 
-    /*
+    /**
      * Contains the timestamp this request was commited (a response was created).
      * This can be used to actually measure the server performance and not the download speed of clients.
      */
     protected volatile long committed = 0;
 
-    /*
+    /**
      * Caches the content size as the "readableBytes" value changes once a stream is on it.
      */
     private Long contentSize;
 
-    /*
+    /**
      * Caches the user agent for this request.
      */
     protected UserAgent userAgent;
 
-    /*
+    /**
      * Name of the cookie used to store and load the client session
      */
     @ConfigValue("http.sessionCookieName")
     private static String sessionCookieName;
 
-    /*
+    /**
      * Determines if a session should be pinned to a certain client or user-agent by using another cookie.
      */
     @ConfigValue("http.sessionPinning")
     private static boolean sessionPinning;
 
-    /*
+    /**
      * The ttl of the client session cookie. If this is 0, it will be a "session cookie" and therefore
      * be deleted when the browser is closed
      */
     @ConfigValue("http.sessionCookieTTL")
     private static Duration defaultSessionCookieTTL;
 
-    /*
+    /**
      * Determines the domain set for all cookies. If empty no domain will be set.
      * If a cookie's domain attribute is not set, the cookie is only applicable to the domain of the originating request, EXCLUDING all its subdomains.
      * (However in IE 9 and older versions, a cookie made for abc.com is also sent in requests to xyz.abc.com)
@@ -300,43 +300,43 @@ public class WebContext implements SubContext {
     @ConfigValue("http.cookieDomain")
     private static String cookieDomain;
 
-    /*
+    /**
      * Shared secret used to protect the client session. If empty one will be created on startup.
      */
     @ConfigValue("http.sessionSecret")
     private static String sessionSecret;
 
-    /*
+    /**
      * Input size limit for structured data (as this is loaded into heap)
      */
     @ConfigValue("http.maxStructuredInputSize")
     private static long maxStructuredInputSize;
 
-    /*
+    /**
      * Determines if a dummy P3P header should be created to disable P3P handling.
      */
     @ConfigValue("http.addP3PHeader")
     protected static boolean addP3PHeader;
 
-    /*
+    /**
      * Determines the security policy used by the client when loading internet resources.
      */
     @ConfigValue("http.contentSecurityPolicy")
     protected static String contentSecurityPolicy;
 
-    /*
+    /**
      * Should the automatic CORS handling be done or not?
      */
     @ConfigValue("http.corsAllowAll")
     protected static boolean corsAllowAll;
 
-    /*
+    /**
      * Should a Strict-Transport-Security header be sent?
      */
     @ConfigValue("http.ssl.forceHSTS")
     protected static boolean forceHSTS;
 
-    /*
+    /**
      * Should the automatic CORS handling be done or not?
      */
     @ConfigValue("http.ssl.hstsMaxAge")

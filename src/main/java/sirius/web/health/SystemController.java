@@ -11,6 +11,7 @@ package sirius.web.health;
 import com.google.common.base.Charsets;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.Sirius;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
@@ -203,6 +204,8 @@ public class SystemController extends BasicController {
      *
      * @param out the output stream to write the metric to
      */
+    @SuppressWarnings("squid:S2184")
+    @Explain("We're only doing calculations with simple operations and small numbers.")
     private void outputNodeStateAsMetric(PrintWriter out) {
         outputMetric(out,
                      new Metric("node_state",
@@ -294,7 +297,9 @@ public class SystemController extends BasicController {
     @Permission(PERMISSION_SYSTEM_STATE)
     public void load(WebContext ctx) {
         ctx.respondWith()
-           .template("/templates/system/load.html.pasta", loadInfoProviders.getParts(), ctx.get("all").asBoolean(false));
+           .template("/templates/system/load.html.pasta",
+                     loadInfoProviders.getParts(),
+                     ctx.get("all").asBoolean(false));
     }
 
     /**

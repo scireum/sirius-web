@@ -14,6 +14,7 @@ import sirius.tagliatelle.rendering.GlobalRenderContext;
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 /**
  * Switches the <tt>escaper</tt> to {@link GlobalRenderContext#escapeRAW(String)} while emitting the given body.
@@ -35,7 +36,7 @@ public class RawEmitter extends Emitter {
 
     @Override
     protected void emitToContext(LocalRenderContext context) throws Exception {
-        Function<String, String> currentEscaper = context.getGlobalContext().getEscaper();
+        UnaryOperator<String> currentEscaper = context.getGlobalContext().getEscaper();
         context.getGlobalContext().setEscaper(GlobalRenderContext::escapeRAW);
         try {
             body.emit(context);
