@@ -16,6 +16,7 @@ import sirius.tagliatelle.rendering.LocalRenderContext;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Gets the current time since 1970 in days
@@ -37,7 +38,7 @@ public class UnixtimeInDaysMacro implements Macro {
 
     @Override
     public Object eval(LocalRenderContext ctx, Expression[] args) {
-        return System.currentTimeMillis() / 1000 / 86400;
+        return TimeUnit.DAYS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS);
     }
 
     @Override
