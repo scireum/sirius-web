@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
  * Gets the current time since 1970 in days
  */
 @Register
-public class UnixtimeInDaysMacro implements Macro {
+public class EpochTimeInDaysMacro implements Macro {
 
     @Override
     public Class<?> getType() {
@@ -32,7 +32,7 @@ public class UnixtimeInDaysMacro implements Macro {
     @Override
     public void verifyArguments(CompilationContext context, Position position, List<Expression> args) {
         if (!args.isEmpty()) {
-            throw new IllegalArgumentException("'unixtimeInDays' does not take arguments.");
+            throw new IllegalArgumentException("'epochTimeInDays' does not take arguments.");
         }
     }
 
@@ -49,7 +49,7 @@ public class UnixtimeInDaysMacro implements Macro {
     @Nonnull
     @Override
     public String getName() {
-        return "unixtimeInDays";
+        return "epochTimeInDays";
     }
 
     @Override
