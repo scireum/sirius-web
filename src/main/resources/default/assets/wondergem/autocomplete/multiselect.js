@@ -81,7 +81,7 @@ var multiSelect = function (args) {
         });
 
         // Needed to still transfer the field if nothing is selected
-        if (tokens.length === 0 && args.optional) {
+        if (tokens.length === 0) {
             $('<option></option>').val('').attr('selected', 'selected').appendTo($select);
         }
     }

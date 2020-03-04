@@ -44,8 +44,7 @@
             readonly: @readonly,
             placeholder: '@i18n('template.html.selects.selection')',
             maxItems: 1,
-            allowCustomEntries: @allowCustomEntries,
-            optional: @optional
+            allowCustomEntries: @allowCustomEntries
         });
     });
 </script>

@@ -5,8 +5,10 @@
 <i:arg name="label" type="String" default="@i18n(labelKey)"/>
 <i:arg name="helpKey" type="String" default=""/>
 <i:arg name="help" type="String" default="@i18n(helpKey)"/>
-<i:arg name="optional" type="boolean" default="false"/>
-<i:arg name="maxItems" type="int" default="0" description="Maximum number of items allowed in the field. 0 = unlimited."/>
+<i:arg name="optional" type="boolean" default="false" 
+       deprecated="No longer has any function. Will now always behave like 'true' did."/>
+<i:arg name="maxItems" type="int" default="0" 
+       description="Maximum number of items allowed in the field. 0 = unlimited."/>
 <i:arg name="required" type="boolean" default="false"/>
 <i:arg name="readonly" type="boolean" default="false"/>
 <i:arg name="adminOnly" type="boolean" default="false"/>
@@ -43,8 +45,7 @@
             readonly: @readonly,
             placeholder: '@i18n('template.html.selects.selection')',
             maxItems: @maxItems,
-            allowCustomEntries: @allowCustomEntries,
-            optional: @optional
+            allowCustomEntries: @allowCustomEntries
         });
     });
 </script>
