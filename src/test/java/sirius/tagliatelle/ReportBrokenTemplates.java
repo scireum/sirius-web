@@ -10,6 +10,8 @@ package sirius.tagliatelle;
 
 import sirius.kernel.Sirius;
 import sirius.kernel.TestLifecycleParticipant;
+import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Priorized;
 import sirius.kernel.di.std.Register;
@@ -20,6 +22,8 @@ import sirius.tagliatelle.compiler.Compiler;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -53,6 +57,7 @@ public class ReportBrokenTemplates implements TestLifecycleParticipant {
 
     @Override
     public void afterTests() {
+        List<Tuple<String, String>> templateWarnings = new ArrayList<>();
         Sirius.getClasspath().find(Pattern.compile(".*.pasta")).forEach(m -> {
             String templateName = "/" + m.group(0);
             if (templateName.startsWith("/default/")) {
@@ -64,15 +69,13 @@ public class ReportBrokenTemplates implements TestLifecycleParticipant {
                 Compiler compiler = new Compiler(compilationContext, resource.getContentAsString());
                 compiler.compile();
                 // If no exception was thrown but still some warnings are present, we
-                // will still break the test unless the template is marked as "unchecked".
-                if (!compiler.getContext().getErrors().isEmpty() && !isUnchecked(compilationContext.getTemplate())) {
-                    throw Exceptions.handle()
-                                    .withSystemErrorMessage("A warning ocurred while trying to compile: %s - %s."
-                                                            + " Please fix the reported issue or mark the template as unchecked"
-                                                            + " via a pragma.",
-                                                            templateName,
-                                                            compiler.getContext().getErrors().get(0).toString())
-                                    .handle();
+                // collect these warnings unless the template is marked as "unchecked".
+                // Any collected warnings will break the test at the end.
+                if (!isUnchecked(compilationContext.getTemplate())) {
+                    final String finalName = templateName;
+                    compiler.getContext().getErrors().forEach(error -> {
+                        templateWarnings.add(Tuple.create(finalName, error.toString()));
+                    });
                 }
             } catch (CompileException e) {
                 if (!isUnchecked(compilationContext.getTemplate())) {
@@ -84,6 +87,15 @@ public class ReportBrokenTemplates implements TestLifecycleParticipant {
                 }
             }
         });
+        if (!templateWarnings.isEmpty()) {
+            StringBuilder warningError = new StringBuilder();
+            templateWarnings.forEach(tuple -> warningError.append(Strings.apply(
+                    "A warning ocurred while trying to compile: %s - %s.\n",
+                    tuple.getFirst(),
+                    tuple.getSecond())));
+            warningError.append("Please fix the reported issue or mark the template as unchecked via a pragma.");
+            throw Exceptions.handle().withSystemErrorMessage(warningError.toString()).handle();
+        }
     }
 
     private boolean isUnchecked(Template template) {
