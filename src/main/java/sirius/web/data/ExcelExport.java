@@ -504,7 +504,9 @@ public class ExcelExport {
     }
 
     private void addAutoFilter() {
-        currentSheet.setAutoFilter(new CellRangeAddress(0, rows - 1, 0, maxCols - 1));
+        if (rows > 0 && maxCols > 0) {
+            currentSheet.setAutoFilter(new CellRangeAddress(0, rows - 1, 0, maxCols - 1));
+        }
     }
 
     private void autosizeColumns() {
