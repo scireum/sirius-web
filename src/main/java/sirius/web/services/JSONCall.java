@@ -57,6 +57,22 @@ public class JSONCall {
     }
 
     /**
+     * Creates a new JSONCall as post request for the given url.
+     *
+     * @param url         the target URL to call
+     * @param contentType the Content-Type to use
+     * @return a new instance to perform the xml call
+     * @throws IOException in case of an IO error
+     */
+    public static JSONCall post(URL url, String contentType) throws IOException {
+        JSONCall result = new JSONCall();
+        result.outcall = new Outcall(url);
+        result.outcall.markAsPostRequest();
+        result.outcall.setRequestProperty("Content-Type", contentType);
+        return result;
+    }
+
+    /**
      * Adds a custom header field to the call
      *
      * @param name  name of the field
