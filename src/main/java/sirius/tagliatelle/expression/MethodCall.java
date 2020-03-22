@@ -233,6 +233,7 @@ public class MethodCall extends Call {
         if (parameterExpressions == NO_ARGS) {
             try {
                 this.method = selfExpression.getType().getMethod(name);
+                checkDeprecation(position, context);
                 return;
             } catch (NoSuchMethodException e) {
                 Exceptions.ignore(e);
