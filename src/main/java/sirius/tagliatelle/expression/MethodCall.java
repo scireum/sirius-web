@@ -19,6 +19,9 @@ import sirius.tagliatelle.rendering.LocalRenderContext;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 
 /**
  * Invokes a Java {@link Method}.
@@ -179,7 +182,44 @@ public class MethodCall extends Call {
             return void.class;
         }
 
+        // Try to resolve type parameters into their actual values if possible.
+        // This will propagate type parameters down a call chain.
+        Type genericType = getGenericType();
+        if (genericType instanceof Class<?>) {
+            return (Class<?>) genericType;
+        }
+        if (genericType instanceof ParameterizedType) {
+            return (Class<?>) ((ParameterizedType) genericType).getRawType();
+        }
+
         return method.getReturnType();
+    }
+
+    @Override
+    public Type getGenericType() {
+        if (method.getGenericReturnType() instanceof TypeVariable) {
+            int index = determineGenericIndex((TypeVariable<?>) method.getGenericReturnType());
+            if (index >= 0) {
+                Type parentType = selfExpression.getGenericType();
+                if (parentType instanceof ParameterizedType) {
+                    return ((ParameterizedType) parentType).getActualTypeArguments()[index];
+                }
+            }
+        }
+
+        return method.getGenericReturnType();
+    }
+
+    private int determineGenericIndex(TypeVariable<?> genericReturnType) {
+        int index = 0;
+        for (TypeVariable<?> param : genericReturnType.getGenericDeclaration().getTypeParameters()) {
+            if (param.getName().equals(genericReturnType.getName())) {
+                return index;
+            }
+            index++;
+        }
+
+        return -1;
     }
 
     /**
@@ -193,7 +233,6 @@ public class MethodCall extends Call {
         if (parameterExpressions == NO_ARGS) {
             try {
                 this.method = selfExpression.getType().getMethod(name);
-                checkDeprecation(position, context);
                 return;
             } catch (NoSuchMethodException e) {
                 Exceptions.ignore(e);

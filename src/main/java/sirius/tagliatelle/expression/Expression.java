@@ -10,6 +10,10 @@ package sirius.tagliatelle.expression;
 
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
+import javax.annotation.Nullable;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+
 /**
  * Represents a node of the expression AST.
  */
@@ -58,4 +62,17 @@ public interface Expression {
      * @return the type of objects created by this expression
      */
     Class<?> getType();
+
+    /**
+     * Returns the generic type if available.
+     * <p>
+     * This can be used when trying to deduce the actual type from a type variable. This is
+     * the counterpart to {@link Method#getGenericReturnType()}.
+     *
+     * @return the generic return type or <tt>null</tt> if none is available
+     */
+    @Nullable
+    default Type getGenericType() {
+        return null;
+    }
 }

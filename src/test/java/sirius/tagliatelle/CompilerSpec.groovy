@@ -94,6 +94,19 @@ class CompilerSpec extends BaseSpecification {
         ctx.getTemplate().renderToString(TestObject.INSTANCE, Amount.TEN) == "-10"
     }
 
+    def "generic type propagation works"() {
+        when:
+        def ctx = new CompilationContext(new Template("test", null), null)
+        List<CompileError> errors = new Compiler(ctx, "<i:arg type=\"sirius.tagliatelle.TestObject\" name=\"test\" />" +
+                "@test.getGenericReturnType().getFirst().apply('Test').get().as(String.class).substring(1)").compile()
+        then:
+        errors.size() == 1
+        and: "We expect a warning as our cast to String is now unnecessary due to proper generic propagation"
+        errors.get(0).getError().getSeverity() == ParseError.Severity.WARNING
+        and:
+        ctx.getTemplate().renderToString(TestObject.INSTANCE) == "est"
+    }
+
     def "vararg detection works with several parameters"() {
         when:
         def ctx = new CompilationContext(new Template("test", null), null)
@@ -268,7 +281,10 @@ class CompilerSpec extends BaseSpecification {
         then:
         errors.size() == 1
         errors.get(0).getSeverity() == ParseError.Severity.WARNING
-        errors.get(0).getMessage().contains("The method sirius.tagliatelle.TestObject.deprecatedMethod is marked as deprecated")
+        errors.
+                get(0).
+                getMessage().
+                contains("The method sirius.tagliatelle.TestObject.deprecatedMethod is marked as deprecated")
     }
 
     def "calling a deprecated macro is detected"() {
@@ -278,7 +294,10 @@ class CompilerSpec extends BaseSpecification {
         then:
         errors.size() == 1
         errors.get(0).getSeverity() == ParseError.Severity.WARNING
-        errors.get(0).getMessage().contains("The macro deprecatedMacro (sirius.tagliatelle.DeprecatedMacro) is deprecated.")
+        errors.
+                get(0).
+                getMessage().
+                contains("The macro deprecatedMacro (sirius.tagliatelle.DeprecatedMacro) is deprecated.")
     }
 
     def "invalid varargs are detected"() {
