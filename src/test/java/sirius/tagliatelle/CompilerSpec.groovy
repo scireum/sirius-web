@@ -281,10 +281,9 @@ class CompilerSpec extends BaseSpecification {
         then:
         errors.size() == 1
         errors.get(0).getSeverity() == ParseError.Severity.WARNING
-        errors.
-                get(0).
-                getMessage().
-                contains("The method sirius.tagliatelle.TestObject.deprecatedMethod is marked as deprecated")
+        errors.get(0)
+              .getMessage()
+              .contains("The method sirius.tagliatelle.TestObject.deprecatedMethod is marked as deprecated")
     }
 
     def "calling a deprecated macro is detected"() {
