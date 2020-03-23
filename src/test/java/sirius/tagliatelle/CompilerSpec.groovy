@@ -293,10 +293,9 @@ class CompilerSpec extends BaseSpecification {
         then:
         errors.size() == 1
         errors.get(0).getSeverity() == ParseError.Severity.WARNING
-        errors.
-                get(0).
-                getMessage().
-                contains("The macro deprecatedMacro (sirius.tagliatelle.DeprecatedMacro) is deprecated.")
+        errors.get(0)
+              .getMessage()
+              .contains("The macro deprecatedMacro (sirius.tagliatelle.DeprecatedMacro) is deprecated.")
     }
 
     def "invalid varargs are detected"() {
@@ -310,10 +309,10 @@ class CompilerSpec extends BaseSpecification {
         then:
         errors.size() == 2
         errors.get(0).getError().getSeverity() == ParseError.Severity.ERROR
-        errors.get(0).
-                toString().
-                contains(
-                        "Incompatible attribute types. e:invalidArgumentTaglib expects int for 'invalidArgument', but class java.lang.String was given.")
+        errors.get(0)
+              .toString()
+              .contains(
+                      "Incompatible attribute types. e:invalidArgumentTaglib expects int for 'invalidArgument', but class java.lang.String was given.")
         !errors.get(1).toString().contains("NullPointerException")
     }
 
