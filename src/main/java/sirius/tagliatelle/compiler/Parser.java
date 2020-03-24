@@ -449,6 +449,11 @@ class Parser extends InputProcessor {
             Class<?> type = (Class<?>) parameters.get(0).eval(null);
             if (Transformable.class.isAssignableFrom(self.getType())) {
                 return new TransformerCast(self, type);
+            }
+
+            if (type.isAssignableFrom(self.getType())) {
+                context.warning(reader.current(), "Ignoring unnecessary cast from %s to %s", self.getType(), type);
+                return self;
             } else {
                 return new NativeCast(self, type);
             }

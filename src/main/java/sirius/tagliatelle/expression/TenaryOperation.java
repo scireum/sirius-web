@@ -10,6 +10,9 @@ package sirius.tagliatelle.expression;
 
 import sirius.tagliatelle.rendering.LocalRenderContext;
 
+import javax.annotation.Nullable;
+import java.lang.reflect.Type;
+
 /**
  * Represents a tenary operation liek {@code condition ? expr : expr}.
  * <p>
@@ -85,5 +88,11 @@ public class TenaryOperation implements Expression {
     @Override
     public Class<?> getType() {
         return leftExpression.getType();
+    }
+
+    @Nullable
+    @Override
+    public Type getGenericType() {
+        return leftExpression.getGenericType();
     }
 }
