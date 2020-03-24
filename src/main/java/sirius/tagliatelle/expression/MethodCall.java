@@ -258,7 +258,7 @@ public class MethodCall extends Call {
     }
 
     private Type tryResolveAsConstantClassParameter(String variableName, int parameterIndex) {
-        // Ensore that the parameter is of type Class<X> - abort otherwise
+        // Ensure that the parameter is of type Class<X> - abort otherwise
         if (!(Class.class.equals(method.getParameterTypes()[parameterIndex])
               && method.getGenericParameterTypes()[parameterIndex] instanceof ParameterizedType)) {
             return null;
