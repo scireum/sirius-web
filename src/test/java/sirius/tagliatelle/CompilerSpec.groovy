@@ -18,6 +18,7 @@ import sirius.tagliatelle.compiler.CompilationContext
 import sirius.tagliatelle.compiler.CompileError
 import sirius.tagliatelle.compiler.CompileException
 import sirius.tagliatelle.compiler.Compiler
+import sirius.tagliatelle.rendering.GlobalRenderContext
 import sirius.web.resources.Resource
 import sirius.web.resources.Resources
 
@@ -110,7 +111,9 @@ class CompilerSpec extends BaseSpecification {
     def "generic type propagation works for class parameters"() {
         when:
         def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx, "@user.getHelper(sirius.tagliatelle.ExampleHelper.class).getTestValue()").compile()
+        List<CompileError> errors = new Compiler(ctx,
+                                                 "@user.getHelper(sirius.tagliatelle.ExampleHelper.class).getTestValue()").
+                compile()
         then:
         errors.size() == 0
         and:
@@ -406,5 +409,25 @@ class CompilerSpec extends BaseSpecification {
                                    .get().renderToString(Tuple.create(innerClass, innerClass))
         then:
         test.basicallyEqual(result, expectedResult)
+    }
+
+    def "Toplevel i:block and i:extraBlock (even when nested) produce the appropriate extra outputs"() {
+        when:
+        def compilationContext = new CompilationContext(new Template("test", null), null)
+        List<CompileError> errors = new Compiler(compilationContext, "<i:block name=\"test\">" +
+                "Test" +
+                "<i:extraBlock name=\"extra-test\">Extra Test</i:extraBlock>" +
+                "</i:block>").
+                compile()
+        and:
+        GlobalRenderContext globalRenderContext = tagliatelle.createRenderContext()
+        and:
+        compilationContext.getTemplate().render(globalRenderContext)
+        then:
+        errors.size() == 0
+        and: "A top level i:block is expected to render its contents into an extra block"
+        globalRenderContext.getExtraBlock("test") == "Test"
+        and: "An i:extraBlock is expected to do the same - independently of its nesting and location"
+        globalRenderContext.getExtraBlock("extra-test") == "Extra Test"
     }
 }
