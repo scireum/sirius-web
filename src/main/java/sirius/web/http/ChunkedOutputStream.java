@@ -75,7 +75,7 @@ class ChunkedOutputStream extends OutputStream {
             completeRequest();
         } else {
             Object message = new DefaultHttpContent(buffer);
-            response.contentionAwareWrite(message);
+            response.contentionAwareWrite(message, true);
         }
 
         buffer = null;

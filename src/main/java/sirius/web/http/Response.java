@@ -1373,18 +1373,21 @@ public class Response {
     }
 
     /**
-     * Writes the given message probably a chunk of output data into the channel.
+     * Writes the given message (probably a chunk of output data) into the channel.
      * <p>
      * If the channel buffer is full (not writeable anymore) we need to trigger a flush,
      * so that the data is shovelled into the network. If this doesn't clear up the buffer immediatelly,
      * we block the current thread to throttle the application until free space is available again.
      * <p>
      * Note that this method must not be invoked in the event loop as otherwise a deadlock might occur. Therefore
-     * all dispatchers now always for a new thread to handle requests.
+     * all dispatchers now always fork a new thread to handle requests.
      *
      * @param message the data to sent
+     * @param flush determines if the underlying buffer must be flushed in any case.
+     *              This should be set to <tt>false</tt> in all possible cases so that the underlying netty and
+     *              operating system can optimize the effective block size for data being sent over the network.
      */
-    protected void contentionAwareWrite(Object message) {
+    protected void contentionAwareWrite(Object message, boolean flush) {
         if (!ctx.channel().isWritable()) {
             ChannelFuture future = ctx.writeAndFlush(message);
             while (!ctx.channel().isWritable() && ctx.channel().isOpen()) {
@@ -1397,7 +1400,11 @@ public class Response {
                 }
             }
         } else {
-            ctx.write(message);
+            if (flush) {
+                ctx.writeAndFlush(message);
+            } else {
+                ctx.write(message);
+            }
         }
     }
 
