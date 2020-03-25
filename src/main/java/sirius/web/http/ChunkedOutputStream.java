@@ -32,7 +32,6 @@ class ChunkedOutputStream extends OutputStream {
     private final String contentType;
     private final HttpResponseStatus status;
     volatile boolean open;
-    volatile long bytesWritten;
     ByteBuf buffer;
 
     ChunkedOutputStream(Response response, String contentType, HttpResponseStatus status) {
@@ -40,7 +39,6 @@ class ChunkedOutputStream extends OutputStream {
         this.contentType = contentType;
         this.status = status;
         open = true;
-        bytesWritten = 0;
         buffer = null;
     }
 
@@ -134,7 +132,6 @@ class ChunkedOutputStream extends OutputStream {
         if (!open) {
             return;
         }
-        bytesWritten++;
         ensureCapacity(1);
         buffer.writeByte(b);
     }
@@ -160,7 +157,6 @@ class ChunkedOutputStream extends OutputStream {
             return;
         }
         ensureCapacity(len);
-        bytesWritten += len;
         buffer.writeBytes(b, off, len);
     }
 
