@@ -31,8 +31,8 @@ class ChunkedOutputStream extends OutputStream {
     private Response response;
     private final String contentType;
     private final HttpResponseStatus status;
-    volatile boolean open;
-    ByteBuf buffer;
+    private volatile boolean open;
+    private ByteBuf buffer;
 
     ChunkedOutputStream(Response response, String contentType, HttpResponseStatus status) {
         this.response = response;
