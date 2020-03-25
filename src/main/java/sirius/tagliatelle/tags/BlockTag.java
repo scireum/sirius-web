@@ -65,15 +65,15 @@ public class BlockTag extends TagHandler {
             getCompilationContext().error(getStartOfTag(), "The attribute name of i:block must be filled.", name);
             return;
         }
+
+        Emitter body = getBlock(BLOCK_BODY);
         if (getParentHandler() != null) {
-            Emitter body = getBlock(BLOCK_BODY);
             if (body != null) {
                 getParentHandler().addBlock(name, body);
             } else {
                 getParentHandler().addBlock(name, ConstantEmitter.EMPTY);
             }
         } else {
-            Emitter body = getBlock(BLOCK_BODY);
             if (body != null) {
                 targetBlock.addChild(new ExtraBlockEmitter(name, body));
             }
