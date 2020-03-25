@@ -198,16 +198,101 @@ public class MethodCall extends Call {
     @Override
     public Type getGenericType() {
         if (method.getGenericReturnType() instanceof TypeVariable) {
-            int index = determineGenericIndex((TypeVariable<?>) method.getGenericReturnType());
-            if (index >= 0) {
-                Type parentType = selfExpression.getGenericType();
-                if (parentType instanceof ParameterizedType) {
-                    return ((ParameterizedType) parentType).getActualTypeArguments()[index];
-                }
+            Type parameterizedType = tryResolveViaParameterizedCallee();
+            if (parameterizedType != null) {
+                return parameterizedType;
+            }
+
+            Type constantClassType = tryResolveViaConstantClassParameter();
+            if (constantClassType != null) {
+                return constantClassType;
             }
         }
 
         return method.getGenericReturnType();
+    }
+
+    /**
+     * Tries to resolve a type variable by inspecting the parameterization of the callsite.
+     * <p>
+     * If a method returns a generic variable like {@code ValueHolder<V>.get()} does,
+     * we try to determine the generic type parameters from the class we're being invoked
+     * on. If we end up at a method or variable declaration which specifies the types, we
+     * can propagate this information down a call chain and therefore deduce the effective type.
+     *
+     * @return the type deduced from a parameterization of the "this" expression or <tt>null</tt>
+     * if not enough information is present
+     */
+    private Type tryResolveViaParameterizedCallee() {
+        Type parentType = selfExpression.getGenericType();
+        if (parentType instanceof ParameterizedType) {
+            int index = determineGenericIndex((TypeVariable<?>) method.getGenericReturnType());
+            if (index >= 0) {
+                return ((ParameterizedType) parentType).getActualTypeArguments()[index];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Tries to deduce the return type of a method by looking for appropriate class parameters.
+     * <p>
+     * Many methods return an object of a given class like {@link sirius.web.security.UserContext#getHelper(Class)}
+     * does. Therefore, if we detect a type variable as return type, we try to find a constant class parameter which
+     * binds to the same type variable and try to deduce the effective return type this way.
+     *
+     * @return the deduced class parameter for the returned type variable or <tt>null</tt> if not enough information
+     * if present
+     */
+    private Type tryResolveViaConstantClassParameter() {
+        String variableName = ((TypeVariable<?>) method.getGenericReturnType()).getName();
+        for (int i = 0; i < method.getParameterCount(); i++) {
+            Type resolvedType = tryResolveAsConstantClassParameter(variableName, i);
+            if (resolvedType != null) {
+                return resolvedType;
+            }
+        }
+
+        return null;
+    }
+
+    private Type tryResolveAsConstantClassParameter(String variableName, int parameterIndex) {
+        // Ensure that the parameter is of type Class<X> - abort otherwise
+        if (!(Class.class.equals(method.getParameterTypes()[parameterIndex])
+              && method.getGenericParameterTypes()[parameterIndex] instanceof ParameterizedType)) {
+            return null;
+        }
+
+        // Read the actual type argument, this would be the X of Class<X>
+        Type actualTypeArgument =
+                ((ParameterizedType) method.getGenericParameterTypes()[parameterIndex]).getActualTypeArguments()[0];
+
+        // Abort if this isn't a type variable...
+        if (!(actualTypeArgument instanceof TypeVariable)) {
+            return null;
+        }
+
+        String typeVariableName = ((TypeVariable<?>) actualTypeArgument).getName();
+        // Make sure that this class actually binds to our type variable and not to
+        // anything else...
+        if (!Strings.areEqual(variableName, typeVariableName)) {
+            return null;
+        }
+
+        // For a constant class, we know the resulting type...
+        if (parameterExpressions[parameterIndex] instanceof ConstantClass) {
+            return (Class<?>) parameterExpressions[parameterIndex].eval(null);
+        }
+
+        // Otherwise resort to the generic type - if available...
+        Type genericType = parameterExpressions[parameterIndex].getGenericType();
+        if (genericType != null) {
+            return genericType;
+        }
+
+        // Or finally resort to the known type...
+        return parameterExpressions[parameterIndex].getType();
     }
 
     private int determineGenericIndex(TypeVariable<?> genericReturnType) {

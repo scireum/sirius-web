@@ -107,6 +107,16 @@ class CompilerSpec extends BaseSpecification {
         ctx.getTemplate().renderToString(TestObject.INSTANCE) == "est"
     }
 
+    def "generic type propagation works for class parameters"() {
+        when:
+        def ctx = new CompilationContext(new Template("test", null), null)
+        List<CompileError> errors = new Compiler(ctx, "@user.getHelper(sirius.tagliatelle.ExampleHelper.class).getTestValue()").compile()
+        then:
+        errors.size() == 0
+        and:
+        ctx.getTemplate().renderToString(TestObject.INSTANCE) == "test"
+    }
+
     def "vararg detection works with several parameters"() {
         when:
         def ctx = new CompilationContext(new Template("test", null), null)
