@@ -8,6 +8,7 @@
 
 package sirius.tagliatelle.tags;
 
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.TemplateArgument;
 import sirius.tagliatelle.emitter.BlockEmitter;
@@ -56,6 +57,15 @@ public class RenderTag extends TagHandler {
 
     @Override
     public void apply(CompositeEmitter targetBlock) {
+        String name = getConstantAttribute(PARAM_NAME).asString();
+        if (Strings.isEmpty(name)) {
+            getCompilationContext().error(getStartOfTag(),
+                                          "The attribute name of i:render must be filled."
+                                          + " Use 'body' to refer to the default block defined when invoking a tag.",
+                                          name);
+            return;
+        }
+
         targetBlock.addChild(new BlockEmitter(getStartOfTag(),
                                               getConstantAttribute(PARAM_NAME).asString(),
                                               getBlock("body")));

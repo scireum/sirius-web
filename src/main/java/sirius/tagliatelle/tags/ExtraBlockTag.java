@@ -12,7 +12,6 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
 import sirius.tagliatelle.TemplateArgument;
 import sirius.tagliatelle.emitter.CompositeEmitter;
-import sirius.tagliatelle.emitter.ConstantEmitter;
 import sirius.tagliatelle.emitter.Emitter;
 import sirius.tagliatelle.emitter.ExtraBlockEmitter;
 
@@ -21,9 +20,16 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Handles <tt>i:block</tt> which specifies a template section passed into a tag invocation.
+ * Permits to add an extra block to the global render context.
+ * <p>
+ * This is a kind of a special tag which permits that its body is added as extra block to the current global
+ * render context. Normally all {@link BlockTag blocks} defined at the top-level of the root template
+ * are added as extra block. However, using this block, an inner template (e.g. a tag being invoked) can
+ * also supply data into an extra block.
+ *
+ * @see sirius.tagliatelle.rendering.GlobalRenderContext#storeExtraBlock(String, String)
  */
-public class BlockTag extends TagHandler {
+public class ExtraBlockTag extends TagHandler {
 
     private static final String PARAM_NAME = "name";
     private static final String BLOCK_BODY = "body";
@@ -37,12 +43,12 @@ public class BlockTag extends TagHandler {
         @Nonnull
         @Override
         public String getName() {
-            return "i:block";
+            return "i:extraBlock";
         }
 
         @Override
         public TagHandler createHandler() {
-            return new BlockTag();
+            return new ExtraBlockTag();
         }
 
         @Override
@@ -54,7 +60,7 @@ public class BlockTag extends TagHandler {
 
         @Override
         public String getDescription() {
-            return "Declares a block which is passed within a template or tag invocation.";
+            return "Declares an extra block which is directly made available to the GlobalRenderContext";
         }
     }
 
@@ -62,21 +68,13 @@ public class BlockTag extends TagHandler {
     public void apply(CompositeEmitter targetBlock) {
         String name = getConstantAttribute(PARAM_NAME).asString();
         if (Strings.isEmpty(name)) {
-            getCompilationContext().error(getStartOfTag(), "The attribute name of i:block must be filled.", name);
+            getCompilationContext().error(getStartOfTag(), "The attribute name of i:extraBlock must be filled.", name);
             return;
         }
 
         Emitter body = getBlock(BLOCK_BODY);
-        if (getParentHandler() != null) {
-            if (body != null) {
-                getParentHandler().addBlock(name, body);
-            } else {
-                getParentHandler().addBlock(name, ConstantEmitter.EMPTY);
-            }
-        } else {
-            if (body != null) {
-                targetBlock.addChild(new ExtraBlockEmitter(name, body));
-            }
+        if (body != null) {
+            targetBlock.addChild(new ExtraBlockEmitter(name, body));
         }
     }
 
