@@ -472,7 +472,7 @@ class WebServerSpec extends BaseSpecification {
      * Invoke a web dispatcher which previously blocked the event loop and crashed netty.
      * <p>
      * We now fork a thread for every request so that we never block the event loop
-     * in {@link Response#contentionAwareWrite(java.lang.Object)} but always a worker thread.
+     * in {@link sirius.web.http.Response#contentionAwareWrite(Object, boolean)} but always a worker thread.
      * Therefore the event loop can shovel away the data in the output buffer of the channel
      * and the future will eventually fullfilled.
      */
