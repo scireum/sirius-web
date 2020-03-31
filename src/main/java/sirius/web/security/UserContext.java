@@ -234,7 +234,7 @@ public class UserContext implements SubContext {
             return Optional.of(currentUser);
         }
 
-        // As this mehtod might be called concurrently (e.g. by the deferred language installer of the WebServerHandler),
+        // As this method might be called concurrently (e.g. by the deferred language installer of the WebServerHandler),
         // we also have to abort if we're already within a user lookup....
         if (fetchingCurrentUser) {
             return Optional.empty();
