@@ -17,6 +17,7 @@ import sirius.kernel.nls.NLS;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
@@ -34,7 +35,7 @@ public class CSVProcessor implements LineBasedProcessor {
 
     @Override
     public void run(RowProcessor rowProcessor, Predicate<Exception> errorHandler) throws Exception {
-        CSVReader reader = new CSVReader(new BOMReader(new InputStreamReader(input, Charsets.UTF_8)));
+        CSVReader reader = new CSVReader(new BOMReader(new InputStreamReader(input, StandardCharsets.UTF_8)));
         AtomicInteger rowCounter = new AtomicInteger(0);
         TaskContext tc = TaskContext.get();
         RateLimit stateUpdateLimiter = tc.shouldUpdateState();

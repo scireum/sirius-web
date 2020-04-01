@@ -186,7 +186,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     protected static Average responseTime = new Average();
     protected static Average timeToFirstByte = new Average();
     protected static Average queueTime = new Average();
-    protected static volatile MicrotimingMode microtimingMode = MicrotimingMode.URI;
+    protected static MicrotimingMode microtimingMode = MicrotimingMode.URI;
 
     /**
      * Returns the port used by the web server
@@ -752,10 +752,26 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
                                      "HTTP Server Errors (5xx)",
                                      serverErrors.get(),
                                      "/min");
-        collector.metric("http_open_connections","http-open-connections", "HTTP Open Connections", openConnections.size(), null);
-        collector.metric("http_response_time","http-response-time", "HTTP Avg. Reponse Time", responseTime.getAndClear(), "ms");
-        collector.metric("http_response_ttfb","http-response-ttfb", "HTTP Avg. Time To First Byte", timeToFirstByte.getAndClear(), "ms");
-        collector.metric("http_response_queue","http-response-queue", "HTTP Avg. Queue Time", queueTime.getAndClear(), "ms");
+        collector.metric("http_open_connections",
+                         "http-open-connections",
+                         "HTTP Open Connections",
+                         openConnections.size(),
+                         null);
+        collector.metric("http_response_time",
+                         "http-response-time",
+                         "HTTP Avg. Reponse Time",
+                         responseTime.getAndClear(),
+                         "ms");
+        collector.metric("http_response_ttfb",
+                         "http-response-ttfb",
+                         "HTTP Avg. Time To First Byte",
+                         timeToFirstByte.getAndClear(),
+                         "ms");
+        collector.metric("http_response_queue",
+                         "http-response-queue",
+                         "HTTP Avg. Queue Time",
+                         queueTime.getAndClear(),
+                         "ms");
         collector.metric("http_websockets", "http-websockets", "Open Websockets", websockets.get(), null);
     }
 

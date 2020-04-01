@@ -24,6 +24,7 @@ import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
@@ -262,7 +263,8 @@ public abstract class GenericUserManager implements UserManager {
 
     private boolean checkTokenValidity(String user, Tuple<String, String> challengeResponse) {
         return getSSOHashFunction().hashBytes(computeSSOHashInput(user,
-                                                                  challengeResponse.getFirst()).getBytes(Charsets.UTF_8))
+                                                                  challengeResponse.getFirst()).getBytes(
+                StandardCharsets.UTF_8))
                                    .toString()
                                    .equalsIgnoreCase(challengeResponse.getSecond());
     }
@@ -278,7 +280,7 @@ public abstract class GenericUserManager implements UserManager {
     public String computeSSOToken(String username) {
         String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
         return timestamp + ":" + getSSOHashFunction().hashBytes(computeSSOHashInput(username, timestamp).getBytes(
-                Charsets.UTF_8)).toString();
+                StandardCharsets.UTF_8)).toString();
     }
 
     /**

@@ -38,6 +38,7 @@ import sirius.web.security.Permission;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -141,7 +142,7 @@ public class SystemController extends BasicController {
 
     private PrintWriter createSimpleErrorResponse(WebContext ctx) {
         OutputStream os = ctx.respondWith().outputStream(HttpResponseStatus.EXPECTATION_FAILED, null);
-        return new PrintWriter(new OutputStreamWriter(os, Charsets.UTF_8));
+        return new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
     }
 
     /**
@@ -176,7 +177,7 @@ public class SystemController extends BasicController {
         try (PrintWriter out = new PrintWriter(new OutputStreamWriter(ctx.respondWith()
                                                                          .outputStream(HttpResponseStatus.OK,
                                                                                        "text/plain; version=0.0.4"),
-                                                                      Charsets.UTF_8))) {
+                                                                      StandardCharsets.UTF_8))) {
             outputNodeStateAsMetric(out);
 
             for (Metric m : metrics.getMetrics()) {

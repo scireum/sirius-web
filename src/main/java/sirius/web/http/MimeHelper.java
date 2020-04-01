@@ -373,7 +373,8 @@ public class MimeHelper {
         return "application/octet-stream";
     }
 
-    @SuppressWarnings("squid:S1698")
+    @SuppressWarnings({"squid:S1698", "java:S4973"})
+    @Explain("We intern strings so that we can use == efficiently")
     private static String guessCommonType(String name) {
         String ending = name.substring(name.length() - 3).toLowerCase().intern();
         if ("jpg" == ending) {

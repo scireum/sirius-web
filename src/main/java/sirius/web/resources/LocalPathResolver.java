@@ -74,7 +74,7 @@ public class LocalPathResolver implements Resolver {
      */
     private boolean isReady() {
         if (baseDirFound != null) {
-            if (baseDirFound) {
+            if (Boolean.TRUE.equals(baseDirFound)) {
                 return true;
             } else if (!checkLimit.check()) {
                 return false;

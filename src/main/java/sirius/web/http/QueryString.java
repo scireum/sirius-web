@@ -13,6 +13,7 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 import sirius.kernel.commons.Value;
 
 import javax.annotation.Nonnull;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,7 +30,7 @@ public class QueryString {
      * @param uri the uri to parse
      */
     public QueryString(@Nonnull String uri) {
-        decoder = new QueryStringDecoder(uri, Charsets.UTF_8);
+        decoder = new QueryStringDecoder(uri, StandardCharsets.UTF_8);
     }
 
     /**

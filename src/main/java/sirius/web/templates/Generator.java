@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 
 /**
@@ -243,7 +244,7 @@ public class Generator {
     public String generate() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         generateTo(out);
-        return new String(out.toByteArray(), Charsets.UTF_8);
+        return new String(out.toByteArray(), StandardCharsets.UTF_8);
     }
 
     /**
@@ -315,7 +316,7 @@ public class Generator {
         if (context.containsKey(ENCODING)) {
             return (String) context.get(ENCODING);
         }
-        return Charsets.UTF_8.name();
+        return StandardCharsets.UTF_8.name();
     }
 
     /**

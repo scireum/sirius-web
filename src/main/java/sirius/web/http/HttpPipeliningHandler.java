@@ -30,7 +30,7 @@ import java.util.List;
  */
 public class HttpPipeliningHandler extends ChannelDuplexHandler {
 
-    private volatile HttpRequest currentRequest;
+    private HttpRequest currentRequest;
     private List<HttpRequest> bufferedRequests = Lists.newArrayList();
 
     @Override

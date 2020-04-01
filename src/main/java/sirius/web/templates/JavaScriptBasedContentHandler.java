@@ -19,6 +19,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.SimpleScriptContext;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Base class for {@link sirius.web.templates.ContentHandler} implementations which rely on JavaScript.
@@ -63,7 +64,7 @@ public abstract class JavaScriptBasedContentHandler implements ContentHandler {
             engine.eval(generator.getTemplateCode(), ctx);
         } else {
             engine.put(ScriptEngine.FILENAME, generator.getTemplateName());
-            try (Reader reader = new InputStreamReader(generator.getTemplate(), Charsets.UTF_8)) {
+            try (Reader reader = new InputStreamReader(generator.getTemplate(), StandardCharsets.UTF_8)) {
                 engine.eval(reader, ctx);
             }
         }

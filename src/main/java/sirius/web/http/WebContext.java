@@ -64,6 +64,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -718,7 +719,7 @@ public class WebContext implements SubContext {
         String sessionPin = session.get(SESSION_PIN_KEY);
         String effectiveSessionPin = Strings.isEmpty(givenSessionPin) ?
                                      "" :
-                                     Hashing.md5().hashString(givenSessionPin, Charsets.UTF_8).toString();
+                                     Hashing.md5().hashString(givenSessionPin, StandardCharsets.UTF_8).toString();
 
         if (Strings.isFilled(sessionPin) && !Strings.areEqual(sessionPin, effectiveSessionPin)) {
             SESSION_CHECK.SEVERE(Strings.apply("Session pin mismatch: %s (%s) vs. %s%n%s%n%s%nIP: %s",
@@ -767,7 +768,7 @@ public class WebContext implements SubContext {
                                  .hashString(getRemoteIP().toString()
                                              + getHeader(HttpHeaderNames.USER_AGENT)
                                              + TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis()),
-                                             Charsets.UTF_8)
+                                             StandardCharsets.UTF_8)
                                  .toString();
 
         if (SESSION_CHECK.isFINE()) {
@@ -814,7 +815,7 @@ public class WebContext implements SubContext {
         return Strings.areEqual(sessionInfo.getFirst(),
                                 Hashing.sha512()
                                        .hashString(sessionInfo.getSecond() + getSessionSecret(currentSession),
-                                                   Charsets.UTF_8)
+                                                   StandardCharsets.UTF_8)
                                        .toString());
     }
 
@@ -1061,7 +1062,7 @@ public class WebContext implements SubContext {
      * Decodes the query string on demand
      */
     private void decodeQueryString() {
-        QueryStringDecoder qsd = new QueryStringDecoder(request.uri(), Charsets.UTF_8);
+        QueryStringDecoder qsd = new QueryStringDecoder(request.uri(), StandardCharsets.UTF_8);
         requestedURI = qsd.path();
         queryString = qsd.parameters();
     }
@@ -1090,7 +1091,7 @@ public class WebContext implements SubContext {
      * @return the web context itself for fluent method calls
      */
     public WebContext withCustomURI(String uri) {
-        QueryStringDecoder qsd = new QueryStringDecoder(uri, Charsets.UTF_8);
+        QueryStringDecoder qsd = new QueryStringDecoder(uri, StandardCharsets.UTF_8);
         requestedURI = qsd.path();
         queryString = qsd.parameters();
         rawRequestedURI = stripQueryFromURI(uri);
@@ -1319,7 +1320,7 @@ public class WebContext implements SubContext {
         }
 
         String value = encoder.toString();
-        String protection = Hashing.sha512().hashString(value + getSessionSecret(session), Charsets.UTF_8).toString();
+        String protection = Hashing.sha512().hashString(value + getSessionSecret(session), StandardCharsets.UTF_8).toString();
 
         long ttl = determineSessionCookieTTL();
         if (ttl == 0) {
@@ -1452,7 +1453,7 @@ public class WebContext implements SubContext {
         String header = getHeaderValue(HttpHeaderNames.AUTHORIZATION.toString()).asString();
         if (Strings.isFilled(header) && header.startsWith("Basic ")) {
             header = header.substring(6);
-            String nameAndPassword = new String(Base64.getDecoder().decode(header), Charsets.UTF_8);
+            String nameAndPassword = new String(Base64.getDecoder().decode(header), StandardCharsets.UTF_8);
             Tuple<String, String> result = Strings.split(nameAndPassword, ":");
             if (Strings.isFilled(result.getFirst()) && Strings.isFilled(result.getSecond())) {
                 return result;
@@ -1622,7 +1623,7 @@ public class WebContext implements SubContext {
      */
     public Charset getContentCharset() {
         if (content == null) {
-            return Charsets.UTF_8;
+            return StandardCharsets.UTF_8;
         }
 
         return content.getCharset();
@@ -1812,7 +1813,7 @@ public class WebContext implements SubContext {
             return parseContentType(contentType);
         } catch (UnsupportedCharsetException e) {
             Exceptions.ignore(e);
-            return Charsets.UTF_8;
+            return StandardCharsets.UTF_8;
         }
     }
 
@@ -1825,7 +1826,7 @@ public class WebContext implements SubContext {
                 }
             }
         }
-        return Charsets.UTF_8;
+        return StandardCharsets.UTF_8;
     }
 
     /**
