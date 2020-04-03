@@ -226,7 +226,8 @@ public class MethodCall extends Call {
     private Type tryResolveViaParameterizedCallee() {
         Type parentType = selfExpression.getGenericType();
         if (parentType instanceof ParameterizedType) {
-            int index = determineGenericIndex((TypeVariable<?>) method.getGenericReturnType());
+            int index = determineGenericIndex(method.getGenericReturnType().getTypeName(),
+                                              (Class<?>) ((ParameterizedType) parentType).getRawType());
             if (index >= 0) {
                 return ((ParameterizedType) parentType).getActualTypeArguments()[index];
             }
@@ -295,10 +296,10 @@ public class MethodCall extends Call {
         return parameterExpressions[parameterIndex].getType();
     }
 
-    private int determineGenericIndex(TypeVariable<?> genericReturnType) {
+    private int determineGenericIndex(String parameterName, Class<?> clazz) {
         int index = 0;
-        for (TypeVariable<?> param : genericReturnType.getGenericDeclaration().getTypeParameters()) {
-            if (param.getName().equals(genericReturnType.getName())) {
+        for (TypeVariable<?> param : clazz.getTypeParameters()) {
+            if (param.getName().equals(parameterName)) {
                 return index;
             }
             index++;
