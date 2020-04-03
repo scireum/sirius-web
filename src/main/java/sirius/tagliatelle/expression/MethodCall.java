@@ -72,6 +72,8 @@ public class MethodCall extends Call {
         return copy;
     }
 
+    @SuppressWarnings("ArrayEquality")
+    @Explain("The same constant is always used")
     @Override
     public Object eval(LocalRenderContext ctx) {
         try {
@@ -315,6 +317,8 @@ public class MethodCall extends Call {
      * @param context  the compilation context for error reporting
      * @param name     the name of the method to find
      */
+    @SuppressWarnings("ArrayEquality")
+    @Explain("The same constant is always used")
     public void bindToMethod(Char position, CompilationContext context, String name) {
         if (parameterExpressions == NO_ARGS) {
             try {
