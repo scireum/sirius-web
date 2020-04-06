@@ -72,6 +72,8 @@ public class MethodCall extends Call {
         return copy;
     }
 
+    @SuppressWarnings("ArrayEquality")
+    @Explain("The same constant is always used")
     @Override
     public Object eval(LocalRenderContext ctx) {
         try {
@@ -226,7 +228,8 @@ public class MethodCall extends Call {
     private Type tryResolveViaParameterizedCallee() {
         Type parentType = selfExpression.getGenericType();
         if (parentType instanceof ParameterizedType) {
-            int index = determineGenericIndex((TypeVariable<?>) method.getGenericReturnType());
+            int index = determineGenericIndex(method.getGenericReturnType().getTypeName(),
+                                              (Class<?>) ((ParameterizedType) parentType).getRawType());
             if (index >= 0) {
                 return ((ParameterizedType) parentType).getActualTypeArguments()[index];
             }
@@ -295,10 +298,10 @@ public class MethodCall extends Call {
         return parameterExpressions[parameterIndex].getType();
     }
 
-    private int determineGenericIndex(TypeVariable<?> genericReturnType) {
+    private int determineGenericIndex(String parameterName, Class<?> clazz) {
         int index = 0;
-        for (TypeVariable<?> param : genericReturnType.getGenericDeclaration().getTypeParameters()) {
-            if (param.getName().equals(genericReturnType.getName())) {
+        for (TypeVariable<?> param : clazz.getTypeParameters()) {
+            if (param.getName().equals(parameterName)) {
                 return index;
             }
             index++;
@@ -314,6 +317,8 @@ public class MethodCall extends Call {
      * @param context  the compilation context for error reporting
      * @param name     the name of the method to find
      */
+    @SuppressWarnings("ArrayEquality")
+    @Explain("The same constant is always used")
     public void bindToMethod(Char position, CompilationContext context, String name) {
         if (parameterExpressions == NO_ARGS) {
             try {
