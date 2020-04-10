@@ -8,6 +8,7 @@
 
 package sirius.web.security;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -16,6 +17,7 @@ import java.lang.annotation.Target;
 /**
  * Marks a field in a helper class as filled with another helper of the given type for the same scope.
  */
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Helper {

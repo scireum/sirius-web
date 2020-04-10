@@ -11,6 +11,7 @@ package sirius.web.controller;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.web.services.JSONStructuredOutput;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -22,6 +23,7 @@ import java.lang.annotation.Target;
  * For conflicting URIs like {@code /foo/:1} should handle everything but {@code /foo/special}, use a
  * priority below {@link PriorityCollector#DEFAULT_PRIORITY} for {@code /foo/special}
  */
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Routed {
