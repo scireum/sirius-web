@@ -8,10 +8,10 @@
 
 package sirius.web.controller;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.async.Promise;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
  */
 public class Route {
 
-    protected static final List<Object> NO_MATCH = new ArrayList<>();
+    protected static final List<Object> NO_MATCH = Collections.unmodifiableList(new ArrayList<>());
     private static final Class<?>[] CLASS_ARRAY = new Class[0];
     private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
@@ -53,7 +53,7 @@ public class Route {
 
     private String label;
     private Pattern pattern;
-    private List<Tuple<String, Object>> expressions = Lists.newArrayList();
+    private List<Tuple<String, Object>> expressions = new ArrayList<>();
     private Method method;
     private MethodHandle methodHandle;
     private String uri;
