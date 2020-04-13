@@ -25,6 +25,8 @@ import sirius.web.security.UserInfo;
 import sirius.web.services.JSONStructuredOutput;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -45,6 +47,7 @@ public class Route {
 
     protected static final List<Object> NO_MATCH = new ArrayList<>();
     private static final Class<?>[] CLASS_ARRAY = new Class[0];
+    private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
     private static final Pattern EXPR = Pattern.compile("([:#$])\\{?(.+?)}?");
 
@@ -52,6 +55,7 @@ public class Route {
     private Pattern pattern;
     private List<Tuple<String, Object>> expressions = Lists.newArrayList();
     private Method method;
+    private MethodHandle methodHandle;
     private String uri;
     private Class<?>[] parameterTypes;
     private Controller controller;
@@ -80,6 +84,12 @@ public class Route {
 
         if (!routed.value().startsWith("/")) {
             throw new IllegalArgumentException("Route does not start with /");
+        }
+
+        try {
+            result.methodHandle = LOOKUP.unreflect(method);
+        } catch (IllegalAccessException e) {
+            throw new IllegalArgumentException("Callback method is not accessible!");
         }
 
         String[] elements = result.uri.substring(1).split("/");
@@ -335,5 +345,44 @@ public class Route {
      */
     protected String getPattern() {
         return pattern.toString();
+    }
+
+    /**
+     * Invokes the route with the given parameters.
+     *
+     * @param params the parameters to supply
+     * @return the result of the route. This will most probably be null (as routes are mostly void), but might be
+     * a {@link Promise} which is used for JSON calls to indicate the the response will be completed in another thread.
+     * @throws Exception in case of an error during the invocation
+     */
+    public Object invoke(List<Object> params) throws Exception {
+        try {
+            if (params.isEmpty()) {
+                return methodHandle.invoke(controller);
+            } else if (params.size() == 1) {
+                return methodHandle.invoke(controller, params.get(0));
+            } else if (params.size() == 2) {
+                return methodHandle.invoke(controller, params.get(0), params.get(1));
+            } else if (params.size() == 3) {
+                return methodHandle.invoke(controller, params.get(0), params.get(1), params.get(2));
+            } else if (params.size() == 4) {
+                return methodHandle.invoke(controller, params.get(0), params.get(1), params.get(2), params.get(3));
+            } else {
+                Object[] args = new Object[params.size() + 1];
+                args[0] = controller;
+                for (int i = 1; i < args.length; i++) {
+                    args[i] = params.get(i - 1);
+                }
+                return methodHandle.invokeWithArguments(args);
+            }
+        } catch (Exception e) {
+            throw e;
+        } catch (Throwable e) {
+            throw Exceptions.handle()
+                            .to(ControllerDispatcher.LOG)
+                            .error(e)
+                            .withSystemErrorMessage("A serious system error occurred when executing %s: %s (%s)", this)
+                            .handle();
+        }
     }
 }

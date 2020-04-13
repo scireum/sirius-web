@@ -197,7 +197,7 @@ public class ControllerDispatcher implements WebDispatcher {
         if (route.isJSONCall()) {
             executeJSONCall(ctx, route, params);
         } else {
-            route.getMethod().invoke(route.getController(), params.toArray());
+            route.invoke(params);
         }
     }
 
@@ -207,7 +207,7 @@ public class ControllerDispatcher implements WebDispatcher {
         out.beginResult();
         out.property("success", true);
         out.property("error", false);
-        Object result = route.getMethod().invoke(route.getController(), params.toArray());
+        Object result = route.invoke(params);
         if (result instanceof Promise) {
             ((Promise<?>) result).onSuccess(ignored -> out.endResult()).onFailure(e -> {
                 handleFailure(ctx, route, e);
