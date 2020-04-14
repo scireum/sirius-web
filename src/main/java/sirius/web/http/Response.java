@@ -135,7 +135,7 @@ public class Response {
     private HttpHeaders headers;
 
     /*
-     * Stores the the effective response code.
+     * Stores the effective response code.
      */
     private volatile int responseCode;
 
