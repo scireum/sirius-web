@@ -135,6 +135,11 @@ public class Response {
     private HttpHeaders headers;
 
     /*
+     * Stores the effective response code.
+     */
+    private volatile int responseCode;
+
+    /*
      * Stores the max expiration of this response. A null value indicates to use the defaults suggested
      * by the content creator.
      */
@@ -381,6 +386,7 @@ public class Response {
             wc.contentHandler.exhaust();
         }
 
+        responseCode = response.status().code();
         wc.responseCommitted = true;
         wc.committed = System.currentTimeMillis();
         wc.releaseContentHandler();
@@ -422,6 +428,9 @@ public class Response {
             return;
         }
         wc.responseCompleted = true;
+        if (wc.completionPromise != null) {
+            wc.completionPromise.success(responseCode);
+        }
         if (WebServer.LOG.isFINE()) {
             WebServer.LOG.FINE("COMPLETING: " + wc.getRequestedURI());
         }
