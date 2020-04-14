@@ -47,8 +47,14 @@ import java.util.Optional;
 public class ControllerDispatcher implements WebDispatcher {
 
     protected static final Log LOG = Log.get("controller");
-
     private static final String SYSTEM_MVC = "MVC";
+
+    /**
+     * Contains the pattern defined by the route being matched.
+     * <p>
+     * This will be put into {@link WebContext#setAttribute(String, Object)}.
+     */
+    public static final String ATTRIBUTE_MATCHED_ROUTE = "sirius_matchedRoute";
 
     private List<Route> routes;
 
@@ -194,10 +200,11 @@ public class ControllerDispatcher implements WebDispatcher {
     }
 
     private void executeRoute(WebContext ctx, Route route, List<Object> params) throws Exception {
+        ctx.setAttribute(ATTRIBUTE_MATCHED_ROUTE, route.getPattern());
         if (route.isJSONCall()) {
             executeJSONCall(ctx, route, params);
         } else {
-            route.getMethod().invoke(route.getController(), params.toArray());
+            route.invoke(params);
         }
     }
 
@@ -207,7 +214,7 @@ public class ControllerDispatcher implements WebDispatcher {
         out.beginResult();
         out.property("success", true);
         out.property("error", false);
-        Object result = route.getMethod().invoke(route.getController(), params.toArray());
+        Object result = route.invoke(params);
         if (result instanceof Promise) {
             ((Promise<?>) result).onSuccess(ignored -> out.endResult()).onFailure(e -> {
                 handleFailure(ctx, route, e);
