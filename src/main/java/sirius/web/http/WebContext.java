@@ -9,7 +9,6 @@ package sirius.web.http;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -22,6 +21,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.QueryStringEncoder;
 import io.netty.handler.codec.http.cookie.Cookie;
@@ -35,6 +35,7 @@ import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.InterfaceHttpPostRequestDecoder;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.async.Promise;
 import sirius.kernel.async.SubContext;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Files;
@@ -223,6 +224,13 @@ public class WebContext implements SubContext {
     protected Callback<CallContext> completionCallback;
 
     /**
+     * This promise is completed once the request is completely handled.
+     * <p>
+     * The main purpose is to attach a callback once the request was successfully handled.
+     */
+    protected Promise<Integer> completionPromise;
+
+    /**
      * Determines if the request is performed via a secured channel (SSL)
      */
     protected Boolean ssl;
@@ -397,12 +405,32 @@ public class WebContext implements SubContext {
     /**
      * Used to provide a handle which is invoked once the call is completely handled.
      * <p>
-     * Note that calling this method, removes the last completion handler.
+     * Note that calling this method, removes the last completion handler. Also, this runs
+     * in a very central IO thread pool, therefore this should only be used in technical
+     * scenarios.
      *
      * @param onComplete the handler to be invoked once the request is completely handled
      */
     public void onComplete(Callback<CallContext> onComplete) {
         completionCallback = onComplete;
+    }
+
+    /**
+     * Provides a promise which is fulfilled with the HTTP status code once the request has been completely
+     * handled.
+     *
+     * @return a promise to attach handlers which are invoked once the request was successfully handled
+     */
+    public Promise<Integer> getCompletionPromise() {
+        if (completionPromise == null) {
+            if (responseCompleted) {
+                return new Promise<Integer>().success(HttpResponseStatus.OK.code());
+            }
+
+            completionPromise = new Promise<>();
+        }
+
+        return completionPromise;
     }
 
     /**
@@ -1320,7 +1348,8 @@ public class WebContext implements SubContext {
         }
 
         String value = encoder.toString();
-        String protection = Hashing.sha512().hashString(value + getSessionSecret(session), StandardCharsets.UTF_8).toString();
+        String protection =
+                Hashing.sha512().hashString(value + getSessionSecret(session), StandardCharsets.UTF_8).toString();
 
         long ttl = determineSessionCookieTTL();
         if (ttl == 0) {
@@ -1877,6 +1906,10 @@ public class WebContext implements SubContext {
      * Releases all data associated with this request.
      */
     void release() {
+        if (completionPromise != null && !completionPromise.isCompleted()) {
+            completionPromise.fail(new IllegalStateException("Request has been aborted"));
+        }
+
         releaseContentHandler();
         releasePostDecoder();
         releaseContent();
