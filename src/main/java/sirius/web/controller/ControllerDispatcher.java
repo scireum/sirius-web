@@ -50,7 +50,7 @@ public class ControllerDispatcher implements WebDispatcher {
     private static final String SYSTEM_MVC = "MVC";
 
     /**
-     * Contains the pattern defined by the route bing matched.
+     * Contains the pattern defined by the route being matched.
      * <p>
      * This will be put into {@link WebContext#setAttribute(String, Object)}.
      */

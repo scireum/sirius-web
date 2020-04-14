@@ -352,7 +352,7 @@ public class Route {
      *
      * @param params the parameters to supply
      * @return the result of the route. This will most probably be null (as routes are mostly void), but might be
-     * a {@link Promise} which is used for JSON calls to indicate the the response will be completed in another thread.
+     * a {@link Promise} which is used for JSON calls to indicate that the response will be completed in another thread.
      * @throws Exception in case of an error during the invocation
      */
     public Object invoke(List<Object> params) throws Exception {
