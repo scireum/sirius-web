@@ -79,6 +79,28 @@ class WebContextSpec extends BaseSpecification {
         "xx, de;q=0.5, en-gb;q=0.7" | "en"
     }
 
+    def "getCompletionPromise() works if a promise has been installed"() {
+        given:
+        CompletionPromiseTestController.lastPromisedReturnCode = 0
+        when:
+        HttpURLConnection c = new URL("http://localhost:9999/test/completion-promise").openConnection()
+        c.setRequestMethod("GET")
+        c.connect()
+        then:
+        c.getResponseCode() == 200
+        and:
+        CompletionPromiseTestController.lastPromisedReturnCode == 200
+    }
+
+    def "getCompletionPromise() works if invoked after completion"() {
+        when:
+        def request = TestRequest.GET("/test?a=a")
+        and:
+        def result = request.execute()
+        then:
+        request.getCompletionPromise().isSuccessful()
+    }
+
     def "setSessionValue works as expected"() {
         when:
         HttpURLConnection c = new URL("http://localhost:9999/test/session-test").openConnection()

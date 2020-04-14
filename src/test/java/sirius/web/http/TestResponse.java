@@ -257,6 +257,11 @@ public class TestResponse extends Response {
     private void completeResponse() {
         innerCallContext = CallContext.getCurrent();
         responsePromise.success(this);
+        wc.responseCompleted = true;
+
+        if (wc.completionPromise != null) {
+            wc.completionPromise.success(status.code());
+        }
     }
 
     @Override
