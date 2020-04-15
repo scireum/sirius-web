@@ -223,7 +223,7 @@ class ImageReplacedElementFactory extends ITextReplacedElementFactory {
         if (code instanceof BarcodeInter25) {
             int length = BarcodeInter25.keepNumbers(src).length();
 
-            // Length is unenven and no checksum will be added
+            // Length is uneven and no checksum will be added
             if (length % 2 != 0 && !code.isGenerateChecksum()) {
                 return "0" + src;
             }
