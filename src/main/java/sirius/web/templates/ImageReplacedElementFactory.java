@@ -17,6 +17,7 @@ import com.lowagie.text.Image;
 import com.lowagie.text.pdf.Barcode;
 import com.lowagie.text.pdf.Barcode128;
 import com.lowagie.text.pdf.BarcodeEAN;
+import com.lowagie.text.pdf.BarcodeInter25;
 import org.w3c.dom.Element;
 import org.xhtmlrenderer.extend.FSImage;
 import org.xhtmlrenderer.extend.ReplacedElement;
@@ -43,7 +44,8 @@ import java.io.IOException;
  * Used by the XHTMLRenderer (creating PDFs) to generate barcodes and to support ratio aware scaling of images.
  * <p>
  * A barcode can be added by placing an img tag with an type attribute: &lt;img type="code128" src="0815" /&gt;.
- * As type <b>code128</b>, <b>ean</b> and <b>qr</b> are supported.
+ * As type <b>code128</b>, <b>ean</b>, <b>interleaved2of5</b>, <b>interleaved2of5checksummed</b> and <b>qr</b> are
+ * supported.
  */
 class ImageReplacedElementFactory extends ITextReplacedElementFactory {
 
@@ -57,6 +59,8 @@ class ImageReplacedElementFactory extends ITextReplacedElementFactory {
     private static final String BARCODE_TYPE_QR = "qr";
     private static final String BARCODE_TYPE_CODE128 = "code128";
     private static final String BARCODE_TYPE_EAN = "ean";
+    private static final String BARCODE_TYPE_INTERLEAVED_2_OF_5 = "interleaved2of5";
+    private static final String BARCODE_TYPE_INTERLEAVED_2_OF_5_CHECKSUMMED = "interleaved2of5checksummed";
 
     @Part
     private static Resources resources;
@@ -164,7 +168,7 @@ class ImageReplacedElementFactory extends ITextReplacedElementFactory {
         }
 
         Barcode code = createBarcode(type);
-        code.setCode(src);
+        code.setCode(padCodeIfNecessary(code, src));
 
         FSImage fsImage =
                 new ITextFSImage(Image.getInstance(code.createAwtImage(Color.BLACK, Color.WHITE), Color.WHITE));
@@ -192,7 +196,45 @@ class ImageReplacedElementFactory extends ITextReplacedElementFactory {
             return new BarcodeEAN();
         }
 
+        if (BARCODE_TYPE_INTERLEAVED_2_OF_5.equalsIgnoreCase(type)) {
+            return new BarcodeInter25();
+        }
+
+        if (BARCODE_TYPE_INTERLEAVED_2_OF_5_CHECKSUMMED.equalsIgnoreCase(type)) {
+            Barcode code = new BarcodeInter25();
+            code.setGenerateChecksum(true);
+            return code;
+        }
+
         throw new UnsupportedOperationException("Type is not supported");
+    }
+
+    /**
+     * Pad the code if necessary.
+     * <p>
+     * Unfortunately padding will not be added automatically when using <b>interleaved2of5</b> or
+     * <b>interleaved2of5checksummed</b>. Thus we manually prepend a zero if the code length is uneven.
+     *
+     * @param code the instance of the barcode
+     * @param src  the code from the src attribute
+     * @return the padded code, or the original code if padding was not needed
+     */
+    private String padCodeIfNecessary(Barcode code, String src) {
+        if (code instanceof BarcodeInter25) {
+            int length = BarcodeInter25.keepNumbers(src).length();
+
+            // Length is unenven and no checksum will be added
+            if (length % 2 != 0 && !code.isGenerateChecksum()) {
+                return "0" + src;
+            }
+
+            // Length is even but a checksum will be added
+            if (length % 2 == 0 && code.isGenerateChecksum()) {
+                return "0" + src;
+            }
+        }
+
+        return src;
     }
 
     /**
