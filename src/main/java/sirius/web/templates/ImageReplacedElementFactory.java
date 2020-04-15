@@ -35,6 +35,7 @@ import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 import sirius.web.security.UserContext;
 
+import javax.annotation.Nonnull;
 import java.awt.Color;
 import java.io.IOException;
 
@@ -47,12 +48,16 @@ import java.io.IOException;
 class ImageReplacedElementFactory extends ITextReplacedElementFactory {
 
     private static final String TAG_TYPE_IMG = "img";
+
     private static final String ATTR_SRC = "src";
     private static final String ATTR_TYPE = "type";
+
     private static final String PROTOCOL_HTTP = "http";
+
     private static final String BARCODE_TYPE_QR = "qr";
     private static final String BARCODE_TYPE_CODE128 = "code128";
     private static final String BARCODE_TYPE_EAN = "ean";
+
     @Part
     private static Resources resources;
 
@@ -89,11 +94,13 @@ class ImageReplacedElementFactory extends ITextReplacedElementFactory {
 
         try {
             String type = e.getAttribute(ATTR_TYPE);
+
             if (Strings.isFilled(type)) {
                 return createImageForBarcode(type, src, cssWidth, cssHeight);
             }
 
             ReplacedElement image = createResizedImage(uac, cssWidth, cssHeight, src);
+
             if (image != null) {
                 return image;
             }
@@ -145,27 +152,47 @@ class ImageReplacedElementFactory extends ITextReplacedElementFactory {
                                              com.google.zxing.BarcodeFormat.QR_CODE,
                                              cssWidth != -1 ? cssWidth : 600,
                                              cssHeight != -1 ? cssHeight : 600);
+
             FSImage fsImage =
                     new ITextFSImage(Image.getInstance(MatrixToImageWriter.toBufferedImage(matrix), Color.WHITE));
+
             if (cssWidth != -1 || cssHeight != -1) {
                 fsImage.scale(cssWidth, cssHeight);
             }
+
             return new ITextImageElement(fsImage);
         }
 
-        Barcode code = null;
-        if (BARCODE_TYPE_CODE128.equalsIgnoreCase(type)) {
-            code = new Barcode128();
-        } else if (BARCODE_TYPE_EAN.equalsIgnoreCase(type)) {
-            code = new BarcodeEAN();
-        }
+        Barcode code = createBarcode(type);
         code.setCode(src);
+
         FSImage fsImage =
                 new ITextFSImage(Image.getInstance(code.createAwtImage(Color.BLACK, Color.WHITE), Color.WHITE));
+
         if (cssWidth != -1 || cssHeight != -1) {
             fsImage.scale(cssWidth, cssHeight);
         }
+
         return new ITextImageElement(fsImage);
+    }
+
+    /**
+     * Creates an instance of {@link Barcode} that matches the given type descriptor.
+     *
+     * @param type the requested type
+     * @return the barcode
+     */
+    @Nonnull
+    private Barcode createBarcode(String type) {
+        if (BARCODE_TYPE_CODE128.equalsIgnoreCase(type)) {
+            return new Barcode128();
+        }
+
+        if (BARCODE_TYPE_EAN.equalsIgnoreCase(type)) {
+            return new BarcodeEAN();
+        }
+
+        throw new UnsupportedOperationException("Type is not supported");
     }
 
     /**
