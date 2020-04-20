@@ -90,7 +90,7 @@ public interface WebDispatcher extends Priorized {
      * in order to directly process the uploaded data. A request for which <tt>true</tt> was replied will <b>not</b>
      * be dispatched again once it is complete.
      * <p>
-     * Note thatthis method will be invoked within the event loop of the web-server, therefore absolutely no blocking
+     * Note that this method will be invoked within the event loop of the web-server, therefore absolutely no blocking
      * operations must be performed. However, the returned <tt>Callback</tt> is executed in its own thread and free of
      * any constraints.
      *
