@@ -26,8 +26,7 @@ public class TestDispatcher implements WebDispatcher {
     }
 
     @Override
-    public void dispatch(WebContext ctx, Consumer<WebContext> startOfPipeline, Consumer<WebContext> nextStage)
-            throws Exception {
+    public DispatchDecision dispatch(WebContext ctx) throws Exception {
         if ("/large-blocking-calls".equalsIgnoreCase(ctx.getRequestedURI())) {
             // See WebServerSepc->"Invoke /large-blocking-calls with GET" to the appropriate test and explanation...
             OutputStream out = ctx.respondWith().outputStream(HttpResponseStatus.OK, "text/plain");
@@ -35,19 +34,14 @@ public class TestDispatcher implements WebDispatcher {
                 out.write("THISISLARGECONTENT".getBytes(Charsets.UTF_8));
             }
             out.close();
-            return;
+            return DispatchDecision.DONE;
         }
         if ("/redispatch".equalsIgnoreCase(ctx.getRequestedURI())) {
             // See WebServerSepc->"Redispatching works" to the appropriate test and explanation...
             ctx.withCustomPath("/service/json/test");
-            startOfPipeline.accept(ctx);
+            return DispatchDecision.RESTART;
         } else {
-            nextStage.accept(ctx);
+            return DispatchDecision.CONTINUE;
         }
-    }
-
-    @Override
-    public boolean dispatch(WebContext ctx) throws Exception {
-        return false;
     }
 }
