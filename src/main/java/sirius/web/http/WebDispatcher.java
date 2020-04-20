@@ -11,8 +11,6 @@ package sirius.web.http;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.di.std.Priorized;
 
-import java.util.function.Consumer;
-
 /**
  * Participates in the dispatching process for incoming HTTP requests.
  * <p>
@@ -46,6 +44,31 @@ import java.util.function.Consumer;
  * @see WebServerHandler
  */
 public interface WebDispatcher extends Priorized {
+
+    /**
+     * Represents the possible outcomes of a call to a {@link WebDispatcher}.
+     */
+    enum DispatchDecision {
+        /**
+         * Signals the the request was handled and all further processing cann be aborted.
+         */
+        DONE,
+
+        /**
+         * Signals that the dispatcher doesn't feel responsible for this requests and that the
+         * next in line dispatcher should give it a try.
+         */
+        CONTINUE,
+
+        /**
+         * Signals that some request re-writing happened and that the the dispatching should be
+         * reset to start from the first dispatcher again.
+         * <p>
+         * Note that there is a circuit breaker installed, therefore this can only be performed up to
+         * three times per request before the processing will be aborted.
+         */
+        RESTART
+    }
 
     /**
      * Returns the priority to determine the position in the dispatcher list.
@@ -83,29 +106,6 @@ public interface WebDispatcher extends Priorized {
     /**
      * Invoked in order to handle the given request.
      * <p>
-     * If the dispatcher doesn't feel responsible for handling the request, it simply invokes <tt>nextStage</tt>.
-     * <p>
-     * Note that no blocking operation must be performed in this method. For any complex interaction, a new thread
-     * should be forked using {@link sirius.kernel.async.Tasks#executor(String)}. Note that even
-     * {@link Response#outputStream(io.netty.handler.codec.http.HttpResponseStatus, String)} might
-     * block sooner or later to limit heap memory usage - so fork a thread for any serious work besides checking
-     * responsibilities for handling requests.
-     *
-     * @param ctx             the request to handle
-     * @param startOfPipeline the start of the pipeline in order
-     * @param nextStage       the next stage to forward the request to in case the dispatcher isn't interested
-     * @throws Exception in case of an error when parsing or dispatching the request
-     */
-    default void dispatch(WebContext ctx, Consumer<WebContext> startOfPipeline, Consumer<WebContext> nextStage)
-            throws Exception {
-        if (!dispatch(ctx)) {
-            nextStage.accept(ctx);
-        }
-    }
-
-    /**
-     * Invoked in order to handle the given request.
-     * <p>
      * If the dispatcher doesn't feel responsible for handling the request, it simply returns <tt>false</tt>. Otherwise
      * if the request is being handled, <tt>true</tt> must be returned
      * <p>
@@ -116,8 +116,8 @@ public interface WebDispatcher extends Priorized {
      * responsibilities for handling requests.
      *
      * @param ctx the request to handle
-     * @return <tt>true</tt> if the request was handled by this dispatcher, <tt>false</tt> otherwise.
+     * @return a decision on how to continue processing the current request
      * @throws Exception in case of an error when parsing or dispatching the request
      */
-    boolean dispatch(WebContext ctx) throws Exception;
+    DispatchDecision dispatch(WebContext ctx) throws Exception;
 }

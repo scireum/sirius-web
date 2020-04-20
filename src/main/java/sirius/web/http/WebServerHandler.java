@@ -73,7 +73,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     private Watch latencyWatch;
     private boolean ssl;
 
-    private DispatcherPipeline pipeline;
+    @Part
+    private static DispatcherPipeline pipeline;
 
     @Part
     private static Firewall firewall;
@@ -605,14 +606,6 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         }
     }
 
-    private DispatcherPipeline getPipeline() {
-        if (pipeline == null) {
-            pipeline = DispatcherPipeline.create();
-        }
-
-        return pipeline;
-    }
-
     /*
      * Tries to dispatch a POST or PUT request before it is completely received so that the handler can install
      * a ContentHandler to process all incoming data.
@@ -622,7 +615,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             WebServer.LOG.FINE("DISPATCHING: " + currentContext.getRequestedURI());
         }
 
-        return getPipeline().preDispatch(currentContext);
+        return pipeline.preDispatch(currentContext);
     }
 
     /*
@@ -633,7 +626,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             WebServer.LOG.FINE("DISPATCHING: " + currentContext.getRequestedURI());
         }
         dispatched = true;
-        getPipeline().dispatch(currentContext);
+        pipeline.dispatch(currentContext);
         currentRequest = null;
     }
 

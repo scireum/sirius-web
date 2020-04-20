@@ -59,6 +59,9 @@ public class TestRequest extends WebContext implements HttpRequest {
     @Part
     private static Resources resources;
 
+    @Part
+    private static DispatcherPipeline pipeline;
+
     private HttpHeaders testHeaders = new DefaultHttpHeaders();
     private String testUri;
     private Map<String, Object> parameters = Context.create();
@@ -67,7 +70,6 @@ public class TestRequest extends WebContext implements HttpRequest {
     private boolean preDispatch;
     private List<Cookie> testCookies = Lists.newArrayList();
     protected Promise<TestResponse> testResponsePromise = new Promise<>();
-    private DispatcherPipeline pipeline;
     private Map<String, String> testSession;
     protected boolean followRedirect = false;
 
@@ -420,10 +422,10 @@ public class TestRequest extends WebContext implements HttpRequest {
 
         CallContext.getCurrent().set(WebContext.class, this);
         try {
-            if (preDispatch && getPipeline().preDispatch(this)) {
+            if (preDispatch && pipeline.preDispatch(this)) {
                 contentHandler.handle(this.content.getByteBuf(), true);
             } else {
-                getPipeline().dispatch(this);
+                pipeline.dispatch(this);
             }
             return testResponsePromise;
         } catch (Exception e) {
@@ -511,14 +513,6 @@ public class TestRequest extends WebContext implements HttpRequest {
         return resources.resolve(resource)
                         .orElseThrow(() -> new IllegalArgumentException("Unknown Resource: " + resource))
                         .openStream();
-    }
-
-    private DispatcherPipeline getPipeline() {
-        if (pipeline == null) {
-            pipeline = DispatcherPipeline.create();
-        }
-
-        return pipeline;
     }
 
     private void setTestSessionValue(String key, Object value) {

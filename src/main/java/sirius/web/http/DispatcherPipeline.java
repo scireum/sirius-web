@@ -13,54 +13,45 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.async.TaskContext;
 import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Callback;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.PriorityParts;
+import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
- * Contains a dispatcher and the next in line.
+ * Dispatches a request ({@link WebContext} by offering it to all known {@link WebDispatcher dispatchers}.
  * <p>
- * Used by {@link WebServerHandler} to send a request through all dispatchers until it is handled. By using a pipeline
- * instead of a simple iteration, we can actually re-dispatch a request.
+ * Used by {@link WebServerHandler} to send a request through all dispatchers until it is handled. Next to
+ * a simple iteration, a dispatcher can always restart the pipeline to perform a "server sided redirect".
  */
-class DispatcherPipeline {
-
-    public static final String EXECUTOR_WEBSERVER = "webserver";
-
-    @PriorityParts(WebDispatcher.class)
-    private static List<WebDispatcher> dispatchers;
-
-    @Part
-    private static Tasks tasks;
-
-    private WebDispatcher dispatcher;
-    private DispatcherPipeline next;
-
-    private DispatcherPipeline(WebDispatcher dispatcher, DispatcherPipeline next) {
-        this.dispatcher = dispatcher;
-        this.next = next;
-    }
-
-    private static DispatcherPipeline createStage(Iterator<WebDispatcher> iterator) {
-        if (!iterator.hasNext()) {
-            return null;
-        }
-        return new DispatcherPipeline(iterator.next(), createStage(iterator));
-    }
+@Register(classes = DispatcherPipeline.class)
+public class DispatcherPipeline {
 
     /**
-     * Creates a fully popularized pipeline which contains all known dispatchers.
-     *
-     * @return a full pipeline of all dispatchers
+     * Specifies the executor used to handle requests.
+     * <p>
+     * We even call the dispatchers in a separate thread pool (out of the event loop) as otherwise
+     * we might run into a deadlock due to internal buffer management within netty. Also this provides
+     * quite a good circuit breaker, as the web server will start to drop load if there is a severe
+     * system slowdown (which is still betten than drownin in requests, without handling any...).
      */
-    public static DispatcherPipeline create() {
-        Iterator<WebDispatcher> iterator = dispatchers.iterator();
-        return createStage(iterator);
-    }
+    private static final String EXECUTOR_WEBSERVER = "webserver";
+
+    /**
+     * Defines the max number of pipeline restarts per requests.
+     * <p>
+     * After that limit has been reached, processing this request will be aborted.
+     */
+    private static final int MAX_RESTARTS_PER_REQUEST = 3;
+
+    @PriorityParts(WebDispatcher.class)
+    private List<WebDispatcher> dispatchers;
+
+    @Part
+    private Tasks tasks;
 
     /**
      * Dispatches the given request.
@@ -71,24 +62,32 @@ class DispatcherPipeline {
         ctx.started = System.currentTimeMillis();
         tasks.executor(EXECUTOR_WEBSERVER)
              .dropOnOverload(() -> handleDrop(ctx))
-             .fork(() -> dispatch(ctx, this::dispatch, CallContext.getCurrent().get(TaskContext.class)));
+             .fork(() -> dispatch(ctx, CallContext.getCurrent().get(TaskContext.class)));
     }
 
     private void handleDrop(WebContext ctx) {
         ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, "Request dropped - System overload!");
     }
 
-    private void dispatch(WebContext webContext, Consumer<WebContext> pipelineRoot, TaskContext context) {
+    private void dispatch(WebContext webContext, TaskContext context) {
         try {
             webContext.scheduled = System.currentTimeMillis();
-            context.setSubSystem(dispatcher.getClass().getSimpleName());
-            dispatcher.dispatch(webContext, pipelineRoot, ctx -> {
-                if (next == null) {
-                    ctx.respondWith().error(HttpResponseStatus.NOT_FOUND);
-                } else {
-                    next.dispatch(ctx, pipelineRoot, context);
+            int leftRestarts = MAX_RESTARTS_PER_REQUEST;
+            for (int index = 0; index < dispatchers.size(); index++) {
+                WebDispatcher dispatcher = dispatchers.get(index);
+                context.setSubSystem(dispatcher.getClass().getSimpleName());
+                WebDispatcher.DispatchDecision decision = dispatcher.dispatch(webContext);
+                if (decision == WebDispatcher.DispatchDecision.DONE) {
+                    return;
+                } else if (decision == WebDispatcher.DispatchDecision.RESTART) {
+                    index = 0;
+                    if (leftRestarts-- <= 0) {
+                        throw new IllegalStateException(Strings.apply(
+                                "Dispatcher pipeline restarted more than 3 times for %s, aborting...",
+                                webContext.getRequestedURL()));
+                    }
                 }
-            });
+            }
         } catch (Exception e) {
             handleInternalServerError(webContext, e);
         }
@@ -110,26 +109,24 @@ class DispatcherPipeline {
      */
     public boolean preDispatch(WebContext webContext) {
         try {
-            Callback<WebContext> handler = dispatcher.preparePreDispatch(webContext);
-            if (handler != null) {
-                tasks.executor(EXECUTOR_WEBSERVER)
-                     .dropOnOverload(() -> handleDrop(webContext))
-                     .fork(() -> executePreDispatching(webContext, handler));
+            for (WebDispatcher webDispatcher : dispatchers) {
+                Callback<WebContext> handler = webDispatcher.preparePreDispatch(webContext);
+                if (handler != null) {
+                    tasks.executor(EXECUTOR_WEBSERVER)
+                         .dropOnOverload(() -> handleDrop(webContext))
+                         .fork(() -> executePreDispatching(webContext, webDispatcher, handler));
 
-                return true;
+                    return true;
+                }
             }
         } catch (Exception e) {
             handleInternalServerError(webContext, e);
         }
 
-        if (next == null) {
-            return false;
-        }
-
-        return next.preDispatch(webContext);
+        return false;
     }
 
-    private void executePreDispatching(WebContext webContext, Callback<WebContext> handler) {
+    private void executePreDispatching(WebContext webContext, WebDispatcher dispatcher, Callback<WebContext> handler) {
         try {
             CallContext.getCurrent().get(TaskContext.class).setSubSystem(dispatcher.getClass().getSimpleName());
             handler.invoke(webContext);
