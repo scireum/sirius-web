@@ -61,6 +61,7 @@ class ImageReplacedElementFactory extends ITextReplacedElementFactory {
     private static final String BARCODE_TYPE_EAN = "ean";
     private static final String BARCODE_TYPE_INTERLEAVED_2_OF_5 = "interleaved2of5";
     private static final String BARCODE_TYPE_INTERLEAVED_2_OF_5_CHECKSUMMED = "interleaved2of5checksummed";
+    private static final int BARCODE_SCALER = 5;
 
     @Part
     private static Resources resources;
@@ -170,8 +171,13 @@ class ImageReplacedElementFactory extends ITextReplacedElementFactory {
         Barcode code = createBarcode(type);
         code.setCode(padCodeIfNecessary(code, src));
 
-        FSImage fsImage =
-                new ITextFSImage(Image.getInstance(code.createAwtImage(Color.BLACK, Color.WHITE), Color.WHITE));
+        java.awt.Image awtImage = code.createAwtImage(Color.BLACK, Color.WHITE);
+
+        awtImage = awtImage.getScaledInstance(awtImage.getWidth(null) * BARCODE_SCALER,
+                                              awtImage.getHeight(null) * BARCODE_SCALER,
+                                              java.awt.Image.SCALE_REPLICATE);
+
+        FSImage fsImage = new ITextFSImage(Image.getInstance(awtImage, Color.WHITE));
 
         if (cssWidth != -1 || cssHeight != -1) {
             fsImage.scale(cssWidth, cssHeight);
