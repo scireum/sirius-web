@@ -65,7 +65,7 @@ class ImageReplacedElementFactory extends ITextReplacedElementFactory {
     /**
      * Factor by which barcodes will be scaled up to prevent blurry prints
      */
-    private static final int BARCODE_SCALER = 5;
+    private static final int BARCODE_SCALE_FACTOR = 5;
 
     @Part
     private static Resources resources;
@@ -177,8 +177,8 @@ class ImageReplacedElementFactory extends ITextReplacedElementFactory {
 
         java.awt.Image awtImage = code.createAwtImage(Color.BLACK, Color.WHITE);
 
-        awtImage = awtImage.getScaledInstance(awtImage.getWidth(null) * BARCODE_SCALER,
-                                              awtImage.getHeight(null) * BARCODE_SCALER,
+        awtImage = awtImage.getScaledInstance(awtImage.getWidth(null) * BARCODE_SCALE_FACTOR,
+                                              awtImage.getHeight(null) * BARCODE_SCALE_FACTOR,
                                               java.awt.Image.SCALE_REPLICATE);
 
         FSImage fsImage = new ITextFSImage(Image.getInstance(awtImage, Color.WHITE, true));
