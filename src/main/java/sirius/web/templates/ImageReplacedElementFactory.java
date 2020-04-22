@@ -188,11 +188,8 @@ class ImageReplacedElementFactory extends ITextReplacedElementFactory {
     }
 
     private int getBarcodeScaleFactor(int cssWidth, int cssHeight, java.awt.Image awtImage) {
-        if (cssWidth > 0) {
-            return (int) Math.ceil(cssWidth / (float) awtImage.getWidth(null));
-        }
-
-        return (int) Math.ceil(cssHeight / (float) awtImage.getHeight(null));
+        return (int) Math.max(Math.ceil(cssWidth / (float) awtImage.getWidth(null)),
+                              Math.ceil(cssHeight / (float) awtImage.getHeight(null)));
     }
 
     /**
