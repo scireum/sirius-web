@@ -172,7 +172,7 @@ class ImageReplacedElementFactory extends ITextReplacedElementFactory {
 
         java.awt.Image awtImage = code.createAwtImage(Color.BLACK, Color.WHITE);
 
-        int scaleFactor = getBarcodeScaleFactor(cssWidth, cssHeight, awtImage);
+        int scaleFactor = calculateBarcodeScaleFactor(cssWidth, cssHeight, awtImage);
 
         awtImage = awtImage.getScaledInstance(awtImage.getWidth(null) * scaleFactor,
                                               awtImage.getHeight(null) * scaleFactor,
@@ -187,7 +187,7 @@ class ImageReplacedElementFactory extends ITextReplacedElementFactory {
         return new ITextImageElement(fsImage);
     }
 
-    private int getBarcodeScaleFactor(int cssWidth, int cssHeight, java.awt.Image awtImage) {
+    private int calculateBarcodeScaleFactor(int cssWidth, int cssHeight, java.awt.Image awtImage) {
         return (int) Math.max(Math.ceil(cssWidth / (float) awtImage.getWidth(null)),
                               Math.ceil(cssHeight / (float) awtImage.getHeight(null)));
     }
