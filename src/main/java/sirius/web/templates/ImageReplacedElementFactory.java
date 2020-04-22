@@ -61,6 +61,10 @@ class ImageReplacedElementFactory extends ITextReplacedElementFactory {
     private static final String BARCODE_TYPE_EAN = "ean";
     private static final String BARCODE_TYPE_INTERLEAVED_2_OF_5 = "interleaved2of5";
     private static final String BARCODE_TYPE_INTERLEAVED_2_OF_5_CHECKSUMMED = "interleaved2of5checksummed";
+
+    /**
+     * Factor by which barcodes will be scaled up to prevent blurry prints
+     */
     private static final int BARCODE_SCALER = 5;
 
     @Part
