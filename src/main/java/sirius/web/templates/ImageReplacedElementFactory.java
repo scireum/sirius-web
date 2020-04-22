@@ -177,7 +177,7 @@ class ImageReplacedElementFactory extends ITextReplacedElementFactory {
                                               awtImage.getHeight(null) * BARCODE_SCALER,
                                               java.awt.Image.SCALE_REPLICATE);
 
-        FSImage fsImage = new ITextFSImage(Image.getInstance(awtImage, Color.WHITE));
+        FSImage fsImage = new ITextFSImage(Image.getInstance(awtImage, Color.WHITE, true));
 
         if (cssWidth != -1 || cssHeight != -1) {
             fsImage.scale(cssWidth, cssHeight);
