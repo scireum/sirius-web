@@ -62,11 +62,6 @@ class ImageReplacedElementFactory extends ITextReplacedElementFactory {
     private static final String BARCODE_TYPE_INTERLEAVED_2_OF_5 = "interleaved2of5";
     private static final String BARCODE_TYPE_INTERLEAVED_2_OF_5_CHECKSUMMED = "interleaved2of5checksummed";
 
-    /**
-     * Factor by which barcodes will be scaled up to prevent blurry prints
-     */
-    private static final int BARCODE_SCALE_FACTOR = 5;
-
     @Part
     private static Resources resources;
 
@@ -177,8 +172,10 @@ class ImageReplacedElementFactory extends ITextReplacedElementFactory {
 
         java.awt.Image awtImage = code.createAwtImage(Color.BLACK, Color.WHITE);
 
-        awtImage = awtImage.getScaledInstance(awtImage.getWidth(null) * BARCODE_SCALE_FACTOR,
-                                              awtImage.getHeight(null) * BARCODE_SCALE_FACTOR,
+        int scaleFactor = getBarcodeScaleFactor(cssWidth, cssHeight, awtImage);
+
+        awtImage = awtImage.getScaledInstance(awtImage.getWidth(null) * scaleFactor,
+                                              awtImage.getHeight(null) * scaleFactor,
                                               java.awt.Image.SCALE_REPLICATE);
 
         FSImage fsImage = new ITextFSImage(Image.getInstance(awtImage, Color.WHITE, true));
@@ -188,6 +185,14 @@ class ImageReplacedElementFactory extends ITextReplacedElementFactory {
         }
 
         return new ITextImageElement(fsImage);
+    }
+
+    private int getBarcodeScaleFactor(int cssWidth, int cssHeight, java.awt.Image awtImage) {
+        if (cssWidth > 0) {
+            return (int) Math.ceil(cssWidth / (float) awtImage.getWidth(null));
+        }
+
+        return (int) Math.ceil(cssHeight / (float) awtImage.getHeight(null));
     }
 
     /**
