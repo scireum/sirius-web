@@ -447,9 +447,14 @@ class Parser extends InputProcessor {
     private Expression handleSpecialMethods(Expression self, String methodName, List<Expression> parameters) {
         if ("as".equals(methodName) && parameters.size() == 1 && (parameters.get(0) instanceof ConstantClass)) {
             Class<?> type = (Class<?>) parameters.get(0).eval(null);
-            if (Transformable.class.isAssignableFrom(self.getType())) {
-                return new TransformerCast(self, type);
+
+            if (type.isAssignableFrom(self.getType())) {
+                context.warning(reader.current(), "Ignoring unnecessary cast from %s to %s", self.getType(), type);
+                return self;
             } else {
+                if (Transformable.class.isAssignableFrom(self.getType())) {
+                    return new TransformerCast(self, type);
+                }
                 return new NativeCast(self, type);
             }
         }

@@ -46,11 +46,13 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.List;
 
 /**
@@ -108,7 +110,7 @@ public class SAMLHelper {
         out.endOutput();
 
         if (LOG.isFINE()) {
-            LOG.FINE("Generating SAML request: %s", new String(buffer.toByteArray(), Charsets.UTF_8));
+            LOG.FINE("Generating SAML request: %s", new String(buffer.toByteArray(), StandardCharsets.UTF_8));
         }
 
         return buffer.toByteArray();
@@ -215,10 +217,10 @@ public class SAMLHelper {
 
     private Document getResponseDocument(WebContext ctx)
             throws SAXException, IOException, ParserConfigurationException {
-        byte[] response = BaseEncoding.base64().decode(ctx.get("SAMLResponse").asString());
+        byte[] response = Base64.getDecoder().decode(ctx.get("SAMLResponse").asString());
 
         if (LOG.isFINE()) {
-            LOG.FINE("Received SAML response: %s", new String(response, Charsets.UTF_8));
+            LOG.FINE("Received SAML response: %s", new String(response, StandardCharsets.UTF_8));
         }
 
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();

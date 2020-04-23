@@ -418,8 +418,8 @@ public class Tagliatelle {
         message.append("Warnings when compiling ")
                .append(compilationContext.getTemplate().getShortName())
                .append(":\n");
-        compilationContext.getErrors().forEach(message::append);
-        message.append(" - Template: ");
+        compilationContext.getErrors().forEach(error -> message.append(error).append("\n\n"));
+        message.append("Template: ");
         message.append(compilationContext.getTemplate().getName());
         message.append("\n");
 

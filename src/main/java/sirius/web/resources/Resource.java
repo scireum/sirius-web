@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -189,7 +190,7 @@ public class Resource {
      * @return the contents of the resource as string (expecting UTF-8 as encoding).
      */
     public String getContentAsString() {
-        return new String(getContent(), Charsets.UTF_8);
+        return new String(getContent(), StandardCharsets.UTF_8);
     }
 
     /**

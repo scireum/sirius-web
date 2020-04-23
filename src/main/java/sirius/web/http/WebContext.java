@@ -9,7 +9,6 @@ package sirius.web.http;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -22,6 +21,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.QueryStringEncoder;
 import io.netty.handler.codec.http.cookie.Cookie;
@@ -35,6 +35,7 @@ import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.InterfaceHttpPostRequestDecoder;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.async.Promise;
 import sirius.kernel.async.SubContext;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Files;
@@ -64,6 +65,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -220,6 +222,13 @@ public class WebContext implements SubContext {
      * Invoked once the call is completely handled
      */
     protected Callback<CallContext> completionCallback;
+
+    /**
+     * This promise is completed once the request is completely handled.
+     * <p>
+     * The main purpose is to attach a callback once the request was successfully handled.
+     */
+    protected Promise<Integer> completionPromise;
 
     /**
      * Determines if the request is performed via a secured channel (SSL)
@@ -396,12 +405,32 @@ public class WebContext implements SubContext {
     /**
      * Used to provide a handle which is invoked once the call is completely handled.
      * <p>
-     * Note that calling this method, removes the last completion handler.
+     * Note that calling this method, removes the last completion handler. Also, this runs
+     * in a very central IO thread pool, therefore this should only be used in technical
+     * scenarios.
      *
      * @param onComplete the handler to be invoked once the request is completely handled
      */
     public void onComplete(Callback<CallContext> onComplete) {
         completionCallback = onComplete;
+    }
+
+    /**
+     * Provides a promise which is fulfilled with the HTTP status code once the request has been completely
+     * handled.
+     *
+     * @return a promise to attach handlers which are invoked once the request was successfully handled
+     */
+    public Promise<Integer> getCompletionPromise() {
+        if (completionPromise == null) {
+            if (responseCompleted) {
+                return new Promise<Integer>().success(HttpResponseStatus.OK.code());
+            }
+
+            completionPromise = new Promise<>();
+        }
+
+        return completionPromise;
     }
 
     /**
@@ -718,7 +747,7 @@ public class WebContext implements SubContext {
         String sessionPin = session.get(SESSION_PIN_KEY);
         String effectiveSessionPin = Strings.isEmpty(givenSessionPin) ?
                                      "" :
-                                     Hashing.md5().hashString(givenSessionPin, Charsets.UTF_8).toString();
+                                     Hashing.md5().hashString(givenSessionPin, StandardCharsets.UTF_8).toString();
 
         if (Strings.isFilled(sessionPin) && !Strings.areEqual(sessionPin, effectiveSessionPin)) {
             SESSION_CHECK.SEVERE(Strings.apply("Session pin mismatch: %s (%s) vs. %s%n%s%n%s%nIP: %s",
@@ -767,7 +796,7 @@ public class WebContext implements SubContext {
                                  .hashString(getRemoteIP().toString()
                                              + getHeader(HttpHeaderNames.USER_AGENT)
                                              + TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis()),
-                                             Charsets.UTF_8)
+                                             StandardCharsets.UTF_8)
                                  .toString();
 
         if (SESSION_CHECK.isFINE()) {
@@ -814,7 +843,7 @@ public class WebContext implements SubContext {
         return Strings.areEqual(sessionInfo.getFirst(),
                                 Hashing.sha512()
                                        .hashString(sessionInfo.getSecond() + getSessionSecret(currentSession),
-                                                   Charsets.UTF_8)
+                                                   StandardCharsets.UTF_8)
                                        .toString());
     }
 
@@ -1061,7 +1090,7 @@ public class WebContext implements SubContext {
      * Decodes the query string on demand
      */
     private void decodeQueryString() {
-        QueryStringDecoder qsd = new QueryStringDecoder(request.uri(), Charsets.UTF_8);
+        QueryStringDecoder qsd = new QueryStringDecoder(request.uri(), StandardCharsets.UTF_8);
         requestedURI = qsd.path();
         queryString = qsd.parameters();
     }
@@ -1090,7 +1119,7 @@ public class WebContext implements SubContext {
      * @return the web context itself for fluent method calls
      */
     public WebContext withCustomURI(String uri) {
-        QueryStringDecoder qsd = new QueryStringDecoder(uri, Charsets.UTF_8);
+        QueryStringDecoder qsd = new QueryStringDecoder(uri, StandardCharsets.UTF_8);
         requestedURI = qsd.path();
         queryString = qsd.parameters();
         rawRequestedURI = stripQueryFromURI(uri);
@@ -1319,7 +1348,8 @@ public class WebContext implements SubContext {
         }
 
         String value = encoder.toString();
-        String protection = Hashing.sha512().hashString(value + getSessionSecret(session), Charsets.UTF_8).toString();
+        String protection =
+                Hashing.sha512().hashString(value + getSessionSecret(session), StandardCharsets.UTF_8).toString();
 
         long ttl = determineSessionCookieTTL();
         if (ttl == 0) {
@@ -1452,7 +1482,7 @@ public class WebContext implements SubContext {
         String header = getHeaderValue(HttpHeaderNames.AUTHORIZATION.toString()).asString();
         if (Strings.isFilled(header) && header.startsWith("Basic ")) {
             header = header.substring(6);
-            String nameAndPassword = new String(Base64.getDecoder().decode(header), Charsets.UTF_8);
+            String nameAndPassword = new String(Base64.getDecoder().decode(header), StandardCharsets.UTF_8);
             Tuple<String, String> result = Strings.split(nameAndPassword, ":");
             if (Strings.isFilled(result.getFirst()) && Strings.isFilled(result.getSecond())) {
                 return result;
@@ -1622,7 +1652,7 @@ public class WebContext implements SubContext {
      */
     public Charset getContentCharset() {
         if (content == null) {
-            return Charsets.UTF_8;
+            return StandardCharsets.UTF_8;
         }
 
         return content.getCharset();
@@ -1812,7 +1842,7 @@ public class WebContext implements SubContext {
             return parseContentType(contentType);
         } catch (UnsupportedCharsetException e) {
             Exceptions.ignore(e);
-            return Charsets.UTF_8;
+            return StandardCharsets.UTF_8;
         }
     }
 
@@ -1825,7 +1855,7 @@ public class WebContext implements SubContext {
                 }
             }
         }
-        return Charsets.UTF_8;
+        return StandardCharsets.UTF_8;
     }
 
     /**
@@ -1876,6 +1906,10 @@ public class WebContext implements SubContext {
      * Releases all data associated with this request.
      */
     void release() {
+        if (completionPromise != null && !completionPromise.isCompleted()) {
+            completionPromise.fail(new IllegalStateException("Request has been aborted"));
+        }
+
         releaseContentHandler();
         releasePostDecoder();
         releaseContent();

@@ -18,6 +18,7 @@ import sirius.tagliatelle.compiler.CompilationContext
 import sirius.tagliatelle.compiler.CompileError
 import sirius.tagliatelle.compiler.CompileException
 import sirius.tagliatelle.compiler.Compiler
+import sirius.tagliatelle.rendering.GlobalRenderContext
 import sirius.web.resources.Resource
 import sirius.web.resources.Resources
 
@@ -92,6 +93,31 @@ class CompilerSpec extends BaseSpecification {
         errors.size() == 0
         and:
         ctx.getTemplate().renderToString(TestObject.INSTANCE, Amount.TEN) == "-10"
+    }
+
+    def "generic type propagation works"() {
+        when:
+        def ctx = new CompilationContext(new Template("test", null), null)
+        List<CompileError> errors = new Compiler(ctx, "<i:arg type=\"sirius.tagliatelle.TestObject\" name=\"test\" />" +
+                "@test.getGenericReturnType().getFirst().apply('Test').get().as(String.class).substring(1)").compile()
+        then:
+        errors.size() == 1
+        and: "We expect a warning as our cast to String is now unnecessary due to proper generic propagation"
+        errors.get(0).getError().getSeverity() == ParseError.Severity.WARNING
+        and:
+        ctx.getTemplate().renderToString(TestObject.INSTANCE) == "est"
+    }
+
+    def "generic type propagation works for class parameters"() {
+        when:
+        def ctx = new CompilationContext(new Template("test", null), null)
+        List<CompileError> errors = new Compiler(ctx,
+                                                 "@user.getHelper(sirius.tagliatelle.ExampleHelper.class).getTestValue()").
+                compile()
+        then:
+        errors.size() == 0
+        and:
+        ctx.getTemplate().renderToString(TestObject.INSTANCE) == "test"
     }
 
     def "vararg detection works with several parameters"() {
@@ -268,7 +294,9 @@ class CompilerSpec extends BaseSpecification {
         then:
         errors.size() == 1
         errors.get(0).getSeverity() == ParseError.Severity.WARNING
-        errors.get(0).getMessage().contains("The method sirius.tagliatelle.TestObject.deprecatedMethod is marked as deprecated")
+        errors.get(0)
+              .getMessage()
+              .contains("The method sirius.tagliatelle.TestObject.deprecatedMethod is marked as deprecated")
     }
 
     def "calling a deprecated macro is detected"() {
@@ -278,7 +306,9 @@ class CompilerSpec extends BaseSpecification {
         then:
         errors.size() == 1
         errors.get(0).getSeverity() == ParseError.Severity.WARNING
-        errors.get(0).getMessage().contains("The macro deprecatedMacro (sirius.tagliatelle.DeprecatedMacro) is deprecated.")
+        errors.get(0)
+              .getMessage()
+              .contains("The macro deprecatedMacro (sirius.tagliatelle.DeprecatedMacro) is deprecated.")
     }
 
     def "invalid varargs are detected"() {
@@ -292,10 +322,10 @@ class CompilerSpec extends BaseSpecification {
         then:
         errors.size() == 2
         errors.get(0).getError().getSeverity() == ParseError.Severity.ERROR
-        errors.get(0).
-                toString().
-                contains(
-                        "Incompatible attribute types. e:invalidArgumentTaglib expects int for 'invalidArgument', but class java.lang.String was given.")
+        errors.get(0)
+              .toString()
+              .contains(
+                      "Incompatible attribute types. e:invalidArgumentTaglib expects int for 'invalidArgument', but class java.lang.String was given.")
         !errors.get(1).toString().contains("NullPointerException")
     }
 
@@ -379,5 +409,25 @@ class CompilerSpec extends BaseSpecification {
                                    .get().renderToString(Tuple.create(innerClass, innerClass))
         then:
         test.basicallyEqual(result, expectedResult)
+    }
+
+    def "Toplevel i:block and i:extraBlock (even when nested) produce the appropriate extra outputs"() {
+        when:
+        def compilationContext = new CompilationContext(new Template("test", null), null)
+        List<CompileError> errors = new Compiler(compilationContext, "<i:block name=\"test\">" +
+                "Test" +
+                "<i:extraBlock name=\"extra-test\">Extra Test</i:extraBlock>" +
+                "</i:block>").
+                compile()
+        and:
+        GlobalRenderContext globalRenderContext = tagliatelle.createRenderContext()
+        and:
+        compilationContext.getTemplate().render(globalRenderContext)
+        then:
+        errors.size() == 0
+        and: "A top level i:block is expected to render its contents into an extra block"
+        globalRenderContext.getExtraBlock("test") == "Test"
+        and: "An i:extraBlock is expected to do the same - independently of its nesting and location"
+        globalRenderContext.getExtraBlock("extra-test") == "Extra Test"
     }
 }

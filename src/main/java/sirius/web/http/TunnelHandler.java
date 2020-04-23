@@ -219,12 +219,14 @@ class TunnelHandler implements AsyncHandler<String> {
                 completeResponse(bodyPart);
             } else if (transformer != null) {
                 ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
-                transformer.apply(data).map(DefaultHttpContent::new).ifPresent(response::contentionAwareWrite);
+                transformer.apply(data).map(DefaultHttpContent::new).ifPresent(message -> response.contentionAwareWrite(
+                        message,
+                        false));
                 data.release();
             } else {
                 ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
                 Object msg = response.responseChunked ? new DefaultHttpContent(data) : data;
-                response.contentionAwareWrite(msg);
+                response.contentionAwareWrite(msg, false);
             }
             return STATE.CONTINUE;
         } catch (HandledException e) {
@@ -271,7 +273,7 @@ class TunnelHandler implements AsyncHandler<String> {
         // Now we figure out which is simply sent and which is sent while obtaining the completion future
         // to finish the response...
         if (lastResult != null && completeResult != null) {
-            response.contentionAwareWrite(new DefaultHttpContent(lastResult));
+            response.contentionAwareWrite(new DefaultHttpContent(lastResult), false);
             ChannelFuture writeFuture = response.ctx.writeAndFlush(new DefaultLastHttpContent(completeResult));
             response.complete(writeFuture);
         } else if (completeResult != null) {

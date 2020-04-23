@@ -16,6 +16,7 @@ import sirius.kernel.xml.Outcall;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Simple call to send JSON to a server (URL) and receive JSON back.
@@ -38,7 +39,7 @@ public class JSONCall {
      * @throws java.io.IOException in case of an IO error
      */
     public static JSONCall to(URL url) throws IOException {
-        return to(url, "application/json; charset=" + Charsets.UTF_8.name());
+        return to(url, "application/json; charset=" + StandardCharsets.UTF_8.name());
     }
 
     /**
@@ -73,7 +74,7 @@ public class JSONCall {
      * @throws IOException in case of an IO error while sending the JSON document
      */
     public JSONStructuredOutput getOutput() throws IOException {
-        return new JSONStructuredOutput(outcall.getOutput(), null, Charsets.UTF_8.name());
+        return new JSONStructuredOutput(outcall.getOutput(), null, StandardCharsets.UTF_8.name());
     }
 
     /**

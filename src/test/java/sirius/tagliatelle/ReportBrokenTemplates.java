@@ -8,8 +8,10 @@
 
 package sirius.tagliatelle;
 
+import parsii.tokenizer.ParseError;
 import sirius.kernel.Sirius;
 import sirius.kernel.TestLifecycleParticipant;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Priorized;
 import sirius.kernel.di.std.Register;
@@ -20,7 +22,11 @@ import sirius.tagliatelle.compiler.Compiler;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 
+import java.util.IntSummaryStatistics;
+import java.util.Objects;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Tries to compile all visible tagliatelle templates and breaks the test run if compilation fails.
@@ -53,40 +59,66 @@ public class ReportBrokenTemplates implements TestLifecycleParticipant {
 
     @Override
     public void afterTests() {
-        Sirius.getClasspath().find(Pattern.compile(".*.pasta")).forEach(m -> {
-            String templateName = "/" + m.group(0);
-            if (templateName.startsWith("/default/")) {
-                templateName = templateName.substring(8);
-            }
-            Resource resource = resources.resolve(templateName).orElse(null);
-            CompilationContext compilationContext = engine.createCompilationContext(templateName, resource, null);
-            try {
-                Compiler compiler = new Compiler(compilationContext, resource.getContentAsString());
-                compiler.compile();
-                // If no exception was thrown but still some warnings are present, we
-                // will still break the test unless the template is marked as "unchecked".
-                if (!compiler.getContext().getErrors().isEmpty() && !isUnchecked(compilationContext.getTemplate())) {
-                    throw Exceptions.handle()
-                                    .withSystemErrorMessage("A warning ocurred while trying to compile: %s - %s."
-                                                            + " Please fix the reported issue or mark the template as unchecked"
-                                                            + " via a pragma.",
-                                                            templateName,
-                                                            compiler.getContext().getErrors().get(0).toString())
-                                    .handle();
-                }
-            } catch (CompileException e) {
-                if (!isUnchecked(compilationContext.getTemplate())) {
-                    throw Exceptions.handle()
-                                    .withSystemErrorMessage("Failed to compile: %s - %s",
-                                                            templateName,
-                                                            e.getErrors().get(0).toString())
-                                    .handle();
-                }
-            }
-        });
+        StringBuilder output = new StringBuilder();
+        IntSummaryStatistics statistics = Sirius.getClasspath()
+                                                .find(Pattern.compile(".*.pasta"))
+                                                .map(this::resolveAsResource)
+                                                .filter(Objects::nonNull)
+                                                .map(this::compile)
+                                                .filter(this::isExpectedToCompile)
+                                                .filter(this::hasErrorsOrWarnings)
+                                                .peek(compilationContext -> reportErrors(compilationContext, output))
+                                                .mapToInt(compilationContext -> compilationContext.getErrors().size())
+                                                .summaryStatistics();
+
+        if (statistics.getCount() > 0) {
+            throw Exceptions.handle()
+                            .withSystemErrorMessage(
+                                    "ReportBrokenTemplates found %s Tagliatelle template(s) with %s error(s)/warning(s):\n\n%s",
+                                    statistics.getCount(),
+                                    statistics.getSum(),
+                                    output.toString())
+                            .handle();
+        }
     }
 
-    private boolean isUnchecked(Template template) {
-        return template.getPragma(PRAGMA_UNCHECKED).asBoolean();
+    private Resource resolveAsResource(Matcher matchedResource) {
+        String templateName = "/" + matchedResource.group(0);
+        if (templateName.startsWith("/default/")) {
+            templateName = templateName.substring(8);
+        }
+
+        return resources.resolve(templateName).orElse(null);
+    }
+
+    private CompilationContext compile(Resource resource) {
+        CompilationContext compilationContext = engine.createCompilationContext(resource.getPath(), resource, null);
+
+        try {
+            Compiler compiler = new Compiler(compilationContext, resource.getContentAsString());
+            compiler.compile();
+        } catch (CompileException e) {
+            // We will log all errors later anyway...
+            Exceptions.ignore(e);
+        }
+
+        return compilationContext;
+    }
+
+    private boolean isExpectedToCompile(CompilationContext compilationContext) {
+        return !compilationContext.getTemplate().getPragma(PRAGMA_UNCHECKED).asBoolean();
+    }
+
+    private boolean hasErrorsOrWarnings(CompilationContext compilationContext) {
+        return !compilationContext.getErrors().isEmpty();
+    }
+
+    private void reportErrors(CompilationContext compilationContext, StringBuilder output) {
+        output.append(Strings.apply("%s:\n%s\n\n",
+                                    compilationContext.getTemplate().getName(),
+                                    compilationContext.getErrors()
+                                                      .stream()
+                                                      .map(ParseError::toString)
+                                                      .collect(Collectors.joining("\n"))));
     }
 }

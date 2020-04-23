@@ -8,6 +8,7 @@
 
 package sirius.web.http;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -17,6 +18,7 @@ import java.lang.annotation.Target;
  * Specifies the realm (counter) to use for rate limiting for this {@link sirius.web.controller.Controller} method
  * or {@link sirius.web.services.StructuredService}
  */
+@Documented
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Limited {

@@ -8,7 +8,6 @@
 
 package sirius.web.security;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.CharStreams;
@@ -32,6 +31,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -340,7 +340,7 @@ public class ScopeInfo extends Composable {
                 return "";
             }
 
-            return CharStreams.toString(new InputStreamReader(contents, Charsets.UTF_8));
+            return CharStreams.toString(new InputStreamReader(contents, StandardCharsets.UTF_8));
         } catch (IOException e) {
             Exceptions.ignore(e);
             return "";

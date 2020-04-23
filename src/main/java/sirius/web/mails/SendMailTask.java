@@ -37,6 +37,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Date;
@@ -386,12 +387,12 @@ class SendMailTask implements Runnable {
         MimeMultipart content = new MimeMultipart(ALTERNATIVE);
         MimeBodyPart text = new MimeBodyPart();
         MimeBodyPart html = new MimeBodyPart();
-        text.setText(textPart, Charsets.UTF_8.name());
+        text.setText(textPart, StandardCharsets.UTF_8.name());
         text.setHeader(MIME_VERSION, MIME_VERSION_1_0);
         text.setHeader(CONTENT_TYPE, TEXT_PLAIN_CHARSET_UTF_8);
         content.addBodyPart(text);
         if (htmlPart != null) {
-            html.setText(Strings.replaceUmlautsToHtml(htmlPart), Charsets.UTF_8.name());
+            html.setText(Strings.replaceUmlautsToHtml(htmlPart), StandardCharsets.UTF_8.name());
             html.setHeader(MIME_VERSION, MIME_VERSION_1_0);
             html.setHeader(CONTENT_TYPE, TEXT_HTML_CHARSET_UTF_8);
             content.addBodyPart(html);
