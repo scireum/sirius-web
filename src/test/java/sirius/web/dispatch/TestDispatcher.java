@@ -28,7 +28,7 @@ public class TestDispatcher implements WebDispatcher {
     @Override
     public DispatchDecision dispatch(WebContext ctx) throws Exception {
         if ("/large-blocking-calls".equalsIgnoreCase(ctx.getRequestedURI())) {
-            // See WebServerSepc->"Invoke /large-blocking-calls with GET" to the appropriate test and explanation...
+            // See WebServerSpec->"Invoke /large-blocking-calls with GET" to the appropriate test and explanation...
             OutputStream out = ctx.respondWith().outputStream(HttpResponseStatus.OK, "text/plain");
             for (int i = 0; i < 10000000; i++) {
                 out.write("THISISLARGECONTENT".getBytes(Charsets.UTF_8));
