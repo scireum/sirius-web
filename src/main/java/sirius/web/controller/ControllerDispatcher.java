@@ -37,6 +37,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.channels.ClosedChannelException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -153,17 +154,17 @@ public class ControllerDispatcher implements WebDispatcher {
     @Override
     @SuppressWarnings("squid:S1698")
     @Explain("We actually can use object identity here as this is a marker object.")
-    public boolean dispatch(WebContext ctx) throws Exception {
+    public DispatchDecision dispatch(WebContext ctx) throws Exception {
         String uri = determineEffectiveURI(ctx);
         for (final Route route : getRoutes()) {
             final List<Object> params = shouldExecute(ctx, uri, route, false);
             if (params != Route.NO_MATCH) {
                 preparePerformRoute(ctx, route, params, null);
-                return true;
+                return DispatchDecision.DONE;
             }
         }
 
-        return false;
+        return DispatchDecision.CONTINUE;
     }
 
     private void performRoute(WebContext ctx, Route route, List<Object> params) {
@@ -357,7 +358,7 @@ public class ControllerDispatcher implements WebDispatcher {
             routes = buildRouter();
         }
 
-        return routes;
+        return Collections.unmodifiableList(routes);
     }
 
     /*

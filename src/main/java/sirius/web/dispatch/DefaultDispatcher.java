@@ -43,7 +43,7 @@ public class DefaultDispatcher implements WebDispatcher {
     }
 
     @Override
-    public boolean dispatch(WebContext ctx) throws Exception {
+    public DispatchDecision dispatch(WebContext ctx) throws Exception {
         if ("/crossdomain.xml".equals(ctx.getRequestedURI()) && serveCrossdomain) {
             ctx.respondWith()
                .infinitelyCached()
@@ -80,6 +80,6 @@ public class DefaultDispatcher implements WebDispatcher {
                       Strings.apply("No dispatcher found for: %s", ctx.getRequestedURI()));
         }
 
-        return true;
+        return DispatchDecision.DONE;
     }
 }

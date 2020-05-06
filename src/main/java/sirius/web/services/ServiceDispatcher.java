@@ -52,9 +52,9 @@ public class ServiceDispatcher implements WebDispatcher {
     }
 
     @Override
-    public boolean dispatch(final WebContext ctx) throws Exception {
+    public DispatchDecision dispatch(final WebContext ctx) throws Exception {
         if (!ctx.getRequestedURI().startsWith("/service/")) {
-            return false;
+            return DispatchDecision.CONTINUE;
         }
         // The real dispatching is put into its own method to support inlining of this check by the JIT
         return doDispatch(ctx);
@@ -63,15 +63,15 @@ public class ServiceDispatcher implements WebDispatcher {
     /*
      * Actually tries to dispatch the incoming request which starts with /service....
      */
-    private boolean doDispatch(WebContext ctx) {
+    private DispatchDecision doDispatch(WebContext ctx) {
         String uri = ctx.getRequestedURI();
         Tuple<ServiceCall, StructuredService> handler = parsePath(ctx, uri);
         if (handler.getSecond() == null) {
-            return false;
+            return DispatchDecision.CONTINUE;
         }
 
         invokeService(ctx, handler.getFirst(), handler.getSecond());
-        return true;
+        return DispatchDecision.DONE;
     }
 
     private Tuple<ServiceCall, StructuredService> parsePath(WebContext ctx, String uri) {

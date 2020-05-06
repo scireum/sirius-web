@@ -62,9 +62,9 @@ public class HelpDispatcher implements WebDispatcher {
     }
 
     @Override
-    public boolean dispatch(WebContext ctx) throws Exception {
+    public DispatchDecision dispatch(WebContext ctx) throws Exception {
         if (!ctx.getRequestedURI().startsWith(HELP_PREFIX) || !HttpMethod.GET.equals(ctx.getRequest().method())) {
-            return false;
+            return DispatchDecision.CONTINUE;
         }
 
         ctx.enableTiming(HELP_PREFIX);
@@ -86,8 +86,11 @@ public class HelpDispatcher implements WebDispatcher {
         Tuple<String, String> langAndTopic = Strings.split(uri.substring(HELP_PREFIX_LENGTH), "/");
         boolean languageFound = setupLang(langAndTopic.getFirst());
 
-        if ((!languageFound || Strings.isFilled(langAndTopic.getSecond())) && serveTopic(ctx, uri)) {
-            return true;
+        if (!languageFound || Strings.isFilled(langAndTopic.getSecond())) {
+            DispatchDecision topicDecision = serveTopic(ctx, uri);
+            if (topicDecision == DispatchDecision.DONE) {
+                return DispatchDecision.DONE;
+            }
         }
 
         if (!languageFound || Strings.areEqual(langAndTopic.getFirst(), NLS.getDefaultLanguage())) {
@@ -97,25 +100,25 @@ public class HelpDispatcher implements WebDispatcher {
         }
     }
 
-    private boolean serveAsset(WebContext ctx, String uri) throws IOException {
+    private DispatchDecision serveAsset(WebContext ctx, String uri) throws IOException {
         Resource asset = resources.resolve(uri).orElse(null);
         if (asset == null) {
-            return false;
+            return DispatchDecision.CONTINUE;
         }
 
         ctx.respondWith().resource(asset.getUrl().openConnection());
-        return true;
+        return DispatchDecision.DONE;
     }
 
-    private boolean serveTopic(WebContext ctx, String uri) {
+    private DispatchDecision serveTopic(WebContext ctx, String uri) {
         Template template = resolveTemplate(uri);
         if (template != null) {
             ctx.respondWith().cached().template(HttpResponseStatus.OK, template);
-            return true;
+            return DispatchDecision.DONE;
         }
 
         UserContext.get().addMessage(Message.error(NLS.get("HelpDispatcher.unknownTopic")));
-        return false;
+        return DispatchDecision.CONTINUE;
     }
 
     private Template resolveTemplate(String uri) {
