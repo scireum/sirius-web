@@ -72,20 +72,25 @@ public class DispatcherPipeline {
     private void dispatch(WebContext webContext, TaskContext context) {
         try {
             webContext.scheduled = System.currentTimeMillis();
-            int leftRestarts = MAX_RESTARTS_PER_REQUEST;
-            for (int index = 0; index < dispatchers.size(); index++) {
+            int leftTries = MAX_RESTARTS_PER_REQUEST * dispatchers.size();
+            int index = 0;
+            while (index < dispatchers.size()) {
                 WebDispatcher dispatcher = dispatchers.get(index);
                 context.setSubSystem(dispatcher.getClass().getSimpleName());
                 WebDispatcher.DispatchDecision decision = dispatcher.dispatch(webContext);
-                if (decision == WebDispatcher.DispatchDecision.DONE) {
-                    return;
-                } else if (decision == WebDispatcher.DispatchDecision.RESTART) {
+                if (decision == WebDispatcher.DispatchDecision.RESTART) {
                     index = 0;
-                    if (leftRestarts-- <= 0) {
-                        throw new IllegalStateException(Strings.apply(
-                                "Dispatcher pipeline restarted more than 3 times for %s, aborting...",
-                                webContext.getRequestedURL()));
-                    }
+                } else if (decision == WebDispatcher.DispatchDecision.CONTINUE) {
+                    index++;
+                } else if (decision == WebDispatcher.DispatchDecision.DONE) {
+                    return;
+                }
+
+                if (leftTries-- <= 0) {
+                    throw new IllegalStateException(Strings.apply(
+                            "Dispatcher pipeline restarted more than %s times for %s, aborting...",
+                            MAX_RESTARTS_PER_REQUEST,
+                            webContext.getRequestedURL()));
                 }
             }
         } catch (Exception e) {
