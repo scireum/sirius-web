@@ -1349,6 +1349,11 @@ public class Response {
                 brb.addHeader(HttpHeaderNames.RANGE.toString(), range);
             }
 
+            // Fine tune request if necessary...
+            if (requestTuner != null) {
+                requestTuner.accept(brb);
+            }
+
             if (WebServer.LOG.isFINE()) {
                 WebServer.LOG.FINE("Tunnel START: %s", url);
             }
