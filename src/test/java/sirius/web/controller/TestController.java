@@ -9,7 +9,6 @@
 package sirius.web.controller;
 
 import com.google.common.io.ByteStreams;
-import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.async.Future;
@@ -103,6 +102,18 @@ public class TestController implements Controller {
         ctx.respondWith()
            .setHeader(HttpHeaderNames.CONTENT_TYPE, "text/test")
            .tunnel("http://localhost:9999/service/json/test");
+    }
+
+    @Routed("/tunnel/test/tune")
+    public void tunnelTuneTest(WebContext ctx) {
+        ctx.respondWith()
+           .setHeader(HttpHeaderNames.CONTENT_TYPE, "text/test")
+           .tunnel("http://localhost:9999/tunnel/test/tune/target", request -> request.setMethod("POST"), null, null);
+    }
+
+    @Routed("/tunnel/test/tune/target")
+    public void tunnelTuneTestTarget(WebContext ctx) {
+        ctx.respondWith().direct(HttpResponseStatus.OK, ctx.getRequest().method().name());
     }
 
     @Routed("/tunnel/fallback_for_404")
@@ -276,7 +287,7 @@ public class TestController implements Controller {
 
         ctx.respondWith().direct(HttpResponseStatus.OK, "OK");
     }
-    
+
     @Routed("/test/redirect-to-get")
     public void redirect(WebContext ctx) {
         ctx.respondWith().redirectToGet("/test/redirect-target");

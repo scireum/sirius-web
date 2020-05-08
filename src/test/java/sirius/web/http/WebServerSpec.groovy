@@ -208,6 +208,18 @@ class WebServerSpec extends BaseSpecification {
     }
 
     /**
+     * Call a controller which tunnels a small file
+     */
+    def "Invoke /tunnel/test/tune with a custom request"() {
+        given:
+        def uri = "/tunnel/test/tune"
+        when:
+        def data = callAndRead(uri, null, null)
+        then:
+        'POST' == data
+    }
+
+    /**
      * Call a controller which tunnels a large file
      */
     def "Invoke /tunnel/test_large"() {
