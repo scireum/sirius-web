@@ -72,6 +72,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
 
@@ -1257,8 +1258,8 @@ public class Response {
      *
      * @param url the url to tunnel through.
      */
-    public void tunnel(final String url) {
-        tunnel(url, null);
+    public void tunnel(String url) {
+        tunnel(url, null, null, null);
     }
 
     /**
@@ -1278,8 +1279,8 @@ public class Response {
      *                       call {@link WebContext#respondWith()} again for the request, as no response was created
      *                       yet.
      */
-    public void tunnel(final String url, @Nullable IntConsumer failureHandler) {
-        tunnel(url, null, failureHandler);
+    public void tunnel(String url, @Nullable IntConsumer failureHandler) {
+        tunnel(url, null, null, failureHandler);
     }
 
     /**
@@ -1301,11 +1302,41 @@ public class Response {
      *                       call {@link WebContext#respondWith()} again for the request, as no response was created
      *                       yet.
      */
-    public void tunnel(final String url,
+    public void tunnel(String url,
+                       @Nullable Processor<ByteBuf, Optional<ByteBuf>> transformer,
+                       @Nullable IntConsumer failureHandler) {
+        tunnel(url, null, transformer, failureHandler);
+    }
+
+    /**
+     * Tunnels the contents retrieved from the given URL as result of this response.
+     * <p>
+     * Caching and range headers will be forwarded and adhered.
+     * <p>
+     * Uses non-blocking APIs in order to maximize throughput. Therefore this can be called in an unforked
+     * dispatcher.
+     * <p>
+     * If the called URL returns an error (&gt;= 400) and the given failureHandler is non null, it is supplied
+     * with the status code and can re-try or answer the request by itself.
+     *
+     * @param url            the url to tunnel through
+     * @param requestTuner   a callback which can enhance the request being sent to the upstream server (e.g. make it
+     *                       a POST request or add additional headers.
+     * @param transformer    the transformer which map / transforms the byte blocks being tunnelled. Note that once
+     *                       all data has been processed an empty buffer is sent to signalize the end of the processing.
+     * @param failureHandler supplies a handler which is invoked if the called URL fails. The handler is provided with
+     *                       the HTTP status code and can (and must) handle the request on its own. It is save to
+     *                       call {@link WebContext#respondWith()} again for the request, as no response was created
+     *                       yet.
+     */
+    public void tunnel(String url,
+                       @Nullable Consumer<AsyncHttpClient.BoundRequestBuilder> requestTuner,
                        @Nullable Processor<ByteBuf, Optional<ByteBuf>> transformer,
                        @Nullable IntConsumer failureHandler) {
         try {
             AsyncHttpClient.BoundRequestBuilder brb = getAsyncClient().prepareGet(url);
+
+            // Adds support for detecting stale cache contents via if-modified-since...
             long ifModifiedSince = wc.getDateHeader(HttpHeaderNames.IF_MODIFIED_SINCE);
             if (ifModifiedSince > 0) {
                 brb.addHeader(HttpHeaderNames.IF_MODIFIED_SINCE.toString(),
@@ -1317,6 +1348,12 @@ public class Response {
             if (Strings.isFilled(range)) {
                 brb.addHeader(HttpHeaderNames.RANGE.toString(), range);
             }
+
+            // Fine tune request if necessary...
+            if (requestTuner != null) {
+                requestTuner.accept(brb);
+            }
+
             if (WebServer.LOG.isFINE()) {
                 WebServer.LOG.FINE("Tunnel START: %s", url);
             }
@@ -1392,9 +1429,9 @@ public class Response {
      * all dispatchers now always fork a new thread to handle requests.
      *
      * @param message the data to sent
-     * @param flush determines if the underlying buffer must be flushed in any case.
-     *              This should be set to <tt>false</tt> in all possible cases so that the underlying netty and
-     *              operating system can optimize the effective block size for data being sent over the network.
+     * @param flush   determines if the underlying buffer must be flushed in any case.
+     *                This should be set to <tt>false</tt> in all possible cases so that the underlying netty and
+     *                operating system can optimize the effective block size for data being sent over the network.
      */
     protected void contentionAwareWrite(Object message, boolean flush) {
         if (!ctx.channel().isWritable()) {
