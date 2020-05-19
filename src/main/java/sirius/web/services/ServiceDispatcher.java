@@ -26,6 +26,7 @@ import sirius.web.security.Permissions;
 import sirius.web.security.UserContext;
 import sirius.web.security.UserInfo;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 /**
@@ -44,6 +45,7 @@ public class ServiceDispatcher implements WebDispatcher {
     private GlobalContext gc;
 
     @Part
+    @Nullable
     private Firewall firewall;
 
     @Override

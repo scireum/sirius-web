@@ -33,6 +33,7 @@ import sirius.web.http.WebDispatcher;
 import sirius.web.security.UserContext;
 import sirius.web.services.JSONStructuredOutput;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.channels.ClosedChannelException;
@@ -66,6 +67,7 @@ public class ControllerDispatcher implements WebDispatcher {
     private Tasks tasks;
 
     @Part
+    @Nullable
     private Firewall firewall;
 
     /**

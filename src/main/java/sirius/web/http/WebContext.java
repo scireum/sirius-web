@@ -307,6 +307,7 @@ public class WebContext implements SubContext {
      * This value should not have a leading dot.
      */
     @ConfigValue("http.cookieDomain")
+    @Nullable
     private static String cookieDomain;
 
     /**
@@ -352,6 +353,7 @@ public class WebContext implements SubContext {
     protected static int hstsMaxAge;
 
     @Part
+    @Nullable
     private static SessionSecretComputer sessionSecretComputer;
 
     @Part

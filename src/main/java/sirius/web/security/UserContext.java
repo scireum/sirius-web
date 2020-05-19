@@ -60,6 +60,7 @@ public class UserContext implements SubContext {
     public static final Log LOG = Log.get("user");
 
     @Part
+    @Nullable
     private static ScopeDetector detector;
 
     @Part

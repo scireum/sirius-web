@@ -16,6 +16,7 @@ import io.netty.handler.timeout.IdleStateHandler;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
@@ -29,6 +30,7 @@ class WebServerInitializer extends ChannelInitializer<SocketChannel> {
     private Duration idleTimeout;
 
     @Part
+    @Nullable
     private static WebsocketDispatcher websocketDispatcher;
 
     protected WebServerInitializer() {

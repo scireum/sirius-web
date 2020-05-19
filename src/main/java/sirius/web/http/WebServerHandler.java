@@ -37,6 +37,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 import sirius.web.security.UserContext;
 
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLHandshakeException;
 import java.io.File;
 import java.io.IOException;
@@ -77,6 +78,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     private static DispatcherPipeline pipeline;
 
     @Part
+    @Nullable
     private static Firewall firewall;
 
     @ConfigValue("http.maxKeepalive")

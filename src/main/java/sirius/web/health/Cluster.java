@@ -18,6 +18,7 @@ import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.health.metrics.Metrics;
 import sirius.kernel.timer.EveryMinute;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -91,6 +92,7 @@ public class Cluster implements EveryMinute {
     private Metrics metrics;
 
     @Part
+    @Nullable
     private ClusterManager manager;
 
     /**
