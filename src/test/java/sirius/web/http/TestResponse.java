@@ -192,7 +192,7 @@ public class TestResponse extends Response {
     public XMLStructuredInput getContentAsXML() {
         if (xmlContent == null) {
             try {
-                xmlContent = new XMLStructuredInput(new ByteArrayInputStream(content), true);
+                xmlContent = new XMLStructuredInput(new ByteArrayInputStream(content), null);
             } catch (IOException e) {
                 throw Exceptions.handle(e);
             }

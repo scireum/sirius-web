@@ -1769,7 +1769,9 @@ public class WebContext implements SubContext {
                                 .handle();
             }
             if (content.isInMemory()) {
-                return new XMLStructuredInput(new ByteArrayInputStream(content.get()), true);
+                try(InputStream inputStream = new ByteArrayInputStream(content.get())) {
+                    return new XMLStructuredInput(inputStream, null);
+                }
             } else {
                 if (content.getFile().length() > maxStructuredInputSize && maxStructuredInputSize > 0) {
                     throw Exceptions.handle()
@@ -1779,7 +1781,10 @@ public class WebContext implements SubContext {
                                             maxStructuredInputSize)
                                     .handle();
                 }
-                return new XMLStructuredInput(new FileInputStream(content.getFile()), true);
+
+                try(InputStream inputStream =  new FileInputStream(content.getFile())) {
+                    return new XMLStructuredInput(inputStream, null);
+                }
             }
         } catch (HandledException e) {
             throw e;
