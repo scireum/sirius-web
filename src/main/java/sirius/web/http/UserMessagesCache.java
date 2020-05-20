@@ -16,6 +16,7 @@ import sirius.kernel.di.std.Register;
 import sirius.web.controller.Message;
 import sirius.web.security.UserContext;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -31,6 +32,7 @@ public class UserMessagesCache {
     private static final String CACHED_MESSAGES_ID = "cachedMessagesId";
 
     @Part
+    @Nullable
     private DistributedUserMessageCache distributedUserMessageCache;
 
     private Cache<String, List<Message>> localUserMessageCache;
