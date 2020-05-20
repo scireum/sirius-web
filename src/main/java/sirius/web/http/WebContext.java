@@ -1769,7 +1769,7 @@ public class WebContext implements SubContext {
                                 .handle();
             }
             if (content.isInMemory()) {
-                try(InputStream inputStream = new ByteArrayInputStream(content.get())) {
+                try (InputStream inputStream = new ByteArrayInputStream(content.get())) {
                     return new XMLStructuredInput(inputStream, null);
                 }
             } else {
@@ -1782,7 +1782,7 @@ public class WebContext implements SubContext {
                                     .handle();
                 }
 
-                try(InputStream inputStream =  new FileInputStream(content.getFile())) {
+                try (InputStream inputStream = new FileInputStream(content.getFile())) {
                     return new XMLStructuredInput(inputStream, null);
                 }
             }
