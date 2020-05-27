@@ -8,10 +8,11 @@
 
 package sirius.web.health;
 
-import com.google.common.collect.Lists;
 import sirius.kernel.health.metrics.Metric;
 import sirius.kernel.health.metrics.MetricState;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -23,7 +24,7 @@ public class NodeInfo {
     private String endpoint;
     private String uptime;
     private MetricState nodeState;
-    private List<Metric> metrics = Lists.newArrayList();
+    private List<Metric> metrics = new ArrayList<>();
 
     /**
      * Returns the name of the node.

@@ -8,13 +8,11 @@
 
 package sirius.web.security;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.io.CharStreams;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Reflection;
+import sirius.kernel.commons.Streams;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.ValueHolder;
 import sirius.kernel.di.GlobalContext;
@@ -32,9 +30,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
@@ -64,8 +65,8 @@ public class ScopeInfo extends Composable {
     private String lang;
     private Function<ScopeInfo, Config> configSupplier;
     private Function<ScopeInfo, Object> scopeSupplier;
-    private Map<Class<?>, Object> helpersByType = Maps.newConcurrentMap();
-    private Map<String, Object> helpersByName = Maps.newConcurrentMap();
+    private Map<Class<?>, Object> helpersByType = new ConcurrentHashMap<>();
+    private Map<String, Object> helpersByName = new ConcurrentHashMap<>();
     private UserSettings settings;
     private UserManager userManager;
 
@@ -314,7 +315,7 @@ public class ScopeInfo extends Composable {
         if (scopeDefaultConfigFiles == null) {
             determineScopeConfigFiles();
         }
-        return Lists.newArrayList(scopeDefaultConfigFiles.keySet());
+        return new ArrayList<>(scopeDefaultConfigFiles.keySet());
     }
 
     /**
@@ -340,7 +341,7 @@ public class ScopeInfo extends Composable {
                 return "";
             }
 
-            return CharStreams.toString(new InputStreamReader(contents, StandardCharsets.UTF_8));
+            return Streams.readToString(new InputStreamReader(contents, StandardCharsets.UTF_8));
         } catch (IOException e) {
             Exceptions.ignore(e);
             return "";
@@ -364,7 +365,7 @@ public class ScopeInfo extends Composable {
     }
 
     private static void determineScopeConfigFiles() {
-        final Map<String, String> configFiles = Maps.newLinkedHashMap();
+        final Map<String, String> configFiles = new LinkedHashMap<>();
         final ValueHolder<Config> configHolder = ValueHolder.of(ConfigFactory.empty());
 
         collectDefaultConfigFiles(configFiles, configHolder);

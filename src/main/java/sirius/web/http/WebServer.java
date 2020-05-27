@@ -8,7 +8,6 @@
 
 package sirius.web.http;
 
-import com.google.common.collect.Maps;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -53,6 +52,7 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -182,7 +182,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     protected static AtomicLong clientErrors = new AtomicLong();
     protected static AtomicLong serverErrors = new AtomicLong();
     protected static AtomicLong websockets = new AtomicLong();
-    protected static Map<WebServerHandler, ActiveHTTPConnection> openConnections = Maps.newConcurrentMap();
+    protected static Map<WebServerHandler, ActiveHTTPConnection> openConnections = new ConcurrentHashMap<>();
     protected static Average responseTime = new Average();
     protected static Average timeToFirstByte = new Average();
     protected static Average queueTime = new Average();

@@ -8,7 +8,6 @@
 
 package sirius.web.templates;
 
-import com.google.common.collect.Lists;
 import sirius.kernel.Sirius;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
@@ -19,6 +18,7 @@ import sirius.kernel.health.Log;
 import sirius.kernel.settings.Extension;
 import sirius.web.resources.Resources;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -146,7 +146,7 @@ public class Templates {
      * @see sirius.kernel.settings.ExtendedSettings
      */
     public List<String> getExtensions(String key) {
-        List<String> result = Lists.newArrayList();
+        List<String> result = new ArrayList<>();
         for (Extension e : Sirius.getSettings().getExtensions("content.extensions." + key)) {
             if (Sirius.isFrameworkEnabled(e.get("framework").asString())) {
                 result.add(e.get("template").asString());

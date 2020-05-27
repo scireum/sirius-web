@@ -8,7 +8,6 @@
 
 package sirius.web.http;
 
-import com.google.common.base.Charsets;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import sirius.kernel.commons.Value;
 

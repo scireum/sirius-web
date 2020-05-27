@@ -8,14 +8,13 @@
 
 package sirius.web.dispatch;
 
-import com.google.common.base.Charsets;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.di.std.Register;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 
 import java.io.OutputStream;
-import java.util.function.Consumer;
+import java.nio.charset.StandardCharsets;
 
 @Register
 public class TestDispatcher implements WebDispatcher {
@@ -31,7 +30,7 @@ public class TestDispatcher implements WebDispatcher {
             // See WebServerSpec->"Invoke /large-blocking-calls with GET" to the appropriate test and explanation...
             OutputStream out = ctx.respondWith().outputStream(HttpResponseStatus.OK, "text/plain");
             for (int i = 0; i < 10000000; i++) {
-                out.write("THISISLARGECONTENT".getBytes(Charsets.UTF_8));
+                out.write("THISISLARGECONTENT".getBytes(StandardCharsets.UTF_8));
             }
             out.close();
             return DispatchDecision.DONE;

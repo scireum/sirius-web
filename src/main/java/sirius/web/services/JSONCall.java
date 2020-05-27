@@ -10,8 +10,7 @@ package sirius.web.services;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.google.common.base.Charsets;
-import com.google.common.io.ByteStreams;
+import sirius.kernel.commons.Streams;
 import sirius.kernel.xml.Outcall;
 
 import java.io.IOException;
@@ -84,7 +83,7 @@ public class JSONCall {
      * @throws IOException in case of an IO error while receiving the result
      */
     public JSONObject getInput() throws IOException {
-        return JSON.parseObject(new String(ByteStreams.toByteArray(outcall.getInput()), outcall.getContentEncoding()));
+        return JSON.parseObject(new String(Streams.toByteArray(outcall.getInput()), outcall.getContentEncoding()));
     }
 
     /**

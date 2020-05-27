@@ -9,10 +9,10 @@
 package sirius.web.http
 
 import com.alibaba.fastjson.JSON
-import com.google.common.io.ByteStreams
 import org.apache.commons.io.Charsets
 import sirius.kernel.BaseSpecification
 import sirius.kernel.Scope
+import sirius.kernel.commons.Streams
 
 /**
  * Simulates "real" uploads through netty and sirius.
@@ -29,11 +29,11 @@ class UploadSpec extends BaseSpecification {
         connection.setDoOutput(true)
         connection.setRequestMethod("POST")
         OutputStream outputStream = connection.getOutputStream()
-        ByteStreams.copy(inputStream, outputStream)
+        Streams.transfer(inputStream, outputStream)
         inputStream.close()
         outputStream.flush()
 
-        return new String(ByteStreams.toByteArray(connection.getInputStream()), Charsets.UTF_8)
+        return new String(ByteStreams.toByteArray(connection.getInputStream()), StandardCharsets.UTF_8)
     }
 
     def "Uploads a file to /upload-test"() {

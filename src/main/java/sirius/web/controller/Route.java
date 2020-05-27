@@ -8,7 +8,6 @@
 
 package sirius.web.controller;
 
-import com.google.common.collect.Lists;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
@@ -80,7 +79,7 @@ public class Route {
         result.jsonCall = routed.jsonCall();
         result.preDispatchable = routed.preDispatchable();
         result.permissions = Permissions.computePermissionsFromAnnotations(method);
-        List<Class<?>> parameterTypes = Lists.newArrayList(Arrays.asList(method.getParameterTypes()));
+        List<Class<?>> parameterTypes = new ArrayList<>(Arrays.asList(method.getParameterTypes()));
 
         if (!routed.value().startsWith("/")) {
             throw new IllegalArgumentException("Route does not start with /");
@@ -225,7 +224,7 @@ public class Route {
     }
 
     private List<Object> extractRouteParameters(WebContext ctx, Matcher m) {
-        List<Object> result = Lists.newArrayListWithCapacity(parameterTypes.length);
+        List<Object> result = new ArrayList<>(parameterTypes.length);
         for (int i = 1; i <= m.groupCount(); i++) {
             Tuple<String, Object> expr = expressions.get(i - 1);
             String value = decodeParameter(m.group(i));

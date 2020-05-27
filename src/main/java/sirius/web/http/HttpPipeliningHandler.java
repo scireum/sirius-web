@@ -8,7 +8,6 @@
 
 package sirius.web.http;
 
-import com.google.common.collect.Lists;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -18,6 +17,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.ReferenceCounted;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,7 +31,7 @@ import java.util.List;
 public class HttpPipeliningHandler extends ChannelDuplexHandler {
 
     private HttpRequest currentRequest;
-    private List<HttpRequest> bufferedRequests = Lists.newArrayList();
+    private List<HttpRequest> bufferedRequests = new ArrayList<>();
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {

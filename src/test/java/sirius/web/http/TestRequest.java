@@ -9,7 +9,6 @@
 package sirius.web.http;
 
 import com.alibaba.fastjson.JSONObject;
-import com.google.common.collect.Lists;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
@@ -39,6 +38,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,7 +68,7 @@ public class TestRequest extends WebContext implements HttpRequest {
     private InputStream resource;
     private HttpMethod testMethod;
     private boolean preDispatch;
-    private List<Cookie> testCookies = Lists.newArrayList();
+    private List<Cookie> testCookies = new ArrayList<>();
     protected Promise<TestResponse> testResponsePromise = new Promise<>();
     private Map<String, String> testSession;
     protected boolean followRedirect = false;

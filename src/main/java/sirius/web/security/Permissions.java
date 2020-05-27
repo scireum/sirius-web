@@ -8,7 +8,6 @@
 
 package sirius.web.security;
 
-import com.google.common.collect.Sets;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
@@ -24,6 +23,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Predicate;
 
 /**
@@ -119,7 +119,7 @@ public class Permissions {
             return Collections.emptySet();
         }
 
-        Set<String> result = Sets.newTreeSet();
+        Set<String> result = new TreeSet<>();
         for (Permission p : object.getAnnotationsByType(Permission.class)) {
             result.add(p.value());
         }

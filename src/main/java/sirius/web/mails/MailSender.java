@@ -8,8 +8,6 @@
 
 package sirius.web.mails;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Context;
@@ -30,10 +28,12 @@ import javax.activation.DataSource;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.mail.internet.InternetAddress;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Implements the builder pattern to specify the mail to send.
@@ -59,10 +59,10 @@ public class MailSender {
     protected String text;
     protected String html;
     protected String type;
-    protected List<DataSource> attachments = Lists.newArrayList();
+    protected List<DataSource> attachments = new ArrayList<>();
     protected String bounceToken;
     protected String lang;
-    protected Map<String, String> headers = Maps.newTreeMap();
+    protected Map<String, String> headers =new TreeMap<>();
 
     @Part
     private static Mails mails;

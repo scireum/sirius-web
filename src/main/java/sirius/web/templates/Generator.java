@@ -8,7 +8,6 @@
 
 package sirius.web.templates;
 
-import com.google.common.base.Charsets;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Strings;

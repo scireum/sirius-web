@@ -8,14 +8,12 @@
 
 package sirius.web.security;
 
-import com.google.common.base.Charsets;
-import com.google.common.hash.Hashing;
-import com.google.common.io.BaseEncoding;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import sirius.kernel.commons.Explain;
+import sirius.kernel.commons.Hasher;
 import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
@@ -89,7 +87,7 @@ public class SAMLHelper {
      * @return a base64 encoded SAML2 request which can be posted to an identity provider
      */
     public String generateAuthenticationRequest(String issuer, String issuerIndex) {
-        return BaseEncoding.base64().encode(createAuthenticationRequestXML(issuer, issuerIndex));
+        return Base64.getEncoder().encodeToString(createAuthenticationRequestXML(issuer, issuerIndex));
     }
 
     private byte[] createAuthenticationRequestXML(String issuer, String issuerIndex) {
@@ -267,7 +265,7 @@ public class SAMLHelper {
         }
 
         X509Certificate certificate = ((X509CertificateResult) signature.getKeySelectorResult()).getCert();
-        return Hashing.sha1().hashBytes(certificate.getEncoded()).toString().toLowerCase();
+        return Hasher.sha1().hashBytes(certificate.getEncoded()).toHexString().toLowerCase();
     }
 
     /**
