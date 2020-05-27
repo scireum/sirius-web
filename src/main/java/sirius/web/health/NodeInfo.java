@@ -86,7 +86,7 @@ public class NodeInfo {
      * @return a list of all known metrics of the node
      */
     public List<Metric> getMetrics() {
-        return metrics;
+        return Collections.synchronizedList(metrics);
     }
 
     /**
