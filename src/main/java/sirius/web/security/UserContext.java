@@ -343,7 +343,7 @@ public class UserContext implements SubContext {
      * @return a list of "real" messages which were created while processing the current request
      */
     public List<Message> getUserSpecificMessages() {
-        return msgList;
+        return Collections.unmodifiableList(msgList);
     }
 
     /**
