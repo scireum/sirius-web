@@ -48,7 +48,7 @@ public class HttpPipeliningHandler extends ChannelDuplexHandler {
         // we continue with the pipeline. This is especially required for web sockets,
         // which receive WebsocketFrames after the request and LastHttpContent were
         // received....
-        if (currentRequest == null || (currentRequest != null && bufferedRequests.isEmpty())) {
+        if (currentRequest == null || bufferedRequests.isEmpty()) {
             ctx.fireChannelRead(msg);
             return;
         }
@@ -72,7 +72,7 @@ public class HttpPipeliningHandler extends ChannelDuplexHandler {
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         super.write(ctx, msg, promise);
-        if (msg instanceof FullHttpResponse || msg instanceof LastHttpContent) {
+        if (msg instanceof LastHttpContent) {
             if (currentRequest == null) {
                 throw new IllegalStateException("Received a response without a request");
             }
