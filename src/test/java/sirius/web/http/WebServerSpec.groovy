@@ -15,7 +15,6 @@ import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.http.*
-import org.apache.log4j.Level
 import sirius.kernel.BaseSpecification
 import sirius.kernel.Scope
 import sirius.kernel.commons.Streams
@@ -24,6 +23,8 @@ import sirius.kernel.commons.Wait
 import sirius.kernel.health.LogHelper
 
 import java.nio.charset.StandardCharsets
+import java.util.logging.Level
+
 /**
  * Simulates a bunch of "real" (outside) requests through netty and sirius.
  * <p>
@@ -188,7 +189,7 @@ class WebServerSpec extends BaseSpecification {
         and:
         def data = callAndRead(uri, null, expectedHeaders)
         then: "We expect a warning as the server was unable to send an error"
-        LogHelper.hasMessage(Level.WARN, "services", "Cannot send service error for.*")
+        LogHelper.hasMessage(Level.WARNING, "services", "Cannot send service error for.*")
         and: "As the connection is closed due to an inconsistent state, an IO exception will occur on the client side"
         thrown(IOException)
     }
