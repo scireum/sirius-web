@@ -8,9 +8,6 @@
 
 package sirius.web.mails;
 
-import com.google.common.base.Charsets;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import net.markenwerk.utils.mail.dkim.Canonicalization;
 import net.markenwerk.utils.mail.dkim.DkimMessage;
 import net.markenwerk.utils.mail.dkim.DkimSigner;
@@ -39,12 +36,14 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Contains the effective logic to send a mail in its own task queue.
@@ -263,7 +262,7 @@ class SendMailTask implements Runnable {
 
     private static boolean isDkimDomain(String domain) {
         if (dkimDomainSet == null) {
-            dkimDomainSet = Sets.newTreeSet(dkimDomains);
+            dkimDomainSet = new TreeSet<>(dkimDomains);
         }
 
         return dkimDomainSet.contains(domain);
@@ -411,7 +410,7 @@ class SendMailTask implements Runnable {
         // as alternative body part for the given html and text part
         // Therefore we split the attachments into these two categories and then generate
         // the appropriate parts...
-        List<DataSource> mixedAttachments = Lists.newArrayList();
+        List<DataSource> mixedAttachments = new ArrayList<>();
         for (DataSource attachment : attachments) {
             // Filter null values since var-args are tricky...
             if (attachment != null) {

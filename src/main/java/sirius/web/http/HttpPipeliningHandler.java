@@ -8,7 +8,6 @@
 
 package sirius.web.http;
 
-import com.google.common.collect.Lists;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -18,6 +17,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.ReferenceCounted;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,7 +31,7 @@ import java.util.List;
 public class HttpPipeliningHandler extends ChannelDuplexHandler {
 
     private HttpRequest currentRequest;
-    private List<HttpRequest> bufferedRequests = Lists.newArrayList();
+    private List<HttpRequest> bufferedRequests = new ArrayList<>();
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -48,7 +48,7 @@ public class HttpPipeliningHandler extends ChannelDuplexHandler {
         // we continue with the pipeline. This is especially required for web sockets,
         // which receive WebsocketFrames after the request and LastHttpContent were
         // received....
-        if (currentRequest == null || (currentRequest != null && bufferedRequests.isEmpty())) {
+        if (currentRequest == null || bufferedRequests.isEmpty()) {
             ctx.fireChannelRead(msg);
             return;
         }
@@ -72,7 +72,7 @@ public class HttpPipeliningHandler extends ChannelDuplexHandler {
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         super.write(ctx, msg, promise);
-        if (msg instanceof FullHttpResponse || msg instanceof LastHttpContent) {
+        if (msg instanceof LastHttpContent) {
             if (currentRequest == null) {
                 throw new IllegalStateException("Received a response without a request");
             }

@@ -8,11 +8,12 @@
 
 package sirius.web.http
 
-import com.google.common.base.Charsets
-import com.google.common.io.ByteStreams
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpResponseStatus
 import sirius.kernel.BaseSpecification
+import sirius.kernel.commons.Streams
+
+import java.nio.charset.StandardCharsets
 
 class CSRFTokenSpec extends BaseSpecification {
 
@@ -28,7 +29,7 @@ class CSRFTokenSpec extends BaseSpecification {
         HttpURLConnection c = new URL("http://localhost:9999/test/provide-security-token").openConnection()
         c.setRequestMethod("GET")
         c.connect()
-        def token = new String(ByteStreams.toByteArray(c.getInputStream()), Charsets.UTF_8)
+        def token = new String(Streams.toByteArray(c.getInputStream()), StandardCharsets.UTF_8)
 
         when:
         def result = TestRequest.GET("/test/fake-delete-data?CSRFToken=" + token).execute()
@@ -55,7 +56,7 @@ class CSRFTokenSpec extends BaseSpecification {
         HttpURLConnection c = new URL("http://localhost:9999/test/provide-security-token").openConnection()
         c.setRequestMethod("GET")
         c.connect()
-        def token = new String(ByteStreams.toByteArray(c.getInputStream()), Charsets.UTF_8)
+        def token = new String(Streams.toByteArray(c.getInputStream()), StandardCharsets.UTF_8)
 
         when:
         HttpURLConnection c2 = new URL(
@@ -72,9 +73,9 @@ class CSRFTokenSpec extends BaseSpecification {
         HttpURLConnection c = new URL("http://localhost:9999/test/provide-security-token").openConnection()
         c.setRequestMethod("GET")
         c.connect()
-        def token = new String(ByteStreams.toByteArray(c.getInputStream()), Charsets.UTF_8)
+        def token = new String(Streams.toByteArray(c.getInputStream()), StandardCharsets.UTF_8)
         TestRequest.GET("/test/expire-security-token").execute()
-        
+
         when:
         HttpURLConnection c2 = new URL(
                 "http://localhost:9999/test/fake-delete-data?CSRFToken=" + token).openConnection()
@@ -90,7 +91,7 @@ class CSRFTokenSpec extends BaseSpecification {
         HttpURLConnection c = new URL("http://localhost:9999/test/provide-security-token").openConnection()
         c.setRequestMethod("GET")
         c.connect()
-        def token = new String(ByteStreams.toByteArray(c.getInputStream()), Charsets.UTF_8)
+        def token = new String(Streams.toByteArray(c.getInputStream()), StandardCharsets.UTF_8)
 
         when:
         HttpURLConnection c2 = new URL("http://localhost:9999/test/fake-delete-data?CSRFToken=w-r-o-n-g-t-o-k-e-n").
@@ -138,7 +139,7 @@ class CSRFTokenSpec extends BaseSpecification {
         HttpURLConnection c = new URL("http://localhost:9999/test/provide-security-token").openConnection()
         c.setRequestMethod("GET")
         c.connect()
-        def token = new String(ByteStreams.toByteArray(c.getInputStream()), Charsets.UTF_8)
+        def token = new String(Streams.toByteArray(c.getInputStream()), StandardCharsets.UTF_8)
 
         when:
         HttpURLConnection c2 = new URL("http://localhost:9999/test/fake-delete-data-ensure-safe?CSRFToken=" + token).

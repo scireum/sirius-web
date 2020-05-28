@@ -8,18 +8,18 @@
 
 package sirius.web.http;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Queues;
-import com.google.common.io.ByteStreams;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import sirius.kernel.commons.Explain;
+import sirius.kernel.commons.Streams;
 import sirius.kernel.health.Exceptions;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -126,7 +126,7 @@ public class InputStreamHandler extends InputStream implements ContentHandler {
         this.readTimeout = readTimeout;
         this.writeTimeout = writeTimeout;
         this.unit = unit;
-        transferQueue = Queues.newArrayBlockingQueue(bufferDepth);
+        transferQueue = new ArrayBlockingQueue<>(bufferDepth);
     }
 
     @Override
@@ -202,7 +202,7 @@ public class InputStreamHandler extends InputStream implements ContentHandler {
 
             // Drain queue und release all data.
             while (!transferQueue.isEmpty()) {
-                List<ByteBuf> unwanted = Lists.newArrayListWithCapacity(transferQueue.size());
+                List<ByteBuf> unwanted = new ArrayList<>(transferQueue.size());
                 transferQueue.drainTo(unwanted);
                 for (ByteBuf buf : unwanted) {
                     buf.release();
@@ -300,7 +300,7 @@ public class InputStreamHandler extends InputStream implements ContentHandler {
     public void exhaust() {
         try {
             if (!eof && !error) {
-                ByteStreams.exhaust(this);
+                Streams.exhaust(this);
             }
         } catch (IOException e) {
             Exceptions.ignore(e);

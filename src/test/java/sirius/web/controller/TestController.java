@@ -8,11 +8,11 @@
 
 package sirius.web.controller;
 
-import com.google.common.io.ByteStreams;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.async.Future;
 import sirius.kernel.async.Tasks;
+import sirius.kernel.commons.Streams;
 import sirius.kernel.commons.Wait;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
@@ -202,7 +202,7 @@ public class TestController implements Controller {
     @Routed(value = "/upload-test", preDispatchable = true, jsonCall = true)
     public void uploadTest(WebContext ctx, JSONStructuredOutput out, InputStreamHandler upload) throws IOException {
         try {
-            long size = ByteStreams.exhaust(upload);
+            long size = Streams.exhaust(upload);
             out.property("size", size);
         } finally {
             upload.close();

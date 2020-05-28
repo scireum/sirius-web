@@ -8,7 +8,6 @@
 
 package sirius.web.http;
 
-import com.google.common.collect.Sets;
 import com.ning.http.client.AsyncHandler;
 import com.ning.http.client.FluentCaseInsensitiveStringsMap;
 import com.ning.http.client.HttpResponseBodyPart;
@@ -34,6 +33,9 @@ import sirius.kernel.health.HandledException;
 import sirius.kernel.nls.NLS;
 
 import java.nio.channels.ClosedChannelException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -46,12 +48,12 @@ import java.util.stream.Collectors;
  */
 class TunnelHandler implements AsyncHandler<String> {
 
-    private static final Set<String> NON_TUNNELLED_HEADERS =
-            Sets.newHashSet(HttpHeaderNames.TRANSFER_ENCODING.toString(),
-                            HttpHeaderNames.SERVER.toString(),
-                            HttpHeaderNames.CONTENT_ENCODING.toString(),
-                            HttpHeaderNames.EXPIRES.toString(),
-                            HttpHeaderNames.CACHE_CONTROL.toString());
+    private static final Set<String> NON_TUNNELLED_HEADERS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+            HttpHeaderNames.TRANSFER_ENCODING.toString(),
+            HttpHeaderNames.SERVER.toString(),
+            HttpHeaderNames.CONTENT_ENCODING.toString(),
+            HttpHeaderNames.EXPIRES.toString(),
+            HttpHeaderNames.CACHE_CONTROL.toString())));
 
     private Response response;
     private WebContext webContext;
@@ -219,9 +221,9 @@ class TunnelHandler implements AsyncHandler<String> {
                 completeResponse(bodyPart);
             } else if (transformer != null) {
                 ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
-                transformer.apply(data).map(DefaultHttpContent::new).ifPresent(message -> response.contentionAwareWrite(
-                        message,
-                        false));
+                transformer.apply(data)
+                           .map(DefaultHttpContent::new)
+                           .ifPresent(message -> response.contentionAwareWrite(message, false));
                 data.release();
             } else {
                 ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());

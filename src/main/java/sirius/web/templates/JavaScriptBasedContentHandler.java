@@ -8,7 +8,6 @@
 
 package sirius.web.templates;
 
-import com.google.common.base.Charsets;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;

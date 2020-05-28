@@ -8,7 +8,6 @@
 
 package sirius.web.data;
 
-import com.google.common.base.Charsets;
 import sirius.kernel.async.TaskContext;
 import sirius.kernel.commons.BOMReader;
 import sirius.kernel.commons.CSVReader;

@@ -8,11 +8,11 @@
 
 package sirius.tagliatelle.compiler;
 
-import com.google.common.io.CharStreams;
 import parsii.tokenizer.Char;
 import parsii.tokenizer.LookaheadReader;
 import parsii.tokenizer.ParseError;
 import parsii.tokenizer.Position;
+import sirius.kernel.commons.Streams;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.health.Exceptions;
@@ -163,7 +163,7 @@ public class Compiler extends InputProcessor {
      */
     private List<String> getInputAsLines() {
         try {
-            return CharStreams.readLines(new StringReader(input));
+            return Streams.readLines(new StringReader(input));
         } catch (IOException e) {
             Exceptions.ignore(e);
         }

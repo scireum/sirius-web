@@ -10,14 +10,12 @@ package sirius.web.http;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.google.common.base.Charsets;
-import com.google.common.collect.Lists;
-import com.google.common.io.ByteStreams;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
+import sirius.kernel.commons.Streams;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.health.Exceptions;
@@ -35,7 +33,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -75,7 +76,7 @@ public class TestResponse extends Response {
     private ResponseType type;
     private HttpResponseStatus status;
     private String templateName;
-    private List<Object> templateParameters = Lists.newArrayList();
+    private List<Object> templateParameters = new ArrayList<>();
     private String redirectUrl;
     private File file;
     private byte[] content;
@@ -120,7 +121,7 @@ public class TestResponse extends Response {
      * @return the template parameters used to render the response
      */
     public List<Object> getTemplateParameters() {
-        return templateParameters;
+        return Collections.unmodifiableList(templateParameters);
     }
 
     /**
@@ -179,7 +180,7 @@ public class TestResponse extends Response {
     }
 
     public String getContentAsString() {
-        return new String(content, Charsets.UTF_8);
+        return new String(content, StandardCharsets.UTF_8);
     }
 
     public JSONObject getContentAsJson() {
@@ -307,7 +308,7 @@ public class TestResponse extends Response {
         try {
             type = ResponseType.RESOURCE;
             status = HttpResponseStatus.OK;
-            content = ByteStreams.toByteArray(urlConnection.getInputStream());
+            content = Streams.toByteArray(urlConnection.getInputStream());
             completeResponse();
         } catch (IOException e) {
             innerCallContext = CallContext.getCurrent();
@@ -327,7 +328,7 @@ public class TestResponse extends Response {
     public void direct(HttpResponseStatus status, String content) {
         type = ResponseType.DIRECT;
         this.status = status;
-        this.content = content.getBytes(Charsets.UTF_8);
+        this.content = content.getBytes(StandardCharsets.UTF_8);
         completeResponse();
     }
 
@@ -348,7 +349,7 @@ public class TestResponse extends Response {
     @Override
     protected void sendTemplateContent(HttpResponseStatus status, String name, String content) {
         this.status = status;
-        this.content = content.getBytes(Charsets.UTF_8);
+        this.content = content.getBytes(StandardCharsets.UTF_8);
         completeResponse();
     }
 

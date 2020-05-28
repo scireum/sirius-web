@@ -8,12 +8,12 @@
 
 package sirius.web.http;
 
-import com.google.common.collect.Lists;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 
 import java.math.BigInteger;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -123,7 +123,7 @@ public class IPRange {
     @Explain("We really mean localhost here.")
     private static RangeSet createLocalHostRangeSet() {
         RangeSet result = new RangeSet();
-        result.ranges = Lists.newArrayList();
+        result.ranges = new ArrayList<>();
         // Do not use the constants defined above, as these might not be initialized yet.
         // As the definition of localhost shouldn't change, we live with double defined constants rather than
         // using static/lazy initializer magic...
@@ -143,7 +143,7 @@ public class IPRange {
     public static RangeSet parseRangeSet(String commaSeparatedListOfRanges) {
         RangeSet result = new RangeSet();
         if (Strings.isFilled(commaSeparatedListOfRanges)) {
-            result.ranges = Lists.newArrayList();
+            result.ranges = new ArrayList<>();
             for (String range : commaSeparatedListOfRanges.replace(" ", "").split("[,;]")) {
                 if (Strings.isFilled(range)) {
                     result.ranges.add(IPRange.parseRange(range.trim()));

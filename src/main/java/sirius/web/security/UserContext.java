@@ -8,8 +8,6 @@
 
 package sirius.web.security;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.SubContext;
@@ -24,8 +22,10 @@ import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -82,9 +82,9 @@ public class UserContext implements SubContext {
 
     private ScopeInfo currentScope = null;
     private boolean fetchingCurrentScope = false;
-    private List<Message> msgList = Lists.newArrayList();
-    private Map<String, String> fieldErrors = Maps.newHashMap();
-    private Map<String, String> fieldErrorMessages = Maps.newHashMap();
+    private List<Message> msgList = new ArrayList<>();
+    private Map<String, String> fieldErrors = new HashMap<>();
+    private Map<String, String> fieldErrorMessages = new HashMap<>();
     private boolean addedAdditionalMessages = false;
 
     /**
@@ -343,7 +343,7 @@ public class UserContext implements SubContext {
      * @return a list of "real" messages which were created while processing the current request
      */
     public List<Message> getUserSpecificMessages() {
-        return msgList;
+        return Collections.unmodifiableList(msgList);
     }
 
     /**

@@ -9,21 +9,21 @@
 package sirius.web.http
 
 import com.alibaba.fastjson.JSON
-import com.google.common.base.Charsets
-import com.google.common.collect.Lists
-import com.google.common.io.ByteStreams
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.*
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.http.*
-import org.apache.log4j.Level
 import sirius.kernel.BaseSpecification
 import sirius.kernel.Scope
+import sirius.kernel.commons.Streams
 import sirius.kernel.commons.Strings
 import sirius.kernel.commons.Wait
 import sirius.kernel.health.LogHelper
+
+import java.nio.charset.StandardCharsets
+import java.util.logging.Level
 
 /**
  * Simulates a bunch of "real" (outside) requests through netty and sirius.
@@ -37,7 +37,7 @@ class WebServerSpec extends BaseSpecification {
         URLConnection c = new URL("http://localhost:9999" + uri).openConnection()
         outHeaders.each { k, v -> c.addRequestProperty(k, v) }
         c.connect()
-        def result = new String(ByteStreams.toByteArray(c.getInputStream()), Charsets.UTF_8)
+        def result = new String(Streams.toByteArray(c.getInputStream()), StandardCharsets.UTF_8)
         expectedHeaders.each { k, v ->
             if ("*" == v) {
                 if (Strings.isEmpty(c.getHeaderField(k))) {
@@ -189,7 +189,7 @@ class WebServerSpec extends BaseSpecification {
         and:
         def data = callAndRead(uri, null, expectedHeaders)
         then: "We expect a warning as the server was unable to send an error"
-        LogHelper.hasMessage(Level.WARN, "services", "Cannot send service error for.*")
+        LogHelper.hasMessage(Level.WARNING, "services", "Cannot send service error for.*")
         and: "As the connection is closed due to an inconsistent state, an IO exception will occur on the client side"
         thrown(IOException)
     }
@@ -243,7 +243,7 @@ class WebServerSpec extends BaseSpecification {
         def data = callAndRead("/tunnel/test_large", null, null)
         and: "we load the transformed data which is byte shifted by +1"
         HttpURLConnection c = new URL("http://localhost:9999/tunnel/test_transform").openConnection()
-        def transformedData = ByteStreams.toByteArray(c.getInputStream())
+        def transformedData = Streams.toByteArray(c.getInputStream())
         and: "we un-shift all bytes"
         def reTransformedData = new byte[transformedData.length]
         for (int i = 0; i < transformedData.length; i++) {
@@ -252,7 +252,7 @@ class WebServerSpec extends BaseSpecification {
         then: "Both should be equivalent in size..."
         transformedData.length == data.length()
         and: "And the re-transformed contents should match..."
-        new String(reTransformedData, Charsets.UTF_8) == data
+        new String(reTransformedData, StandardCharsets.UTF_8) == data
     }
 
     /**
@@ -364,7 +364,7 @@ class WebServerSpec extends BaseSpecification {
             out.write(testByteArray)
         }
         out.close()
-        def result = new String(ByteStreams.toByteArray(u.getInputStream()), Charsets.UTF_8)
+        def result = new String(Streams.toByteArray(u.getInputStream()), StandardCharsets.UTF_8)
         then:
         String.valueOf(testByteArray.length * 1024) == result
         and:
@@ -401,7 +401,7 @@ class WebServerSpec extends BaseSpecification {
             out.write(testByteArray)
         }
 
-        def result = new String(ByteStreams.toByteArray(u.getInputStream()), Charsets.UTF_8)
+        def result = new String(Streams.toByteArray(u.getInputStream()), StandardCharsets.UTF_8)
         then:
         // We still expect a proper response
         "ABORT" == result
@@ -424,9 +424,9 @@ class WebServerSpec extends BaseSpecification {
         u.setDoInput(true)
         u.setDoOutput(true)
         def out = u.getOutputStream()
-        out.write(testString.getBytes(Charsets.UTF_8))
+        out.write(testString.getBytes(StandardCharsets.UTF_8))
         out.close()
-        def result = new String(ByteStreams.toByteArray(u.getInputStream()), Charsets.UTF_8)
+        def result = new String(Streams.toByteArray(u.getInputStream()), StandardCharsets.UTF_8)
         then:
         "Hello" == result
     }
@@ -438,7 +438,7 @@ class WebServerSpec extends BaseSpecification {
         u.setRequestMethod("GET")
         u.setDoInput(true)
         u.setDoOutput(false)
-        def arr = ByteStreams.toByteArray(u.getInputStream())
+        def arr = Streams.toByteArray(u.getInputStream())
         then:
         9 * 8192 == arr.length
 
@@ -461,9 +461,9 @@ class WebServerSpec extends BaseSpecification {
         u.setDoInput(true)
         u.setDoOutput(true)
         def out = u.getOutputStream()
-        out.write(testString.getBytes(Charsets.UTF_8))
+        out.write(testString.getBytes(StandardCharsets.UTF_8))
         out.close()
-        def result = new String(ByteStreams.toByteArray(u.getInputStream()), Charsets.UTF_8)
+        def result = new String(Streams.toByteArray(u.getInputStream()), StandardCharsets.UTF_8)
         then:
         "" == result
     }
@@ -697,7 +697,7 @@ class WebServerSpec extends BaseSpecification {
         then:
         JSON.parseObject(data).get("test") == '1'
     }
-    
+
     def "testRequest follows redirects if instructed"() {
         when:
         def response1 = TestRequest.GET("/test/redirect-to-get").execute()

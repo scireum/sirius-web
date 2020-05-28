@@ -9,12 +9,6 @@ package sirius.web.http;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.google.common.hash.Hashing;
-import com.google.common.io.ByteStreams;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandlerContext;
@@ -39,9 +33,12 @@ import sirius.kernel.async.Promise;
 import sirius.kernel.async.SubContext;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Files;
+import sirius.kernel.commons.Hasher;
+import sirius.kernel.commons.Streams;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
+import sirius.kernel.commons.Values;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
@@ -76,12 +73,14 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -714,7 +713,7 @@ public class WebContext implements SubContext {
      */
     public void setAttribute(String key, Object value) {
         if (attribute == null) {
-            attribute = Maps.newTreeMap();
+            attribute = new TreeMap<>();
         }
         attribute.put(key, value);
     }
@@ -747,9 +746,8 @@ public class WebContext implements SubContext {
     private void checkAndEnforceSessionPinning() {
         String givenSessionPin = getCookieValue(getSessionPinCookieName());
         String sessionPin = session.get(SESSION_PIN_KEY);
-        String effectiveSessionPin = Strings.isEmpty(givenSessionPin) ?
-                                     "" :
-                                     Hashing.md5().hashString(givenSessionPin, StandardCharsets.UTF_8).toString();
+        String effectiveSessionPin =
+                Strings.isEmpty(givenSessionPin) ? "" : Hasher.md5().hash(givenSessionPin).toHexString();
 
         if (Strings.isFilled(sessionPin) && !Strings.areEqual(sessionPin, effectiveSessionPin)) {
             SESSION_CHECK.SEVERE(Strings.apply("Session pin mismatch: %s (%s) vs. %s%n%s%n%s%nIP: %s",
@@ -794,12 +792,11 @@ public class WebContext implements SubContext {
 
         // Generate a pin which is stable for one day, as some requests might concurrently want to set the
         // session pin.
-        givenSessionPin = Hashing.md5()
-                                 .hashString(getRemoteIP().toString()
-                                             + getHeader(HttpHeaderNames.USER_AGENT)
-                                             + TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis()),
-                                             StandardCharsets.UTF_8)
-                                 .toString();
+        givenSessionPin = Hasher.md5()
+                                .hash(getRemoteIP().toString()
+                                      + getHeader(HttpHeaderNames.USER_AGENT)
+                                      + TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis()))
+                                .toHexString();
 
         if (SESSION_CHECK.isFINE()) {
             SESSION_CHECK.FINE("Creating session pin %s for %s%n%s%nIP: %s",
@@ -814,14 +811,14 @@ public class WebContext implements SubContext {
 
     private Map<String, String> decodeSession(String encodedSession) {
         Tuple<String, String> sessionInfo = Strings.split(encodedSession, ":");
-        Map<String, String> decodedSession = Maps.newHashMap();
+        Map<String, String> decodedSession = new HashMap<>();
         long decodedSessionTTL = -1;
         QueryStringDecoder qsd = new QueryStringDecoder(encodedSession);
         for (Map.Entry<String, List<String>> entry : qsd.parameters().entrySet()) {
             if (TTL_SESSION_KEY.equals(entry.getKey())) {
-                decodedSessionTTL = Value.of(Iterables.getFirst(entry.getValue(), null)).getLong();
+                decodedSessionTTL = Values.of(entry.getValue()).at(0).getLong();
             } else {
-                decodedSession.put(entry.getKey(), Iterables.getFirst(entry.getValue(), null));
+                decodedSession.put(entry.getKey(), Values.of(entry.getValue()).at(0).getString());
             }
         }
         if (checkSessionDataIntegrity(decodedSession, sessionInfo)) {
@@ -843,10 +840,9 @@ public class WebContext implements SubContext {
 
     private boolean checkSessionDataIntegrity(Map<String, String> currentSession, Tuple<String, String> sessionInfo) {
         return Strings.areEqual(sessionInfo.getFirst(),
-                                Hashing.sha512()
-                                       .hashString(sessionInfo.getSecond() + getSessionSecret(currentSession),
-                                                   StandardCharsets.UTF_8)
-                                       .toString());
+                                Hasher.sha512()
+                                      .hash(sessionInfo.getSecond() + getSessionSecret(currentSession))
+                                      .toHexString());
     }
 
     /**
@@ -912,7 +908,7 @@ public class WebContext implements SubContext {
         if (session == null) {
             initSession();
         }
-        return Lists.newArrayList(session.keySet());
+        return new ArrayList<>(session.keySet());
     }
 
     /**
@@ -1030,7 +1026,7 @@ public class WebContext implements SubContext {
      * @return the first value or <tt>null</tt> if the parameter was not set or empty
      */
     public String getParameter(String key) {
-        return Iterables.getFirst(getParameters(key), null);
+        return Values.of(getParameters(key)).at(0).getString();
     }
 
     /**
@@ -1176,7 +1172,7 @@ public class WebContext implements SubContext {
      */
     private void fillCookies() {
         if (cookiesIn == null) {
-            cookiesIn = Maps.newHashMap();
+            cookiesIn = new HashMap<>();
             if (request != null) {
                 parseCookieHeader();
             }
@@ -1214,7 +1210,7 @@ public class WebContext implements SubContext {
      */
     public void setCookie(Cookie cookie) {
         if (cookiesOut == null) {
-            cookiesOut = Maps.newTreeMap();
+            cookiesOut = new TreeMap<>();
         }
         cookiesOut.put(cookie.name(), cookie);
     }
@@ -1350,8 +1346,7 @@ public class WebContext implements SubContext {
         }
 
         String value = encoder.toString();
-        String protection =
-                Hashing.sha512().hashString(value + getSessionSecret(session), StandardCharsets.UTF_8).toString();
+        String protection = Hasher.sha512().hash(value + getSessionSecret(session)).toHexString();
 
         long ttl = determineSessionCookieTTL();
         if (ttl == 0) {
@@ -1505,7 +1500,7 @@ public class WebContext implements SubContext {
         if (queryString == null) {
             decodeQueryString();
         }
-        Set<String> names = Sets.newLinkedHashSet(queryString.keySet());
+        Set<String> names = new LinkedHashSet<>(queryString.keySet());
         if (postDecoder != null) {
             try {
                 for (InterfaceHttpData data : postDecoder.getBodyHttpDatas()) {
@@ -1729,7 +1724,7 @@ public class WebContext implements SubContext {
                 outputStream.write(content.get());
             } else {
                 try (FileInputStream inputStream = new FileInputStream(content.getFile())) {
-                    ByteStreams.copy(inputStream, outputStream);
+                    Streams.transfer(inputStream, outputStream);
                 }
             }
         }
@@ -1747,7 +1742,7 @@ public class WebContext implements SubContext {
      */
     public void addFileToCleanup(File file) {
         if (filesToCleanup == null) {
-            filesToCleanup = Lists.newArrayList();
+            filesToCleanup = new ArrayList<>();
         }
         filesToCleanup.add(file);
     }

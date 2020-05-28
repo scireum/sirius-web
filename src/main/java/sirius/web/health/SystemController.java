@@ -8,7 +8,6 @@
 
 package sirius.web.health;
 
-import com.google.common.base.Charsets;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Explain;

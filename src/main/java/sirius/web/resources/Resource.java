@@ -8,10 +8,9 @@
 
 package sirius.web.resources;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.ByteStreams;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.RateLimit;
+import sirius.kernel.commons.Streams;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 
@@ -177,7 +176,7 @@ public class Resource {
     public byte[] getContent() {
         try {
             try (InputStream in = openStream()) {
-                return ByteStreams.toByteArray(in);
+                return Streams.toByteArray(in);
             }
         } catch (IOException e) {
             throw Exceptions.handle(e);

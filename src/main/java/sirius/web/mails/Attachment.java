@@ -8,13 +8,12 @@
 
 package sirius.web.mails;
 
-import com.google.common.collect.Maps;
-
 import javax.activation.DataSource;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Encapsulates all information required to add an attachment to a mail being sent.
@@ -24,7 +23,7 @@ public abstract class Attachment implements DataSource {
     private String contentType;
     private boolean asAlternative;
     private String name;
-    private Map<String, String> headers = Maps.newTreeMap();
+    private Map<String, String> headers = new TreeMap<>();
 
     /**
      * Generates a new attachment with the given name, mime type and contents.
@@ -35,7 +34,7 @@ public abstract class Attachment implements DataSource {
      * @param asAlternative determines if this attachment is an alternative to the text content of the mail
      *                      (<tt>true</tt>) or a real attachment (<tt>false</tt>)
      */
-    public Attachment(String name, String mimeType, boolean asAlternative) {
+    protected Attachment(String name, String mimeType, boolean asAlternative) {
         this.name = name;
         this.contentType = mimeType;
         this.asAlternative = asAlternative;

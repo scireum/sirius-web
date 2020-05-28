@@ -8,10 +8,7 @@
 
 package sirius.web.security;
 
-import com.google.common.base.Charsets;
-import com.google.common.collect.Sets;
-import com.google.common.hash.HashFunction;
-import com.google.common.hash.Hashing;
+import sirius.kernel.commons.Hasher;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
@@ -24,12 +21,12 @@ import sirius.web.http.WebContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -76,8 +73,10 @@ public abstract class GenericUserManager implements UserManager {
         this.ssoEnabled = Strings.isFilled(ssoSecret) && config.get("ssoEnabled").asBoolean(false);
         this.ssoGraceInterval = config.get("ssoGraceInterval").asLong(DEFAULT_SSO_GRACE_INTERVAL);
         this.keepLoginEnabled = config.get("keepLoginEnabled").asBoolean(true);
-        this.publicRoles = Collections.unmodifiableList(config.get("publicRoles").get(List.class, Collections.emptyList()));
-        this.defaultRoles = Collections.unmodifiableList(config.get("defaultRoles").get(List.class, Collections.emptyList()));
+        this.publicRoles =
+                Collections.unmodifiableList(config.get("publicRoles").get(List.class, Collections.emptyList()));
+        this.defaultRoles =
+                Collections.unmodifiableList(config.get("defaultRoles").get(List.class, Collections.emptyList()));
         this.loginTTL = config.get("loginTTL").get(Duration.class, Duration.ofDays(90));
         this.defaultUser = buildDefaultUser();
     }
@@ -262,10 +261,8 @@ public abstract class GenericUserManager implements UserManager {
     }
 
     private boolean checkTokenValidity(String user, Tuple<String, String> challengeResponse) {
-        return getSSOHashFunction().hashBytes(computeSSOHashInput(user,
-                                                                  challengeResponse.getFirst()).getBytes(
-                StandardCharsets.UTF_8))
-                                   .toString()
+        return getSSOHashFunction().hash(computeSSOHashInput(user, challengeResponse.getFirst()))
+                                   .toHexString()
                                    .equalsIgnoreCase(challengeResponse.getSecond());
     }
 
@@ -279,8 +276,7 @@ public abstract class GenericUserManager implements UserManager {
      */
     public String computeSSOToken(String username) {
         String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
-        return timestamp + ":" + getSSOHashFunction().hashBytes(computeSSOHashInput(username, timestamp).getBytes(
-                StandardCharsets.UTF_8)).toString();
+        return timestamp + ":" + getSSOHashFunction().hash(computeSSOHashInput(username, timestamp)).toHexString();
     }
 
     /**
@@ -288,11 +284,11 @@ public abstract class GenericUserManager implements UserManager {
      *
      * @return the hash function to use for single sign-on tokens
      */
-    protected HashFunction getSSOHashFunction() {
+    protected Hasher getSSOHashFunction() {
         if (HASH_MD_5.equalsIgnoreCase(hashFunction)) {
-            return Hashing.md5();
+            return Hasher.md5();
         } else if (HASH_SHA_1.equalsIgnoreCase(hashFunction)) {
-            return Hashing.sha1();
+            return Hasher.sha1();
         } else {
             throw Exceptions.handle()
                             .to(UserContext.LOG)
@@ -322,7 +318,7 @@ public abstract class GenericUserManager implements UserManager {
      * transformations
      */
     protected Set<String> transformRoles(Collection<String> roles) {
-        Set<String> allRoles = Sets.newTreeSet(roles);
+        Set<String> allRoles = new TreeSet<>(roles);
         allRoles.addAll(defaultRoles);
         Permissions.applyProfiles(allRoles);
 

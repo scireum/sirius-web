@@ -8,7 +8,6 @@
 
 package sirius.web.controller;
 
-import com.google.common.collect.Lists;
 import sirius.kernel.cache.ValueComputer;
 import sirius.kernel.commons.Limit;
 import sirius.kernel.commons.Strings;
@@ -39,7 +38,7 @@ public class Page<E> {
     private List<E> items = Collections.emptyList();
     private boolean more;
     private String duration;
-    private List<Facet> facets = Lists.newArrayList();
+    private List<Facet> facets = new ArrayList<>();
     private Supplier<List<Facet>> facetsSupplier;
     private Boolean hasFacets = null;
     private int pageSize = DEFAULT_PAGE_SIZE;
@@ -151,7 +150,7 @@ public class Page<E> {
      */
     public Page<E> addFacet(Facet facet) {
         if (this.facets == null) {
-            this.facets = Lists.newArrayList();
+            this.facets = new ArrayList<>();
         }
 
         facets.add(facet);
