@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
 /**
  * Contains the default admin GUI.
  */
-@Register(classes = Controller.class)
+@Register
 public class SystemController extends BasicController {
 
     private static final String LOAD_INFO_METRIC_PREFIX = "load_";

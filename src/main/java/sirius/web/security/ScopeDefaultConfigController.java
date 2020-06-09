@@ -22,7 +22,7 @@ import java.util.List;
  * <p>
  * This can be shown to a user as a source of inspiration when writing a custom scope or user config.
  */
-@Register(classes = Controller.class)
+@Register
 public class ScopeDefaultConfigController extends BasicController {
 
     /**
