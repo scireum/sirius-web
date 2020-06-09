@@ -10,7 +10,6 @@ package sirius.web.security;
 
 import sirius.kernel.di.std.Register;
 import sirius.web.controller.BasicController;
-import sirius.web.controller.Controller;
 import sirius.web.controller.DefaultRoute;
 import sirius.web.controller.Routed;
 import sirius.web.http.WebContext;
@@ -22,7 +21,7 @@ import java.util.List;
  * <p>
  * This can be shown to a user as a source of inspiration when writing a custom scope or user config.
  */
-@Register(classes = Controller.class)
+@Register
 public class ScopeDefaultConfigController extends BasicController {
 
     /**

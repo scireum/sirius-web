@@ -8,6 +8,7 @@
 
 package sirius.web.controller;
 
+import sirius.kernel.di.std.AutoRegister;
 import sirius.kernel.health.HandledException;
 import sirius.web.http.WebContext;
 
@@ -37,6 +38,7 @@ import sirius.web.http.WebContext;
  * Although this can be used to respond with JSON, also bear in mind, that services
  * ({@link sirius.web.services.StructuredService}) can be used to provide both, an XML and JSON interfaces at once.
  */
+@AutoRegister
 public interface Controller {
 
     /**

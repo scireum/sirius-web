@@ -27,7 +27,6 @@ import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.health.metrics.Metrics;
 import sirius.kernel.nls.NLS;
 import sirius.web.controller.BasicController;
-import sirius.web.controller.Controller;
 import sirius.web.controller.Page;
 import sirius.web.controller.Routed;
 import sirius.web.http.WebContext;
@@ -46,7 +45,7 @@ import java.util.stream.Collectors;
 /**
  * Contains the default admin GUI.
  */
-@Register(classes = Controller.class)
+@Register
 public class SystemController extends BasicController {
 
     private static final String LOAD_INFO_METRIC_PREFIX = "load_";
