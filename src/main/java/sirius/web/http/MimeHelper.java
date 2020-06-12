@@ -177,6 +177,8 @@ public class MimeHelper {
         mimeTable.put("grxml", "application/srgs+xml");
         mimeTable.put("gtar", "application/x-gtar");
         mimeTable.put("hdf", "application/x-hdf");
+        mimeTable.put("heic", "image/heic");
+        mimeTable.put("heif", "image/heif");
         mimeTable.put("hqx", "application/mac-binhex40");
         mimeTable.put("htm", TEXT_HTML);
         mimeTable.put("html", TEXT_HTML);
