@@ -219,9 +219,18 @@ var multiSelect = function (args) {
                     autocomplete.off('onHide', reAddToken);
                     tokenfield.getTokenfieldInputField()[0].placeholder = args.placeholder;
                 });
-                tokenfield.clearTokens();
-                tokenfield.getTokenfieldInputField().show().focus();
-                tokenfield.getTokenfieldInputField()[0].placeholder = args.searchKey || args.placeholder;
+
+                if (args.keepInputOnSelect) {
+                    var input = tokenfield.getInput() || "";
+                    tokenfield.clearTokens();
+                    // the first focus is necessary so that .val will not create a token
+                    // the second focus call will trigger the autocomplete with the correct value set
+                    tokenfield.getTokenfieldInputField().show().focus().val(input.trim()).select().focus();
+                } else {
+                    tokenfield.clearTokens();
+                    tokenfield.getTokenfieldInputField().show().focus();
+                    tokenfield.getTokenfieldInputField()[0].placeholder = args.searchKey || args.placeholder;
+                }
             });
 
             $('#' + args.id).on('keyup', '.tokenfield', function (e) {
