@@ -225,7 +225,7 @@ var multiSelect = function (args) {
                     tokenfield.clearTokens();
                     // the first focus is necessary so that .val will not create a token
                     // the second focus call will trigger the autocomplete with the correct value set
-                    tokenfield.getTokenfieldInputField().show().focus().val(input.trim()).select().focus();
+                    tokenfield.getTokenfieldInputField().show().focus().val(input.trim()).focus();
                 } else {
                     tokenfield.clearTokens();
                     tokenfield.getTokenfieldInputField().show().focus();
