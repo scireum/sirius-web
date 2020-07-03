@@ -105,6 +105,18 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
     }
 
     @Override
+    public StructuredOutput beginObject(String name, Attribute... attributes) {
+        beginObject(name);
+        if (attributes != null) {
+            for (Attribute attr : attributes) {
+                property(attr.getName(), attr.getValue());
+            }
+        }
+
+        return this;
+    }
+
+    @Override
     protected void startObject(String name, Attribute... attributes) {
         try {
             addRequiredComma();
