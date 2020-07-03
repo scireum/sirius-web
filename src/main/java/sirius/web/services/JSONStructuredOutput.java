@@ -8,6 +8,8 @@
 
 package sirius.web.services;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
@@ -227,6 +229,20 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
 
     @Override
     public void writeProperty(String name, Object data) {
+        if (data instanceof JSONObject) {
+            beginObject(name);
+            ((JSONObject) data).forEach(this::property);
+            endObject();
+        } else if (data instanceof JSONArray) {
+            beginArray(name);
+            ((JSONArray) data).forEach(element -> property("", element));
+            endArray();
+        } else {
+            writePlainProperty(name, data);
+        }
+    }
+
+    private void writePlainProperty(String name, Object data) {
         try {
             addRequiredComma();
             if (getCurrentType() == ElementType.OBJECT) {
