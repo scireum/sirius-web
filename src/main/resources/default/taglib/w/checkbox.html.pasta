@@ -16,6 +16,9 @@
 <div class="col-xs-@smallSpan col-md-@span">
     <div class="form-group checkbox @user.signalFieldError(name)">
         <label>
+            <i:if test="!readonly">
+                <input type="hidden" name="@apply('%s_marker',name)" />
+            </i:if>
             <input type="checkbox" name="@name" value="true" @if (value) { checked="checked" } @if (readonly) { disabled="disabled" } />
             <i:if test="isFilled(label)">
                 <span class="@if (required) { input-required } @if (adminOnly) { admin-link }">
