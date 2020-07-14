@@ -224,6 +224,23 @@ var multiSelect = function (args) {
             $('#' + args.id).find('.tokenfield').removeAttr("tabindex");
         });
 
+        // Special handling for singleSelects with keepInputOnSelect = true
+        // The tokenfield doesn't trigger any changes if the input was cleared manually, so we need to do this by hand
+        if (args.keepInputOnSelect) {
+            tokenfield.getTokenfieldInputField().on('keyup', function (e) {
+                if (tokenfield.getInput().trim().length === 0 && e.keyCode === sirius.keys.KEY_ENTER) {
+                    tokenfield.getTokenfieldInputField().blur();
+                }
+            });
+
+            tokenfield.getTokenfieldInputField().on('blur', function () {
+                if (tokenfield.getInput().trim().length === 0) {
+                    updateSelectObject();
+                    triggerChangeEventIfNecessary();
+                }
+            });
+        }
+
         if (!args.readonly) {
             $('#' + args.id).on('click', '.tokenfield', function () {
                 if (args.keepInputOnSelect) {
