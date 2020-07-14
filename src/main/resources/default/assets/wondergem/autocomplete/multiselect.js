@@ -95,6 +95,22 @@ var multiSelect = function (args) {
             '</div>'
     }
 
+    /**
+     * Trigger the change-event on the original select if the input changed.
+     * <p>
+     * Send additional data so we know that we don't need to react to it. The relatively long timeout is needed, as we
+     * need to work around the hack in completions#hide, which adds a 500ms timeout when the autocomplete is hidden.
+     */
+    var triggerChangeEventIfNecessary = function () {
+        setTimeout(function () {
+            if (currentInput !== tokenfield.getInput()) {
+                currentInput = tokenfield.getInput();
+
+                $select.trigger('change', {source: 'multiselect'});
+            }
+        }, 550);
+    }
+
     var suggestions = createSuggestionsObject();
 
     var tokenfield = sirius.createTokenfield();
@@ -110,9 +126,7 @@ var multiSelect = function (args) {
         tokenfield.addToken(selectedRow.find('.autocomplete-data').attr('data-autocomplete'));
         tokenfield.getTokenfieldInputField().focus();
 
-        // Trigger the change-event on the original select
-        // send additional data so we know that we don't need to react to it
-        $select.trigger('change', {source: 'multiselect'});
+        triggerChangeEventIfNecessary();
     });
 
     autocomplete.on('beforeRenderRow', function (row) {
@@ -279,6 +293,8 @@ var multiSelect = function (args) {
     tokenfield.appendTokens(suggestions.getInitialSelection());
     updateSelectObject();
 
+    var currentInput = tokenfield.getInput();
+
     if (!tokenfield.hasTokens()) {
         tokenfield.getTokenfieldInputField()[0].placeholder = args.placeholder;
     }
@@ -288,9 +304,7 @@ var multiSelect = function (args) {
             tokenfield.getTokenfieldInputField()[0].placeholder = args.placeholder;
         }
 
-        // Trigger the change-event on the original select
-        // send additional data so we know that we don't need to react to it
-        $select.trigger('change', {source: 'multiselect'});
+        triggerChangeEventIfNecessary();
     });
 
     if (!args.readonly) {
