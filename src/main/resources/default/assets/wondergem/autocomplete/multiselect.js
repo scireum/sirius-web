@@ -210,16 +210,6 @@ var multiSelect = function (args) {
 
         if (!args.readonly) {
             $('#' + args.id).on('click', '.tokenfield', function () {
-                var oldToken = tokenfield.getTokens()[0];
-                autocomplete.on('onHide', function reAddToken() {
-                    if (!tokenfield.hasTokens() && oldToken) {
-                        tokenfield.addToken(oldToken);
-                        tokenfield.getTokenfieldInputField().val('');
-                    }
-                    autocomplete.off('onHide', reAddToken);
-                    tokenfield.getTokenfieldInputField()[0].placeholder = args.placeholder;
-                });
-
                 if (args.keepInputOnSelect) {
                     var input = tokenfield.getInput() || "";
                     tokenfield.clearTokens();
@@ -227,6 +217,16 @@ var multiSelect = function (args) {
                     // the second focus call will trigger the autocomplete with the correct value set
                     tokenfield.getTokenfieldInputField().show().focus().val(input.trim()).focus();
                 } else {
+                    var oldToken = tokenfield.getTokens()[0];
+                    autocomplete.on('onHide', function reAddToken() {
+                        if (!tokenfield.hasTokens() && oldToken) {
+                            tokenfield.addToken(oldToken);
+                            tokenfield.getTokenfieldInputField().val('');
+                        }
+                        autocomplete.off('onHide', reAddToken);
+                        tokenfield.getTokenfieldInputField()[0].placeholder = args.placeholder;
+                    });
+
                     tokenfield.clearTokens();
                     tokenfield.getTokenfieldInputField().show().focus();
                     tokenfield.getTokenfieldInputField()[0].placeholder = args.searchKey || args.placeholder;
