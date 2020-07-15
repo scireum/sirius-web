@@ -95,6 +95,22 @@ var multiSelect = function (args) {
             '</div>'
     }
 
+    /**
+     * Trigger the change-event on the original select if the input changed.
+     * <p>
+     * Send additional data so we know that we don't need to react to it. The relatively long timeout is needed, as we
+     * need to work around the hack in completions#hide, which adds a 500ms timeout when the autocomplete is hidden.
+     */
+    var triggerChangeEventIfNecessary = function () {
+        setTimeout(function () {
+            if (currentInput !== tokenfield.getInput()) {
+                currentInput = tokenfield.getInput();
+
+                $select.trigger('change', {source: 'multiselect'});
+            }
+        }, 550);
+    }
+
     var suggestions = createSuggestionsObject();
 
     var tokenfield = sirius.createTokenfield();
@@ -110,9 +126,7 @@ var multiSelect = function (args) {
         tokenfield.addToken(selectedRow.find('.autocomplete-data').attr('data-autocomplete'));
         tokenfield.getTokenfieldInputField().focus();
 
-        // Trigger the change-event on the original select
-        // send additional data so we know that we don't need to react to it
-        $select.trigger('change', {source: 'multiselect'});
+        triggerChangeEventIfNecessary();
     });
 
     autocomplete.on('beforeRenderRow', function (row) {
@@ -149,6 +163,8 @@ var multiSelect = function (args) {
                     return false;
                 }
             }
+
+            triggerChangeEventIfNecessary();
         } else {
             token.label = suggestions.getTokenForValue(token.value).label;
         }
@@ -208,18 +224,25 @@ var multiSelect = function (args) {
             $('#' + args.id).find('.tokenfield').removeAttr("tabindex");
         });
 
+        // Special handling for singleSelects with keepInputOnSelect = true
+        // The tokenfield doesn't trigger any changes if the input was cleared manually, so we need to do this by hand
+        if (args.keepInputOnSelect) {
+            tokenfield.getTokenfieldInputField().on('keyup', function (e) {
+                if (tokenfield.getInput().trim().length === 0 && e.keyCode === sirius.keys.KEY_ENTER) {
+                    tokenfield.getTokenfieldInputField().blur();
+                }
+            });
+
+            tokenfield.getTokenfieldInputField().on('blur', function () {
+                if (tokenfield.getInput().trim().length === 0) {
+                    updateSelectObject();
+                    triggerChangeEventIfNecessary();
+                }
+            });
+        }
+
         if (!args.readonly) {
             $('#' + args.id).on('click', '.tokenfield', function () {
-                var oldToken = tokenfield.getTokens()[0];
-                autocomplete.on('onHide', function reAddToken() {
-                    if (!tokenfield.hasTokens() && oldToken) {
-                        tokenfield.addToken(oldToken);
-                        tokenfield.getTokenfieldInputField().val('');
-                    }
-                    autocomplete.off('onHide', reAddToken);
-                    tokenfield.getTokenfieldInputField()[0].placeholder = args.placeholder;
-                });
-
                 if (args.keepInputOnSelect) {
                     var input = tokenfield.getInput() || "";
                     tokenfield.clearTokens();
@@ -227,6 +250,16 @@ var multiSelect = function (args) {
                     // the second focus call will trigger the autocomplete with the correct value set
                     tokenfield.getTokenfieldInputField().show().focus().val(input.trim()).focus();
                 } else {
+                    var oldToken = tokenfield.getTokens()[0];
+                    autocomplete.on('onHide', function reAddToken() {
+                        if (!tokenfield.hasTokens() && oldToken) {
+                            tokenfield.addToken(oldToken);
+                            tokenfield.getTokenfieldInputField().val('');
+                        }
+                        autocomplete.off('onHide', reAddToken);
+                        tokenfield.getTokenfieldInputField()[0].placeholder = args.placeholder;
+                    });
+
                     tokenfield.clearTokens();
                     tokenfield.getTokenfieldInputField().show().focus();
                     tokenfield.getTokenfieldInputField()[0].placeholder = args.searchKey || args.placeholder;
@@ -279,6 +312,8 @@ var multiSelect = function (args) {
     tokenfield.appendTokens(suggestions.getInitialSelection());
     updateSelectObject();
 
+    var currentInput = tokenfield.getInput();
+
     if (!tokenfield.hasTokens()) {
         tokenfield.getTokenfieldInputField()[0].placeholder = args.placeholder;
     }
@@ -288,9 +323,7 @@ var multiSelect = function (args) {
             tokenfield.getTokenfieldInputField()[0].placeholder = args.placeholder;
         }
 
-        // Trigger the change-event on the original select
-        // send additional data so we know that we don't need to react to it
-        $select.trigger('change', {source: 'multiselect'});
+        triggerChangeEventIfNecessary();
     });
 
     if (!args.readonly) {
