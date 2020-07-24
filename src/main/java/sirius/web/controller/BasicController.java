@@ -112,8 +112,19 @@ public class BasicController implements Controller {
      */
     protected void assertNotNull(Object obj) {
         if (obj == null) {
-            throw Exceptions.createHandled().withNLSKey("BasicController.unknownObject").handle();
+            throw unknownObjectException();
         }
+    }
+
+    /**
+     * Provides a simple {@link HandledException} to throw if a object was not found.
+     * <p>
+     * This exception is not logged.
+     *
+     * @return a HandledException which can be thrown
+     */
+    protected HandledException unknownObjectException() {
+        return Exceptions.createHandled().withNLSKey("BasicController.unknownObject").handle();
     }
 
     /**
