@@ -8,6 +8,7 @@
 
 package sirius.web.data;
 
+import com.monitorjbl.xlsx.StreamingReader;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -15,7 +16,6 @@ import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import sirius.kernel.async.TaskContext;
 import sirius.kernel.commons.Doubles;
 import sirius.kernel.commons.RateLimit;
@@ -48,7 +48,7 @@ public class XLSProcessor implements LineBasedProcessor {
 
     @Override
     public void run(RowProcessor rowProcessor, Predicate<Exception> errorHandler) throws Exception {
-        Workbook wb = xslx ? new XSSFWorkbook(input) : new HSSFWorkbook(input);
+        Workbook wb = xslx ? StreamingReader.builder().bufferSize(4096).open(input) : new HSSFWorkbook(input);
         Sheet sheet = wb.getSheetAt(0);
         Iterator<Row> iter = sheet.rowIterator();
         int current = 0;
