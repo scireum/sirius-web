@@ -522,24 +522,29 @@ public class WebContext implements SubContext {
         }
 
         if (postDecoder != null) {
-            return fetchPostAttribute(key);
+            return fetchPostAttributes(key);
         }
 
         return Value.EMPTY;
     }
 
-    private Value fetchPostAttribute(String key) {
+    private Value fetchPostAttributes(String key) {
         try {
-            InterfaceHttpData data = postDecoder.getBodyHttpData(key);
-            if (data instanceof Attribute) {
-                Attribute attr = (Attribute) data;
-                ByteBuf byteBuf = attr.getByteBuf();
-
-                // If the request gets aborted prematurely, the underlying buffers might
-                // already be released. Therefore we have to check this here manually as
-                // the server might still try to process the request...
-                if (byteBuf != null) {
-                    return Value.of(byteBuf.toString(attr.getCharset()));
+            List<InterfaceHttpData> dataList = postDecoder.getBodyHttpDatas(key);
+            if (dataList == null || dataList.isEmpty()) {
+                return Value.EMPTY;
+            } else if (dataList.size() == 1) {
+                return Value.of(transformHttpData(dataList.get(0)));
+            } else {
+                List<String> attributes = new ArrayList<>();
+                for (InterfaceHttpData data : dataList) {
+                    String value = transformHttpData(data);
+                    if (Strings.isFilled(value)) {
+                        attributes.add(value);
+                    }
+                }
+                if (!attributes.isEmpty()) {
+                    return Value.of(attributes);
                 }
             }
         } catch (HttpPostRequestDecoder.NotEnoughDataDecoderException e) {
@@ -552,6 +557,21 @@ public class WebContext implements SubContext {
                       .handle();
         }
         return Value.EMPTY;
+    }
+
+    private String transformHttpData(InterfaceHttpData data) throws IOException {
+        if (data instanceof Attribute) {
+            Attribute attr = (Attribute) data;
+            ByteBuf byteBuf = attr.getByteBuf();
+
+            // If the request gets aborted prematurely, the underlying buffers might
+            // already be released. Therefore we have to check this here manually as
+            // the server might still try to process the request...
+            if (byteBuf != null) {
+                return byteBuf.toString(attr.getCharset());
+            }
+        }
+        return null;
     }
 
     /**
