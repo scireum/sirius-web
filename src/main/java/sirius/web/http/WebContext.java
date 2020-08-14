@@ -46,12 +46,15 @@ import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Log;
 import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
+import sirius.kernel.xml.BasicNamespaceContext;
 import sirius.kernel.xml.StructuredInput;
 import sirius.kernel.xml.XMLStructuredInput;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -1768,14 +1771,31 @@ public class WebContext implements SubContext {
     }
 
     /**
+     * Returns the body of the HTTP request as XML data without considering xml namespaces.
+     * <p>
+     * Note that all data is loaded into the heap. Therefore certain limits apply. If the data is too large, an
+     * exception will be thrown.
+     * <p>
+     * See: {@link #getXMLContent(boolean)} for controlling namespace awareness
+     *
+     * @return the body of the HTTP request as XML input
+     */
+    public StructuredInput getXMLContent() {
+        return getXMLContent(false);
+    }
+
+    /**
      * Returns the body of the HTTP request as XML data.
      * <p>
      * Note that all data is loaded into the heap. Therefore certain limits apply. If the data is too large, an
      * exception will be thrown.
      *
+     * @param namespaceAware if true the XML will be parsed namespace aware.
+     *                       See {@link DocumentBuilderFactory#setNamespaceAware(boolean)} for details.
      * @return the body of the HTTP request as XML input
      */
-    public StructuredInput getXMLContent() {
+    public StructuredInput getXMLContent(boolean namespaceAware) {
+        NamespaceContext namespaceContext = namespaceAware ? new BasicNamespaceContext() : null;
         try {
             if (content == null) {
                 throw Exceptions.handle()
@@ -1785,7 +1805,7 @@ public class WebContext implements SubContext {
             }
             if (content.isInMemory()) {
                 try (InputStream inputStream = new ByteArrayInputStream(content.get())) {
-                    return new XMLStructuredInput(inputStream, null);
+                    return new XMLStructuredInput(inputStream, namespaceContext);
                 }
             } else {
                 if (content.getFile().length() > maxStructuredInputSize && maxStructuredInputSize > 0) {
@@ -1798,7 +1818,7 @@ public class WebContext implements SubContext {
                 }
 
                 try (InputStream inputStream = new FileInputStream(content.getFile())) {
-                    return new XMLStructuredInput(inputStream, null);
+                    return new XMLStructuredInput(inputStream, namespaceContext);
                 }
             }
         } catch (HandledException e) {
