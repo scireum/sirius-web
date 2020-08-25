@@ -14,7 +14,7 @@
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
     <properties>
-        <sirius.kernel>dev-19.6</sirius.kernel>
+        <sirius.kernel>dev-19.7</sirius.kernel>
     </properties>
 
     <repositories>
