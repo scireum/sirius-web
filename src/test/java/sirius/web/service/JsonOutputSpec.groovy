@@ -24,10 +24,6 @@ class JsonOutputSpec extends BaseSpecification {
         out.endObject()
         out.endResult();
         then:
-        compareJsonString(os.toString(), """{"1":{"a":"b"}}""");
-    }
-
-    private def compareJsonString(String str1, String str2) {
-        return new JsonSlurper().parseText(str1) == new JsonSlurper().parseText(str2);
+        os.toString() == """{"1":{"a":"b"}}""";
     }
 }
