@@ -202,11 +202,7 @@ public class TestResponse extends Response {
     }
 
     public StructuredNode xmlContent() {
-        try {
-            return getContentAsXML().getNode(".");
-        } catch (XPathExpressionException e) {
-            throw Exceptions.handle(e);
-        }
+        return getContentAsXML().getNode(".");
     }
 
     /**
