@@ -55,16 +55,18 @@ class TunnelHandler implements AsyncHandler<String> {
             HttpHeaderNames.EXPIRES.toString(),
             HttpHeaderNames.CACHE_CONTROL.toString())));
 
-    private Response response;
-    private WebContext webContext;
+    private final Response response;
+    private final WebContext webContext;
     private final String url;
-    private Processor<ByteBuf, Optional<ByteBuf>> transformer;
-    private IntConsumer failureHandler;
+    private final Processor<ByteBuf, Optional<ByteBuf>> transformer;
+    private final IntConsumer failureHandler;
     private final CallContext cc;
+    private final Watch watch;
+
     private int responseCode = HttpResponseStatus.OK.code();
     private boolean contentLengthKnown;
+
     private volatile boolean failed;
-    private Watch watch;
 
     TunnelHandler(Response response,
                   String url,
