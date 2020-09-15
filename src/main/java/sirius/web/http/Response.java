@@ -1260,9 +1260,13 @@ public class Response {
      * dispatcher.
      *
      * @param url the url to tunnel through.
+     * @see #tunnel(String, Consumer, Processor, IntConsumer, boolean)
+     * @see #tunnel(String, Consumer, Processor, IntConsumer)
+     * @see #tunnel(String, Processor, IntConsumer)
+     * @see #tunnel(String, IntConsumer)
      */
     public void tunnel(String url) {
-        tunnel(url, null, null, null);
+        tunnel(url, null, null, null, false);
     }
 
     /**
@@ -1281,9 +1285,13 @@ public class Response {
      *                       the HTTP status code and can (and must) handle the request on its own. It is save to
      *                       call {@link WebContext#respondWith()} again for the request, as no response was created
      *                       yet.
+     * @see #tunnel(String, Consumer, Processor, IntConsumer, boolean)
+     * @see #tunnel(String, Consumer, Processor, IntConsumer)
+     * @see #tunnel(String, Processor, IntConsumer)
+     * @see #tunnel(String)
      */
     public void tunnel(String url, @Nullable IntConsumer failureHandler) {
-        tunnel(url, null, null, failureHandler);
+        tunnel(url, null, null, failureHandler, false);
     }
 
     /**
@@ -1304,11 +1312,15 @@ public class Response {
      *                       the HTTP status code and can (and must) handle the request on its own. It is save to
      *                       call {@link WebContext#respondWith()} again for the request, as no response was created
      *                       yet.
+     * @see #tunnel(String, Consumer, Processor, IntConsumer, boolean)
+     * @see #tunnel(String, Consumer, Processor, IntConsumer)
+     * @see #tunnel(String, IntConsumer)
+     * @see #tunnel(String)
      */
     public void tunnel(String url,
                        @Nullable Processor<ByteBuf, Optional<ByteBuf>> transformer,
                        @Nullable IntConsumer failureHandler) {
-        tunnel(url, null, transformer, failureHandler);
+        tunnel(url, null, transformer, failureHandler, false);
     }
 
     /**
@@ -1331,11 +1343,51 @@ public class Response {
      *                       the HTTP status code and can (and must) handle the request on its own. It is save to
      *                       call {@link WebContext#respondWith()} again for the request, as no response was created
      *                       yet.
+     * @see #tunnel(String, Consumer, Processor, IntConsumer, boolean)
+     * @see #tunnel(String, Processor, IntConsumer)
+     * @see #tunnel(String, IntConsumer)
+     * @see #tunnel(String)
      */
     public void tunnel(String url,
                        @Nullable Consumer<AsyncHttpClient.BoundRequestBuilder> requestTuner,
                        @Nullable Processor<ByteBuf, Optional<ByteBuf>> transformer,
                        @Nullable IntConsumer failureHandler) {
+        tunnel(url, requestTuner, transformer, failureHandler, false);
+    }
+
+    /**
+     * Tunnels the contents retrieved from the given URL as result of this response.
+     * <p>
+     * Caching and range headers will be forwarded and adhered.
+     * <p>
+     * Uses non-blocking APIs in order to maximize throughput. Therefore this can be called in an unforked
+     * dispatcher.
+     * <p>
+     * If the called URL returns an error (&gt;= 400) and the given failureHandler is non null, it is supplied
+     * with the status code and can re-try or answer the request by itself.
+     *
+     * @param url                  the url to tunnel through
+     * @param requestTuner         a callback which can enhance the request being sent to the upstream server (e.g. make
+     *                             it a POST request or add additional headers.
+     * @param transformer          the transformer which map / transforms the byte blocks being tunnelled. Note that
+     *                             once all data has been processed an empty buffer is sent to signalize the end of the
+     *                             processing.
+     * @param failureHandler       supplies a handler which is invoked if the called URL fails. The handler is provided
+     *                             with the HTTP status code and can (and must) handle the request on its own. It is
+     *                             save to call {@link WebContext#respondWith()} again for the request, as no response
+     *                             was created yet.
+     * @param forceContentDownload forces the content-disposition header set in this object. If forceContentDownload is
+     *                             false, the header from the tunneled response may override this header
+     * @see #tunnel(String, Consumer, Processor, IntConsumer)
+     * @see #tunnel(String, Processor, IntConsumer)
+     * @see #tunnel(String, IntConsumer)
+     * @see #tunnel(String)
+     */
+    public void tunnel(String url,
+                       @Nullable Consumer<AsyncHttpClient.BoundRequestBuilder> requestTuner,
+                       @Nullable Processor<ByteBuf, Optional<ByteBuf>> transformer,
+                       @Nullable IntConsumer failureHandler,
+                       boolean forceContentDownload) {
         try {
             AsyncHttpClient.BoundRequestBuilder brb = getAsyncClient().prepareGet(url);
 
@@ -1359,6 +1411,10 @@ public class Response {
 
             if (WebServer.LOG.isFINE()) {
                 WebServer.LOG.FINE("Tunnel START: %s", url);
+            }
+
+            if (forceContentDownload && name != null) {
+                setContentDisposition(name, download);
             }
 
             // Tunnel it through...
