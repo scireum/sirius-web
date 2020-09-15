@@ -1236,6 +1236,7 @@ public class Response {
             asyncClient = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setAllowPoolingConnections(true)
                                                                                  .setAllowPoolingSslConnections(true)
                                                                                  .setRequestTimeout(-1)
+                                                                                 .setFollowRedirect(true)
                                                                                  .build());
         }
         return asyncClient;
