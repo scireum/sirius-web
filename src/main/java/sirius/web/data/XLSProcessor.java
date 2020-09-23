@@ -8,7 +8,7 @@
 
 package sirius.web.data;
 
-import com.monitorjbl.xlsx.StreamingReader;
+import com.github.pjfanning.xlsx.StreamingReader;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -113,7 +113,7 @@ public class XLSProcessor implements LineBasedProcessor {
             return null;
         }
         throw new IllegalArgumentException(Strings.apply(
-                "Cannot read a value of type %d from cell at row %d, column  %d",
+                "Cannot read a value of type %s from cell at row %d, column  %d",
                 cellType,
                 cell.getRowIndex(),
                 cell.getColumnIndex()));

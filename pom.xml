@@ -123,9 +123,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.monitorjbl</groupId>
-            <artifactId>xlsx-streamer</artifactId>
-            <version>2.1.0</version>
+            <groupId>com.github.pjfanning</groupId>
+            <artifactId>excel-streaming-reader</artifactId>
+            <version>2.3.4</version>
         </dependency>
 
 
