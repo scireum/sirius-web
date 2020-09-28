@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * Represents a switch block where inner blocks are only rendered if their name matche the switch expression.
+ * Represents a switch block where inner blocks are only rendered if their name matches the switch expression.
  *
  * @see sirius.tagliatelle.tags.SwitchTag
  */
