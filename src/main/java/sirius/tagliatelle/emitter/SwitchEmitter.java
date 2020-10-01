@@ -19,9 +19,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * Represents a conditional block which is only emitted if a given expression evaluates to <tt>true</tt>.
- * <p>
- * A conditional block can either be defined via the built-in tag &lt;i:if&gt; or via an if statement.
+ * Represents a switch block where inner blocks are only rendered if their name matches the switch expression.
  *
  * @see sirius.tagliatelle.tags.SwitchTag
  */
@@ -33,7 +31,7 @@ public class SwitchEmitter extends Emitter {
     /**
      * Creates a new emitter for the given position.
      *
-     * @param startOfBlock the position where the conditional block was defined.
+     * @param startOfBlock the position where the switch block was defined.
      */
     public SwitchEmitter(Position startOfBlock) {
         super(startOfBlock);
@@ -75,11 +73,11 @@ public class SwitchEmitter extends Emitter {
     }
 
     /**
-     * Reduces the condition as well as the true and false blocks.
+     * Reduces the switch expression as well as the inner blocks.
      * <p>
-     * If the condition becomes constant, the emitter is reduced the the repective true or false block.
+     * If the switch expression becomes constant, the emitter is reduced the the respective blocks to render.
      *
-     * @return either the emitter itself or, if the condition is constant, the true or false block
+     * @return either the emitter itself or, if the expression is constant, the inner blocks
      */
     @Override
     public Emitter reduce() {

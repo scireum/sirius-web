@@ -21,7 +21,7 @@ import java.util.Objects;
  * <p>
  * Additionally a point can be passed along (together with
  * arbitrary other variables. This can be used to provide multiple
- * extensions in a sible template. Use a <b>i:switch</b> on point
+ * extensions in a single template. Use a <b>i:switch</b> on point
  * to define each extension as separate block.
  */
 public class TemplateExtension implements Comparable<TemplateExtension> {

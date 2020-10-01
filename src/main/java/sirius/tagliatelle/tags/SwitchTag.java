@@ -18,7 +18,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Handles <tt>i:if</tt> which emits its body if a condition is met.
+ * Handles <tt>i:switch</tt> which can hold multiple blocks which are only rendered if their name matches an expression.
  */
 public class SwitchTag extends TagHandler {
 
@@ -42,14 +42,13 @@ public class SwitchTag extends TagHandler {
         @Override
         public List<TemplateArgument> reportArguments() {
             return Collections.singletonList(new TemplateArgument(boolean.class,
-                                                                  "test",
-                                                                  "Contains the condition to check."));
+                    "test",
+                    "Contains the switch expression to evaluate."));
         }
 
         @Override
         public String getDescription() {
-            return "Emits its body only if the given condition evaluates to true. "
-                   + "Use an inner i:else to emit if the condition is false.";
+            return "Emits the inner i:block only if their name matches the 'test' expression.";
         }
     }
 

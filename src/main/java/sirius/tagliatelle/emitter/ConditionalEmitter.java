@@ -95,7 +95,7 @@ public class ConditionalEmitter extends Emitter {
     /**
      * Reduces the condition as well as the true and false blocks.
      * <p>
-     * If the condition becomes constant, the emitter is reduced the the repective true or false block.
+     * If the condition becomes constant, the emitter is reduced the the respective true or false block.
      *
      * @return either the emitter itself or, if the condition is constant, the true or false block
      */
