@@ -207,8 +207,8 @@ public class Resource {
         if (!outputFile.getParentFile().exists()) {
             outputFile.getParentFile().mkdirs();
         }
-        try (OutputStream outputStream = new FileOutputStream(outputFile)) {
-            Streams.transfer(openStream(), outputStream);
+        try (OutputStream outputStream = new FileOutputStream(outputFile); InputStream inputStream = openStream()) {
+            Streams.transfer(inputStream, outputStream);
             return outputFile;
         } catch (IOException e) {
             throw Exceptions.handle(e);
