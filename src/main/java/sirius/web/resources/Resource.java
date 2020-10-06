@@ -45,7 +45,7 @@ public class Resource {
     private long lastModified = -1;
     private final boolean consideredConstant;
     private final RateLimit checkInterval = RateLimit.timeInterval(10, TimeUnit.SECONDS);
-    private long minLastModified;
+    private final long minLastModified;
 
     private Resource(String scopeId, String path, URL url, boolean constant) {
         this.scopeId = scopeId;
