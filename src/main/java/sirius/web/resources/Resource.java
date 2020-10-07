@@ -16,8 +16,10 @@ import sirius.kernel.health.Exceptions;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -43,7 +45,7 @@ public class Resource {
     private long lastModified = -1;
     private final boolean consideredConstant;
     private final RateLimit checkInterval = RateLimit.timeInterval(10, TimeUnit.SECONDS);
-    private long minLastModified;
+    private final long minLastModified;
 
     private Resource(String scopeId, String path, URL url, boolean constant) {
         this.scopeId = scopeId;
@@ -190,6 +192,27 @@ public class Resource {
      */
     public String getContentAsString() {
         return new String(getContent(), StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Saves the content of the resource to a file at the given path.
+     * <p>
+     * This method creates the intermediate parent directories if non existent
+     *
+     * @param path the path to write the output file
+     * @return the output {@link File}
+     */
+    public File saveContentToFile(String path) {
+        File outputFile = new File(path);
+        if (!outputFile.getParentFile().exists()) {
+            outputFile.getParentFile().mkdirs();
+        }
+        try (OutputStream outputStream = new FileOutputStream(outputFile); InputStream inputStream = openStream()) {
+            Streams.transfer(inputStream, outputStream);
+            return outputFile;
+        } catch (IOException e) {
+            throw Exceptions.handle(e);
+        }
     }
 
     /**
