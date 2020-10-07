@@ -21,7 +21,7 @@
             <i:if test="!readonly">
                 <input type="hidden" name="@apply('%s_marker',name)"/>
             </i:if>
-            <input type="checkbox" id="@checkboxId" name="@name" value="@valueAttribute"
+            <input type="checkbox" name="@name" value="@valueAttribute" @if (isFilled(checkboxId)) { id="@checkboxId" }
                    @if (value) { checked="checked" } @if (readonly) { disabled="disabled" }/>
             <i:if test="isFilled(label)">
                 <span class="@if (required) { input-required } @if (adminOnly) { admin-link }">
