@@ -1,25 +1,28 @@
-<i:arg name="span" type="int" default="6" />
-<i:arg name="smallSpan" type="int" default="12" description="Defines the span for mobile devices" />
-<i:arg name="name" type="String" />
-<i:arg name="value" type="boolean" />
-<i:arg name="labelKey" type="String" default="" />
-<i:arg name="label" type="String" default="@i18n(labelKey)" />
-<i:arg name="helpKey" type="String" default="" />
-<i:arg name="help" type="String" default="@i18n(helpKey)" />
-<i:arg name="required" type="boolean" default="false" />
-<i:arg name="readonly" type="boolean" default="false" />
-<i:arg name="adminOnly" type="boolean" default="false" />
+<i:arg name="span" type="int" default="6"/>
+<i:arg name="smallSpan" type="int" default="12" description="Defines the span for mobile devices"/>
+<i:arg name="name" type="String"/>
+<i:arg name="value" type="boolean"/>
+<i:arg name="valueAttribute" type="String" default="true"/>
+<i:arg name="labelKey" type="String" default=""/>
+<i:arg name="label" type="String" default="@i18n(labelKey)"/>
+<i:arg name="helpKey" type="String" default=""/>
+<i:arg name="help" type="String" default="@i18n(helpKey)"/>
+<i:arg name="required" type="boolean" default="false"/>
+<i:arg name="readonly" type="boolean" default="false"/>
+<i:arg name="adminOnly" type="boolean" default="false"/>
+<i:arg name="checkboxId" type="String" default=""/>
 
-<i:pragma name="description" value="Renders a checkbox within a Wondergem template" />
+<i:pragma name="description" value="Renders a checkbox within a Wondergem template"/>
 
 
 <div class="col-xs-@smallSpan col-md-@span">
     <div class="form-group checkbox @user.signalFieldError(name)">
         <label>
             <i:if test="!readonly">
-                <input type="hidden" name="@apply('%s_marker',name)" />
+                <input type="hidden" name="@apply('%s_marker',name)"/>
             </i:if>
-            <input type="checkbox" name="@name" value="true" @if (value) { checked="checked" } @if (readonly) { disabled="disabled" } />
+            <input type="checkbox" name="@name" value="@valueAttribute" @id="@checkboxId"
+                   @if (value) { checked="checked" } @if (readonly) { disabled="disabled" }/>
             <i:if test="isFilled(label)">
                 <span class="@if (required) { input-required } @if (adminOnly) { admin-link }">
                     @label
