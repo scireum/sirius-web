@@ -106,6 +106,13 @@ public class Compiler extends InputProcessor {
         reportAsJson(context.getErrors(), out);
     }
 
+    /**
+     * Output specific errors to the json, so that the ACE editor can understand them.
+     *
+     * @param errors the errors to report
+     * @param out    the json output
+     * @see #reportProblemsAsJson(JSONStructuredOutput)
+     */
     public static void reportAsJson(Collection<ParseError> errors, JSONStructuredOutput out) {
         out.beginArray("problems");
         for (ParseError error : errors) {
