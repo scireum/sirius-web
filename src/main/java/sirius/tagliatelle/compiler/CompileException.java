@@ -11,7 +11,9 @@ package sirius.tagliatelle.compiler;
 import sirius.tagliatelle.Template;
 import sirius.web.services.JSONStructuredOutput;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Thrown to indicate one or more {@link CompileError compilation errors}.
@@ -62,7 +64,7 @@ public class CompileException extends Exception {
      * @return all errors and warnings which occurred while processing the user input
      */
     public List<CompileError> getErrors() {
-        return errors;
+        return Collections.unmodifiableList(errors);
     }
 
     /**
@@ -80,16 +82,7 @@ public class CompileException extends Exception {
      * @param out the JSON output to write to
      */
     public void reportAsJSON(JSONStructuredOutput out) {
-        out.beginArray("problems");
-        for (CompileError error : getErrors()) {
-            out.beginObject("problem");
-            out.property("row", error.getError().getPosition().getLine() - 1);
-            out.property("column", error.getError().getPosition().getPos());
-            out.property("text", error.getError().getMessage());
-            out.property("type", "error");
-            out.endObject();
-        }
-        out.endArray();
+        Compiler.reportAsJson(getErrors().stream().map(CompileError::getError).collect(Collectors.toList()), out);
     }
 }
 

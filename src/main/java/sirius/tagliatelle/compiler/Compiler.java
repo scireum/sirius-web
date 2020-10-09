@@ -26,11 +26,13 @@ import sirius.tagliatelle.expression.ConstantString;
 import sirius.tagliatelle.expression.Expression;
 import sirius.tagliatelle.expression.MacroCall;
 import sirius.tagliatelle.tags.TagHandler;
+import sirius.web.services.JSONStructuredOutput;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -93,6 +95,35 @@ public class Compiler extends InputProcessor {
         reader = null;
 
         return processCollectedErrors();
+    }
+
+    /**
+     * Outputs compilation warnings and errors to the json, so that the ACE editor can understand them.
+     *
+     * @param out the json output
+     */
+    public void reportProblemsAsJson(JSONStructuredOutput out) {
+        reportAsJson(context.getErrors(), out);
+    }
+
+    /**
+     * Output specific errors to the json, so that the ACE editor can understand them.
+     *
+     * @param errors the errors to report
+     * @param out    the json output
+     * @see #reportProblemsAsJson(JSONStructuredOutput)
+     */
+    public static void reportAsJson(Collection<ParseError> errors, JSONStructuredOutput out) {
+        out.beginArray("problems");
+        for (ParseError error : errors) {
+            out.beginObject("problem");
+            out.property("row", error.getPosition().getLine() - 1);
+            out.property("column", error.getPosition().getPos());
+            out.property("text", error.getMessage());
+            out.property("type", error.getSeverity().name().toLowerCase());
+            out.endObject();
+        }
+        out.endArray();
     }
 
     /**
