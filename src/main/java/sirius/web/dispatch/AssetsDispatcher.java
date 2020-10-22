@@ -24,6 +24,7 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.info.Product;
+import sirius.kernel.settings.Extension;
 import sirius.tagliatelle.Tagliatelle;
 import sirius.tagliatelle.Template;
 import sirius.tagliatelle.compiler.CompileException;
@@ -211,10 +212,15 @@ public class AssetsDispatcher implements WebDispatcher {
     }
 
     private void compileSASS(String scssUri, File file) throws IOException {
-
         Resources.LOG.FINE("Compiling: " + scssUri);
         SIRIUSGenerator gen = new SIRIUSGenerator();
         gen.importStylesheet(scssUri);
+
+        for (Extension extension : Sirius.getSettings()
+                                         .getExtensions("assets.scss." + Files.getFilenameWithoutExtension(scssUri))) {
+            gen.importStylesheet(extension.get("path").asString());
+        }
+
         gen.compile();
         try (FileWriter writer = new FileWriter(file, false)) {
             // Let the content compressor take care of minifying the CSS
