@@ -1,0 +1,10 @@
+(function (sirius, undefined) {
+
+    ___include("/assets/common/core.js")
+
+}(window.sirius = window.sirius || {}, window.console = window.console || {
+    log: function () {
+    }
+
+}));
+

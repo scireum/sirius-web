@@ -118,7 +118,6 @@ public class InvokeTag extends TagHandler {
 
     private boolean ensureThatTemplateIsPresent() {
         if (template == null) {
-
             if (templateResolved) {
                 // We already tried and failed...
                 return false;

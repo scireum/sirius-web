@@ -44,7 +44,7 @@ public class Resource {
     private final File file;
     private long lastModified = -1;
     private final boolean consideredConstant;
-    private final RateLimit checkInterval = RateLimit.timeInterval(10, TimeUnit.SECONDS);
+    private final RateLimit checkInterval = RateLimit.timeInterval(Sirius.isDev() ? 1 : 10, TimeUnit.SECONDS);
     private final long minLastModified;
 
     private Resource(String scopeId, String path, URL url, boolean constant) {
@@ -228,7 +228,7 @@ public class Resource {
      * @return the last modified value of the underlying resource.
      */
     public long getLastModified() {
-        if (lastModified == -1 || ((!consideredConstant || Sirius.isDev()) && checkInterval.check())) {
+        if (lastModified == -1 || Sirius.isDev() || (!consideredConstant && checkInterval.check())) {
             try {
                 if (file != null) {
                     lastModified = file.lastModified();
