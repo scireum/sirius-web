@@ -11,3 +11,5 @@ kind of overview and readability.
 
 Note that all functionality provided by this are wrapped in the **sirius** object
 to avoid any namespace clashed.
+
+Note that jQuery should not be used throughout this library as we try keeping it dependency free.
