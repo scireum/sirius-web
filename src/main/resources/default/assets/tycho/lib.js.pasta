@@ -1,0 +1,6 @@
+___include("/assets/tycho/libs/jquery/jquery-3.5.1.min.js")
+___include("/assets/tycho/libs/bootstrap/js/bootstrap.js")
+___include("/assets/tycho/libs/fontawesome/js/all.js")
+
+___invoke("/assets/common/common.js.pasta")
+
