@@ -1,5 +1,3 @@
-___include("/assets/common/polyfill.js")
-
 (function (sirius, undefined) {
 
     ___include("/assets/common/core.js")

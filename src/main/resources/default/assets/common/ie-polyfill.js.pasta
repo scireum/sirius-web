@@ -1,1 +1,2 @@
+___include("/assets/common/common-polyfills.js")
 ___include("/assets/common/libs/es6-promise/es6-promise.min.js")
