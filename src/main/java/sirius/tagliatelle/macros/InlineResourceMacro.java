@@ -24,6 +24,15 @@ import java.util.Optional;
 
 /**
  * Inlines a complete resource file into a JavaScript string.
+ * <p>
+ * Most probably the {@link EscapeJSMacro} wil be used to make the included contents safe in JS.
+ * <p>
+ * If only a block of JS is to be included (e.g. to aggregate many JS files into one), use either
+ * {@link sirius.tagliatelle.compiler.InvokeHandler} or {@link sirius.tagliatelle.compiler.IncludeHandler}.
+ *
+ * @see sirius.tagliatelle.compiler.InvokeHandler
+ * @see sirius.tagliatelle.compiler.IncludeHandler
+ * @see sirius.tagliatelle.macros.EscapeJSMacro
  */
 @Register
 public class InlineResourceMacro implements Macro {
@@ -67,6 +76,6 @@ public class InlineResourceMacro implements Macro {
 
     @Override
     public String getDescription() {
-        return "Returns the contents of the given asset as string.";
+        return "Returns the contents of the given asset as string. Use escaceJS() to place the data in a JS string.";
     }
 }
