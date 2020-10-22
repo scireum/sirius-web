@@ -46,6 +46,7 @@ if (!Array.prototype.includes) {
         return false;
     };
 }
+
 /**
  * Polyfill for the String.startsWith function
  * see https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith#Polyfill
