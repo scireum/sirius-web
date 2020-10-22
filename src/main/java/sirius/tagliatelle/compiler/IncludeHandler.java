@@ -67,7 +67,7 @@ public class IncludeHandler extends ExpressionHandler {
 
         String resourcePath = (String) expression.eval(null);
 
-        if (!resourcePath.startsWith("/assets") && !resourcePath.startsWith("assets/")) {
+        if (!resourcePath.startsWith("/assets/") && !resourcePath.startsWith("assets/")) {
             compiler.getContext()
                     .error(position,
                            "For security reasons only assets can be included. Invalid path: %s",

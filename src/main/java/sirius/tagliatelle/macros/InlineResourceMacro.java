@@ -76,6 +76,6 @@ public class InlineResourceMacro implements Macro {
 
     @Override
     public String getDescription() {
-        return "Returns the contents of the given asset as string. Use escaceJS() to place the data in a JS string.";
+        return "Returns the contents of the given asset as string. Use escapeJS() to place the data in a JS string.";
     }
 }
