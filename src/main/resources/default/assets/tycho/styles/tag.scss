@@ -1,0 +1,27 @@
+.dot-block {
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 8px;
+    align-self: center;
+    color: $grayDark;
+  }
+
+  font-size: 0.85rem;
+}
+
+.tag {
+  padding: 4px 8px;
+  background-color: $whiteDark;
+  border-radius: 4px;
+  color: $grayDark;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.tags {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  flex-wrap: wrap;
+}
