@@ -1,0 +1,10 @@
+<div id="mainContainer" class="container">
+    <div class="well" style="margin-top: 50px; font-size: 16px">
+        <i:if test="user.getCurrentScope().as(sirius.web.security.MaintenanceInfo.class).maintenanceMessage() != null">
+            @user.getCurrentScope().as(sirius.web.security.MaintenanceInfo.class).maintenanceMessage().getMessage()
+            <i:else>
+                @i18n("template.html.maintenanceInfo")
+            </i:else>
+        </i:if>
+    </div>
+</div>
