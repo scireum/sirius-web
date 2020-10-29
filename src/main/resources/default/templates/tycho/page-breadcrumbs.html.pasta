@@ -1,0 +1,4 @@
+<ol class="breadcrumb">
+    <li><a href="@tychoRoot"><span class="fa fa-home"></span></a></li>
+    <i:render name="body" />
+</ol>

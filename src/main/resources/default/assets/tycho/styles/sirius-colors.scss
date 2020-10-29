@@ -1,0 +1,82 @@
+/*!
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+$sirius-accent: #f1c40f;
+
+$sirius-primary: #3171D5;
+$sirius-primary-dark: #275AAA;
+
+$sirius-red: #D12600;
+$sirius-red-dark: #AB100E;
+$sirius-red-light: #ED5547;
+
+$sirius-green: #47C47F;
+$sirius-green-dark: #2F9663;
+$sirius-green-light: #77D9A3;
+
+$sirius-blue: #406FC7;
+$sirius-blue-dark: #33589F;
+$sirius-blue-light: #668;
+
+$sirius-violet: #DB397A;
+$sirius-violet-dark: #BD2461;
+$sirius-violet-light: #ED5C96;
+
+$sirius-orange: #F08700;
+$sirius-orange-dark: #D46A00;
+$sirius-orange-light: #FAA93E;
+
+$sirius-yellow: #FFBF00;
+$sirius-yellow-dark: #E6A607;
+$sirius-yellow-light: #FFD34F;
+
+$sirius-cyan: #46C6E3;
+$sirius-cyan-dark: #268E9E;
+$sirius-cyan-light: #68D3E3;
+
+$sirius-deep-blue: #53599A;
+$sirius-deep-blue-dark: #352E87;
+
+$sirius-gray: #ACACAC;
+$sirius-gray-dark: #808080;
+
+.text-sirius-red {
+  color: $sirius-red !important;
+}
+.bg-sirius-red {
+  background-color: $sirius-red !important;
+}
+.card-sirius-red {
+  border-left: 4px solid $sirius-red;
+}
+
+.text-sirius-green {
+  color: $sirius-green !important;
+}
+.bg-sirius-green {
+  background-color: $sirius-green !important;
+}
+.border-sirius-green {
+  border-left: 4px solid $sirius-green;
+}
+
+.text-sirius-green-dark {
+  color: $sirius-green-dark !important;
+}
+.bg-sirius-green-dark {
+  background-color: $sirius-green-dark !important;
+}
+.border-sirius-green-dark {
+  border-left: 4px solid $sirius-green-dark;
+}
+
+
+
+
+
+

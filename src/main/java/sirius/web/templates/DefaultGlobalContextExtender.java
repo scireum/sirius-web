@@ -61,6 +61,7 @@ public class DefaultGlobalContextExtender implements GlobalContextExtender {
         parameterCollector.collect("lang", NLS.getCurrentLang());
         parameterCollector.collect("contentHelper", ContentHelper.INSTANCE);
         parameterCollector.collect("wondergemRoot", wondergemRoot, String.class);
+        parameterCollector.collect("tychoRoot", wondergemRoot, String.class);
         parameterCollector.collect("tagLine", tagLine, String.class);
         parameterCollector.collect("contentSecurityPolicy", contentSecurityPolicy, String.class);
         parameterCollector.collect("saml", saml, SAMLHelper.class);

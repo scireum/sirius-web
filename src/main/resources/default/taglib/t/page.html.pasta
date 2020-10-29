@@ -1,0 +1,95 @@
+<i:arg type="String" name="titleKey" default=""/>
+<i:arg type="String" name="title" default="@i18n(titleKey)"/>
+<i:arg type="boolean" name="ignoreDisasterMode" default="false"/>
+
+
+<i:pragma name="description" value="Provides the base layout for a Tycho page"/>
+
+<!DOCTYPE html>
+<html lang="@lang">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+    <i:if test="isFilled(contentSecurityPolicy)">
+        <meta http-equiv="Content-Security-Policy" content="@contentSecurityPolicy"/>
+    </i:if>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@title - @product</title>
+
+    <link rel="stylesheet" media="screen" href="/assets/tycho/lib.css"/>
+    <link rel="stylesheet" media="screen" href="/assets/tycho/styles/tycho.css"/>
+    <link rel="shortcut icon" type="image/vnd.microsoft.icon" href="/assets/tycho/images/favicon.ico"/>
+
+    <i:render name="electron-fix">
+        <i:invoke template="/templates/tycho/page-electron.html.pasta"/>
+    </i:render>
+
+    <i:if test="@call.getUserAgent().contains('Trident')">
+        <script src="/assets/common/ie-polyfill.js" type="text/javascript"></script>
+    </i:if>
+    <script src="/assets/tycho/lib.js" type="text/javascript"></script>
+    <script src="/assets/tycho/scripts/tycho.js" type="text/javascript"></script>
+
+    <i:extensions target="tycho-page" point="head"/>
+
+    <i:render name="head"/>
+</head>
+<body>
+<div id="wrapper">
+    <div id="wrapper-menu">
+        <i:render name="menu">
+            <i:invoke template="/templates/tycho/page-menu.html.pasta"/>
+        </i:render>
+    </div>
+
+    <div id="wrapper-body">
+        <i:if test="!ignoreDisasterMode && user.getCurrentScope().is(sirius.web.security.MaintenanceInfo.class) && user.getCurrentScope().as(sirius.web.security.MaintenanceInfo.class).isLocked()">
+            <i:invoke template="/templates/tycho/page-disaster.html.pasta"/>
+            <i:else>
+                <i:render name="header"/>
+
+
+                <div id="page-header">
+
+                    <div class="container-fluid">
+                        <i:render name="aboveMessages"/>
+
+                        <i:render name="messages">
+                            <i:invoke template="/templates/tycho/page-messages.html.pasta"/>
+                        </i:render>
+
+                        <div id="page-nav">
+                            <i:render name="breadcrumbBar">
+                                <i:invoke template="/templates/tycho/page-breadcrumbs.html.pasta">
+                                    <i:render name="breadcrumbs"/>
+                                </i:invoke>
+                            </i:render>
+
+                             <div id="page-header-infos">
+                                <i:render name="headerInfos">
+                                </i:render>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+                <div id="mainContainer" class="container-fluid">
+
+                    <i:render name="body"/>
+                </div>
+            </i:else>
+        </i:if>
+    </div>
+    <div id="wrapper-footer">
+        <i:render name="footer">
+            <i:invoke template="/templates/tycho/page-footer.html.pasta"/>
+        </i:render>
+    </div>
+</div>
+
+<i:render name="dialogs"/>
+
+<i:invoke template="/templates/tycho/page-dialogs.html.pasta"/>
+<i:extensions target="tycho-page" point="footer"/>
+</body>
+</html>
