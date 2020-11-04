@@ -216,9 +216,11 @@ public class AssetsDispatcher implements WebDispatcher {
         SIRIUSGenerator gen = new SIRIUSGenerator();
         gen.importStylesheet(scssUri);
 
-        for (Extension extension : Sirius.getSettings()
-                                         .getExtensions("assets.scss." + Files.getFilenameWithoutExtension(scssUri))) {
-            gen.importStylesheet(extension.get("path").asString());
+        String configPath = "assets.scss." + Files.getFilenameWithoutExtension(scssUri);
+        if (Sirius.getSettings().has(configPath)) {
+            for (Extension extension : Sirius.getSettings().getExtensions(configPath)) {
+                gen.importStylesheet(extension.get("path").asString());
+            }
         }
 
         gen.compile();
