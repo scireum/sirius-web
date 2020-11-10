@@ -21,22 +21,35 @@ public interface LineBasedProcessor {
     /**
      * Generates an appropriate LineBasedProcessor based on the file extension of the given file.
      *
+     * @param name            the name of the file to process
+     * @param input           an input stream containing the data to import
+     * @param importAllSheets determines if all sheets or just the first should be processed
+     * @return an appropriate processor for the given file
+     * @throws sirius.kernel.health.HandledException if no processor can handle the given file
+     */
+    static LineBasedProcessor create(String name, InputStream input, boolean importAllSheets) {
+        if (name.toLowerCase().endsWith("xls")) {
+            return new XLSProcessor(input, importAllSheets);
+        }
+        if (name.toLowerCase().endsWith("xlsx")) {
+            return new XLSXProcessor(input, importAllSheets);
+        }
+        if (name.toLowerCase().endsWith("csv")) {
+            return new CSVProcessor(input);
+        }
+        throw Exceptions.createHandled().withSystemErrorMessage("Cannot process files of type: %s", name).handle();
+    }
+
+    /**
+     * Generates an appropriate LineBasedProcessor based on the file extension of the given file.
+     *
      * @param name  the name of the file to process
      * @param input an input stream containing the data to import
      * @return an appropriate processor for the given file
      * @throws sirius.kernel.health.HandledException if no processor can handle the given file
      */
     static LineBasedProcessor create(String name, InputStream input) {
-        if (name.toLowerCase().endsWith("xls")) {
-            return new XLSProcessor(input, false);
-        }
-        if (name.toLowerCase().endsWith("xlsx")) {
-            return new XLSProcessor(input, true);
-        }
-        if (name.toLowerCase().endsWith("csv")) {
-            return new CSVProcessor(input);
-        }
-        throw Exceptions.createHandled().withSystemErrorMessage("Cannot process files of type: %s", name).handle();
+        return create(name, input, false);
     }
 
     /**

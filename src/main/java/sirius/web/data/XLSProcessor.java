@@ -8,7 +8,6 @@
 
 package sirius.web.data;
 
-import com.github.pjfanning.xlsx.StreamingReader;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -23,6 +22,7 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Values;
 import sirius.kernel.nls.NLS;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -37,19 +37,33 @@ import java.util.function.Predicate;
  */
 public class XLSProcessor implements LineBasedProcessor {
 
-    private InputStream input;
-    private boolean xslx;
+    protected final InputStream input;
+    protected final boolean importAllSheets;
 
-    XLSProcessor(InputStream input, boolean xslx) {
+    XLSProcessor(InputStream input, boolean importAllSheets) {
         super();
         this.input = input;
-        this.xslx = xslx;
+        this.importAllSheets = importAllSheets;
     }
 
     @Override
     public void run(RowProcessor rowProcessor, Predicate<Exception> errorHandler) throws Exception {
-        Workbook wb = xslx ? StreamingReader.builder().bufferSize(4096).open(input) : new HSSFWorkbook(input);
-        Sheet sheet = wb.getSheetAt(0);
+        try (Workbook wb = openWorkbook()) {
+            if (importAllSheets) {
+                for (int i = 0; i < wb.getNumberOfSheets(); i++) {
+                    importSheet(rowProcessor, errorHandler, wb.getSheetAt(i));
+                }
+            } else {
+                importSheet(rowProcessor, errorHandler, wb.getSheetAt(0));
+            }
+        }
+    }
+
+    protected Workbook openWorkbook() throws IOException {
+        return new HSSFWorkbook(input);
+    }
+
+    protected void importSheet(RowProcessor rowProcessor, Predicate<Exception> errorHandler, Sheet sheet) {
         Iterator<Row> iter = sheet.rowIterator();
         int current = 0;
         TaskContext tc = TaskContext.get();
