@@ -515,7 +515,7 @@ class WebServerSpec extends BaseSpecification {
     @Scope(Scope.SCOPE_NIGHTLY)
     def "HTTP pipelining is supported correctly"() {
         given:
-        List<HttpResponse> responses = Lists.newArrayList()
+        List<HttpResponse> responses = new ArrayList<>()
         when:
         EventLoopGroup workerGroup = new NioEventLoopGroup()
         try {

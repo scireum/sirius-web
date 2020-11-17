@@ -14,6 +14,8 @@ import sirius.kernel.BaseSpecification
 import sirius.kernel.Scope
 import sirius.kernel.commons.Streams
 
+import java.nio.charset.StandardCharsets
+
 /**
  * Simulates "real" uploads through netty and sirius.
  */
@@ -33,7 +35,7 @@ class UploadSpec extends BaseSpecification {
         inputStream.close()
         outputStream.flush()
 
-        return new String(ByteStreams.toByteArray(connection.getInputStream()), StandardCharsets.UTF_8)
+        return new String(Streams.toByteArray(connection.getInputStream()), StandardCharsets.UTF_8)
     }
 
     def "Uploads a file to /upload-test"() {
