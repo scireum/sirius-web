@@ -207,7 +207,9 @@ public class BasicController implements Controller {
         out.beginResult();
         out.property("success", false);
         out.property("error", true);
-        out.property("code", status.codeAsText());
+        if(error instanceof ErrorCodeException) {
+            out.property("code", ((ErrorCodeException) error).getCode());
+        }
         out.property("message", error.getMessage());
         out.endResult();
     }
