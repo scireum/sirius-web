@@ -15,7 +15,7 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.HandledException;
 import sirius.tagliatelle.macros.Macro;
 import sirius.tagliatelle.tags.TagHandlerFactory;
-import sirius.web.controller.Controller;
+import sirius.web.controller.BasicController;
 import sirius.web.controller.Routed;
 import sirius.web.http.WebContext;
 import sirius.web.security.Permission;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * Provides a small helper to provide infos about available Tagliatelle tags.
  */
 @Register
-public class TagliatelleController implements Controller {
+public class TagliatelleController extends BasicController {
 
     /**
      * Describes the permission required to access the Tagliatelle infos
@@ -46,8 +46,8 @@ public class TagliatelleController implements Controller {
     private GlobalContext context;
 
     @Override
-    public void onError(WebContext ctx, HandledException error) {
-        ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
+    public void onError(WebContext webContext, HandledException error) {
+        webContext.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
     }
 
     /**

@@ -33,7 +33,7 @@ import java.util.Optional;
 import java.util.zip.GZIPInputStream;
 
 @Register
-public class TestController implements Controller {
+public class TestController extends BasicController {
 
     @Part
     private Tasks tasks;
@@ -42,8 +42,8 @@ public class TestController implements Controller {
     private CSRFHelper csrfHelper;
 
     @Override
-    public void onError(WebContext ctx, HandledException error) {
-        ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error.getMessage());
+    public void onError(WebContext webContext, HandledException error) {
+        webContext.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error.getMessage());
     }
 
     @Routed("/test/post")

@@ -11,17 +11,17 @@ package sirius.web.http;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.HandledException;
-import sirius.web.controller.Controller;
+import sirius.web.controller.BasicController;
 import sirius.web.controller.Routed;
 
 @Register
-public class CompletionPromiseTestController implements Controller {
+public class CompletionPromiseTestController extends BasicController {
 
     public static int lastPromisedReturnCode = 0;
 
     @Override
-    public void onError(WebContext ctx, HandledException error) {
-        ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
+    public void onError(WebContext webContext, HandledException error) {
+        webContext.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
     }
 
     @Routed("/test/completion-promise")
