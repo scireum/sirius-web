@@ -12,11 +12,13 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.nls.NLS;
+import sirius.web.ErrorCodeException;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebServer;
 import sirius.web.security.Permissions;
 import sirius.web.security.UserContext;
 import sirius.web.security.UserInfo;
+import sirius.web.services.JSONStructuredOutput;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -171,5 +173,62 @@ public class BasicController implements Controller {
             UserContext.message(Message.error(error.getMessage()));
         }
         defaultRoute.accept(ctx);
+    }
+
+    @Override
+    public void onJsonError(WebContext ctx, HandledException error) {
+        if (ctx.isResponseCommitted()) {
+            // Force underlying request / response to be closed...
+            ctx.respondWith()
+               .error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(ControllerDispatcher.LOG, error));
+            return;
+        }
+
+        if (error instanceof ErrorCodeException) {
+            try {
+                createJsonResult(ctx,
+                                 error,
+                                 HttpResponseStatus.valueOf(Integer.parseInt(((ErrorCodeException) error).getCode())));
+            } catch (NumberFormatException e) {
+                createJsonResult(ctx, error, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                throw Exceptions.handle(ControllerDispatcher.LOG, e);
+            }
+        } else {
+            createJsonResult(ctx, error);
+        }
+    }
+
+    /**
+     * Creates a JSON response from the given {@link HttpResponseStatus}.
+     *
+     * @param ctx    the context conatining the request
+     * @param error  the error which occurred
+     * @param status the given {@link HttpResponseStatus} to respond with
+     */
+    protected void createJsonResult(WebContext ctx, HandledException error, HttpResponseStatus status) {
+        JSONStructuredOutput out = ctx.respondWith().json(status);
+
+        out.beginResult();
+        out.property("success", false);
+        out.property("error", true);
+        out.property("code", ((ErrorCodeException) error).getCode());
+        out.property("message", error.getMessage());
+        out.endResult();
+    }
+
+    /**
+     * Creates a standard JSON response.
+     *
+     * @param ctx   the context conatining the request
+     * @param error the error which occurred
+     */
+    protected void createJsonResult(WebContext ctx, HandledException error) {
+        JSONStructuredOutput out = ctx.respondWith().json();
+
+        out.beginResult();
+        out.property("success", false);
+        out.property("error", true);
+        out.property("message", Exceptions.handle(ControllerDispatcher.LOG, error).getMessage());
+        out.endResult();
     }
 }

@@ -1435,12 +1435,25 @@ public class Response {
      * @return a structured output which will be sent as JSON response
      */
     public JSONStructuredOutput json() {
+        return json(HttpResponseStatus.OK);
+    }
+
+    /**
+     * Creates a JSON output which can be used to generate well formed json.
+     * <p>
+     * By default, caching will be disabled. If the generated JSON is small enough, it will be transmitted in
+     * one go. Otherwise a chunked response will be sent. The reponse will have the given {@link HttpResponseStatus}.
+     * <p>
+     * If a callback parameter is given in the request, the output will automatically be boxed into that function as JSONP.
+     *
+     * @param status the {@link HttpResponseStatus} the response shall have.
+     * @return a structured output which will be sent as JSON response
+     */
+    public JSONStructuredOutput json(HttpResponseStatus status) {
         String callback = wc.get("callback").getString();
         String encoding = wc.get("encoding").first().asString(StandardCharsets.UTF_8.name());
         String mimeType = Strings.isFilled(callback) ? "application/javascript" : "application/json";
-        return new JSONStructuredOutput(outputStream(HttpResponseStatus.OK, mimeType + ";charset=" + encoding),
-                                        callback,
-                                        encoding);
+        return new JSONStructuredOutput(outputStream(status, mimeType + ";charset=" + encoding), callback, encoding);
     }
 
     /**
