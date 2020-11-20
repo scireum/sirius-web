@@ -163,38 +163,38 @@ public class BasicController implements Controller {
     }
 
     @Override
-    public void onError(WebContext ctx, HandledException error) {
-        if (ctx.isResponseCommitted() || defaultRoute == null) {
-            fail(ctx, error);
+    public void onError(WebContext webContext, HandledException error) {
+        if (webContext.isResponseCommitted() || defaultRoute == null) {
+            fail(webContext, error);
             return;
         }
 
         if (error != null) {
             UserContext.message(Message.error(error.getMessage()));
         }
-        defaultRoute.accept(ctx);
+        defaultRoute.accept(webContext);
     }
 
     @Override
-    public void onJsonError(WebContext ctx, HandledException error) {
-        if (ctx.isResponseCommitted()) {
+    public void onJsonError(WebContext webContext, HandledException error) {
+        if (webContext.isResponseCommitted()) {
             // Force underlying request / response to be closed...
-            ctx.respondWith()
-               .error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(ControllerDispatcher.LOG, error));
+            webContext.respondWith()
+                      .error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(ControllerDispatcher.LOG, error));
             return;
         }
 
         if (error instanceof ErrorCodeException) {
             try {
-                createJsonResult(ctx,
+                createJsonResult(webContext,
                                  error,
                                  HttpResponseStatus.valueOf(Integer.parseInt(((ErrorCodeException) error).getCode())));
             } catch (NumberFormatException e) {
-                createJsonResult(ctx, error, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                createJsonResult(webContext, error, HttpResponseStatus.INTERNAL_SERVER_ERROR);
                 throw Exceptions.handle(ControllerDispatcher.LOG, e);
             }
         } else {
-            createJsonResult(ctx, error);
+            createJsonResult(webContext, error);
         }
     }
 

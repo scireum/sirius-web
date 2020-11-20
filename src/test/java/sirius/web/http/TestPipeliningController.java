@@ -18,13 +18,13 @@ import sirius.web.controller.Routed;
 @Register
 public class TestPipeliningController implements Controller {
     @Override
-    public void onError(WebContext ctx, HandledException error) {
+    public void onError(WebContext webContext, HandledException error) {
         throw new IllegalStateException();
     }
 
     @Override
-    public void onJsonError(WebContext ctx, HandledException error) {
-        onError(ctx, error);
+    public void onJsonError(WebContext webContext, HandledException error) {
+        onError(webContext, error);
     }
 
     @Routed("/pipelining/:1")

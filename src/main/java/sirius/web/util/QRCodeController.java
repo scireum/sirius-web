@@ -30,13 +30,13 @@ import java.io.OutputStream;
 public class QRCodeController implements Controller {
 
     @Override
-    public void onError(WebContext ctx, HandledException error) {
-        ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
+    public void onError(WebContext webContext, HandledException error) {
+        webContext.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
     }
 
     @Override
-    public void onJsonError(WebContext ctx, HandledException error) {
-        onError(ctx, error);
+    public void onJsonError(WebContext webContext, HandledException error) {
+        onError(webContext, error);
     }
 
     /**

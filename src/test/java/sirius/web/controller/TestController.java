@@ -42,13 +42,13 @@ public class TestController implements Controller {
     private CSRFHelper csrfHelper;
 
     @Override
-    public void onError(WebContext ctx, HandledException error) {
-        ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error.getMessage());
+    public void onError(WebContext webContext, HandledException error) {
+        webContext.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error.getMessage());
     }
 
     @Override
-    public void onJsonError(WebContext ctx, HandledException error) {
-        onError(ctx, error);
+    public void onJsonError(WebContext webContext, HandledException error) {
+        onError(webContext, error);
     }
 
     @Routed("/test/post")
