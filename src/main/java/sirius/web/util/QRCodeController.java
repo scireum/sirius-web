@@ -16,7 +16,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.HandledException;
-import sirius.web.controller.Controller;
+import sirius.web.controller.BasicController;
 import sirius.web.controller.Routed;
 import sirius.web.http.MimeHelper;
 import sirius.web.http.WebContext;
@@ -27,16 +27,11 @@ import java.io.OutputStream;
  * Used to generate QR codes by responding to /qr
  */
 @Register
-public class QRCodeController implements Controller {
+public class QRCodeController extends BasicController {
 
     @Override
     public void onError(WebContext webContext, HandledException error) {
         webContext.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
-    }
-
-    @Override
-    public void onJsonError(WebContext webContext, HandledException error) {
-        onError(webContext, error);
     }
 
     /**

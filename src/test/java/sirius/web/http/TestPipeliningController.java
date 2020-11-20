@@ -12,19 +12,15 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.HandledException;
-import sirius.web.controller.Controller;
+import sirius.web.controller.BasicController;
 import sirius.web.controller.Routed;
 
 @Register
-public class TestPipeliningController implements Controller {
+public class TestPipeliningController extends BasicController {
+
     @Override
     public void onError(WebContext webContext, HandledException error) {
         throw new IllegalStateException();
-    }
-
-    @Override
-    public void onJsonError(WebContext webContext, HandledException error) {
-        onError(webContext, error);
     }
 
     @Routed("/pipelining/:1")

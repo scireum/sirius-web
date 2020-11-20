@@ -33,7 +33,7 @@ import java.util.Optional;
 import java.util.zip.GZIPInputStream;
 
 @Register
-public class TestController implements Controller {
+public class TestController extends BasicController {
 
     @Part
     private Tasks tasks;
@@ -44,11 +44,6 @@ public class TestController implements Controller {
     @Override
     public void onError(WebContext webContext, HandledException error) {
         webContext.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error.getMessage());
-    }
-
-    @Override
-    public void onJsonError(WebContext webContext, HandledException error) {
-        onError(webContext, error);
     }
 
     @Routed("/test/post")
