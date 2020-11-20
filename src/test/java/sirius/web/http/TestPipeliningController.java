@@ -22,6 +22,11 @@ public class TestPipeliningController implements Controller {
         throw new IllegalStateException();
     }
 
+    @Override
+    public void onJsonError(WebContext ctx, HandledException error) {
+        onError(ctx, error);
+    }
+
     @Routed("/pipelining/:1")
     @SuppressWarnings("squid:S2925")
     @Explain("We need this delay here to properly test pipelining.")

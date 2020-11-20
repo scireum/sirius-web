@@ -51,4 +51,14 @@ public interface Controller {
      * @param error the error which occurred
      */
     void onError(WebContext ctx, HandledException error);
+
+    /**
+     * In case processing a JSON request via a method fails (throws an exception), this method will be called.
+     * <p>
+     * This provides a convenient way to generate a "fallback" JSON response.
+     *
+     * @param ctx the context conatining the request
+     * @param error the error which occurred
+     */
+    void onJsonError(WebContext ctx, HandledException error);
 }

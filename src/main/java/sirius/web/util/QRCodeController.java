@@ -34,6 +34,11 @@ public class QRCodeController implements Controller {
         ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
     }
 
+    @Override
+    public void onJsonError(WebContext ctx, HandledException error) {
+        onError(ctx, error);
+    }
+
     /**
      * Creates an QR code for the given content.
      * <p>

@@ -46,6 +46,11 @@ public class TestController implements Controller {
         ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error.getMessage());
     }
 
+    @Override
+    public void onJsonError(WebContext ctx, HandledException error) {
+        onError(ctx, error);
+    }
+
     @Routed("/test/post")
     public void postTest(WebContext ctx) {
         ctx.respondWith()

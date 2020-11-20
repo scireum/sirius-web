@@ -50,6 +50,11 @@ public class TagliatelleController implements Controller {
         ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
     }
 
+    @Override
+    public void onJsonError(WebContext ctx, HandledException error) {
+        onError(ctx, error);
+    }
+
     /**
      * Renders a list of all known tags.
      *
