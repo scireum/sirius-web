@@ -23,7 +23,6 @@ import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
-import sirius.web.ErrorCodeException;
 import sirius.web.http.Firewall;
 import sirius.web.http.InputStreamHandler;
 import sirius.web.http.Limited;
@@ -254,27 +253,9 @@ public class ControllerDispatcher implements WebDispatcher {
                        .addToMDC("controller",
                                  route.getController().getClass().getName() + "." + route.getMethod().getName());
             if (route.isJSONCall()) {
-                if (ctx.isResponseCommitted()) {
-                    // Force underlying request / response to be closed...
-                    ctx.respondWith()
-                       .error(HttpResponseStatus.INTERNAL_SERVER_ERROR,
-                              Exceptions.handle(ControllerDispatcher.LOG, ex));
-                    return;
-                }
-
-                JSONStructuredOutput out = ctx.respondWith().json();
-                out.beginResult();
-                out.property("success", false);
-                out.property("error", true);
-                if (ex instanceof ErrorCodeException) {
-                    out.property("code", ((ErrorCodeException) ex).getCode());
-                    out.property("message", ex.getMessage());
-                } else {
-                    out.property("message", Exceptions.handle(ControllerDispatcher.LOG, ex).getMessage());
-                }
-                out.endResult();
+                route.getController().onJsonError(ctx, Exceptions.handle(LOG, ex));
             } else {
-                route.getController().onError(ctx, Exceptions.handle(ControllerDispatcher.LOG, ex));
+                route.getController().onError(ctx, Exceptions.handle(LOG, ex));
             }
         } catch (Exception t) {
             ctx.respondWith()

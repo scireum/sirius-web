@@ -12,11 +12,13 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.nls.NLS;
+import sirius.web.ErrorCodeException;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebServer;
 import sirius.web.security.Permissions;
 import sirius.web.security.UserContext;
 import sirius.web.security.UserInfo;
+import sirius.web.services.JSONStructuredOutput;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -154,22 +156,61 @@ public class BasicController implements Controller {
     public void fail(WebContext ctx, HandledException error) {
         if (ctx.isResponseCommitted()) {
             // Force underlying request / response to be closed...
-            ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
+            if (error instanceof ErrorCodeException) {
+                ctx.respondWith().error(((ErrorCodeException) error).getHttpResponseStatus(), error);
+            } else {
+                ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
+            }
         } else {
             ctx.respondWith().template("/templates/wondergem/error.html.pasta", error.getMessage());
         }
     }
 
     @Override
-    public void onError(WebContext ctx, HandledException error) {
-        if (ctx.isResponseCommitted() || defaultRoute == null) {
-            fail(ctx, error);
+    public void onError(WebContext webContext, HandledException error) {
+        if (webContext.isResponseCommitted() || defaultRoute == null) {
+            fail(webContext, error);
             return;
         }
 
         if (error != null) {
             UserContext.message(Message.error(error.getMessage()));
         }
-        defaultRoute.accept(ctx);
+        defaultRoute.accept(webContext);
+    }
+
+    @Override
+    public void onJsonError(WebContext webContext, HandledException error) {
+        if (webContext.isResponseCommitted()) {
+            fail(webContext, error);
+            return;
+        }
+
+        if (error instanceof ErrorCodeException) {
+            createJsonErrorInformation(webContext, error, ((ErrorCodeException) error).getHttpResponseStatus());
+        } else {
+            // Return 200 to keep legacy behaviour
+            createJsonErrorInformation(webContext, error, HttpResponseStatus.OK);
+        }
+    }
+
+    /**
+     * Creates a JSON response from the given {@link HttpResponseStatus}.
+     *
+     * @param ctx    the context conatining the request
+     * @param error  the error which occurred
+     * @param status the given {@link HttpResponseStatus} to respond with
+     */
+    protected void createJsonErrorInformation(WebContext ctx, HandledException error, HttpResponseStatus status) {
+        JSONStructuredOutput out = ctx.respondWith().json(status);
+
+        out.beginResult();
+        out.property("success", false);
+        out.property("error", true);
+        if(error instanceof ErrorCodeException) {
+            out.property("code", ((ErrorCodeException) error).getCode());
+        }
+        out.property("message", error.getMessage());
+        out.endResult();
     }
 }
