@@ -39,6 +39,16 @@ public class ErrorCodeException extends HandledException {
         this.httpResponseStatus = HttpResponseStatus.OK;
     }
 
+    /**
+     * Creates a new exception with the given code, message and {@link HttpResponseStatus}
+     * <p>
+     * Note tha this is a <tt>HandledException</tt> so no further logging or error reporting will be performed by the
+     * system.
+     *
+     * @param code the error code to report
+     * @param message the message to add to the output
+     * @param httpResponseStatus the {@link HttpResponseStatus} to report
+     */
     public ErrorCodeException(String code, String message, HttpResponseStatus httpResponseStatus) {
         super(message);
         this.code = code;
