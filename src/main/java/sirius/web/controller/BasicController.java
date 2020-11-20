@@ -156,7 +156,11 @@ public class BasicController implements Controller {
     public void fail(WebContext ctx, HandledException error) {
         if (ctx.isResponseCommitted()) {
             // Force underlying request / response to be closed...
-            ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
+            if (error instanceof ErrorCodeException) {
+                ctx.respondWith().error(((ErrorCodeException) error).getHttpResponseStatus(), error);
+            } else {
+                ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
+            }
         } else {
             ctx.respondWith().template("/templates/wondergem/error.html.pasta", error.getMessage());
         }
@@ -178,23 +182,15 @@ public class BasicController implements Controller {
     @Override
     public void onJsonError(WebContext webContext, HandledException error) {
         if (webContext.isResponseCommitted()) {
-            // Force underlying request / response to be closed...
-            webContext.respondWith()
-                      .error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(ControllerDispatcher.LOG, error));
+            fail(webContext, error);
             return;
         }
 
         if (error instanceof ErrorCodeException) {
-            try {
-                createJsonResult(webContext,
-                                 error,
-                                 HttpResponseStatus.valueOf(Integer.parseInt(((ErrorCodeException) error).getCode())));
-            } catch (NumberFormatException e) {
-                createJsonResult(webContext, error, HttpResponseStatus.INTERNAL_SERVER_ERROR);
-                throw Exceptions.handle(ControllerDispatcher.LOG, e);
-            }
+            createJsonErrorInformation(webContext, error, ((ErrorCodeException) error).getHttpResponseStatus());
         } else {
-            createJsonResult(webContext, error);
+            // Return 200 to keep legacy behaviour
+            createJsonErrorInformation(webContext, error, HttpResponseStatus.OK);
         }
     }
 
@@ -205,30 +201,14 @@ public class BasicController implements Controller {
      * @param error  the error which occurred
      * @param status the given {@link HttpResponseStatus} to respond with
      */
-    protected void createJsonResult(WebContext ctx, HandledException error, HttpResponseStatus status) {
+    protected void createJsonErrorInformation(WebContext ctx, HandledException error, HttpResponseStatus status) {
         JSONStructuredOutput out = ctx.respondWith().json(status);
 
         out.beginResult();
         out.property("success", false);
         out.property("error", true);
-        out.property("code", ((ErrorCodeException) error).getCode());
+        out.property("code", status.codeAsText());
         out.property("message", error.getMessage());
-        out.endResult();
-    }
-
-    /**
-     * Creates a standard JSON response.
-     *
-     * @param ctx   the context conatining the request
-     * @param error the error which occurred
-     */
-    protected void createJsonResult(WebContext ctx, HandledException error) {
-        JSONStructuredOutput out = ctx.respondWith().json();
-
-        out.beginResult();
-        out.property("success", false);
-        out.property("error", true);
-        out.property("message", Exceptions.handle(ControllerDispatcher.LOG, error).getMessage());
         out.endResult();
     }
 }
