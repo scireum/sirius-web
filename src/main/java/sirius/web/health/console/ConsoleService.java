@@ -8,6 +8,7 @@
 
 package sirius.web.health.console;
 
+import org.checkerframework.checker.units.qual.C;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.di.GlobalContext;
@@ -40,21 +41,18 @@ public class ConsoleService implements StructuredService {
         out.beginResult();
         try {
             Watch w = Watch.start();
-            String[] commandData = call.require("command").asString().split(" ");
-            if (commandData.length == 0) {
+            CommandParser parser = new CommandParser(call.require("command").asString());
+            if (Strings.isEmpty(parser.parseCommand())) {
                 throw Exceptions.createHandled().withSystemErrorMessage("Please enter a command!").handle();
             }
-            String command = commandData.length > 0 ? commandData[0] : "";
-            String[] parameters = new String[commandData.length - 1];
-            System.arraycopy(commandData, 1, parameters, 0, commandData.length - 1);
 
-            Command cmd = ctx.getPart(command, Command.class);
+            Command cmd = ctx.getPart(parser.parseCommand(), Command.class);
             try (StringWriter buffer = new StringWriter(); PrintWriter pw = new PrintWriter(buffer)) {
                 pw.println();
                 if (cmd == null) {
-                    pw.println(Strings.apply("Unknown command: %s", command));
+                    pw.println(Strings.apply("Unknown command: %s", parser.parseCommand()));
                 } else {
-                    cmd.execute(new CommandOutput(pw), parameters);
+                    cmd.execute(new CommandOutput(pw), parser.getArgArray());
                     pw.println(w.duration());
                 }
                 pw.println();
