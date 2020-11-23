@@ -123,6 +123,11 @@ public class Response {
     private static final String CONTENT_TYPE_HTML = "text/html; charset=UTF-8";
 
     /*
+     * Represents a value to be used for CACHE_CONTROL which prevents any caching...
+     */
+    private static final String NO_CACHE = HttpHeaderValues.NO_CACHE + ", max-age=0";
+
+    /*
      * Stores the associated request
      */
     protected WebContext wc;
@@ -257,6 +262,11 @@ public class Response {
             response.headers().add(headers);
         }
 
+        // Never cache any server-sided errors...
+        if (status.code() >= 500) {
+            response.headers().set(HttpHeaderNames.CACHE_CONTROL, NO_CACHE);
+        }
+
         // Add keepalive header if required
         if (responseKeepalive && keepalive && isKeepalive()) {
             response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
@@ -341,7 +351,7 @@ public class Response {
                                    wc.getRequestedURI(),
                                    wc,
                                    ExecutionPoint.snapshot());
-                response.headers().set(HttpHeaderNames.CACHE_CONTROL, HttpHeaderValues.NO_CACHE + ", max-age=0");
+                response.headers().set(HttpHeaderNames.CACHE_CONTROL, NO_CACHE);
             }
         }
     }
@@ -867,7 +877,7 @@ public class Response {
                 addHeaderIfNotExists(HttpHeaderNames.CACHE_CONTROL, "public, max-age=" + cacheSeconds);
             }
         } else {
-            addHeaderIfNotExists(HttpHeaderNames.CACHE_CONTROL, HttpHeaderValues.NO_CACHE + ", max-age=0");
+            addHeaderIfNotExists(HttpHeaderNames.CACHE_CONTROL, NO_CACHE);
         }
         if (lastModifiedMillis > 0 && !headers().contains(HttpHeaderNames.LAST_MODIFIED)) {
             addHeaderIfNotExists(HttpHeaderNames.
