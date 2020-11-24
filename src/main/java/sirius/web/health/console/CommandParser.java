@@ -78,9 +78,14 @@ public class CommandParser {
     }
 
     private void parse() {
-        LookaheadReader reader = new LookaheadReader(new StringReader(input));
         command = null;
         args = new ArrayList<>();
+
+        if (Strings.isEmpty(input)) {
+            return;
+        }
+
+        LookaheadReader reader = new LookaheadReader(new StringReader(input));
         skipWhitespace(reader);
         while (!reader.current().isEndOfInput()) {
             String token = parseToken(reader);
