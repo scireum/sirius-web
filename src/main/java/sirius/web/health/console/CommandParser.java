@@ -21,7 +21,7 @@ import java.util.List;
  * Parses command invocations as e.g. seen in the {@link ConsoleService}.
  * <p>
  * A command is a verb, followed by additional parameters (0..N). Parameters are separated by one or more
- * whitespaces. If a parameter value itself contains whitepsaces, it can be put into quotes:
+ * whitespaces. If a parameter value itself contains whitespaces, it can be put into quotes:
  * <tt>command arg1 arg2 "argument 3"</tt>.
  */
 public class CommandParser {
