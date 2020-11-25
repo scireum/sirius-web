@@ -61,6 +61,7 @@ public class Route {
     private boolean preDispatchable;
     private boolean jsonCall;
     private Set<String> permissions = null;
+    private String subScope;
 
     /**
      * Compiles a method defined by a {@link Controller}
@@ -79,6 +80,16 @@ public class Route {
         result.jsonCall = routed.jsonCall();
         result.preDispatchable = routed.preDispatchable();
         result.permissions = Permissions.computePermissionsFromAnnotations(method);
+        if (method.isAnnotationPresent(SubScope.class)) {
+            if (result.permissions.isEmpty()) {
+                ControllerDispatcher.LOG.WARN(
+                        "Route %s does specify a sub scope but no permissions. The sub scope will not be enforced!",
+                        result.label);
+            }
+            result.subScope = method.getAnnotation(SubScope.class).value();
+        } else {
+            result.subScope = SubScope.SUB_SCOPE_UI;
+        }
         List<Class<?>> parameterTypes = new ArrayList<>(Arrays.asList(method.getParameterTypes()));
 
         if (!routed.value().startsWith("/")) {
@@ -285,6 +296,14 @@ public class Route {
         if (permissions == null) {
             return null;
         }
+
+        // Note that we intentionally only check and enforce the sub scope if the
+        // route is "not public accessible". This way, we do not have to fetch the
+        // effective user at all for such routes...
+        if (!user.get().isSubScopeEnabled(subScope)) {
+            return "Scope: " + subScope;
+        }
+
         for (String p : permissions) {
             if (!user.get().hasPermission(p)) {
                 return p;
