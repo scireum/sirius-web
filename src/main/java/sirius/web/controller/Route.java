@@ -298,7 +298,7 @@ public class Route {
         }
 
         // Note that we intentionally only check and enforce the sub scope if the
-        // route is "not public accessible". This way, we to not have to fetch the
+        // route is "not public accessible". This way, we do not have to fetch the
         // effective user at all for such routes...
         if (!user.get().isSubScopeEnabled(subScope)) {
             return "Scope: " + subScope;
