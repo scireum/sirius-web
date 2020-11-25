@@ -413,9 +413,25 @@ public abstract class GenericUserManager implements UserManager {
                                .withTenantName(computeTenantname(webContext, tenantId))
                                .withLang(computeLang(webContext, userId.asString()))
                                .withPermissions(roles)
-                               .withSettingsSupplier(ui -> getUserSettings(getScopeSettings(), ui))
+                               .withSettingsSupplier(user -> getUserSettings(getScopeSettings(), user))
+                               .withSubScopeCheck(this::checkSubScope)
                                .withUserSupplier(this::getUserObject)
+
                                .build();
+    }
+
+    /**
+     * Determines if the given sub scope is enabled for the given user.
+     * <p>
+     * By default all sub scopes are enabled for all users. This can and should however be overwritten
+     * by sophisticated custom user managers.
+     *
+     * @param user  the user to check
+     * @param scope the scope to check if enabled
+     * @return <tt>true</tt> if enabled, <tt>false</tt> otherwise
+     */
+    protected boolean checkSubScope(UserInfo user, String scope) {
+        return true;
     }
 
     /**

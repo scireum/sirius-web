@@ -19,6 +19,7 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -49,6 +50,7 @@ public class UserInfo extends Composable {
     protected Supplier<String> nameAppendixSupplier;
     protected Function<UserInfo, UserSettings> settingsSupplier;
     protected Function<UserInfo, Object> userSupplier;
+    protected BiPredicate<UserInfo, String> subScopeCheck;
 
     /**
      * Builder pattern to create a new {@link UserInfo}.
@@ -76,9 +78,6 @@ public class UserInfo extends Composable {
 
         /**
          * Provides a method to copy everything but the permissions from the given user info.
-         * <p>
-         * Allows as to copy the user info and modify its permissions
-         * (e.g. in the {@link UserManager#verifyUser(UserInfo)})
          *
          * @param info the info to copy from
          * @return the builder itself for fluent method calls
@@ -193,6 +192,18 @@ public class UserInfo extends Composable {
         public Builder withUserSupplier(Function<UserInfo, Object> userSupplier) {
             verifyState();
             user.userSupplier = userSupplier;
+            return this;
+        }
+
+        /**
+         * Installs a checker which determines if a given sub-scope is enabled for a user.
+         *
+         * @param subScopeCheck the checker to install
+         * @return the builder itself for fluent method calls
+         */
+        public Builder withSubScopeCheck(BiPredicate<UserInfo, String> subScopeCheck) {
+            verifyState();
+            user.subScopeCheck = subScopeCheck;
             return this;
         }
 
@@ -339,7 +350,7 @@ public class UserInfo extends Composable {
                 return Strings.apply("%s (%s)", username, nameAppendixSupplier.get());
             }
         }
-        
+
         return username;
     }
 
@@ -373,7 +384,6 @@ public class UserInfo extends Composable {
         return super.is(type);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <A> Optional<A> tryAs(@Nonnull Class<A> adapterType) {
         Transformable userObject = getUserObject(Transformable.class);
@@ -409,5 +419,22 @@ public class UserInfo extends Composable {
         } else {
             return settingsSupplier.apply(this);
         }
+    }
+
+    /**
+     * Determines if a sub-scope for a user is enabled or suppressed.
+     * <p>
+     * Sub scopes can be used e.g. to restrict a user to only be able to login to
+     * the FTP server as provided by sirius-biz but not to the backend UI.
+     *
+     * @param subScope the sub scope to check
+     * @return <tt>true</tt> if the sub scope is enabled, <tt>false</tt> otherwise
+     */
+    public boolean isSubScopeEnabled(String subScope) {
+        if (subScopeCheck == null) {
+            return true;
+        }
+
+        return subScopeCheck.test(this, subScope);
     }
 }
