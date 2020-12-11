@@ -28,6 +28,7 @@ public class SMTPConfiguration {
     private String mailSender;
     private String mailSenderName;
     private boolean useSenderAndEnvelopeFrom;
+    private String trustedServers;
 
     @ConfigValue("mail.smtp.host")
     private static String smtpHost;
@@ -49,6 +50,9 @@ public class SMTPConfiguration {
 
     @ConfigValue("mail.smtp.useEnvelopeFrom")
     private static boolean smtpUseEnvelopeFrom;
+
+    @ConfigValue("mail.smtp.trustedServers")
+    private static String smtpTrustedServers;
 
     private SMTPConfiguration() {
     }
@@ -104,6 +108,11 @@ public class SMTPConfiguration {
         return this;
     }
 
+    public SMTPConfiguration setTrustedServers(String trustedServers) {
+        this.trustedServers = trustedServers;
+        return this;
+    }
+
     /**
      * Creates a new configuration based on the config files.
      *
@@ -118,7 +127,8 @@ public class SMTPConfiguration {
                                 .setPassword(smtpPassword)
                                 .setMailSender(smtpSender)
                                 .setMailSenderName(smtpSenderName)
-                                .setUseSenderAndEnvelopeFrom(smtpUseEnvelopeFrom);
+                                .setUseSenderAndEnvelopeFrom(smtpUseEnvelopeFrom)
+                                .setTrustedServers(smtpTrustedServers);
     }
 
     /**
@@ -145,7 +155,8 @@ public class SMTPConfiguration {
                                 .setPassword(settings.get("mail.password").getString())
                                 .setMailSender(settings.get("mail.sender").getString())
                                 .setMailSenderName(settings.get("mail.senderName").getString())
-                                .setUseSenderAndEnvelopeFrom(settings.get("mail.useEnvelopeFrom").asBoolean());
+                                .setUseSenderAndEnvelopeFrom(settings.get("mail.useEnvelopeFrom").asBoolean())
+                                .setTrustedServers(settings.get("mail.trustedServers").getString());
     }
 
     /**
@@ -173,6 +184,15 @@ public class SMTPConfiguration {
      */
     public static boolean getDefaultUseSenderAndEnvelopeFrom() {
         return smtpUseEnvelopeFrom;
+    }
+
+    /**
+     * Returns a whitespace separated list of servers (domain names), whose SSL certificates can be trusted.
+     *
+     * @return a whitespace separated list of servers (domain names), whose SSL certificates can be trusted.
+     */
+    public String getTrustedServers() {
+        return trustedServers;
     }
 
     /**
