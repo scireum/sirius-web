@@ -19,7 +19,7 @@ import javax.annotation.Nonnull;
  * This macro determines if the current system environment is in production {@link sirius.kernel.Setup.Mode}.
  */
 @Register
-public class IsProductiveMacro extends EnvironmentModeMacro {
+public class IsProductionMacro extends EnvironmentModeMacro {
 
     @Override
     public Object eval(LocalRenderContext ctx, Expression[] args) {
@@ -34,6 +34,6 @@ public class IsProductiveMacro extends EnvironmentModeMacro {
     @Nonnull
     @Override
     public String getName() {
-        return "isProductive";
+        return "isProduction";
     }
 }
