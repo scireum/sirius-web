@@ -29,6 +29,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -235,9 +236,13 @@ public class ScopeInfo extends Composable {
     }
 
     private Object makeHelperByType(Class<?> aClass) {
+        return makeHelper(findFactoryForType(aClass));
+    }
+
+    private HelperFactory<?> findFactoryForType(Class<?> aClass) {
         for (HelperFactory<?> factory : factories) {
             if (aClass.equals(factory.getHelperType())) {
-                return makeHelper(factory);
+                return factory;
             }
         }
 
@@ -284,23 +289,29 @@ public class ScopeInfo extends Composable {
     private void fillFriends(Object result) {
         Reflection.getAllFields(result.getClass())
                   .stream()
-                  .filter(f -> f.isAnnotationPresent(Helper.class))
-                  .forEach(f -> {
+                  .filter(field -> field.isAnnotationPresent(Helper.class))
+                  .forEach(field -> {
                       try {
-                          f.setAccessible(true);
-                          f.set(result, makeHelperByType(f.getType()));
+                          fillFriend(result, field);
                       } catch (Exception e) {
                           Exceptions.handle()
                                     .error(e)
                                     .to(UserContext.LOG)
                                     .withSystemErrorMessage("Cannot fill friend %s in %s of helper %s (%s): %s (%s)",
-                                                            f.getType().getName(),
-                                                            f.getName(),
+                                                            field.getType().getName(),
+                                                            field.getName(),
                                                             result,
                                                             result.getClass().getName())
                                     .handle();
                       }
                   });
+    }
+
+    private void fillFriend(Object result, Field field) throws IllegalAccessException {
+        HelperFactory<?> factory = findFactoryForType(field.getType());
+
+        field.setAccessible(true);
+        field.set(result, makeHelper(factory));
     }
 
     /**
