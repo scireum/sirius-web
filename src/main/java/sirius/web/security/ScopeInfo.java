@@ -29,6 +29,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -51,6 +52,8 @@ import java.util.regex.Pattern;
 public class ScopeInfo extends Composable {
 
     private static final String DEFAULT_SCOPE_ID = "default";
+
+    private static final int HELPER_FRIENDS_MAX_DEPTH = 25;
 
     /**
      * If no distinct scope is recognized by the current <tt>ScopeDetector</tt> or if no detector is installed,
@@ -235,9 +238,13 @@ public class ScopeInfo extends Composable {
     }
 
     private Object makeHelperByType(Class<?> aClass) {
+        return makeHelper(findFactoryForType(aClass));
+    }
+
+    private HelperFactory<?> findFactoryForType(Class<?> aClass) {
         for (HelperFactory<?> factory : factories) {
             if (aClass.equals(factory.getHelperType())) {
-                return makeHelper(factory);
+                return factory;
             }
         }
 
@@ -261,12 +268,20 @@ public class ScopeInfo extends Composable {
     }
 
     private Object makeHelper(HelperFactory<?> factory) {
+        return makeHelper(factory, 0);
+    }
+
+    private Object makeHelper(HelperFactory<?> factory, int circuitBreaker) {
+        circuitBreaker++;
+
         Object result = factory.make(this);
+
         ctx.wire(result);
         fillConfig(result);
+        fillFriends(result, circuitBreaker);
+
         helpersByType.put(factory.getHelperType(), result);
         helpersByName.put(factory.getName(), result);
-        fillFriends(result);
 
         return result;
     }
@@ -281,26 +296,36 @@ public class ScopeInfo extends Composable {
                                                                     f.getAnnotation(HelperConfig.class).value()));
     }
 
-    private void fillFriends(Object result) {
+    private void fillFriends(Object result, int circuitBreaker) {
         Reflection.getAllFields(result.getClass())
                   .stream()
-                  .filter(f -> f.isAnnotationPresent(Helper.class))
-                  .forEach(f -> {
+                  .filter(field -> field.isAnnotationPresent(Helper.class))
+                  .forEach(field -> {
                       try {
-                          f.setAccessible(true);
-                          f.set(result, makeHelperByType(f.getType()));
+                          fillFriend(result, field, circuitBreaker);
                       } catch (Exception e) {
                           Exceptions.handle()
                                     .error(e)
                                     .to(UserContext.LOG)
                                     .withSystemErrorMessage("Cannot fill friend %s in %s of helper %s (%s): %s (%s)",
-                                                            f.getType().getName(),
-                                                            f.getName(),
+                                                            field.getType().getName(),
+                                                            field.getName(),
                                                             result,
                                                             result.getClass().getName())
                                     .handle();
                       }
                   });
+    }
+
+    private void fillFriend(Object result, Field field, int circuitBreaker) throws IllegalAccessException {
+        HelperFactory<?> factory = findFactoryForType(field.getType());
+
+        if (circuitBreaker > HELPER_FRIENDS_MAX_DEPTH) {
+            throw new IllegalStateException("Detected circular friend dependency");
+        }
+
+        field.setAccessible(true);
+        field.set(result, makeHelper(factory, circuitBreaker));
     }
 
     /**
