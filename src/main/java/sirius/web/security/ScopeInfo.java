@@ -53,6 +53,8 @@ public class ScopeInfo extends Composable {
 
     private static final String DEFAULT_SCOPE_ID = "default";
 
+    private static final int HELPER_FRIENDS_MAX_DEPTH = 25;
+
     /**
      * If no distinct scope is recognized by the current <tt>ScopeDetector</tt> or if no detector is installed,
      * this scope is used.
@@ -266,12 +268,20 @@ public class ScopeInfo extends Composable {
     }
 
     private Object makeHelper(HelperFactory<?> factory) {
+        return makeHelper(factory, 0);
+    }
+
+    private Object makeHelper(HelperFactory<?> factory, int circuitBreaker) {
+        circuitBreaker++;
+
         Object result = factory.make(this);
+
         ctx.wire(result);
         fillConfig(result);
+
         helpersByType.put(factory.getHelperType(), result);
         helpersByName.put(factory.getName(), result);
-        fillFriends(result);
+        fillFriends(result, circuitBreaker);
 
         return result;
     }
@@ -286,13 +296,13 @@ public class ScopeInfo extends Composable {
                                                                     f.getAnnotation(HelperConfig.class).value()));
     }
 
-    private void fillFriends(Object result) {
+    private void fillFriends(Object result, int circuitBreaker) {
         Reflection.getAllFields(result.getClass())
                   .stream()
                   .filter(field -> field.isAnnotationPresent(Helper.class))
                   .forEach(field -> {
                       try {
-                          fillFriend(result, field);
+                          fillFriend(result, field, circuitBreaker);
                       } catch (Exception e) {
                           Exceptions.handle()
                                     .error(e)
@@ -307,11 +317,15 @@ public class ScopeInfo extends Composable {
                   });
     }
 
-    private void fillFriend(Object result, Field field) throws IllegalAccessException {
+    private void fillFriend(Object result, Field field, int circuitBreaker) throws IllegalAccessException {
         HelperFactory<?> factory = findFactoryForType(field.getType());
 
+        if (circuitBreaker > HELPER_FRIENDS_MAX_DEPTH) {
+            throw new IllegalStateException("Detected circular friend dependency");
+        }
+
         field.setAccessible(true);
-        field.set(result, makeHelper(factory));
+        field.set(result, makeHelper(factory, circuitBreaker));
     }
 
     /**
