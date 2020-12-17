@@ -278,10 +278,10 @@ public class ScopeInfo extends Composable {
 
         ctx.wire(result);
         fillConfig(result);
+        fillFriends(result, circuitBreaker);
 
         helpersByType.put(factory.getHelperType(), result);
         helpersByName.put(factory.getName(), result);
-        fillFriends(result, circuitBreaker);
 
         return result;
     }
