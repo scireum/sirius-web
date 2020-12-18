@@ -20,6 +20,12 @@ import sirius.pasta.noodle.sandbox.PublicAPI;
 import javax.annotation.Nonnull;
 import java.util.List;
 
+/**
+ * Performs a lookup for the given part.
+ * <p>
+ * This is a shortcut for {@code Injector.context().getPart(type)}. Note that due to the static nature of the system
+ * this is a constant call and will be optimized away entirely.
+ */
 @Register
 @PublicAPI
 public class PartMacro extends BasicMacro {

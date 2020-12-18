@@ -21,6 +21,10 @@ import java.util.List;
 
 /**
  * Reads the system configuration using the given key.
+ * <p>
+ * This directly permits to access the system config (and is thus not part of the public API). However, note
+ * that due to the static nature of the system, this call is considered constant and optimized away at compile
+ * time.
  */
 @Register
 public class ConfigMacro extends BasicMacro {
