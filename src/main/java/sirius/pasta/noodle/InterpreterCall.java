@@ -35,7 +35,7 @@ public class InterpreterCall implements Callable {
      * @param constants         the list of shared constants
      * @param returnType        the return type of this call
      * @param genericReturnType the generic return type
-     * @param sourceCodeInfo  a way to retrieve the source code in case of an error
+     * @param sourceCodeInfo    a way to retrieve the source code in case of an error
      * @param ipToPositionTable a map which determines the source location for each bytecode
      */
     public InterpreterCall(List<Integer> opcodes,
@@ -119,8 +119,6 @@ public class InterpreterCall implements Callable {
 
         return listing.toString();
     }
-
-
 
     @Override
     public String toString() {

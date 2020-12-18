@@ -726,7 +726,7 @@ public class Parser extends InputProcessor {
     /**
      * Parses a static call to a {@link sirius.pasta.noodle.macros.Macro}.
      *
-     * @param position        the position of the invokation
+     * @param position   the position of the invokation
      * @param methodName the name of the macro to call
      * @return the parsed {@link MacroCall}
      */
@@ -772,7 +772,7 @@ public class Parser extends InputProcessor {
      * <p>
      * This will be either a well known keyword (true, false, null) or a local or global variable.
      *
-     * @param position          the position where the identifier started
+     * @param position     the position where the identifier started
      * @param variableName the parsed variable name
      * @return either a representation of a constant value or a read operation on the respective local or global
      * variable
@@ -799,7 +799,10 @@ public class Parser extends InputProcessor {
         for (LegacyGlobalsHandler legacyGlobalsHandler : legacyGlobalsHandlers) {
             Tuple<String, Node> replacement = legacyGlobalsHandler.replaceLegacyVariable(context, variableName);
             if (replacement != null) {
-                context.warning(position, "Replacing legacy variable '%s' with '%s'!", variableName, replacement.getFirst());
+                context.warning(position,
+                                "Replacing legacy variable '%s' with '%s'!",
+                                variableName,
+                                replacement.getFirst());
                 return replacement.getSecond();
             }
         }
@@ -812,7 +815,7 @@ public class Parser extends InputProcessor {
      * <p>
      * This will be either a well known keyword (true, false, null) or a local or global variable.
      *
-     * @param position          the position where the identifier started
+     * @param position     the position where the identifier started
      * @param variableName the parsed variable name
      * @return either a representation of a constant value or a read operation on the respective local or global
      * variable

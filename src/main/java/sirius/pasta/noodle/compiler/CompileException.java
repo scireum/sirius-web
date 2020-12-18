@@ -42,7 +42,9 @@ public class CompileException extends Exception {
      * @param errors         the errors which occurred while processing the user input
      * @return a new CompileException which can be thrown
      */
-    public static CompileException create(String sourceName, @Nullable String sourceLocation, List<CompileError> errors) {
+    public static CompileException create(String sourceName,
+                                          @Nullable String sourceLocation,
+                                          List<CompileError> errors) {
         StringBuilder message = new StringBuilder();
         message.append("Cannot compile ").append(Files.getFilenameAndExtension(sourceName)).append(":\n");
         errors.forEach(message::append);

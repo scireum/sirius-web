@@ -65,6 +65,8 @@ public class BlockNode extends Node {
 
     @Override
     public String toString() {
-        return "BlockNode: {\n" + statements.stream().map(Object::toString).collect(Collectors.joining(";\n")) + ";\n}\n";
+        return "BlockNode: {\n"
+               + statements.stream().map(Object::toString).collect(Collectors.joining(";\n"))
+               + ";\n}\n";
     }
 }

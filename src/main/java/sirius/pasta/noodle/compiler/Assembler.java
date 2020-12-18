@@ -108,8 +108,8 @@ public class Assembler {
     public void coerce(Position position, Class<?> type, Class<?> otherType) {
         if (Long.class.equals(CompilationContext.autoboxClass(type)) && CompilationContext.isAssignableTo(Double.class,
                                                                                                           CompilationContext
-                                                                                                                .autoboxClass(
-                                                                                                                        otherType))) {
+                                                                                                                  .autoboxClass(
+                                                                                                                          otherType))) {
             emitByteCode(OpCode.OP_COERCE_LONG_TO_DOUBLE, 0, position);
         } else if (Integer.class.equals(CompilationContext.autoboxClass(type))) {
             if (CompilationContext.isAssignableTo(Double.class, CompilationContext.autoboxClass(otherType))) {
