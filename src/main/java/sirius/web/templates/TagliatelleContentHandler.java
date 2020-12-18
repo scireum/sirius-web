@@ -11,10 +11,10 @@ package sirius.web.templates;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
-import sirius.tagliatelle.Tagliatelle;
-import sirius.tagliatelle.Template;
-import sirius.tagliatelle.compiler.CompileException;
-import sirius.tagliatelle.compiler.Compiler;
+import sirius.pasta.noodle.compiler.CompileException;
+import sirius.pasta.tagliatelle.Tagliatelle;
+import sirius.pasta.tagliatelle.Template;
+import sirius.pasta.tagliatelle.compiler.TemplateCompiler;
 
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -38,8 +38,12 @@ public class TagliatelleContentHandler implements ContentHandler {
 
     protected Template getTemplate(Generator generator) throws CompileException {
         if (Strings.isFilled(generator.getTemplateCode())) {
-            Compiler compiler = new Compiler(tagliatelle.createCompilationContext("inline", null, null),
-                                             generator.getTemplateCode());
+            TemplateCompiler compiler =
+                    new TemplateCompiler(tagliatelle.createInlineCompilationContext(Strings.isFilled(generator.getTemplateName()) ?
+                                                                                    generator.getTemplateName() :
+                                                                                    "inline",
+                                                                                    generator.getTemplateCode(),
+                                                                                    null));
             compiler.compile();
             return compiler.getContext().getTemplate();
         } else {

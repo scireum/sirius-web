@@ -45,10 +45,11 @@ import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Microtiming;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.XMLStructuredOutput;
-import sirius.tagliatelle.Tagliatelle;
-import sirius.tagliatelle.Template;
-import sirius.tagliatelle.compiler.CompileException;
-import sirius.tagliatelle.rendering.GlobalRenderContext;
+import sirius.pasta.Pasta;
+import sirius.pasta.noodle.compiler.CompileException;
+import sirius.pasta.tagliatelle.Tagliatelle;
+import sirius.pasta.tagliatelle.Template;
+import sirius.pasta.tagliatelle.rendering.GlobalRenderContext;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 import sirius.web.services.JSONStructuredOutput;
@@ -1205,7 +1206,7 @@ public class Response {
 
     private void handleTemplateError(String name, Exception e) {
         throw Exceptions.handle()
-                        .to(Tagliatelle.LOG)
+                        .to(Pasta.LOG)
                         .error(e)
                         .withSystemErrorMessage("Failed to render the template '%s': %s (%s)", name)
                         .handle();

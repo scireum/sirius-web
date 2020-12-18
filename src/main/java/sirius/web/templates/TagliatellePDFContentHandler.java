@@ -11,8 +11,8 @@ package sirius.web.templates;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
-import sirius.tagliatelle.Tagliatelle;
-import sirius.tagliatelle.Template;
+import sirius.pasta.tagliatelle.Tagliatelle;
+import sirius.pasta.tagliatelle.Template;
 
 import java.io.OutputStream;
 
