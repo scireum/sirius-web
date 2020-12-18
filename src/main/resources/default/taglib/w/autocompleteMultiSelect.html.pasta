@@ -17,7 +17,7 @@
 
 <i:pragma name="description" value="Renders an autocomplete for multiple values within a Wondergem template"/>
 
-<i:local name="id" value="@apply('multiselect-%s', call.generateLocalId())"/>
+<i:local name="id" value="@generateId('multiselect-%s')"/>
 
 <div id="@id" class="sirius-select multi-select">
     <w:textfield name="@name"

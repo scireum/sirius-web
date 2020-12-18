@@ -3,6 +3,6 @@
 <i:pragma name="description"
           value="Checks if the current user has the wanted permission within a Wondergem template" />
 
-<i:if test="user.getUser().hasPermission(permission)">
+<i:if test="user().hasPermission(permission)">
     <i:render name="body" />
 </i:if>

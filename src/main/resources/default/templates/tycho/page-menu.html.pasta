@@ -1,5 +1,5 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-white">
-    <a class="navbar-brand" href="@tychoRoot">
+    <a class="navbar-brand" href="@config('product.tychoRoot')">
         <svg width="100px" height="33px">
             <image xlink:href="/assets/images/menu_logo.svg"
                    src="/assets/images/menu_logo.png"

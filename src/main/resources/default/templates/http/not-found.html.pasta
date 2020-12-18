@@ -12,7 +12,7 @@
     </div>
 
     <div class="form-actions">
-        <a href="@wondergemRoot" class="btn">
+        <a href="@config('product.wondergemRoot')" class="btn">
             <i class="fa fa-angle-double-left"></i> @i18n('BasicController.toDashboard')
         </a>
     </div>

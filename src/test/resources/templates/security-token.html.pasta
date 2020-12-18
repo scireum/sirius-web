@@ -1,1 +1,1 @@
-@csrf.getCSRFToken(call)
+@part(sirius.web.http.CSRFHelper.class).getCSRFToken()

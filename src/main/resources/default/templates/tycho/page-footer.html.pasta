@@ -4,7 +4,7 @@
             <i:invoke template="/templates/wondergem/page-footer-menu.html.pasta"  />
         </div>
         <div class="text-right form-control-sm text-muted">
-            <span title="@watch.elapsedMillis() ms (@detailedVersion)">@nodeName</span>
+            <span title="@CallContext.getCurrent().getWatch().elapsedMillis() ms (@const(Product.getProduct().getDetails()))">@const(CallContext.getNodeName())</span>
         </div>
     </div>
 </div>
