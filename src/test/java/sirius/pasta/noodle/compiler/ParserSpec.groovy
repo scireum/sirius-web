@@ -28,7 +28,7 @@ class ParserSpec extends BaseSpecification {
         and:
         parse("Map.Entry.class").getConstantValue() == Map.Entry.class
         and:
-        parse("sirius.kernel.Setup.Mode.DEV").getConstantValue() == Setup.Mode.DEV
+        parse("sirius.kernel.Setup.Mode.DEVELOP").getConstantValue() == Setup.Mode.DEVELOP
         and:
         parse("java.lang.System.out").getConstantValue() == System.out
         and:
