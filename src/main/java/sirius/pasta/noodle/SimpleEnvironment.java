@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Provides a simple and context free environment within a <tt>Noodle</tt> {@link Callable} can be executed.
+ * Provides a simple and context free environment in which a <tt>Noodle</tt> {@link Callable} can be executed.
  */
 public class SimpleEnvironment implements Environment {
 

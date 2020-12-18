@@ -38,12 +38,15 @@ public class VariableScoper {
 
     /**
      * Represents a variable.
+     * <p>
+     * A variable is a name which is valid/visible within a {@link Scope} and internally assigned to a local index
+     * which is used to store the actual value in the {@link sirius.pasta.noodle.Environment} at runtime.
      */
     public static class Variable {
-        private String name;
-        private int localIndex;
-        private Class<?> type;
-        private Type genericType;
+        private final String name;
+        private final int localIndex;
+        private final Class<?> type;
+        private final Type genericType;
 
         protected Variable(String name, int localIndex, Class<?> type, Type genericType) {
             this.name = name;
@@ -52,29 +55,14 @@ public class VariableScoper {
             this.genericType = genericType;
         }
 
-        /**
-         * Returns the name of the variable.
-         *
-         * @return the name of the variable
-         */
         public String getName() {
             return name;
         }
 
-        /**
-         * Returns the index of the variable.
-         *
-         * @return the index of the variable which is later managed via the environment
-         */
         public int getLocalIndex() {
             return localIndex;
         }
 
-        /**
-         * Returns the type of the variable.
-         *
-         * @return the type of the variable
-         */
         public Class<?> getType() {
             return type;
         }
@@ -115,10 +103,9 @@ public class VariableScoper {
         }
     }
 
-    private CompilationContext compilationContext;
-    private List<Variable> variables = new ArrayList<>();
+    private final CompilationContext compilationContext;
+    private final List<Variable> variables = new ArrayList<>();
     private int maxVariables = 0;
-    private List<Integer> scopes = new ArrayList<>();
 
     /**
      * Creates a new scoper for the given context
