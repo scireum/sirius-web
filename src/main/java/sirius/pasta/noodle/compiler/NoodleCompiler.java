@@ -62,9 +62,9 @@ public class NoodleCompiler {
      * then report all detected errors.
      */
     public Callable compileScript() {
-        Node ir = parseBlock();
-        Optional<Callable> simpleCall = simplify(ir);
-        return simpleCall.orElseGet(() -> assemble(ir));
+        Node syntaxTree = parseBlock();
+        Optional<Callable> simpleCall = simplify(syntaxTree);
+        return simpleCall.orElseGet(() -> assemble(syntaxTree));
     }
 
     protected Node parseBlock() {
@@ -99,30 +99,30 @@ public class NoodleCompiler {
         return ir;
     }
 
-    private Callable assemble(Node ast) {
+    private Callable assemble(Node syntaxTree) {
         Assembler assembler = new Assembler();
-        ast.emit(assembler);
-        return assembler.build(ast.getType(), ast.getGenericType(), context.getSourceCodeInfo());
+        syntaxTree.emit(assembler);
+        return assembler.build(syntaxTree.getType(), syntaxTree.getGenericType(), context.getSourceCodeInfo());
     }
 
-    private Optional<Callable> simplify(Node ir) {
-        if (ir instanceof Constant) {
-            return Optional.of(new ConstantCall(ir.getConstantValue()));
+    private Optional<Callable> simplify(Node syntaxTree) {
+        if (syntaxTree instanceof Constant) {
+            return Optional.of(new ConstantCall(syntaxTree.getConstantValue()));
         }
 
-        if (ir instanceof IntrinsicCall) {
-            IntrinsicCall call = (IntrinsicCall) ir;
+        if (syntaxTree instanceof IntrinsicCall) {
+            IntrinsicCall call = (IntrinsicCall) syntaxTree;
             if (call.getOpCode() == OpCode.OP_INTRINSIC_NLS_GET && call.getParameter(0).isConstant()) {
                 return Optional.of(new NLSCall((String) call.getParameter(0).getConstantValue()));
             }
         }
 
-        if (ir instanceof PushTemporary) {
-            PushTemporary pushTemporary = (PushTemporary) ir;
+        if (syntaxTree instanceof PushTemporary) {
+            PushTemporary pushTemporary = (PushTemporary) syntaxTree;
             return Optional.of(new ReturnVariableCall(pushTemporary.getVariableName(),
                                                       pushTemporary.getVariableIndex(),
-                                                      ir.getType(),
-                                                      ir.getGenericType()));
+                                                      syntaxTree.getType(),
+                                                      syntaxTree.getGenericType()));
         }
 
         return Optional.empty();

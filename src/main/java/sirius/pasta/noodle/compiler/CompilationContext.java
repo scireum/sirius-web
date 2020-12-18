@@ -51,7 +51,7 @@ public class CompilationContext {
     private final VariableScoper variableScoper = new VariableScoper(this);
 
     /**
-     * Detemmines if the security sandbox is enabled.
+     * Determines if the security sandbox is enabled.
      * <p>
      * The sandbox is used to safely execute code provided by users of the system.
      */
@@ -311,14 +311,14 @@ public class CompilationContext {
     }
 
     /**
-     * Unboxes the given class.
+     * Returns tha matching "boxed" class for the given class.
      * <p>
      * This will return the boxed type for a primitive class like <tt>Integer</tt> for <tt>int</tt>.
      *
-     * @param type the classto unbox
-     * @return the unboxed version of the given class or the class itself if it wasn't a primitive
+     * @param type the class to unbox
+     * @return the boxed version of the given class or the class itself if it wasn't a primitive
      */
-    public static Class<?> unboxClass(Class<?> type) {
+    public static Class<?> autoboxClass(Class<?> type) {
         if (type == int.class) {
             return Integer.class;
         }
@@ -354,8 +354,8 @@ public class CompilationContext {
             return !to.isPrimitive();
         }
 
-        Class<?> unboxedFrom = unboxClass(from);
-        Class<?> unboxedTo = unboxClass(to);
+        Class<?> unboxedFrom = autoboxClass(from);
+        Class<?> unboxedTo = autoboxClass(to);
 
         if (unboxedTo.isAssignableFrom(unboxedFrom)) {
             return true;
@@ -382,10 +382,10 @@ public class CompilationContext {
      * @return a type which is compatible with both given types
      */
     public static Class<?> coerceNumericTypes(Class<?> typeA, Class<?> typeB) {
-        if (unboxClass(typeA) == Double.class || unboxClass(typeB) == Double.class) {
+        if (autoboxClass(typeA) == Double.class || autoboxClass(typeB) == Double.class) {
             return Double.class;
         }
-        if (unboxClass(typeA) == Long.class && unboxClass(typeB) == Long.class) {
+        if (autoboxClass(typeA) == Long.class && autoboxClass(typeB) == Long.class) {
             return Long.class;
         }
 
@@ -409,7 +409,7 @@ public class CompilationContext {
      * <p>
      * Note that the sandbox is disabled by default and has to be enabled when compiling user supplied code.
      */
-    public void enableSanbox() {
+    public void enableSandbox() {
         this.enableSandbox = true;
     }
 
@@ -419,22 +419,22 @@ public class CompilationContext {
      * Note that the sandbox is disabled by default so this method only needs to be invoked if the sandbox has
      * previously been enabled manually.
      */
-    public void disableSanbox() {
+    public void disableSandbox() {
         this.enableSandbox = false;
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder result = new StringBuilder();
         if (!errors.isEmpty()) {
-            sb.append("Errors / Warnings\n-----------------\n");
+            result.append("Errors / Warnings\n-----------------\n");
             for (ParseError error : errors) {
-                sb.append(error);
-                sb.append("\n");
+                result.append(error);
+                result.append("\n");
             }
         }
 
-        return sb.toString();
+        return result.toString();
     }
 
     public SourceCodeInfo getSourceCodeInfo() {

@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
 /**
  * Represents an <tt>instanceof</tt> check.
  */
-public class InstanceCheck extends Node {
+public class InstanceOfCheck extends Node {
     private Node expression;
     private final Class<?> typeToCheck;
 
@@ -29,7 +29,7 @@ public class InstanceCheck extends Node {
      * @param expression  the expression to check
      * @param typeToCheck the type to ensure
      */
-    public InstanceCheck(Position position, Node expression, Class<?> typeToCheck) {
+    public InstanceOfCheck(Position position, Node expression, Class<?> typeToCheck) {
         super(position);
         this.expression = expression;
         this.typeToCheck = typeToCheck;

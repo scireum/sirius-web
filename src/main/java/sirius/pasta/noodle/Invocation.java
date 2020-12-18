@@ -385,6 +385,16 @@ public class Invocation {
         push(methodHandle.invokeWithArguments(args));
     }
 
+    /**
+     * Pops (removes) the given number of argument off the stack.
+     *
+     * @param numberOfArguments the argument to remove
+     * @param isStatic          determines if a static method call is present. If not, an additional parameter for "this" is
+     *                          popped off the stack.
+     * @return the parameters which have been popped off the stack. Note that the first element will be "this" (unless
+     * isStatic was <tt>true</tt>). Then the stack top will be the first argument and so on. Therefore the compiler has
+     * to actually reverse the execution order of arguments to match our expectation here.
+     */
     private Object[] popArguments(int numberOfArguments, boolean isStatic) {
         int argsOffset = isStatic ? 0 : 1;
         if (argsOffset == 0 && numberOfArguments == 0) {

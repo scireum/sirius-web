@@ -41,7 +41,7 @@ public class Sandbox {
      * @return <tt>true</tt> if it can be invoked, <tt>false</tt> otherwise
      */
     public boolean canInvoke(Method method) {
-        if (isAllowedPerAnnotation(method)) {
+        if (isAllowedViaAnnotation(method)) {
             return true;
         }
 
@@ -72,7 +72,7 @@ public class Sandbox {
         this.allowlist = newAllowlist;
     }
 
-    private boolean isAllowedPerAnnotation(Method method) {
+    private boolean isAllowedViaAnnotation(Method method) {
         if (method.isAnnotationPresent(PublicAPI.class)) {
             return true;
         }

@@ -15,7 +15,7 @@ import sirius.pasta.noodle.compiler.Assembler;
 /**
  * Represents an AND operation.
  * <p>
- * This generates custome code, as it first evaluates the left operand and then only evaluates the right
+ * This generates custom code, as it first evaluates the left operand and then only evaluates the right
  * operand if the left one was <tt>true</tt>.
  */
 public class Conjunction extends BinaryOperation {

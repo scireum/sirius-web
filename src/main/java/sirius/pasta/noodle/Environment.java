@@ -11,7 +11,7 @@ package sirius.pasta.noodle;
 /**
  * Defines an environment which permits to access shared variables.
  * <p>
- * For example a <b>Tagliatelle</b> template is bunch of scripts which share all arguments and local variables
+ * For example a <b>Tagliatelle</b> template is a bunch of scripts which share all arguments and local variables
  * of the template. Therefore an environment (in the form of {@link sirius.pasta.tagliatelle.rendering.LocalRenderContext}
  * is provided to share these.
  */

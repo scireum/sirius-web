@@ -18,7 +18,7 @@ import java.lang.reflect.Type;
 /**
  * Represents a tenary operation.
  */
-public class TenaryOperation extends Node {
+public class TernaryOperation extends Node {
 
     private final Node condition;
     private final Node whenTrue;
@@ -31,7 +31,7 @@ public class TenaryOperation extends Node {
      * @param whenTrue  the expression to evaluate when the condition is <tt>true</tt>
      * @param whenFalse the expression to evaluate when the condition is <tt>false</tt>
      */
-    public TenaryOperation(Node condition, Node whenTrue, Node whenFalse) {
+    public TernaryOperation(Node condition, Node whenTrue, Node whenFalse) {
         super(condition.getPosition());
 
         this.condition = condition;

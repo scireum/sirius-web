@@ -24,7 +24,7 @@ import sirius.pasta.noodle.compiler.ir.BlockNode;
 import sirius.pasta.noodle.compiler.ir.Conjunction;
 import sirius.pasta.noodle.compiler.ir.Constant;
 import sirius.pasta.noodle.compiler.ir.Disjunction;
-import sirius.pasta.noodle.compiler.ir.InstanceCheck;
+import sirius.pasta.noodle.compiler.ir.InstanceOfCheck;
 import sirius.pasta.noodle.compiler.ir.MacroCall;
 import sirius.pasta.noodle.compiler.ir.MethodCall;
 import sirius.pasta.noodle.compiler.ir.NativeCast;
@@ -32,7 +32,7 @@ import sirius.pasta.noodle.compiler.ir.Node;
 import sirius.pasta.noodle.compiler.ir.PushStaticField;
 import sirius.pasta.noodle.compiler.ir.PushTemporary;
 import sirius.pasta.noodle.compiler.ir.RawClassLiteral;
-import sirius.pasta.noodle.compiler.ir.TenaryOperation;
+import sirius.pasta.noodle.compiler.ir.TernaryOperation;
 import sirius.pasta.noodle.compiler.ir.UnaryOperation;
 
 import javax.annotation.Nonnull;
@@ -46,7 +46,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Parses {@link Node expressions} used by <tt>Noodle.
+ * Parses {@link Node expressions} used by <tt>Noodle</tt>.
  * <p>
  * The parser is invoked by the {@link NoodleCompiler} so there is most probably no need to call it directly.
  * It is implemented as a simple recursive descending parser.
@@ -201,22 +201,22 @@ public class Parser extends InputProcessor {
      */
     private Node parseExpression() {
         if (canSkipWhitespace) {
-            return parseTenaryOperation(disjunction());
+            return parseTernaryOperation(disjunction());
         } else {
             return chain();
         }
     }
 
     /**
-     * Parses a tenary operation (if the input starts with '?'.
+     * Parses a ternary operation (if the input starts with '?'.
      * <p>
-     * A tenary operation is <pre>CONDITION ? EXPRESSION_IF_TRUE : EXPRESSION_IF_FALSE</pre> or in short <pre>CONDITION
+     * A ternary operation is <pre>CONDITION ? EXPRESSION_IF_TRUE : EXPRESSION_IF_FALSE</pre> or in short <pre>CONDITION
      * ? EXPRESSION_IF_TRUE</pre> which uses <tt>null</tt> when the condition is false.
      *
      * @param baseNode the condition which has already been parsed
-     * @return the baseExpression if no '?' was found or an {@link TenaryOperation}
+     * @return the baseExpression if no '?' was found or an {@link TernaryOperation}
      */
-    private Node parseTenaryOperation(Node baseNode) {
+    private Node parseTernaryOperation(Node baseNode) {
         skipWhitespaces();
         if (!reader.current().is('?')) {
             return baseNode;
@@ -241,7 +241,7 @@ public class Parser extends InputProcessor {
                           whenFalse.getType());
         }
 
-        return new TenaryOperation(baseNode, whenTrue, whenFalse);
+        return new TernaryOperation(baseNode, whenTrue, whenFalse);
     }
 
     /**
@@ -330,46 +330,46 @@ public class Parser extends InputProcessor {
     }
 
     private Node parseEquals(Node left, OpCode op) {
-        Position pos = reader.current();
+        Position position = reader.current();
         reader.consume(2);
         Node right = term();
 
-        return new BinaryOperation(pos, op, left, right, boolean.class);
+        return new BinaryOperation(position, op, left, right, boolean.class);
     }
 
     private Node parseGreaterThan(Node left) {
-        Position pos = reader.current();
+        Position position = reader.current();
         reader.consume();
 
         if (reader.current().is('=')) {
             reader.consume();
             Node right = term();
-            assertType(pos, left, Comparable.class);
-            assertType(pos, right, Comparable.class);
-            return new BinaryOperation(pos, OpCode.OP_GE, left, right, boolean.class);
+            assertType(position, left, Comparable.class);
+            assertType(position, right, Comparable.class);
+            return new BinaryOperation(position, OpCode.OP_GE, left, right, boolean.class);
         } else {
             Node right = term();
-            assertType(pos, left, Comparable.class);
-            assertType(pos, right, Comparable.class);
-            return new BinaryOperation(pos, OpCode.OP_GT, left, right, boolean.class);
+            assertType(position, left, Comparable.class);
+            assertType(position, right, Comparable.class);
+            return new BinaryOperation(position, OpCode.OP_GT, left, right, boolean.class);
         }
     }
 
     private Node parseLessThan(Node left) {
-        Position pos = reader.current();
+        Position position = reader.current();
         reader.consume();
         if (reader.current().is('=')) {
             reader.consume();
             Node right = term();
 
-            assertType(pos, left, Comparable.class);
-            assertType(pos, right, Comparable.class);
-            return new BinaryOperation(pos, OpCode.OP_LE, left, right, boolean.class);
+            assertType(position, left, Comparable.class);
+            assertType(position, right, Comparable.class);
+            return new BinaryOperation(position, OpCode.OP_LE, left, right, boolean.class);
         } else {
             Node right = term();
-            assertType(pos, left, Comparable.class);
-            assertType(pos, right, Comparable.class);
-            return new BinaryOperation(pos, OpCode.OP_LT, left, right, boolean.class);
+            assertType(position, left, Comparable.class);
+            assertType(position, right, Comparable.class);
+            return new BinaryOperation(position, OpCode.OP_LT, left, right, boolean.class);
         }
     }
 
@@ -401,12 +401,12 @@ public class Parser extends InputProcessor {
                                   right.getType());
                 }
             } else if (reader.current().is('-')) {
-                Position pos = reader.current();
+                Position position = reader.current();
                 reader.consume();
                 Node right = product();
-                assertType(pos, result, Number.class);
-                assertType(pos, right, Number.class);
-                result = new BinaryOperation(pos, OpCode.OP_SUB, result, right);
+                assertType(position, result, Number.class);
+                assertType(position, right, Number.class);
+                result = new BinaryOperation(position, OpCode.OP_SUB, result, right);
             } else {
                 break;
             }
@@ -426,28 +426,28 @@ public class Parser extends InputProcessor {
         while (!reader.current().isEndOfInput()) {
             skipWhitespaces();
             if (reader.current().is('*')) {
-                Position pos = reader.current();
+                Position position = reader.current();
                 reader.consume();
                 Node rightNode = chain();
-                assertType(pos, result, Number.class);
-                assertType(pos, rightNode, Number.class);
-                result = new BinaryOperation(pos, OpCode.OP_MUL, result, rightNode);
+                assertType(position, result, Number.class);
+                assertType(position, rightNode, Number.class);
+                result = new BinaryOperation(position, OpCode.OP_MUL, result, rightNode);
             } else if (reader.current().is('/')) {
-                Position pos = reader.current();
+                Position position = reader.current();
                 reader.consume();
                 Node rightNode = chain();
-                assertType(pos, result, Number.class);
-                assertType(pos, rightNode, Number.class);
-                result = new BinaryOperation(pos, OpCode.OP_DIV, result, rightNode);
+                assertType(position, result, Number.class);
+                assertType(position, rightNode, Number.class);
+                result = new BinaryOperation(position, OpCode.OP_DIV, result, rightNode);
             } else if (reader.current().is('%')) {
-                Position pos = reader.current();
+                Position position = reader.current();
                 reader.consume();
                 Node rightNode = chain();
-                assertType(pos, result, Number.class);
-                assertType(pos, rightNode, Number.class);
-                result = new BinaryOperation(pos, OpCode.OP_MOD, result, rightNode);
-                assertType(pos, result, int.class);
-                assertType(pos, rightNode, int.class);
+                assertType(position, result, Number.class);
+                assertType(position, rightNode, Number.class);
+                result = new BinaryOperation(position, OpCode.OP_MOD, result, rightNode);
+                assertType(position, result, int.class);
+                assertType(position, rightNode, int.class);
             } else {
                 break;
             }
@@ -572,7 +572,7 @@ public class Parser extends InputProcessor {
      * @param self       the expression to invoke a method on
      * @param methodName the name of the method to invoke
      * @param parameters the parameters for the method
-     * @return either a {@link NativeCast} or an {@link InstanceCheck} or <tt>null</tt> if the call isn't a cast
+     * @return either a {@link NativeCast} or an {@link InstanceOfCheck} or <tt>null</tt> if the call isn't a cast
      */
     @Nullable
     private Node handleSpecialMethods(Node self, String methodName, List<Node> parameters) {
@@ -592,7 +592,7 @@ public class Parser extends InputProcessor {
             && (Class.class.isAssignableFrom(parameters.get(0).getType()))) {
             Class<?> type = (Class<?>) parameters.get(0).getConstantValue();
             if (!Transformable.class.isAssignableFrom(self.getType())) {
-                return new InstanceCheck(self.getPosition(), self, type);
+                return new InstanceOfCheck(self.getPosition(), self, type);
             }
         }
 
@@ -637,12 +637,12 @@ public class Parser extends InputProcessor {
     private Node atom() {
         skipWhitespaces();
         if (reader.current().is('!')) {
-            Position pos = reader.consume();
+            Position position = reader.consume();
             Node target = chain();
-            if (!Boolean.class.equals(CompilationContext.unboxClass(target.getType()))) {
-                context.error(pos, "Expected a boolean expression here!");
+            if (!Boolean.class.equals(CompilationContext.autoboxClass(target.getType()))) {
+                context.error(position, "Expected a boolean expression here!");
             }
-            return new UnaryOperation(pos, OpCode.OP_NOT, target);
+            return new UnaryOperation(position, OpCode.OP_NOT, target);
         }
         if (reader.current().is('(')) {
             reader.consume();
@@ -653,90 +653,89 @@ public class Parser extends InputProcessor {
         }
 
         if (isAtIdentifier()) {
-            Char pos = reader.current();
-            String id = readIdentifier();
+            Char position = reader.current();
+            String identifier = readIdentifier();
             if (reader.current().is('.')) {
-                Node result = tryVariable(pos, id);
+                Node result = tryVariable(position, identifier);
                 if (result != null) {
                     return result;
                 }
-                return tryClassLiteral(pos, id);
+                return tryClassLiteral(position, identifier);
             }
 
             skipWhitespaces();
 
             if (reader.current().is('(')) {
-                return macroCall(pos, id);
+                return macroCall(position, identifier);
             }
             if (reader.current().is('=') && !reader.next().is('=')) {
-                return assignmentTo(pos, id);
+                return assignmentTo(position, identifier);
             }
 
-            return variable(pos, id);
+            return variable(position, identifier);
         }
 
         return literal();
     }
 
-    private Node assignmentTo(Char pos, String id) {
+    private Node assignmentTo(Char position, String identifier) {
         consumeExpectedCharacter('=');
         skipWhitespaces();
         Node variableValue = parseExpression();
-        VariableScoper.Variable var = context.getVariableScoper().resolve(id).orElse(null);
+        VariableScoper.Variable var = context.getVariableScoper().resolve(identifier).orElse(null);
         if (var == null) {
-            context.error(pos, "Unknown variable '%s'. Add 'let' to define a variable.", id);
+            context.error(position, "Unknown variable '%s'. Add 'let' to define a variable.", identifier);
             return variableValue;
         }
 
-        return new Assignment(pos, var, variableValue);
+        return new Assignment(position, var, variableValue);
     }
 
-    private Node tryClassLiteral(Position pos, String id) {
-        StringBuilder className = new StringBuilder(id);
+    private Node tryClassLiteral(Position position, String identifier) {
+        StringBuilder className = new StringBuilder(identifier);
         while (true) {
             Class<?> clazz = context.tryResolveClass(className.toString()).orElse(null);
             if (clazz != null) {
-                return new RawClassLiteral(pos, clazz);
+                return new RawClassLiteral(position, clazz);
             }
 
             if (!reader.current().is('.')) {
-                return reportUnknownVariableOrClass(pos, id, className.toString());
+                return reportUnknownVariableOrClass(position, identifier, className.toString());
             }
             className.append(reader.consume().getStringValue());
 
             if (!isAtIdentifier()) {
-                return reportUnknownVariableOrClass(pos, id, className.toString());
+                return reportUnknownVariableOrClass(position, identifier, className.toString());
             }
             className.append(readIdentifier());
         }
     }
 
-    private Node reportUnknownVariableOrClass(Position pos, String id, String className) {
+    private Node reportUnknownVariableOrClass(Position position, String identifier, String className) {
         String localClassName = Strings.splitAtLast(className, ".").getSecond();
         if (Strings.isEmpty(localClassName) || !Character.isUpperCase(localClassName.charAt(0))) {
-            context.error(pos, "Unknown variable %s", id);
-            context.skipErrors();
+            context.error(position, "Unknown variable %s", identifier);
         } else {
-            context.error(pos, "Unknown class %s", className);
-            context.skipErrors();
+            context.error(position, "Unknown class %s", className);
         }
+        context.skipErrors();
 
-        return new Constant(pos, null);
+        return new Constant(position, null);
     }
 
     /**
      * Parses a static call to a {@link sirius.pasta.noodle.macros.Macro}.
      *
-     * @param pos        the position of the invokation
+     * @param position        the position of the invokation
      * @param methodName the name of the macro to call
      * @return the parsed {@link MacroCall}
      */
-    private Node macroCall(Char pos, String methodName) {
+    private Node macroCall(Char position, String methodName) {
         if ("const".equals(methodName)) {
-            return handleConstExpr(pos);
+            return handleConstExpr(position);
         }
         consumeExpectedCharacter('(');
-        MacroCall call = new MacroCall(pos, methodName);
+        MacroCall call = new MacroCall(position, methodName);
         call.setParameters(parseParameterList());
         consumeExpectedCharacter(')');
         call.tryBind(context);
@@ -744,7 +743,7 @@ public class Parser extends InputProcessor {
         return call;
     }
 
-    private Constant handleConstExpr(Char pos) {
+    private Constant handleConstExpr(Char position) {
         consumeExpectedCharacter('(');
         if (reader.current().is(')')) {
             context.error(reader.current(), "Expected an inner expression for const");
@@ -760,9 +759,9 @@ public class Parser extends InputProcessor {
                 InterpreterCall expr =
                         assembler.build(constExpr.getType(), constExpr.getGenericType(), context.getSourceCodeInfo());
                 Object value = expr.call(null);
-                return new Constant(pos, value);
+                return new Constant(position, value);
             } catch (Exception e) {
-                context.error(pos, "Failed to compile and evaluate const expression: %s", e.getMessage());
+                context.error(position, "Failed to compile and evaluate const expression: %s", e.getMessage());
                 return new Constant(reader.consume(), null);
             }
         }
@@ -773,34 +772,34 @@ public class Parser extends InputProcessor {
      * <p>
      * This will be either a well known keyword (true, false, null) or a local or global variable.
      *
-     * @param pos          the position where the identifier started
+     * @param position          the position where the identifier started
      * @param variableName the parsed variable name
      * @return either a representation of a constant value or a read operation on the respective local or global
      * variable
      */
     @Nullable
-    private Node tryVariable(Char pos, String variableName) {
+    private Node tryVariable(Char position, String variableName) {
         if (KEYWORD_TRUE.equalsIgnoreCase(variableName)) {
-            return new Constant(pos, true);
+            return new Constant(position, true);
         }
 
         if (KEYWORD_FALSE.equalsIgnoreCase(variableName)) {
-            return new Constant(pos, false);
+            return new Constant(position, false);
         }
 
         if (KEYWORD_NULL.equalsIgnoreCase(variableName)) {
-            return new Constant(pos, null);
+            return new Constant(position, null);
         }
 
         Optional<VariableScoper.Variable> variable = context.getVariableScoper().resolve(variableName);
         if (variable.isPresent()) {
-            return new PushTemporary(pos, variable.get());
+            return new PushTemporary(position, variable.get());
         }
 
         for (LegacyGlobalsHandler legacyGlobalsHandler : legacyGlobalsHandlers) {
             Tuple<String, Node> replacement = legacyGlobalsHandler.replaceLegacyVariable(context, variableName);
             if (replacement != null) {
-                context.warning(pos, "Replacing legacy variable '%s' with '%s'!", variableName, replacement.getFirst());
+                context.warning(position, "Replacing legacy variable '%s' with '%s'!", variableName, replacement.getFirst());
                 return replacement.getSecond();
             }
         }
@@ -813,16 +812,16 @@ public class Parser extends InputProcessor {
      * <p>
      * This will be either a well known keyword (true, false, null) or a local or global variable.
      *
-     * @param pos          the position where the identifier started
+     * @param position          the position where the identifier started
      * @param variableName the parsed variable name
      * @return either a representation of a constant value or a read operation on the respective local or global
      * variable
      */
-    private Node variable(Char pos, String variableName) {
-        Node result = tryVariable(pos, variableName);
+    private Node variable(Char position, String variableName) {
+        Node result = tryVariable(position, variableName);
         if (result == null) {
-            context.error(pos, "Unknown variable %s", variableName);
-            return new Constant(pos, null);
+            context.error(position, "Unknown variable %s", variableName);
+            return new Constant(position, null);
         } else {
             return result;
         }
@@ -856,31 +855,30 @@ public class Parser extends InputProcessor {
      * @return the parsed number
      */
     private Node number() {
-        Position pos = reader.current();
+        Position position = reader.current();
         boolean decimal = false;
-        StringBuilder sb = new StringBuilder(reader.consume().getStringValue());
+        StringBuilder numericLiteral = new StringBuilder(reader.consume().getStringValue());
         while (reader.current().isDigit()) {
-            sb.append(reader.consume().getValue());
+            numericLiteral.append(reader.consume().getValue());
         }
 
         if (reader.current().is('.') && reader.next().isDigit()) {
-            sb.append(reader.consume().getValue());
+            numericLiteral.append(reader.consume().getValue());
             while (reader.current().isDigit()) {
-                sb.append(reader.consume().getValue());
+                numericLiteral.append(reader.consume().getValue());
             }
             decimal = true;
         }
 
-        String value = sb.toString();
         if (decimal) {
-            return new Constant(pos, Double.parseDouble(value));
+            return new Constant(position, Double.parseDouble(numericLiteral.toString()));
         }
 
-        long longValue = Long.parseLong(value);
+        long longValue = Long.parseLong(numericLiteral.toString());
         if (longValue <= Integer.MAX_VALUE && longValue >= Integer.MIN_VALUE) {
-            return new Constant(pos, (int) longValue);
+            return new Constant(position, (int) longValue);
         } else {
-            return new Constant(pos, longValue);
+            return new Constant(position, longValue);
         }
     }
 
@@ -891,28 +889,28 @@ public class Parser extends InputProcessor {
      * @return the parsed string
      */
     private Node string(char stopChar) {
-        Position pos = reader.current();
+        Position position = reader.current();
         reader.consume();
-        StringBuilder sb = new StringBuilder();
+        StringBuilder stringLiteral = new StringBuilder();
         while (!reader.current().isEndOfInput() && !reader.current().is(stopChar) && !reader.current().isNewLine()) {
             if (reader.current().is('\\')) {
                 reader.consume();
                 if (reader.current().is('n')) {
                     reader.consume();
-                    sb.append("\n");
+                    stringLiteral.append("\n");
                 } else if (reader.current().is('t')) {
                     reader.consume();
-                    sb.append("\t");
+                    stringLiteral.append("\t");
                 } else {
-                    sb.append(reader.consume().getValue());
+                    stringLiteral.append(reader.consume().getValue());
                 }
             } else {
-                sb.append(reader.consume().getValue());
+                stringLiteral.append(reader.consume().getValue());
             }
         }
         consumeExpectedCharacter(stopChar);
 
-        return new Constant(pos, sb.toString());
+        return new Constant(position, stringLiteral.toString());
     }
 
     /**
@@ -921,12 +919,12 @@ public class Parser extends InputProcessor {
      * @return the parsed identifier
      */
     private String readIdentifier() {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder identifier = new StringBuilder();
         while (reader.current().isLetter() || reader.current().is('_') || reader.current().isDigit()) {
-            sb.append(reader.consume().getValue());
+            identifier.append(reader.consume().getValue());
         }
 
-        return sb.toString();
+        return identifier.toString();
     }
 
     /**

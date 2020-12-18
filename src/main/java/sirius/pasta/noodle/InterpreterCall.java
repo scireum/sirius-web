@@ -73,18 +73,18 @@ public class InterpreterCall implements Callable {
      * @return a string representation of this script
      */
     public String disassemble() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("OpCodes\n");
-        sb.append("====================\n");
+        StringBuilder listing = new StringBuilder();
+        listing.append("OpCodes\n");
+        listing.append("====================\n");
         int lastLine = -1;
         int lastCol = -1;
         for (int i = 0; i < opcodes.size(); i++) {
             int instruction = opcodes.get(i);
             Position position = ipToPositionTable.get(i);
             if (position.getLine() != lastLine) {
-                sb.append(Strings.apply("Line %3s: ", position.getLine()));
-                sb.append(sourceCodeInfo.fetchLine(position.getLine()));
-                sb.append("\n");
+                listing.append(Strings.apply("Line %3s: ", position.getLine()));
+                listing.append(sourceCodeInfo.fetchLine(position.getLine()));
+                listing.append("\n");
                 lastLine = position.getLine();
                 lastCol = -1;
             }
@@ -92,32 +92,32 @@ public class InterpreterCall implements Callable {
             OpCode opCode = OpCode.values()[(instruction & 0x00FF0000) >> 16];
             int index = instruction & 0x0000FFFF;
             if (lastCol != position.getPos()) {
-                sb.append("          ");
+                listing.append("          ");
                 for (int p = 1; p < position.getPos(); p++) {
-                    sb.append(" ");
+                    listing.append(" ");
                 }
-                sb.append("^\n");
+                listing.append("^\n");
                 lastCol = position.getPos();
             }
-            sb.append("          ");
+            listing.append("          ");
             for (int p = 1; p < position.getPos(); p++) {
-                sb.append(" ");
+                listing.append(" ");
             }
-            sb.append(i);
-            sb.append(Strings.apply(": %s (%s)\n", opCode.name(), index));
+            listing.append(i);
+            listing.append(Strings.apply(": %s (%s)\n", opCode.name(), index));
         }
 
         if (constants != null) {
-            sb.append("\n\n");
-            sb.append("Constants\n");
-            sb.append("====================\n");
+            listing.append("\n\n");
+            listing.append("Constants\n");
+            listing.append("====================\n");
             for (Object object : constants) {
-                sb.append(object);
-                sb.append("\n");
+                listing.append(object);
+                listing.append("\n");
             }
         }
 
-        return sb.toString();
+        return listing.toString();
     }
 
 

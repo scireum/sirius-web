@@ -33,7 +33,7 @@ public class MacroCall extends Call {
     private Macro macro;
 
     @Part
-    private static GlobalContext ctx;
+    private static GlobalContext globalContext;
 
     /**
      * Creates a new macro call.
@@ -142,7 +142,7 @@ public class MacroCall extends Call {
      * @return <tt>true</tt> if the macro was successfully resolved or <tt>false</tt> otherwise
      */
     public boolean tryBind(CompilationContext compilationContext) {
-        this.macro = ctx.getPart(macroName, Macro.class);
+        this.macro = globalContext.getPart(macroName, Macro.class);
         if (macro == null) {
             compilationContext.error(position, "Unknown macro: %s", macroName);
             return false;

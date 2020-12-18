@@ -11,7 +11,7 @@ package sirius.pasta.noodle;
 /**
  * Defines all op codes understood by the {@link Invocation interpreter}.
  * <p>
- * A bytecode used by the interpreset is a 64bit integer. The lower two bytes make up for an index (see below)
+ * A bytecode used by the interpreter is a 64bit integer. The lower two bytes make up for an index (see below)
  * the 3rd byte is the actual index of the list of op codes below.
  */
 public enum OpCode {

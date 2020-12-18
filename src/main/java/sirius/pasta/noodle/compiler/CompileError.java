@@ -55,20 +55,20 @@ public class CompileError {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(error);
+        StringBuilder result = new StringBuilder();
+        result.append(error);
         if (line != null) {
-            sb.append("\n   ");
-            sb.append(line);
-            sb.append("\n   ");
+            result.append("\n   ");
+            result.append(line);
+            result.append("\n   ");
             for (int i = 0; i < error.getPosition().getPos() - 2; i++) {
-                sb.append(" ");
+                result.append(" ");
             }
-            sb.append("^\n");
+            result.append("^\n");
         } else {
-            sb.append("\n");
+            result.append("\n");
         }
 
-        return sb.toString();
+        return result.toString();
     }
 }

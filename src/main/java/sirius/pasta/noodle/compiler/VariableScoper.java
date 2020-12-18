@@ -62,7 +62,7 @@ public class VariableScoper {
         }
 
         /**
-         * Returns the index of the variable
+         * Returns the index of the variable.
          *
          * @return the index of the variable which is later managed via the environment
          */

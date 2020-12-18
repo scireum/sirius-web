@@ -61,7 +61,7 @@ public class Assembler {
     private final List<Position> ipToPositionTable = new ArrayList<>();
 
     /**
-     * Emits the given op code with the given index as byteode.
+     * Emits the given op code with the given index as bytecode.
      *
      * @param code     the op code to emit
      * @param index    the index to attach
@@ -106,15 +106,15 @@ public class Assembler {
      * @param otherType the target type expected by the subsequent bytecodes
      */
     public void coerce(Position position, Class<?> type, Class<?> otherType) {
-        if (Long.class.equals(CompilationContext.unboxClass(type)) && CompilationContext.isAssignableTo(Double.class,
-                                                                                                        CompilationContext
-                                                                                                                .unboxClass(
+        if (Long.class.equals(CompilationContext.autoboxClass(type)) && CompilationContext.isAssignableTo(Double.class,
+                                                                                                          CompilationContext
+                                                                                                                .autoboxClass(
                                                                                                                         otherType))) {
             emitByteCode(OpCode.OP_COERCE_LONG_TO_DOUBLE, 0, position);
-        } else if (Integer.class.equals(CompilationContext.unboxClass(type))) {
-            if (CompilationContext.isAssignableTo(Double.class, CompilationContext.unboxClass(otherType))) {
+        } else if (Integer.class.equals(CompilationContext.autoboxClass(type))) {
+            if (CompilationContext.isAssignableTo(Double.class, CompilationContext.autoboxClass(otherType))) {
                 emitByteCode(OpCode.OP_COERCE_INT_TO_DOUBLE, 0, position);
-            } else if (CompilationContext.isAssignableTo(Long.class, CompilationContext.unboxClass(otherType))) {
+            } else if (CompilationContext.isAssignableTo(Long.class, CompilationContext.autoboxClass(otherType))) {
                 emitByteCode(OpCode.OP_COERCE_INT_TO_LONG, 0, position);
             }
         }
