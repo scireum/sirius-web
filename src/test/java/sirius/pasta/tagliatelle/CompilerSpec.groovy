@@ -6,7 +6,7 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.tagliatelle
+package sirius.pasta.tagliatelle
 
 import parsii.tokenizer.ParseError
 import sirius.kernel.BaseSpecification
@@ -14,11 +14,12 @@ import sirius.kernel.commons.Amount
 import sirius.kernel.commons.Tuple
 import sirius.kernel.commons.Value
 import sirius.kernel.di.std.Part
-import sirius.tagliatelle.compiler.CompilationContext
-import sirius.tagliatelle.compiler.CompileError
-import sirius.tagliatelle.compiler.CompileException
-import sirius.tagliatelle.compiler.Compiler
-import sirius.tagliatelle.rendering.GlobalRenderContext
+import sirius.pasta.noodle.compiler.CompileError
+import sirius.pasta.noodle.compiler.CompileException
+import sirius.pasta.noodle.compiler.SourceCodeInfo
+import sirius.pasta.tagliatelle.compiler.TemplateCompilationContext
+import sirius.pasta.tagliatelle.compiler.TemplateCompiler
+import sirius.pasta.tagliatelle.rendering.GlobalRenderContext
 import sirius.web.resources.Resource
 import sirius.web.resources.Resources
 
@@ -37,10 +38,9 @@ class CompilerSpec extends BaseSpecification {
 
     def "vararg detection doesn't crash when a non-vararg method is invoked with null"() {
         when:
-        def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx,
-                                                 "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" /> @test.asLocalDate(null)").
-                compile()
+        def source = "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" /> @test.asLocalDate(null)"
+        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        List<CompileError> errors = new TemplateCompiler(ctx).compile()
         then:
         errors.size() == 0
         and:
@@ -49,10 +49,9 @@ class CompilerSpec extends BaseSpecification {
 
     def "vararg detection works without parameters"() {
         when:
-        def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx,
-                                                 "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore().asString()").
-                compile()
+        def source = "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore().asString()"
+        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        List<CompileError> errors = new TemplateCompiler(ctx).compile()
         then:
         errors.size() == 0
         and:
@@ -61,10 +60,9 @@ class CompilerSpec extends BaseSpecification {
 
     def "vararg detection works with a single parameter"() {
         when:
-        def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx,
-                                                 "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore('test').asString()").
-                compile()
+        def source = "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore('test').asString()"
+        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        List<CompileError> errors = new TemplateCompiler(ctx).compile()
         then:
         errors.size() == 0
         and:
@@ -73,10 +71,9 @@ class CompilerSpec extends BaseSpecification {
 
     def "vararg detection works with null as parameter"() {
         when:
-        def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx,
-                                                 "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore(null).asString()").
-                compile()
+        def source = "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore(null).asString()"
+        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        List<CompileError> errors = new TemplateCompiler(ctx).compile()
         then:
         errors.size() == 0
         and:
@@ -85,10 +82,12 @@ class CompilerSpec extends BaseSpecification {
 
     def "method overloading works with generics"() {
         when:
-        def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx, "<i:arg type=\"sirius.tagliatelle.TestObject\" name=\"test\" />" +
+        def source = "<i:arg type=\"sirius.pasta.tagliatelle.TestObject\" name=\"test\" />" +
                 "<i:arg type=\"sirius.kernel.commons.Amount\" name=\"test1\" />" +
-                "@test.genericTest(test1)").compile()
+                "@test.genericTest(test1)"
+        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        List<CompileError> errors = new TemplateCompiler(ctx,
+                                                         ).compile()
         then:
         errors.size() == 0
         and:
@@ -97,9 +96,10 @@ class CompilerSpec extends BaseSpecification {
 
     def "generic type propagation works"() {
         when:
-        def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx, "<i:arg type=\"sirius.tagliatelle.TestObject\" name=\"test\" />" +
-                "@test.getGenericReturnType().getFirst().apply('Test').get().as(String.class).substring(1)").compile()
+        def source = "<i:arg type=\"sirius.pasta.tagliatelle.TestObject\" name=\"test\" />" +
+                "@test.getGenericReturnType().getFirst().apply('Test').get().as(String.class).substring(1)"
+        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        List<CompileError> errors = new TemplateCompiler(ctx).compile()
         then:
         errors.size() == 1
         and: "We expect a warning as our cast to String is now unnecessary due to proper generic propagation"
@@ -110,10 +110,9 @@ class CompilerSpec extends BaseSpecification {
 
     def "generic type propagation works for class parameters"() {
         when:
-        def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx,
-                                                 "@user.getHelper(sirius.tagliatelle.ExampleHelper.class).getTestValue()").
-                compile()
+        def source = "@helper(sirius.pasta.tagliatelle.ExampleHelper.class).getTestValue()"
+        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        List<CompileError> errors = new TemplateCompiler(ctx).compile()
         then:
         errors.size() == 0
         and:
@@ -122,10 +121,9 @@ class CompilerSpec extends BaseSpecification {
 
     def "vararg detection works with several parameters"() {
         when:
-        def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx,
-                                                 "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore('a', 'test').asString()").
-                compile()
+        def source = "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore('a', 'test').asString()"
+        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        List<CompileError> errors = new TemplateCompiler(ctx).compile()
         then:
         errors.size() == 0
         and:
@@ -134,10 +132,9 @@ class CompilerSpec extends BaseSpecification {
 
     def "vararg detection works without vararg parameters"() {
         when:
-        def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx,
-                                                 "<i:arg type=\"sirius.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('X')").
-                compile()
+        def source = "<i:arg type=\"sirius.pasta.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('X')"
+        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        List<CompileError> errors = new TemplateCompiler(ctx).compile()
         then:
         errors.size() == 0
         and:
@@ -146,10 +143,9 @@ class CompilerSpec extends BaseSpecification {
 
     def "vararg detection works with a single vararg parameter"() {
         when:
-        def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx,
-                                                 "<i:arg type=\"sirius.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('%s','X')").
-                compile()
+        def source = "<i:arg type=\"sirius.pasta.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('%s','X')"
+        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        List<CompileError> errors = new TemplateCompiler(ctx).compile()
         then:
         errors.size() == 0
         and:
@@ -158,10 +154,9 @@ class CompilerSpec extends BaseSpecification {
 
     def "vararg detection works with null as a vararg parameter"() {
         when:
-        def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx,
-                                                 "<i:arg type=\"sirius.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('%s', null)").
-                compile()
+        def source = "<i:arg type=\"sirius.pasta.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('%s', null)"
+        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        List<CompileError> errors = new TemplateCompiler(ctx).compile()
         then:
         errors.size() == 0
         and:
@@ -170,10 +165,9 @@ class CompilerSpec extends BaseSpecification {
 
     def "vararg detection works with several vararg parameters"() {
         when:
-        def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx,
-                                                 "<i:arg type=\"sirius.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('%s %s', 'X', 'Y')").
-                compile()
+        def source = "<i:arg type=\"sirius.pasta.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('%s %s', 'X', 'Y')"
+        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        List<CompileError> errors = new TemplateCompiler(ctx).compile()
         then:
         errors.size() == 0
         and:
@@ -259,17 +253,18 @@ class CompilerSpec extends BaseSpecification {
         errors.get(1).toString().contains("Cannot find a handler for the internal tag: i:unknown")
     }
 
-    private CompilationContext compile(String templateName) {
+    private TemplateCompilationContext compile(String templateName) {
         Resource resource = resources.resolve(templateName).orElse(null)
-        CompilationContext compilationContext = tagliatelle.createCompilationContext(templateName, resource, null)
-        Compiler compiler = new Compiler(compilationContext, resource.getContentAsString())
+        TemplateCompilationContext compilationContext = tagliatelle.
+                createResourceCompilationContext(templateName, resource, null)
+        TemplateCompiler compiler = new TemplateCompiler(compilationContext)
         compiler.compile()
         return compilationContext
     }
 
     def "argument deprecation is detected"() {
         when:
-        CompilationContext compilationContext = compile("/templates/deprecatedArgument.html.pasta")
+        TemplateCompilationContext compilationContext = compile("/templates/deprecatedArgument.html.pasta")
         List<ParseError> errors = compilationContext.getErrors()
         then:
         errors.size() == 1
@@ -279,7 +274,7 @@ class CompilerSpec extends BaseSpecification {
 
     def "deprecation is detected"() {
         when:
-        CompilationContext compilationContext = compile("/templates/deprecatedCaller.html.pasta")
+        TemplateCompilationContext compilationContext = compile("/templates/deprecatedCaller.html.pasta")
         List<ParseError> errors = compilationContext.getErrors()
         then:
         errors.size() == 2
@@ -289,26 +284,26 @@ class CompilerSpec extends BaseSpecification {
 
     def "calling a deprecated method is detected"() {
         when:
-        CompilationContext compilationContext = compile("/templates/deprecatedMethodCall.html.pasta")
+        TemplateCompilationContext compilationContext = compile("/templates/deprecatedMethodCall.html.pasta")
         List<ParseError> errors = compilationContext.getErrors()
         then:
         errors.size() == 1
         errors.get(0).getSeverity() == ParseError.Severity.WARNING
         errors.get(0)
               .getMessage()
-              .contains("The method sirius.tagliatelle.TestObject.deprecatedMethod is marked as deprecated")
+              .contains("The method sirius.pasta.tagliatelle.TestObject.deprecatedMethod is marked as deprecated")
     }
 
     def "calling a deprecated macro is detected"() {
         when:
-        CompilationContext compilationContext = compile("/templates/deprecatedMacroCall.html.pasta")
+        TemplateCompilationContext compilationContext = compile("/templates/deprecatedMacroCall.html.pasta")
         List<ParseError> errors = compilationContext.getErrors()
         then:
         errors.size() == 1
         errors.get(0).getSeverity() == ParseError.Severity.WARNING
         errors.get(0)
               .getMessage()
-              .contains("The macro deprecatedMacro (sirius.tagliatelle.DeprecatedMacro) is deprecated.")
+              .contains("The macro deprecatedMacro (sirius.pasta.tagliatelle.DeprecatedMacro) is deprecated.")
     }
 
     def "invalid varargs are detected"() {
@@ -380,10 +375,9 @@ class CompilerSpec extends BaseSpecification {
      */
     def "horror whitespaces don't crash the compiler"() {
         when:
-        def ctx = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(ctx,
-                                                 "<i:invoke\u00A0template=\"/templates/attribute-expressions.html.pasta\"/>").
-                compile()
+        def script = "<i:invoke\u00A0template=\"/templates/attribute-expressions.html.pasta\"/>"
+        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(script), null)
+        List<CompileError> errors = new TemplateCompiler(ctx).compile()
         then:
         errors.size() == 1
     }
@@ -413,16 +407,16 @@ class CompilerSpec extends BaseSpecification {
 
     def "Toplevel i:block and i:extraBlock (even when nested) produce the appropriate extra outputs"() {
         when:
-        def compilationContext = new CompilationContext(new Template("test", null), null)
-        List<CompileError> errors = new Compiler(compilationContext, "<i:block name=\"test\">" +
+        def source = "<i:block name=\"test\">" +
                 "Test" +
                 "<i:extraBlock name=\"extra-test\">Extra Test</i:extraBlock>" +
-                "</i:block>").
-                compile()
+                "</i:block>"
+        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        List<CompileError> errors = new TemplateCompiler(ctx).compile()
         and:
         GlobalRenderContext globalRenderContext = tagliatelle.createRenderContext()
         and:
-        compilationContext.getTemplate().render(globalRenderContext)
+        ctx.getTemplate().render(globalRenderContext)
         then:
         errors.size() == 0
         and: "A top level i:block is expected to render its contents into an extra block"

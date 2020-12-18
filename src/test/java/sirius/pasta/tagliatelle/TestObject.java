@@ -6,7 +6,7 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.tagliatelle;
+package sirius.pasta.tagliatelle;
 
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;

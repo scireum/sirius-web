@@ -6,12 +6,12 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.tagliatelle
+package sirius.pasta.tagliatelle
 
 import sirius.kernel.BaseSpecification
 import sirius.kernel.di.std.Part
-import sirius.tagliatelle.rendering.GlobalRenderContext
-import sirius.tagliatelle.rendering.LocalRenderContext
+import sirius.pasta.tagliatelle.rendering.GlobalRenderContext
+import sirius.pasta.tagliatelle.rendering.LocalRenderContext
 import sirius.web.resources.Resources
 
 class DebugSpec extends BaseSpecification {

@@ -6,14 +6,14 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.tagliatelle;
+package sirius.pasta.tagliatelle;
 
 import parsii.tokenizer.Position;
 import sirius.kernel.di.std.Register;
-import sirius.tagliatelle.compiler.CompilationContext;
-import sirius.tagliatelle.expression.Expression;
-import sirius.tagliatelle.macros.Macro;
-import sirius.tagliatelle.rendering.LocalRenderContext;
+import sirius.pasta.noodle.Environment;
+import sirius.pasta.noodle.compiler.CompilationContext;
+import sirius.pasta.noodle.compiler.ir.Node;
+import sirius.pasta.noodle.macros.BasicMacro;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -23,7 +23,7 @@ import java.util.List;
  */
 @Register
 @Deprecated
-public class DeprecatedMacro implements Macro {
+public class DeprecatedMacro extends BasicMacro {
 
     @Override
     public Class<?> getType() {
@@ -31,17 +31,17 @@ public class DeprecatedMacro implements Macro {
     }
 
     @Override
-    public void verifyArguments(CompilationContext context, Position pos, List<Expression> args) {
+    public void verifyArguments(CompilationContext context, Position pos, List<Class<?>> args) {
 
     }
 
     @Override
-    public Object eval(LocalRenderContext ctx, Expression[] args) {
+    public Object invoke(Environment environment, Object[] args) {
         return "deprecated";
     }
 
     @Override
-    public boolean isConstant(Expression[] args) {
+    public boolean isConstant(CompilationContext context, List<Node> args) {
         return false;
     }
 

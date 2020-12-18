@@ -6,7 +6,7 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.tagliatelle;
+package sirius.pasta.tagliatelle;
 
 import parsii.tokenizer.ParseError;
 import sirius.kernel.Sirius;
@@ -16,9 +16,10 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Priorized;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
-import sirius.tagliatelle.compiler.CompilationContext;
-import sirius.tagliatelle.compiler.CompileException;
-import sirius.tagliatelle.compiler.Compiler;
+import sirius.pasta.noodle.compiler.CompilationContext;
+import sirius.pasta.noodle.compiler.CompileException;
+import sirius.pasta.tagliatelle.compiler.TemplateCompilationContext;
+import sirius.pasta.tagliatelle.compiler.TemplateCompiler;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 
@@ -92,10 +93,11 @@ public class ReportBrokenTemplates implements TestLifecycleParticipant {
     }
 
     private CompilationContext compile(Resource resource) {
-        CompilationContext compilationContext = engine.createCompilationContext(resource.getPath(), resource, null);
+        TemplateCompilationContext compilationContext =
+                engine.createResourceCompilationContext(resource.getPath(), resource, null);
 
         try {
-            Compiler compiler = new Compiler(compilationContext, resource.getContentAsString());
+            TemplateCompiler compiler = new TemplateCompiler(compilationContext);
             compiler.compile();
         } catch (CompileException e) {
             // We will log all errors later anyway...
@@ -106,7 +108,7 @@ public class ReportBrokenTemplates implements TestLifecycleParticipant {
     }
 
     private boolean isExpectedToCompile(CompilationContext compilationContext) {
-        return !compilationContext.getTemplate().getPragma(PRAGMA_UNCHECKED).asBoolean();
+        return !((TemplateCompilationContext) compilationContext).getTemplate().getPragma(PRAGMA_UNCHECKED).asBoolean();
     }
 
     private boolean hasErrorsOrWarnings(CompilationContext compilationContext) {
@@ -115,7 +117,7 @@ public class ReportBrokenTemplates implements TestLifecycleParticipant {
 
     private void reportErrors(CompilationContext compilationContext, StringBuilder output) {
         output.append(Strings.apply("%s:\n%s\n\n",
-                                    compilationContext.getTemplate().getName(),
+                                    ((TemplateCompilationContext) compilationContext).getTemplate().getName(),
                                     compilationContext.getErrors()
                                                       .stream()
                                                       .map(ParseError::toString)

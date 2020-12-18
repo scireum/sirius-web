@@ -6,12 +6,12 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.tagliatelle
+package sirius.pasta.tagliatelle
 
 import sirius.kernel.BaseSpecification
 import sirius.kernel.di.std.Part
-import sirius.tagliatelle.compiler.CompilationContext
-import sirius.tagliatelle.compiler.Compiler
+import sirius.pasta.tagliatelle.compiler.TemplateCompilationContext
+import sirius.pasta.tagliatelle.compiler.TemplateCompiler
 import sirius.web.resources.Resources
 
 class I18nMacroSpec extends BaseSpecification {
@@ -24,11 +24,10 @@ class I18nMacroSpec extends BaseSpecification {
 
     def "basic tests"() {
         given:
-        Template template = new Template("test", null)
-        def ctx = new CompilationContext(template, null)
-        new Compiler(ctx, input).compile()
+        def ctx = tagliatelle.createInlineCompilationContext("inline", input,null)
+        new TemplateCompiler(ctx).compile()
         expect:
-        template.renderToString() == output
+        ctx.getTemplate().renderToString() == output
         where:
         input                                    | output
         "@i18n('I18nMacroSpec.test')"            | "test"

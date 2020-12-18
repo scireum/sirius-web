@@ -6,7 +6,7 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.tagliatelle;
+package sirius.pasta.tagliatelle;
 
 public class InnerClassTestObject {
     public static class InnerClass {

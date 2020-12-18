@@ -6,7 +6,7 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.tagliatelle;
+package sirius.pasta.tagliatelle;
 
 import sirius.kernel.di.std.Register;
 import sirius.web.security.HelperFactory;
