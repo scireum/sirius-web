@@ -3,7 +3,7 @@
 <i:arg type="boolean" name="all"/>
 <i:arg type="String" name="uptime"/>
 
-<w:page title="@apply('[%s/%s] %s - Status', cluster.getClusterState(), cluster.getNodeState(), product)">
+<w:page title="@apply('[%s/%s] %s - Status', cluster.getClusterState(), cluster.getNodeState(), Product.getProduct().getName())">
     <i:block name="head">
         <style>
             .GRAY {
@@ -80,7 +80,7 @@
     </table>
     <w:heading>
         <span class="@cluster.getNodeState()">Node State</span>
-        <small>@nodeName</small>
+        <small>@CallContext.getNodeName()</small>
     </w:heading>
 
     <table class="table table-striped">

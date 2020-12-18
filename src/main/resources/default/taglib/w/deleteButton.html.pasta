@@ -5,7 +5,7 @@
 
 <i:pragma name="description" value="Renders a delete/dangerous link as button within a Wondergem template"/>
 
-<i:local name="deleteFormId" value="@apply('deleteForm-%s', call.generateLocalId())"/>
+<i:local name="deleteFormId" value="@generateId('deleteForm-%s')"/>
 
 <form id="@deleteFormId"
       method="post"
@@ -16,5 +16,5 @@
         <i class="fa fa-trash"></i>
         @i18n("NLS.delete")
     </a>
-    <input name="CSRFToken" value="@csrf.getCSRFToken(call)" type="hidden"/>
+    <input name="CSRFToken" value="@part(sirius.web.http.CSRFHelper.class).getCSRFToken()" type="hidden"/>
 </form>

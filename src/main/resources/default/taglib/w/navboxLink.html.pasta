@@ -7,7 +7,7 @@
 
 <i:pragma name="description" value="Renders navigation box link within a Wondergem template" />
 
-<i:if test="user.getUser().hasPermission(permission)">
+<i:if test="user().hasPermission(permission)">
     <li @if(active) { class="active" }>
         <a href="@url" class="link">
             <i:if test="isFilled(icon)">

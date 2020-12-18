@@ -14,7 +14,7 @@
 
 <i:pragma name="description" value="Renders a text area within a Wondergem template" />
 
-<div class="col-xs-@smallSpan col-md-@span form-group @user.signalFieldError(name)">
+<div class="col-xs-@smallSpan col-md-@span form-group @UserContext.get().signalFieldError(name)">
     <i:if test="isFilled(label)">
         <label>
         <span class="@if (required) { input-required } @if (adminOnly) { admin-link }">
@@ -22,12 +22,12 @@
         </span>
         </label>
     </i:if>
-    <textarea @if (isFilled(id)) {id="@id"} name="@name" rows="@rows" class="form-control input-block-level" @if (readonly) { readonly }>@user.getFieldValue(name, value)</textarea>
+    <textarea @id="@id" name="@name" rows="@rows" class="form-control input-block-level" @readonly="readonly">@UserContext.get().getFieldValue(name, value)</textarea>
 
     <i:if test="isFilled(help)">
         <span class="help-block"><i:raw>@help</i:raw></span>
     </i:if>
-    <i:if test="user.hasError(name)">
-        <span class="error-block help-block">@user.getFieldErrorMessage(name)</span>
+    <i:if test="UserContext.get().hasError(name)">
+        <span class="error-block help-block">@UserContext.get().getFieldErrorMessage(name)</span>
     </i:if>
 </div>

@@ -14,7 +14,7 @@
 <i:arg name="readonly" type="boolean" default="false" />
 <i:arg name="adminOnly" type="boolean" default="false" />
 <i:arg name="keepInputOnSelect" type="boolean" default="false" />
-<i:arg name="id" type="String" default="@apply('multiselect-%s', call.generateLocalId())" />
+<i:arg name="id" type="String" default="@generateId('multiselect-%s')" />
 
 <i:pragma name="description" value="Renders an autocomplete select field within a Wondergem template" />
 
