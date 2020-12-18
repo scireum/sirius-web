@@ -53,7 +53,7 @@ public class Invocation {
     /**
      * Contains the "instruction pointer" which contains the index of the bytecode to execute next.
      */
-    protected int ip;
+    protected int instructionPointer;
 
     /**
      * Creates a new interpreter for the given script and environment.
@@ -75,147 +75,153 @@ public class Invocation {
      * @throws ScriptingException in case of an error within the script. See {@link ScriptingException} for a detailed
      *                            explanation of when this exception is used.
      */
-    @SuppressWarnings({"unchecked", "java:S1541", "java:S134", "java:S1764"})
     public Object execute() throws ScriptingException {
         try {
-            while (ip < compiledMethod.opcodes.size()) {
-                int instruction = compiledMethod.opcodes.get(ip++);
-                OpCode opCode = OpCode.values()[(instruction & 0x00FF0000) >> 16];
-                int index = instruction & 0x0000FFFF;
-
-                switch (opCode) {
-                    case PUSH_CONST:
-                        push(compiledMethod.constants.get(index));
-                        break;
-                    case PUSH_VARIABLE:
-                        push(environment.readVariable(index));
-                        break;
-                    case PUSH_BUILT_IN:
-                        push(SHARED_CONSTANT_POOL.fetch(index));
-                        break;
-                    case POP_VARIABLE:
-                        environment.writeVariable(index, pop());
-                        return -1;
-                    case JMP_FALSE:
-                        if (Boolean.FALSE.equals(pop())) {
-                            ip += index;
-                        }
-                        break;
-                    case JMP:
-                        ip += index;
-                        break;
-                    case JMP_BACK:
-                        ip -= index;
-                        break;
-                    case INVOKE:
-                        handleInvoke(index, false);
-                        break;
-                    case INVOCE_STATIC:
-                        handleInvoke(index, true);
-                        break;
-                    case RET_STACK_TOP:
-                        return pop();
-                    case OP_EQ:
-                        push(Objects.equals(pop(), pop()));
-                        break;
-                    case OP_ID:
-                        push(pop() == pop());
-                        break;
-                    case OP_NE:
-                        push(!Objects.equals(pop(), pop()));
-                        break;
-                    case OP_GT:
-                        push(pop(Comparable.class).compareTo(pop()) > 0);
-                        break;
-                    case OP_GE:
-                        push(pop(Comparable.class).compareTo(pop()) >= 0);
-                        break;
-                    case OP_LT:
-                        push(pop(Comparable.class).compareTo(pop()) < 0);
-                        break;
-                    case OP_LE:
-                        push(pop(Comparable.class).compareTo(pop()) <= 0);
-                        break;
-                    case OP_NOT:
-                        push(!pop(boolean.class));
-                        break;
-                    case OP_ADD:
-                        push(add(pop(), pop()));
-                        break;
-                    case OP_SUB:
-                        push(sub(pop(), pop()));
-                        break;
-                    case OP_MUL:
-                        push(mul(pop(), pop()));
-                        break;
-                    case OP_DIV:
-                        push(div(pop(), pop()));
-                        break;
-                    case OP_MOD:
-                        push(mod(pop(), pop()));
-                        break;
-                    case OP_CONCAT:
-                        push(asString(pop()) + asString(pop()));
-                        break;
-                    case OP_CAST:
-                        push(pop(Class.class).cast(pop()));
-                        break;
-                    case OP_INSTANCE_OF:
-                        push(pop(Class.class).isAssignableFrom(pop().getClass()));
-                        break;
-                    case OP_COERCE_INT_TO_LONG:
-                        push(Long.valueOf(pop(int.class)));
-                        break;
-                    case OP_COERCE_INT_TO_DOUBLE:
-                        push(Double.valueOf(pop(int.class)));
-                        break;
-                    case OP_COERCE_LONG_TO_DOUBLE:
-                        push(Double.valueOf(pop(long.class)));
-                        break;
-                    case OP_INTRINSIC_TRANSFORMABLE_AS:
-                        push(pop(Transformable.class).as(pop(Class.class)));
-                        break;
-                    case OP_INTRINSIC_TRANSFORMABLE_IS:
-                        push(pop(Transformable.class).is(pop(Class.class)));
-                        break;
-                    case OP_INTRINSIC_STRINGS_IS_EMPTY:
-                        push(Strings.isEmpty(pop()));
-                        break;
-                    case OP_INTRINSIC_STRINGS_IS_FILLED:
-                        push(Strings.isFilled(pop()));
-                        break;
-                    case OP_INTRINSIC_VALUE_OF:
-                        push(Value.of(pop()));
-                        break;
-                    case OP_INTRINSIC_NLS_GET:
-                        push(NLS.get(pop(String.class)));
-                        break;
-                    case OP_INTRINSIC_USER_CONTEXT_HELPER:
-                        push(UserContext.getHelper(pop(Class.class)));
-                        break;
-                    case OP_INTRINSIC_USER_CONTEXT_CURRENT_USER:
-                        push(UserContext.getCurrentUser());
-                        break;
-                    default:
-                        throw new UnsupportedOperationException(String.valueOf(opCode));
-                }
-            }
-
-            if (stack.isEmpty()) {
-                return null;
-            } else {
-                return pop();
-            }
+            return executeBytecodes();
         } catch (HandledException ex) {
             throw ex;
         } catch (Throwable ex) {
-            Position position = compiledMethod.ipToPositionTable.get(ip - 1);
+            Position position = compiledMethod.ipToPositionTable.get(instructionPointer - 1);
             throw new ScriptingException(Strings.apply(
                     "An error occurred while executing a script. Location: %s.%s%s (%s)",
                     compiledMethod.sourceCodeInfo + ":" + position.getLine() + ":" + position.getPos(),
                     computeOffendingPosition(position),
                     ex.getMessage(),
                     ex.getClass().getName()), ex);
+        }
+    }
+
+    @SuppressWarnings({"unchecked", "java:S1541", "java:S134", "java:S1764", "OverlyLongMethod"})
+    @Explain(
+            "This method and also this switch statement is too large. However, we'd like to keep everything in one place if possible.")
+    private Object executeBytecodes() throws Throwable {
+        while (instructionPointer < compiledMethod.opcodes.size()) {
+            int instruction = compiledMethod.opcodes.get(instructionPointer++);
+            OpCode opCode = OpCode.values()[(instruction & 0x00FF0000) >> 16];
+            int index = instruction & 0x0000FFFF;
+
+            switch (opCode) {
+                case PUSH_CONST:
+                    push(compiledMethod.constants.get(index));
+                    break;
+                case PUSH_VARIABLE:
+                    push(environment.readVariable(index));
+                    break;
+                case PUSH_BUILT_IN:
+                    push(SHARED_CONSTANT_POOL.fetch(index));
+                    break;
+                case POP_VARIABLE:
+                    environment.writeVariable(index, pop());
+                    return -1;
+                case JMP_FALSE:
+                    if (Boolean.FALSE.equals(pop())) {
+                        instructionPointer += index;
+                    }
+                    break;
+                case JMP:
+                    instructionPointer += index;
+                    break;
+                case JMP_BACK:
+                    instructionPointer -= index;
+                    break;
+                case INVOKE:
+                    handleInvoke(index, false);
+                    break;
+                case INVOCE_STATIC:
+                    handleInvoke(index, true);
+                    break;
+                case RET_STACK_TOP:
+                    return pop();
+                case OP_EQ:
+                    push(Objects.equals(pop(), pop()));
+                    break;
+                case OP_ID:
+                    push(pop() == pop());
+                    break;
+                case OP_NE:
+                    push(!Objects.equals(pop(), pop()));
+                    break;
+                case OP_GT:
+                    push(pop(Comparable.class).compareTo(pop()) > 0);
+                    break;
+                case OP_GE:
+                    push(pop(Comparable.class).compareTo(pop()) >= 0);
+                    break;
+                case OP_LT:
+                    push(pop(Comparable.class).compareTo(pop()) < 0);
+                    break;
+                case OP_LE:
+                    push(pop(Comparable.class).compareTo(pop()) <= 0);
+                    break;
+                case OP_NOT:
+                    push(!pop(boolean.class));
+                    break;
+                case OP_ADD:
+                    push(add(pop(), pop()));
+                    break;
+                case OP_SUB:
+                    push(sub(pop(), pop()));
+                    break;
+                case OP_MUL:
+                    push(mul(pop(), pop()));
+                    break;
+                case OP_DIV:
+                    push(div(pop(), pop()));
+                    break;
+                case OP_MOD:
+                    push(mod(pop(), pop()));
+                    break;
+                case OP_CONCAT:
+                    push(asString(pop()) + asString(pop()));
+                    break;
+                case OP_CAST:
+                    push(pop(Class.class).cast(pop()));
+                    break;
+                case OP_INSTANCE_OF:
+                    push(pop(Class.class).isAssignableFrom(pop().getClass()));
+                    break;
+                case OP_COERCE_INT_TO_LONG:
+                    push(Long.valueOf(pop(int.class)));
+                    break;
+                case OP_COERCE_INT_TO_DOUBLE:
+                    push(Double.valueOf(pop(int.class)));
+                    break;
+                case OP_COERCE_LONG_TO_DOUBLE:
+                    push(Double.valueOf(pop(long.class)));
+                    break;
+                case OP_INTRINSIC_TRANSFORMABLE_AS:
+                    push(pop(Transformable.class).as(pop(Class.class)));
+                    break;
+                case OP_INTRINSIC_TRANSFORMABLE_IS:
+                    push(pop(Transformable.class).is(pop(Class.class)));
+                    break;
+                case OP_INTRINSIC_STRINGS_IS_EMPTY:
+                    push(Strings.isEmpty(pop()));
+                    break;
+                case OP_INTRINSIC_STRINGS_IS_FILLED:
+                    push(Strings.isFilled(pop()));
+                    break;
+                case OP_INTRINSIC_VALUE_OF:
+                    push(Value.of(pop()));
+                    break;
+                case OP_INTRINSIC_NLS_GET:
+                    push(NLS.get(pop(String.class)));
+                    break;
+                case OP_INTRINSIC_USER_CONTEXT_HELPER:
+                    push(UserContext.getHelper(pop(Class.class)));
+                    break;
+                case OP_INTRINSIC_USER_CONTEXT_CURRENT_USER:
+                    push(UserContext.getCurrentUser());
+                    break;
+                default:
+                    throw new UnsupportedOperationException(String.valueOf(opCode));
+            }
+        }
+
+        if (stack.isEmpty()) {
+            return null;
+        } else {
+            return pop();
         }
     }
 

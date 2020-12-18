@@ -32,17 +32,17 @@ public enum OpCode {
     POP_VARIABLE,
 
     /**
-     * Pops off a value of the stack. If it is false, the IP is incremented by the given index.
+     * Pops off a value of the stack. If it is false, the instruction pointer is incremented by the given index.
      */
     JMP_FALSE,
 
     /**
-     * Increments the IP by the given index.
+     * Increments the instruction pointer by the given index.
      */
     JMP,
 
     /**
-     * Decrements the IP by the given index.
+     * Decrements the instruction pointer by the given index.
      */
     JMP_BACK,
 
