@@ -8,6 +8,8 @@
 
 package sirius.web.health;
 
+import sirius.kernel.di.std.AutoRegister;
+
 import java.util.List;
 
 /**
@@ -16,6 +18,7 @@ import java.util.List;
  * A load info provides has to be registered using {@link sirius.kernel.di.std.Register} to be visible to the load UI
  * (<tt>/system/load</tt>) and metrics infos (<tt>/system/metrics</tt>), which is both provided by the {@link SystemController}.
  */
+@AutoRegister
 public interface LoadInfoProvider {
 
     /**
