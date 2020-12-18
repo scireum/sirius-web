@@ -560,6 +560,8 @@ public class UserContext implements SubContext {
         child.currentScope = currentScope;
         child.msgList = msgList;
         child.fieldErrors = fieldErrors;
+        child.fieldErrorMessages = fieldErrorMessages;
+        child.addedAdditionalMessages = addedAdditionalMessages;
 
         return child;
     }
