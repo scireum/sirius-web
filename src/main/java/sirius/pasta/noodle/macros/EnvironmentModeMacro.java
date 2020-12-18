@@ -24,7 +24,7 @@ public abstract class EnvironmentModeMacro extends BasicMacro {
     }
 
     @Override
-    protected void verifyArguments(CompilationContext compilationContext, Position pos, List<Class<?>> args) {
+    protected void verifyArguments(CompilationContext compilationContext, Position position, List<Class<?>> args) {
         if (!args.isEmpty()) {
             throw new IllegalArgumentException("No arguments expected!");
         }

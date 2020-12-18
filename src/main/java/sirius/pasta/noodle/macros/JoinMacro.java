@@ -30,7 +30,7 @@ public class JoinMacro extends BasicMacro {
     }
 
     @Override
-    public void verifyArguments(CompilationContext context, Position pos, List<Class<?>> args) {
+    public void verifyArguments(CompilationContext context, Position position, List<Class<?>> args) {
         if (args.size() != 2
             || !CompilationContext.isAssignableTo(args.get(0), Iterable.class)
             || !CompilationContext.isAssignableTo(args.get(1), String.class)) {

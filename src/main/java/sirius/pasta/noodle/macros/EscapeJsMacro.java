@@ -24,7 +24,7 @@ import java.util.List;
  */
 @Register
 @PublicAPI
-public class EscapeJSMacro extends BasicMacro {
+public class EscapeJsMacro extends BasicMacro {
 
     @Part
     private static Resources resources;
@@ -35,7 +35,7 @@ public class EscapeJSMacro extends BasicMacro {
     }
 
     @Override
-    public void verifyArguments(CompilationContext context, Position pos, List<Class<?>> args) {
+    public void verifyArguments(CompilationContext context, Position position, List<Class<?>> args) {
         if (args.size() != 1) {
             throw new IllegalArgumentException("Expected a single argument.");
         }

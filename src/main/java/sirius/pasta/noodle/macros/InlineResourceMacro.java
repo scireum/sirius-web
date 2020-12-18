@@ -23,14 +23,14 @@ import java.util.Optional;
 /**
  * Inlines a complete resource file into a JavaScript string.
  * <p>
- * Most probably the {@link EscapeJSMacro} wil be used to make the included contents safe in JS.
+ * Most probably the {@link EscapeJsMacro} wil be used to make the included contents safe in JS.
  * <p>
  * If only a block of JS is to be included (e.g. to aggregate many JS files into one), use either
  * {@link sirius.pasta.tagliatelle.compiler.InvokeHandler} or {@link sirius.pasta.tagliatelle.compiler.IncludeHandler}.
  *
  * @see sirius.pasta.tagliatelle.compiler.InvokeHandler
  * @see sirius.pasta.tagliatelle.compiler.IncludeHandler
- * @see sirius.pasta.noodle.macros.EscapeJSMacro
+ * @see EscapeJsMacro
  */
 @Register
 public class InlineResourceMacro extends BasicMacro {
@@ -44,7 +44,7 @@ public class InlineResourceMacro extends BasicMacro {
     }
 
     @Override
-    public void verifyArguments(CompilationContext context, Position pos, List<Class<?>> args) {
+    public void verifyArguments(CompilationContext context, Position position, List<Class<?>> args) {
         if (args.size() != 1 || !CompilationContext.isAssignableTo(args.get(0), String.class)) {
             throw new IllegalArgumentException("Expected a single String as argument.");
         }

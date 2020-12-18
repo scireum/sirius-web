@@ -39,7 +39,7 @@ public class PartMacro extends BasicMacro {
     }
 
     @Override
-    public void verify(CompilationContext context, Position pos, List<Node> args) {
+    public void verify(CompilationContext context, Position position, List<Node> args) {
         if (args.size() != 1 || !args.get(0).isConstant() || !Class.class.isAssignableFrom(args.get(0).getType())) {
             throw new IllegalArgumentException("Expected a single constant class as argument.");
         }
@@ -52,7 +52,7 @@ public class PartMacro extends BasicMacro {
     }
 
     @Override
-    protected void verifyArguments(CompilationContext compilationContext, Position pos, List<Class<?>> args) {
+    protected void verifyArguments(CompilationContext compilationContext, Position position, List<Class<?>> args) {
         throw new UnsupportedOperationException("unreachable");
     }
 

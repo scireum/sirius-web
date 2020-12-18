@@ -42,11 +42,11 @@ public interface Macro extends Named {
      * either an {@link IllegalArgumentException} can be thrown to report a generic error or the given context can
      * be used to either emit an error or warning.
      *
-     * @param context the compilation context which can be used to emit an error or warning
-     * @param pos     the position to use for the generated errors or warnings
-     * @param args    the expressions which will be passed in at runtime.
+     * @param context  the compilation context which can be used to emit an error or warning
+     * @param position the position to use for the generated errors or warnings
+     * @param args     the expressions which will be passed in at runtime.
      */
-    void verify(CompilationContext context, Position pos, List<Node> args);
+    void verify(CompilationContext context, Position position, List<Node> args);
 
     /**
      * Determines if the macro is "constant" for the given parameter expressions.

@@ -20,6 +20,12 @@ import sirius.web.security.UserInfo;
 import javax.annotation.Nonnull;
 import java.util.List;
 
+/**
+ * Returns the current user.
+ * <p>
+ * This is actually a shortcur for {@code UserContext.getCurrentUser()}. However, this will be translated into
+ * {@link sirius.pasta.noodle.OpCode#OP_INTRINSIC_USER_CONTEXT_CURRENT_USER} and therefore be quite efficient anyway.
+ */
 @Register
 @PublicAPI
 public class UserMacro extends BasicMacro {
@@ -30,7 +36,7 @@ public class UserMacro extends BasicMacro {
     }
 
     @Override
-    protected void verifyArguments(CompilationContext compilationContext, Position pos, List<Class<?>> args) {
+    protected void verifyArguments(CompilationContext compilationContext, Position position, List<Class<?>> args) {
         if (!args.isEmpty()) {
             throw new IllegalArgumentException("No arguments are expected.");
         }

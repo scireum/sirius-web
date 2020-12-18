@@ -38,7 +38,7 @@ import java.util.List;
  */
 @Register
 @PublicAPI
-public class FormatISOMacro extends BasicMacro {
+public class FormatIsoMacro extends BasicMacro {
 
     private static final DateTimeFormatter ISO_LOCAL_YEAR =
             new DateTimeFormatterBuilder().appendValue(ChronoField.YEAR, 4, 10, SignStyle.EXCEEDS_PAD).toFormatter();
@@ -55,7 +55,7 @@ public class FormatISOMacro extends BasicMacro {
     }
 
     @Override
-    public void verifyArguments(CompilationContext context, Position pos, List<Class<?>> args) {
+    public void verifyArguments(CompilationContext context, Position position, List<Class<?>> args) {
         if (args.size() != 1 || !CompilationContext.isAssignableTo(args.get(0), Temporal.class)) {
             throw new IllegalArgumentException("One parameter of type Temporal is expected.");
         }

@@ -28,19 +28,21 @@ public abstract class BasicMacro implements Macro {
     protected abstract Class<?> getType();
 
     @Override
-    public void verify(CompilationContext context, Position pos, List<Node> args) {
-        verifyArguments(context, pos, args.stream().map(Node::getType).collect(Collectors.toList()));
+    public void verify(CompilationContext context, Position position, List<Node> args) {
+        verifyArguments(context, position, args.stream().map(Node::getType).collect(Collectors.toList()));
     }
 
     /**
      * Verifies the arguments of the macro based on their types.
      *
      * @param compilationContext the context used to add additional errors or warnings
-     * @param pos                the position within the source code
+     * @param position           the position within the source code
      * @param args               the types of the available parameters
      * @throws IllegalArgumentException in case of invalid arguments
      */
-    protected abstract void verifyArguments(CompilationContext compilationContext, Position pos, List<Class<?>> args);
+    protected abstract void verifyArguments(CompilationContext compilationContext,
+                                            Position position,
+                                            List<Class<?>> args);
 
     @Override
     public boolean isConstant(CompilationContext context, List<Node> args) {

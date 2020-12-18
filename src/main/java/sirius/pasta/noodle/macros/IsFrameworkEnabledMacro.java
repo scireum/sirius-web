@@ -35,7 +35,7 @@ public class IsFrameworkEnabledMacro extends BasicMacro {
     }
 
     @Override
-    public void verifyArguments(CompilationContext context, Position pos, List<Class<?>> args) {
+    public void verifyArguments(CompilationContext context, Position position, List<Class<?>> args) {
         if (args.size() != 1) {
             throw new IllegalArgumentException("Expected a single String as argument.");
         }

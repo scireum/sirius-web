@@ -31,7 +31,7 @@ public class EpochTimeInDaysMacro extends BasicMacro {
     }
 
     @Override
-    public void verifyArguments(CompilationContext context, Position pos, List<Class<?>> args) {
+    public void verifyArguments(CompilationContext context, Position position, List<Class<?>> args) {
         if (!args.isEmpty()) {
             throw new IllegalArgumentException("'epochTimeInDays' does not take arguments.");
         }

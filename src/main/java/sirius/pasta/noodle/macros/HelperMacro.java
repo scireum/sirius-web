@@ -19,6 +19,14 @@ import sirius.web.security.UserContext;
 import javax.annotation.Nonnull;
 import java.util.List;
 
+/**
+ * Performs a lookup for the helper of the given class.
+ * <p>
+ * This is actually a shortcur for {@code UserContext.getHelper(aClass)}. Note that in contrast to
+ * {@link PartMacro} this isn't constant (as the helper is bound to the actual {@link sirius.web.security.ScopeInfo}).
+ * However, this will be translated into {@link sirius.pasta.noodle.OpCode#OP_INTRINSIC_USER_CONTEXT_HELPER} and
+ * therefore be quite efficient anyway.
+ */
 @Register
 @PublicAPI
 public class HelperMacro extends BasicMacro {
@@ -34,18 +42,18 @@ public class HelperMacro extends BasicMacro {
 
     @Override
     protected Class<?> getType() {
-        return void.class;
+        throw new UnsupportedOperationException("unreachable");
     }
 
     @Override
-    public void verify(CompilationContext context, Position pos, List<Node> args) {
+    public void verify(CompilationContext context, Position position, List<Node> args) {
         if (args.size() != 1 || !args.get(0).isConstant() || !Class.class.isAssignableFrom(args.get(0).getType())) {
             throw new IllegalArgumentException("Expected a single constant class as argument.");
         }
     }
 
     @Override
-    protected void verifyArguments(CompilationContext compilationContext, Position pos, List<Class<?>> args) {
+    protected void verifyArguments(CompilationContext compilationContext, Position position, List<Class<?>> args) {
         throw new UnsupportedOperationException("unreachable");
     }
 

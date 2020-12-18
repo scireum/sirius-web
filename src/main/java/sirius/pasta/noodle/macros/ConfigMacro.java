@@ -31,7 +31,7 @@ public class ConfigMacro extends BasicMacro {
     }
 
     @Override
-    public void verify(CompilationContext context, Position pos, List<Node> args) {
+    public void verify(CompilationContext context, Position position, List<Node> args) {
         if (args.size() != 1 || !CompilationContext.isAssignableTo(args.get(0).getType(), String.class)) {
             throw new IllegalArgumentException("Expects a single string as argument.");
         }
@@ -39,13 +39,13 @@ public class ConfigMacro extends BasicMacro {
         if (args.get(0).isConstant()) {
             String configKey = (String) args.get(0).getConstantValue();
             if (!Sirius.getSettings().has(configKey)) {
-                context.warning(pos, "Unknown config value: '%s'", configKey);
+                context.warning(position, "Unknown config value: '%s'", configKey);
             }
         }
     }
 
     @Override
-    protected void verifyArguments(CompilationContext compilationContext, Position pos, List<Class<?>> args) {
+    protected void verifyArguments(CompilationContext compilationContext, Position position, List<Class<?>> args) {
         throw new UnsupportedOperationException("unreachable");
     }
 

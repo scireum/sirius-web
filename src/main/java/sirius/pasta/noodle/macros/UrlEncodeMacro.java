@@ -30,7 +30,7 @@ public class UrlEncodeMacro extends BasicMacro {
     }
 
     @Override
-    public void verifyArguments(CompilationContext context, Position pos, List<Class<?>> args) {
+    public void verifyArguments(CompilationContext context, Position position, List<Class<?>> args) {
         if (args.size() != 1 || !CompilationContext.isAssignableTo(args.get(0), String.class)) {
             throw new IllegalArgumentException("One parameter of type String is expected");
         }

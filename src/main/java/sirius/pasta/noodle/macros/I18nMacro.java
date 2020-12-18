@@ -33,7 +33,7 @@ public class I18nMacro extends BasicMacro {
     }
 
     @Override
-    public void verify(CompilationContext context, Position pos, List<Node> args) {
+    public void verify(CompilationContext context, Position position, List<Node> args) {
         if (args.isEmpty()) {
             throw new IllegalArgumentException("Expected at least one String as argument.");
         }
@@ -57,13 +57,13 @@ public class I18nMacro extends BasicMacro {
             if (Strings.isFilled(key) && NLS.getTranslationEngine()
                                             .getEntriesStartingWith(key)
                                             .noneMatch(entry -> key.equals(entry.getKey()))) {
-                context.warning(pos, "No translation found for key: %s", key);
+                context.warning(position, "No translation found for key: %s", key);
             }
         }
     }
 
     @Override
-    protected void verifyArguments(CompilationContext compilationContext, Position pos, List<Class<?>> args) {
+    protected void verifyArguments(CompilationContext compilationContext, Position position, List<Class<?>> args) {
         throw new UnsupportedOperationException("unreachable");
     }
 

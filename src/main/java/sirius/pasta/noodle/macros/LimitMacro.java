@@ -34,7 +34,7 @@ public class LimitMacro extends BasicMacro {
     }
 
     @Override
-    public void verifyArguments(CompilationContext context, Position pos, List<Class<?>> args) {
+    public void verifyArguments(CompilationContext context, Position position, List<Class<?>> args) {
         if (args.size() < 2 || args.size() > 3 || !CompilationContext.isAssignableTo(args.get(1), int.class)) {
             throw new IllegalArgumentException(
                     "Expected the first argument to be an object and the second argument to be an integer.");

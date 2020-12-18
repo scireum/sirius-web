@@ -31,7 +31,7 @@ public class TodayMacro extends BasicMacro {
     }
 
     @Override
-    public void verifyArguments(CompilationContext context, Position pos, List<Class<?>> args) {
+    public void verifyArguments(CompilationContext context, Position position, List<Class<?>> args) {
         if (!args.isEmpty()) {
             throw new IllegalArgumentException("No parameters are expected!");
         }

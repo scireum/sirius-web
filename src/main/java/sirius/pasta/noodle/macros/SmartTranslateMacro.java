@@ -32,7 +32,7 @@ public class SmartTranslateMacro extends BasicMacro {
     }
 
     @Override
-    public void verify(CompilationContext context, Position pos, List<Node> args) {
+    public void verify(CompilationContext context, Position position, List<Node> args) {
         if (args.size() != 1 || !CompilationContext.isAssignableTo(args.get(0).getType(), String.class)) {
             throw new IllegalArgumentException("Expected a single String as argument.");
         }
@@ -47,13 +47,13 @@ public class SmartTranslateMacro extends BasicMacro {
             if (Strings.isFilled(effectiveKey) && NLS.getTranslationEngine()
                                                      .getEntriesStartingWith(effectiveKey)
                                                      .noneMatch(entry -> effectiveKey.equals(entry.getKey()))) {
-                context.warning(pos, "No translation found for key: %s", key);
+                context.warning(position, "No translation found for key: %s", key);
             }
         }
     }
 
     @Override
-    protected void verifyArguments(CompilationContext compilationContext, Position pos, List<Class<?>> args) {
+    protected void verifyArguments(CompilationContext compilationContext, Position position, List<Class<?>> args) {
         throw new UnsupportedOperationException("unreachable");
     }
 
