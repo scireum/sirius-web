@@ -24,7 +24,6 @@ import sirius.pasta.noodle.compiler.CompileError;
 import sirius.pasta.noodle.compiler.CompileException;
 import sirius.pasta.noodle.compiler.InputProcessor;
 import sirius.pasta.noodle.compiler.NoodleCompiler;
-import sirius.pasta.tagliatelle.Tagliatelle;
 import sirius.pasta.tagliatelle.emitter.CompositeEmitter;
 import sirius.pasta.tagliatelle.emitter.ConstantEmitter;
 import sirius.pasta.tagliatelle.emitter.Emitter;

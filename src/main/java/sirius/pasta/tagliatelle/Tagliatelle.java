@@ -21,7 +21,6 @@ import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
-import sirius.kernel.health.Log;
 import sirius.pasta.Pasta;
 import sirius.pasta.noodle.compiler.CompileError;
 import sirius.pasta.noodle.compiler.CompileException;
@@ -286,14 +285,13 @@ public class Tagliatelle {
                 return result;
             }
             if (Pasta.LOG.isFINE()) {
-                Pasta.LOG.FINE(
-                        "Resolved '%s' for '%s' from cache but the resource is newer than the compiled template "
-                        + "(%s > %s, Delta: %s)....Recompiling!",
-                        result,
-                        path,
-                        resource.getLastModified(),
-                        result.getCompilationTimestamp(),
-                        resource.getLastModified() - result.getCompilationTimestamp());
+                Pasta.LOG.FINE("Resolved '%s' for '%s' from cache but the resource is newer than the compiled template "
+                               + "(%s > %s, Delta: %s)....Recompiling!",
+                               result,
+                               path,
+                               resource.getLastModified(),
+                               result.getCompilationTimestamp(),
+                               resource.getLastModified() - result.getCompilationTimestamp());
             }
         } else if (Pasta.LOG.isFINE()) {
             Pasta.LOG.FINE("Cannot resolve '%s' for '%s' from cache...", result, resource.getUrl());

@@ -8,13 +8,19 @@
 
 package sirius.web.templates;
 
+import sirius.kernel.commons.Explain;
 import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.compiler.LegacyGlobalsHandler;
 
+/**
+ * Provides some fallbacks for legacy variables which were previously defined by Tagliatelle.
+ */
 @Register
 public class LegacyDefaultGlobalsHandler extends LegacyGlobalsHandler {
 
     @Override
+    @SuppressWarnings({"java:S1541", "java:S131"})
+    @Explain("We rather keep all cases in one place even if the switch is a bit to complex")
     protected String determineReplacement(String name) {
         switch (name) {
             case "user":

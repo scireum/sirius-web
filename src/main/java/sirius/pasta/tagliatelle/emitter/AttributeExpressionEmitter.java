@@ -19,14 +19,23 @@ import sirius.pasta.tagliatelle.rendering.LocalRenderContext;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Handles attributes which are only emitted if the value evaluates to neither <tt>null</tt> nor <tt>false</tt>.
+ * <p>
+ * Therefore an expression like {@code @attr="something"} is either output as <tt>attr="attr"</tt> if "something"
+ * evaluates to <tt>true</tt> or <tt>att="value"</tt> if "something" evaluates to the value.
+ */
 public class AttributeExpressionEmitter extends Emitter {
+
     private final String attibuteName;
     private final Callable attributeExpression;
 
     /**
      * Contains a new emitter with the given position.
      *
-     * @param startOfBlock the start position where the emitter was created
+     * @param startOfBlock        the start position where the emitter was created
+     * @param attibuteName        the name of the attribute to emit
+     * @param attributeExpression the expression to evaluate and to output the result
      */
     public AttributeExpressionEmitter(@Nonnull Position startOfBlock,
                                       String attibuteName,

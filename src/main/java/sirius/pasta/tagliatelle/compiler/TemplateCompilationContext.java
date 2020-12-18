@@ -58,7 +58,7 @@ public class TemplateCompilationContext extends CompilationContext {
     private final Template template;
 
     @Part
-    private static GlobalContext ctx;
+    private static GlobalContext globalContext;
 
     @Part
     private static Tagliatelle engine;
@@ -66,9 +66,10 @@ public class TemplateCompilationContext extends CompilationContext {
     /**
      * Creates a new context for the given template and parent context.
      *
-     * @param template the template which is being compiled
-     * @param parent   the parent context if the template is compiled because it is invoked by another template being
-     *                 compiled
+     * @param template       the template which is being compiled
+     * @param sourceCodeInfo the source code being compiled
+     * @param parent         the parent context if the template is compiled because it is invoked by another template
+     *                       being compiled
      */
     public TemplateCompilationContext(@Nonnull Template template,
                                       @Nonnull SourceCodeInfo sourceCodeInfo,
@@ -103,7 +104,7 @@ public class TemplateCompilationContext extends CompilationContext {
         }
 
         if (tagName.startsWith("i:")) {
-            TagHandlerFactory factory = ctx.getPart(tagName, TagHandlerFactory.class);
+            TagHandlerFactory factory = globalContext.getPart(tagName, TagHandlerFactory.class);
             if (factory != null) {
                 return factory.createHandler();
             } else {

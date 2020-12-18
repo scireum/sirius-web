@@ -21,6 +21,9 @@ import sirius.pasta.tagliatelle.rendering.LocalRenderContext;
 import javax.annotation.Nonnull;
 import java.util.List;
 
+/**
+ * Generates a new ID which is unique within this {@link LocalRenderContext}.
+ */
 @Register
 @PublicAPI
 public class GenerateIdMacro extends BasicMacro {

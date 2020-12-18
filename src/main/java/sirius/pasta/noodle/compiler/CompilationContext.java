@@ -82,6 +82,11 @@ public class CompilationContext {
      */
     private static Map<String, Class<?>> aliases;
 
+    /**
+     * Creates a new compilation context for the given source code.
+     *
+     * @param sourceCodeInfo the source code to copmpile
+     */
     public CompilationContext(SourceCodeInfo sourceCodeInfo) {
         this.sourceCodeInfo = sourceCodeInfo;
     }
@@ -178,7 +183,6 @@ public class CompilationContext {
         if (getErrors().isEmpty()) {
             return Collections.emptyList();
         }
-
 
         List<CompileError> compileErrors = getCompilationErrors();
         boolean errorFound = false;

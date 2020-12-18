@@ -22,7 +22,6 @@ import sirius.pasta.tagliatelle.emitter.ConstantEmitter;
 import sirius.pasta.tagliatelle.emitter.Emitter;
 import sirius.web.resources.Resources;
 
-import javax.annotation.Nullable;
 import java.util.Collections;
 
 /**

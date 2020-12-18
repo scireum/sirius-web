@@ -27,7 +27,16 @@ public class ConstantCall implements Callable {
      */
     public static final Callable EMPTY_STRING = new ConstantCall("");
 
-    private Object value;
+    private final Object value;
+
+    /**
+     * Creates a new constant call which always yields the given value.
+     *
+     * @param value the value to return
+     */
+    public ConstantCall(Object value) {
+        this.value = value;
+    }
 
     /**
      * Determines if the given call will constantly return <tt>null</tt>.
@@ -52,15 +61,6 @@ public class ConstantCall implements Callable {
     @Override
     public Type getGenericType() {
         return getType();
-    }
-
-    /**
-     * Creates a new constant call which always yields the given value.
-     *
-     * @param value the value to return
-     */
-    public ConstantCall(Object value) {
-        this.value = value;
     }
 
     @Override

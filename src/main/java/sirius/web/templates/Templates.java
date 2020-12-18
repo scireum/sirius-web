@@ -56,7 +56,7 @@ public class Templates {
     private Collection<GlobalContextExtender> extenders;
 
     @Part
-    private GlobalContext ctx;
+    private GlobalContext globalContext;
 
     @Part
     private Resources resources;

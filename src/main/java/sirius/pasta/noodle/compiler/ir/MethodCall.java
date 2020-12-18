@@ -49,8 +49,9 @@ public class MethodCall extends Call {
     /**
      * Creates a new instance and specifies the expression on which the method is invoked.
      *
+     * @param position   the position within the source code
      * @param self       the expression on which the method is invoked.
-     * @param methodName
+     * @param methodName the method to call
      */
     public MethodCall(Position position, Node self, String methodName) {
         super(position);
@@ -72,6 +73,8 @@ public class MethodCall extends Call {
         return super.reduce(compilationContext);
     }
 
+    @SuppressWarnings({"java:S3776", "java:S1541"})
+    @Explain("We rather keep all optimizations in one place.")
     private Node optimizeIntrinsics() {
         if (NLS.class.equals(method.getDeclaringClass()) && "get".equals(method.getName())) {
             return new IntrinsicCall(getPosition(),
@@ -272,9 +275,8 @@ public class MethodCall extends Call {
     /**
      * Tries to find a matching method for the given name, type of "self" and parameter types.
      *
-     * @param position the position where the invocation was declared
-     * @param context  the compilation context for error reporting
-     * @param name     the name of the method to find
+     * @param compilationContext the compilation context for error reporting
+     * @return <tt>true</tt> if the method was bound successfully, <tt>false</tt> otherwise
      */
     public boolean tryBindToMethod(CompilationContext compilationContext) {
         if (parameterNodes == NO_ARGS) {

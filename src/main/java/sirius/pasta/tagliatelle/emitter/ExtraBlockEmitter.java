@@ -8,7 +8,6 @@
 
 package sirius.pasta.tagliatelle.emitter;
 
-import parsii.tokenizer.Position;
 import sirius.pasta.tagliatelle.rendering.LocalRenderContext;
 
 import javax.annotation.Nonnull;
@@ -50,5 +49,4 @@ public class ExtraBlockEmitter extends Emitter {
         body = body.reduce();
         return this;
     }
-
 }

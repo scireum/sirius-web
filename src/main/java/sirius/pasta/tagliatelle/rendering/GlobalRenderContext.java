@@ -8,9 +8,9 @@
 
 package sirius.pasta.tagliatelle.rendering;
 
+import sirius.pasta.noodle.compiler.CompileException;
 import sirius.pasta.tagliatelle.Tagliatelle;
 import sirius.pasta.tagliatelle.Template;
-import sirius.pasta.noodle.compiler.CompileException;
 import sirius.web.templates.ContentHelper;
 
 import javax.annotation.Nonnull;
@@ -214,8 +214,9 @@ public class GlobalRenderContext {
     /**
      * Generates an ID which is unique within this render context.
      * <p>
-     *     This is mainly used to generate unique IDs for HTML elements
-     * @return
+     * This is mainly used to generate unique IDs for HTML elements.
+     *
+     * @return a new unique id within this context
      */
     public int generateLocalId() {
         return localIdGenerator++;

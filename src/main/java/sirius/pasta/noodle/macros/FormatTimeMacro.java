@@ -8,20 +8,16 @@
 
 package sirius.pasta.noodle.macros;
 
-import parsii.tokenizer.Position;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.nls.NLS;
 import sirius.pasta.noodle.Environment;
-import sirius.pasta.noodle.compiler.CompilationContext;
-import sirius.pasta.noodle.compiler.ir.Node;
 import sirius.pasta.noodle.sandbox.PublicAPI;
 
 import javax.annotation.Nonnull;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Represents <tt>formatTime(…)</tt>.

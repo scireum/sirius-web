@@ -8,6 +8,7 @@
 
 package sirius.pasta.noodle;
 
+import sirius.kernel.commons.Explain;
 import sirius.pasta.noodle.macros.Macro;
 
 import java.lang.invoke.MethodHandle;
@@ -51,6 +52,8 @@ public class SharedConstantPool {
      * @param constant the constant to store
      * @return the index of the constant or -1 if the value is not accepted as shared constant
      */
+    @SuppressWarnings("java:S2250")
+    @Explain("This add method is no bottleneck as it should saturate quite quickly.")
     public synchronized int getIndex(Object constant) {
         for (int i = 0; i < sharedConstants.size(); i++) {
             if (Objects.equals(sharedConstants.get(i), constant)) {

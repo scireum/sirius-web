@@ -8,7 +8,6 @@
 
 package sirius.web.health.console;
 
-import org.checkerframework.checker.units.qual.C;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.di.GlobalContext;
@@ -33,7 +32,7 @@ import java.io.StringWriter;
 public class ConsoleService implements StructuredService {
 
     @Part
-    private GlobalContext ctx;
+    private GlobalContext globalContext;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -46,7 +45,7 @@ public class ConsoleService implements StructuredService {
                 throw Exceptions.createHandled().withSystemErrorMessage("Please enter a command!").handle();
             }
 
-            Command cmd = ctx.getPart(parser.parseCommand(), Command.class);
+            Command cmd = globalContext.getPart(parser.parseCommand(), Command.class);
             try (StringWriter buffer = new StringWriter(); PrintWriter pw = new PrintWriter(buffer)) {
                 pw.println();
                 if (cmd == null) {
