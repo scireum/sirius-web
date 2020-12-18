@@ -283,7 +283,7 @@ public class ScopeInfo extends Composable {
         fillConfig(helper);
 
         // Note that we deliberately make the helper visible in the local context here so that "fillFriends" is
-        // catable of handling circular references...
+        // capable of handling circular references...
         localContext.put(type, helper);
         fillFriends(helper, localContext);
 
@@ -294,10 +294,10 @@ public class ScopeInfo extends Composable {
         Settings scopeSettings = getSettings();
         Reflection.getAllFields(result.getClass())
                   .stream()
-                  .filter(f -> f.isAnnotationPresent(HelperConfig.class))
-                  .forEach(f -> {
+                  .filter(field -> field.isAnnotationPresent(HelperConfig.class))
+                  .forEach(field -> {
                       try {
-                          scopeSettings.injectValueFromConfig(result, f, f.getAnnotation(HelperConfig.class).value());
+                          scopeSettings.injectValueFromConfig(result, field, field.getAnnotation(HelperConfig.class).value());
                       } catch (IllegalArgumentException e) {
                           UserContext.LOG.WARN("Failed to fill a helper-config value: %s for scope %s",
                                                e.getMessage(),
