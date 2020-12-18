@@ -15,7 +15,7 @@ import javax.annotation.Nonnull;
 import java.time.LocalDateTime;
 
 /**
- * Macro for comparing it a given date is after another given date or now.
+ * Checks whether a given date is after another given date or now.
  */
 @Register
 @PublicAPI

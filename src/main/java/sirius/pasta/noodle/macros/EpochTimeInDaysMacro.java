@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Gets the current time since 1970 in days
+ * Gets the current time since 1970 in days.
  */
 @Register
 @PublicAPI

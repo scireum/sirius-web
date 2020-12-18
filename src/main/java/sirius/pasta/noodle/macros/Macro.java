@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Represents a macro or constant function.
  * <p>
- * Note that {@link BasicMacro} a base class which simplifies writing macros. Also note that if a macro is safe
+ * Note that {@link BasicMacro} is a base class which simplifies writing macros. Also note that if a macro is safe
  * to be called from custom code (provided by users of the system), {@link sirius.pasta.noodle.sandbox.PublicAPI}
  * should be added as annotation to the class.
  */

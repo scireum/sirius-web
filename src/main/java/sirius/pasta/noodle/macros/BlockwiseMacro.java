@@ -51,14 +51,14 @@ public class BlockwiseMacro extends BasicMacro {
     @Override
     public Object invoke(Environment environment, Object[] args) {
         List<List<Object>> blocks = new ArrayList<>();
-        Iterator<Object> iter = ((Iterable<Object>) args[0]).iterator();
+        Iterator<Object> iterator = ((Iterable<Object>) args[0]).iterator();
         int blockSize = (int) args[1];
-        while (iter.hasNext()) {
+        while (iterator.hasNext()) {
             List<Object> block = new ArrayList<>();
             blocks.add(block);
             int currentBlock = blockSize;
-            while (iter.hasNext() && currentBlock-- > 0) {
-                block.add(iter.next());
+            while (iterator.hasNext() && currentBlock-- > 0) {
+                block.add(iterator.next());
             }
         }
 

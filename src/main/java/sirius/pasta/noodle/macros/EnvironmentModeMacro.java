@@ -14,7 +14,7 @@ import sirius.pasta.noodle.compiler.CompilationContext;
 import java.util.List;
 
 /**
- * Base class for environment determining {@link Macro}s.
+ * Base class for environment determining {@link Macro macros}.
  */
 public abstract class EnvironmentModeMacro extends BasicMacro {
 

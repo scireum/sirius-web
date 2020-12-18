@@ -15,7 +15,7 @@ import sirius.pasta.noodle.Environment;
 import javax.annotation.Nonnull;
 
 /**
- * This macro determines if the current system environment is in staging {@link sirius.kernel.Setup.Mode}.
+ * Determines if the current system environment is in staging {@link sirius.kernel.Setup.Mode}.
  */
 @Register
 public class IsStagingMacro extends EnvironmentModeMacro {
