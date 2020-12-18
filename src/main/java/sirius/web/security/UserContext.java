@@ -135,22 +135,6 @@ public class UserContext implements SubContext {
     }
 
     /**
-     * Returns the helper with the given name for the current scope.
-     * <p>
-     * NOTE: This helper is per {@link ScopeInfo} not per {@link UserInfo}! Therefore no user dependent data may be kept
-     * in its state.
-     *
-     * @param name the name of the helper to fetch
-     * @param <H>  the generic type of the helper
-     * @return an instance of the given helper. If the helper can neither be found nor created, an exception will be
-     * thrown.
-     */
-    @Nonnull
-    public static <H> H getHelper(@Nonnull String name) {
-        return getCurrentScope().getHelper(name);
-    }
-
-    /**
      * Boilerplate method to quickly access the current scope.
      *
      * @return the currently active scope
@@ -576,6 +560,8 @@ public class UserContext implements SubContext {
         child.currentScope = currentScope;
         child.msgList = msgList;
         child.fieldErrors = fieldErrors;
+        child.fieldErrorMessages = fieldErrorMessages;
+        child.addedAdditionalMessages = addedAdditionalMessages;
 
         return child;
     }

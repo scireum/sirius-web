@@ -40,16 +40,6 @@ public interface HelperFactory<H> extends Priorized {
     Class<H> getHelperType();
 
     /**
-     * Returns a short and descriptive name which can be used to fetch the helper in templates.
-     * <p>
-     * We prefer using names over class names in templates as this make refactorings way easier.
-     *
-     * @return the unique name used to fetch the helper in a template
-     */
-    @Nonnull
-    String getName();
-
-    /**
      * Creates a new helper for the given scope.
      *
      * @param scope the scope for which this helper is created
