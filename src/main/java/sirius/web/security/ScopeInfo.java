@@ -79,7 +79,7 @@ public class ScopeInfo extends Composable {
     private static List<HelperFactory<?>> factories;
 
     @Part
-    private static GlobalContext ctx;
+    private static GlobalContext globalContext;
 
     /**
      * Creates a new <tt>ScopeInfo</tt> with the given parameters.
@@ -279,7 +279,7 @@ public class ScopeInfo extends Composable {
     }
 
     private Object populateHelper(Class<?> type, Object helper, Map<Class<?>, Object> localContext) {
-        ctx.wire(helper);
+        globalContext.wire(helper);
         fillConfig(helper);
 
         // Note that we deliberately make the helper visible in the local context here so that "fillFriends" is
@@ -468,8 +468,8 @@ public class ScopeInfo extends Composable {
     public UserManager getUserManager() {
         if (userManager == null) {
             Extension ext = Sirius.getSettings().getExtension("security.scopes", getScopeType());
-            userManager = ctx.getPart(ext.get("manager").asString("public"), UserManagerFactory.class)
-                             .createManager(this, ext);
+            userManager = globalContext.getPart(ext.get("manager").asString("public"), UserManagerFactory.class)
+                                       .createManager(this, ext);
         }
 
         return userManager;
