@@ -315,7 +315,7 @@ public class CompilationContext {
      * <p>
      * This will return the boxed type for a primitive class like <tt>Integer</tt> for <tt>int</tt>.
      *
-     * @param type the class to unbox
+     * @param type the class to box
      * @return the boxed version of the given class or the class itself if it wasn't a primitive
      */
     public static Class<?> autoboxClass(Class<?> type) {
