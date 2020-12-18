@@ -16,7 +16,7 @@
 
 
 <div class="col-xs-@smallSpan col-md-@span">
-    <div class="form-group checkbox @user.signalFieldError(name)">
+    <div class="form-group checkbox @UserContext.get().signalFieldError(name)">
         <label>
             <i:if test="!readonly">
                 <input type="hidden" name="@apply('%s_marker',name)"/>

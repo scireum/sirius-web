@@ -12,9 +12,9 @@
 
         <h2>Diagnostic:</h2>
         <ul>
-            <li><b>node:</b> @ctx.getNodeName()</li>
+            <li><b>node:</b> @CallContext.getNodeName()</li>
             <li><b>duration:</b> @ctx.getWatch().duration()</li>
-            <i:for type="sirius.kernel.commons.Tuple" var="t" items="ctx.getMDC()">
+            <i:for type="Tuple" var="t" items="ctx.getMDC()">
                 <li>
                     <b>@t.getFirst():</b> @t.getSecond()
                 </li>
@@ -23,7 +23,7 @@
     </div>
 
     <div class="form-actions">
-        <a href="@wondergemRoot" class="btn">
+        <a href="@config('product.wondergemRoot')" class="btn">
             <i class="fa fa-angle-double-left"></i> @i18n('BasicController.toDashboard')
         </a>
     </div>

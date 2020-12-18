@@ -1,4 +1,4 @@
-<i:arg type="String" name="id" default="@apply('codeEditor_%s', call.generateLocalId())" />
+<i:arg type="String" name="id" default="@generateId('codeEditor_%s')" />
 <i:arg type="int" name="height" default="450" />
 <i:arg type="boolean" name="readonly" default="false" />
 <i:arg type="String" name="mode" default="html" />

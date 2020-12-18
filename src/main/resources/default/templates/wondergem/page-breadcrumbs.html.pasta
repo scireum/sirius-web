@@ -1,4 +1,4 @@
 <ol class="breadcrumb">
-    <li><a href="@wondergemRoot"><span class="fa fa-home"></span></a></li>
+    <li><a href="@config('product.wondergemRoot')"><span class="fa fa-home"></span></a></li>
     <i:render name="body" />
 </ol>

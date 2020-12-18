@@ -186,11 +186,6 @@ public class WebContext implements SubContext {
     private Map<String, String> session;
 
     /**
-     * Used to create IDs which are locally unique (for this web context).
-     */
-    private AtomicLong localIdGenerator;
-
-    /**
      * Internal key used to keep track of the TTL of the client session cookie
      */
     private static final String TTL_SESSION_KEY = "_TTL";
@@ -709,20 +704,6 @@ public class WebContext implements SubContext {
             Exceptions.handle(WebServer.LOG, e);
         }
         return null;
-    }
-
-    /**
-     * Generates an ID (numeric value) which is unique withing this HTTP request.
-     * <p>
-     * This can be used to create IDs for HTML elements and the like.
-     *
-     * @return a locally unique ID as long as less than {@link Long#MAX_VALUE} IDs are requested.
-     */
-    public long generateLocalId() {
-        if (localIdGenerator == null) {
-            localIdGenerator = new AtomicLong(1);
-        }
-        return localIdGenerator.getAndIncrement();
     }
 
     /**

@@ -60,7 +60,7 @@
         instanciateColorPickers();
 
         $('.date-picker').datetimepicker({
-            locale: "@lang",
+            locale: "@NLS.getCurrentLang()",
             ignoreReadonly: true,
             keepInvalid: true,
             useCurrent: false,

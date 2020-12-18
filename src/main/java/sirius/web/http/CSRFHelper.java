@@ -8,6 +8,7 @@
 
 package sirius.web.http;
 
+import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
@@ -39,6 +40,15 @@ public class CSRFHelper {
 
     @ConfigValue("http.csrfTokenLifetime")
     private static Duration csrfTokenLifetime;
+
+    /**
+     * Returns the CSRF security-token of the current session. Internally recomputes the token if outdated.
+     *
+     * @return the CSRF security-token to protect sensitive links.
+     */
+    public String getCSRFToken() {
+        return getCSRFToken(CallContext.getCurrent().get(WebContext.class));
+    }
 
     /**
      * Returns the CSRF security-token of the current session. Internally recomputes the token if outdated.

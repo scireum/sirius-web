@@ -1,4 +1,4 @@
-<i:arg type="String" name="name" default="@('image-upload' + call.generateLocalId())" />
+<i:arg type="String" name="name" default="@generateId('image-upload-%s')" />
 <i:arg type="String" name="uploadUrl" />
 <i:arg type="String" name="allowedExtensions" default="[]" />
 <i:arg type="int" name="maxParallelConnections" default="3" />
