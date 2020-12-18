@@ -9,13 +9,8 @@
 package sirius.web.security
 
 import sirius.kernel.BaseSpecification
-import sirius.kernel.async.Future
 import sirius.kernel.async.Tasks
 import sirius.kernel.di.std.Part
-
-import java.time.Duration
-import java.time.temporal.TemporalUnit
-import java.util.concurrent.TimeUnit
 
 class ScopeInfoSpec extends BaseSpecification {
 
@@ -45,29 +40,18 @@ class ScopeInfoSpec extends BaseSpecification {
         value == "# Test\nsettings.test =\"Hello\""
     }
 
-    def "friend helpers are loaded"() {
+    def "helpers are instantiated via factory/constructors"() {
         when:
-        String value = UserContext.getCurrentScope().getHelper(ExampleHelper.class).getTestValue()
-        then:
-        value == "test"
+        def helper1 = UserContext.getCurrentScope().getHelper(FactoryExampleHelper.class)
+        def helper2 = UserContext.getCurrentScope().getHelper(ExampleHelper.class)
+        def helper3 = UserContext.getCurrentScope().getHelper(AnotherExampleHelper.class)
+        then: "all can be instantiated"
+        helper1 != null
+        helper2 != null
+        helper3 != null
+        and: "friends are the exact same instances and not copies of the same helpers"
+        helper2.getAnotherExampleHelper() == helper3
+        helper3.getExampleHelper() == helper2
     }
 
-    def "helpers are cached in a consistent state"() {
-        given:
-        def scope = new ScopeInfo("test", "test", "test", null, null, null)
-        when:
-        def future1 = tasks.executor("test").start({ ->
-            scope.getHelper(ExampleHelper.class).getTestValue();
-        })
-        def future2 = tasks.executor("test").start({ ->
-            scope.getHelper(ExampleHelper.class).getTestValue();
-        })
-        and:
-        future1.await(Duration.ofSeconds(1))
-        future2.await(Duration.ofSeconds(1))
-        then:
-        future1.isSuccessful()
-        and:
-        future2.isSuccessful()
-    }
 }

@@ -16,28 +16,6 @@ import javax.annotation.Nonnull;
 
 public class ExampleHelper {
 
-    @Register
-    public static class ExampleHelperFactory implements HelperFactory<ExampleHelper> {
-
-        @Nonnull
-        @Override
-        public Class<ExampleHelper> getHelperType() {
-            return ExampleHelper.class;
-        }
-
-        @Nonnull
-        @Override
-        public String getName() {
-            return "example";
-        }
-
-        @Nonnull
-        @Override
-        public ExampleHelper make(@Nonnull ScopeInfo scope) {
-            return new ExampleHelper();
-        }
-    }
-
     public String getTestValue() {
         return "test";
     }
