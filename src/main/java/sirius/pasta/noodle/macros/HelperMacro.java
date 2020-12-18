@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * Performs a lookup for the helper of the given class.
  * <p>
- * This is actually a shortcur for {@code UserContext.getHelper(aClass)}. Note that in contrast to
+ * This is actually a shortcut for {@code UserContext.getHelper(aClass)}. Note that in contrast to
  * {@link PartMacro} this isn't constant (as the helper is bound to the actual {@link sirius.web.security.ScopeInfo}).
  * However, this will be translated into {@link sirius.pasta.noodle.OpCode#OP_INTRINSIC_USER_CONTEXT_HELPER} and
  * therefore be quite efficient anyway.
