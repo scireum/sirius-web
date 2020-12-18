@@ -15,7 +15,7 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.health.Exceptions;
 import sirius.pasta.Pasta;
-import sirius.pasta.tagliatelle.ClassAliasProvider;
+import sirius.pasta.noodle.ClassAliasProvider;
 
 import java.util.ArrayList;
 import java.util.Collection;
