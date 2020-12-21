@@ -51,7 +51,7 @@ public @interface Routed {
      * <li>an i18n string like ${i18n.key}: This will be transalted using {@link sirius.kernel.nls.NLS}. The resulting
      * string must match the part in the request URI</li>
      * <li>a * can be used to accept any path element in the request URI</li>
-     * <li>a ** behaves like a variac parameter. It can only occur at the end of the expression and the method has to
+     * <li>a ** behaves like a variadic parameter. It can only occur at the end of the expression and the method has to
      * provide a List&lt;String&gt; subPath as last parameter which will contain all matched elements</li>
      * </ul>
      *
