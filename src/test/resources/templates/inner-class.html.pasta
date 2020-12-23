@@ -1,2 +1,2 @@
 <i:arg name="tuple" type="sirius.kernel.commons.Tuple"/>
-@tuple.getFirst().as(sirius.tagliatelle.InnerClassTestObject$InnerClass.class).getTest()
+@tuple.getFirst().as(sirius.pasta.tagliatelle.InnerClassTestObject.InnerClass.class).getTest()

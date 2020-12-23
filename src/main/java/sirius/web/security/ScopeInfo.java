@@ -218,7 +218,7 @@ public class ScopeInfo extends Composable {
         if (result == null) {
             Map<Class<?>, Object> localContext = new HashMap<>(helpersByType);
             result = makeHelperByType(helperType, localContext);
-            localContext.forEach((type, helper) -> helpersByType.putIfAbsent(type, helper));
+            localContext.forEach(helpersByType::putIfAbsent);
         }
 
         return result;
@@ -297,7 +297,9 @@ public class ScopeInfo extends Composable {
                   .filter(field -> field.isAnnotationPresent(HelperConfig.class))
                   .forEach(field -> {
                       try {
-                          scopeSettings.injectValueFromConfig(result, field, field.getAnnotation(HelperConfig.class).value());
+                          scopeSettings.injectValueFromConfig(result,
+                                                              field,
+                                                              field.getAnnotation(HelperConfig.class).value());
                       } catch (IllegalArgumentException e) {
                           UserContext.LOG.WARN("Failed to fill a helper-config value: %s for scope %s",
                                                e.getMessage(),

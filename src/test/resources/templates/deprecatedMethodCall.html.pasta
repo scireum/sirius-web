@@ -1,4 +1,4 @@
 <i:pragma name="unchecked" value="true" />
-<i:arg type="sirius.tagliatelle.TestObject" name="test" />
+<i:arg type="sirius.pasta.tagliatelle.TestObject" name="test" />
 
 @test.deprecatedMethod()

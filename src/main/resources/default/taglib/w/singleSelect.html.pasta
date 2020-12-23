@@ -9,7 +9,7 @@
 <i:arg name="required" type="boolean" default="false" />
 <i:arg name="readonly" type="boolean" default="false" />
 <i:arg name="adminOnly" type="boolean" default="false" />
-<i:arg name="id" type="String" default="@apply('multiselect-%s', call.generateLocalId())" />
+<i:arg name="id" type="String" default="@generateId('multiselect-%s')" />
 <i:arg name="allowCustomEntries" type="boolean" default="false" />
 
 <i:pragma name="description" value="Renders a dropdown field within a Wondergem template" />

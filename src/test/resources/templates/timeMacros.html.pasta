@@ -1,3 +1,5 @@
+<i:local name="now" value="now()" />
+<i:local name="today" value="today()" />
 <i:if test="isBefore(now, now)">
 now is equal not before
 </i:if>

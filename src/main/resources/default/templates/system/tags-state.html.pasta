@@ -50,7 +50,7 @@
             <td class="align-right">Invocations</td>
             <td class="align-right">Avg. Rendertime</td>
         </tr>
-        <i:for type="sirius.tagliatelle.Template" var="template" items="templates">
+        <i:for type="sirius.pasta.tagliatelle.Template" var="template" items="templates">
             <tr>
                 <td>
                     @template.getName()<br>

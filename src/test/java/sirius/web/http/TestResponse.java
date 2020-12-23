@@ -21,10 +21,9 @@ import sirius.kernel.commons.Value;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.xml.StructuredNode;
 import sirius.kernel.xml.XMLStructuredInput;
-import sirius.tagliatelle.Template;
+import sirius.pasta.tagliatelle.Template;
 
 import javax.annotation.Nullable;
-import javax.xml.xpath.XPathExpressionException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;

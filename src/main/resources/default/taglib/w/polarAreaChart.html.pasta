@@ -1,4 +1,4 @@
-<i:arg type="String" name="name" default="@apply('polarareachart-%s',call.generateLocalId())"/>
+<i:arg type="String" name="name" default="@generateId('polarareachart-%s')"/>
 <i:arg type="String" name="titleKey" default=""/>
 <i:arg type="String" name="title" default="@i18n(titleKey)"/>
 <i:arg type="String" name="data"/>

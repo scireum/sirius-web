@@ -16,9 +16,9 @@
                 }, {
                     prompt: function (output) {
                         var now = new Date();
-                        output(now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds() + ' - @(nodeName)> ');
+                        output(now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds() + ' - @(CallContext.getNodeName())> ');
                     },
-                    greetings: '@product (@detailedVersion) - Type "help" for a list of available commands.'
+                    greetings: '@Product.getProduct().getName() (@Product.getProduct().getDetails()) - Type "help" for a list of available commands.'
                 });
 
 

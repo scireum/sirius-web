@@ -86,7 +86,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 /**
  * Provides access to a request received by the WebServer.
@@ -184,11 +184,6 @@ public class WebContext implements SubContext {
      * will not be stored on the server.
      */
     private Map<String, String> session;
-
-    /**
-     * Used to create IDs which are locally unique (for this web context).
-     */
-    private AtomicLong localIdGenerator;
 
     /**
      * Internal key used to keep track of the TTL of the client session cookie
@@ -539,13 +534,10 @@ public class WebContext implements SubContext {
             } else if (dataList.size() == 1) {
                 return Value.of(transformHttpData(dataList.get(0)));
             } else {
-                List<String> attributes = new ArrayList<>();
-                for (InterfaceHttpData data : dataList) {
-                    String value = transformHttpData(data);
-                    if (Strings.isFilled(value)) {
-                        attributes.add(value);
-                    }
-                }
+                List<String> attributes = dataList.stream()
+                                                  .map(this::transformHttpData)
+                                                  .filter(Strings::isFilled)
+                                                  .collect(Collectors.toList());
                 if (!attributes.isEmpty()) {
                     return Value.of(attributes);
                 }
@@ -562,17 +554,21 @@ public class WebContext implements SubContext {
         return Value.EMPTY;
     }
 
-    private String transformHttpData(InterfaceHttpData data) throws IOException {
-        if (data instanceof Attribute) {
-            Attribute attr = (Attribute) data;
-            ByteBuf byteBuf = attr.getByteBuf();
+    private String transformHttpData(InterfaceHttpData data) {
+        try {
+            if (data instanceof Attribute) {
+                Attribute attr = (Attribute) data;
+                ByteBuf byteBuf = attr.getByteBuf();
 
-            // If the request gets aborted prematurely, the underlying buffers might
-            // already be released. Therefore we have to check this here manually as
-            // the server might still try to process the request...
-            if (byteBuf != null) {
-                return byteBuf.toString(attr.getCharset());
+                // If the request gets aborted prematurely, the underlying buffers might
+                // already be released. Therefore we have to check this here manually as
+                // the server might still try to process the request...
+                if (byteBuf != null) {
+                    return byteBuf.toString(attr.getCharset());
+                }
             }
+        } catch (IOException e) {
+            Exceptions.ignore(e);
         }
         return null;
     }
@@ -709,20 +705,6 @@ public class WebContext implements SubContext {
             Exceptions.handle(WebServer.LOG, e);
         }
         return null;
-    }
-
-    /**
-     * Generates an ID (numeric value) which is unique withing this HTTP request.
-     * <p>
-     * This can be used to create IDs for HTML elements and the like.
-     *
-     * @return a locally unique ID as long as less than {@link Long#MAX_VALUE} IDs are requested.
-     */
-    public long generateLocalId() {
-        if (localIdGenerator == null) {
-            localIdGenerator = new AtomicLong(1);
-        }
-        return localIdGenerator.getAndIncrement();
     }
 
     /**
