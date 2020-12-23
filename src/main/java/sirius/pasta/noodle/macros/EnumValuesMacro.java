@@ -37,8 +37,8 @@ public class EnumValuesMacro extends BasicMacro {
             || !CompilationContext.isAssignableTo(args.get(0).getType(), Class.class)
             || !args.get(0)
                     .isConstant()
-            || ((Class<?>) args.get(0).getConstantValue()).isEnum()) {
-                throw new IllegalArgumentException("Expected an enum class as parameter.");
+            || !((Class<?>) args.get(0).getConstantValue()).isEnum()) {
+            throw new IllegalArgumentException("Expected an enum class as parameter.");
         }
     }
 
