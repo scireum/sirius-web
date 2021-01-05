@@ -385,7 +385,7 @@ class TunnelHandler implements AsyncHandler<String>, AsyncHandlerExtensions {
                                    + "%nDNS: %s, TCP-ATTEMPT: %s, TCP-CONNECT: %s, HANDSHAKE: %s, REQUEST-SENT: %s"
                                    + "%nURL:%s"
                                    + "%nTunnel URL:%s"
-                                   + "%nResponse:%s"
+                                   + "%nStatus: %s"
                                    + "%nParameters:"
                                    + "%n%s"
                                    + "%nMDC:"
@@ -399,7 +399,7 @@ class TunnelHandler implements AsyncHandler<String>, AsyncHandlerExtensions {
                                    NLS.convertDuration(timeToRequestSent, true, true),
                                    webContext.getRequestedURL(),
                                    Strings.split(url, "?").getFirst(),
-
+                                   status.getStatusCode(),
                                    webContext.getParameterNames()
                                              .stream()
                                              .map(param -> param + ": " + Strings.limit(webContext.get(param)
