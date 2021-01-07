@@ -451,7 +451,7 @@ public class MethodCall extends Call {
                 parameterNodes[i].emit(assembler);
             }
 
-            boolean isStatic = selfNode instanceof RawClassLiteral;
+            boolean isStatic = Modifier.isStatic(method.getModifiers());
             if (!isStatic) {
                 selfNode.emit(assembler);
             }
