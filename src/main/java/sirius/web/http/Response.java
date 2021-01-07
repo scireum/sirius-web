@@ -8,8 +8,6 @@
 
 package sirius.web.http;
 
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.AsyncHttpClientConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
@@ -32,6 +30,9 @@ import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.handler.stream.ChunkedStream;
 import io.netty.handler.stream.ChunkedWriteHandler;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.BoundRequestBuilder;
+import org.asynchttpclient.Dsl;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.ExecutionPoint;
@@ -57,6 +58,7 @@ import sirius.web.services.JSONStructuredOutput;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URLConnection;
 import java.nio.channels.ClosedChannelException;
@@ -1244,11 +1246,7 @@ public class Response {
      */
     protected static AsyncHttpClient getAsyncClient() {
         if (asyncClient == null) {
-            asyncClient = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setAllowPoolingConnections(true)
-                                                                                 .setAllowPoolingSslConnections(true)
-                                                                                 .setRequestTimeout(-1)
-                                                                                 .setFollowRedirect(true)
-                                                                                 .build());
+            asyncClient = Dsl.asyncHttpClient(Dsl.config().setFollowRedirect(true).setRequestTimeout(-1));
         }
         return asyncClient;
     }
@@ -1258,7 +1256,11 @@ public class Response {
      */
     protected static void closeAsyncClient() {
         if (asyncClient != null) {
-            asyncClient.close();
+            try {
+                asyncClient.close();
+            } catch (IOException e) {
+                Exceptions.handle(WebServer.LOG, e);
+            }
         }
     }
 
@@ -1360,7 +1362,7 @@ public class Response {
      * @see #tunnel(String)
      */
     public void tunnel(String url,
-                       @Nullable Consumer<AsyncHttpClient.BoundRequestBuilder> requestTuner,
+                       @Nullable Consumer<BoundRequestBuilder> requestTuner,
                        @Nullable Processor<ByteBuf, Optional<ByteBuf>> transformer,
                        @Nullable IntConsumer failureHandler) {
         tunnel(url, requestTuner, transformer, failureHandler, false);
@@ -1395,12 +1397,12 @@ public class Response {
      * @see #tunnel(String)
      */
     public void tunnel(String url,
-                       @Nullable Consumer<AsyncHttpClient.BoundRequestBuilder> requestTuner,
+                       @Nullable Consumer<BoundRequestBuilder> requestTuner,
                        @Nullable Processor<ByteBuf, Optional<ByteBuf>> transformer,
                        @Nullable IntConsumer failureHandler,
                        boolean forceContentDownload) {
         try {
-            AsyncHttpClient.BoundRequestBuilder brb = getAsyncClient().prepareGet(url);
+            BoundRequestBuilder brb = getAsyncClient().prepareGet(url);
 
             // Adds support for detecting stale cache contents via if-modified-since...
             long ifModifiedSince = wc.getDateHeader(HttpHeaderNames.IF_MODIFIED_SINCE);
