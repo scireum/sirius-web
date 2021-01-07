@@ -62,7 +62,6 @@ public class SiriusClassAliasProvider implements ClassAliasProvider {
         consumer.accept("CallContext", CallContext.class);
         consumer.accept("UserContext", UserContext.class);
         consumer.accept("WebContext", WebContext.class);
-        consumer.accept("Product", Product.class);
         consumer.accept("Injector", Injector.class);
         consumer.accept("Strings", Strings.class);
         consumer.accept("Files", Files.class);
