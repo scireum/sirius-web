@@ -9,6 +9,7 @@
 package sirius.web.http;
 
 import com.ning.http.client.AsyncHandler;
+import com.ning.http.client.AsyncHandlerExtensions;
 import com.ning.http.client.FluentCaseInsensitiveStringsMap;
 import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.HttpResponseHeaders;
@@ -32,6 +33,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.nls.NLS;
 
+import java.net.InetAddress;
 import java.nio.channels.ClosedChannelException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,7 +48,7 @@ import java.util.stream.Collectors;
 /**
  * Performs tunneling into a request by reading from another.
  */
-class TunnelHandler implements AsyncHandler<String> {
+class TunnelHandler implements AsyncHandler<String>, AsyncHandlerExtensions {
 
     private static final Set<String> NON_TUNNELLED_HEADERS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             HttpHeaderNames.TRANSFER_ENCODING.toString(),
@@ -62,6 +64,11 @@ class TunnelHandler implements AsyncHandler<String> {
     private final IntConsumer failureHandler;
     private final CallContext cc;
     private final Watch watch;
+    private volatile long timeToDns;
+    private volatile long timeToConnectAttept;
+    private volatile long timeToConnect;
+    private volatile long timeToHandshake;
+    private volatile long timeToRequestSent;
 
     private int responseCode = HttpResponseStatus.OK.code();
     private boolean contentLengthKnown;
@@ -82,8 +89,48 @@ class TunnelHandler implements AsyncHandler<String> {
     }
 
     @Override
+    public void onOpenConnection() {
+        this.timeToConnectAttept = watch.elapsedMillis();
+    }
+
+    @Override
+    public void onConnectionOpen() {
+        this.timeToConnect = watch.elapsedMillis();
+    }
+
+    @Override
+    public void onPoolConnection() {
+
+    }
+
+    @Override
+    public void onConnectionPooled() {
+
+    }
+
+    @Override
+    public void onSendRequest(Object request) {
+        this.timeToRequestSent = watch.elapsedMillis();
+    }
+
+    @Override
+    public void onRetry() {
+
+    }
+
+    @Override
+    public void onDnsResolved(InetAddress address) {
+        this.timeToDns = watch.elapsedMillis();
+    }
+
+    @Override
+    public void onSslHandshakeCompleted() {
+        this.timeToHandshake = watch.elapsedMillis();
+    }
+
+    @Override
     public STATE onStatusReceived(com.ning.http.client.HttpResponseStatus status) throws Exception {
-        logTiming();
+        logTiming(status);
 
         CallContext.setCurrent(cc);
 
@@ -325,7 +372,7 @@ class TunnelHandler implements AsyncHandler<String> {
         return "";
     }
 
-    private void logTiming() {
+    private void logTiming(com.ning.http.client.HttpResponseStatus status) {
         try {
             if (webContext.isLongCall() || webContext.scheduled == 0) {
                 // No response time measurement for long running or aborted requests...
@@ -335,16 +382,24 @@ class TunnelHandler implements AsyncHandler<String> {
 
             if (ttfbMillis > WebServer.getMaxTimeToFirstByte() && WebServer.getMaxTimeToFirstByte() > 0) {
                 WebServer.LOG.WARN("Long running tunneling: %s (TTFB: %s)"
+                                   + "%nDNS: %s, TCP-ATTEMPT: %s, TCP-CONNECT: %s, HANDSHAKE: %s, REQUEST-SENT: %s"
                                    + "%nURL:%s"
                                    + "%nTunnel URL:%s"
+                                   + "%nStatus: %s"
                                    + "%nParameters:"
                                    + "%n%s"
                                    + "%nMDC:"
                                    + "%n%s%n",
                                    webContext.getRequestedURI(),
                                    NLS.convertDuration(ttfbMillis, true, true),
+                                   NLS.convertDuration(timeToDns, true, true),
+                                   NLS.convertDuration(timeToConnectAttept, true, true),
+                                   NLS.convertDuration(timeToConnect, true, true),
+                                   NLS.convertDuration(timeToHandshake, true, true),
+                                   NLS.convertDuration(timeToRequestSent, true, true),
                                    webContext.getRequestedURL(),
                                    Strings.split(url, "?").getFirst(),
+                                   status.getStatusCode(),
                                    webContext.getParameterNames()
                                              .stream()
                                              .map(param -> param + ": " + Strings.limit(webContext.get(param)
