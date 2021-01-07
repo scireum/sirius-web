@@ -65,11 +65,11 @@ class TunnelHandler implements AsyncHandler<String> {
     private final IntConsumer failureHandler;
     private final CallContext cc;
     private final Watch watch;
-    private volatile long timeToDns;
-    private volatile long timeToConnectAttept;
-    private volatile long timeToConnect;
-    private volatile long timeToHandshake;
-    private volatile long timeToRequestSent;
+    private volatile long timeToDns = -1;
+    private volatile long timeToConnectAttempt = -1;
+    private volatile long timeToConnect = -1;
+    private volatile long timeToHandshake = -1;
+    private volatile long timeToRequestSent = -1;
 
     private int responseCode = HttpResponseStatus.OK.code();
     private boolean contentLengthKnown;
@@ -96,7 +96,7 @@ class TunnelHandler implements AsyncHandler<String> {
 
     @Override
     public void onTcpConnectAttempt(InetSocketAddress remoteAddress) {
-        this.timeToConnectAttept = watch.elapsedMillis();
+        this.timeToConnectAttempt = watch.elapsedMillis();
     }
 
     @Override
@@ -374,11 +374,13 @@ class TunnelHandler implements AsyncHandler<String> {
                                    + "%n%s%n",
                                    webContext.getRequestedURI(),
                                    NLS.convertDuration(ttfbMillis, true, true),
-                                   NLS.convertDuration(timeToDns, true, true),
-                                   NLS.convertDuration(timeToConnectAttept, true, true),
-                                   NLS.convertDuration(timeToConnect, true, true),
-                                   NLS.convertDuration(timeToHandshake, true, true),
-                                   NLS.convertDuration(timeToRequestSent, true, true),
+                                   timeToDns < 0 ? "-" : NLS.convertDuration(timeToDns, true, true),
+                                   timeToConnectAttempt < 0 ?
+                                   "-" :
+                                   NLS.convertDuration(timeToConnectAttempt, true, true),
+                                   timeToConnect < 0 ? "-" : NLS.convertDuration(timeToConnect, true, true),
+                                   timeToHandshake < 0 ? "-" : NLS.convertDuration(timeToHandshake, true, true),
+                                   timeToRequestSent < 0 ? "-" : NLS.convertDuration(timeToRequestSent, true, true),
                                    webContext.getRequestedURL(),
                                    Strings.split(url, "?").getFirst(),
                                    status.getStatusCode(),
