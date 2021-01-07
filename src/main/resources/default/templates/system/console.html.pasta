@@ -18,7 +18,7 @@
                         var now = new Date();
                         output(now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds() + ' - @(CallContext.getNodeName())> ');
                     },
-                    greetings: '@Product.getProduct().getName() (@Product.getProduct().getDetails()) - Type "help" for a list of available commands.'
+                    greetings: '@sirius.kernel.info.Product.getProduct().getName() (@sirius.kernel.info.Product.getProduct().getDetails()) - Type "help" for a list of available commands.'
                 });
 
 
