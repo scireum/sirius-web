@@ -8,6 +8,7 @@
 
 package sirius.pasta.noodle;
 
+import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Amount;
 import sirius.kernel.commons.Files;
@@ -53,7 +54,7 @@ public class SiriusClassAliasProvider implements ClassAliasProvider {
         consumer.accept("LocalTime", LocalTime.class);
 
         consumer.accept("Page", Page.class);
-        consumer.accept("Sirius", Page.class);
+        consumer.accept("Sirius", Sirius.class);
         consumer.accept("Tuple", Tuple.class);
         consumer.accept("NLS", NLS.class);
         consumer.accept("Formatter", NLS.class);
