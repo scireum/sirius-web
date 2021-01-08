@@ -28,12 +28,7 @@ import javax.activation.DataSource;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.mail.internet.InternetAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Implements the builder pattern to specify the mail to send.
@@ -571,6 +566,11 @@ public class MailSender {
         }
     }
 
+    /**
+     * Returns the language which is set for the mail for example to set NLS-keys in the context to the right language.
+     *
+     * @return the language
+     */
     public String getLang() {
         return lang;
     }
