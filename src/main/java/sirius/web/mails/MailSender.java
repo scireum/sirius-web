@@ -374,7 +374,7 @@ public class MailSender {
     /**
      * Sets a bounce token.
      * <p>
-     * This bounce toke is hopefully included in a bounce email (generated if a mail cannot be delivered).
+     * This bounce token is hopefully included in a bounce email (generated if a mail cannot be delivered).
      * This permits better bounce handling.
      *
      * @param token the token to identify the mail by a bounce handler.
