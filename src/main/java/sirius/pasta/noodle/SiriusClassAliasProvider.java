@@ -24,6 +24,7 @@ import sirius.kernel.nls.NLS;
 import sirius.web.controller.Page;
 import sirius.web.http.WebContext;
 import sirius.web.security.UserContext;
+import sirius.web.templates.ContentHelper;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -68,5 +69,7 @@ public class SiriusClassAliasProvider implements ClassAliasProvider {
         consumer.accept("Files", Files.class);
         consumer.accept("Hasher", Hasher.class);
         consumer.accept("Amount", Amount.class);
+        consumer.accept("ContentHelper", ContentHelper.class);
+        consumer.accept("Product", Product.class);
     }
 }
