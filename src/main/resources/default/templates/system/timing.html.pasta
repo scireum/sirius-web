@@ -1,6 +1,6 @@
 <i:arg type="boolean" name="enabled"/>
 <i:arg type="List" name="timings"/>
-<i:arg type="Page" name="page"/>
+<i:arg type="sirius.web.controller.Page" name="page"/>
 <i:arg type="String" name="periodSinceReset"/>
 
 <w:page title="Microtiming">

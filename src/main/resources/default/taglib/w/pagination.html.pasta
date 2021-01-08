@@ -1,4 +1,4 @@
-<i:arg type="Page" name="page" />
+<i:arg type="sirius.web.controller.Page" name="page" />
 <i:arg type="String" name="baseUrl" />
 
 <i:pragma name="description" value="Renders a pagination box below a table within a Wondergem template" />

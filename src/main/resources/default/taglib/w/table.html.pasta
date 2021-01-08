@@ -4,7 +4,7 @@
 
 <i:pragma name="description" value="Renders table within a Wondergem template" />
 
-<i:if test="(data.is(Page.class) && !data.as(Page.class).getItems().isEmpty()) || (data.is(java.util.Collection.class) && !data.as(java.util.Collection.class).isEmpty())">
+<i:if test="(data.is(sirius.web.controller.Page.class) && !data.as(sirius.web.controller.Page.class).getItems().isEmpty()) || (data.is(java.util.Collection.class) && !data.as(java.util.Collection.class).isEmpty())">
     <table class="table table-striped @if (colorized) { table-colorized } @class">
         <i:render name="body" />
     </table>

@@ -1,4 +1,4 @@
-<i:arg name="page" type="Page"/>
+<i:arg name="page" type="sirius.web.controller.Page"/>
 <i:arg name="baseUrl" type="String"/>
 <i:arg name="hideSearchBox" type="boolean" default="false"/>
 

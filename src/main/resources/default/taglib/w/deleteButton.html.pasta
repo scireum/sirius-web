@@ -1,6 +1,6 @@
 <i:arg type="String" name="url"/>
 <i:arg type="boolean" name="adminOnly" default="false"/>
-<i:arg type="Page" name="page" default=""/>
+<i:arg type="sirius.web.controller.Page" name="page" default=""/>
 
 
 <i:pragma name="description" value="Renders a delete/dangerous link as button within a Wondergem template"/>
