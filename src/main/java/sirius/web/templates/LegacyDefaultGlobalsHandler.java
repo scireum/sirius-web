@@ -26,13 +26,13 @@ public class LegacyDefaultGlobalsHandler extends LegacyGlobalsHandler {
             case "user":
                 return "UserContext.get()";
             case "product":
-                return "Product.getProduct().getName()";
+                return "sirius.kernel.info.Product.getProduct().getName()";
             case "now":
                 return "now()";
             case "today":
                 return "today()";
             case "detailedVersion":
-                return "Product.getProduct().getDetails()";
+                return "sirius.kernel.info.Product.getProduct().getDetails()";
             case "nodeName":
                 return "CallContext.getNodeName()";
             case "isDev":
