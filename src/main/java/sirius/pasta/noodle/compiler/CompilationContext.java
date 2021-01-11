@@ -290,7 +290,7 @@ public class CompilationContext {
         if (aliases == null) {
             Map<String, Class<?>> aliasMap = new HashMap<>();
             aliasProviders.forEach(p -> p.collectAliases((name, type) -> addAlias(aliasMap, name, type)));
-            aliasProviders.forEach(p -> p.collectAliases((name, type) -> addOptionalAlias(aliasMap, name, type)));
+            aliasProviders.forEach(p -> p.collectOptionalAliases((name, type) -> addOptionalAlias(aliasMap, name, type)));
             aliases = aliasMap;
         }
 
