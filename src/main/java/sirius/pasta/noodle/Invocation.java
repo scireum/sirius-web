@@ -84,7 +84,7 @@ public class Invocation {
             Position position = compiledMethod.ipToPositionTable.get(instructionPointer - 1);
             throw new ScriptingException(Strings.apply(
                     "An error occurred while executing a script. Location: %s.%s%s (%s)",
-                    compiledMethod.sourceCodeInfo + ":" + position.getLine() + ":" + position.getPos(),
+                    compiledMethod.sourceCodeInfo.getName() + ":" + position.getLine() + ":" + position.getPos(),
                     computeOffendingPosition(position),
                     ex.getMessage(),
                     ex.getClass().getName()), ex);
