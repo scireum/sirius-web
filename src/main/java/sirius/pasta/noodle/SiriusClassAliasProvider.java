@@ -8,6 +8,7 @@
 
 package sirius.pasta.noodle;
 
+import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Amount;
 import sirius.kernel.commons.Files;
@@ -19,6 +20,7 @@ import sirius.kernel.commons.Values;
 import sirius.kernel.di.Injector;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.info.Product;
+import sirius.kernel.nls.Formatter;
 import sirius.kernel.nls.NLS;
 import sirius.web.controller.Page;
 import sirius.web.http.WebContext;
@@ -39,6 +41,11 @@ import java.util.function.BiConsumer;
 public class SiriusClassAliasProvider implements ClassAliasProvider {
 
     @Override
+    public int getPriority() {
+        return 10;
+    }
+
+    @Override
     public void collectAliases(BiConsumer<String, Class<?>> consumer) {
         consumer.accept("String", String.class);
         consumer.accept("int", int.class);
@@ -53,10 +60,10 @@ public class SiriusClassAliasProvider implements ClassAliasProvider {
         consumer.accept("LocalTime", LocalTime.class);
 
         consumer.accept("Page", Page.class);
-        consumer.accept("Sirius", Page.class);
+        consumer.accept("Sirius", Sirius.class);
         consumer.accept("Tuple", Tuple.class);
         consumer.accept("NLS", NLS.class);
-        consumer.accept("Formatter", NLS.class);
+        consumer.accept("Formatter", Formatter.class);
         consumer.accept("Value", Value.class);
         consumer.accept("Values", Values.class);
         consumer.accept("CallContext", CallContext.class);

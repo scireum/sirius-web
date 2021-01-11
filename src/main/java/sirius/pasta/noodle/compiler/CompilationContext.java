@@ -12,13 +12,12 @@ import parsii.tokenizer.ParseError;
 import parsii.tokenizer.Position;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.di.std.Parts;
+import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.health.Exceptions;
 import sirius.pasta.Pasta;
 import sirius.pasta.noodle.ClassAliasProvider;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -74,8 +73,8 @@ public class CompilationContext {
      */
     private final Map<String, Class<?>> importedClasses = new HashMap<>();
 
-    @Parts(ClassAliasProvider.class)
-    private static Collection<ClassAliasProvider> aliasProviders;
+    @PriorityParts(ClassAliasProvider.class)
+    private static List<ClassAliasProvider> aliasProviders;
 
     /**
      * Contains all aliases collected via {@link ClassAliasProvider alias providers}.
@@ -290,11 +289,29 @@ public class CompilationContext {
     private static Map<String, Class<?>> getClassAliases() {
         if (aliases == null) {
             Map<String, Class<?>> aliasMap = new HashMap<>();
-            aliasProviders.forEach(p -> p.collectAliases(aliasMap::put));
+            aliasProviders.forEach(p -> p.collectAliases((name, type) -> addAlias(aliasMap, name, type)));
+            aliasProviders.forEach(p -> p.collectOptionalAliases((name, type) -> addOptionalAlias(aliasMap, name, type)));
             aliases = aliasMap;
         }
 
         return Collections.unmodifiableMap(aliases);
+    }
+
+    private static void addAlias(Map<String, Class<?>> aliasMap, String name, Class<?> type) {
+        if (aliasMap.containsKey(name)) {
+            Pasta.LOG.WARN("Failed to register %s as class alias for %s - This is already used by: %s",
+                           name,
+                           type,
+                           aliasMap.get(name));
+        } else {
+            aliasMap.put(name, type);
+        }
+    }
+
+    private static void addOptionalAlias(Map<String, Class<?>> aliasMap, String name, Class<?> type) {
+        if (!aliasMap.containsKey(name)) {
+            aliasMap.put(name, type);
+        }
     }
 
     /**
