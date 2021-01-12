@@ -96,7 +96,7 @@ public class InvokeTemplateEmitter extends Emitter {
                                LocalRenderContext subContext,
                                int index,
                                TemplateArgument arg) {
-        Object argumentValue = determrineArgumentValue(context, template, subContext, index, arg);
+        Object argumentValue = determineArgumentValue(context, template, subContext, index, arg);
 
         if (!CompilationContext.isAssignable(argumentValue, arg.getType())) {
             throw new IllegalArgumentException(Strings.apply(
@@ -110,11 +110,11 @@ public class InvokeTemplateEmitter extends Emitter {
         subContext.writeVariable(index, argumentValue);
     }
 
-    private Object determrineArgumentValue(LocalRenderContext context,
-                                           Template template,
-                                           LocalRenderContext subContext,
-                                           int index,
-                                           TemplateArgument arg) {
+    private Object determineArgumentValue(LocalRenderContext context,
+                                          Template template,
+                                          LocalRenderContext subContext,
+                                          int index,
+                                          TemplateArgument arg) {
         try {
             if (index < arguments.length && arguments[index] != null) {
                 return arguments[index].call(context);
