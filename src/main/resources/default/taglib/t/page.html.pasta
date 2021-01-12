@@ -13,7 +13,7 @@
         <meta http-equiv="Content-Security-Policy" content="@config('http.contentSecurityPolicy')"/>
     </i:if>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@title - @const(Product.getProduct().getName())</title>
+    <title>@title - @const(sirius.kernel.info.Product.getProduct().getName())</title>
 
     <link rel="stylesheet" media="screen" href="/assets/tycho/lib.css"/>
     <link rel="stylesheet" media="screen" href="/assets/tycho/styles/tycho.css"/>

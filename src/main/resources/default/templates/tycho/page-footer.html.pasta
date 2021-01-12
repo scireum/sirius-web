@@ -4,7 +4,7 @@
             <i:invoke template="/templates/wondergem/page-footer-menu.html.pasta"  />
         </div>
         <div class="text-right form-control-sm text-muted">
-            <span title="@CallContext.getCurrent().getWatch().elapsedMillis() ms (@const(Product.getProduct().getDetails()))">CallContext.getNodeName()</span>
+            <span title="@CallContext.getCurrent().getWatch().elapsedMillis() ms (@const(sirius.kernel.info.Product.getProduct().getDetails()))">CallContext.getNodeName()</span>
         </div>
     </div>
 </div>
