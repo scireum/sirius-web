@@ -21,6 +21,7 @@ import sirius.web.http.WebContext;
 import sirius.web.security.Permission;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
 /**
@@ -58,7 +59,10 @@ public class TagliatelleController extends BasicController {
     @Routed("/system/tags")
     @Permission(PERMISSION_SYSTEM_TAGS)
     public void overview(WebContext ctx) {
-        Collection<Macro> macros = context.getParts(Macro.class);
+        Collection<Macro> macros = context.getParts(Macro.class)
+                                          .stream()
+                                          .sorted(Comparator.comparing(Macro::getName))
+                                          .collect(Collectors.toList());
         Collection<String> builtIns = context.getParts(TagHandlerFactory.class)
                                              .stream()
                                              .map(TagHandlerFactory::getName)
