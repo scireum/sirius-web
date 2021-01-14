@@ -367,7 +367,12 @@ public class Invocation {
             }
         } else {
             Object self = pop();
-            if (numberOfArguments == 0) {
+            if (self == null) {
+                while(numberOfArguments-- > 0) {
+                    pop();
+                }
+                push(null);
+            } else if (numberOfArguments == 0) {
                 push(methodHandle.invoke(self));
             } else if (numberOfArguments == 1) {
                 Object arg1 = pop();
