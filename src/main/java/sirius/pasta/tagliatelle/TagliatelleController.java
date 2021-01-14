@@ -66,9 +66,9 @@ public class TagliatelleController extends BasicController {
                                           .collect(Collectors.toList());
         Collection<String> builtIns = context.getParts(TagHandlerFactory.class)
                                              .stream()
-                                             .sorted(Comparator.comparing(TagHandlerFactory::getName))
                                              .map(TagHandlerFactory::getName)
                                              .map(name -> name.substring(2))
+                                             .sorted()
                                              .collect(Collectors.toList());
 
         webContext.respondWith()
