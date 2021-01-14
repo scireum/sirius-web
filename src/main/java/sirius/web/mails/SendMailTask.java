@@ -359,7 +359,9 @@ class SendMailTask implements Runnable {
 
         props.setProperty(MAIL_TRANSPORT_PROTOCOL, config.getProtocol().getProtocol());
         props.setProperty(MAIL_SMTP_STARTTLS_ENABLE, Boolean.toString(config.getProtocol().isStarttls()));
-        props.setProperty(MAIL_SMTP_SSL_TRUST, config.getTrustedServers());
+        if (Strings.isFilled(config.getTrustedServers())) {
+            props.setProperty(MAIL_SMTP_SSL_TRUST, config.getTrustedServers());
+        }
         Authenticator auth = new MailAuthenticator(config);
         if (Strings.isEmpty(config.getMailPassword())) {
             props.setProperty(MAIL_SMTP_AUTH, Boolean.FALSE.toString());
