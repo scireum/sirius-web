@@ -13,6 +13,7 @@ import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.HandledException;
+import sirius.pasta.noodle.compiler.CompileException;
 import sirius.pasta.noodle.macros.Macro;
 import sirius.pasta.tagliatelle.tags.TagHandlerFactory;
 import sirius.web.controller.BasicController;
@@ -21,6 +22,7 @@ import sirius.web.http.WebContext;
 import sirius.web.security.Permission;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
 /**
@@ -53,71 +55,76 @@ public class TagliatelleController extends BasicController {
     /**
      * Renders a list of all known tags.
      *
-     * @param ctx the request to process
+     * @param webContext the request to process
      */
     @Routed("/system/tags")
     @Permission(PERMISSION_SYSTEM_TAGS)
-    public void overview(WebContext ctx) {
-        Collection<Macro> macros = context.getParts(Macro.class);
+    public void overview(WebContext webContext) {
+        Collection<Macro> macros = context.getParts(Macro.class)
+                                          .stream()
+                                          .sorted(Comparator.comparing(Macro::getName))
+                                          .collect(Collectors.toList());
         Collection<String> builtIns = context.getParts(TagHandlerFactory.class)
                                              .stream()
                                              .map(TagHandlerFactory::getName)
                                              .map(name -> name.substring(2))
+                                             .sorted()
                                              .collect(Collectors.toList());
 
-        ctx.respondWith()
-           .template("/templates/system/tags.html.pasta",
-                     macros,
-                     builtIns,
-                     tagliatelle.getTagLibs(),
-                     tagliatelle.getTagLibTags());
+        webContext.respondWith()
+                  .template("/templates/system/tags.html.pasta",
+                            macros,
+                            builtIns,
+                            tagliatelle.getTagLibs(),
+                            tagliatelle.getTagLibTags());
     }
 
     /**
      * Renders details for the given tag.
      *
-     * @param tagLib the library which contains the tag
-     * @param tag    the name of the tag
-     * @param ctx    the request to process
-     * @throws Exception in case of an error while rendering the page
+     * @param tagLib     the library which contains the tag
+     * @param tag        the name of the tag
+     * @param webContext the request to process
+     * @throws CompileException in case of an error while rendering the tag template
      */
     @Routed("/system/tag/:1/:2")
     @Permission(PERMISSION_SYSTEM_TAGS)
-    public void tagInfo(WebContext ctx, String tagLib, String tag) throws Exception {
+    public void tagInfo(WebContext webContext, String tagLib, String tag) throws CompileException {
         if ("i".equals(tagLib)) {
             TagHandlerFactory handler = context.findPart("i:" + tag, TagHandlerFactory.class);
 
-            ctx.respondWith()
-               .template("/templates/system/tag.html.pasta",
-                         tagLib,
-                         tag,
-                         handler.reportArguments(),
-                         handler.getDescription(),
-                         null);
+            webContext.respondWith()
+                      .template("/templates/system/tag.html.pasta",
+                                tagLib,
+                                tag,
+                                handler.reportArguments(),
+                                handler.getDescription(),
+                                null);
         } else {
             Template template = tagliatelle.resolve("/taglib/" + tagLib + "/" + tag + ".html.pasta")
                                            .orElseThrow(() -> new IllegalArgumentException(tag));
-            ctx.respondWith()
-               .template("/templates/system/tag.html.pasta",
-                         tagLib,
-                         tag,
-                         template.getArguments(),
-                         template.getPragma("description").asString(),
-                         template.getResource().getContentAsString());
+            webContext.respondWith()
+                      .template("/templates/system/tag.html.pasta",
+                                tagLib,
+                                tag,
+                                template.getArguments(),
+                                template.getPragma("description").asString(),
+                                template.getResource().getContentAsString());
         }
     }
 
     /**
      * Provides some statistics and metrics for the internals of tagliatelle.
      *
-     * @param ctx the request being handled
+     * @param webContext the request being handled
      */
     @Routed("/system/tags/state")
     @Permission(PERMISSION_SYSTEM_TAGS_STATE)
-    public void tagState(WebContext ctx) {
-        if (ctx.hasParameter("reset")) {
+    public void tagState(WebContext webContext) {
+        if (webContext.hasParameter("reset")) {
             tagliatelle.getCompiledTemplates().forEach(Template::resetAverageRenderTime);
         }
-        ctx.respondWith().template("/templates/system/tags-state.html.pasta", tagliatelle.getCompiledTemplates());
+        webContext.respondWith()
+                  .template("/templates/system/tags-state.html.pasta", tagliatelle.getCompiledTemplates());
     }
 }
