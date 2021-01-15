@@ -175,10 +175,10 @@ public class Invocation {
                     push(asString(pop()) + asString(pop()));
                     break;
                 case OP_CAST:
-                    push(pop(Class.class).cast(pop()));
+                    handleCast();
                     break;
                 case OP_INSTANCE_OF:
-                    push(pop(Class.class).isAssignableFrom(pop().getClass()));
+                    handleInstanceOf();
                     break;
                 case OP_COERCE_INT_TO_LONG:
                     push(Long.valueOf(pop(int.class)));
@@ -222,6 +222,26 @@ public class Invocation {
             return null;
         } else {
             return pop();
+        }
+    }
+
+    private void handleInstanceOf() {
+        Class<?> type = pop(Class.class);
+        Object self = pop();
+        if (self != null) {
+            push(type.isAssignableFrom(self.getClass()));
+        } else {
+            push(false);
+        }
+    }
+
+    private void handleCast() {
+        Class<?> type = pop(Class.class);
+        Object self = pop();
+        if (self != null) {
+            push(type.cast(self));
+        } else {
+            push(null);
         }
     }
 
@@ -387,7 +407,7 @@ public class Invocation {
         } else {
             Object self = pop();
             if (self == null) {
-                while(numberOfArguments-- > 0) {
+                while (numberOfArguments-- > 0) {
                     pop();
                 }
                 push(null);
