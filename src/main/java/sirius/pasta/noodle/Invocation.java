@@ -193,7 +193,7 @@ public class Invocation {
                     handleTransformableAs();
                     break;
                 case OP_INTRINSIC_TRANSFORMABLE_IS:
-                    handlTransformableIs();
+                    handleTransformableIs();
                     break;
                 case OP_INTRINSIC_STRINGS_IS_EMPTY:
                     push(Strings.isEmpty(pop()));
@@ -225,7 +225,7 @@ public class Invocation {
         }
     }
 
-    private void handlTransformableIs() {
+    private void handleTransformableIs() {
         Object self = pop();
         if (self instanceof Transformable) {
             push(((Transformable) self).is(pop(Class.class)));
