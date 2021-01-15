@@ -190,10 +190,10 @@ public class Invocation {
                     push(Double.valueOf(pop(long.class)));
                     break;
                 case OP_INTRINSIC_TRANSFORMABLE_AS:
-                    push(pop(Transformable.class).as(pop(Class.class)));
+                    handleTransformableAs();
                     break;
                 case OP_INTRINSIC_TRANSFORMABLE_IS:
-                    push(pop(Transformable.class).is(pop(Class.class)));
+                    handlTransformableIs();
                     break;
                 case OP_INTRINSIC_STRINGS_IS_EMPTY:
                     push(Strings.isEmpty(pop()));
@@ -222,6 +222,25 @@ public class Invocation {
             return null;
         } else {
             return pop();
+        }
+    }
+
+    private void handlTransformableIs() {
+        Object self = pop();
+        if (self instanceof Transformable) {
+            push(((Transformable) self).is(pop(Class.class)));
+        } else {
+            push(false);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void handleTransformableAs() {
+        Object self = pop();
+        if (self instanceof Transformable) {
+            push(((Transformable) self).as(pop(Class.class)));
+        } else {
+            push(null);
         }
     }
 
