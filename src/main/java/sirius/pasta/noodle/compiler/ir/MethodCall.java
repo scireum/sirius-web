@@ -17,6 +17,7 @@ import sirius.kernel.di.transformers.Transformable;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
+import sirius.pasta.noodle.MethodPointer;
 import sirius.pasta.noodle.OpCode;
 import sirius.pasta.noodle.compiler.Assembler;
 import sirius.pasta.noodle.compiler.CompilationContext;
@@ -424,7 +425,7 @@ public class MethodCall extends Call {
 
     @Override
     public String toString() {
-        return "MethdoCall: " + selfNode + "." + methodName + "(" + Arrays.stream(parameterNodes)
+        return "MethodCall: " + selfNode + "." + methodName + "(" + Arrays.stream(parameterNodes)
                                                                           .map(Object::toString)
                                                                           .collect(Collectors.joining(", ")) + ")";
     }
