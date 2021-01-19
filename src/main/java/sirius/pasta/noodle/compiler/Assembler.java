@@ -27,7 +27,7 @@ import java.util.Objects;
 public class Assembler {
 
     /**
-     * Represents the maximum internal index or offset which can be encoded in an bytecode.
+     * Represents the maximum internal index or offset which can be encoded in a bytecode.
      * <p>
      * A bytecode is a 32 bit integer, where the 16 "MSBs" are used to encode the {@link OpCode} and
      * the lower 16 bits are used to store the index, we cannot store more than 2^16.
