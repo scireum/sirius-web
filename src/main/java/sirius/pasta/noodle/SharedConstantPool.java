@@ -24,6 +24,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class SharedConstantPool {
 
     private List<Object> sharedConstants = new CopyOnWriteArrayList<>();
+    /**
+     * Provides an upper limit for the shared constant pool. Under normal conditions, the pool should be
+     * way smaller as only classes, macros and some common constants are cached.
+     */
+    private static final int MAX_SHARED_CONSTANTS = 16384;
 
     /**
      * Creates a new instance and initializes it with some common values.
@@ -62,6 +67,11 @@ public class SharedConstantPool {
         }
 
         if (constant instanceof MethodHandle || constant instanceof Class || constant instanceof Macro) {
+            if (sharedConstants.size() >= MAX_SHARED_CONSTANTS) {
+                Pasta.LOG.WARN("SharedConstantPool is full (more than %s entries). No more constants will be added...",
+                               MAX_SHARED_CONSTANTS);
+                return -1;
+            }
             sharedConstants.add(constant);
             return sharedConstants.size() - 1;
         } else {
