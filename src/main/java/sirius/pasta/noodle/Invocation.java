@@ -292,7 +292,7 @@ public class Invocation {
      * @return an exception with a short and concise message of what happened. Also a long and elaborate message will
      * be logged which might provide further insight.
      */
-    private IllegalArgumentException vmError(String message) {
+    private IllegalArgumentException createVmError(String message) {
         // Create a full blown exception for the logs...
         IllegalStateException internalError = new IllegalStateException(Strings.apply(
                 "A Noodle VM error occurred: %s%n%nIP: %s%nStack: %s%nCall:%n%n%s",
@@ -317,7 +317,7 @@ public class Invocation {
             return ((double) a) + (double) b;
         }
 
-        throw vmError(Strings.apply("Cannot add %s and %s (%s, %s)", a, b, a.getClass(), b.getClass()));
+        throw createVmError(Strings.apply("Cannot add %s and %s (%s, %s)", a, b, a.getClass(), b.getClass()));
     }
 
     private Object sub(Object a, Object b) {
@@ -331,7 +331,7 @@ public class Invocation {
             return ((double) a) - (double) b;
         }
 
-        throw vmError(Strings.apply("Cannot subtract %s minus %s (%s, %s)", a, b, a.getClass(), b.getClass()));
+        throw createVmError(Strings.apply("Cannot subtract %s minus %s (%s, %s)", a, b, a.getClass(), b.getClass()));
     }
 
     private Object mul(Object a, Object b) {
@@ -345,7 +345,7 @@ public class Invocation {
             return ((double) a) * (double) b;
         }
 
-        throw vmError(Strings.apply("Cannot multiply %s by %s (%s, %s)", a, b, a.getClass(), b.getClass()));
+        throw createVmError(Strings.apply("Cannot multiply %s by %s (%s, %s)", a, b, a.getClass(), b.getClass()));
     }
 
     private Object div(Object a, Object b) {
@@ -359,7 +359,7 @@ public class Invocation {
             return ((double) a) / (double) b;
         }
 
-        throw vmError(Strings.apply("Cannot divide %s by %s (%s, %s)", a, b, a.getClass(), b.getClass()));
+        throw createVmError(Strings.apply("Cannot divide %s by %s (%s, %s)", a, b, a.getClass(), b.getClass()));
     }
 
     private Object mod(Object a, Object b) {
@@ -373,11 +373,11 @@ public class Invocation {
             return ((double) a) % (double) b;
         }
 
-        throw vmError(Strings.apply("Cannot compute the modulo of %s and %s (%s, %s)",
-                                    a,
-                                    b,
-                                    a.getClass(),
-                                    b.getClass()));
+        throw createVmError(Strings.apply("Cannot compute the modulo of %s and %s (%s, %s)",
+                                          a,
+                                          b,
+                                          a.getClass(),
+                                          b.getClass()));
     }
 
     private String asString(Object value) {
@@ -391,7 +391,7 @@ public class Invocation {
         } else if (target instanceof Macro) {
             invokeMacro(numberOfArguments, (Macro) target);
         } else {
-            throw vmError(Strings.apply("Cannot invoke: %s", target));
+            throw createVmError(Strings.apply("Cannot invoke: %s", target));
         }
     }
 
@@ -493,7 +493,7 @@ public class Invocation {
 
     private Object pop() {
         if (stack.isEmpty()) {
-            throw vmError("Stack underflow");
+            throw createVmError("Stack underflow");
         }
         return stack.remove(stack.size() - 1);
     }
