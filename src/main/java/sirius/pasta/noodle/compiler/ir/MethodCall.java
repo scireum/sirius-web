@@ -444,9 +444,6 @@ public class MethodCall extends Call {
                 return;
             }
 
-            MethodHandles.Lookup lookup = MethodHandles.lookup();
-            MethodHandle handle = lookup.unreflect(method);
-
             for (int i = parameterNodes.length - 1; i >= 0; i--) {
                 parameterNodes[i].emit(assembler);
             }
@@ -456,7 +453,7 @@ public class MethodCall extends Call {
                 selfNode.emit(assembler);
             }
 
-            assembler.emitPushConstant(handle, position);
+            assembler.emitPushConstant(new MethodPointer(method), position);
             assembler.emitByteCode(isStatic ? OpCode.INVOCE_STATIC : OpCode.INVOKE, parameterNodes.length, position);
         } catch (Exception e) {
             throw Exceptions.handle()

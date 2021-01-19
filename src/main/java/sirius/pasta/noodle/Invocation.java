@@ -376,8 +376,8 @@ public class Invocation {
 
     private void handleInvoke(int numberOfArguments, boolean isStatic) throws Throwable {
         Object target = pop();
-        if (target instanceof MethodHandle) {
-            invokeMethod(numberOfArguments, isStatic, (MethodHandle) target);
+        if (target instanceof MethodPointer) {
+            invokeMethod(numberOfArguments, isStatic, ((MethodPointer) target).getMethodHandle());
         } else if (target instanceof Macro) {
             invokeMacro(numberOfArguments, (Macro) target);
         }
