@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Keeps commonly used constants around in a single list so that the constant pool of
@@ -29,7 +30,7 @@ public class SharedConstantPool {
      */
     private static final int MAX_SHARED_CONSTANTS = 16384;
 
-    private List<Object> sharedConstants = new ArrayList<>();
+    private List<Object> sharedConstants;
 
     /**
      * Creates a new instance and initializes it with some common values.
@@ -37,7 +38,7 @@ public class SharedConstantPool {
      * Note that most probably the {@link Invocation#SHARED_CONSTANT_POOL} instance should be used.
      */
     protected SharedConstantPool() {
-        this.sharedConstants = new ArrayList<>(Arrays.asList(null, "", 0, 1, true, false));
+        this.sharedConstants = new CopyOnWriteArrayList<>(Arrays.asList(null, "", 0, 1, true, false));
     }
 
     /**
@@ -83,7 +84,7 @@ public class SharedConstantPool {
      *
      * @return a copy of all shared constants. Note that this list cannot be mutated.
      */
-    public synchronized List<Object> getSharedConstants() {
-        return Collections.unmodifiableList(new ArrayList<>(sharedConstants));
+    public List<Object> getSharedConstants() {
+        return Collections.unmodifiableList(sharedConstants);
     }
 }
