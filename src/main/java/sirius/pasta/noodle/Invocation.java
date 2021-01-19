@@ -286,7 +286,7 @@ public class Invocation {
      * Creates an exception which is used when Noodle detects an inconsistent or invalid internal state.
      * <p>
      * These states should normally not be reached as the compiler should only emit valid bytecodes. Therefore
-     * we provide quite some excessivle loggig here.
+     * we provide quite some excessive logging here.
      *
      * @param message the message to log
      * @return an exception with a short and concise message of what happened. Also a long and elaborate message will
