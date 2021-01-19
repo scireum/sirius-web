@@ -11,7 +11,6 @@ package sirius.pasta.noodle;
 import sirius.pasta.Pasta;
 import sirius.pasta.noodle.macros.Macro;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -30,7 +29,7 @@ public class SharedConstantPool {
      */
     private static final int MAX_SHARED_CONSTANTS = 16384;
 
-    private List<Object> sharedConstants;
+    private final List<Object> sharedConstants;
 
     /**
      * Creates a new instance and initializes it with some common values.
