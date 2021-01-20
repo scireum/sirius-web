@@ -347,11 +347,11 @@ public class UserInfo extends Composable {
         if (nameAppendixSupplier != null) {
             String appendix = nameAppendixSupplier.get();
             if (Strings.isFilled(appendix)) {
-                return Strings.apply("%s (%s)", username, nameAppendixSupplier.get());
+                return Strings.apply("%s (%s)", getUserName(), nameAppendixSupplier.get());
             }
         }
 
-        return username;
+        return getUserName();
     }
 
     /**
