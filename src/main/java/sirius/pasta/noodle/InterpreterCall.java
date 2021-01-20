@@ -93,14 +93,14 @@ public class InterpreterCall implements Callable {
             int index = instruction & 0x0000FFFF;
             if (lastCol != position.getPos()) {
                 listing.append("          ");
-                for (int p = 1; p < position.getPos(); p++) {
+                for (int p = 1; p < position.getPos() - 1; p++) {
                     listing.append(" ");
                 }
                 listing.append("^\n");
                 lastCol = position.getPos();
             }
             listing.append("          ");
-            for (int p = 1; p < position.getPos(); p++) {
+            for (int p = 1; p < position.getPos() - 1; p++) {
                 listing.append(" ");
             }
             listing.append(i);
@@ -111,11 +111,24 @@ public class InterpreterCall implements Callable {
             listing.append("\n\n");
             listing.append("Constants\n");
             listing.append("====================\n");
+            int index = 0;
             for (Object object : constants) {
+                listing.append(Strings.apply("%3s: ", index++));
                 listing.append(object);
                 listing.append("\n");
             }
         }
+
+        listing.append("\n\n");
+        listing.append("Shared Constants\n");
+        listing.append("====================\n");
+        int index = 0;
+        for (Object object : Invocation.SHARED_CONSTANT_POOL.getSharedConstants()) {
+            listing.append(Strings.apply("%3s: ", index++));
+            listing.append(object);
+            listing.append("\n");
+        }
+
 
         return listing.toString();
     }

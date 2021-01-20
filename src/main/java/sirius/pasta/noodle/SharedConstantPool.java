@@ -8,11 +8,11 @@
 
 package sirius.pasta.noodle;
 
-import sirius.kernel.commons.Explain;
+import sirius.pasta.Pasta;
 import sirius.pasta.noodle.macros.Macro;
 
-import java.lang.invoke.MethodHandle;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -23,7 +23,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class SharedConstantPool {
 
-    private List<Object> sharedConstants = new CopyOnWriteArrayList<>();
+    /**
+     * Provides an upper limit for the shared constant pool. Under normal conditions, the pool should be
+     * way smaller as only classes, macros and some common constants are cached.
+     */
+    private static final int MAX_SHARED_CONSTANTS = 16384;
+
+    private final List<Object> sharedConstants;
 
     /**
      * Creates a new instance and initializes it with some common values.
@@ -52,8 +58,6 @@ public class SharedConstantPool {
      * @param constant the constant to store
      * @return the index of the constant or -1 if the value is not accepted as shared constant
      */
-    @SuppressWarnings("java:S2250")
-    @Explain("This add method is no bottleneck as it should saturate quite quickly.")
     public synchronized int getIndex(Object constant) {
         for (int i = 0; i < sharedConstants.size(); i++) {
             if (Objects.equals(sharedConstants.get(i), constant)) {
@@ -61,11 +65,25 @@ public class SharedConstantPool {
             }
         }
 
-        if (constant instanceof MethodHandle || constant instanceof Class || constant instanceof Macro) {
+        if (constant instanceof Class || constant instanceof Macro) {
+            if (sharedConstants.size() >= MAX_SHARED_CONSTANTS) {
+                Pasta.LOG.WARN("SharedConstantPool is full (more than %s entries). No more constants will be added...",
+                               MAX_SHARED_CONSTANTS);
+                return -1;
+            }
             sharedConstants.add(constant);
             return sharedConstants.size() - 1;
         } else {
             return -1;
         }
+    }
+
+    /**
+     * Returns a copy of the list of shared constants.
+     *
+     * @return a copy of all shared constants. Note that this list cannot be mutated.
+     */
+    public List<Object> getSharedConstants() {
+        return Collections.unmodifiableList(sharedConstants);
     }
 }

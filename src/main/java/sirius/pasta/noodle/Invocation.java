@@ -13,8 +13,10 @@ import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.transformers.Transformable;
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.nls.NLS;
+import sirius.pasta.Pasta;
 import sirius.pasta.noodle.macros.Macro;
 import sirius.web.security.UserContext;
 
@@ -273,11 +275,35 @@ public class Invocation {
         StringBuilder result = new StringBuilder(" Line:\n");
         result.append(offendingLine);
         result.append("\n");
-        for (int i = 1; i < position.getPos(); i++) {
+        for (int i = 1; i < position.getPos() - 1; i++) {
             result.append(" ");
         }
         result.append("^\n");
         return result.toString();
+    }
+
+    /**
+     * Creates an exception which is used when Noodle detects an inconsistent or invalid internal state.
+     * <p>
+     * These states should normally not be reached as the compiler should only emit valid bytecodes. Therefore
+     * we provide quite some excessive logging here.
+     *
+     * @param message the message to log
+     * @return an exception with a short and concise message of what happened. Also a long and elaborate message will
+     * be logged which might provide further insight.
+     */
+    private IllegalArgumentException createVmError(String message) {
+        // Create a full blown exception for the logs...
+        IllegalStateException internalError = new IllegalStateException(Strings.apply(
+                "A Noodle VM error occurred: %s%n%nIP: %s%nStack: %s%nCall:%n%n%s",
+                message,
+                instructionPointer,
+                stack,
+                this.compiledMethod.disassemble()));
+        Exceptions.handle(Pasta.LOG, internalError);
+
+        // Return a shortened exception which may even be delivered to the frontend...
+        return new IllegalArgumentException(message);
     }
 
     private Object add(Object a, Object b) {
@@ -291,11 +317,7 @@ public class Invocation {
             return ((double) a) + (double) b;
         }
 
-        throw new IllegalArgumentException(Strings.apply("Cannot add %s and %s (%s, %s)",
-                                                         a,
-                                                         b,
-                                                         a.getClass(),
-                                                         b.getClass()));
+        throw createVmError(Strings.apply("Cannot add %s and %s (%s, %s)", a, b, a.getClass(), b.getClass()));
     }
 
     private Object sub(Object a, Object b) {
@@ -309,11 +331,7 @@ public class Invocation {
             return ((double) a) - (double) b;
         }
 
-        throw new IllegalArgumentException(Strings.apply("Cannot subtract %s minus %s (%s, %s)",
-                                                         a,
-                                                         b,
-                                                         a.getClass(),
-                                                         b.getClass()));
+        throw createVmError(Strings.apply("Cannot subtract %s minus %s (%s, %s)", a, b, a.getClass(), b.getClass()));
     }
 
     private Object mul(Object a, Object b) {
@@ -327,11 +345,7 @@ public class Invocation {
             return ((double) a) * (double) b;
         }
 
-        throw new IllegalArgumentException(Strings.apply("Cannot multiply %s by %s (%s, %s)",
-                                                         a,
-                                                         b,
-                                                         a.getClass(),
-                                                         b.getClass()));
+        throw createVmError(Strings.apply("Cannot multiply %s by %s (%s, %s)", a, b, a.getClass(), b.getClass()));
     }
 
     private Object div(Object a, Object b) {
@@ -345,11 +359,7 @@ public class Invocation {
             return ((double) a) / (double) b;
         }
 
-        throw new IllegalArgumentException(Strings.apply("Cannot divide %s by %s (%s, %s)",
-                                                         a,
-                                                         b,
-                                                         a.getClass(),
-                                                         b.getClass()));
+        throw createVmError(Strings.apply("Cannot divide %s by %s (%s, %s)", a, b, a.getClass(), b.getClass()));
     }
 
     private Object mod(Object a, Object b) {
@@ -363,11 +373,11 @@ public class Invocation {
             return ((double) a) % (double) b;
         }
 
-        throw new IllegalArgumentException(Strings.apply("Cannot compute the modulo of %s and %s (%s, %s)",
-                                                         a,
-                                                         b,
-                                                         a.getClass(),
-                                                         b.getClass()));
+        throw createVmError(Strings.apply("Cannot compute the modulo of %s and %s (%s, %s)",
+                                          a,
+                                          b,
+                                          a.getClass(),
+                                          b.getClass()));
     }
 
     private String asString(Object value) {
@@ -376,10 +386,12 @@ public class Invocation {
 
     private void handleInvoke(int numberOfArguments, boolean isStatic) throws Throwable {
         Object target = pop();
-        if (target instanceof MethodHandle) {
-            invokeMethod(numberOfArguments, isStatic, (MethodHandle) target);
+        if (target instanceof MethodPointer) {
+            invokeMethod(numberOfArguments, isStatic, ((MethodPointer) target).getMethodHandle());
         } else if (target instanceof Macro) {
             invokeMacro(numberOfArguments, (Macro) target);
+        } else {
+            throw createVmError(Strings.apply("Cannot invoke: %s", target));
         }
     }
 
@@ -481,7 +493,7 @@ public class Invocation {
 
     private Object pop() {
         if (stack.isEmpty()) {
-            throw new IllegalStateException("Stack underflow");
+            throw createVmError("Stack underflow");
         }
         return stack.remove(stack.size() - 1);
     }

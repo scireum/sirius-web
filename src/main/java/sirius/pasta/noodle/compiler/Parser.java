@@ -16,6 +16,9 @@ import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.transformers.Transformable;
+import sirius.kernel.health.Exceptions;
+import sirius.kernel.health.HandledException;
+import sirius.pasta.Pasta;
 import sirius.pasta.noodle.InterpreterCall;
 import sirius.pasta.noodle.OpCode;
 import sirius.pasta.noodle.compiler.ir.Assignment;
@@ -760,8 +763,15 @@ public class Parser extends InputProcessor {
                         assembler.build(constExpr.getType(), constExpr.getGenericType(), context.getSourceCodeInfo());
                 Object value = expr.call(null);
                 return new Constant(position, value);
-            } catch (Exception e) {
+            } catch (HandledException e) {
                 context.error(position, "Failed to compile and evaluate const expression: %s", e.getMessage());
+                return new Constant(reader.consume(), null);
+            } catch (Exception e) {
+                context.error(position,
+                              "Failed to compile and evaluate const expression: %s in: %s - %s",
+                              constExpr.toString(),
+                              context.getSourceCodeInfo().getName(),
+                              Exceptions.handle(Pasta.LOG, e).getMessage());
                 return new Constant(reader.consume(), null);
             }
         }

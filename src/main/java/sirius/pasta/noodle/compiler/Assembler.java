@@ -9,6 +9,7 @@
 package sirius.pasta.noodle.compiler;
 
 import parsii.tokenizer.Position;
+import sirius.kernel.commons.Strings;
 import sirius.pasta.noodle.InterpreterCall;
 import sirius.pasta.noodle.Invocation;
 import sirius.pasta.noodle.OpCode;
@@ -24,6 +25,14 @@ import java.util.Objects;
  * This mainly simplifies generating appropriate jump instructions by supporting labels.
  */
 public class Assembler {
+
+    /**
+     * Represents the maximum internal index or offset which can be encoded in a bytecode.
+     * <p>
+     * A bytecode is a 32 bit integer, where the 16 "MSBs" are used to encode the {@link OpCode} and
+     * the lower 16 bits are used to store the index, we cannot store more than 2^16.
+     */
+    private static final int MAX_INDEX = (1 << 16) - 1;
 
     /**
      * Represents a label which can be used to generate a jump instruction to jump to the label.
@@ -68,6 +77,14 @@ public class Assembler {
      * @param position the position within the source code for which this op code was created
      */
     public void emitByteCode(OpCode code, int index, Position position) {
+        if (index >= MAX_INDEX) {
+            throw new IllegalArgumentException(Strings.apply(
+                    "Cannot emit opcode %s for index %s as this would overflow! (Position in file: %s",
+                    code,
+                    index,
+                    position.getLine() + ":" + position.getPos()));
+        }
+
         bytecode.add(code.ordinal() << 16 | index);
         ipToPositionTable.add(position);
     }
