@@ -19,6 +19,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.QueryStringEncoder;
 import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.CookieHeaderNames;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.handler.codec.http.multipart.Attribute;
@@ -294,6 +295,12 @@ public class WebContext implements SubContext {
      */
     @ConfigValue("http.sessionCookieTTL")
     private static Duration defaultSessionCookieTTL;
+
+    /**
+     * The same site attribute of the Session Cookie
+     */
+    @ConfigValue("http.sessionCookieSameSite")
+    private static CookieHeaderNames.SameSite sessionCookieSameSite;
 
     /**
      * Determines the domain set for all cookies. If empty no domain will be set.
@@ -811,7 +818,7 @@ public class WebContext implements SubContext {
                                getRemoteIP());
         }
 
-        setCookie(getSessionPinCookieName(), givenSessionPin, SESSION_PIN_COOKIE_TTL);
+        setCookie(getSessionPinCookieName(), givenSessionPin, SESSION_PIN_COOKIE_TTL, sessionCookieSameSite);
     }
 
     private Map<String, String> decodeSession(String encodedSession) {
@@ -1214,6 +1221,9 @@ public class WebContext implements SubContext {
      * @param cookie the cookie to send to the client
      */
     public void setCookie(Cookie cookie) {
+        if (isSSL()) {
+            cookie.setSecure(true);
+        }
         if (cookiesOut == null) {
             cookiesOut = new TreeMap<>();
         }
@@ -1225,11 +1235,12 @@ public class WebContext implements SubContext {
      * <p>
      * The generated cookie will be a session cookie and varnish once the user agent is closed
      *
-     * @param name  the cookie to create
-     * @param value the contents of the cookie
+     * @param name     the cookie to create
+     * @param value    the contents of the cookie
+     * @param sameSite the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite">SameSite</a> value
      */
-    public void setSessionCookie(String name, String value) {
-        setCookie(name, value, Long.MIN_VALUE);
+    public void setSessionCookie(String name, String value, CookieHeaderNames.SameSite sameSite) {
+        setCookie(name, value, Long.MIN_VALUE, sameSite);
     }
 
     /**
@@ -1238,11 +1249,13 @@ public class WebContext implements SubContext {
      * The generated cookie will be a session cookie and varnish once the user agent is closed. Also this cookie
      * will not be accessible by JavaScript and therefore slightly more secure.
      *
-     * @param name  the cookie to create
-     * @param value the contents of the cookie
+     * @param name     the cookie to create
+     * @param value    the contents of the cookie
+     * @param sameSite the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite">SameSite</a> value
      */
-    public void setHTTPSessionCookie(String name, String value) {
+    public void setHTTPSessionCookie(String name, String value, CookieHeaderNames.SameSite sameSite) {
         DefaultCookie cookie = new DefaultCookie(name, value);
+        cookie.setSameSite(sameSite);
         cookie.setMaxAge(Long.MIN_VALUE);
         cookie.setHttpOnly(true);
         cookie.setPath("/");
@@ -1260,10 +1273,12 @@ public class WebContext implements SubContext {
      * @param name          the cookie to create
      * @param value         the contents of the cookie
      * @param maxAgeSeconds contains the max age of this cookie in seconds
+     * @param sameSite      the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite">SameSite</a> value
      */
-    public void setClientCookie(String name, String value, long maxAgeSeconds) {
+    public void setClientCookie(String name, String value, long maxAgeSeconds, CookieHeaderNames.SameSite sameSite) {
         DefaultCookie cookie = new DefaultCookie(name, value);
         cookie.setMaxAge(maxAgeSeconds);
+        cookie.setSameSite(sameSite);
         cookie.setPath("/");
         if (Strings.isFilled(cookieDomain)) {
             cookie.setDomain(cookieDomain);
@@ -1277,10 +1292,12 @@ public class WebContext implements SubContext {
      * @param name          the cookie to create
      * @param value         the contents of the cookie
      * @param maxAgeSeconds contains the max age of this cookie in seconds
+     * @param sameSite      the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite">SameSite</a> value
      */
-    public void setCookie(String name, String value, long maxAgeSeconds) {
+    public void setCookie(String name, String value, long maxAgeSeconds, CookieHeaderNames.SameSite sameSite) {
         DefaultCookie cookie = new DefaultCookie(name, value);
         cookie.setMaxAge(maxAgeSeconds);
+        cookie.setSameSite(sameSite);
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         if (Strings.isFilled(cookieDomain)) {
@@ -1295,7 +1312,7 @@ public class WebContext implements SubContext {
      * @param name the cookie to delete
      */
     public void deleteCookie(@Nonnull String name) {
-        setCookie(name, "", -1);
+        setCookie(name, "", -1, null);
     }
 
     /**
@@ -1355,9 +1372,9 @@ public class WebContext implements SubContext {
 
         long ttl = determineSessionCookieTTL();
         if (ttl == 0) {
-            setHTTPSessionCookie(sessionCookieName, protection + ":" + value);
+            setHTTPSessionCookie(sessionCookieName, protection + ":" + value, sessionCookieSameSite);
         } else {
-            setCookie(sessionCookieName, protection + ":" + value, ttl);
+            setCookie(sessionCookieName, protection + ":" + value, ttl, sessionCookieSameSite);
         }
     }
 
