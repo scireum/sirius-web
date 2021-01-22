@@ -105,9 +105,12 @@ public class WebContext implements SubContext {
     private static final Log SESSION_CHECK = Log.get("session-check");
     private static final long SESSION_PIN_COOKIE_TTL = TimeUnit.DAYS.toSeconds(10L * 365);
 
+    /**
+     * How the secure property of a cookie should be set
+     */
     public enum CookieSecurity {
         /**
-         * the cookie shall only be send via https
+         * the cookie shall only be sent via https
          */
         ALWAYS_SECURE,
         /**
