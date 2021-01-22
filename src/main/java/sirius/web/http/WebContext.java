@@ -280,26 +280,26 @@ public class WebContext implements SubContext {
     /**
      * Name of the cookie used to store and load the client session
      */
-    @ConfigValue("http.sessionCookieName")
+    @ConfigValue("http.sessionCookie.name")
     private static String sessionCookieName;
 
     /**
      * Determines if a session should be pinned to a certain client or user-agent by using another cookie.
      */
-    @ConfigValue("http.sessionPinning")
+    @ConfigValue("http.sessionCookie.pinSession")
     private static boolean sessionPinning;
 
     /**
      * The ttl of the client session cookie. If this is 0, it will be a "session cookie" and therefore
      * be deleted when the browser is closed
      */
-    @ConfigValue("http.sessionCookieTTL")
+    @ConfigValue("http.sessionCookie.ttl")
     private static Duration defaultSessionCookieTTL;
 
     /**
      * The same site attribute of the Session Cookie
      */
-    @ConfigValue("http.sessionCookieSameSite")
+    @ConfigValue("http.sessionCookie.sameSite")
     private static CookieHeaderNames.SameSite sessionCookieSameSite;
 
     /**
