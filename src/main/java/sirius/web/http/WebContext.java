@@ -105,6 +105,21 @@ public class WebContext implements SubContext {
     private static final Log SESSION_CHECK = Log.get("session-check");
     private static final long SESSION_PIN_COOKIE_TTL = TimeUnit.DAYS.toSeconds(10L * 365);
 
+    public enum CookieSecurity {
+        /**
+         * the cookie shall only be send via https
+         */
+        ALWAYS_SECURE,
+        /**
+         * no special security handling is required
+         */
+        NEVER,
+        /**
+         * like {@link #ALWAYS_SECURE} if the cookie is set via an SSL connection, otherwise like {@link #NEVER}
+         */
+        IF_SSL,
+    }
+
     /**
      * Underlying channel to send and receive data
      */
@@ -301,6 +316,12 @@ public class WebContext implements SubContext {
      */
     @ConfigValue("http.sessionCookie.sameSite")
     private static CookieHeaderNames.SameSite sessionCookieSameSite;
+
+    /**
+     * The same site attribute of the Session Cookie
+     */
+    @ConfigValue("http.sessionCookie.secure")
+    private static CookieSecurity sessionCookieSecurity;
 
     /**
      * Determines the domain set for all cookies. If empty no domain will be set.
@@ -818,7 +839,11 @@ public class WebContext implements SubContext {
                                getRemoteIP());
         }
 
-        setCookie(getSessionPinCookieName(), givenSessionPin, SESSION_PIN_COOKIE_TTL, sessionCookieSameSite);
+        setCookie(getSessionPinCookieName(),
+                  givenSessionPin,
+                  SESSION_PIN_COOKIE_TTL,
+                  sessionCookieSameSite,
+                  sessionCookieSecurity);
     }
 
     private Map<String, String> decodeSession(String encodedSession) {
@@ -1221,9 +1246,6 @@ public class WebContext implements SubContext {
      * @param cookie the cookie to send to the client
      */
     public void setCookie(Cookie cookie) {
-        if (isSSL()) {
-            cookie.setSecure(true);
-        }
         if (cookiesOut == null) {
             cookiesOut = new TreeMap<>();
         }
@@ -1233,36 +1255,26 @@ public class WebContext implements SubContext {
     /**
      * Sets a cookie value to be sent back to the client
      * <p>
-     * The generated cookie will be a session cookie and varnish once the user agent is closed
+     * The generated cookie will be a session cookie and vanish once the user agent is closed
      *
-     * @param name     the cookie to create
-     * @param value    the contents of the cookie
-     * @param sameSite the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite">SameSite</a> value
+     * @param name  the cookie to create
+     * @param value the contents of the cookie
      */
-    public void setSessionCookie(String name, String value, CookieHeaderNames.SameSite sameSite) {
-        setCookie(name, value, Long.MIN_VALUE, sameSite);
+    public void setSessionCookie(String name, String value) {
+        setCookie(name, value, Long.MIN_VALUE, sessionCookieSameSite, sessionCookieSecurity);
     }
 
     /**
      * Sets a http only cookie value to be sent back to the client.
      * <p>
-     * The generated cookie will be a session cookie and varnish once the user agent is closed. Also this cookie
+     * The generated cookie will be a session cookie and vanish once the user agent is closed. Also this cookie
      * will not be accessible by JavaScript and therefore slightly more secure.
      *
-     * @param name     the cookie to create
-     * @param value    the contents of the cookie
-     * @param sameSite the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite">SameSite</a> value
+     * @param name  the cookie to create
+     * @param value the contents of the cookie
      */
-    public void setHTTPSessionCookie(String name, String value, CookieHeaderNames.SameSite sameSite) {
-        DefaultCookie cookie = new DefaultCookie(name, value);
-        cookie.setSameSite(sameSite);
-        cookie.setMaxAge(Long.MIN_VALUE);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        if (Strings.isFilled(cookieDomain)) {
-            cookie.setDomain(cookieDomain);
-        }
-        setCookie(cookie);
+    public void setHTTPSessionCookie(String name, String value) {
+        setCookie(name, value, Long.MIN_VALUE, sessionCookieSameSite, sessionCookieSecurity);
     }
 
     /**
@@ -1274,16 +1286,14 @@ public class WebContext implements SubContext {
      * @param value         the contents of the cookie
      * @param maxAgeSeconds contains the max age of this cookie in seconds
      * @param sameSite      the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite">SameSite</a> value
+     * @param security      the policy for the security header
      */
-    public void setClientCookie(String name, String value, long maxAgeSeconds, CookieHeaderNames.SameSite sameSite) {
-        DefaultCookie cookie = new DefaultCookie(name, value);
-        cookie.setMaxAge(maxAgeSeconds);
-        cookie.setSameSite(sameSite);
-        cookie.setPath("/");
-        if (Strings.isFilled(cookieDomain)) {
-            cookie.setDomain(cookieDomain);
-        }
-        setCookie(cookie);
+    public void setClientCookie(String name,
+                                String value,
+                                long maxAgeSeconds,
+                                CookieHeaderNames.SameSite sameSite,
+                                CookieSecurity security) {
+        setCookie(createCookie(name, value, maxAgeSeconds, sameSite, security));
     }
 
     /**
@@ -1293,17 +1303,32 @@ public class WebContext implements SubContext {
      * @param value         the contents of the cookie
      * @param maxAgeSeconds contains the max age of this cookie in seconds
      * @param sameSite      the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite">SameSite</a> value
+     * @param security      the policy for the security header
      */
-    public void setCookie(String name, String value, long maxAgeSeconds, CookieHeaderNames.SameSite sameSite) {
+    public void setCookie(String name,
+                          String value,
+                          long maxAgeSeconds,
+                          CookieHeaderNames.SameSite sameSite,
+                          CookieSecurity security) {
+        DefaultCookie cookie = createCookie(name, value, maxAgeSeconds, sameSite, security);
+        cookie.setHttpOnly(true);
+        setCookie(cookie);
+    }
+
+    private DefaultCookie createCookie(String name,
+                                       String value,
+                                       long maxAgeSeconds,
+                                       CookieHeaderNames.SameSite sameSite,
+                                       CookieSecurity security) {
         DefaultCookie cookie = new DefaultCookie(name, value);
         cookie.setMaxAge(maxAgeSeconds);
         cookie.setSameSite(sameSite);
-        cookie.setHttpOnly(true);
+        cookie.setSecure(security == CookieSecurity.ALWAYS_SECURE || (security == CookieSecurity.IF_SSL && isSSL()));
         cookie.setPath("/");
         if (Strings.isFilled(cookieDomain)) {
             cookie.setDomain(cookieDomain);
         }
-        setCookie(cookie);
+        return cookie;
     }
 
     /**
@@ -1312,7 +1337,7 @@ public class WebContext implements SubContext {
      * @param name the cookie to delete
      */
     public void deleteCookie(@Nonnull String name) {
-        setCookie(name, "", -1, null);
+        setCookie(name, "", -1, null, CookieSecurity.NEVER);
     }
 
     /**
@@ -1372,9 +1397,9 @@ public class WebContext implements SubContext {
 
         long ttl = determineSessionCookieTTL();
         if (ttl == 0) {
-            setHTTPSessionCookie(sessionCookieName, protection + ":" + value, sessionCookieSameSite);
+            setHTTPSessionCookie(sessionCookieName, protection + ":" + value);
         } else {
-            setCookie(sessionCookieName, protection + ":" + value, ttl, sessionCookieSameSite);
+            setCookie(sessionCookieName, protection + ":" + value, ttl, sessionCookieSameSite, sessionCookieSecurity);
         }
     }
 

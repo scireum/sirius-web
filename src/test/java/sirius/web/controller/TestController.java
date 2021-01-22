@@ -66,7 +66,7 @@ public class TestController extends BasicController {
 
     @Routed("/test/cookieCacheTest")
     public void testCookieCacheTest(WebContext ctx) {
-        ctx.setCookie("Test", "1", 3600, CookieHeaderNames.SameSite.Strict);
+        ctx.setCookie("Test", "1", 3600, CookieHeaderNames.SameSite.Strict, WebContext.CookieSecurity.IF_SSL);
         ctx.respondWith().cached().direct(HttpResponseStatus.OK, "OK");
     }
 
