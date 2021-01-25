@@ -41,8 +41,9 @@
         <!-- Netty is the foundation of the built in web server -->
         <dependency>
             <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
+            <artifactId>netty-bom</artifactId>
             <version>4.1.49.Final</version>
+            <type>pom</type>
         </dependency>
 
         <!-- Used to compile SCSS (SASS) files into CSS files -->
