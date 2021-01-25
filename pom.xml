@@ -42,6 +42,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
+            <!-- Set version below in <dependencyManagement>. -->
         </dependency>
 
         <!-- Used to compile SCSS (SASS) files into CSS files -->
