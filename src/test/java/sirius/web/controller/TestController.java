@@ -10,6 +10,7 @@ package sirius.web.controller;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.cookie.CookieHeaderNames;
 import sirius.kernel.async.Future;
 import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Streams;
@@ -65,7 +66,7 @@ public class TestController extends BasicController {
 
     @Routed("/test/cookieCacheTest")
     public void testCookieCacheTest(WebContext ctx) {
-        ctx.setCookie("Test", "1", 3600);
+        ctx.setCookie("Test", "1", 3600, CookieHeaderNames.SameSite.Strict, WebContext.CookieSecurity.IF_SSL);
         ctx.respondWith().cached().direct(HttpResponseStatus.OK, "OK");
     }
 
