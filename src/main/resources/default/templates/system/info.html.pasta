@@ -1,4 +1,5 @@
 <w:page title="System Info">
+    <i:local name="webContext" value="CallContext.getCurrent().get(WebContext.class)" />
     <i:block name="breadcrumbs">
         <li><a href="/system/info">System Info</a></li>
     </i:block>
@@ -10,19 +11,19 @@
                 <tr>
                     <td>Node Name</td>
                     <td style="text-align: right">
-                        @nodeName
+                        @CallContext.getNodeName()
                     </td>
                 </tr>
                 <tr>
                     <td>Remote IP</td>
                     <td style="text-align: right">
-                        @call.getRemoteIP().getHostAddress()
+                        @webContext.getRemoteIP().getHostAddress()
                     </td>
                 </tr>
                 <tr>
                     <td>Language</td>
                     <td style="text-align: right">
-                        @call.getLang()
+                        @webContext.getLang()
                     </td>
                 </tr>
             </table>
@@ -31,11 +32,11 @@
         <h1>Headers</h1>
         <div class="">
             <table class="table table-bordered">
-                <i:for type="String" var="name" items="call.getRequest().headers().names()">
+                <i:for type="String" var="name" items="webContext.getRequest().headers().names()">
                     <tr>
                         <td>@name</td>
                         <td style="text-align: right">
-                            <i:for type="String" var="value" items="call.getRequest().headers().getAll(name)">
+                            <i:for type="String" var="value" items="webContext.getRequest().headers().getAll(name)">
                                 <div style="word-wrap: break-word; word-break: break-all">@value</div>
                             </i:for>
                         </td>
@@ -44,7 +45,7 @@
             </table>
         </div>
 
-        <i:if test="!call.getCookies().isEmpty()">
+        <i:if test="!webContext.getCookies().isEmpty()">
             <h1>Cookies</h1>
             <div class="">
                 <table class="table table-bordered">
@@ -56,7 +57,7 @@
                         <th>Secure</th>
                         <th>HTTP only</th>
                     </tr>
-                    <i:for type="io.netty.handler.codec.http.cookie.Cookie" var="cookie" items="call.getCookies()">
+                    <i:for type="io.netty.handler.codec.http.cookie.Cookie" var="cookie" items="webContext.getCookies()">
                         <tr>
                             <td>@cookie.name()</td>
                             <td style="text-align: right; word-wrap: break-word; word-break: break-all">
@@ -70,15 +71,15 @@
             </div>
         </i:if>
 
-        <i:if test="!call.getSessionKeys().isEmpty()">
+        <i:if test="!webContext.getSessionKeys().isEmpty()">
             <h1>Client Session</h1>
             <div class="">
                 <table class="table table-bordered">
-                    <i:for type="String" var="name" items="call.getSessionKeys()">
+                    <i:for type="String" var="name" items="webContext.getSessionKeys()">
                         <tr>
                             <td>@name</td>
                             <td style="text-align: right">
-                                @call.getSessionValue(name)
+                                @webContext.getSessionValue(name)
                             </td>
                         </tr>
                     </i:for>

@@ -149,7 +149,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     private static IPRange.RangeSet proxyRanges;
 
     @Part
-    private GlobalContext ctx;
+    private GlobalContext globalContext;
 
     private static HttpDataFactory httpDataFactory;
 
@@ -496,7 +496,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
         bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
         bootstrap.group(eventLoop);
         bootstrap.channel(NioServerSocketChannel.class);
-        bootstrap.childHandler(ctx.wire(initializer));
+        bootstrap.childHandler(globalContext.wire(initializer));
         return bootstrap;
     }
 

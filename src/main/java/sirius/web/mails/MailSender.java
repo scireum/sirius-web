@@ -28,12 +28,7 @@ import javax.activation.DataSource;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.mail.internet.InternetAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Implements the builder pattern to specify the mail to send.
@@ -137,11 +132,11 @@ public class MailSender {
     /**
      * Specifies both, the sender email and name.
      * <p>
-     * This is boilerpalte for {@code fromEmail(senderEmail).fromName(senderName)}
+     * This is boilerplate for {@code fromEmail(senderEmail).fromName(senderName)}
      *
      * @param senderEmail the email address which sent the email
      * @param senderName  the name of the sender of the email
-     * @return the buidler itself
+     * @return the builder itself
      */
     public MailSender from(String senderEmail, String senderName) {
         return fromEmail(senderEmail).fromName(senderName);
@@ -150,7 +145,7 @@ public class MailSender {
     /**
      * Specifies both, the receiver email and name.
      * <p>
-     * This is boilerpalte for {@code toEmail(receiverEmail).toName(receiverName)}
+     * This is boilerplate for {@code toEmail(receiverEmail).toName(receiverName)}
      *
      * @param receiverEmail the email address which should receive the email
      * @param receiverName  the name of the receiver of the email
@@ -374,10 +369,10 @@ public class MailSender {
     /**
      * Sets a bounce token.
      * <p>
-     * This bounce toke is hopefully included in a bounce email (generated if a mail cannot be delivered).
+     * This bounce token is hopefully included in a bounce email (generated if a mail cannot be delivered).
      * This permits better bounce handling.
      *
-     * @param token the token to identify the mail by a bounde handler.
+     * @param token the token to identify the mail by a bounce handler.
      * @return the builder itself
      */
     public MailSender setBounceToken(String token) {
@@ -569,5 +564,14 @@ public class MailSender {
         if (Strings.isFilled(replyToName)) {
             replyToName = replyToName.trim();
         }
+    }
+
+    /**
+     * Returns the language which is set for the mail for example to set NLS-keys in the context to the right language.
+     *
+     * @return the language
+     */
+    public String getLang() {
+        return lang;
     }
 }

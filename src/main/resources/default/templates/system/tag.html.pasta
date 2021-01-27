@@ -33,7 +33,7 @@
                     Description
                 </td>
             </tr>
-            <i:for type="sirius.tagliatelle.TemplateArgument" var="arg" items="arguments">
+            <i:for type="sirius.pasta.tagliatelle.TemplateArgument" var="arg" items="arguments">
                 <tr>
                     <td  style="@if (arg.getDefaultValue() == null) {font-weight: bold; } @if (arg.getDeprecationWarning() != null) { text-decoration: line-through }">
                         @arg.getName() <small>(@arg.getType().getName())</small>

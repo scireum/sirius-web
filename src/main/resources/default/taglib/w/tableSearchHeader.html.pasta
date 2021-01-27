@@ -10,11 +10,11 @@
     <div class="row">
         <div class="col-xs-12 col-sm-6">
             <i:if test="@!hideSearchBox">
-                <i:local name="linkAndQueryString" value="@split(baseUrl,'?')" />
+                <i:local name="linkAndQueryString" value="@Strings.split(baseUrl,'?')" />
                 <form class="form-inline" action="@linkAndQueryString.getFirst()" method="get" id="search">
                     <i:if test="linkAndQueryString.getSecond() != null">
-                        <i:for type="String" var="pair" items="toList(linkAndQueryString.getSecond().as(String.class).split('&'))">
-                            <i:local name="nameAndValue" value="@split(pair,'=')" />
+                        <i:for type="String" var="pair" items="toList(linkAndQueryString.getSecond().split('&'))">
+                            <i:local name="nameAndValue" value="@Strings.split(pair,'=')" />
                             <input type="hidden" name="@nameAndValue.getFirst()" value="@nameAndValue.getSecond()"/>
                         </i:for>
                     </i:if>

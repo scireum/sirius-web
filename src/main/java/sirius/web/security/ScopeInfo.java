@@ -13,7 +13,6 @@ import com.typesafe.config.ConfigFactory;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Reflection;
 import sirius.kernel.commons.Streams;
-import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.ValueHolder;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
@@ -29,8 +28,12 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,14 +62,13 @@ public class ScopeInfo extends Composable {
     public static final ScopeInfo DEFAULT_SCOPE =
             new ScopeInfo(DEFAULT_SCOPE_ID, DEFAULT_SCOPE_ID, DEFAULT_SCOPE_ID, null, null, null);
 
-    private String scopeId;
-    private String scopeType;
-    private String scopeName;
-    private String lang;
-    private Function<ScopeInfo, Config> configSupplier;
-    private Function<ScopeInfo, Object> scopeSupplier;
-    private Map<Class<?>, Object> helpersByType = new ConcurrentHashMap<>();
-    private Map<String, Object> helpersByName = new ConcurrentHashMap<>();
+    private final String scopeId;
+    private final String scopeType;
+    private final String scopeName;
+    private final String lang;
+    private final Function<ScopeInfo, Config> configSupplier;
+    private final Function<ScopeInfo, Object> scopeSupplier;
+    private final Map<Class<?>, Object> helpersByType = new ConcurrentHashMap<>();
     private UserSettings settings;
     private UserManager userManager;
 
@@ -77,7 +79,7 @@ public class ScopeInfo extends Composable {
     private static List<HelperFactory<?>> factories;
 
     @Part
-    private static GlobalContext ctx;
+    private static GlobalContext globalContext;
 
     /**
      * Creates a new <tt>ScopeInfo</tt> with the given parameters.
@@ -205,102 +207,133 @@ public class ScopeInfo extends Composable {
     public <T> T getHelper(Class<T> clazz) {
         Object result = helpersByType.get(clazz);
         if (result == null) {
-            result = makeHelperByType(clazz);
+            result = findOrCreateHelper(clazz);
         }
 
         return (T) result;
     }
 
-    /**
-     * Retrieves the helper of the given name.
-     * <p>
-     * Helpers are utility classes which are kept per <tt>ScopeInfo</tt> and created by {@link HelperFactory}
-     * instances.
-     * <p>
-     * When using helpers in templates, it is better to refer to them via name than via class, as this stays constant
-     * when renaming or moving classes.
-     *
-     * @param name the name of the helper to fetch
-     * @param <T>  the generic type of the helper
-     * @return a cached or newly created instance of the helper for this scope.
-     */
-    @SuppressWarnings("unchecked")
-    public <T> T getHelper(String name) {
-        Object result = helpersByName.get(name);
+    private synchronized Object findOrCreateHelper(Class<?> helperType) {
+        Object result = helpersByType.get(helperType);
         if (result == null) {
-            result = makeHelperByName(name);
+            Map<Class<?>, Object> localContext = new HashMap<>(helpersByType);
+            result = makeHelperByType(helperType, localContext);
+            localContext.forEach(helpersByType::putIfAbsent);
         }
 
-        return (T) result;
+        return result;
     }
 
-    private Object makeHelperByType(Class<?> aClass) {
+    private Object makeHelperByType(Class<?> aClass, Map<Class<?>, Object> localContext) {
+        return populateHelper(aClass, createHelperByType(aClass), localContext);
+    }
+
+    private Object createHelperByType(Class<?> aClass) {
         for (HelperFactory<?> factory : factories) {
             if (aClass.equals(factory.getHelperType())) {
-                return makeHelper(factory);
+                return factory.make(this);
             }
         }
 
+        return makeHelperByConstructor(aClass);
+    }
+
+    private Object makeHelperByConstructor(Class<?> aClass) {
+        // First try to instantiate with a constructor that takes ScopeInfo as argument....
+        try {
+            Constructor<?> constructor = aClass.getDeclaredConstructor(ScopeInfo.class);
+            return constructor.newInstance(this);
+        } catch (NoSuchMethodException | IllegalAccessException e) {
+            // There is either no constructor or it isn't accessible -> ignore
+            Exceptions.ignore(e);
+        } catch (InstantiationException | InvocationTargetException e) {
+            throw Exceptions.handle()
+                            .to(UserContext.LOG)
+                            .error(e)
+                            .withSystemErrorMessage("Cannot auto instantiate a helper of type %s - %s (%s)",
+                                                    aClass.getName())
+                            .handle();
+        }
+
+        // Then try to instantiate with a no args constructor....
+        try {
+            Constructor<?> constructor = aClass.getDeclaredConstructor();
+            return constructor.newInstance();
+        } catch (NoSuchMethodException | IllegalAccessException e) {
+            // There is either no constructor or it isn't accessible -> ignore
+            Exceptions.ignore(e);
+        } catch (InstantiationException | InvocationTargetException e) {
+            throw Exceptions.handle()
+                            .to(UserContext.LOG)
+                            .error(e)
+                            .withSystemErrorMessage("Cannot auto instantiate a helper of type %s - %s (%s)",
+                                                    aClass.getName())
+                            .handle();
+        }
+
+        // There is no way to instantiate this helper - give up...
         throw Exceptions.handle()
                         .to(UserContext.LOG)
                         .withSystemErrorMessage("Cannot make a helper of type %s", aClass.getName())
                         .handle();
     }
 
-    private Object makeHelperByName(String name) {
-        for (HelperFactory<?> factory : factories) {
-            if (Strings.areEqual(name, factory.getName())) {
-                return makeHelper(factory);
-            }
-        }
+    private Object populateHelper(Class<?> type, Object helper, Map<Class<?>, Object> localContext) {
+        globalContext.wire(helper);
+        fillConfig(helper);
 
-        throw Exceptions.handle()
-                        .to(UserContext.LOG)
-                        .withSystemErrorMessage("Cannot make a helper named %s", name)
-                        .handle();
-    }
+        // Note that we deliberately make the helper visible in the local context here so that "fillFriends" is
+        // capable of handling circular references...
+        localContext.put(type, helper);
+        fillFriends(helper, localContext);
 
-    private Object makeHelper(HelperFactory<?> factory) {
-        Object result = factory.make(this);
-        ctx.wire(result);
-        fillConfig(result);
-        helpersByType.put(factory.getHelperType(), result);
-        helpersByName.put(factory.getName(), result);
-        fillFriends(result);
-
-        return result;
+        return helper;
     }
 
     private void fillConfig(Object result) {
         Settings scopeSettings = getSettings();
         Reflection.getAllFields(result.getClass())
                   .stream()
-                  .filter(f -> f.isAnnotationPresent(HelperConfig.class))
-                  .forEach(f -> scopeSettings.injectValueFromConfig(result,
-                                                                    f,
-                                                                    f.getAnnotation(HelperConfig.class).value()));
-    }
-
-    private void fillFriends(Object result) {
-        Reflection.getAllFields(result.getClass())
-                  .stream()
-                  .filter(f -> f.isAnnotationPresent(Helper.class))
-                  .forEach(f -> {
+                  .filter(field -> field.isAnnotationPresent(HelperConfig.class))
+                  .forEach(field -> {
                       try {
-                          f.setAccessible(true);
-                          f.set(result, makeHelperByType(f.getType()));
-                      } catch (Exception e) {
-                          Exceptions.handle()
-                                    .error(e)
-                                    .to(UserContext.LOG)
-                                    .withSystemErrorMessage("Cannot fill friend %s in %s of helper %s (%s): %s (%s)",
-                                                            f.getType().getName(),
-                                                            f.getName(),
-                                                            result,
-                                                            result.getClass().getName())
-                                    .handle();
+                          scopeSettings.injectValueFromConfig(result,
+                                                              field,
+                                                              field.getAnnotation(HelperConfig.class).value());
+                      } catch (IllegalArgumentException e) {
+                          UserContext.LOG.WARN("Failed to fill a helper-config value: %s for scope %s",
+                                               e.getMessage(),
+                                               getScopeId());
                       }
                   });
+    }
+
+    private void fillFriends(Object result, Map<Class<?>, Object> localContext) {
+        Reflection.getAllFields(result.getClass())
+                  .stream()
+                  .filter(field -> field.isAnnotationPresent(Helper.class))
+                  .forEach(field -> fillFriend(result, field, localContext));
+    }
+
+    private void fillFriend(Object helper, Field field, Map<Class<?>, Object> localContext) {
+        try {
+            Object friend = localContext.get(field.getType());
+            if (friend == null) {
+                friend = makeHelperByType(field.getType(), localContext);
+            }
+            field.setAccessible(true);
+            field.set(helper, friend);
+        } catch (Exception e) {
+            Exceptions.handle()
+                      .error(e)
+                      .to(UserContext.LOG)
+                      .withSystemErrorMessage("Cannot fill friend %s in %s of helper %s (%s): %s (%s)",
+                                              field.getType().getName(),
+                                              field.getName(),
+                                              helper,
+                                              helper.getClass().getName())
+                      .handle();
+        }
     }
 
     /**
@@ -437,8 +470,8 @@ public class ScopeInfo extends Composable {
     public UserManager getUserManager() {
         if (userManager == null) {
             Extension ext = Sirius.getSettings().getExtension("security.scopes", getScopeType());
-            userManager = ctx.getPart(ext.get("manager").asString("public"), UserManagerFactory.class)
-                             .createManager(this, ext);
+            userManager = globalContext.getPart(ext.get("manager").asString("public"), UserManagerFactory.class)
+                                       .createManager(this, ext);
         }
 
         return userManager;

@@ -19,9 +19,10 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
-import sirius.tagliatelle.Tagliatelle;
-import sirius.tagliatelle.Template;
-import sirius.tagliatelle.compiler.CompileException;
+import sirius.pasta.Pasta;
+import sirius.pasta.noodle.compiler.CompileException;
+import sirius.pasta.tagliatelle.Tagliatelle;
+import sirius.pasta.tagliatelle.Template;
 import sirius.web.controller.Message;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
@@ -126,7 +127,7 @@ public class HelpDispatcher implements WebDispatcher {
             return tagliatelle.resolve(uri.endsWith(PASTA_SUFFIX) ? uri : uri + PASTA_SUFFIX).orElse(null);
         } catch (CompileException e) {
             Exceptions.handle()
-                      .to(Tagliatelle.LOG)
+                      .to(Pasta.LOG)
                       .error(e)
                       .withSystemErrorMessage("Failed to render the template '%s': %s (%s)", uri)
                       .handle();

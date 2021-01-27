@@ -1,7 +1,7 @@
 <i:arg type="java.util.Collection" name="providers"/>
 <i:arg type="boolean" name="all"/>
 
-<w:page title="@apply('%s - Load', product)">
+<w:page title="@apply('%s - Load', sirius.kernel.info.Product.getProduct().getName())">
     <i:block name="head">
         <style>
             .GRAY {

@@ -1,10 +1,10 @@
 <div class="footer">
     <div class="container">
         <div class="pull-left">
-            <i:invoke template="/templates/wondergem/page-footer-menu.html.pasta"  />
+            <i:invoke template="/templates/wondergem/page-footer-menu.html.pasta"/>
         </div>
         <div class="pull-right" style="text-align: right">
-            <small title="@watch.elapsedMillis() ms (@detailedVersion)">@nodeName</small>
+            <small title="@CallContext.getCurrent().getWatch().elapsedMillis() ms (@const(sirius.kernel.info.Product.getProduct().getDetails()))">@CallContext.getNodeName()</small>
         </div>
     </div>
 </div>

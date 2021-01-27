@@ -22,7 +22,7 @@ public class ErrorCodeException extends HandledException {
 
     private static final long serialVersionUID = -5345498530492414479L;
     private final String code;
-    private final HttpResponseStatus httpResponseStatus;
+    private final transient HttpResponseStatus httpResponseStatus;
 
     /**
      * Creates a new exception with the given code and message.

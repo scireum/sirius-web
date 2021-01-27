@@ -14,7 +14,7 @@
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
     <properties>
-        <sirius.kernel>dev-19.11</sirius.kernel>
+        <sirius.kernel>dev-20.1</sirius.kernel>
     </properties>
 
     <repositories>
@@ -42,7 +42,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.49.Final</version>
+            <!-- Set version below in <dependencyManagement>. -->
         </dependency>
 
         <!-- Used to compile SCSS (SASS) files into CSS files -->
@@ -61,9 +61,15 @@
 
         <!-- Async http client used to tunnel http data from a backend server -->
         <dependency>
-            <groupId>com.ning</groupId>
+            <groupId>org.asynchttpclient</groupId>
             <artifactId>async-http-client</artifactId>
-            <version>1.9.40</version>
+            <version>2.12.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Used to generate QR codes -->
@@ -130,5 +136,17 @@
 
 
     </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-bom</artifactId>
+                <version>4.1.49.Final</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 </project>

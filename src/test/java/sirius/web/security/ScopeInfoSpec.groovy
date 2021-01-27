@@ -9,8 +9,13 @@
 package sirius.web.security
 
 import sirius.kernel.BaseSpecification
+import sirius.kernel.async.Tasks
+import sirius.kernel.di.std.Part
 
 class ScopeInfoSpec extends BaseSpecification {
+
+    @Part
+    private static Tasks tasks;
 
     def "default config is loaded"() {
         when:
@@ -33,6 +38,20 @@ class ScopeInfoSpec extends BaseSpecification {
         String value = UserContext.getCurrentScope().getDefaulScopeConfigContents("test")
         then:
         value == "# Test\nsettings.test =\"Hello\""
+    }
+
+    def "helpers are instantiated via factory/constructors"() {
+        when:
+        def helper1 = UserContext.getCurrentScope().getHelper(FactoryExampleHelper.class)
+        def helper2 = UserContext.getCurrentScope().getHelper(ExampleHelper.class)
+        def helper3 = UserContext.getCurrentScope().getHelper(AnotherExampleHelper.class)
+        then: "all can be instantiated"
+        helper1 != null
+        helper2 != null
+        helper3 != null
+        and: "friends are the exact same instances and not copies of the same helpers"
+        helper2.getAnotherExampleHelper() == helper3
+        helper3.getExampleHelper() == helper2
     }
 
 }

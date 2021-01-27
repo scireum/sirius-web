@@ -55,7 +55,7 @@ public class Generator {
     private static Collection<ContentHandler> handlers;
 
     @Part
-    private static GlobalContext ctx;
+    private static GlobalContext globalContext;
 
     @Part
     private static Resources resources;
@@ -221,7 +221,7 @@ public class Generator {
     }
 
     private void generateContentUsingHandler(OutputStream out) throws Exception {
-        ContentHandler handler = ctx.findPart(handlerType, ContentHandler.class);
+        ContentHandler handler = globalContext.findPart(handlerType, ContentHandler.class);
         if (!handler.generate(this, out)) {
             throw Exceptions.handle()
                             .to(Templates.LOG)
