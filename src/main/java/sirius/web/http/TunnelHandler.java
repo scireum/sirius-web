@@ -360,9 +360,10 @@ class TunnelHandler implements AsyncHandler<String> {
                 // No response time measurement for long running or aborted requests...
                 return;
             }
-            long ttfbMillis = watch.elapsedMillis();
 
+            long ttfbMillis = watch.elapsedMillis();
             if (ttfbMillis > WebServer.getMaxTimeToFirstByte() && WebServer.getMaxTimeToFirstByte() > 0) {
+
                 WebServer.LOG.WARN("Long running tunneling: %s (TTFB: %s)"
                                    + "%nDNS: %s, TCP-ATTEMPT: %s, TCP-CONNECT: %s, HANDSHAKE: %s, REQUEST-SENT: %s"
                                    + "%nURL:%s"
