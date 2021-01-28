@@ -239,6 +239,15 @@ class CompilerSpec extends BaseSpecification {
         test.basicallyEqual(result, expectedResult)
     }
 
+    def "generateId macro works within tag libs"() {
+        given:
+        String expectedResult = resources.resolve("templates/generate-id.html").get().getContentAsString()
+        when:
+        String result = tagliatelle.resolve("/templates/generate-id.html.pasta").get().renderToString()
+        then:
+        test.basicallyEqual(result, expectedResult)
+    }
+
     def "missing tag detection works"() {
         when:
         List<CompileError> errors = null

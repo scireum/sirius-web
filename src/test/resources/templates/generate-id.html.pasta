@@ -1,0 +1,7 @@
+@generateId()
+<e:generateIdTag id="X" />
+<e:generateIdTag />
+@generateId()
+<e:generateIdTag id="Y" />
+<e:generateIdTag />
+@generateId()

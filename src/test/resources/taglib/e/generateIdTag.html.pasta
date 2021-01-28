@@ -1,0 +1,3 @@
+<i:arg type="String" name="id" default="@generateId()" />
+@id
+@generateId()
