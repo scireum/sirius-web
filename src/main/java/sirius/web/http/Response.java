@@ -487,6 +487,9 @@ public class Response {
         WebServer.responseTime.addValue(responseTimeMillis);
 
         if (ttfbMillis > WebServer.getMaxTimeToFirstByte() && WebServer.getMaxTimeToFirstByte() > 0) {
+            if (WebServer.slowRequests.incrementAndGet() < 0) {
+                WebServer.slowRequests.set(0);
+            }
             WebServer.LOG.WARN("Long running request: %s (Response Time: %s, Queue Time: %s, TTFB: %s)"
                                + "%nURL:%s"
                                + "%nParameters:"
