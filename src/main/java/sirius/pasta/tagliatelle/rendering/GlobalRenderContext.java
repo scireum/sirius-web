@@ -34,7 +34,6 @@ public class GlobalRenderContext {
     protected StringBuilder buffer;
     protected Map<String, String> extraBlocks;
     protected UnaryOperator<String> escaper = GlobalRenderContext::escapeRAW;
-    protected int localIdGenerator = 0;
     private static final Pattern OPENING_SCRIPT_TAG = Pattern.compile("<script(\\s.*)?>", Pattern.CASE_INSENSITIVE);
     private static final Pattern CLOSING_SCRIPT_TAG = Pattern.compile("</script>", Pattern.CASE_INSENSITIVE);
     private static final Pattern OPENING_STYLE_TAG = Pattern.compile("<style(\\s.*)?>", Pattern.CASE_INSENSITIVE);
@@ -209,17 +208,6 @@ public class GlobalRenderContext {
      */
     protected void release(LocalRenderContext renderContext) {
         stack.free(renderContext.getLocals());
-    }
-
-    /**
-     * Generates an ID which is unique within this render context.
-     * <p>
-     * This is mainly used to generate unique IDs for HTML elements.
-     *
-     * @return a new unique id within this context
-     */
-    public int generateLocalId() {
-        return localIdGenerator++;
     }
 
     @Override
