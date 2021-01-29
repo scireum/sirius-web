@@ -9,6 +9,7 @@
 package sirius.pasta.tagliatelle.macros;
 
 import parsii.tokenizer.Position;
+import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.Environment;
@@ -17,6 +18,7 @@ import sirius.pasta.noodle.compiler.ir.Node;
 import sirius.pasta.noodle.macros.BasicMacro;
 import sirius.pasta.noodle.sandbox.PublicAPI;
 import sirius.pasta.tagliatelle.rendering.LocalRenderContext;
+import sirius.web.util.IdGeneratorContext;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -44,7 +46,7 @@ public class GenerateIdMacro extends BasicMacro {
 
     @Override
     public Object invoke(Environment environment, Object[] args) {
-        int localId = ((LocalRenderContext) environment).getGlobalContext().generateLocalId();
+        long localId = CallContext.getCurrent().get(IdGeneratorContext.class).generateLocalId();
         if (args.length == 1) {
             return Strings.apply((String) args[0], localId);
         } else {

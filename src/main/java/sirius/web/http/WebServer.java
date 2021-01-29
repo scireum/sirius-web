@@ -185,6 +185,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     protected static Map<WebServerHandler, ActiveHTTPConnection> openConnections = new ConcurrentHashMap<>();
     protected static Average responseTime = new Average();
     protected static Average timeToFirstByte = new Average();
+    protected static AtomicLong slowRequests = new AtomicLong();
     protected static Average queueTime = new Average();
     protected static MicrotimingMode microtimingMode = MicrotimingMode.URI;
 
@@ -722,6 +723,16 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
         return queueTime.getAvg();
     }
 
+    /**
+     * Returns the number of requests which are not marked as <b>long running</b> but took longer than
+     * {@link #maxTimeToFirstByte}.
+     *
+     * @return the number of recorded slow requests
+     */
+    public static long getNumSlowRequests() {
+        return slowRequests.get();
+    }
+
     @Override
     public void gather(MetricsCollector collector) {
         collector.differentialMetric("http_bytes_in",
@@ -736,6 +747,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
                                      "KB/s");
         collector.differentialMetric("http_connects", "http-connects", "HTTP Connects", connections.get(), "/min");
         collector.differentialMetric("http_requests", "http-requests", "HTTP Requests", requests.get(), "/min");
+        collector.differentialMetric("http_slow_requests", "http-slow-requests", "HTTP Slow Requests", slowRequests.get(), "/min");
         collector.differentialMetric("http-blocks", "http-blocks", "HTTP Blocked Requests", blocks.get(), "/min");
         collector.differentialMetric("http_timeouts",
                                      "http-timeouts",
