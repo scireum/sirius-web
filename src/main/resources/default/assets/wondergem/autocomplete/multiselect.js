@@ -163,11 +163,11 @@ var multiSelect = function (args) {
                     return false;
                 }
             }
-
-            triggerChangeEventIfNecessary();
         } else {
             token.label = suggestions.getTokenForValue(token.value).label;
         }
+
+        triggerChangeEventIfNecessary();
 
         if (tokenfield.hasToken(token)) {
             tokenfield.removeToken(token);
