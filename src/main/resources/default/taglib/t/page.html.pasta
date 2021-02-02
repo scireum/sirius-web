@@ -1,6 +1,8 @@
 <i:arg type="String" name="titleKey" default=""/>
 <i:arg type="String" name="title" default="@i18n(titleKey)"/>
 <i:arg type="boolean" name="ignoreDisasterMode" default="false"/>
+<i:arg type="boolean" name="noindex" default="false"
+       description="if set to true, search engine bots are advised to not index this page"/>
 
 
 <i:pragma name="description" value="Provides the base layout for a Tycho page"/>
@@ -11,6 +13,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
     <i:if test="isFilled(config('http.contentSecurityPolicy'))">
         <meta http-equiv="Content-Security-Policy" content="@config('http.contentSecurityPolicy')"/>
+    </i:if>
+    <i:if test="noindex">
+        <meta name="robots" content="noindex,nofollow"/>
     </i:if>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@title - @const(sirius.kernel.info.Product.getProduct().getName())</title>
