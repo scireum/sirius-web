@@ -296,7 +296,7 @@ public class Invocation {
      */
     private void handleLambda(int numLocals) {
         int initialIP = instructionPointer + 1;
-        int contextOffset = 0;
+        int contextOffset = pop(int.class);
         Class<?> samInterface = pop(Class.class);
         Environment lambdaEnvironment =
                 LambdaEnvironment.create(environment, contextOffset, numLocals);

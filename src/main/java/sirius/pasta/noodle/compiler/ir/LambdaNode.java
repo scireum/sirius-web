@@ -97,9 +97,7 @@ public class LambdaNode extends Node {
     @Override
     public void emit(Assembler assembler) {
         assembler.emitPushConstant(samInterface, position);
-        if (!arguments.isEmpty()) {
-            assembler.emitPushConstant(arguments.get(0).getLocalIndex(), position);
-        }
+        assembler.emitPushConstant(arguments.get(0).getLocalIndex(), position);
         assembler.emitByteCode(OpCode.LAMBDA, numberOfLocals, position);
         Assembler.Label endLabel = assembler.createLabel();
         assembler.emitJump(OpCode.JMP, endLabel, position);
