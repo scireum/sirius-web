@@ -13,21 +13,21 @@ import sirius.pasta.noodle.OpCode;
 import sirius.pasta.noodle.compiler.Assembler;
 import sirius.pasta.noodle.compiler.CompilationContext;
 
-import javax.annotation.Nullable;
+import java.lang.reflect.Type;
 
 /**
  * Returns the value of an expression.
  */
-public class ReturnNode extends Node {
+public class ReturnStatement extends Statement {
 
     private Node expression;
 
     /**
-     * Creates a new return node.
+     * Creates a new return statement.
      *
      * @param position the position in the source code
      */
-    public ReturnNode(Position position) {
+    public ReturnStatement(Position position) {
         super(position);
     }
 
@@ -55,10 +55,9 @@ public class ReturnNode extends Node {
         return this;
     }
 
-    @Nullable
     @Override
-    public Class<?> getType() {
-        return getExpression().getType();
+    public Type getGenericType() {
+        return getExpression().getGenericType();
     }
 
     @Override

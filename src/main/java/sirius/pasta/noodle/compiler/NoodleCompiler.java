@@ -18,7 +18,7 @@ import sirius.pasta.noodle.compiler.ir.Constant;
 import sirius.pasta.noodle.compiler.ir.IntrinsicCall;
 import sirius.pasta.noodle.compiler.ir.Node;
 import sirius.pasta.noodle.compiler.ir.PushTemporary;
-import sirius.pasta.noodle.compiler.ir.ReturnNode;
+import sirius.pasta.noodle.compiler.ir.ReturnStatement;
 
 import java.util.Optional;
 
@@ -69,8 +69,8 @@ public class NoodleCompiler {
 
     protected Node parseBlock() {
         Node ir = parser.block().reduce(context);
-        if (ir instanceof ReturnNode) {
-            ir = ((ReturnNode) ir).getExpression();
+        if (ir instanceof ReturnStatement) {
+            ir = ((ReturnStatement) ir).getExpression();
         }
 
         return ir;
@@ -93,8 +93,8 @@ public class NoodleCompiler {
 
     protected Node parseExpression(boolean canSkipWhitespaces) {
         Node ir = parser.parseExpression(canSkipWhitespaces).reduce(context);
-        if (ir instanceof ReturnNode) {
-            ir = ((ReturnNode) ir).getExpression();
+        if (ir instanceof ReturnStatement) {
+            ir = ((ReturnStatement) ir).getExpression();
         }
         return ir;
     }

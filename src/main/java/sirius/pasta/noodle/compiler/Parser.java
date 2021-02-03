@@ -37,6 +37,7 @@ import sirius.pasta.noodle.compiler.ir.PopField;
 import sirius.pasta.noodle.compiler.ir.PushField;
 import sirius.pasta.noodle.compiler.ir.PushTemporary;
 import sirius.pasta.noodle.compiler.ir.RawClassLiteral;
+import sirius.pasta.noodle.compiler.ir.ReturnStatement;
 import sirius.pasta.noodle.compiler.ir.TernaryOperation;
 import sirius.pasta.noodle.compiler.ir.UnaryOperation;
 
@@ -61,6 +62,11 @@ public class Parser extends InputProcessor {
      * Represents the keyword used to define a variable.
      */
     public static final String KEYWORD_LET = "let";
+
+    /**
+     * Represents the keyword used to return a value.
+     */
+    public static final String KEYWORD_RETURN = "return";
 
     /**
      * Represents the keyword used to declare a class literal (used as suffix as in Java).
@@ -143,6 +149,9 @@ public class Parser extends InputProcessor {
         if (isAtKeyword(KEYWORD_LET)) {
             return assignment();
         }
+        if (isAtKeyword(KEYWORD_RETURN)) {
+            return returnStatement();
+        }
 
         Node expression = parseExpression();
         skipWhitespaces();
@@ -195,6 +204,21 @@ public class Parser extends InputProcessor {
         VariableScoper.Variable variable =
                 context.getVariableScoper().defineVariable(declaration, variableName, variableValue.getType());
         return new AssignmentStatement(declaration, variable, variableValue);
+    }
+
+    private Node returnStatement() {
+        ReturnStatement returnStatement = new ReturnStatement(reader.current());
+        reader.consume(6);
+        skipWhitespaces();
+
+        if (reader.current().is(';')) {
+            returnStatement.setExpression(new Constant(reader.current(), null));
+            return returnStatement;
+        }
+
+        Node returnValue = parseExpression();
+        returnStatement.setExpression(returnValue);
+        return returnStatement;
     }
 
     }
