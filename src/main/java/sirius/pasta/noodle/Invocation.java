@@ -11,18 +11,21 @@ package sirius.pasta.noodle;
 import parsii.tokenizer.Position;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.transformers.Transformable;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.nls.NLS;
 import sirius.pasta.Pasta;
+import sirius.pasta.noodle.compiler.ir.LambdaNode;
 import sirius.pasta.noodle.macros.Macro;
 import sirius.web.security.UserContext;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -66,8 +69,20 @@ public class Invocation {
      * @param environment the environment to use
      */
     public Invocation(InterpreterCall method, Environment environment) {
+        this(method, environment, 0);
+    }
+
+    /**
+     * Creates a new interpreter for the given script and environment.
+     *
+     * @param method      the script to execute
+     * @param environment the environment to use
+     * @param initialIP   the first instruction to execute
+     */
+    public Invocation(InterpreterCall method, Environment environment, int initialIP) {
         this.compiledMethod = method;
         this.environment = environment;
+        this.instructionPointer = initialIP;
     }
 
     /**
@@ -142,6 +157,9 @@ public class Invocation {
                     break;
                 case INVOCE_STATIC:
                     handleInvoke(index, true);
+                    break;
+                case LAMBDA:
+                    handleLambda(index);
                     break;
                 case RET_STACK_TOP:
                     return pop();
@@ -267,6 +285,28 @@ public class Invocation {
                                               field.getName(),
                                               field.getDeclaringClass().getName()));
         }
+    }
+
+    /**
+     * Handles {@link OpCode#LAMBDA}.
+     * <p>
+     * Note that the theory of operation is described in {@link LambdaNode}.
+     *
+     * @param numLocals the number of locals of the lambda
+     */
+    private void handleLambda(int numLocals) {
+        int initialIP = instructionPointer + 1;
+        int contextOffset = 0;
+        Class<?> samInterface = pop(Class.class);
+        Environment lambdaEnvironment =
+                LambdaEnvironment.create(environment, contextOffset, numLocals);
+        push(Proxy.newProxyInstance(getClass().getClassLoader(),
+                                    new Class[]{samInterface},
+                                    new LambdaHandler(initialIP,
+                                                      contextOffset,
+                                                      numLocals,
+                                                      compiledMethod,
+                                                      lambdaEnvironment)));
     }
 
     private void handleInstanceOf() {

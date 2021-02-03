@@ -83,6 +83,11 @@ public enum OpCode {
     PUSH_BUILT_IN,
 
     /**
+     * Creates a lambda closure.
+     */
+    LAMBDA,
+
+    /**
      * Returns the stack top.
      */
     RET_STACK_TOP,
