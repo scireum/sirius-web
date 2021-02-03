@@ -13,7 +13,7 @@ import sirius.pasta.noodle.OpCode;
 import sirius.pasta.noodle.compiler.Assembler;
 import sirius.pasta.noodle.compiler.CompilationContext;
 
-import javax.annotation.Nullable;
+import java.lang.reflect.Type;
 
 /**
  * Performs a native (normal) cast to the desired type.
@@ -39,9 +39,8 @@ public class NativeCast extends Node {
         this.type = type;
     }
 
-    @Nullable
     @Override
-    public Class<?> getType() {
+    public Type getGenericType() {
         return type;
     }
 

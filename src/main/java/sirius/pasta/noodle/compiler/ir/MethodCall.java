@@ -77,20 +77,20 @@ public class MethodCall extends Call {
     private Node optimizeIntrinsics() {
         if (NLS.class.equals(method.getDeclaringClass()) && "get".equals(method.getName())) {
             return new IntrinsicCall(getPosition(),
-                                     method.getReturnType(),
+                                     method.getGenericReturnType(),
                                      OpCode.INTRINSIC_NLS_GET,
                                      parameterNodes);
         }
         if (Strings.class.equals(method.getDeclaringClass())) {
             if ("isFilled".equals(method.getName())) {
                 return new IntrinsicCall(getPosition(),
-                                         method.getReturnType(),
+                                         method.getGenericReturnType(),
                                          OpCode.INTRINSIC_STRINGS_IS_FILLED,
                                          parameterNodes);
             }
             if ("isEmpty".equals(method.getName())) {
                 return new IntrinsicCall(getPosition(),
-                                         method.getReturnType(),
+                                         method.getGenericReturnType(),
                                          OpCode.INTRINSIC_STRINGS_IS_EMPTY,
                                          parameterNodes);
             }
@@ -111,14 +111,14 @@ public class MethodCall extends Call {
         }
         if (Value.class.equals(method.getDeclaringClass()) && "of".equals(method.getName())) {
             return new IntrinsicCall(getPosition(),
-                                     method.getReturnType(),
+                                     method.getGenericReturnType(),
                                      OpCode.INTRINSIC_VALUE_OF,
                                      parameterNodes);
         }
         if (UserContext.class.equals(method.getDeclaringClass())) {
             if ("getCurrentUser".equals(method.getName())) {
                 return new IntrinsicCall(getPosition(),
-                                         method.getReturnType(),
+                                         method.getGenericReturnType(),
                                          OpCode.INTRINSIC_USER_CONTEXT_CURRENT_USER,
                                          parameterNodes);
             }
@@ -131,25 +131,6 @@ public class MethodCall extends Call {
         }
 
         return null;
-    }
-
-    @Override
-    public Class<?> getType() {
-        if (method == null) {
-            return void.class;
-        }
-
-        // Try to resolve type parameters into their actual values if possible.
-        // This will propagate type parameters down a call chain.
-        Type genericType = getGenericType();
-        if (genericType instanceof Class<?>) {
-            return (Class<?>) genericType;
-        }
-        if (genericType instanceof ParameterizedType) {
-            return (Class<?>) ((ParameterizedType) genericType).getRawType();
-        }
-
-        return method.getReturnType();
     }
 
     @Nullable

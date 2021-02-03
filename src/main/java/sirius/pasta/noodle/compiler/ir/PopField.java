@@ -17,7 +17,7 @@ import java.lang.reflect.Field;
 /**
  * Stores a stack value in a Java field.
  */
-public class PopField extends Node {
+public class PopField extends Statement {
 
     private Node selfExpression;
     private final Field field;
@@ -48,11 +48,6 @@ public class PopField extends Node {
 
     public void setValueExpression(Node valueExpression) {
         this.valueExpression = valueExpression;
-    }
-
-    @Override
-    public Class<?> getType() {
-        return field.getType();
     }
 
     @Override

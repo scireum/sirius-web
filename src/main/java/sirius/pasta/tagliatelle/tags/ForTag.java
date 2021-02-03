@@ -79,12 +79,11 @@ public class ForTag extends TagHandler {
         loopVariable = getCompilationContext().getVariableScoper()
                                               .defineVariable(getStartOfTag(),
                                                               getConstantAttribute(PARAM_VAR).asString(),
-                                                              type, type);
+                                                              type);
         String loopState = getConstantAttribute(PARAM_STATE).asString();
         if (Strings.isFilled(loopState)) {
             loopStateVariable = getCompilationContext().getVariableScoper()
-                                                       .defineVariable(getStartOfTag(), loopState, LoopState.class,
-                                                                       LoopState.class);
+                                                       .defineVariable(getStartOfTag(), loopState, LoopState.class);
         }
     }
 

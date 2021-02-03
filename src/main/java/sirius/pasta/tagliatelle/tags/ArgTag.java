@@ -99,7 +99,7 @@ public class ArgTag extends TagHandler {
                                           typeName);
         }
 
-        getCompilationContext().getVariableScoper().defineVariable(getStartOfTag(), name, type, type);
+        getCompilationContext().getVariableScoper().defineVariable(getStartOfTag(), name, type);
         getCompilationContext().getTemplate()
                                .addArgument(new TemplateArgument(type,
                                                                  name,

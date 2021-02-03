@@ -11,7 +11,9 @@ package sirius.pasta.noodle.compiler.ir;
 import parsii.tokenizer.Position;
 import sirius.pasta.noodle.compiler.Assembler;
 import sirius.pasta.noodle.compiler.CompilationContext;
+import sirius.pasta.noodle.compiler.TypeTools;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -28,25 +30,21 @@ public abstract class Node {
     }
 
     /**
-     * Returns the type of the objects yielded by this expression.
+     * Returns the raw (class) of the objects yielded by this expression.
      *
      * @return the type of objects created by this expression
      */
-    @Nullable
-    public abstract Class<?> getType();
+    @Nonnull
+    public final Class<?> getType() {
+        return TypeTools.simplifyToClass(getGenericType(), void.class);
+    }
 
     /**
-     * Returns the generic type if available.
-     * <p>
-     * This can be used when trying to deduce the actual type from a type variable. This is
-     * the counterpart to {@link Method#getGenericReturnType()}.
-     *
-     * @return the generic return type or <tt>null</tt> if none is available
+     * Returns the type created by this expression.
+     * @return the return type or <tt>null</tt> if none is available
      */
     @Nullable
-    public Type getGenericType() {
-        return null;
-    }
+    public abstract Type getGenericType();
 
     /**
      * Determines if the node represents a constant value.

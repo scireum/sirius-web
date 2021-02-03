@@ -62,7 +62,6 @@ public class DefineTag extends TagHandler {
         VariableScoper.Variable variable = getCompilationContext().getVariableScoper()
                                                                   .defineVariable(getStartOfTag(),
                                                                                   name,
-                                                                                  String.class,
                                                                                   String.class);
         targetBlock.addChild(new PushLocalEmitter(startOfTag,
                                                   variable.getLocalIndex(),

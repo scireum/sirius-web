@@ -13,6 +13,8 @@ import sirius.pasta.noodle.OpCode;
 import sirius.pasta.noodle.compiler.Assembler;
 import sirius.pasta.noodle.compiler.CompilationContext;
 
+import java.lang.reflect.Type;
+
 /**
  * Represents an unary operation.
  */
@@ -41,7 +43,7 @@ public class UnaryOperation extends Node {
     }
 
     @Override
-    public Class<?> getType() {
+    public Type getGenericType() {
         return operand.getType();
     }
 

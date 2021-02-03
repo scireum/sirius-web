@@ -14,6 +14,7 @@ import sirius.pasta.noodle.compiler.Assembler;
 import sirius.pasta.noodle.compiler.CompilationContext;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.Type;
 
 /**
  * Represents an <tt>instanceof</tt> check.
@@ -35,9 +36,8 @@ public class InstanceOfCheck extends Node {
         this.typeToCheck = typeToCheck;
     }
 
-    @Nullable
     @Override
-    public Class<?> getType() {
+    public Type getGenericType() {
         return boolean.class;
     }
 

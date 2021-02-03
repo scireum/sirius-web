@@ -34,15 +34,10 @@ public class PushTemporary extends Node {
         this.variable = variable;
     }
 
-    @Override
-    public Class<?> getType() {
-        return variable.getType();
-    }
-
     @Nullable
     @Override
     public Type getGenericType() {
-        return variable.getGenericType();
+        return variable.getType();
     }
 
     @Override
