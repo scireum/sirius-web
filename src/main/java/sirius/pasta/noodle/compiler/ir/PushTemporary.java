@@ -21,7 +21,7 @@ import java.lang.reflect.Type;
  */
 public class PushTemporary extends Node {
 
-    private VariableScoper.Variable variable;
+    private final VariableScoper.Variable variable;
 
     /**
      * Creates a new variable access.

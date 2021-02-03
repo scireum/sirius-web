@@ -444,42 +444,9 @@ public class Invocation {
         }
 
         if (isStatic) {
-            if (numberOfArguments == 0) {
-                push(methodHandle.invoke());
-            } else if (numberOfArguments == 1) {
-                push(methodHandle.invoke(pop()));
-            } else if (numberOfArguments == 2) {
-                Object arg1 = pop();
-                Object arg2 = pop();
-                push(methodHandle.invoke(arg1, arg2));
-            } else if (numberOfArguments == 3) {
-                Object arg1 = pop();
-                Object arg2 = pop();
-                Object arg3 = pop();
-                push(methodHandle.invoke(arg1, arg2, arg3));
-            }
+            handleStaticMethod(numberOfArguments, methodHandle);
         } else {
-            Object self = pop();
-            if (self == null) {
-                while (numberOfArguments-- > 0) {
-                    pop();
-                }
-                push(null);
-            } else if (numberOfArguments == 0) {
-                push(methodHandle.invoke(self));
-            } else if (numberOfArguments == 1) {
-                Object arg1 = pop();
-                push(methodHandle.invoke(self, arg1));
-            } else if (numberOfArguments == 2) {
-                Object arg1 = pop();
-                Object arg2 = pop();
-                push(methodHandle.invoke(self, arg1, arg2));
-            } else if (numberOfArguments == 3) {
-                Object arg1 = pop();
-                Object arg2 = pop();
-                Object arg3 = pop();
-                push(methodHandle.invoke(self, arg1, arg2, arg3));
-            }
+            handeDynamicMethod(numberOfArguments, methodHandle);
         }
     }
 
@@ -487,6 +454,47 @@ public class Invocation {
             throws Throwable {
         Object[] args = popArguments(numberOfArguments, isStatic);
         push(methodHandle.invokeWithArguments(args));
+    }
+
+    private void handleStaticMethod(int numberOfArguments, MethodHandle methodHandle) throws Throwable {
+        if (numberOfArguments == 0) {
+            push(methodHandle.invoke());
+        } else if (numberOfArguments == 1) {
+            push(methodHandle.invoke(pop()));
+        } else if (numberOfArguments == 2) {
+            Object arg1 = pop();
+            Object arg2 = pop();
+            push(methodHandle.invoke(arg1, arg2));
+        } else if (numberOfArguments == 3) {
+            Object arg1 = pop();
+            Object arg2 = pop();
+            Object arg3 = pop();
+            push(methodHandle.invoke(arg1, arg2, arg3));
+        }
+    }
+
+    private void handeDynamicMethod(int numberOfArguments, MethodHandle methodHandle) throws Throwable {
+        Object self = pop();
+        if (self == null) {
+            while (numberOfArguments-- > 0) {
+                pop();
+            }
+            push(null);
+        } else if (numberOfArguments == 0) {
+            push(methodHandle.invoke(self));
+        } else if (numberOfArguments == 1) {
+            Object arg1 = pop();
+            push(methodHandle.invoke(self, arg1));
+        } else if (numberOfArguments == 2) {
+            Object arg1 = pop();
+            Object arg2 = pop();
+            push(methodHandle.invoke(self, arg1, arg2));
+        } else if (numberOfArguments == 3) {
+            Object arg1 = pop();
+            Object arg2 = pop();
+            Object arg3 = pop();
+            push(methodHandle.invoke(self, arg1, arg2, arg3));
+        }
     }
 
     /**
