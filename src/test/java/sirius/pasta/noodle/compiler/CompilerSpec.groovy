@@ -37,4 +37,15 @@ class CompilerSpec extends BaseSpecification {
         compile("NoodleExample.AN_INT + NoodleExample.A_LONG_OBJECT").call(new SimpleEnvironment()) == 36L
     }
 
+    def "accessing fields works"() {
+        expect:
+        compile("NoodleExample.privateStaticField").call(new SimpleEnvironment()) == "Hello from the other side"
+        and:
+        compile("NoodleExample.privateStaticField = 'Hello'; return NoodleExample.privateStaticField;").call(new SimpleEnvironment()) == "Hello"
+        and:
+        compile("NoodleExample.INSTANCE.privateField").call(new SimpleEnvironment()) == "Hello World"
+        and:
+        compile("NoodleExample.INSTANCE.privateField = 'Hello'; return NoodleExample.INSTANCE.privateField;").call(new SimpleEnvironment()) == "Hello"
+    }
+
 }

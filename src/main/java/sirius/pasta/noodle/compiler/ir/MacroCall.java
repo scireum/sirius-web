@@ -92,18 +92,18 @@ public class MacroCall extends Call {
      */
     private Node optimizeIntrinsic() {
         if (macro instanceof I18nMacro && parameterNodes.length == 1) {
-            return new IntrinsicCall(position, String.class, OpCode.OP_INTRINSIC_NLS_GET, parameterNodes);
+            return new IntrinsicCall(position, String.class, OpCode.INTRINSIC_NLS_GET, parameterNodes);
         }
         if (macro instanceof HelperMacro) {
             return new IntrinsicCall(position,
                                      (Class<?>) parameterNodes[0].getConstantValue(),
-                                     OpCode.OP_INTRINSIC_USER_CONTEXT_HELPER,
+                                     OpCode.INTRINSIC_USER_CONTEXT_HELPER,
                                      parameterNodes);
         }
         if (macro instanceof UserMacro) {
             return new IntrinsicCall(position,
                                      UserInfo.class,
-                                     OpCode.OP_INTRINSIC_USER_CONTEXT_CURRENT_USER,
+                                     OpCode.INTRINSIC_USER_CONTEXT_CURRENT_USER,
                                      parameterNodes);
         }
 

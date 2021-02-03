@@ -18,11 +18,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 /**
- * Pushes a static field or constant.
+ * Pushes a Java field onto the stack.
  */
-public class PushStaticField extends Node {
+public class PushField extends Node {
 
-    private Field field;
+    private Node selfExpression;
+    private final Field field;
 
     /**
      * Creates a new node for the given field.
@@ -30,14 +31,22 @@ public class PushStaticField extends Node {
      * @param position the position in the source code
      * @param field    the field to push
      */
-    public PushStaticField(Position position, Field field) {
+    public PushField(Position position, Field field) {
         super(position);
         this.field = field;
     }
 
+    public Node getSelfExpression() {
+        return selfExpression;
+    }
+
+    public void setSelfExpression(Node selfExpression) {
+        this.selfExpression = selfExpression;
+    }
+
     @Override
     public boolean isConstant() {
-        return Modifier.isFinal(field.getModifiers());
+        return Modifier.isFinal(field.getModifiers()) && Modifier.isStatic(field.getModifiers());
     }
 
     @Override
@@ -60,7 +69,15 @@ public class PushStaticField extends Node {
 
     @Override
     public void emit(Assembler assembler) {
+        if (selfExpression != null) {
+            selfExpression.emit(assembler);
+        }
+        field.setAccessible(true);
         assembler.emitPushConstant(field, position);
-        assembler.emitByteCode(OpCode.OP_PUSH_STATIC_FIELD, 0, position);
+        assembler.emitByteCode(OpCode.PUSH_FIELD, 0, position);
+    }
+
+    public Field getField() {
+        return field;
     }
 }

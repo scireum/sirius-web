@@ -21,6 +21,8 @@ import sirius.pasta.noodle.macros.Macro;
 import sirius.web.security.UserContext;
 
 import java.lang.invoke.MethodHandle;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -112,9 +114,15 @@ public class Invocation {
                 case PUSH_BUILT_IN:
                     push(SHARED_CONSTANT_POOL.fetch(index));
                     break;
+                case PUSH_FIELD:
+                    handlePushField();
+                    break;
+                case POP_FIELD:
+                    handlePopField();
+                    break;
                 case POP_VARIABLE:
                     environment.writeVariable(index, pop());
-                    return -1;
+                    break;
                 case JMP_FALSE:
                     if (Boolean.FALSE.equals(pop())) {
                         instructionPointer += index;
@@ -182,37 +190,37 @@ public class Invocation {
                 case OP_INSTANCE_OF:
                     handleInstanceOf();
                     break;
-                case OP_COERCE_INT_TO_LONG:
+                case COERCE_INT_TO_LONG:
                     push(Long.valueOf(pop(int.class)));
                     break;
-                case OP_COERCE_INT_TO_DOUBLE:
+                case COERCE_INT_TO_DOUBLE:
                     push(Double.valueOf(pop(int.class)));
                     break;
-                case OP_COERCE_LONG_TO_DOUBLE:
+                case COERCE_LONG_TO_DOUBLE:
                     push(Double.valueOf(pop(long.class)));
                     break;
-                case OP_INTRINSIC_TRANSFORMABLE_AS:
+                case INTRINSIC_TRANSFORMABLE_AS:
                     handleTransformableAs();
                     break;
-                case OP_INTRINSIC_TRANSFORMABLE_IS:
+                case INTRINSIC_TRANSFORMABLE_IS:
                     handleTransformableIs();
                     break;
-                case OP_INTRINSIC_STRINGS_IS_EMPTY:
+                case INTRINSIC_STRINGS_IS_EMPTY:
                     push(Strings.isEmpty(pop()));
                     break;
-                case OP_INTRINSIC_STRINGS_IS_FILLED:
+                case INTRINSIC_STRINGS_IS_FILLED:
                     push(Strings.isFilled(pop()));
                     break;
-                case OP_INTRINSIC_VALUE_OF:
+                case INTRINSIC_VALUE_OF:
                     push(Value.of(pop()));
                     break;
-                case OP_INTRINSIC_NLS_GET:
+                case INTRINSIC_NLS_GET:
                     push(NLS.get(pop(String.class)));
                     break;
-                case OP_INTRINSIC_USER_CONTEXT_HELPER:
+                case INTRINSIC_USER_CONTEXT_HELPER:
                     push(UserContext.getHelper(pop(Class.class)));
                     break;
-                case OP_INTRINSIC_USER_CONTEXT_CURRENT_USER:
+                case INTRINSIC_USER_CONTEXT_CURRENT_USER:
                     push(UserContext.getCurrentUser());
                     break;
                 default:
@@ -224,6 +232,37 @@ public class Invocation {
             return null;
         } else {
             return pop();
+        }
+    }
+
+    private void handlePushField() {
+        Field field = pop(Field.class);
+        try {
+            if (Modifier.isStatic(field.getModifiers())) {
+                push(field.get(null));
+            } else {
+                push(field.get(pop()));
+            }
+        } catch (Exception e) {
+            throw createVmError(Strings.apply("Cannot read the field %s of %s",
+                                              field.getName(),
+                                              field.getDeclaringClass().getName()));
+        }
+    }
+
+    private void handlePopField() {
+        Field field = pop(Field.class);
+        try {
+            if (Modifier.isStatic(field.getModifiers())) {
+                field.set(null, pop());
+            } else {
+                Object self = pop();
+                field.set(self, pop());
+            }
+        } catch (Exception e) {
+            throw createVmError(Strings.apply("Cannot store into the field %s of %s",
+                                              field.getName(),
+                                              field.getDeclaringClass().getName()));
         }
     }
 

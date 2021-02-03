@@ -25,8 +25,6 @@ import sirius.pasta.noodle.sandbox.Sandbox;
 import sirius.web.security.UserContext;
 
 import javax.annotation.Nullable;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -80,20 +78,20 @@ public class MethodCall extends Call {
         if (NLS.class.equals(method.getDeclaringClass()) && "get".equals(method.getName())) {
             return new IntrinsicCall(getPosition(),
                                      method.getReturnType(),
-                                     OpCode.OP_INTRINSIC_NLS_GET,
+                                     OpCode.INTRINSIC_NLS_GET,
                                      parameterNodes);
         }
         if (Strings.class.equals(method.getDeclaringClass())) {
             if ("isFilled".equals(method.getName())) {
                 return new IntrinsicCall(getPosition(),
                                          method.getReturnType(),
-                                         OpCode.OP_INTRINSIC_STRINGS_IS_FILLED,
+                                         OpCode.INTRINSIC_STRINGS_IS_FILLED,
                                          parameterNodes);
             }
             if ("isEmpty".equals(method.getName())) {
                 return new IntrinsicCall(getPosition(),
                                          method.getReturnType(),
-                                         OpCode.OP_INTRINSIC_STRINGS_IS_EMPTY,
+                                         OpCode.INTRINSIC_STRINGS_IS_EMPTY,
                                          parameterNodes);
             }
         }
@@ -101,33 +99,33 @@ public class MethodCall extends Call {
             if ("is".equals(method.getName())) {
                 return new IntrinsicCall(getPosition(),
                                          boolean.class,
-                                         OpCode.OP_INTRINSIC_TRANSFORMABLE_IS,
+                                         OpCode.INTRINSIC_TRANSFORMABLE_IS,
                                          new Node[]{selfNode, parameterNodes[0]});
             }
             if ("as".equals(method.getName()) && parameterNodes[0].isConstant()) {
                 return new IntrinsicCall(getPosition(),
                                          (Class<?>) parameterNodes[0].getConstantValue(),
-                                         OpCode.OP_INTRINSIC_TRANSFORMABLE_AS,
+                                         OpCode.INTRINSIC_TRANSFORMABLE_AS,
                                          new Node[]{selfNode, parameterNodes[0]});
             }
         }
         if (Value.class.equals(method.getDeclaringClass()) && "of".equals(method.getName())) {
             return new IntrinsicCall(getPosition(),
                                      method.getReturnType(),
-                                     OpCode.OP_INTRINSIC_VALUE_OF,
+                                     OpCode.INTRINSIC_VALUE_OF,
                                      parameterNodes);
         }
         if (UserContext.class.equals(method.getDeclaringClass())) {
             if ("getCurrentUser".equals(method.getName())) {
                 return new IntrinsicCall(getPosition(),
                                          method.getReturnType(),
-                                         OpCode.OP_INTRINSIC_USER_CONTEXT_CURRENT_USER,
+                                         OpCode.INTRINSIC_USER_CONTEXT_CURRENT_USER,
                                          parameterNodes);
             }
             if ("getHelper".equals(method.getName()) && parameterNodes.length == 1 && parameterNodes[0].isConstant()) {
                 return new IntrinsicCall(getPosition(),
                                          (Class<?>) parameterNodes[0].getConstantValue(),
-                                         OpCode.OP_INTRINSIC_USER_CONTEXT_HELPER,
+                                         OpCode.INTRINSIC_USER_CONTEXT_HELPER,
                                          parameterNodes);
             }
         }

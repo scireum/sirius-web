@@ -127,12 +127,12 @@ public class Assembler {
                                                                                                           CompilationContext
                                                                                                                   .autoboxClass(
                                                                                                                           otherType))) {
-            emitByteCode(OpCode.OP_COERCE_LONG_TO_DOUBLE, 0, position);
+            emitByteCode(OpCode.COERCE_LONG_TO_DOUBLE, 0, position);
         } else if (Integer.class.equals(CompilationContext.autoboxClass(type))) {
             if (CompilationContext.isAssignableTo(Double.class, CompilationContext.autoboxClass(otherType))) {
-                emitByteCode(OpCode.OP_COERCE_INT_TO_DOUBLE, 0, position);
+                emitByteCode(OpCode.COERCE_INT_TO_DOUBLE, 0, position);
             } else if (CompilationContext.isAssignableTo(Long.class, CompilationContext.autoboxClass(otherType))) {
-                emitByteCode(OpCode.OP_COERCE_INT_TO_LONG, 0, position);
+                emitByteCode(OpCode.COERCE_INT_TO_LONG, 0, position);
             }
         }
     }
