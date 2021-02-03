@@ -22,7 +22,7 @@ import sirius.kernel.health.HandledException;
 import sirius.pasta.Pasta;
 import sirius.pasta.noodle.InterpreterCall;
 import sirius.pasta.noodle.OpCode;
-import sirius.pasta.noodle.compiler.ir.Assignment;
+import sirius.pasta.noodle.compiler.ir.AssignmentStatement;
 import sirius.pasta.noodle.compiler.ir.BinaryOperation;
 import sirius.pasta.noodle.compiler.ir.BlockNode;
 import sirius.pasta.noodle.compiler.ir.Conjunction;
@@ -168,7 +168,6 @@ public class Parser extends InputProcessor {
         return expression;
     }
 
-    @Nonnull
     private Node assignment() {
         reader.consume(3);
         skipWhitespaces();
@@ -193,12 +192,11 @@ public class Parser extends InputProcessor {
             context.warning(declaration, "This declaration of '%s' shadows another variable.", variableName);
         }
 
-        VariableScoper.Variable variable = context.getVariableScoper()
-                                                  .defineVariable(declaration,
-                                                                  variableName,
-                                                                  variableValue.getType(),
-                                                                  variableValue.getGenericType());
-        return new Assignment(declaration, variable, variableValue);
+        VariableScoper.Variable variable =
+                context.getVariableScoper().defineVariable(declaration, variableName, variableValue.getType());
+        return new AssignmentStatement(declaration, variable, variableValue);
+    }
+
     }
 
     /**
