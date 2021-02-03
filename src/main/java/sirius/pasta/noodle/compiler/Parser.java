@@ -11,6 +11,7 @@ package sirius.pasta.noodle.compiler;
 import parsii.tokenizer.Char;
 import parsii.tokenizer.LookaheadReader;
 import parsii.tokenizer.Position;
+import sirius.kernel.commons.Reflection;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.PartCollection;
@@ -32,7 +33,8 @@ import sirius.pasta.noodle.compiler.ir.MacroCall;
 import sirius.pasta.noodle.compiler.ir.MethodCall;
 import sirius.pasta.noodle.compiler.ir.NativeCast;
 import sirius.pasta.noodle.compiler.ir.Node;
-import sirius.pasta.noodle.compiler.ir.PushStaticField;
+import sirius.pasta.noodle.compiler.ir.PopField;
+import sirius.pasta.noodle.compiler.ir.PushField;
 import sirius.pasta.noodle.compiler.ir.PushTemporary;
 import sirius.pasta.noodle.compiler.ir.RawClassLiteral;
 import sirius.pasta.noodle.compiler.ir.TernaryOperation;
@@ -43,7 +45,6 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -140,7 +141,28 @@ public class Parser extends InputProcessor {
             return assignment();
         }
 
-        return parseExpression();
+        Node expression = parseExpression();
+        skipWhitespaces();
+        if (reader.current().is('=')) {
+            if (expression instanceof PushField) {
+                PushField pushField = (PushField) expression;
+                Field field = pushField.getField();
+                PopField popField = new PopField(reader.consume(), field);
+                popField.setSelfExpression(pushField.getSelfExpression());
+                popField.setValueExpression(parseExpression());
+
+                if (Modifier.isFinal(field.getModifiers())) {
+                    context.error(popField.getPosition(),
+                                  "The field '%s' of '%s' is final and cannot be assigned with a value.",
+                                  field.getName(),
+                                  field.getDeclaringClass().getName());
+                }
+
+                return popField;
+            }
+        }
+
+        return expression;
     }
 
     @Nonnull
@@ -511,6 +533,25 @@ public class Parser extends InputProcessor {
             }
         }
 
+        Field targetField = Reflection.getAllFields(self.getType())
+                                      .stream()
+                                      .filter(field -> !Modifier.isStatic(field.getModifiers()))
+                                      .filter(field -> field.getName().equals(nextIdentifier))
+                                      .findAny()
+                                      .orElse(null);
+        if (targetField != null) {
+            if (!context.isSandboxEnabled() && !Modifier.isPublic(targetField.getModifiers())) {
+                context.error(position,
+                              "The field '%s' of '%s' is not public accessible.",
+                              targetField.getName(),
+                              targetField.getDeclaringClass().getName());
+            }
+
+            PushField pushField = new PushField(position, targetField);
+            pushField.setSelfExpression(self);
+            return pushField;
+        }
+
         context.error(position, "Unexpected identifier. '%s' is neither a method nor a static member.", nextIdentifier);
         context.skipErrors();
         return new Constant(position, null);
@@ -523,27 +564,28 @@ public class Parser extends InputProcessor {
             }
         }
 
-        Field staticField = Arrays.stream(parentClass.getFields())
-                                  .filter(field -> Modifier.isStatic(field.getModifiers()))
-                                  .filter(field -> field.getName().equals(nextIdentifier))
-                                  .findAny()
-                                  .orElse(null);
+        Field staticField = Reflection.getAllFields(parentClass)
+                                      .stream()
+                                      .filter(field -> Modifier.isStatic(field.getModifiers()))
+                                      .filter(field -> field.getName().equals(nextIdentifier))
+                                      .findAny()
+                                      .orElse(null);
         if (staticField != null) {
-            if (Modifier.isFinal(staticField.getModifiers())) {
-                try {
-                    return new Constant(position, staticField.get(null));
-                } catch (IllegalAccessException e) {
-                    context.error(position, "Cannot access constant '%s' of %s", nextIdentifier, parentClass);
-                    return new Constant(position, null);
-                }
-            } else {
-                return new PushStaticField(position, staticField);
+            if (!context.isSandboxEnabled() && !Modifier.isPublic(staticField.getModifiers())) {
+                context.error(position,
+                              "The field '%s' of '%s' is not public accessible.",
+                              staticField.getName(),
+                              staticField.getDeclaringClass().getName());
             }
+
+            return new PushField(position, staticField);
         }
 
-        for (Object enumValue : parentClass.getEnumConstants()) {
-            if (Strings.areEqual(((Enum<?>) enumValue).name(), nextIdentifier)) {
-                return new Constant(position, enumValue);
+        if (parentClass.isEnum()) {
+            for (Object enumValue : parentClass.getEnumConstants()) {
+                if (Strings.areEqual(((Enum<?>) enumValue).name(), nextIdentifier)) {
+                    return new Constant(position, enumValue);
+                }
             }
         }
 

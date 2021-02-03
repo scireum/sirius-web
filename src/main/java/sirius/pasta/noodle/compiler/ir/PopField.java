@@ -9,29 +9,27 @@
 package sirius.pasta.noodle.compiler.ir;
 
 import parsii.tokenizer.Position;
-import sirius.kernel.health.Exceptions;
-import sirius.kernel.health.Log;
 import sirius.pasta.noodle.OpCode;
 import sirius.pasta.noodle.compiler.Assembler;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 
 /**
- * Pushes a Java field onto the stack.
+ * Stores a stack value in a Java field.
  */
-public class PushField extends Node {
+public class PopField extends Node {
 
     private Node selfExpression;
     private final Field field;
+    private Node valueExpression;
 
     /**
      * Creates a new node for the given field.
      *
      * @param position the position in the source code
-     * @param field    the field to push
+     * @param field    the field to push into
      */
-    public PushField(Position position, Field field) {
+    public PopField(Position position, Field field) {
         super(position);
         this.field = field;
     }
@@ -44,22 +42,12 @@ public class PushField extends Node {
         this.selfExpression = selfExpression;
     }
 
-    @Override
-    public boolean isConstant() {
-        return Modifier.isFinal(field.getModifiers()) && Modifier.isStatic(field.getModifiers());
+    public Node getValueExpression() {
+        return valueExpression;
     }
 
-    @Override
-    public Object getConstantValue() {
-        try {
-            return field.get(null);
-        } catch (Exception e) {
-            throw Exceptions.handle()
-                            .to(Log.SYSTEM)
-                            .error(e)
-                            .withSystemErrorMessage("Failed to inline a constant value %s: %s (%s)", field.toString())
-                            .handle();
-        }
+    public void setValueExpression(Node valueExpression) {
+        this.valueExpression = valueExpression;
     }
 
     @Override
@@ -69,15 +57,12 @@ public class PushField extends Node {
 
     @Override
     public void emit(Assembler assembler) {
+        valueExpression.emit(assembler);
         if (selfExpression != null) {
             selfExpression.emit(assembler);
         }
         field.setAccessible(true);
         assembler.emitPushConstant(field, position);
-        assembler.emitByteCode(OpCode.PUSH_FIELD, 0, position);
-    }
-
-    public Field getField() {
-        return field;
+        assembler.emitByteCode(OpCode.POP_FIELD, 0, position);
     }
 }

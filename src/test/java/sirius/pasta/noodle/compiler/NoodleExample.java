@@ -12,10 +12,14 @@ import java.util.function.IntConsumer;
 
 public class NoodleExample {
 
+    private static String privateStaticField = "Hello from the other side";
+    private String privateField = "Hello World";
+
     public static final int AN_INT = 3;
     public static final long A_LONG = 4L;
     public static final Integer AN_INTEGER_OBJECT = Integer.valueOf(12);
     public static final Long A_LONG_OBJECT = Long.valueOf(33);
+    public static final NoodleExample INSTANCE = new NoodleExample();
 
     public static String intToString(int number) {
         return Integer.toString(number);

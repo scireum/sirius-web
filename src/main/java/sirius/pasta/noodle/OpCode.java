@@ -32,6 +32,16 @@ public enum OpCode {
     POP_VARIABLE,
 
     /**
+     * Pushes a field on the stack.
+     */
+    PUSH_FIELD,
+
+    /**
+     * Pops a stack value into a field.
+     */
+    POP_FIELD,
+
+    /**
      * Pops off a value of the stack. If it is false, the instruction pointer is incremented by the given index.
      */
     JMP_FALSE,
@@ -151,11 +161,6 @@ public enum OpCode {
      * Pops a class and a value off the stack and pushes the result of a instanceof b on the stack.
      */
     OP_INSTANCE_OF,
-
-    /**
-     * Pushes a static field on the stack.
-     */
-    OP_PUSH_STATIC_FIELD,
 
     /**
      * Pops an int off the stack and pushes it as long back on the stack.

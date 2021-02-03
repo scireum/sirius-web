@@ -16,7 +16,7 @@ import sirius.pasta.noodle.compiler.Assembler;
  * <p>
  * A raw class literal is an intermediate node. This is used if either a field is accessed like
  * {@code my.Class.FIELD} then first <tt>my.Class</tt> would be parsed as <tt>RawClassLiteral</tt>
- * and then transformed into a {@link PushStaticField}. The same goes for a "real" class literal
+ * and then transformed into a {@link PushField}. The same goes for a "real" class literal
  * like {@code my.Class.class} which is then simply transformed into a {@link Constant} with the
  * class as value.
  */
