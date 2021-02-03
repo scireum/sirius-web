@@ -66,7 +66,11 @@ public class PushField extends Node {
 
     @Override
     public Type getGenericType() {
-        return new TypeTools(selfExpression.getGenericType()).simplify(field.getGenericType());
+        if (selfExpression == null) {
+            return field.getGenericType();
+        } else {
+            return new TypeTools(selfExpression.getGenericType()).simplify(field.getGenericType());
+        }
     }
 
     @Override
