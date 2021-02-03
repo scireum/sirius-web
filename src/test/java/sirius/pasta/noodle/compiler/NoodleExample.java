@@ -8,7 +8,10 @@
 
 package sirius.pasta.noodle.compiler;
 
+import java.util.Arrays;
+import java.util.function.Consumer;
 import java.util.function.IntConsumer;
+import java.util.stream.Stream;
 
 public class NoodleExample {
 
@@ -43,5 +46,26 @@ public class NoodleExample {
 
     public static void invokeConsumer(IntConsumer consumer) {
         consumer.accept(3);
+    }
+
+    public static Stream<Integer> intStream() {
+        return Stream.of(1,2,3);
+    }
+
+    public static <E> Stream<E> stream(Class<E> type) {
+        return Stream.of();
+    }
+
+    public static <E> Stream<E> singletonStream(E value) {
+        return Stream.of(value);
+    }
+
+    public static Consumer<Integer> intConsumer() {
+        return new Consumer<Integer>() {
+            @Override
+            public void accept(Integer integer) {
+                // ignored
+            }
+        };
     }
 }
