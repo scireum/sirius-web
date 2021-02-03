@@ -9,9 +9,12 @@
 package sirius.pasta.noodle.compiler.ir;
 
 import parsii.tokenizer.Position;
+import sirius.pasta.noodle.OpCode;
 import sirius.pasta.noodle.compiler.Assembler;
 import sirius.pasta.noodle.compiler.CompilationContext;
 
+import javax.annotation.Nullable;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,8 +22,9 @@ import java.util.stream.Collectors;
 /**
  * Represents a block of statements.
  */
-public class BlockNode extends Node {
+public class BlockStatement extends Statement {
 
+    private Type returnType;
     private List<Node> statements = new ArrayList<>();
 
     /**
@@ -28,7 +32,7 @@ public class BlockNode extends Node {
      *
      * @param position the position within the source code
      */
-    public BlockNode(Position position) {
+    public BlockStatement(Position position) {
         super(position);
     }
 
@@ -36,15 +40,32 @@ public class BlockNode extends Node {
      * Adds a new statement to the block
      *
      * @param statement the statement to add
+     * @param compilationContext the current compilation context
      */
-    public void addStatement(Node statement) {
+    public void addStatement(Node statement, CompilationContext compilationContext) {
+        if (returnType != null) {
+            // Only report the first statement as dead code and skip all others...
+            if (statements.get(statements.size() - 1) instanceof ReturnStatement) {
+                compilationContext.error(position, "Dead code: Nothing after a return statement will be executed.");
+            }
+
+            return;
+        }
         statements.add(statement);
+        if (statement instanceof ReturnStatement) {
+            returnType = statement.getGenericType();
+        }
     }
 
     @Override
-    public Class<?> getType() {
-        return void.class;
+    public Type getGenericType() {
+        if (returnType == null) {
+            return void.class;
+        } else {
+            return returnType;
+        }
     }
+
 
     @Override
     public Node reduce(CompilationContext compilationContext) {
@@ -60,13 +81,19 @@ public class BlockNode extends Node {
 
     @Override
     public void emit(Assembler assembler) {
-        statements.forEach(statement -> statement.emit(assembler));
+        statements.forEach(statement -> {
+            statement.emit(assembler);
+            if (!(statement instanceof Statement)) {
+                assembler.emitByteCode(OpCode.POP_TOP, 0, statement.position);
+            }
+        });
     }
 
     @Override
     public String toString() {
-        return "BlockNode: {\n"
+        return "BlockStatement: {\n"
                + statements.stream().map(Object::toString).collect(Collectors.joining(";\n"))
                + ";\n}\n";
     }
+
 }

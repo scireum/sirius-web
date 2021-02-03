@@ -42,6 +42,11 @@ public enum OpCode {
     POP_FIELD,
 
     /**
+     * Pops a value off the stack and throws it away.
+     */
+    POP_TOP,
+
+    /**
      * Pops off a value of the stack. If it is false, the instruction pointer is incremented by the given index.
      */
     JMP_FALSE,

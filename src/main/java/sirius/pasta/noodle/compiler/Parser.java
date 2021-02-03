@@ -120,12 +120,15 @@ public class Parser extends InputProcessor {
     protected Node block() {
         canSkipWhitespace = true;
         VariableScoper.Scope scope = context.getVariableScoper().pushScope();
-        BlockNode block = new BlockNode(reader.current());
+        BlockStatement block = new BlockStatement(reader.current());
         while (!reader.current().isEndOfInput() && !reader.current().is('}')) {
-            block.addStatement(statement());
+            block.addStatement(statement(), context);
             skipWhitespaces();
-            if (consumeExpectedCharacter(';')) {
-                context.reEnableErrors();
+            // Only enforce a ";" if we're not a single line script...
+            if (!(reader.current().getLine() == 1 && reader.current().isEndOfInput())) {
+                if (consumeExpectedCharacter(';')) {
+                    context.reEnableErrors();
+                }
             }
             skipWhitespaces();
         }
