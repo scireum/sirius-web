@@ -155,7 +155,9 @@ public class VariableScoper {
             compilationContext.error(position, "%s is a reserved name.", name);
         }
         Variable variable = new Variable(name, maxVariables++, type);
+        if (!name.startsWith("$")) {
             variables.add(variable);
+        }
         return variable;
     }
 
