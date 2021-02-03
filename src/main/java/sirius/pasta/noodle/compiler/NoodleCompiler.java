@@ -112,7 +112,7 @@ public class NoodleCompiler {
 
         if (syntaxTree instanceof IntrinsicCall) {
             IntrinsicCall call = (IntrinsicCall) syntaxTree;
-            if (call.getOpCode() == OpCode.OP_INTRINSIC_NLS_GET && call.getParameter(0).isConstant()) {
+            if (call.getOpCode() == OpCode.INTRINSIC_NLS_GET && call.getParameter(0).isConstant()) {
                 return Optional.of(new NLSCall((String) call.getParameter(0).getConstantValue()));
             }
         }

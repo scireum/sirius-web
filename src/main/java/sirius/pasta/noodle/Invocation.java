@@ -182,37 +182,37 @@ public class Invocation {
                 case OP_INSTANCE_OF:
                     handleInstanceOf();
                     break;
-                case OP_COERCE_INT_TO_LONG:
+                case COERCE_INT_TO_LONG:
                     push(Long.valueOf(pop(int.class)));
                     break;
-                case OP_COERCE_INT_TO_DOUBLE:
+                case COERCE_INT_TO_DOUBLE:
                     push(Double.valueOf(pop(int.class)));
                     break;
-                case OP_COERCE_LONG_TO_DOUBLE:
+                case COERCE_LONG_TO_DOUBLE:
                     push(Double.valueOf(pop(long.class)));
                     break;
-                case OP_INTRINSIC_TRANSFORMABLE_AS:
+                case INTRINSIC_TRANSFORMABLE_AS:
                     handleTransformableAs();
                     break;
-                case OP_INTRINSIC_TRANSFORMABLE_IS:
+                case INTRINSIC_TRANSFORMABLE_IS:
                     handleTransformableIs();
                     break;
-                case OP_INTRINSIC_STRINGS_IS_EMPTY:
+                case INTRINSIC_STRINGS_IS_EMPTY:
                     push(Strings.isEmpty(pop()));
                     break;
-                case OP_INTRINSIC_STRINGS_IS_FILLED:
+                case INTRINSIC_STRINGS_IS_FILLED:
                     push(Strings.isFilled(pop()));
                     break;
-                case OP_INTRINSIC_VALUE_OF:
+                case INTRINSIC_VALUE_OF:
                     push(Value.of(pop()));
                     break;
-                case OP_INTRINSIC_NLS_GET:
+                case INTRINSIC_NLS_GET:
                     push(NLS.get(pop(String.class)));
                     break;
-                case OP_INTRINSIC_USER_CONTEXT_HELPER:
+                case INTRINSIC_USER_CONTEXT_HELPER:
                     push(UserContext.getHelper(pop(Class.class)));
                     break;
-                case OP_INTRINSIC_USER_CONTEXT_CURRENT_USER:
+                case INTRINSIC_USER_CONTEXT_CURRENT_USER:
                     push(UserContext.getCurrentUser());
                     break;
                 default:

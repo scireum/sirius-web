@@ -160,55 +160,55 @@ public enum OpCode {
     /**
      * Pops an int off the stack and pushes it as long back on the stack.
      */
-    OP_COERCE_INT_TO_LONG,
+    COERCE_INT_TO_LONG,
 
     /**
      * Pops an int off the stack and pushes it as double back on the stack.
      */
-    OP_COERCE_INT_TO_DOUBLE,
+    COERCE_INT_TO_DOUBLE,
 
     /**
      * Pops a long off the stack and pushes it as double back on the stack.
      */
-    OP_COERCE_LONG_TO_DOUBLE,
+    COERCE_LONG_TO_DOUBLE,
 
     /**
      * Pops a class and a value off the stack and pushes the result of ((Transformable)b).as(a) on the stack.
      */
-    OP_INTRINSIC_TRANSFORMABLE_AS,
+    INTRINSIC_TRANSFORMABLE_AS,
 
     /**
      * Pops a class and a value off the stack and pushes the result of ((Transformable)b).is(a) on the stack.
      */
-    OP_INTRINSIC_TRANSFORMABLE_IS,
+    INTRINSIC_TRANSFORMABLE_IS,
 
     /**
      * Pops a value off the stack and pushes the result of Strings.isEmpty(a) on the stack.
      */
-    OP_INTRINSIC_STRINGS_IS_EMPTY,
+    INTRINSIC_STRINGS_IS_EMPTY,
 
     /**
      * Pops a value off the stack and pushes the result of Strings.isFilled(a) on the stack.
      */
-    OP_INTRINSIC_STRINGS_IS_FILLED,
+    INTRINSIC_STRINGS_IS_FILLED,
 
     /**
      * Pops a value off the stack and pushes the result of Value.of(a) on the stack.
      */
-    OP_INTRINSIC_VALUE_OF,
+    INTRINSIC_VALUE_OF,
 
     /**
      * Pops a value off the stack and pushes the result of NLS.get(a) on the stack.
      */
-    OP_INTRINSIC_NLS_GET,
+    INTRINSIC_NLS_GET,
 
     /**
      * Pops a value off the stack and pushes the result of UserContext.getHelper(a) on the stack.
      */
-    OP_INTRINSIC_USER_CONTEXT_HELPER,
+    INTRINSIC_USER_CONTEXT_HELPER,
 
     /**
      * Pushes the result of UserContext.getCurrentUser() on the stack.
      */
-    OP_INTRINSIC_USER_CONTEXT_CURRENT_USER
+    INTRINSIC_USER_CONTEXT_CURRENT_USER
 }

@@ -24,7 +24,7 @@ import java.util.List;
  * Returns the current user.
  * <p>
  * This is actually a shortcut for {@code UserContext.getCurrentUser()}. However, this will be translated into
- * {@link sirius.pasta.noodle.OpCode#OP_INTRINSIC_USER_CONTEXT_CURRENT_USER} and therefore be quite efficient anyway.
+ * {@link sirius.pasta.noodle.OpCode#INTRINSIC_USER_CONTEXT_CURRENT_USER} and therefore be quite efficient anyway.
  */
 @Register
 @PublicAPI
