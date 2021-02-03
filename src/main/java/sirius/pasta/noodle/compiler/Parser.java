@@ -29,6 +29,7 @@ import sirius.pasta.noodle.compiler.ir.Conjunction;
 import sirius.pasta.noodle.compiler.ir.Constant;
 import sirius.pasta.noodle.compiler.ir.Disjunction;
 import sirius.pasta.noodle.compiler.ir.ForStatement;
+import sirius.pasta.noodle.compiler.ir.IfStatement;
 import sirius.pasta.noodle.compiler.ir.InstanceOfCheck;
 import sirius.pasta.noodle.compiler.ir.MacroCall;
 import sirius.pasta.noodle.compiler.ir.MethodCall;
@@ -69,6 +70,15 @@ public class Parser extends InputProcessor {
      */
     public static final String KEYWORD_RETURN = "return";
 
+    /**
+     * Represents the keyword used to represent an if.
+     */
+    public static final String KEYWORD_IF = "if";
+
+    /**
+     * Represents the keyword used to represent an else branch.
+     */
+    public static final String KEYWORD_ELSE = "else";
 
     /**
      * Represents the keyword used to start a for loop.
@@ -159,6 +169,9 @@ public class Parser extends InputProcessor {
         if (isAtKeyword(KEYWORD_RETURN)) {
             return returnStatement();
         }
+        if (isAtKeyword(KEYWORD_IF)) {
+            return ifStatement();
+        }
         if (isAtKeyword(KEYWORD_FOR)) {
             return forStatement();
         }
@@ -231,6 +244,32 @@ public class Parser extends InputProcessor {
         return returnStatement;
     }
 
+    private Node ifStatement() {
+        IfStatement ifStatement = new IfStatement(reader.current());
+        reader.consume(2);
+        skipWhitespaces();
+
+        consumeExpectedCharacter('(');
+        ifStatement.setCondition(parseExpression());
+        if (!CompilationContext.isAssignableTo(ifStatement.getCondition().getType(), boolean.class)) {
+            context.error(ifStatement.getCondition().getPosition(), "Expected a boolean expression as condition.");
+        }
+        consumeExpectedCharacter(')');
+        skipWhitespaces();
+        consumeExpectedCharacter('{');
+        ifStatement.setTrueBlock(block());
+        consumeExpectedCharacter('}');
+        skipWhitespaces();
+        if (isAtKeyword(KEYWORD_ELSE)) {
+            reader.consume(4);
+            skipWhitespaces();
+            consumeExpectedCharacter('{');
+            ifStatement.setFalseBlock(block());
+            consumeExpectedCharacter('}');
+        }
+
+        return ifStatement;
+    }
 
     private Node forStatement() {
         ForStatement forStatement = new ForStatement(reader.current());
