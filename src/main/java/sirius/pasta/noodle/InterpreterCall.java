@@ -78,29 +78,31 @@ public class InterpreterCall implements Callable {
         listing.append("====================\n");
         int lastLine = -1;
         int lastCol = -1;
+        int opCodesForLine = 0;
         for (int i = 0; i < opcodes.size(); i++) {
             int instruction = opcodes.get(i);
             Position position = ipToPositionTable.get(i);
-            if (position.getLine() != lastLine) {
+            if (position.getLine() != lastLine || opCodesForLine-- <= 0) {
                 listing.append(Strings.apply("Line %3s: ", position.getLine()));
                 listing.append(sourceCodeInfo.fetchLine(position.getLine()));
                 listing.append("\n");
                 lastLine = position.getLine();
                 lastCol = -1;
+                opCodesForLine = 2;
             }
 
             OpCode opCode = OpCode.values()[(instruction & 0x00FF0000) >> 16];
             int index = instruction & 0x0000FFFF;
             if (lastCol != position.getPos()) {
                 listing.append("          ");
-                for (int p = 1; p < position.getPos() - 1; p++) {
+                for (int p = 1; p < position.getPos(); p++) {
                     listing.append(" ");
                 }
                 listing.append("^\n");
                 lastCol = position.getPos();
             }
             listing.append("          ");
-            for (int p = 1; p < position.getPos() - 1; p++) {
+            for (int p = 1; p < position.getPos(); p++) {
                 listing.append(" ");
             }
             listing.append(i);
