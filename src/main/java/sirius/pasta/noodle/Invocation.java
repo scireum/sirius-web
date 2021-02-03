@@ -114,7 +114,7 @@ public class Invocation {
                     break;
                 case POP_VARIABLE:
                     environment.writeVariable(index, pop());
-                    return -1;
+                    break;
                 case JMP_FALSE:
                     if (Boolean.FALSE.equals(pop())) {
                         instructionPointer += index;
