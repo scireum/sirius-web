@@ -28,6 +28,7 @@ import sirius.pasta.noodle.compiler.ir.BlockNode;
 import sirius.pasta.noodle.compiler.ir.Conjunction;
 import sirius.pasta.noodle.compiler.ir.Constant;
 import sirius.pasta.noodle.compiler.ir.Disjunction;
+import sirius.pasta.noodle.compiler.ir.ForStatement;
 import sirius.pasta.noodle.compiler.ir.InstanceOfCheck;
 import sirius.pasta.noodle.compiler.ir.MacroCall;
 import sirius.pasta.noodle.compiler.ir.MethodCall;
@@ -67,6 +68,12 @@ public class Parser extends InputProcessor {
      * Represents the keyword used to return a value.
      */
     public static final String KEYWORD_RETURN = "return";
+
+
+    /**
+     * Represents the keyword used to start a for loop.
+     */
+    public static final String KEYWORD_FOR = "for";
 
     /**
      * Represents the keyword used to declare a class literal (used as suffix as in Java).
@@ -152,6 +159,9 @@ public class Parser extends InputProcessor {
         if (isAtKeyword(KEYWORD_RETURN)) {
             return returnStatement();
         }
+        if (isAtKeyword(KEYWORD_FOR)) {
+            return forStatement();
+        }
 
         Node expression = parseExpression();
         skipWhitespaces();
@@ -221,6 +231,41 @@ public class Parser extends InputProcessor {
         return returnStatement;
     }
 
+
+    private Node forStatement() {
+        ForStatement forStatement = new ForStatement(reader.current());
+        reader.consume(3);
+        skipWhitespaces();
+
+        consumeExpectedCharacter('(');
+        Position variablePosition = reader.current();
+        String typeName = readIdentifier();
+        Class<?> variableType = context.resolveClass(variablePosition, typeName);
+        skipWhitespaces();
+        String variableName = readIdentifier();
+        skipWhitespaces();
+        consumeExpectedCharacter(':');
+        skipWhitespaces();
+        forStatement.setCondition(parseExpression());
+        if (!CompilationContext.isAssignableTo(forStatement.getCondition().getType(), Iterable.class)) {
+            context.error(forStatement.getCondition().getPosition(), "Expected an Iterable expression as condition.");
+        }
+        consumeExpectedCharacter(')');
+
+        skipWhitespaces();
+        consumeExpectedCharacter('{');
+        VariableScoper.Scope scope = context.getVariableScoper().pushScope();
+        forStatement.setIteratorVariable(context.getVariableScoper()
+                                                .defineVariable(forStatement.getPosition(),
+                                                                "$iterator",
+                                                                Iterator.class));
+        forStatement.setLoopVariable(context.getVariableScoper()
+                                            .defineVariable(forStatement.getPosition(), variableName, variableType));
+        forStatement.setLoopBlock(block());
+        scope.pop();
+        consumeExpectedCharacter('}');
+
+        return forStatement;
     }
 
     /**
