@@ -822,6 +822,7 @@ public class WebContext implements SubContext {
     private boolean isLegacyCookieValid(String sessionPin) {
         return sessionPinLegacyCookieNames.stream()
                                           .map(this::getCookieValue)
+                                          .filter(Objects::nonNull)
                                           .map(this::calculateEffectiveSessionPin)
                                           .anyMatch(effectiveSessionPin -> Strings.areEqual(effectiveSessionPin,
                                                                                             sessionPin));
