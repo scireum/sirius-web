@@ -18,9 +18,6 @@ import java.util.function.Consumer;
 
 /**
  * Provides a basic implementation which caches all computed infos for up to ten seconds.
- * <p>
- * Be aware, that subclasses have to specify <tt>LoadInfoProvider</tt> in their <tt>Register</tt> annotation:
- * {@code @Register(classes = LoadInfoProvider.class)}.
  */
 public abstract class CachingLoadInfoProvider implements LoadInfoProvider {
 
