@@ -308,6 +308,18 @@ public class WebContext implements SubContext {
     private static boolean sessionPinning;
 
     /**
+     * Name of the session pin cookie used to validate a corresponding client session cookie
+     */
+    @ConfigValue("http.sessionCookie.pinName")
+    private static String sessionPinCookieName;
+
+    /**
+     * Name of previously used session pin cookie names that are still read for validation
+     */
+    @ConfigValue("http.sessionCookie.pinLegacyNames")
+    private static List<String> sessionPinLegacyCookieNames;
+
+    /**
      * The ttl of the client session cookie. If this is 0, it will be a "session cookie" and therefore
      * be deleted when the browser is closed
      */
@@ -782,10 +794,10 @@ public class WebContext implements SubContext {
     private void checkAndEnforceSessionPinning() {
         String givenSessionPin = getCookieValue(getSessionPinCookieName());
         String sessionPin = session.get(SESSION_PIN_KEY);
-        String effectiveSessionPin =
-                Strings.isEmpty(givenSessionPin) ? "" : Hasher.md5().hash(givenSessionPin).toHexString();
+        String effectiveSessionPin = calculateEffectiveSessionPin(givenSessionPin);
 
-        if (Strings.isFilled(sessionPin) && !Strings.areEqual(sessionPin, effectiveSessionPin)) {
+        if (Strings.isFilled(sessionPin) && !Strings.areEqual(sessionPin, effectiveSessionPin) && !isLegacyCookieValid(
+                sessionPin)) {
             SESSION_CHECK.SEVERE(Strings.apply("Session pin mismatch: %s (%s) vs. %s%n%s%n%s%nIP: %s",
                                                givenSessionPin,
                                                effectiveSessionPin,
@@ -807,8 +819,21 @@ public class WebContext implements SubContext {
         }
     }
 
+    private boolean isLegacyCookieValid(String sessionPin) {
+        return sessionPinLegacyCookieNames.stream()
+                                          .map(this::getCookieValue)
+                                          .filter(Objects::nonNull)
+                                          .map(this::calculateEffectiveSessionPin)
+                                          .anyMatch(effectiveSessionPin -> Strings.areEqual(effectiveSessionPin,
+                                                                                            sessionPin));
+    }
+
+    private String calculateEffectiveSessionPin(String givenSessionPin) {
+        return Strings.isEmpty(givenSessionPin) ? "" : Hasher.md5().hash(givenSessionPin).toHexString();
+    }
+
     private String getSessionPinCookieName() {
-        return sessionCookieName + "_PIN";
+        return sessionPinCookieName;
     }
 
     /**
