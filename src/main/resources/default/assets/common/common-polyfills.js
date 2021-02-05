@@ -73,3 +73,11 @@ if (!String.prototype.endsWith) {
         return lastIndex !== -1 && lastIndex === position;
     };
 }
+
+/**
+ * Polyfill for the NodeList.forEach function
+ * see https://developer.mozilla.org/en-US/docs/Web/API/NodeList/forEach
+ */
+if (window.NodeList && !NodeList.prototype.forEach) {
+    NodeList.prototype.forEach = Array.prototype.forEach;
+}
