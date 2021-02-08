@@ -38,9 +38,9 @@ public class CompilationContext {
      * <p>
      * The compilers itself are quite optimistic and try to recover from errors to provide as much information
      * as possible. However, as sometimes one error leads to another, we use this limit here to determine when
-     * to abort.
+     * to abort (reject any further errors).
      */
-    private static final int MAX_ERRORS = 50;
+    private static final int MAX_ERRORS = 250;
 
     private final SourceCodeInfo sourceCodeInfo;
 
@@ -115,11 +115,8 @@ public class CompilationContext {
         if (skipErrors) {
             return;
         }
-        errors.add(ParseError.error(pos, Strings.apply(message, params)));
-        if (errors.size() > MAX_ERRORS) {
-            throw Exceptions.createHandled()
-                            .withSystemErrorMessage("More than %s errors occurred. Aborting.", MAX_ERRORS)
-                            .handle();
+        if (errors.size() < MAX_ERRORS) {
+            errors.add(ParseError.error(pos, Strings.apply(message, params)));
         }
     }
 
@@ -151,11 +148,8 @@ public class CompilationContext {
             return;
         }
 
-        errors.add(ParseError.warning(pos, Strings.apply(message, params)));
-        if (errors.size() > MAX_ERRORS) {
-            throw Exceptions.createHandled()
-                            .withSystemErrorMessage("More than %s errors occurred. Aborting.", MAX_ERRORS)
-                            .handle();
+        if (errors.size() < MAX_ERRORS) {
+            errors.add(ParseError.warning(pos, Strings.apply(message, params)));
         }
     }
 
@@ -290,7 +284,9 @@ public class CompilationContext {
         if (aliases == null) {
             Map<String, Class<?>> aliasMap = new HashMap<>();
             aliasProviders.forEach(p -> p.collectAliases((name, type) -> addAlias(aliasMap, name, type)));
-            aliasProviders.forEach(p -> p.collectOptionalAliases((name, type) -> addOptionalAlias(aliasMap, name, type)));
+            aliasProviders.forEach(p -> p.collectOptionalAliases((name, type) -> addOptionalAlias(aliasMap,
+                                                                                                  name,
+                                                                                                  type)));
             aliases = aliasMap;
         }
 
