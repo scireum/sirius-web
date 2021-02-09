@@ -654,7 +654,7 @@ public class Parser extends InputProcessor {
                                       .findAny()
                                       .orElse(null);
         if (targetField != null) {
-            if (!context.isSandboxEnabled() && !Modifier.isPublic(targetField.getModifiers())) {
+            if (context.isSandboxEnabled() && !Modifier.isPublic(targetField.getModifiers())) {
                 context.error(position,
                               "The field '%s' of '%s' is not public accessible.",
                               targetField.getName(),
@@ -685,7 +685,7 @@ public class Parser extends InputProcessor {
                                       .findAny()
                                       .orElse(null);
         if (staticField != null) {
-            if (!context.isSandboxEnabled() && !Modifier.isPublic(staticField.getModifiers())) {
+            if (context.isSandboxEnabled() && !Modifier.isPublic(staticField.getModifiers())) {
                 context.error(position,
                               "The field '%s' of '%s' is not public accessible.",
                               staticField.getName(),
