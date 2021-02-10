@@ -48,4 +48,20 @@ class CompilerSpec extends BaseSpecification {
         compile("NoodleExample.INSTANCE.privateField = 'Hello'; return NoodleExample.INSTANCE.privateField;").call(new SimpleEnvironment()) == "Hello"
     }
 
+    def "conditions work as expected"() {
+        expect:
+        compile(input).call(new SimpleEnvironment()) == output
+        where:
+        input            | output
+        "false"          | false
+        "true"           | true
+        "false && true"  | false
+        "true && true"   | true
+        "false || false" | false
+        "false || true"  | true
+        "null && true"   | false
+        "null && false"  | false
+        "null || true"   | true
+        "null || false"  | false
+    }
 }
