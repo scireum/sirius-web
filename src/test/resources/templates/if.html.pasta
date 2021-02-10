@@ -1,0 +1,8 @@
+<i:arg type="String" name="condition"/>
+
+<i:if test="@condition == 'a'">
+    a
+    <i:else>
+        b
+    </i:else>
+</i:if>

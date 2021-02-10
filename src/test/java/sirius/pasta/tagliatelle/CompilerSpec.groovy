@@ -194,6 +194,15 @@ class CompilerSpec extends BaseSpecification {
         test.basicallyEqual(result, expectedResult)
     }
 
+    def "if works as expected"() {
+        when:
+        String a = tagliatelle.resolve("/templates/if.html.pasta").get().renderToString("a")
+        String b = tagliatelle.resolve("/templates/if.html.pasta").get().renderToString("b")
+        then:
+        test.basicallyEqual(a, "a")
+        test.basicallyEqual(b, "b")
+    }
+
     def "switch works as expected"() {
         when:
         String a = tagliatelle.resolve("/templates/switch.html.pasta").get().renderToString("a")
