@@ -124,9 +124,7 @@ public class Invocation {
                     environment.writeVariable(index, pop());
                     break;
                 case JMP_FALSE:
-                    if (Boolean.FALSE.equals(pop())) {
-                        instructionPointer += index;
-                    }
+                    handleJumpFalse(index);
                     break;
                 case JMP:
                     instructionPointer += index;
@@ -263,6 +261,13 @@ public class Invocation {
             throw createVmError(Strings.apply("Cannot store into the field %s of %s",
                                               field.getName(),
                                               field.getDeclaringClass().getName()));
+        }
+    }
+
+    private void handleJumpFalse(int index) {
+        Object value = pop();
+        if (value == null || Boolean.FALSE.equals(value)) {
+            instructionPointer += index;
         }
     }
 
