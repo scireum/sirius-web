@@ -145,8 +145,8 @@ public class Generator {
      * Specifies which {@link ContentHandler} is used to generate the content.
      * <p>
      * Most of the time, the content handler is auto-detected using the file name of the template. An example
-     * would be <b>.pdf.vm</b> which will force the {@link TagliatellePDFContentHandler}
-     * to generate a PDF file using the template. However, by using {@code generator.handler("pdf-vm")}
+     * would be <b>.pdf.pasta</b> which will force the {@link sirius.web.templates.pdf.TagliatellePDFContentHandler}
+     * to generate a PDF file using the template. However, by using {@code generator.handler("pdf-pasta")}
      * it can be ensured, that this handler is picked, without relying on the file name.
      *
      * @param handlerType the name of the handler type to use. Constants can be found by looking at the
@@ -294,8 +294,8 @@ public class Generator {
      * @return <tt>true</tt> if the given template ends with the given extension, <tt>false</tt> otherwise.
      * In contrast to {@link #isTemplateFileExtension(String)} this will not consider the first "." to be the
      * file extension but rather really check if the template name ends with the given extension. Therefore
-     * for a template named <tt>test.js.vm</tt> this will return <tt>true</tt> for
-     * {@code isTemplateEndsWith(".vm")} but <tt>false</tt> for {@code isTemplateFileExtension("vm")}
+     * for a template named <tt>test.js.pasta</tt> this will return <tt>true</tt> for
+     * {@code isTemplateEndsWith(".pasta")} but <tt>false</tt> for {@code isTemplateFileExtension("pasta")}
      */
     public boolean isTemplateEndsWith(@Nonnull String extension) {
         return Strings.isFilled(templateName) && templateName.toLowerCase().endsWith(extension);

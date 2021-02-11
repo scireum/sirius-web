@@ -6,7 +6,7 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.web.templates;
+package sirius.web.templates.pdf;
 
 import com.google.zxing.Writer;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
