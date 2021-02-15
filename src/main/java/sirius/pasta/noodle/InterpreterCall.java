@@ -21,6 +21,8 @@ import java.util.List;
  */
 public class InterpreterCall implements Callable {
 
+    private static final String SEPARATOR = "====================\n";
+
     protected final List<Position> ipToPositionTable;
     protected final Class<?> returnType;
     protected final List<Integer> opcodes;
@@ -75,7 +77,7 @@ public class InterpreterCall implements Callable {
     public String disassemble() {
         StringBuilder listing = new StringBuilder();
         listing.append("OpCodes\n");
-        listing.append("====================\n");
+        listing.append(SEPARATOR);
         int lastLine = -1;
         int lastCol = -1;
         for (int i = 0; i < opcodes.size(); i++) {
@@ -110,7 +112,7 @@ public class InterpreterCall implements Callable {
         if (constants != null) {
             listing.append("\n\n");
             listing.append("Constants\n");
-            listing.append("====================\n");
+            listing.append(SEPARATOR);
             int index = 0;
             for (Object object : constants) {
                 listing.append(Strings.apply("%3s: ", index++));
@@ -121,7 +123,7 @@ public class InterpreterCall implements Callable {
 
         listing.append("\n\n");
         listing.append("Shared Constants\n");
-        listing.append("====================\n");
+        listing.append(SEPARATOR);
         int index = 0;
         for (Object object : Invocation.SHARED_CONSTANT_POOL.getSharedConstants()) {
             listing.append(Strings.apply("%3s: ", index++));
