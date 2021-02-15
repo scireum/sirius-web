@@ -340,6 +340,10 @@ public class ExcelExport {
             cell.setCellValue(((BigDecimal) obj).doubleValue());
             return;
         }
+        if (obj instanceof BigInteger) {
+            cell.setCellValue(((BigInteger) obj).doubleValue());
+            return;
+        }
         if (obj instanceof Amount && ((Amount) obj).isFilled()) {
             cell.setCellValue(((Amount) obj).getAmount().doubleValue());
             return;
