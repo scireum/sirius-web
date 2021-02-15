@@ -100,12 +100,11 @@ public class ImageReplacedElementFactory extends ITextReplacedElementFactory {
     }
 
     private PdfReplaceHandler findHandler(String protocol) {
-        for (PdfReplaceHandler handler : handlers) {
-            if (handler.accepts(protocol)) {
-                return handler;
-            }
-        }
-
-        throw new UnsupportedOperationException(Strings.apply("No handler for protocol '%s' could be found", protocol));
+        return handlers.stream()
+                       .filter(handler -> handler.accepts(protocol))
+                       .findFirst()
+                       .orElseThrow(() -> new UnsupportedOperationException(Strings.apply(
+                               "No handler for protocol '%s' could be found",
+                               protocol)));
     }
 }

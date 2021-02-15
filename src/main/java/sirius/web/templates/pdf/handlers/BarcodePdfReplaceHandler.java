@@ -23,7 +23,7 @@ import java.awt.Color;
 import java.awt.Image;
 
 /**
- * Responsible for resolving barcode:// URIs.
+ * Resolves barcode:// URIs to barcode images.
  * <p>
  * The format of the URI needs to match barcode://type/content. As type <b>code128</b>, <b>ean</b>,
  * <b>interleaved2of5</b> and <b>interleaved2of5checksummed</b> are supported. The content is the number that should be
@@ -106,7 +106,7 @@ public class BarcodePdfReplaceHandler extends PdfReplaceHandler {
     }
 
     /**
-     * Pad the code if necessary.
+     * Pads the code if necessary.
      * <p>
      * Unfortunately padding will not be added automatically when using <b>interleaved2of5</b> or
      * <b>interleaved2of5checksummed</b>. Thus we manually prepend a zero if the code length is uneven.

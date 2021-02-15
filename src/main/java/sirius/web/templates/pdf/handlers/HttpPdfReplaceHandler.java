@@ -15,7 +15,7 @@ import sirius.kernel.di.std.Register;
 import javax.annotation.Nullable;
 
 /**
- * Responsible for resolving http:// and https:// URIs and resizing the image while maintaining the image ratio.
+ * Resolves http:// and https:// URIs to resized images while maintaining the image ratios.
  */
 @Register
 public class HttpPdfReplaceHandler extends PdfReplaceHandler {

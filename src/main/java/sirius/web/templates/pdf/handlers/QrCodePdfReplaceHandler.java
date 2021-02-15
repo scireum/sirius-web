@@ -22,7 +22,7 @@ import javax.annotation.Nullable;
 import java.awt.Color;
 
 /**
- * Responsible for resolving qr:// URIs.
+ * Resolves qr:// URIs to QR code images.
  * <p>
  * The format of the URI needs to match qr://content where content is the data that should be represented by the QR
  * code.

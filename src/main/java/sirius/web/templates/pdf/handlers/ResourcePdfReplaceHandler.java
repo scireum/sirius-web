@@ -19,8 +19,8 @@ import sirius.web.resources.Resources;
 import javax.annotation.Nullable;
 
 /**
- * Responsible for resolving resource:// URIs using {@link Resources} and resizing the image while maintaining the image
- * ratio.
+ * Resolves resource:// URIs that are referencing {@link Resources} to resized images while maintaining the image
+ * ratios.
  */
 @Register
 public class ResourcePdfReplaceHandler extends PdfReplaceHandler {
