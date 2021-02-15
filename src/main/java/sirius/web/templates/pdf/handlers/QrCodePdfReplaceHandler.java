@@ -17,6 +17,7 @@ import org.xhtmlrenderer.extend.FSImage;
 import org.xhtmlrenderer.extend.UserAgentCallback;
 import org.xhtmlrenderer.pdf.ITextFSImage;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.di.std.Register;
 
 import javax.annotation.Nullable;
 import java.awt.Color;
@@ -27,6 +28,7 @@ import java.awt.Color;
  * The format of the URI needs to match qr://content where content is the data that should be represented by the QR
  * code.
  */
+@Register
 public class QrCodePdfReplaceHandler extends PdfReplaceHandler {
 
     @Override

@@ -16,6 +16,7 @@ import org.xhtmlrenderer.extend.FSImage;
 import org.xhtmlrenderer.extend.UserAgentCallback;
 import org.xhtmlrenderer.pdf.ITextFSImage;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.di.std.Register;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -29,6 +30,7 @@ import java.awt.Image;
  * <b>interleaved2of5</b> and <b>interleaved2of5checksummed</b> are supported. The content is the number that should be
  * represented by the barcode.
  */
+@Register
 public class BarcodePdfReplaceHandler extends PdfReplaceHandler {
 
     private static final String BARCODE_TYPE_CODE128 = "code128";
