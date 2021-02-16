@@ -6,13 +6,16 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.web.templates;
+package sirius.web.templates.pdf;
 
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.pasta.tagliatelle.Tagliatelle;
 import sirius.pasta.tagliatelle.Template;
+import sirius.web.templates.ContentHandler;
+import sirius.web.templates.Generator;
+import sirius.web.templates.TagliatelleContentHandler;
 
 import java.io.OutputStream;
 
