@@ -11,7 +11,6 @@ package sirius.pasta.noodle;
 import parsii.tokenizer.Position;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.transformers.Transformable;
 import sirius.kernel.health.Exceptions;
@@ -142,9 +141,7 @@ public class Invocation {
                     pop();
                     break;
                 case JMP_FALSE:
-                    if (Boolean.FALSE.equals(pop())) {
-                        instructionPointer += index;
-                    }
+                    handleJumpFalse(index);
                     break;
                 case JMP:
                     instructionPointer += index;
@@ -298,8 +295,7 @@ public class Invocation {
         int initialIP = instructionPointer + 1;
         int contextOffset = pop(int.class);
         Class<?> samInterface = pop(Class.class);
-        Environment lambdaEnvironment =
-                LambdaEnvironment.create(environment, contextOffset, numLocals);
+        Environment lambdaEnvironment = LambdaEnvironment.create(environment, contextOffset, numLocals);
         push(Proxy.newProxyInstance(getClass().getClassLoader(),
                                     new Class[]{samInterface},
                                     new LambdaHandler(initialIP,
@@ -307,6 +303,13 @@ public class Invocation {
                                                       numLocals,
                                                       compiledMethod,
                                                       lambdaEnvironment)));
+    }
+
+    private void handleJumpFalse(int index) {
+        Object value = pop();
+        if (value == null || Boolean.FALSE.equals(value)) {
+            instructionPointer += index;
+        }
     }
 
     private void handleInstanceOf() {
