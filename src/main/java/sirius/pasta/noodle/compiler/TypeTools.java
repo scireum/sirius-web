@@ -20,7 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * A helper which tries to resolve all type variables of a class (and method) into concrete types.
+ * Provides a helper which tries to resolve all type variables of a class (and method) into concrete types.
  */
 public class TypeTools {
 
@@ -29,7 +29,7 @@ public class TypeTools {
     /**
      * Computes a type table for the given class.
      *
-     * @param rootType the type to derives parameterization from
+     * @param rootType the type to derive parameterization from
      */
     public TypeTools(Type rootType) {
         if (!(rootType instanceof ParameterizedType)) {
@@ -191,7 +191,7 @@ public class TypeTools {
      * Tries to reduces the given type to a <tt>Class</tt>.
      *
      * @param type     the type to reduce
-     * @param fallback used if the type cannot be reduced (e.g. for an unresolved type variable.
+     * @param fallback used if the type cannot be reduced, e.g. for an unresolved type variable.
      * @return the reduced class or the fallback if the type cannot be reduced
      */
     public static Class<?> simplifyToClass(Type type, Class<?> fallback) {

@@ -158,7 +158,7 @@ public class MethodCall extends Call {
      * @return <tt>true</tt> if the method was bound successfully, <tt>false</tt> otherwise
      */
     @SuppressWarnings("ArrayEquality")
-    @Explain("This is a re-used constant so an idendity check works fine here")
+    @Explain("This is a re-used constant so an identity check works fine here")
     public boolean tryBindToMethod(CompilationContext compilationContext) {
         if (parameterNodes == NO_ARGS) {
             try {
