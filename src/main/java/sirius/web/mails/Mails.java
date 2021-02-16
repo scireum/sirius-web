@@ -55,7 +55,7 @@ public class Mails implements MetricProvider {
     @Parts(MailLog.class)
     private Collection<MailLog> logs;
 
-    private Average mailsOut = new Average();
+    private final Average mailsOut = new Average();
 
     @Override
     public void gather(MetricsCollector collector) {

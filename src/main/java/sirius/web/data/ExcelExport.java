@@ -44,6 +44,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -66,11 +67,11 @@ public class ExcelExport {
     private Sheet currentSheet;
     private int rows = 0;
     private int maxCols = 0;
-    private CellStyle dateStyle;
-    private CellStyle numeric;
-    private CellStyle borderStyle;
-    private CellStyle normalStyle;
-    private Set<Short> pictureCols = new HashSet<>();
+    private final CellStyle dateStyle;
+    private final CellStyle numeric;
+    private final CellStyle borderStyle;
+    private final CellStyle normalStyle;
+    private final Set<Short> pictureCols = new HashSet<>();
     private Drawing<?> drawing;
     private String maxRowsReachedMessage;
     private Consumer<String> maxRowsReachedHandler;
@@ -182,7 +183,7 @@ public class ExcelExport {
 
     protected ExcelExport(Workbook workbook, boolean createDefaultSheet) {
         this.workbook = workbook;
-        // Setup styles
+
         dateStyle = workbook.createCellStyle();
         dateStyle.setDataFormat(workbook.createDataFormat().getFormat("dd.mm.yyyy"));
         numeric = workbook.createCellStyle();
@@ -338,6 +339,10 @@ public class ExcelExport {
         }
         if (obj instanceof BigDecimal) {
             cell.setCellValue(((BigDecimal) obj).doubleValue());
+            return;
+        }
+        if (obj instanceof BigInteger) {
+            cell.setCellValue(((BigInteger) obj).doubleValue());
             return;
         }
         if (obj instanceof Amount && ((Amount) obj).isFilled()) {

@@ -183,23 +183,21 @@ public class Parser extends InputProcessor {
 
         Node expression = parseExpression();
         skipWhitespaces();
-        if (reader.current().is('=')) {
-            if (expression instanceof PushField) {
-                PushField pushField = (PushField) expression;
-                Field field = pushField.getField();
-                PopField popField = new PopField(reader.consume(), field);
-                popField.setSelfExpression(pushField.getSelfExpression());
-                popField.setValueExpression(parseExpression());
+        if (reader.current().is('=') && (expression instanceof PushField)) {
+            PushField pushField = (PushField) expression;
+            Field field = pushField.getField();
+            PopField popField = new PopField(reader.consume(), field);
+            popField.setSelfExpression(pushField.getSelfExpression());
+            popField.setValueExpression(parseExpression());
 
-                if (Modifier.isFinal(field.getModifiers())) {
-                    context.error(popField.getPosition(),
-                                  "The field '%s' of '%s' is final and cannot be assigned with a value.",
-                                  field.getName(),
-                                  field.getDeclaringClass().getName());
-                }
-
-                return popField;
+            if (Modifier.isFinal(field.getModifiers())) {
+                context.error(popField.getPosition(),
+                              "The field '%s' of '%s' is final and cannot be assigned with a value.",
+                              field.getName(),
+                              field.getDeclaringClass().getName());
             }
+
+            return popField;
         }
 
         return expression;

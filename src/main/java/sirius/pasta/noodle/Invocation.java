@@ -483,13 +483,10 @@ public class Invocation {
     private void invokeMethod(int numberOfArguments, boolean isStatic, MethodHandle methodHandle) throws Throwable {
         if (methodHandle.isVarargsCollector() || numberOfArguments > 3) {
             invokeMethodWithArguments(numberOfArguments, isStatic, methodHandle);
-            return;
-        }
-
-        if (isStatic) {
-            handleStaticMethod(numberOfArguments, methodHandle);
+        } else if (isStatic) {
+            invokeStaticMethod(numberOfArguments, methodHandle);
         } else {
-            handeDynamicMethod(numberOfArguments, methodHandle);
+            invokeMethod(numberOfArguments, methodHandle);
         }
     }
 
@@ -499,7 +496,7 @@ public class Invocation {
         push(methodHandle.invokeWithArguments(args));
     }
 
-    private void handleStaticMethod(int numberOfArguments, MethodHandle methodHandle) throws Throwable {
+    private void invokeStaticMethod(int numberOfArguments, MethodHandle methodHandle) throws Throwable {
         if (numberOfArguments == 0) {
             push(methodHandle.invoke());
         } else if (numberOfArguments == 1) {
@@ -516,7 +513,7 @@ public class Invocation {
         }
     }
 
-    private void handeDynamicMethod(int numberOfArguments, MethodHandle methodHandle) throws Throwable {
+    private void invokeMethod(int numberOfArguments, MethodHandle methodHandle) throws Throwable {
         Object self = pop();
         if (self == null) {
             while (numberOfArguments-- > 0) {

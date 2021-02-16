@@ -19,7 +19,6 @@ import sirius.kernel.commons.Value;
 import sirius.kernel.commons.Values;
 import sirius.kernel.di.Injector;
 import sirius.kernel.di.std.Register;
-import sirius.kernel.info.Product;
 import sirius.kernel.nls.Formatter;
 import sirius.kernel.nls.NLS;
 import sirius.web.controller.Page;
