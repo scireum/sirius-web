@@ -13,6 +13,8 @@ import sirius.pasta.noodle.OpCode;
 import sirius.pasta.noodle.compiler.Assembler;
 import sirius.pasta.noodle.compiler.CompilationContext;
 
+import java.lang.reflect.Type;
+
 /**
  * Represents a binary operation.
  * <p>
@@ -63,7 +65,7 @@ public class BinaryOperation extends Node {
     }
 
     @Override
-    public Class<?> getType() {
+    public Type getGenericType() {
         return returnType;
     }
 

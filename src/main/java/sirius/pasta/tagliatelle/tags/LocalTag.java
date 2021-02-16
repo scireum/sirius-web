@@ -68,7 +68,6 @@ public class LocalTag extends TagHandler {
             VariableScoper.Variable variable = getCompilationContext().getVariableScoper()
                                                                       .defineVariable(getStartOfTag(),
                                                                                       name,
-                                                                                      value.getType(),
                                                                                       value.getGenericType());
             targetBlock.addChild(new PushLocalEmitter(startOfTag, variable.getLocalIndex(), value));
         } else {

@@ -11,6 +11,8 @@ package sirius.pasta.noodle.compiler.ir;
 import parsii.tokenizer.Position;
 import sirius.pasta.noodle.compiler.Assembler;
 
+import java.lang.reflect.Type;
+
 /**
  * Represents a raw class literal.
  * <p>
@@ -36,7 +38,7 @@ public class RawClassLiteral extends Node {
     }
 
     @Override
-    public Class<?> getType() {
+    public Type getGenericType() {
         // We return the actual class here as well to simplify the method retrieval code in MethodCall...
         return (Class<?>) getConstantValue();
     }

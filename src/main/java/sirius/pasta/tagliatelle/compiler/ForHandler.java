@@ -50,7 +50,7 @@ public class ForHandler extends ExpressionHandler {
         VariableScoper.Scope scope = compiler.getContext().getVariableScoper().pushScope();
         result.setLocalIndex(compiler.getContext()
                                      .getVariableScoper()
-                                     .defineVariable(result.getStartOfBlock(), variable, type, type)
+                                     .defineVariable(result.getStartOfBlock(), variable, type)
                                      .getLocalIndex());
         result.setLoop(compiler.parseBlock(null, "}"));
         scope.pop();

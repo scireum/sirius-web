@@ -11,6 +11,7 @@ package sirius.pasta.noodle.compiler.ir;
 import parsii.tokenizer.Position;
 import sirius.pasta.noodle.compiler.Assembler;
 
+import java.lang.reflect.Type;
 import java.util.Objects;
 
 /**
@@ -42,7 +43,7 @@ public class Constant extends Node {
     }
 
     @Override
-    public Class<?> getType() {
+    public Type getGenericType() {
         return value == null ? void.class : value.getClass();
     }
 

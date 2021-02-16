@@ -45,14 +45,12 @@ public class VariableScoper {
     public static class Variable {
         private final String name;
         private final int localIndex;
-        private final Class<?> type;
-        private final Type genericType;
+        private final Type type;
 
-        protected Variable(String name, int localIndex, Class<?> type, Type genericType) {
+        protected Variable(String name, int localIndex, Type type) {
             this.name = name;
             this.localIndex = localIndex;
             this.type = type;
-            this.genericType = genericType;
         }
 
         public String getName() {
@@ -63,12 +61,8 @@ public class VariableScoper {
             return localIndex;
         }
 
-        public Class<?> getType() {
+        public Type getType() {
             return type;
-        }
-
-        public Type getGenericType() {
-            return genericType;
         }
 
         @Override
@@ -151,18 +145,19 @@ public class VariableScoper {
     /**
      * Defines a new variable.
      *
-     * @param position    the position in the source code
-     * @param name        the name of the variable
-     * @param type        the type of the variable
-     * @param genericType the generic type of the variable
+     * @param position the position in the source code
+     * @param name     the name of the variable
+     * @param type     the type of the variable
      * @return the newly created variable
      */
-    public Variable defineVariable(Position position, String name, Class<?> type, Type genericType) {
+    public Variable defineVariable(Position position, String name, Type type) {
         if (RESERVED_NAMES.contains(name)) {
             compilationContext.error(position, "%s is a reserved name.", name);
         }
-        Variable variable = new Variable(name, maxVariables++, type, genericType);
-        variables.add(variable);
+        Variable variable = new Variable(name, maxVariables++, type);
+        if (!name.startsWith("$")) {
+            variables.add(variable);
+        }
         return variable;
     }
 

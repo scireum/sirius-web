@@ -13,6 +13,7 @@ import sirius.pasta.noodle.OpCode;
 import sirius.pasta.noodle.compiler.Assembler;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
  */
 public class IntrinsicCall extends Call {
 
-    private final Class<?> returnType;
+    private final Type returnType;
     private final OpCode opCode;
 
     /**
@@ -32,7 +33,7 @@ public class IntrinsicCall extends Call {
      * @param opCode         the intrinsic to invoke
      * @param parameterNodes the parameters to pass in
      */
-    public IntrinsicCall(Position position, Class<?> type, OpCode opCode, Node[] parameterNodes) {
+    public IntrinsicCall(Position position, Type type, OpCode opCode, Node[] parameterNodes) {
         super(position);
         this.opCode = opCode;
         this.parameterNodes = parameterNodes;
@@ -41,7 +42,7 @@ public class IntrinsicCall extends Call {
 
     @Nullable
     @Override
-    public Class<?> getType() {
+    public Type getGenericType() {
         return returnType;
     }
 

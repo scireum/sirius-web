@@ -22,13 +22,16 @@ import sirius.kernel.health.HandledException;
 import sirius.pasta.Pasta;
 import sirius.pasta.noodle.InterpreterCall;
 import sirius.pasta.noodle.OpCode;
-import sirius.pasta.noodle.compiler.ir.Assignment;
+import sirius.pasta.noodle.compiler.ir.AssignmentStatement;
 import sirius.pasta.noodle.compiler.ir.BinaryOperation;
-import sirius.pasta.noodle.compiler.ir.BlockNode;
+import sirius.pasta.noodle.compiler.ir.BlockStatement;
 import sirius.pasta.noodle.compiler.ir.Conjunction;
 import sirius.pasta.noodle.compiler.ir.Constant;
 import sirius.pasta.noodle.compiler.ir.Disjunction;
+import sirius.pasta.noodle.compiler.ir.ForStatement;
+import sirius.pasta.noodle.compiler.ir.IfStatement;
 import sirius.pasta.noodle.compiler.ir.InstanceOfCheck;
+import sirius.pasta.noodle.compiler.ir.LambdaNode;
 import sirius.pasta.noodle.compiler.ir.MacroCall;
 import sirius.pasta.noodle.compiler.ir.MethodCall;
 import sirius.pasta.noodle.compiler.ir.NativeCast;
@@ -37,15 +40,20 @@ import sirius.pasta.noodle.compiler.ir.PopField;
 import sirius.pasta.noodle.compiler.ir.PushField;
 import sirius.pasta.noodle.compiler.ir.PushTemporary;
 import sirius.pasta.noodle.compiler.ir.RawClassLiteral;
+import sirius.pasta.noodle.compiler.ir.ReturnStatement;
 import sirius.pasta.noodle.compiler.ir.TernaryOperation;
 import sirius.pasta.noodle.compiler.ir.UnaryOperation;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,6 +69,26 @@ public class Parser extends InputProcessor {
      * Represents the keyword used to define a variable.
      */
     public static final String KEYWORD_LET = "let";
+
+    /**
+     * Represents the keyword used to return a value.
+     */
+    public static final String KEYWORD_RETURN = "return";
+
+    /**
+     * Represents the keyword used to represent an if.
+     */
+    public static final String KEYWORD_IF = "if";
+
+    /**
+     * Represents the keyword used to represent an else branch.
+     */
+    public static final String KEYWORD_ELSE = "else";
+
+    /**
+     * Represents the keyword used to start a for loop.
+     */
+    public static final String KEYWORD_FOR = "for";
 
     /**
      * Represents the keyword used to declare a class literal (used as suffix as in Java).
@@ -117,15 +145,18 @@ public class Parser extends InputProcessor {
         super(context, reader);
     }
 
-    protected Node block() {
+    protected BlockStatement block() {
         canSkipWhitespace = true;
         VariableScoper.Scope scope = context.getVariableScoper().pushScope();
-        BlockNode block = new BlockNode(reader.current());
+        BlockStatement block = new BlockStatement(reader.current());
         while (!reader.current().isEndOfInput() && !reader.current().is('}')) {
-            block.addStatement(statement());
+            block.addStatement(statement(), context);
             skipWhitespaces();
-            if (consumeExpectedCharacter(';')) {
-                context.reEnableErrors();
+            // Only enforce a ";" if we're not a single line script...
+            if (!(reader.current().getLine() == 1 && reader.current().isEndOfInput())) {
+                if (consumeExpectedCharacter(';')) {
+                    context.reEnableErrors();
+                }
             }
             skipWhitespaces();
         }
@@ -139,6 +170,15 @@ public class Parser extends InputProcessor {
         skipWhitespaces();
         if (isAtKeyword(KEYWORD_LET)) {
             return assignment();
+        }
+        if (isAtKeyword(KEYWORD_RETURN)) {
+            return returnStatement();
+        }
+        if (isAtKeyword(KEYWORD_IF)) {
+            return ifStatement();
+        }
+        if (isAtKeyword(KEYWORD_FOR)) {
+            return forStatement();
         }
 
         Node expression = parseExpression();
@@ -163,7 +203,6 @@ public class Parser extends InputProcessor {
         return expression;
     }
 
-    @Nonnull
     private Node assignment() {
         reader.consume(3);
         skipWhitespaces();
@@ -188,12 +227,87 @@ public class Parser extends InputProcessor {
             context.warning(declaration, "This declaration of '%s' shadows another variable.", variableName);
         }
 
-        VariableScoper.Variable variable = context.getVariableScoper()
-                                                  .defineVariable(declaration,
-                                                                  variableName,
-                                                                  variableValue.getType(),
-                                                                  variableValue.getGenericType());
-        return new Assignment(declaration, variable, variableValue);
+        VariableScoper.Variable variable =
+                context.getVariableScoper().defineVariable(declaration, variableName, variableValue.getType());
+        return new AssignmentStatement(declaration, variable, variableValue);
+    }
+
+    private Node returnStatement() {
+        ReturnStatement returnStatement = new ReturnStatement(reader.current());
+        reader.consume(6);
+        skipWhitespaces();
+
+        if (reader.current().is(';')) {
+            returnStatement.setExpression(new Constant(reader.current(), null));
+            return returnStatement;
+        }
+
+        Node returnValue = parseExpression();
+        returnStatement.setExpression(returnValue);
+        return returnStatement;
+    }
+
+    private Node ifStatement() {
+        IfStatement ifStatement = new IfStatement(reader.current());
+        reader.consume(2);
+        skipWhitespaces();
+
+        consumeExpectedCharacter('(');
+        ifStatement.setCondition(parseExpression());
+        if (!CompilationContext.isAssignableTo(ifStatement.getCondition().getType(), boolean.class)) {
+            context.error(ifStatement.getCondition().getPosition(), "Expected a boolean expression as condition.");
+        }
+        consumeExpectedCharacter(')');
+        skipWhitespaces();
+        consumeExpectedCharacter('{');
+        ifStatement.setTrueBlock(block());
+        consumeExpectedCharacter('}');
+        skipWhitespaces();
+        if (isAtKeyword(KEYWORD_ELSE)) {
+            reader.consume(4);
+            skipWhitespaces();
+            consumeExpectedCharacter('{');
+            ifStatement.setFalseBlock(block());
+            consumeExpectedCharacter('}');
+        }
+
+        return ifStatement;
+    }
+
+    private Node forStatement() {
+        ForStatement forStatement = new ForStatement(reader.current());
+        reader.consume(3);
+        skipWhitespaces();
+
+        consumeExpectedCharacter('(');
+        Position variablePosition = reader.current();
+        String typeName = readIdentifier();
+        Class<?> variableType = context.resolveClass(variablePosition, typeName);
+        skipWhitespaces();
+        String variableName = readIdentifier();
+        skipWhitespaces();
+        consumeExpectedCharacter(':');
+        skipWhitespaces();
+        forStatement.setCondition(parseExpression());
+        if (!CompilationContext.isAssignableTo(forStatement.getCondition().getType(), Iterable.class)) {
+            context.error(forStatement.getCondition().getPosition(), "Expected an Iterable expression as condition.");
+        }
+        consumeExpectedCharacter(')');
+
+        skipWhitespaces();
+        consumeExpectedCharacter('{');
+        VariableScoper.Scope scope = context.getVariableScoper().pushScope();
+        forStatement.setIteratorVariable(context.getVariableScoper()
+                                                .defineVariable(forStatement.getPosition(),
+                                                                "$iterator",
+                                                                Iterator.class));
+        forStatement.setLoopVariable(context.getVariableScoper()
+                                            .defineVariable(forStatement.getPosition(), variableName, variableType));
+        forStatement.setLoopBlock(block());
+        scope.pop();
+        consumeExpectedCharacter('}');
+
+        return forStatement;
     }
 
     /**
@@ -538,7 +652,7 @@ public class Parser extends InputProcessor {
                                       .findAny()
                                       .orElse(null);
         if (targetField != null) {
-            if (!context.isSandboxEnabled() && !Modifier.isPublic(targetField.getModifiers())) {
+            if (context.isSandboxEnabled() && !Modifier.isPublic(targetField.getModifiers())) {
                 context.error(position,
                               "The field '%s' of '%s' is not public accessible.",
                               targetField.getName(),
@@ -569,7 +683,7 @@ public class Parser extends InputProcessor {
                                       .findAny()
                                       .orElse(null);
         if (staticField != null) {
-            if (!context.isSandboxEnabled() && !Modifier.isPublic(staticField.getModifiers())) {
+            if (context.isSandboxEnabled() && !Modifier.isPublic(staticField.getModifiers())) {
                 context.error(position,
                               "The field '%s' of '%s' is not public accessible.",
                               staticField.getName(),
@@ -592,7 +706,7 @@ public class Parser extends InputProcessor {
 
     private Node call(Node self, Char position, String methodName) {
         consumeExpectedCharacter('(');
-        List<Node> parameters = parseParameterList();
+        List<Node> parameters = parseParameterList(self.getGenericType(), methodName);
         consumeExpectedCharacter(')');
         Node specialNode = handleSpecialMethods(self, methodName, parameters);
         if (specialNode != null) {
@@ -607,6 +721,267 @@ public class Parser extends InputProcessor {
     }
 
     /**
+     * Parses the list of parameters for a {@link #chainContinuation(Node)} or {@link #macroCall(Char, String)}.
+     *
+     * @param selfType   the type of the expression on which the call is invoked
+     * @param methodName the name of the method to invoke
+     * @return the list of parameter expressions for the method call
+     */
+    private List<Node> parseParameterList(Type selfType, String methodName) {
+        if (reader.current().is(')')) {
+            return Collections.emptyList();
+        }
+
+        // We try to take a peek and resolve the method by simple name resolution. This is required in case a parameter
+        // is a lambda closure. In this case we have to know the method so that we can derive the lambda interface
+        // to implement.
+        Method possibleMethod = Arrays.stream(TypeTools.simplifyToClass(selfType, Object.class).getMethods())
+                                      .filter(method -> Strings.areEqual(method.getName(), methodName))
+                                      .findFirst()
+                                      .orElse(null);
+        if (possibleMethod != null) {
+            // In case the method belongs to a superclass of our self expression, we have to propagate all
+            // generics up in the hierarchy (e.g. List<T> --> Iterable<E>) so that generics are resolved
+            // properly...
+            Type effectiveSelfType = determinEffectiveSelfType(selfType, possibleMethod);
+            if (effectiveSelfType != null) {
+                selfType = effectiveSelfType;
+            }
+        }
+
+        List<Node> parameters = new ArrayList<>();
+        while (!reader.current().isEndOfInput()) {
+            parameters.add(parseParameter(possibleMethod, selfType, parameters.size()));
+            if (!reader.current().is(',')) {
+                break;
+            }
+            consumeExpectedCharacter(',');
+            skipWhitespaces();
+        }
+
+        return parameters;
+    }
+
+    /**
+     * Tries to walk the class and interface hierarchy up (while propagating generics) in order to create the
+     * actual type on which the method will be invoked.
+     *
+     * @param selfType     the original type of the expression on which the method is invoked
+     * @param targetMethod the method to invoke
+     * @return the effective type which will be invoked
+     */
+    private Type determinEffectiveSelfType(Type selfType, Method targetMethod) {
+        Class<?> self = TypeTools.simplifyToClass(selfType, Object.class);
+        if (self.equals(targetMethod.getDeclaringClass())) {
+            return selfType;
+        }
+
+        TypeTools typeTools = new TypeTools(selfType);
+
+        if (self.getGenericSuperclass() != null && !TypeTools.simplifyToClass(self.getGenericSuperclass(), self)
+                                                             .equals(self)) {
+            Type result = determinEffectiveSelfType(typeTools.simplify(self.getGenericSuperclass()), targetMethod);
+            if (result != null) {
+                return result;
+            }
+        }
+
+        for (Type iface : self.getGenericInterfaces()) {
+            Type result = determinEffectiveSelfType(typeTools.simplify(iface), targetMethod);
+            if (result != null) {
+                return result;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Tries to parse a parameter passed into a method or macro.
+     *
+     * @param method         the method to invoke (if known)
+     * @param selfType       the type on which the method is invoked
+     * @param parameterIndex the parameter being currently parsed
+     * @return the parsed parameter expression
+     */
+    private Node parseParameter(Method method, Type selfType, int parameterIndex) {
+        skipWhitespaces();
+        if (reader.current().is('|')) {
+            if (method == null || method.getParameterTypes().length <= parameterIndex) {
+                context.error(reader.current(),
+                              "Cannot evaluate a lambda here, as the method is unknown, overloaded or the parameters don't match!");
+                return parseInvalidLambda();
+            } else {
+                return parseLambdaParameter(new TypeTools(selfType).simplify(method.getGenericParameterTypes()[parameterIndex]));
+            }
+        } else {
+            return parseExpression(true);
+        }
+    }
+
+    /**
+     * Parses a lambda as method parameter.
+     *
+     * @param calleeType the type which is to be implemented by the lambda.
+     * @return the parsed lambda expression
+     */
+    private Node parseLambdaParameter(Type calleeType) {
+        Position start = reader.current();
+        Method targetMethod = findSAM(reader.current(), TypeTools.simplifyToClass(calleeType, null));
+        if (targetMethod == null) {
+            return parseInvalidLambda();
+        }
+
+        LambdaNode lambdaNode = new LambdaNode(start);
+        lambdaNode.setSamInterface(TypeTools.simplifyToClass(calleeType, Object.class));
+        VariableScoper.Scope scope = context.getVariableScoper().pushScope();
+        int numVariablesBeforeLambda = context.getVariableScoper().getMaxVariables();
+        parseLambdaParameters(lambdaNode, calleeType, targetMethod);
+        parseLambdaBody(lambdaNode, targetMethod);
+        lambdaNode.setNumberOfLocals(context.getVariableScoper().getMaxVariables() - numVariablesBeforeLambda);
+        scope.pop();
+
+        return lambdaNode;
+    }
+
+    /**
+     * Parses and fully ignores a misplaced lambda.
+     * <p>
+     * This simple consumes all the expected tokens an throws them away as the lambda cannot be compiled anyway. This
+     * is just to prevent false positives when continuing to parse.
+     *
+     * @return a placeholder node for the failed lambda
+     */
+    private Node parseInvalidLambda() {
+        Position start = reader.current();
+        consumeExpectedCharacter('|');
+        skipWhitespaces();
+        while (isAtIdentifier()) {
+            readIdentifier();
+            skipWhitespaces();
+            if (reader.current().is(',')) {
+                reader.consume();
+            }
+            skipWhitespaces();
+        }
+        consumeExpectedCharacter('|');
+        skipWhitespaces();
+        if (reader.current().is('{')) {
+            consumeExpectedCharacter('{');
+            skipWhitespaces();
+            block();
+            consumeExpectedCharacter('}');
+        } else {
+            parseExpression();
+        }
+
+        return new Constant(null, start);
+    }
+
+    private void parseLambdaParameters(LambdaNode lambdaNode, Type calleeType, Method targetMethod) {
+        consumeExpectedCharacter('|');
+        skipWhitespaces();
+        List<String> parameters = new ArrayList<>();
+        while (isAtIdentifier()) {
+            parameters.add(readIdentifier());
+            skipWhitespaces();
+            if (reader.current().is(',')) {
+                reader.consume();
+            }
+            skipWhitespaces();
+        }
+        consumeExpectedCharacter('|');
+        skipWhitespaces();
+
+        for (int i = 0; i < parameters.size(); i++) {
+            Type effectiveParameterType =
+                    determineEffectiveParameterType(calleeType, targetMethod.getGenericParameterTypes()[i]);
+            lambdaNode.addArgument(context.getVariableScoper()
+                                          .defineVariable(lambdaNode.getPosition(),
+                                                          parameters.get(i),
+                                                          effectiveParameterType));
+        }
+    }
+
+    private Type determineEffectiveParameterType(Type calleeType, Type parameterType) {
+        Type result = new TypeTools(calleeType).simplify(parameterType);
+        if (result instanceof TypeVariable) {
+            return Object.class;
+        } else {
+            return result;
+        }
+    }
+
+    private void parseLambdaBody(LambdaNode lambdaNode, Method targetMethod) {
+        Node body = readLambdaBody();
+        if (targetMethod.getReturnType() == null || void.class.equals(targetMethod.getReturnType())) {
+            if (!void.class.equals(body.getType())) {
+                context.error(body.getPosition(), "Unexpected return type. This lambda must not return a value.");
+            }
+        } else if (!CompilationContext.isAssignableTo(body.getType(), targetMethod.getReturnType())) {
+            context.error(body.getPosition(),
+                          "Unexpected return type '%s': Expected: %s",
+                          body.getType(),
+                          targetMethod.getReturnType());
+        }
+        lambdaNode.setBody(body);
+    }
+
+    private Node readLambdaBody() {
+        if (reader.current().is('{')) {
+            consumeExpectedCharacter('{');
+            skipWhitespaces();
+            BlockStatement result = block();
+            consumeExpectedCharacter('}');
+
+            return result;
+        } else {
+            Node expression = parseExpression();
+            if (expression.getType() == void.class) {
+                return expression;
+            } else {
+                ReturnStatement returnStatement = new ReturnStatement(expression.getPosition());
+                returnStatement.setExpression(expression);
+                return returnStatement;
+            }
+        }
+    }
+
+    /**
+     * Tries to find the "single abstract method".
+     * <p>
+     * If a Java interface or abstract class is implemented via a lambda, this is only possible if there is exactly
+     * a single abstract method left. This method searches for this method and returns it (or creates an error
+     * message an returns null).
+     *
+     * @param position   the position of the lambda start (for error reporting)
+     * @param calleeType the type to be implemented by the lambda
+     * @return the single abstract method to implement or <tt>null</tt> if there is none
+     */
+    private Method findSAM(Position position, Class<?> calleeType) {
+        if (calleeType == null) {
+            return null;
+        }
+
+        long numberOfPossibleMethods = Arrays.stream(calleeType.getMethods())
+                                             .filter(method -> Modifier.isAbstract(method.getModifiers())
+                                                               && !method.isDefault())
+                                             .count();
+        if (numberOfPossibleMethods != 1) {
+            context.error(position,
+                          "%s does not define a single abstract method. Cannot determine the lambda target!",
+                          calleeType);
+
+            return null;
+        }
+
+        return Arrays.stream(calleeType.getMethods())
+                     .filter(method -> Modifier.isAbstract(method.getModifiers()) && !method.isDefault())
+                     .findFirst()
+                     .orElse(null);
+    }
+
+    /**
      * Handles special methods like <tt>.is</tt> and <tt>.as</tt>
      * <p>
      * To make the syntax a bit more pleasing we do casts as ".as" operation instead of double brackets. We also use
@@ -617,7 +992,6 @@ public class Parser extends InputProcessor {
      * @param parameters the parameters for the method
      * @return either a {@link NativeCast} or an {@link InstanceOfCheck} or <tt>null</tt> if the call isn't a cast
      */
-    @Nullable
     private Node handleSpecialMethods(Node self, String methodName, List<Node> parameters) {
         if (KEYWORD_METHOD_AS.equals(methodName)
             && parameters.size() == 1
@@ -640,28 +1014,6 @@ public class Parser extends InputProcessor {
         }
 
         return null;
-    }
-
-    /**
-     * Parses the list of parameters for a {@link #chainContinuation(Node)} or {@link #macroCall(Char, String)}.
-     *
-     * @return the list of parameter expressions for the method call
-     */
-    private List<Node> parseParameterList() {
-        if (reader.current().is(')')) {
-            return Collections.emptyList();
-        }
-
-        List<Node> parameters = new ArrayList<>();
-        while (!reader.current().isEndOfInput()) {
-            parameters.add(parseExpression(true));
-            if (!reader.current().is(',')) {
-                break;
-            }
-            consumeExpectedCharacter(',');
-            skipWhitespaces();
-        }
-        return parameters;
     }
 
     /**
@@ -693,6 +1045,10 @@ public class Parser extends InputProcessor {
             consumeExpectedCharacter(')');
 
             return result;
+        }
+        if (reader.current().is('|') && !reader.next().is('|')) {
+            context.error(reader.current(), "Lambdas can only be defined as method parameters.");
+            return parseInvalidLambda();
         }
 
         if (isAtIdentifier()) {
@@ -730,8 +1086,12 @@ public class Parser extends InputProcessor {
             context.error(position, "Unknown variable '%s'. Add 'let' to define a variable.", identifier);
             return variableValue;
         }
+        if (variableValue.getType() == void.class) {
+            context.error(position, "Cannot assign a void value to variable '%s'.", identifier);
+            return variableValue;
+        }
 
-        return new Assignment(position, var, variableValue);
+        return new AssignmentStatement(position, var, variableValue);
     }
 
     private Node tryClassLiteral(Position position, String identifier) {
@@ -779,7 +1139,7 @@ public class Parser extends InputProcessor {
         }
         consumeExpectedCharacter('(');
         MacroCall call = new MacroCall(position, methodName);
-        call.setParameters(parseParameterList());
+        call.setParameters(parseParameterList(void.class, methodName));
         consumeExpectedCharacter(')');
         call.tryBind(context);
 

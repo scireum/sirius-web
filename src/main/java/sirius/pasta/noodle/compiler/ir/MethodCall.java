@@ -21,13 +21,13 @@ import sirius.pasta.noodle.MethodPointer;
 import sirius.pasta.noodle.OpCode;
 import sirius.pasta.noodle.compiler.Assembler;
 import sirius.pasta.noodle.compiler.CompilationContext;
+import sirius.pasta.noodle.compiler.TypeTools;
 import sirius.pasta.noodle.sandbox.Sandbox;
 import sirius.web.security.UserContext;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  */
 public class MethodCall extends Call {
 
-    private String methodName;
+    private final String methodName;
     private Method method;
     private Node selfNode;
 
@@ -77,20 +77,20 @@ public class MethodCall extends Call {
     private Node optimizeIntrinsics() {
         if (NLS.class.equals(method.getDeclaringClass()) && "get".equals(method.getName())) {
             return new IntrinsicCall(getPosition(),
-                                     method.getReturnType(),
+                                     method.getGenericReturnType(),
                                      OpCode.INTRINSIC_NLS_GET,
                                      parameterNodes);
         }
         if (Strings.class.equals(method.getDeclaringClass())) {
             if ("isFilled".equals(method.getName())) {
                 return new IntrinsicCall(getPosition(),
-                                         method.getReturnType(),
+                                         method.getGenericReturnType(),
                                          OpCode.INTRINSIC_STRINGS_IS_FILLED,
                                          parameterNodes);
             }
             if ("isEmpty".equals(method.getName())) {
                 return new IntrinsicCall(getPosition(),
-                                         method.getReturnType(),
+                                         method.getGenericReturnType(),
                                          OpCode.INTRINSIC_STRINGS_IS_EMPTY,
                                          parameterNodes);
             }
@@ -111,14 +111,14 @@ public class MethodCall extends Call {
         }
         if (Value.class.equals(method.getDeclaringClass()) && "of".equals(method.getName())) {
             return new IntrinsicCall(getPosition(),
-                                     method.getReturnType(),
+                                     method.getGenericReturnType(),
                                      OpCode.INTRINSIC_VALUE_OF,
                                      parameterNodes);
         }
         if (UserContext.class.equals(method.getDeclaringClass())) {
             if ("getCurrentUser".equals(method.getName())) {
                 return new IntrinsicCall(getPosition(),
-                                         method.getReturnType(),
+                                         method.getGenericReturnType(),
                                          OpCode.INTRINSIC_USER_CONTEXT_CURRENT_USER,
                                          parameterNodes);
             }
@@ -133,25 +133,6 @@ public class MethodCall extends Call {
         return null;
     }
 
-    @Override
-    public Class<?> getType() {
-        if (method == null) {
-            return void.class;
-        }
-
-        // Try to resolve type parameters into their actual values if possible.
-        // This will propagate type parameters down a call chain.
-        Type genericType = getGenericType();
-        if (genericType instanceof Class<?>) {
-            return (Class<?>) genericType;
-        }
-        if (genericType instanceof ParameterizedType) {
-            return (Class<?>) ((ParameterizedType) genericType).getRawType();
-        }
-
-        return method.getReturnType();
-    }
-
     @Nullable
     @Override
     public Type getGenericType() {
@@ -159,116 +140,15 @@ public class MethodCall extends Call {
             return null;
         }
 
-        if (method.getGenericReturnType() instanceof TypeVariable) {
-            Type parameterizedType = tryResolveViaParameterizedCallee();
-            if (parameterizedType != null) {
-                return parameterizedType;
-            }
-
-            Type constantClassType = tryResolveViaConstantClassParameter();
-            if (constantClassType != null) {
-                return constantClassType;
-            }
+        TypeTools typeTools = new TypeTools(selfNode.getGenericType() == null ?
+                                            selfNode.getType() :
+                                            selfNode.getGenericType()).withMethod(method, parameterNodes);
+        Type returnType = typeTools.simplify(method.getGenericReturnType());
+        if (returnType instanceof TypeVariable) {
+            return method.getReturnType();
+        } else {
+            return returnType;
         }
-
-        return method.getGenericReturnType();
-    }
-
-    /**
-     * Tries to resolve a type variable by inspecting the parameterization of the callsite.
-     * <p>
-     * If a method returns a generic variable like {@code ValueHolder<V>.get()} does,
-     * we try to determine the generic type parameters from the class we're being invoked
-     * on. If we end up at a method or variable declaration which specifies the types, we
-     * can propagate this information down a call chain and therefore deduce the effective type.
-     *
-     * @return the type deduced from a parameterization of the "this" expression or <tt>null</tt>
-     * if not enough information is present
-     */
-    private Type tryResolveViaParameterizedCallee() {
-        Type parentType = selfNode.getGenericType();
-        if (parentType instanceof ParameterizedType) {
-            int index = determineGenericIndex(method.getGenericReturnType().getTypeName(),
-                                              (Class<?>) ((ParameterizedType) parentType).getRawType());
-            if (index >= 0) {
-                return ((ParameterizedType) parentType).getActualTypeArguments()[index];
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Tries to deduce the return type of a method by looking for appropriate class parameters.
-     * <p>
-     * Many methods return an object of a given class like {@link sirius.web.security.UserContext#getHelper(Class)}
-     * does. Therefore, if we detect a type variable as return type, we try to find a constant class parameter which
-     * binds to the same type variable and try to deduce the effective return type this way.
-     *
-     * @return the deduced class parameter for the returned type variable or <tt>null</tt> if not enough information
-     * if present
-     */
-    private Type tryResolveViaConstantClassParameter() {
-        String variableName = ((TypeVariable<?>) method.getGenericReturnType()).getName();
-        for (int i = 0; i < method.getParameterCount(); i++) {
-            Type resolvedType = tryResolveAsConstantClassParameter(variableName, i);
-            if (resolvedType != null) {
-                return resolvedType;
-            }
-        }
-
-        return null;
-    }
-
-    private Type tryResolveAsConstantClassParameter(String variableName, int parameterIndex) {
-        // Ensure that the parameter is of type Class<X> - abort otherwise
-        if (!(Class.class.equals(method.getParameterTypes()[parameterIndex])
-              && method.getGenericParameterTypes()[parameterIndex] instanceof ParameterizedType)) {
-            return null;
-        }
-
-        // Read the actual type argument, this would be the X of Class<X>
-        Type actualTypeArgument =
-                ((ParameterizedType) method.getGenericParameterTypes()[parameterIndex]).getActualTypeArguments()[0];
-
-        // Abort if this isn't a type variable...
-        if (!(actualTypeArgument instanceof TypeVariable)) {
-            return null;
-        }
-
-        String typeVariableName = ((TypeVariable<?>) actualTypeArgument).getName();
-        // Make sure that this class actually binds to our type variable and not to
-        // anything else...
-        if (!Strings.areEqual(variableName, typeVariableName)) {
-            return null;
-        }
-
-        // For a constant class, we know the resulting type...
-        if (parameterNodes[parameterIndex].isConstant()
-            && Class.class.isAssignableFrom(parameterNodes[parameterIndex].getType())) {
-            return (Class<?>) parameterNodes[parameterIndex].getConstantValue();
-        }
-
-        // Otherwise resort to the generic type - if available...
-        Type genericType = parameterNodes[parameterIndex].getGenericType();
-        if (genericType != null) {
-            return genericType;
-        }
-
-        // Or finally resort to the known type...
-        return parameterNodes[parameterIndex].getType();
-    }
-
-    private int determineGenericIndex(String parameterName, Class<?> clazz) {
-        int index = 0;
-        for (TypeVariable<?> param : clazz.getTypeParameters()) {
-            if (param.getName().equals(parameterName)) {
-                return index;
-            }
-            index++;
-        }
-
-        return -1;
     }
 
     /**
@@ -277,6 +157,8 @@ public class MethodCall extends Call {
      * @param compilationContext the compilation context for error reporting
      * @return <tt>true</tt> if the method was bound successfully, <tt>false</tt> otherwise
      */
+    @SuppressWarnings("ArrayEquality")
+    @Explain("This is a re-used constant so an identity check works fine here")
     public boolean tryBindToMethod(CompilationContext compilationContext) {
         if (parameterNodes == NO_ARGS) {
             try {

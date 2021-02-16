@@ -21,7 +21,7 @@ import java.lang.reflect.Type;
  */
 public class PushTemporary extends Node {
 
-    private VariableScoper.Variable variable;
+    private final VariableScoper.Variable variable;
 
     /**
      * Creates a new variable access.
@@ -34,15 +34,10 @@ public class PushTemporary extends Node {
         this.variable = variable;
     }
 
-    @Override
-    public Class<?> getType() {
-        return variable.getType();
-    }
-
     @Nullable
     @Override
     public Type getGenericType() {
-        return variable.getGenericType();
+        return variable.getType();
     }
 
     @Override

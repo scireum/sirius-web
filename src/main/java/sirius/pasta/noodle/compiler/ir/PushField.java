@@ -13,9 +13,11 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.pasta.noodle.OpCode;
 import sirius.pasta.noodle.compiler.Assembler;
+import sirius.pasta.noodle.compiler.TypeTools;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 
 /**
  * Pushes a Java field onto the stack.
@@ -63,8 +65,12 @@ public class PushField extends Node {
     }
 
     @Override
-    public Class<?> getType() {
-        return field.getType();
+    public Type getGenericType() {
+        if (selfExpression == null) {
+            return field.getGenericType();
+        } else {
+            return new TypeTools(selfExpression.getGenericType()).simplify(field.getGenericType());
+        }
     }
 
     @Override

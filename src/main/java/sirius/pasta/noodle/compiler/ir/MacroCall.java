@@ -21,6 +21,7 @@ import sirius.pasta.noodle.macros.UserMacro;
 import sirius.pasta.noodle.sandbox.PublicAPI;
 import sirius.web.security.UserInfo;
 
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -127,7 +128,7 @@ public class MacroCall extends Call {
     }
 
     @Override
-    public Class<?> getType() {
+    public Type getGenericType() {
         if (macro == null) {
             return void.class;
         }

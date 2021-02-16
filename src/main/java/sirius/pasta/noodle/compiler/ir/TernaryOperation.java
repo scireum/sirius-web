@@ -39,17 +39,6 @@ public class TernaryOperation extends Node {
         this.whenFalse = whenFalse;
     }
 
-    @Nullable
-    @Override
-    public Class<?> getType() {
-        if (!CompilationContext.isAssignableTo(whenTrue.getType(), whenFalse.getType())) {
-            return whenFalse.getType();
-        } else {
-            return whenTrue.getType();
-        }
-    }
-
-    @Nullable
     @Override
     public Type getGenericType() {
         if (!CompilationContext.isAssignableTo(whenTrue.getType(), whenFalse.getType())) {

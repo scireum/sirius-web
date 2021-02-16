@@ -17,7 +17,7 @@ import sirius.pasta.noodle.compiler.VariableScoper;
 /**
  * Represents an assignment.
  */
-public class Assignment extends Node {
+public class AssignmentStatement extends Statement {
 
     private final VariableScoper.Variable variable;
     private Node variableValue;
@@ -29,15 +29,10 @@ public class Assignment extends Node {
      * @param variable      the variable to assign to
      * @param variableValue the expression to assign to the variable
      */
-    public Assignment(Position position, VariableScoper.Variable variable, Node variableValue) {
+    public AssignmentStatement(Position position, VariableScoper.Variable variable, Node variableValue) {
         super(position);
         this.variable = variable;
         this.variableValue = variableValue;
-    }
-
-    @Override
-    public Class<?> getType() {
-        return void.class;
     }
 
     @Override

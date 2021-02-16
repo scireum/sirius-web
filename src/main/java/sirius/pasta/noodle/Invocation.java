@@ -17,12 +17,14 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.nls.NLS;
 import sirius.pasta.Pasta;
+import sirius.pasta.noodle.compiler.ir.LambdaNode;
 import sirius.pasta.noodle.macros.Macro;
 import sirius.web.security.UserContext;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -66,8 +68,20 @@ public class Invocation {
      * @param environment the environment to use
      */
     public Invocation(InterpreterCall method, Environment environment) {
+        this(method, environment, 0);
+    }
+
+    /**
+     * Creates a new interpreter for the given script and environment.
+     *
+     * @param method      the script to execute
+     * @param environment the environment to use
+     * @param initialIP   the first instruction to execute
+     */
+    public Invocation(InterpreterCall method, Environment environment, int initialIP) {
         this.compiledMethod = method;
         this.environment = environment;
+        this.instructionPointer = initialIP;
     }
 
     /**
@@ -123,6 +137,9 @@ public class Invocation {
                 case POP_VARIABLE:
                     environment.writeVariable(index, pop());
                     break;
+                case POP_TOP:
+                    pop();
+                    break;
                 case JMP_FALSE:
                     handleJumpFalse(index);
                     break;
@@ -137,6 +154,9 @@ public class Invocation {
                     break;
                 case INVOCE_STATIC:
                     handleInvoke(index, true);
+                    break;
+                case LAMBDA:
+                    handleLambda(index);
                     break;
                 case RET_STACK_TOP:
                     return pop();
@@ -262,6 +282,27 @@ public class Invocation {
                                               field.getName(),
                                               field.getDeclaringClass().getName()));
         }
+    }
+
+    /**
+     * Handles {@link OpCode#LAMBDA}.
+     * <p>
+     * Note that the theory of operation is described in {@link LambdaNode}.
+     *
+     * @param numLocals the number of locals of the lambda
+     */
+    private void handleLambda(int numLocals) {
+        int initialIP = instructionPointer + 1;
+        int contextOffset = pop(int.class);
+        Class<?> samInterface = pop(Class.class);
+        Environment lambdaEnvironment = LambdaEnvironment.create(environment, contextOffset, numLocals);
+        push(Proxy.newProxyInstance(getClass().getClassLoader(),
+                                    new Class[]{samInterface},
+                                    new LambdaHandler(initialIP,
+                                                      contextOffset,
+                                                      numLocals,
+                                                      compiledMethod,
+                                                      lambdaEnvironment)));
     }
 
     private void handleJumpFalse(int index) {
@@ -442,14 +483,17 @@ public class Invocation {
     private void invokeMethod(int numberOfArguments, boolean isStatic, MethodHandle methodHandle) throws Throwable {
         if (methodHandle.isVarargsCollector() || numberOfArguments > 3) {
             invokeMethodWithArguments(numberOfArguments, isStatic, methodHandle);
-            return;
-        }
-
-        if (isStatic) {
+        } else if (isStatic) {
             invokeStaticMethod(numberOfArguments, methodHandle);
         } else {
             invokeMethod(numberOfArguments, methodHandle);
         }
+    }
+
+    private void invokeMethodWithArguments(int numberOfArguments, boolean isStatic, MethodHandle methodHandle)
+            throws Throwable {
+        Object[] args = popArguments(numberOfArguments, isStatic);
+        push(methodHandle.invokeWithArguments(args));
     }
 
     private void invokeStaticMethod(int numberOfArguments, MethodHandle methodHandle) throws Throwable {
@@ -491,12 +535,6 @@ public class Invocation {
             Object arg3 = pop();
             push(methodHandle.invoke(self, arg1, arg2, arg3));
         }
-    }
-
-    private void invokeMethodWithArguments(int numberOfArguments, boolean isStatic, MethodHandle methodHandle)
-            throws Throwable {
-        Object[] args = popArguments(numberOfArguments, isStatic);
-        push(methodHandle.invokeWithArguments(args));
     }
 
     /**
