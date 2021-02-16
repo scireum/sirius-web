@@ -363,7 +363,6 @@ class TunnelHandler implements AsyncHandler<String> {
 
             long ttfbMillis = watch.elapsedMillis();
             if (ttfbMillis > WebServer.getMaxTimeToFirstByte() && WebServer.getMaxTimeToFirstByte() > 0) {
-
                 WebServer.LOG.WARN("Long running tunneling: %s (TTFB: %s)"
                                    + "%nDNS: %s, TCP-ATTEMPT: %s, TCP-CONNECT: %s, HANDSHAKE: %s, REQUEST-SENT: %s"
                                    + "%nURL:%s"
@@ -375,13 +374,11 @@ class TunnelHandler implements AsyncHandler<String> {
                                    + "%n%s%n",
                                    webContext.getRequestedURI(),
                                    NLS.convertDuration(ttfbMillis, true, true),
-                                   timeToDns < 0 ? "-" : NLS.convertDuration(timeToDns, true, true),
-                                   timeToConnectAttempt < 0 ?
-                                   "-" :
-                                   NLS.convertDuration(timeToConnectAttempt, true, true),
-                                   timeToConnect < 0 ? "-" : NLS.convertDuration(timeToConnect, true, true),
-                                   timeToHandshake < 0 ? "-" : NLS.convertDuration(timeToHandshake, true, true),
-                                   timeToRequestSent < 0 ? "-" : NLS.convertDuration(timeToRequestSent, true, true),
+                                   safeConvertDuration(timeToDns),
+                                   safeConvertDuration(timeToConnectAttempt),
+                                   safeConvertDuration(timeToConnect),
+                                   safeConvertDuration(timeToHandshake),
+                                   safeConvertDuration(timeToRequestSent),
                                    webContext.getRequestedURL(),
                                    Strings.split(url, "?").getFirst(),
                                    status.getStatusCode(),
@@ -394,6 +391,14 @@ class TunnelHandler implements AsyncHandler<String> {
             }
         } catch (Exception e) {
             Exceptions.handle(e);
+        }
+    }
+
+    private String safeConvertDuration(long durationMillis) {
+        if (durationMillis <= 0) {
+            return "-";
+        } else {
+            return NLS.convertDuration(durationMillis, true, true);
         }
     }
 
