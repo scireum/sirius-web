@@ -12,7 +12,7 @@ package sirius.pasta.noodle;
  * Provides a wrapper environment for a ({@link sirius.pasta.noodle.compiler.ir.LambdaNode lambda}).
  * <p>
  * This essentially shadows the few environment variables which are local to the lambda and stores them
- * in a local buffer. Everything else if passed through to the enclosing environment.
+ * in a local buffer. Everything else is passed through to the enclosing environment.
  */
 class LambdaEnvironment implements Environment {
     private final Environment closure;
@@ -33,7 +33,7 @@ class LambdaEnvironment implements Environment {
      * @param closure        the enclosing environment
      * @param contextOffset  the first variable which is local to the lambda
      * @param numberOfLocals the number of locals of the lambda
-     * @return an environment which can "shadow" (keep local copies) of the lambad locals and delegates everything else
+     * @return an environment which can "shadow" (keep local copies) of the lambda locals and delegates everything else
      * to the closure (or the closure itself if the lambda has no locals).
      */
     static Environment create(Environment closure, int contextOffset, int numberOfLocals) {

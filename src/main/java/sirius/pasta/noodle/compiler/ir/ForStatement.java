@@ -21,7 +21,7 @@ import java.lang.reflect.Type;
 import java.util.Iterator;
 
 /**
- * Represents an IF statement.
+ * Represents an FOR statement.
  */
 public class ForStatement extends Statement {
 
