@@ -90,16 +90,16 @@ class CompilerSpec extends BaseSpecification {
         expect:
         compile(input).call(new SimpleEnvironment()) == output
         where:
-        input            | output
-        "false"          | false
-        "true"           | true
-        "false && true"  | false
-        "true && true"   | true
-        "false || false" | false
-        "false || true"  | true
-        "null && true"   | false
-        "null && false"  | false
-        "null || true"   | true
-        "null || false"  | false
+        input                                       | output
+        "false"                                     | false
+        "true"                                      | true
+        "false && true"                             | false
+        "true && true"                              | true
+        "false || false"                            | false
+        "false || true"                             | true
+        "null.as(java.lang.Boolean.class) && true"  | false
+        "null.as(java.lang.Boolean.class) && false" | false
+        "null.as(java.lang.Boolean.class) || true"  | true
+        "null.as(java.lang.Boolean.class) || false" | false
     }
 }
