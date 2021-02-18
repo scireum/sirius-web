@@ -51,7 +51,7 @@ public class TypeTools {
     }
 
     /**
-     * Tries to derive even more type variables by inspecting the given method an its parameters.
+     * Tries to derive even more type variables by inspecting the given method and its parameters.
      * <p>
      * This essentially can derive type variables from class, object or array parameters.
      *
@@ -114,7 +114,13 @@ public class TypeTools {
 
         String typeVariableName = ((TypeVariable<?>) parameterType).getName();
         Type genericType = parameter.getGenericType();
-        typeTable.put(typeVariableName, genericType == null ? parameter.getType() : genericType);
+        Type type = genericType == null ? parameter.getType() : genericType;
+
+        if ("void".equals(type.getTypeName())) {
+            typeTable.putIfAbsent(typeVariableName, type);
+        } else {
+            typeTable.put(typeVariableName, type);
+        }
     }
 
     private void propagateConstantValueArrayTypeInfos(Type parameterType, Node parameter) {
