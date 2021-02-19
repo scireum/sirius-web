@@ -8,7 +8,7 @@
 
 package sirius.pasta.noodle.compiler;
 
-import java.util.Arrays;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.stream.Stream;
@@ -58,6 +58,10 @@ public class NoodleExample {
 
     public static <E> Stream<E> singletonStream(E value) {
         return Stream.of(value);
+    }
+
+    public static Optional<NoodleExample> filledOptional() {
+        return Optional.of(new NoodleExample());
     }
 
     public static Consumer<Integer> intConsumer() {

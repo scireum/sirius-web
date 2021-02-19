@@ -59,6 +59,9 @@ class CompilerSpec extends BaseSpecification {
         and:
         compile("NoodleExample.INSTANCE.privateField = 'Hello'; return NoodleExample.INSTANCE.privateField;").
                 call(new SimpleEnvironment()) == "Hello"
+        and:
+        compile("NoodleExample.filledOptional().orElse(null).privateField").
+                call(new SimpleEnvironment()) == "Hello World"
     }
 
     def "parsing let/if/for works"() {

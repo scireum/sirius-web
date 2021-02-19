@@ -12,6 +12,7 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.ValueHolder;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -32,5 +33,9 @@ public class TestObject extends GenericTestObject<String> {
     @Deprecated
     public void deprecatedMethod() {
         // Nothing to do...
+    }
+
+    public Optional<String> emptyOptional() {
+        return Optional.empty();
     }
 }
