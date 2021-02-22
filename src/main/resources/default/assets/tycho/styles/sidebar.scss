@@ -1,0 +1,18 @@
+.nav-header {
+  padding: .5rem 1rem;
+  text-transform: uppercase;
+  color: $grayLight;
+  font-size: 0.9rem;
+}
+
+.nav-pills {
+  .nav-link {
+    margin-top: 2px;
+    color: $grayDarker;
+  }
+
+  .nav-link.active, .nav-link:hover {
+    color: #fff;
+    background-color: $primary-color;
+  }
+}

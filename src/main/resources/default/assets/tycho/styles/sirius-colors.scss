@@ -51,8 +51,28 @@ $sirius-gray-dark: #808080;
 .bg-sirius-red {
   background-color: $sirius-red !important;
 }
-.card-sirius-red {
-  border-left: 4px solid $sirius-red;
+.border-sirius-red {
+  border-color: $sirius-red;
+}
+
+.text-sirius-red-dark {
+  color: $sirius-red-dark !important;
+}
+.bg-sirius-red-dark {
+  background-color: $sirius-red-dark !important;
+}
+.border-sirius-red-dark {
+  border-color: $sirius-red-dark;
+}
+
+.text-sirius-red-light {
+  color: $sirius-red-light !important;
+}
+.bg-sirius-red-light {
+  background-color: $sirius-red-light !important;
+}
+.border-sirius-red-light {
+  border-color: $sirius-red-light;
 }
 
 .text-sirius-green {
@@ -62,7 +82,7 @@ $sirius-gray-dark: #808080;
   background-color: $sirius-green !important;
 }
 .border-sirius-green {
-  border-left: 4px solid $sirius-green;
+  border-color: $sirius-green;
 }
 
 .text-sirius-green-dark {
@@ -72,7 +92,77 @@ $sirius-gray-dark: #808080;
   background-color: $sirius-green-dark !important;
 }
 .border-sirius-green-dark {
-  border-left: 4px solid $sirius-green-dark;
+  border-color: $sirius-green-dark;
+}
+
+.text-sirius-green-light {
+  color: $sirius-green-light !important;
+}
+.bg-sirius-green-light {
+  background-color: $sirius-green-light !important;
+}
+.border-sirius-green-light {
+  border-color: $sirius-green-light;
+}
+
+.text-sirius-yellow {
+  color: $sirius-yellow !important;
+}
+.bg-sirius-yellow {
+  background-color: $sirius-yellow !important;
+}
+.border-sirius-yellow {
+  border-color: $sirius-yellow;
+}
+
+.text-sirius-yellow-dark {
+  color: $sirius-yellow-dark !important;
+}
+.bg-sirius-yellow-dark {
+  background-color: $sirius-yellow-dark !important;
+}
+.border-sirius-yellow-dark {
+  border-color: $sirius-yellow-dark;
+}
+
+.text-sirius-yellow-light {
+  color: $sirius-yellow-light !important;
+}
+.bg-sirius-yellow-light {
+  background-color: $sirius-yellow-light !important;
+}
+.border-sirius-yellow-light {
+  border-color: $sirius-yellow-light;
+}
+
+.text-sirius-gray {
+  color: $sirius-gray !important;
+}
+.bg-sirius-gray {
+  background-color: $sirius-gray !important;
+}
+.border-sirius-gray {
+  border-color: $sirius-gray;
+}
+
+.text-sirius-gray-dark {
+  color: $sirius-gray-dark !important;
+}
+.bg-sirius-gray-dark {
+  background-color: $sirius-gray-dark !important;
+}
+.border-sirius-gray-dark {
+  border-color: $sirius-gray-dark;
+}
+
+.text-sirius-blue-dark {
+  color: $siriusblue-dark !important;
+}
+.bg-sirius-blue-dark {
+  background-color: $sirius-blue-dark !important;
+}
+.border-sirius-blue-dark {
+  border-color: $sirius-blue-dark;
 }
 
 

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="300px" height="200px" viewBox="0 0 300 200" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63.1 (92452) - https://sketch.com -->
+    <title>Inside_Job_grafik_default</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="300" height="205" rx="4"></rect>
+        <circle id="path-3" cx="22.5" cy="22.5" r="22.5"></circle>
+        <linearGradient x1="22.8385417%" y1="80.1822917%" x2="100%" y2="0%" id="linearGradient-5">
+            <stop stop-color="#4BA9ED" offset="0%"></stop>
+            <stop stop-color="#4AE8DB" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="Inside_Job_grafik_default" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Capaign" transform="translate(0.000000, -1.000000)">
+            <g id="Oval-13-Copy">
+                <mask id="mask-2" fill="white">
+                    <use xlink:href="#path-1"></use>
+                </mask>
+                <g id="Mask"></g>
+                <g id="Element_grafik" mask="url(#mask-2)">
+                    <g transform="translate(-61.350000, -165.887082)" id="Group-5">
+                        <g transform="translate(0.349611, 0.887082)">
+                            <g id="Group-4" transform="translate(8.000000, 0.000000)">
+                                <circle id="Oval" stroke="#68D3E3" stroke-width="2" cx="175" cy="175" r="174"></circle>
+                                <g id="Oval" transform="translate(254.000000, 305.000000)">
+                                    <mask id="mask-4" fill="white">
+                                        <use xlink:href="#path-3"></use>
+                                    </mask>
+                                    <use id="Mask" fill="#4BA9ED" xlink:href="#path-3"></use>
+                                    <circle stroke="#FFFFFF" stroke-width="2" mask="url(#mask-4)" cx="-79" cy="-130" r="174"></circle>
+                                </g>
+                            </g>
+                            <g id="Group-3" transform="translate(0.000000, 4.000000)" stroke="url(#linearGradient-5)" stroke-width="2">
+                                <circle id="Mask" cx="159" cy="159.5" r="158"></circle>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

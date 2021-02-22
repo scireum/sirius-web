@@ -1,0 +1,9 @@
+<i:arg type="String" name="permission" default=""/>
+
+<i:pragma name="description">
+    Checks if the current user has the wanted permission.
+</i:pragma>
+
+<i:if test="user().hasPermission(permission)">
+    <i:render name="body"/>
+</i:if>

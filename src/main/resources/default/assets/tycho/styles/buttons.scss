@@ -1,0 +1,16 @@
+.btn-outline-link {
+  border: 1px solid $grayLight;
+  border-radius: 4px;
+}
+
+.btn-link {
+  color: inherit;
+}
+
+.btn-link.active,
+.btn-link:hover,
+.dropdown.show > .btn-link {
+  color: #fff !important;
+  background-color: $primary-color;
+  border-color: $primary-color-dark;
+}

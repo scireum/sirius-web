@@ -1,0 +1,27 @@
+<i:arg type="String" name="labelKey" default="" description="Contains the i18n key of the label to show."/>
+<i:arg type="String" name="label" default="@i18n(labelKey)" description="Contains an additional label to show."/>
+<i:arg type="String" name="labelClasses" default=""
+       description="Defines addition classes to add to the label."/>
+
+<i:pragma name="description">
+    Renders a dropdown menu which lists additional actions. (These are passed in via the body).
+    If no actions are present, no dropdown will be rendered.
+</i:pragma>
+
+<i:local name="actions" value="@renderToString('body')"/>
+<i:if test="isFilled(actions)">
+    <div class="dropdown">
+        <a class="btn btn-link" style="z-index: 3; position: relative" data-toggle="dropdown" aria-haspopup="true"
+           aria-expanded="false">
+            <span class="d-flex flex-row">
+                <i:if test="isFilled(label)">
+                    <span class="@labelClasses pr-2">@label</span>
+                </i:if>
+                <span><i class="fa fa-ellipsis-v"></i></span>
+            </span>
+        </a>
+        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+            <i:raw>@actions</i:raw>
+        </div>
+    </div>
+</i:if>

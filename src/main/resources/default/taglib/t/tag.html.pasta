@@ -1,0 +1,9 @@
+<i:arg type="String" name="color" default="gray" description="Specifies the color to use." />
+
+<i:pragma name="description">
+    Renders a colored tag using the given text.
+</i:pragma>
+
+<span class="border-sirius-@color tag mr-3 mb-2">
+    <i:render name="body" />
+</span>

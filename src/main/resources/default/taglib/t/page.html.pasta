@@ -48,40 +48,31 @@
         </i:render>
     </div>
 
-    <div id="wrapper-body">
-        <i:local name="currentScope" value="UserContext.getCurrentScope()" />
+    <div id="wrapper-body" class="d-flex flex-column">
+        <i:local name="currentScope" value="UserContext.getCurrentScope()"/>
         <i:if test="!ignoreDisasterMode && currentScope.is(sirius.web.security.MaintenanceInfo.class) && currentScope.as(sirius.web.security.MaintenanceInfo.class).isLocked()">
             <i:invoke template="/templates/tycho/page-disaster.html.pasta"/>
             <i:else>
                 <i:render name="header"/>
 
-
                 <div id="page-header">
 
                     <div class="container-fluid">
-                        <i:render name="aboveMessages"/>
-
-                        <i:render name="messages">
-                            <i:invoke template="/templates/tycho/page-messages.html.pasta"/>
-                        </i:render>
-
                         <div id="page-nav">
                             <i:render name="breadcrumbBar">
                                 <i:invoke template="/templates/tycho/page-breadcrumbs.html.pasta">
                                     <i:render name="breadcrumbs"/>
                                 </i:invoke>
                             </i:render>
-
-                             <div id="page-header-infos">
-                                <i:render name="headerInfos">
-                                </i:render>
-                            </div>
                         </div>
                     </div>
-
-
                 </div>
-                <div id="mainContainer" class="container-fluid">
+                <div id="main-container" class="container-fluid mb-2">
+                    <i:render name="page-header" />
+
+                    <i:render name="messages">
+                        <i:invoke template="/templates/tycho/page-messages.html.pasta"/>
+                    </i:render>
 
                     <i:render name="body"/>
                 </div>
