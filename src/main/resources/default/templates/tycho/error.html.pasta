@@ -1,12 +1,8 @@
-<i:arg type="sirius.kernel.async.CallContext" name="ctx" />
 <i:arg type="String" name="message" />
-<t:page title="@i18n('BasicController.404')">
+<t:page title="@i18n('BasicController.error')">
     <i:block name="breadcrumbBar" />
-
     <i:block name="page-header">
-        <t:pageHeader titleKey="BasicController.404">
-            <t:dot color="yellow">404 - Not Found</t:dot>
-        </t:pageHeader>
+        <t:pageHeader titleKey="BasicController.error" />
     </i:block>
 
     <div class="card">
