@@ -1067,7 +1067,12 @@ public class Response {
                 if (Strings.isEmpty(effectiveMessage)) {
                     effectiveMessage = status.toString();
                 }
-                template(status, "/templates/http/error.html.pasta", CallContext.getCurrent(), effectiveMessage);
+                template(status,
+                         "/templates/http/error.html.pasta",
+                         CallContext.getCurrent(),
+                         effectiveMessage,
+                         status.reasonPhrase(),
+                         status.code());
             }
         } catch (HandledException e) {
             Exceptions.ignore(e);

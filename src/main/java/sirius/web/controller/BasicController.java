@@ -162,7 +162,7 @@ public class BasicController implements Controller {
                 ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
             }
         } else {
-            ctx.respondWith().template("/templates/wondergem/error.html.pasta", error.getMessage());
+            ctx.respondWith().template("/templates/tycho/error.html.pasta", error.getMessage());
         }
     }
 
