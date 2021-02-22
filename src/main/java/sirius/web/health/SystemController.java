@@ -27,11 +27,13 @@ import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.health.metrics.Metrics;
 import sirius.kernel.nls.NLS;
 import sirius.web.controller.BasicController;
+import sirius.web.controller.Message;
 import sirius.web.controller.Page;
 import sirius.web.controller.Routed;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebServer;
 import sirius.web.security.Permission;
+import sirius.web.security.UserContext;
 
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -316,7 +318,7 @@ public class SystemController extends BasicController {
             Microtiming.setEnabled(false);
         }
 
-        String periodSinceReset = getPeriodSinceLastReset();
+        String periodSinceReset = NLS.convertDuration(System.currentTimeMillis() - Microtiming.getLastReset(), true, false);
 
         Page<String> page = new Page<>();
         page.bindToRequest(ctx);
@@ -356,10 +358,4 @@ public class SystemController extends BasicController {
                                                                                        .contains(query);
     }
 
-    private String getPeriodSinceLastReset() {
-        if (Microtiming.isEnabled()) {
-            return NLS.convertDuration(System.currentTimeMillis() - Microtiming.getLastReset(), true, true);
-        }
-        return "";
-    }
 }
