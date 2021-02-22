@@ -60,8 +60,8 @@ public class CompileError {
         if (line != null) {
             result.append("\n   ");
             result.append(line);
-            result.append("\n   ");
-            for (int i = 0; i < error.getPosition().getPos() - 2; i++) {
+            result.append("\n       ");
+            for (int i = 0; i < error.getPosition().getPos() - 1; i++) {
                 result.append(" ");
             }
             result.append("^\n");
