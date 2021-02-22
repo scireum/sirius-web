@@ -108,6 +108,18 @@ class CompilerSpec extends BaseSpecification {
         ctx.getTemplate().renderToString(TestObject.INSTANCE) == "est"
     }
 
+    def "generic type propagation works with null"() {
+        when:
+        def source = "<i:arg type=\"sirius.pasta.tagliatelle.TestObject\" name=\"test\"/>" +
+                "@test.emptyOptional().orElse(null).substring(1)"
+        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        List<CompileError> errors = new TemplateCompiler(ctx).compile()
+        then:
+        errors.size() == 0
+        and:
+        ctx.getTemplate().renderToString(TestObject.INSTANCE) == ""
+    }
+
     def "generic type propagation works for class parameters"() {
         when:
         def source = "@helper(sirius.pasta.tagliatelle.ExampleHelper.class).getTestValue()"

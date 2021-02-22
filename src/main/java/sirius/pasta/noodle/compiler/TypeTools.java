@@ -44,14 +44,14 @@ public class TypeTools {
         TypeVariable<?>[] variables = ((Class<?>) parameterizedType.getRawType()).getTypeParameters();
         Type[] actualParameters = parameterizedType.getActualTypeArguments();
         for (int i = 0; i < variables.length; i++) {
-            typeTable.put(variables[i].getName(), actualParameters[i]);
+            addTypeVariableInfo(variables[i].getName(), actualParameters[i]);
         }
 
         reduceTable();
     }
 
     /**
-     * Tries to derive even more type variables by inspecting the given method an its parameters.
+     * Tries to derive even more type variables by inspecting the given method and its parameters.
      * <p>
      * This essentially can derive type variables from class, object or array parameters.
      *
@@ -61,8 +61,8 @@ public class TypeTools {
      */
     public TypeTools withMethod(Method method, Node[] parameters) {
         for (TypeVariable<?> methodVariable : method.getTypeParameters()) {
-            typeTable.put(methodVariable.getName(),
-                          methodVariable.getBounds().length > 0 ? methodVariable.getBounds()[0] : Object.class);
+            addTypeVariableInfo(methodVariable.getName(),
+                                methodVariable.getBounds().length > 0 ? methodVariable.getBounds()[0] : Object.class);
         }
 
         for (int i = 0; i < method.getParameterCount() && i < parameters.length; i++) {
@@ -102,7 +102,7 @@ public class TypeTools {
 
         // For a constant class, we know the resulting type...
         if (parameter.isConstant() && Class.class.isAssignableFrom(parameter.getType())) {
-            typeTable.put(typeVariableName, (Class<?>) parameter.getConstantValue());
+            addTypeVariableInfo(typeVariableName, (Class<?>) parameter.getConstantValue());
         }
     }
 
@@ -114,7 +114,9 @@ public class TypeTools {
 
         String typeVariableName = ((TypeVariable<?>) parameterType).getName();
         Type genericType = parameter.getGenericType();
-        typeTable.put(typeVariableName, genericType == null ? parameter.getType() : genericType);
+        Type type = genericType == null ? parameter.getType() : genericType;
+
+        addTypeVariableInfo(typeVariableName, type);
     }
 
     private void propagateConstantValueArrayTypeInfos(Type parameterType, Node parameter) {
@@ -127,11 +129,18 @@ public class TypeTools {
         String typeVariableName =
                 ((TypeVariable<?>) ((GenericArrayType) parameterType).getGenericComponentType()).getName();
         if (parameter.getType().isArray()) {
-            typeTable.put(typeVariableName, parameter.getType().getComponentType());
+            addTypeVariableInfo(typeVariableName, parameter.getType().getComponentType());
         } else {
             // seems to be a var args parameter..
             Type genericType = parameter.getGenericType();
-            typeTable.put(typeVariableName, genericType == null ? parameter.getType() : genericType);
+            addTypeVariableInfo(typeVariableName, genericType == null ? parameter.getType() : genericType);
+        }
+    }
+
+    private void addTypeVariableInfo(String typeVariableName, Type type) {
+        // Ignore void as this info is useless for us and we might even override good info
+        if (type != void.class) {
+            typeTable.put(typeVariableName, type);
         }
     }
 
