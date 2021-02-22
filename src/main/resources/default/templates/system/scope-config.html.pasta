@@ -1,38 +1,45 @@
-<i:arg type="String" name="name" />
-<i:arg type="List" name="files" />
-<i:arg type="String" name="contents" />
+<i:arg type="String" name="name"/>
+<i:arg type="List" name="files"/>
+<i:arg type="String" name="contents"/>
 
-<w:page titleKey="ScopeDefaultConfigController.config">
+<t:page titleKey="ScopeDefaultConfigController.config">
     <i:block name="head">
-        <script src="/assets/wondergem/ace/ace.js" type="text/javascript"></script>
+        <script src="/assets/libs/ace/ace.js" type="text/javascript"></script>
     </i:block>
 
-     <i:block name="breadcrumbs">
-         <li>
-             <a href="/system/scope-config">@i18n("ScopeDefaultConfigController.config")</a>
-         </li>
-         <li>
-             <a href="/system/scope-config/@name">@name</a>
-         </li>
+    <i:block name="breadcrumbs">
+        <li>
+            <a href="/system/scope-config">@i18n("ScopeDefaultConfigController.config")</a>
+        </li>
+        <li>
+            <a href="/system/scope-config/@name">@name</a>
+        </li>
     </i:block>
 
-    <w:pageHeader titleKey="ScopeDefaultConfigController.config" />
+    <i:block name="page-header">
+        <t:pageHeader titleKey="ScopeDefaultConfigController.config"/>
+    </i:block>
 
-    <div class="row">
-        <div class="col-md-3">
-            <w:navbox>
-                <li class="nav-header">@i18n("ScopeDefaultConfigController.files")</li>
+    <t:sidebar>
+        <i:block name="sidebar">
+            <t:navbox labelKey="ScopeDefaultConfigController.files">
                 <i:for type="String" var="file" items="files">
-                    <li class="@if(name == file) { active }">
-                        <a href="/system/scope-config/@file" class="link">
-                            @file
-                        </a>
-                    </li>
+                    <t:navboxLink
+                            active="name == file"
+                            url="@apply('/system/scope-config/%s', file)"
+                            label="@file"/>
                 </i:for>
-            </w:navbox>
-        </div>
-        <div class="col-md-9">
-            <w:codeEditor mode="json" readonly="true">@contents</w:codeEditor>
-        </div>
-    </div>
-</w:page>
+                <t:navboxLink
+                        url="X"
+                        label="Test"/>
+                <t:navboxLink
+                        url="X"
+                        label="Test"/>
+                <t:navboxLink
+                        url="X"
+                        label="Test"/>
+            </t:navbox>
+        </i:block>
+        <t:codeEditor mode="text" readonly="true">@contents</t:codeEditor>
+    </t:sidebar>
+</t:page>

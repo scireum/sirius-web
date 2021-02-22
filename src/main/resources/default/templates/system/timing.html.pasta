@@ -3,47 +3,65 @@
 <i:arg type="Page" name="page"/>
 <i:arg type="String" name="periodSinceReset"/>
 
-<w:page title="Microtiming">
+<t:page title="Microtiming">
 
     <i:block name="breadcrumbs">
         <li><a href="/system/timing">Microtiming</a></li>
     </i:block>
 
-    <w:pageHeader>
-        Microtiming
-        <small class="pull-right" style="padding-top: 12px">@periodSinceReset</small>
-    </w:pageHeader>
+    <i:block name="page-header">
+        <t:pageHeader title="Microtiming">
+            <i:if test="enabled">
+                <t:dot color="green">Active</t:dot>
+                <t:inlineInfo label="Collecting for">
+                    @periodSinceReset
+                </t:inlineInfo>
+                <i:else>
+                    <t:dot color="gray">Inactive</t:dot>
+                </i:else>
+            </i:if>
+        </t:pageHeader>
+    </i:block>
 
-    <w:tableSearchHeader baseUrl="/system/timing" page="page">
-        @if (enabled) {
-            <a href="/system/timing?disable=true" class="btn btn-primary"><i class="fa fa-minus"></i> Disable</a>
-        } else {
-            <a href="/system/timing?enable=true" class="btn btn-primary"><i class="fa fa-plus"></i> Enable</a>
-        }
-    </w:tableSearchHeader>
+    <t:searchHeader baseUrl="/system/timing" page="page">
+        <i:if test="enabled">
+            <a href="/system/timing?disable=true" class="btn btn-outline-primary">
+                <i class="fa fa-minus"></i> <span class="d-none d-md-inline-block">Disable</span>
+            </a>
+            <i:else>
+                <a href="/system/timing?enable=true" class="btn btn-outline-primary">
+                    <i class="fa fa-plus"></i> <span class="d-none d-md-inline-block">Enable</span>
+                </a>
+            </i:else>
+        </i:if>
+    </t:searchHeader>
 
     <i:for type="Tuple" var="category" items="timings">
-        <w:heading label="@category.getFirst().toString()"/>
-        <table class="table table-striped">
-            <tr>
-                <th style="overflow: hidden">
-                    Key
-                </th>
-                <th class="align-right" style="overflow: hidden">
-                    Calls (Duration)
-                </th>
-            </tr>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">@category.getFirst().toString()</h5>
+                <table class="table mt-4">
+                    <tr>
+                        <th>
+                            Key
+                        </th>
+                        <th class="text-right">
+                            Calls (Duration)
+                        </th>
+                    </tr>
 
-            <i:for type="Tuple" var="timing" items="category.getSecond().as(java.util.Collection.class)">
-                <tr>
-                    <td style="overflow: hidden">
-                        <small>@timing.getFirst()</small>
-                    </td>
-                    <td class="align-right">
-                        @timing.getSecond()
-                    </td>
-                </tr>
-            </i:for>
-        </table>
+                    <i:for type="Tuple" var="timing" items="category.getSecond().as(java.util.Collection.class)">
+                        <tr>
+                            <td>
+                                @timing.getFirst()
+                            </td>
+                            <td class="text-right">
+                                @timing.getSecond()
+                            </td>
+                        </tr>
+                    </i:for>
+                </table>
+            </div>
+        </div>
     </i:for>
-</w:page>
+</t:page>

@@ -1,18 +1,10 @@
 <div class="row">
-    <div class="col-md-12" id="messageBox">
+    <div class="col-12" id="message-box">
         <i:for type="sirius.web.controller.Message" var="msg" items="UserContext.get().getMessages()">
-            <div class="alert @msg.getType().getCssClass()">
-                <i:raw>@msg.getMessage()</i:raw>
-                <i:if test="msg.getAction() != null">
-                    <i:if test="msg.isActionJavascript()">
-                        <a onclick="@msg.getAction()"
-                           class="link link-info">@msg.getActionLabel()</a>
-                        <i:else>
-                            <a href="@msg.getAction()"
-                               class="link link-info">@msg.getActionLabel()</a>
-                        </i:else>
-                    </i:if>
-                </i:if>
+            <div class="card full-border border-sirius-@msg.getType().getColor()-dark mb-4">
+                <div class="card-body">
+                    <i:raw>@msg.getMessage()</i:raw>
+                </div>
             </div>
         </i:for>
     </div>
