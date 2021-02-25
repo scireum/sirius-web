@@ -353,6 +353,9 @@ public class UserContext implements SubContext {
 
     /**
      * Returns "has-error" if an error was added for the given field.
+     * <p>
+     * Warning: Doesn't add an error to the given as the name might tell. This method will be removed with SIRI-335,
+     * the css class decision logic will be moved to Tagliatelle templates.
      *
      * @param field the field to check
      * @return "has-error" if an error was added for the given field, an empty string otherwise
