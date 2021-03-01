@@ -238,7 +238,6 @@ public class ExcelExport {
         if (sheetIndex < 0) {
             throw Exceptions.handle().withSystemErrorMessage("Workbook has no Sheet named '%s'.", name).handle();
         }
-        workbook.setSelectedTab(sheetIndex);
         currentSheet = workbook.getSheetAt(sheetIndex);
     }
 
