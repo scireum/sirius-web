@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 /**
@@ -67,7 +68,7 @@ public class ExcelExport {
 
     private final Workbook workbook;
     private Sheet currentSheet;
-    private final Map<String, Integer> rows = new HashMap<>();
+    private final Map<String, AtomicInteger> rows = new HashMap<>();
     private final Map<String, Integer> maxCols = new HashMap<>();
     private final CellStyle dateStyle;
     private final CellStyle numeric;
@@ -215,7 +216,7 @@ public class ExcelExport {
         } else {
             currentSheet = workbook.createSheet();
         }
-        rows.put(currentSheet.getSheetName(), 0);
+        rows.put(currentSheet.getSheetName(), new AtomicInteger(0));
         maxCols.put(currentSheet.getSheetName(), 0);
 
         currentSheet.createFreezePane(0, 1, 0, 1);
@@ -437,7 +438,7 @@ public class ExcelExport {
 
         maxCols.put(currentSheet.getSheetName(), Math.max(maxCols.get(currentSheet.getSheetName()), row.size()));
         int idx = 0;
-        Row r = currentSheet.createRow(getAndIncrementRowForSheet(currentSheet.getSheetName()));
+        Row r = currentSheet.createRow(rows.get(currentSheet.getSheetName()).getAndIncrement());
         for (Object entry : row) {
             addCell(r, entry, idx++, getCellStyleForObject(entry));
         }
@@ -459,7 +460,7 @@ public class ExcelExport {
             maxRowsReachedHandler.accept(currentSheet.getSheetName());
         }
         if (Strings.isFilled(determineMaxRowsReachedMessage())) {
-            Row r = currentSheet.createRow(getAndIncrementRowForSheet(currentSheet.getSheetName()));
+            Row r = currentSheet.createRow(rows.get(currentSheet.getSheetName()).getAndIncrement());
             addCell(r, determineMaxRowsReachedMessage(), 0, normalStyle);
             return true;
         }
@@ -467,11 +468,11 @@ public class ExcelExport {
     }
 
     private boolean isRowLimitExceeded() {
-        return rows.get(currentSheet.getSheetName()) > workbook.getSpreadsheetVersion().getMaxRows() - 1;
+        return rows.get(currentSheet.getSheetName()).get() > workbook.getSpreadsheetVersion().getMaxRows() - 1;
     }
 
     private boolean isLastRow() {
-        return rows.get(currentSheet.getSheetName()) == workbook.getSpreadsheetVersion().getMaxRows() - 1;
+        return rows.get(currentSheet.getSheetName()).get() == workbook.getSpreadsheetVersion().getMaxRows() - 1;
     }
 
     /**
@@ -603,12 +604,5 @@ public class ExcelExport {
     public ExcelExport withMaxRowsReachedHandler(Consumer<String> maxRowsReachedHandler) {
         this.maxRowsReachedHandler = maxRowsReachedHandler;
         return this;
-    }
-
-    private int getAndIncrementRowForSheet(String name) {
-        return rows.computeIfPresent(name, (key, integer) -> {
-            integer = integer + 1;
-            return integer;
-        }) - 1;
     }
 }
