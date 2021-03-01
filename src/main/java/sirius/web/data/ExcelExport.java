@@ -228,7 +228,7 @@ public class ExcelExport {
     /**
      * Sets the sheet provided as the current sheet to receive data.
      * <p>
-     * Note that this won't change the Sheet visible when the file is open.
+     * Note that this won't set the Sheet active when the file is opened.
      *
      * @param name the name of the worksheet
      */
