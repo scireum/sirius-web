@@ -51,7 +51,9 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -65,7 +67,7 @@ public class ExcelExport {
 
     private final Workbook workbook;
     private Sheet currentSheet;
-    private int rows = 0;
+    private final Map<String, Integer> rows = new HashMap<>();
     private int maxCols = 0;
     private final CellStyle dateStyle;
     private final CellStyle numeric;
@@ -207,7 +209,6 @@ public class ExcelExport {
         if (currentSheet != null) {
             autosizeColumns();
             addAutoFilter();
-            rows = 0;
             maxCols = 0;
         }
         if (Strings.isFilled(name)) {
@@ -215,6 +216,8 @@ public class ExcelExport {
         } else {
             currentSheet = workbook.createSheet();
         }
+        rows.put(currentSheet.getSheetName(), 0);
+
         currentSheet.createFreezePane(0, 1, 0, 1);
         PrintSetup ps = currentSheet.getPrintSetup();
         ps.setPaperSize(PrintSetup.A4_PAPERSIZE);
@@ -433,7 +436,7 @@ public class ExcelExport {
 
         maxCols = Math.max(maxCols, row.size());
         int idx = 0;
-        Row r = currentSheet.createRow(rows++);
+        Row r = currentSheet.createRow(getAndIncrementRowForSheet(currentSheet.getSheetName()));
         for (Object entry : row) {
             addCell(r, entry, idx++, getCellStyleForObject(entry));
         }
@@ -455,7 +458,7 @@ public class ExcelExport {
             maxRowsReachedHandler.accept(currentSheet.getSheetName());
         }
         if (Strings.isFilled(determineMaxRowsReachedMessage())) {
-            Row r = currentSheet.createRow(rows++);
+            Row r = currentSheet.createRow(getAndIncrementRowForSheet(currentSheet.getSheetName()));
             addCell(r, determineMaxRowsReachedMessage(), 0, normalStyle);
             return true;
         }
@@ -463,11 +466,11 @@ public class ExcelExport {
     }
 
     private boolean isRowLimitExceeded() {
-        return rows > workbook.getSpreadsheetVersion().getMaxRows() - 1;
+        return rows.get(currentSheet.getSheetName()) > workbook.getSpreadsheetVersion().getMaxRows() - 1;
     }
 
     private boolean isLastRow() {
-        return rows == workbook.getSpreadsheetVersion().getMaxRows() - 1;
+        return rows.get(currentSheet.getSheetName()) == workbook.getSpreadsheetVersion().getMaxRows() - 1;
     }
 
     /**
@@ -523,8 +526,9 @@ public class ExcelExport {
     }
 
     private void addAutoFilter() {
-        if (rows > 0 && maxCols > 0) {
-            currentSheet.setAutoFilter(new CellRangeAddress(0, rows - 1, 0, maxCols - 1));
+        int rowcount = rows.get(currentSheet.getSheetName());
+        if (rowcount > 0 && maxCols > 0) {
+            currentSheet.setAutoFilter(new CellRangeAddress(0, rowcount - 1, 0, maxCols - 1));
         }
     }
 
@@ -596,5 +600,12 @@ public class ExcelExport {
     public ExcelExport withMaxRowsReachedHandler(Consumer<String> maxRowsReachedHandler) {
         this.maxRowsReachedHandler = maxRowsReachedHandler;
         return this;
+    }
+
+    private int getAndIncrementRowForSheet(String name) {
+        return rows.computeIfPresent(name, (key, integer) -> {
+            integer = integer + 1;
+            return integer;
+        }) - 1;
     }
 }
