@@ -229,11 +229,13 @@ public class ExcelExport {
     }
 
     /**
-     * Sets the sheet provided as the currently selected sheet.
+     * Sets the sheet provided as the current sheet to receive data.
+     * <p>
+     * Note that this won't change the Sheet visible when the file is open.
      *
      * @param name the name of the worksheet
      */
-    public void selectSheet(String name) {
+    public void setCurrentSheet(String name) {
         int sheetIndex = workbook.getSheetIndex(name);
         if (sheetIndex < 0) {
             throw Exceptions.handle().withSystemErrorMessage("Workbook has no Sheet named '%s'.", name).handle();
