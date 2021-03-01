@@ -68,7 +68,7 @@ public class ExcelExport {
     private final Workbook workbook;
     private Sheet currentSheet;
     private final Map<String, Integer> rows = new HashMap<>();
-    private int maxCols = 0;
+    private final Map<String, Integer> maxCols = new HashMap<>();
     private final CellStyle dateStyle;
     private final CellStyle numeric;
     private final CellStyle borderStyle;
@@ -209,7 +209,6 @@ public class ExcelExport {
         if (currentSheet != null) {
             autosizeColumns();
             addAutoFilter();
-            maxCols = 0;
         }
         if (Strings.isFilled(name)) {
             currentSheet = workbook.createSheet(WorkbookUtil.createSafeSheetName(name));
@@ -217,6 +216,7 @@ public class ExcelExport {
             currentSheet = workbook.createSheet();
         }
         rows.put(currentSheet.getSheetName(), 0);
+        maxCols.put(currentSheet.getSheetName(), 0);
 
         currentSheet.createFreezePane(0, 1, 0, 1);
         PrintSetup ps = currentSheet.getPrintSetup();
@@ -434,7 +434,7 @@ public class ExcelExport {
             return this;
         }
 
-        maxCols = Math.max(maxCols, row.size());
+        maxCols.put(currentSheet.getSheetName(), Math.max(maxCols.get(currentSheet.getSheetName()), row.size()));
         int idx = 0;
         Row r = currentSheet.createRow(getAndIncrementRowForSheet(currentSheet.getSheetName()));
         for (Object entry : row) {
@@ -526,9 +526,10 @@ public class ExcelExport {
     }
 
     private void addAutoFilter() {
-        int rowcount = rows.get(currentSheet.getSheetName());
-        if (rowcount > 0 && maxCols > 0) {
-            currentSheet.setAutoFilter(new CellRangeAddress(0, rowcount - 1, 0, maxCols - 1));
+        int rowCount = rows.get(currentSheet.getSheetName());
+        int colCount = maxCols.get(currentSheet.getSheetName());
+        if (rowCount > 0 && colCount > 0) {
+            currentSheet.setAutoFilter(new CellRangeAddress(0, rowCount - 1, 0, colCount - 1));
         }
     }
 
@@ -537,7 +538,8 @@ public class ExcelExport {
             // we do not want to autosize columns of streamed excel sheets, because of performance reasons
             return;
         }
-        for (short col = 0; col < maxCols; col++) {
+        int colCount = maxCols.get(currentSheet.getSheetName());
+        for (short col = 0; col < colCount; col++) {
             // Don't distort images
             if (!pictureCols.contains(col)) {
                 currentSheet.autoSizeColumn(col);
