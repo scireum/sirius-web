@@ -207,10 +207,6 @@ public class ExcelExport {
      * @param name the name of the worksheet, if <tt>null</tt> a default name is choosen
      */
     public void createSheet(@Nullable String name) {
-        if (currentSheet != null) {
-            autosizeColumns();
-            addAutoFilter();
-        }
         if (Strings.isFilled(name)) {
             currentSheet = workbook.createSheet(WorkbookUtil.createSafeSheetName(name));
         } else {
@@ -510,12 +506,13 @@ public class ExcelExport {
     public void writeToStream(OutputStream stream) {
         try {
             try (OutputStream out = stream) {
-                // Make it pretty...
-                autosizeColumns();
+                for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+                    // Make it pretty...
+                    autosizeColumns(workbook.getSheetAt(i));
 
-                // Add autofilter...
-                addAutoFilter();
-
+                    // Add autofilter...
+                    addAutoFilter(workbook.getSheetAt(i));
+                }
                 workbook.write(out);
             }
         } catch (IOException e) {
@@ -527,24 +524,24 @@ public class ExcelExport {
         }
     }
 
-    private void addAutoFilter() {
-        int rowCount = rows.get(currentSheet.getSheetName());
-        int colCount = maxCols.get(currentSheet.getSheetName());
+    private void addAutoFilter(Sheet sheet) {
+        int rowCount = rows.get(sheet.getSheetName()).get();
+        int colCount = maxCols.get(sheet.getSheetName());
         if (rowCount > 0 && colCount > 0) {
-            currentSheet.setAutoFilter(new CellRangeAddress(0, rowCount - 1, 0, colCount - 1));
+            sheet.setAutoFilter(new CellRangeAddress(0, rowCount - 1, 0, colCount - 1));
         }
     }
 
-    private void autosizeColumns() {
-        if (currentSheet instanceof SXSSFSheet) {
+    private void autosizeColumns(Sheet sheet) {
+        if (sheet instanceof SXSSFSheet) {
             // we do not want to autosize columns of streamed excel sheets, because of performance reasons
             return;
         }
-        int colCount = maxCols.get(currentSheet.getSheetName());
+        int colCount = maxCols.get(sheet.getSheetName());
         for (short col = 0; col < colCount; col++) {
             // Don't distort images
             if (!pictureCols.contains(col)) {
-                currentSheet.autoSizeColumn(col);
+                sheet.autoSizeColumn(col);
             }
         }
     }
