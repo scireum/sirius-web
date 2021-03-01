@@ -226,6 +226,20 @@ public class ExcelExport {
     }
 
     /**
+     * Sets the sheet provided as the currently selected sheet.
+     *
+     * @param name the name of the worksheet
+     */
+    public void selectSheet(String name) {
+        int sheetIndex = workbook.getSheetIndex(name);
+        if (sheetIndex < 0) {
+            throw Exceptions.handle().withSystemErrorMessage("Workbook has no Sheet named '%s'.", name).handle();
+        }
+        workbook.setSelectedTab(sheetIndex);
+        currentSheet = workbook.getSheetAt(sheetIndex);
+    }
+
+    /**
      * Creates a new export which uses the legacy Excel'97 format (.xls).
      *
      * @return a new exporter using the Excel'97 format
