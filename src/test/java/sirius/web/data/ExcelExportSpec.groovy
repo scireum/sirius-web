@@ -91,13 +91,13 @@ class ExcelExportSpec extends BaseSpecification {
         def data = [["S1-A-1", "S1-B-1", "S1-C-1"], ["S1-A-2", "S1-B-2", "S1-C-2"], ["S2-A-1", "S2-B-1", "S2-C-1"], ["S2-A-2", "S2-B-2", "S2-C-2"]]
         when:
         ExcelExport export = ExcelExport.asStreamingXLSX(false)
-        export.createSheet("First Sheet")
+        export.createSheet()
         export.addRowAsList(data[0] as ArrayList)
-        export.createSheet("Second Sheet")
+        export.createSheet()
         export.addRowAsList(data[2] as ArrayList)
-        export.setCurrentSheet("First Sheet")
+        export.setCurrentSheet(0)
         export.addRowAsList(data[1] as ArrayList)
-        export.setCurrentSheet("Second Sheet")
+        export.setCurrentSheet(1)
         export.addRowAsList(data[3] as ArrayList)
         export.writeToStream(new FileOutputStream(testFile))
         then:
