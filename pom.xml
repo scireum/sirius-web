@@ -14,7 +14,7 @@
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
     <properties>
-        <sirius.kernel>dev-20.5.1</sirius.kernel>
+        <sirius.kernel>dev-20.5.2</sirius.kernel>
     </properties>
 
     <repositories>
