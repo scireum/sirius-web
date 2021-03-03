@@ -51,8 +51,11 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 /**
@@ -65,8 +68,8 @@ public class ExcelExport {
 
     private final Workbook workbook;
     private Sheet currentSheet;
-    private int rows = 0;
-    private int maxCols = 0;
+    private final Map<Integer, AtomicInteger> rows = new HashMap<>();
+    private final Map<Integer, Integer> maxCols = new HashMap<>();
     private final CellStyle dateStyle;
     private final CellStyle numeric;
     private final CellStyle borderStyle;
@@ -204,17 +207,15 @@ public class ExcelExport {
      * @param name the name of the worksheet, if <tt>null</tt> a default name is choosen
      */
     public void createSheet(@Nullable String name) {
-        if (currentSheet != null) {
-            autosizeColumns();
-            addAutoFilter();
-            rows = 0;
-            maxCols = 0;
-        }
         if (Strings.isFilled(name)) {
             currentSheet = workbook.createSheet(WorkbookUtil.createSafeSheetName(name));
         } else {
             currentSheet = workbook.createSheet();
         }
+        int currentSheetIndex = workbook.getSheetIndex(currentSheet);
+        rows.put(currentSheetIndex, new AtomicInteger(0));
+        maxCols.put(currentSheetIndex, 0);
+
         currentSheet.createFreezePane(0, 1, 0, 1);
         PrintSetup ps = currentSheet.getPrintSetup();
         ps.setPaperSize(PrintSetup.A4_PAPERSIZE);
@@ -223,6 +224,17 @@ public class ExcelExport {
         ps.setFitHeight((short) 0);
         currentSheet.setAutobreaks(true);
         currentSheet.setRepeatingRows(new CellRangeAddress(0, 0, -1, -1));
+    }
+
+    /**
+     * Sets the sheet provided as the current sheet to receive data.
+     * <p>
+     * Note that this won't set the Sheet active when the file is opened.
+     *
+     * @param sheetIndex the index of the sheet to retrieve. The first sheet has index 0.
+     */
+    public void setCurrentSheet(int sheetIndex) {
+        currentSheet = workbook.getSheetAt(sheetIndex);
     }
 
     /**
@@ -417,9 +429,10 @@ public class ExcelExport {
             return this;
         }
 
-        maxCols = Math.max(maxCols, row.size());
+        int currentSheetIndex = workbook.getSheetIndex(currentSheet);
+        maxCols.put(currentSheetIndex, Math.max(maxCols.get(currentSheetIndex), row.size()));
         int idx = 0;
-        Row r = currentSheet.createRow(rows++);
+        Row r = currentSheet.createRow(rows.get(currentSheetIndex).getAndIncrement());
         for (Object entry : row) {
             addCell(r, entry, idx++, getCellStyleForObject(entry));
         }
@@ -441,7 +454,7 @@ public class ExcelExport {
             maxRowsReachedHandler.accept(currentSheet.getSheetName());
         }
         if (Strings.isFilled(determineMaxRowsReachedMessage())) {
-            Row r = currentSheet.createRow(rows++);
+            Row r = currentSheet.createRow(rows.get(workbook.getSheetIndex(currentSheet)).getAndIncrement());
             addCell(r, determineMaxRowsReachedMessage(), 0, normalStyle);
             return true;
         }
@@ -449,11 +462,12 @@ public class ExcelExport {
     }
 
     private boolean isRowLimitExceeded() {
-        return rows > workbook.getSpreadsheetVersion().getMaxRows() - 1;
+        return rows.get(workbook.getSheetIndex(currentSheet)).get() > workbook.getSpreadsheetVersion().getMaxRows() - 1;
     }
 
     private boolean isLastRow() {
-        return rows == workbook.getSpreadsheetVersion().getMaxRows() - 1;
+        return rows.get(workbook.getSheetIndex(currentSheet)).get()
+               == workbook.getSpreadsheetVersion().getMaxRows() - 1;
     }
 
     /**
@@ -491,12 +505,13 @@ public class ExcelExport {
     public void writeToStream(OutputStream stream) {
         try {
             try (OutputStream out = stream) {
-                // Make it pretty...
-                autosizeColumns();
+                for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+                    // Make it pretty...
+                    autosizeColumns(workbook.getSheetAt(i));
 
-                // Add autofilter...
-                addAutoFilter();
-
+                    // Add autofilter...
+                    addAutoFilter(workbook.getSheetAt(i));
+                }
                 workbook.write(out);
             }
         } catch (IOException e) {
@@ -508,21 +523,25 @@ public class ExcelExport {
         }
     }
 
-    private void addAutoFilter() {
-        if (rows > 0 && maxCols > 0) {
-            currentSheet.setAutoFilter(new CellRangeAddress(0, rows - 1, 0, maxCols - 1));
+    private void addAutoFilter(Sheet sheet) {
+        int sheetIndex = workbook.getSheetIndex(sheet);
+        int rowCount = rows.get(sheetIndex).get();
+        int colCount = maxCols.get(sheetIndex);
+        if (rowCount > 0 && colCount > 0) {
+            sheet.setAutoFilter(new CellRangeAddress(0, rowCount - 1, 0, colCount - 1));
         }
     }
 
-    private void autosizeColumns() {
-        if (currentSheet instanceof SXSSFSheet) {
+    private void autosizeColumns(Sheet sheet) {
+        if (sheet instanceof SXSSFSheet) {
             // we do not want to autosize columns of streamed excel sheets, because of performance reasons
             return;
         }
-        for (short col = 0; col < maxCols; col++) {
+        int colCount = maxCols.get(workbook.getSheetIndex(sheet));
+        for (short col = 0; col < colCount; col++) {
             // Don't distort images
             if (!pictureCols.contains(col)) {
-                currentSheet.autoSizeColumn(col);
+                sheet.autoSizeColumn(col);
             }
         }
     }

@@ -85,6 +85,34 @@ class ExcelExportSpec extends BaseSpecification {
         Files.delete(testFile)
     }
 
+    def "create excel sheet with multiple sheets"() {
+        given:
+        File testFile = File.createTempFile("excel-output", ".xlsx")
+        def data = [["S1-A-1", "S1-B-1", "S1-C-1"], ["S1-A-2", "S1-B-2", "S1-C-2"], ["S2-A-1", "S2-B-1", "S2-C-1"], ["S2-A-2", "S2-B-2", "S2-C-2"]]
+        when:
+        ExcelExport export = ExcelExport.asStreamingXLSX(false)
+        export.createSheet()
+        export.addRowAsList(data[0] as ArrayList)
+        export.createSheet()
+        export.addRowAsList(data[2] as ArrayList)
+        export.setCurrentSheet(0)
+        export.addRowAsList(data[1] as ArrayList)
+        export.setCurrentSheet(1)
+        export.addRowAsList(data[3] as ArrayList)
+        export.writeToStream(new FileOutputStream(testFile))
+        then:
+        def currentData = 0
+        XLSXProcessor.create(testFile.getName(), new FileInputStream(testFile), true)
+                     .run({
+                              lineNum, row ->
+                                  assert row.asList() == data[currentData]
+                                  currentData++
+                          },
+                          { e -> false })
+        cleanup:
+        Files.delete(testFile)
+    }
+
     @Scope(Scope.SCOPE_NIGHTLY)
     def "only allow 1 million rows in an xlsx excel sheet"() {
         given:
