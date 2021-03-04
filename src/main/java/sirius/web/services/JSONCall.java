@@ -71,7 +71,7 @@ public class JSONCall {
      * <p>
      * This will mark the underlying {@link Outcall} as a POST request.
      *
-     * @return the an input which can be used to generate an JSON document which is sent to the URL
+     * @return the an input which can be used to generate a JSON document which is sent to the URL
      * @throws IOException in case of an IO error while sending the JSON document
      */
     public JSONStructuredOutput getOutput() throws IOException {
