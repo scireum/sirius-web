@@ -2043,7 +2043,7 @@ public class WebContext implements SubContext {
         try {
             InterfaceHttpPostRequestDecoder copy = this.postDecoder;
             postDecoder = null;
-            copy.cleanFiles();
+            copy.destroy();
         } catch (Exception e) {
             Exceptions.handle(WebServer.LOG, e);
         }
