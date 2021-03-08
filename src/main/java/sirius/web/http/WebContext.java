@@ -1702,7 +1702,8 @@ public class WebContext implements SubContext {
         if (!content.isInMemory()) {
             return new FileInputStream(content.getFile());
         }
-        return new ByteBufInputStream(content.getByteBuf().copy());
+
+        return new ByteArrayInputStream(content.get());
     }
 
     /**
