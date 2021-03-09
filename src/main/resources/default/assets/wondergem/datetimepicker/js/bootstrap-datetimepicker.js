@@ -1179,6 +1179,10 @@
              * Shows the widget. Possibly will emit dp.show and dp.change
              */
             show = function () {
+                if (input.prop('disabled') || (options.ignoreReadonly && input.prop('readonly')) || widget) {
+                    return picker;
+                }
+
                 var currentMoment,
                     useCurrentGranularity = {
                         'year': function (m) {
@@ -1196,11 +1200,8 @@
                         'minute': function (m) {
                             return m.seconds(0);
                         }
-                    };
+                };
 
-                if (input.prop('disabled') || (!options.ignoreReadonly && input.prop('readonly')) || widget) {
-                    return picker;
-                }
                 if (input.val() !== undefined && input.val().trim().length !== 0) {
                     setValue(parseInputDate(input.val().trim()));
                 } else if (unset && options.useCurrent && (options.inline || (input.is('input') && input.val().trim().length === 0))) {
