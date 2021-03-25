@@ -167,9 +167,8 @@ class TunnelHandler implements AsyncHandler<String> {
             return State.ABORT;
         }
 
-        if (!response.headers().contains(HttpHeaderNames.CONTENT_TYPE)) {
-            response.setContentTypeHeader(response.name != null ? response.name : url);
-        }
+        overrideContentTypeIfNecessary();
+
         response.setDateAndCacheHeaders(lastModified,
                                         response.cacheSeconds == null ? Response.HTTP_CACHE : response.cacheSeconds,
                                         response.isPrivate);
@@ -179,6 +178,18 @@ class TunnelHandler implements AsyncHandler<String> {
         }
 
         return State.CONTINUE;
+    }
+
+    /**
+     * Overrides the {@link HttpHeaderNames#CONTENT_TYPE} header if the current value is not clearly specified.
+     */
+    private void overrideContentTypeIfNecessary() {
+        String currentType = response.headers().get(HttpHeaderNames.CONTENT_TYPE);
+
+        if (Strings.isEmpty(currentType) || MimeHelper.APPLICATION_OCTET_STREAM.equals(currentType)) {
+            response.setHeader(HttpHeaderNames.CONTENT_TYPE,
+                               MimeHelper.guessMimeType(response.name != null ? response.name : url));
+        }
     }
 
     private long forwardHeadersAndDetermineLastModified(HttpHeaders httpHeaders) {
