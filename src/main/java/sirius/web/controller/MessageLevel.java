@@ -38,9 +38,7 @@ public enum MessageLevel {
      * Returns the Bootstrap CSS class used to render the message.
      *
      * @return the name of the css class used to render the message
-     * @deprecated Used by Wonderger. Tycho will use getColor.
      */
-    @Deprecated
     public String getCssClass() {
         return cssClass;
     }
