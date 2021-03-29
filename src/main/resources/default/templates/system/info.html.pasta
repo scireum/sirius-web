@@ -23,10 +23,10 @@
 
     <div class="row">
         <t:datacard title="Headers">
-            <table class="table table-bordered">
+            <table class="table">
                 <i:for type="String" var="name" items="webContext.getRequest().headers().names()">
                     <tr>
-                        <td>@name</td>
+                        <td><b>@name</b></td>
                         <td class="text-right">
                             <i:for type="String" var="value" items="webContext.getRequest().headers().getAll(name)">
                                 <div style="word-wrap: break-word; word-break: break-all">@value</div>
@@ -40,7 +40,7 @@
     <i:if test="!webContext.getCookies().isEmpty()">
         <div class="row">
             <t:datacard title="Cookies">
-                <table class="table table-bordered">
+                <table class="table">
                     <tr>
                         <th>Name</th>
                         <th class="text-right">
@@ -68,7 +68,7 @@
     <i:if test="!webContext.getSessionKeys().isEmpty()">
         <div class="row">
             <t:datacard title="Client Session">
-                <table class="table table-bordered">
+                <table class="table">
                     <i:for type="String" var="name" items="webContext.getSessionKeys()">
                         <tr>
                             <td>@name</td>
