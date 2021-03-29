@@ -12,12 +12,17 @@
     font-weight: lighter;
   }
 
-  border: none;
+  border-width: 0;
   border-radius: 0;
 
 }
 
-.card.border {
+.card.card-border {
+  border-width: 1px;
+  border-style: solid;
+}
+
+.card.left-border {
   border-left-width: 4px;
   border-left-style: solid;
 }

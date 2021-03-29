@@ -1,7 +1,21 @@
+
 .cursor-pointer {
   cursor: pointer;
 }
 
 a {
   color: $primary-color;
+}
+
+.btn-primary {
+  background-color: $primary-color;
+}
+
+.btn-outline-primary {
+  border-color: $primary-color;
+}
+
+// Hide the first divider in each menu...
+.dropdown-menu div:first-of-type.dropdown-divider {
+  display: none;
 }

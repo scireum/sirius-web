@@ -11,7 +11,7 @@
 </i:pragma>
 
 <div class="col mb-4">
-    <div class="card h-100 @classes">
+    <div class="card card-border h-100 @classes">
         <div class="card-body">
             <div class="d-flex justify-content-between">
                 <h5 class="card-title">@title</h5>

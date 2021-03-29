@@ -2,7 +2,7 @@
     Renders a card/box with hopefully helpful content.
 </i:pragma>
 
-<div class="card border border-sirius-blue-dark">
+<div class="card left-border border-sirius-blue-dark">
     <div class="card-body">
         <div class="d-flex flex-row">
             <div class="mr-auto">

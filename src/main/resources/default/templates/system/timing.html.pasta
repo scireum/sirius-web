@@ -37,7 +37,7 @@
     </t:searchHeader>
 
     <i:for type="Tuple" var="category" items="timings">
-        <div class="card">
+        <div class="card mb-4">
             <div class="card-body">
                 <h5 class="card-title">@category.getFirst().toString()</h5>
                 <table class="table mt-4">

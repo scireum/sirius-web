@@ -1,0 +1,20 @@
+<i:arg type="String" name="titleKey" default=""/>
+<i:arg type="String" name="title" default="@i18n(titleKey)"/>
+<i:arg type="String" name="icon" default=""/>
+<i:arg type="String" name="permission" default=""/>
+<i:arg type="String" name="framework" default=""/>
+<i:arg type="String" name="class" default=""/>
+<i:arg type="String" name="url"/>
+
+<i:pragma name="description" value="Renders menu entry within a tycho template"/>
+
+<i:if test="isFrameworkEnabled(framework)">
+    <t:permission permission="@permission">
+        <a href="@url" class="dropdown-item @class">
+            <i:if test="isFilled(icon)">
+                <i class="fa fa-fw @icon"></i>
+            </i:if>
+            @title
+        </a>
+    </t:permission>
+</i:if>
