@@ -1702,7 +1702,8 @@ public class WebContext implements SubContext {
         if (!content.isInMemory()) {
             return new FileInputStream(content.getFile());
         }
-        return new ByteBufInputStream(content.getByteBuf().copy());
+
+        return new ByteArrayInputStream(content.get());
     }
 
     /**
@@ -2042,7 +2043,7 @@ public class WebContext implements SubContext {
         try {
             InterfaceHttpPostRequestDecoder copy = this.postDecoder;
             postDecoder = null;
-            copy.cleanFiles();
+            copy.destroy();
         } catch (Exception e) {
             Exceptions.handle(WebServer.LOG, e);
         }

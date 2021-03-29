@@ -45,6 +45,16 @@ steps:
       event:
       - pull_request
 
+  - name: deploy
+    image: hub.scireum.com/scireum/sirius-build:latest
+    commands:
+      - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' pom.xml
+      - mvn clean deploy -DskipTests
+    volumes: *scireum_volumes
+    when:
+      event:
+        - tag
+
   - name: sonar
     image: hub.scireum.com/scireum/sirius-build:latest
     commands:
@@ -54,16 +64,6 @@ steps:
     when:
       event:
         - tag
-
-  - name: deploy
-    image: hub.scireum.com/scireum/sirius-build:latest
-    commands:
-      - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' pom.xml
-      - mvn clean deploy -DskipTests
-    volumes: *scireum_volumes
-    when:
-      event:
-      - tag
 
 volumes:
   - name: docker_socket

@@ -78,7 +78,7 @@ public class InputStreamHandler extends InputStream implements ContentHandler {
     /**
      * Internal buffer which keeps written data until it is read
      */
-    private BlockingQueue<ByteBuf> transferQueue;
+    private final BlockingQueue<ByteBuf> transferQueue;
 
     /**
      * Contains the chunk on which reads are currently performed

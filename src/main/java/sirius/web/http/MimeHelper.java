@@ -120,6 +120,11 @@ public class MimeHelper {
      */
     public static final String VIDEO_QUICKTIME = "video/quicktime";
 
+    /**
+     * Mime type of miscellaneous binary files or for files where the type is not further specified
+     */
+    public static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
+
     private static final Map<String, String> mimeTable = new TreeMap<>();
 
     /*
@@ -139,11 +144,11 @@ public class MimeHelper {
         mimeTable.put("au", "audio/basic");
         mimeTable.put("avi", "video/x-msvideo");
         mimeTable.put("bcpio", "application/x-bcpio");
-        mimeTable.put("bin", "application/octet-stream");
+        mimeTable.put("bin", APPLICATION_OCTET_STREAM);
         mimeTable.put("bmp", "image/bmp");
         mimeTable.put("cdf", "application/x-netcdf");
         mimeTable.put("cgm", "image/cgm");
-        mimeTable.put("class", "application/octet-stream");
+        mimeTable.put("class", APPLICATION_OCTET_STREAM);
         mimeTable.put("cpio", "application/x-cpio");
         mimeTable.put("cpt", "application/mac-compactpro");
         mimeTable.put("csh", "application/x-csh");
@@ -154,9 +159,9 @@ public class MimeHelper {
         mimeTable.put("dir", "application/x-director");
         mimeTable.put("djv", "image/vnd.djvu");
         mimeTable.put("djvu", "image/vnd.djvu");
-        mimeTable.put("dll", "application/octet-stream");
-        mimeTable.put("dmg", "application/octet-stream");
-        mimeTable.put("dms", "application/octet-stream");
+        mimeTable.put("dll", APPLICATION_OCTET_STREAM);
+        mimeTable.put("dmg", APPLICATION_OCTET_STREAM);
+        mimeTable.put("dms", APPLICATION_OCTET_STREAM);
         mimeTable.put("doc", "application/msword");
         mimeTable.put("docm", "application/vnd.ms-word.document.macroEnabled.12");
         mimeTable.put("docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
@@ -170,7 +175,7 @@ public class MimeHelper {
         mimeTable.put("eot", "application/vnd.ms-fontobject");
         mimeTable.put("eps", "application/postscript");
         mimeTable.put("etx", "text/x-setext");
-        mimeTable.put("exe", "application/octet-stream");
+        mimeTable.put("exe", APPLICATION_OCTET_STREAM);
         mimeTable.put("ez", "application/andrew-inset");
         mimeTable.put("gif", "image/gif");
         mimeTable.put("gram", "application/srgs");
@@ -198,9 +203,9 @@ public class MimeHelper {
         mimeTable.put("json", "application/json");
         mimeTable.put("kar", "audio/midi");
         mimeTable.put("latex", "application/x-latex");
-        mimeTable.put("lha", "application/octet-stream");
+        mimeTable.put("lha", APPLICATION_OCTET_STREAM);
         mimeTable.put("log", TEXT_PLAIN);
-        mimeTable.put("lzh", "application/octet-stream");
+        mimeTable.put("lzh", APPLICATION_OCTET_STREAM);
         mimeTable.put("m3u", "audio/x-mpegurl");
         mimeTable.put("m4a", "audio/mp4a-latm");
         mimeTable.put("m4b", "audio/mp4a-latm");
@@ -285,7 +290,7 @@ public class MimeHelper {
         mimeTable.put("smi", "application/smil");
         mimeTable.put("smil", "application/smil");
         mimeTable.put("snd", "audio/basic");
-        mimeTable.put("so", "application/octet-stream");
+        mimeTable.put("so", APPLICATION_OCTET_STREAM);
         mimeTable.put("spl", "application/x-futuresplash");
         mimeTable.put("src", "application/x-wais-source");
         mimeTable.put("sv4cpio", "application/x-sv4cpio");
@@ -372,7 +377,7 @@ public class MimeHelper {
             }
         }
 
-        return "application/octet-stream";
+        return APPLICATION_OCTET_STREAM;
     }
 
     @SuppressWarnings({"squid:S1698", "java:S4973"})
