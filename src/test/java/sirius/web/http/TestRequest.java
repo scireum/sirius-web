@@ -22,8 +22,8 @@ import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.MemoryAttribute;
-import sirius.kernel.async.Barrier;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.async.CombinedFuture;
 import sirius.kernel.async.Promise;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Strings;
@@ -37,13 +37,13 @@ import javax.annotation.Nonnull;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Provides a test or mock instance of {@link sirius.web.http.WebContext}.
@@ -62,15 +62,15 @@ public class TestRequest extends WebContext implements HttpRequest {
     @Part
     private static DispatcherPipeline pipeline;
 
-    private HttpHeaders testHeaders = new DefaultHttpHeaders();
+    private final HttpHeaders testHeaders = new DefaultHttpHeaders();
+    private final Map<String, Object> parameters = Context.create();
+    private final List<Cookie> testCookies = new ArrayList<>();
+    private final  Map<String, String> testSession;
     private String testUri;
-    private Map<String, Object> parameters = Context.create();
     private InputStream resource;
     private HttpMethod testMethod;
     private boolean preDispatch;
-    private List<Cookie> testCookies = new ArrayList<>();
     protected Promise<TestResponse> testResponsePromise = new Promise<>();
-    private Map<String, String> testSession;
     protected boolean followRedirect = false;
 
     protected TestRequest() {
@@ -470,9 +470,9 @@ public class TestRequest extends WebContext implements HttpRequest {
      * @return the generated response
      */
     public TestResponse execute() {
-        Barrier barrier = Barrier.create();
+        CombinedFuture barrier = new CombinedFuture();
         barrier.add(executeAsync());
-        if (barrier.await(60, TimeUnit.SECONDS)) {
+        if (barrier.asFuture().await(Duration.ofSeconds(60))) {
             if (testResponsePromise.isSuccessful()) {
                 return testResponsePromise.get();
             } else {

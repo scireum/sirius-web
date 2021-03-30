@@ -37,14 +37,11 @@ public class CSVProcessor implements LineBasedProcessor {
         CSVReader reader = new CSVReader(new BOMReader(new InputStreamReader(input, StandardCharsets.UTF_8)));
         AtomicInteger rowCounter = new AtomicInteger(0);
         TaskContext tc = TaskContext.get();
-        RateLimit stateUpdateLimiter = tc.shouldUpdateState();
 
         reader.execute(row -> {
             try {
                 rowProcessor.handleRow(rowCounter.incrementAndGet(), row);
-                if (stateUpdateLimiter.check()) {
-                    tc.setState(NLS.get("LineBasedProcessor.linesProcessed"), rowCounter.get());
-                }
+                    tc.tryUpdateState(NLS.get("LineBasedProcessor.linesProcessed"), rowCounter.get());
             } catch (Exception e) {
                 if (!errorHandler.test(e)) {
                     throw e;
@@ -53,7 +50,7 @@ public class CSVProcessor implements LineBasedProcessor {
         });
 
         if (tc.isActive() && rowCounter.get() > 0) {
-            tc.setState(NLS.get("LineBasedProcessor.linesProcessed"), rowCounter.get());
+            tc.forceUpdateState(NLS.get("LineBasedProcessor.linesProcessed"), rowCounter.get());
         }
     }
 }
