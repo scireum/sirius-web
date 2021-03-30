@@ -4,14 +4,14 @@
  * to display user friendly timestamps.
  */
 sirius.ready(function () {
-   document.querySelectorAll('.cycle').forEach(function(node) {
-       if (sirius.isFilled(node.dataset.cycle)) {
-           node.setAttribute('title', node.dataset.cycle);
-           node.addEventListener('click', function() {
-               let originalText = node.textContent.trim();
-               node.textContent = node.dataset.cycle;
-               node.setAttribute('title', originalText);
-               node.dataset.cycle = originalText;
+   document.querySelectorAll('.cycle').forEach(function(_node) {
+       if (sirius.isFilled(_node.dataset.cycle)) {
+           _node.setAttribute('title', _node.dataset.cycle);
+           _node.addEventListener('click', function() {
+               let originalText = _node.textContent.trim();
+               _node.textContent = _node.dataset.cycle;
+               _node.setAttribute('title', originalText);
+               _node.dataset.cycle = originalText;
            });
        }
    });
