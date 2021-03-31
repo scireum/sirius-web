@@ -6,7 +6,7 @@
     the 'page-header' block of the page.
 
     The body of this tag can contain additional infos best represented using dot, tag or inlineInfo tags.
-    Also using the block 'actions' can be used to supply actions to be shown on the right and 'additional-actions'
+    Also using the block 'actions' can be used to supply actions to be shown on the right and 'additionalActions'
     can be used to provide a dropdown with further actions. Note that especially the 'actions' should regulate
     their visibility based on screen real estate...
 </i:pragma>
