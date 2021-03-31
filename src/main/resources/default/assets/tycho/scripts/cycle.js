@@ -1,6 +1,6 @@
 /**
  * Provides a tiny helper for links which have a "cycle" class. For such links, on click, their contents
- * if exchanged with the value given in data-cycle. This is e.g. used by t:smartDateTime or t:smartDate
+ * is exchanged with the value given in data-cycle. This is e.g. used by t:smartDateTime or t:smartDate
  * to display user friendly timestamps.
  */
 sirius.ready(function () {
