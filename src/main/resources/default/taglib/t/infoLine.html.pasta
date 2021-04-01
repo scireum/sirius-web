@@ -1,0 +1,23 @@
+<i:arg type="String" name="labelKey" default=""/>
+<i:arg type="String" name="label" default="@i18n(labelKey)"/>
+<i:arg type="String" name="value" default=""/>
+<i:arg type="Object" name="effectiveValue" default="isFilled(value) ? value : renderToString('body')"/>
+<i:arg type="String" name="class" default=""/>
+
+<i:pragma name="description">
+    Renders a name, value pair which fills up a whole line.
+</i:pragma>
+
+<i:if test="isFilled(effectiveValue)">
+    <div class="d-flex flex-row justify-content-between mb-2">
+        <div>@label</div>
+        <div class="text-right">
+            <i:if test="isFilled(value)">
+                @value
+                <i:else>
+                    <i:render name="body"/>
+                </i:else>
+            </i:if>
+        </div>
+    </div>
+</i:if>

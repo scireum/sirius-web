@@ -3,145 +3,101 @@
 <i:arg type="boolean" name="all"/>
 <i:arg type="String" name="uptime"/>
 
-<w:page title="@apply('[%s/%s] %s - Status', cluster.getClusterState(), cluster.getNodeState(), sirius.kernel.info.Product.getProduct().getName())">
-    <i:block name="head">
-        <style>
-            .GRAY {
-                color: #555555;
-            }
 
-            .GREEN {
-                color: #168d12;
-            }
-
-            .RED {
-                color: #9f3d33;
-            }
-
-            .YELLOW {
-                color: rgb(209, 170, 0);
-            }
-        </style>
-    </i:block>
-
+<t:page title="@apply('[%s/%s] %s - Status', cluster.getClusterState(), cluster.getNodeState(), sirius.kernel.info.Product.getProduct().getName())">
     <i:block name="breadcrumbs">
         <li><a href="/system/state">System State</a></li>
     </i:block>
 
-    <w:pageHeader>
-        <span class="@cluster.getClusterState()">System State</span>
-
-        <div class="pull-right">
-            <i:if test="all">
-                <a href="/system/state" class="btn btn-primary"><i class="fa fa-minus"></i> Less</a>
-                <a class="btn btn-default" href="/system/state?all=true"><i class="fa fa-refresh"></i></a>
+    <i:block name="page-header">
+        <t:pageHeader title="System State">
+            <i:if test="cluster.isAlarmPresent()">
+                <t:dot color="red">Alarm Present</t:dot>
                 <i:else>
-                    <a href="/system/state?all=true" class="btn btn-primary"><i class="fa fa-plus"></i> More</a>
-                    <a class="btn btn-default" href="/system/state"><i class="fa fa-refresh"></i></a>
+                    <t:dot color="green">No Alarm Present</t:dot>
                 </i:else>
             </i:if>
-        </div>
-        <div class="clearfix"></div>
-    </w:pageHeader>
+            <t:inlineInfo class="d-none d-md-block">
+                Failed <b>@cluster.countFailedIntervals()</b> of <b>@cluster.getMonitoringIntervals()</b> intervals
+                (Limit:
+                <b>@cluster.getCriticalIntervalLimit()</b>)
+            </t:inlineInfo>
+            <i:block name="actions">
+                <i:if test="all">
+                    <a href="/system/state" class="btn btn-link active mr-2">
+                        <i class="fa fa-plus"></i>
+                        <span class="d-none d-lg-inline">Show all</span>
+                        <a class="btn btn-link mr-2 d-none d-md-inline-block" href="/system/state?all=true"><i
+                                class="fa fa-sync"></i></a>
+                    </a>
+                    <i:else>
+                        <a href="/system/state?all=true" class="btn btn-link mr-2">
+                            <i class="fa fa-plus"></i>
+                            <span class="d-none d-lg-inline">Show all</span>
+                        </a>
+                        <a class="btn btn-link mr-2 d-none d-md-inline-block" href="/system/state"><i
+                                class="fa fa-sync"></i></a>
+                    </i:else>
+                </i:if>
+            </i:block>
+        </t:pageHeader>
+    </i:block>
 
-    <table class="table table-striped">
-        <tr>
-            <td class="@cluster.getAlarmState()">
-                Alarm Present
-            </td>
-            <td class="align-right @cluster.getAlarmState()">
-                @toUserString(cluster.isAlarmPresent())
-            </td>
-        </tr>
-        <tr>
-            <td>
-                Monitoring Intervals
-            </td>
-            <td class="align-right">
-                @cluster.getMonitoringIntervals()
-            </td>
-        </tr>
-        <tr>
-            <td>
-                Critical Intervals
-            </td>
-            <td class="align-right">
-                @cluster.getCriticalIntervalLimit()
-            </td>
-        </tr>
-        <tr>
-            <td>
-                Failed Intervals
-            </td>
-            <td class="align-right">
-                @cluster.countFailedIntervals()
-            </td>
-        </tr>
-    </table>
-    <w:heading>
-        <span class="@cluster.getNodeState()">Node State</span>
-        <small>@CallContext.getNodeName()</small>
-    </w:heading>
-
-    <table class="table table-striped">
-        <tr>
-            <td style="overflow: hidden">
-                Uptime
-            </td>
-            <td class="align-right" style="overflow: hidden">
-                @uptime
-            </td>
-        </tr>
-
-        <i:for type="sirius.kernel.health.metrics.Metric" var="m" items="metrics.getMetrics()">
-            <i:if test="all || m.getState() != sirius.kernel.health.metrics.MetricState.GRAY">
-                <tr class="@m.getState()">
-                    <td style="overflow: hidden">
-                        @m.getLabel()
-                    </td>
-                    <td class="align-right" style="overflow: hidden">
-                        @m.getValueAsString()
-                    </td>
-                </tr>
-            </i:if>
-        </i:for>
-    </table>
-
-    <i:if test="!cluster.getNodeInfos().isEmpty()">
-        <w:heading>
-            <span class="@cluster.getClusterState()">Cluster</span>
-        </w:heading>
-    </i:if>
-
-    <i:for type="sirius.web.health.NodeInfo" var="info" items="cluster.getNodeInfos()">
-        <w:subHeading>
-            <span class="@info.getNodeState()">@info.getName()</span>
-            <small>@info.getEndpoint()</small>
-        </w:subHeading>
-
-        <table class="table table-striped">
-            <tr>
-                <td style="overflow: hidden">
-                    Uptime
-                </td>
-                <td class="align-right" style="overflow: hidden">
-                    @info.getUptime()
-                </td>
-            </tr>
-
-            <i:for type="sirius.kernel.health.metrics.Metric" var="m" items="info.getMetrics()">
+    <t:datacards>
+        <t:datacard title="@CallContext.getNodeName()" subTitle="@apply('Uptime %s',  uptime)">
+            <i:for type="sirius.kernel.health.metrics.Metric" var="m" items="metrics.getMetrics()">
                 <i:if test="all || m.getState() != sirius.kernel.health.metrics.MetricState.GRAY">
-                    <tr class="@m.getState()">
-                        <td style="overflow: hidden">
-                            @m.getLabel()
-                        </td>
-                        <td class="align-right" style="overflow: hidden">
-                            @m.getValueAsString()
-                        </td>
-                    </tr>
+                    <t:infoLine label="@m.getLabel()">
+                        <span class="text-sirius-@(m.getState().name().toLowerCase())-dark">@m.getValueAsString()</span>
+                    </t:infoLine>
                 </i:if>
             </i:for>
-        </table>
 
-    </i:for>
-</w:page>
+            <i:block name="footer">
+                <i:switch test="@cluster.getNodeState().name()">
+                    <i:block name="GRAY">
+                        <t:dot color="green">Norminal</t:dot>
+                    </i:block>
+                    <i:block name="GREEN">
+                        <t:dot color="green">Norminal</t:dot>
+                    </i:block>
+                    <i:block name="YELLOW">
+                        <t:dot color="yellow">Warnings Present</t:dot>
+                    </i:block>
+                    <i:block name="RED">
+                        <t:dot color="red">Critical</t:dot>
+                    </i:block>
+                </i:switch>
+            </i:block>
+        </t:datacard>
+
+        <i:for type="sirius.web.health.NodeInfo" var="info" items="cluster.getNodeInfos()">
+            <t:datacard title="@info.getName()" subTitle="@apply('Uptime %s', info.getUptime())">
+                <i:for type="sirius.kernel.health.metrics.Metric" var="m" items="info.getMetrics()">
+                    <i:if test="all || m.getState() != sirius.kernel.health.metrics.MetricState.GRAY">
+                        <t:infoLine label="@m.getLabel()">
+                            <span class="text-sirius-@(m.getState().name().toLowerCase())-dark">@m.getValueAsString()</span>
+                        </t:infoLine>
+                    </i:if>
+                </i:for>
+
+                <i:block name="footer">
+                    <i:switch test="@cluster.getNodeState().name()">
+                        <i:block name="GRAY">
+                            <t:dot color="green">Norminal</t:dot>
+                        </i:block>
+                        <i:block name="GREEN">
+                            <t:dot color="green">Norminal</t:dot>
+                        </i:block>
+                        <i:block name="YELLOW">
+                            <t:dot color="green">Warnings Present</t:dot>
+                        </i:block>
+                        <i:block name="RED">
+                            <t:dot color="red">Critical</t:dot>
+                        </i:block>
+                    </i:switch>
+                </i:block>
+            </t:datacard>
+        </i:for>
+    </t:datacards>
+</t:page>

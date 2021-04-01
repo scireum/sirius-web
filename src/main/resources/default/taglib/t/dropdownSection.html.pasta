@@ -1,0 +1,14 @@
+<i:arg type="String" name="permission" default="" />
+<i:arg type="String" name="framework" default="" />
+
+<i:pragma name="description" value="Renders the menu items within its body and places a divider above if at least one menu item is visible." />
+<i:local name="contents" value="@renderToString('body')" />
+
+<i:if test="isFrameworkEnabled(framework)">
+    <t:permission permission="@permission">
+        <i:if test="isFilled(contents)">
+            <div class="dropdown-divider"></div>
+        </i:if>
+        <i:raw>@contents</i:raw>
+    </t:permission>
+</i:if>

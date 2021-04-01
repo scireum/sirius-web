@@ -1,0 +1,42 @@
+<i:arg type="String" name="classes" default="" description="Permits to add additional classes to the card."/>
+<i:arg type="String" name="title" default="" description="Specifies the card title."/>
+<i:arg type="String" name="subTitle" default="" description="Specifies the card sub-title."/>
+<i:arg type="String" name="link" default="" description="Specifies the target this card points to."/>
+
+<i:pragma name="description">
+    Renders a data centric card which has a title an optional sub title and body contents.
+    Via the block 'actions' a list of additional actions can be provided for this card.
+    Using the block 'footer' the bottom part of the card can be supplied with additional
+    infos, tags etc.
+</i:pragma>
+
+<div class="col mb-4">
+    <div class="card card-border h-100 @classes">
+        <div class="card-body">
+            <div class="d-flex justify-content-between">
+                <h5 class="card-title">@title</h5>
+                <t:additionalActions>
+                    <i:render name="actions"/>
+                </t:additionalActions>
+            </div>
+            <i:if test="isFilled(subTitle)">
+                <h6 class="card-subtitle mb-4 text-muted">@subTitle</h6>
+            </i:if>
+
+            <i:render name="body"/>
+
+            <i:if test="isFilled(link)">
+                <a href="@link" class="stretched-link"></a>
+            </i:if>
+        </div>
+
+        <i:local name="footer" value="@renderToString('footer')"/>
+        <i:if test="isFilled(footer)">
+            <div class="card-footer">
+        <span class="d-flex flex-row flex-wrap">
+            <i:raw>@footer</i:raw>
+        </span>
+            </div>
+        </i:if>
+    </div>
+</div>

@@ -8,6 +8,7 @@
 
 package sirius.pasta.tagliatelle.tags;
 
+import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Register;
 import sirius.pasta.tagliatelle.TemplateArgument;
 import sirius.pasta.tagliatelle.emitter.CompositeEmitter;
@@ -55,9 +56,16 @@ public class PragmaTag extends TagHandler {
 
     @Override
     public void apply(CompositeEmitter targetBlock) {
-        getCompilationContext().getTemplate()
-                               .addPragma(getConstantAttribute(PARAM_NAME).asString(),
-                                          getConstantAttribute(PARAM_VALUE).asString());
+        Value value = getConstantAttribute(PARAM_VALUE);
+        if (value.isFilled()) {
+            getCompilationContext().getTemplate()
+                                   .addPragma(getConstantAttribute(PARAM_NAME).asString(), value.asString());
+        } else if (getBlock("body") != null) {
+            getCompilationContext().getTemplate()
+                                   .addPragma(getConstantAttribute(PARAM_NAME).asString(), getBlock("body").toString());
+        } else {
+            compilationContext.error(getStartOfTag(), "A pragma tag must either have a value or a body!");
+        }
     }
 
     @Override

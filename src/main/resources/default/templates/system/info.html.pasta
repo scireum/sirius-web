@@ -1,41 +1,33 @@
-<w:page title="System Info">
-    <i:local name="webContext" value="CallContext.getCurrent().get(WebContext.class)" />
+<t:page title="Client Info">
+    <i:local name="webContext" value="CallContext.getCurrent().get(WebContext.class)"/>
     <i:block name="breadcrumbs">
-        <li><a href="/system/info">System Info</a></li>
+        <li><a href="/system/info">Client Info</a></li>
     </i:block>
 
-    <div class="container">
-        <h1>Base</h1>
-        <div class="">
-            <table class="table table-bordered">
-                <tr>
-                    <td>Node Name</td>
-                    <td style="text-align: right">
-                        @CallContext.getNodeName()
-                    </td>
-                </tr>
-                <tr>
-                    <td>Remote IP</td>
-                    <td style="text-align: right">
-                        @webContext.getRemoteIP().getHostAddress()
-                    </td>
-                </tr>
-                <tr>
-                    <td>Language</td>
-                    <td style="text-align: right">
-                        @webContext.getLang()
-                    </td>
-                </tr>
-            </table>
-        </div>
+    <i:block name="page-header">
+        <t:pageHeader title="Client Info">
+            <t:inlineInfo class="d-none d-md-block">
+                <b>Remote IP:</b> @webContext.getRemoteIP().getHostAddress()
+            </t:inlineInfo>
+            <t:inlineInfo class="d-none d-md-block">
+                <b>Language:</b> @webContext.getLang().orElse('?')
+            </t:inlineInfo>
 
-        <h1>Headers</h1>
-        <div class="">
-            <table class="table table-bordered">
+            <i:block name="actions">
+                <a class="btn btn-link d-none d-md-inline-block" href="javascript:window.print();">
+                    <i class="fa fa-print"></i>
+                </a>
+            </i:block>
+        </t:pageHeader>
+    </i:block>
+
+    <div class="row">
+        <t:datacard title="Headers">
+            <table class="table">
                 <i:for type="String" var="name" items="webContext.getRequest().headers().names()">
                     <tr>
-                        <td>@name</td>
-                        <td style="text-align: right">
+                        <td><b>@name</b></td>
+                        <td class="text-right">
                             <i:for type="String" var="value" items="webContext.getRequest().headers().getAll(name)">
                                 <div style="word-wrap: break-word; word-break: break-all">@value</div>
                             </i:for>
@@ -43,61 +35,51 @@
                     </tr>
                 </i:for>
             </table>
-        </div>
-
-        <i:if test="!webContext.getCookies().isEmpty()">
-            <h1>Cookies</h1>
-            <div class="">
-                <table class="table table-bordered">
+        </t:datacard>
+    </div>
+    <i:if test="!webContext.getCookies().isEmpty()">
+        <div class="row">
+            <t:datacard title="Cookies">
+                <table class="table">
                     <tr>
                         <th>Name</th>
-                        <th style="text-align: right">
+                        <th class="text-right">
                             Value
                         </th>
-                        <th>Secure</th>
-                        <th>HTTP only</th>
+                        <th class="text-center">Secure</th>
+                        <th class="text-center">HTTP only</th>
                     </tr>
-                    <i:for type="io.netty.handler.codec.http.cookie.Cookie" var="cookie" items="webContext.getCookies()">
+                    <i:for type="io.netty.handler.codec.http.cookie.Cookie" var="cookie"
+                           items="webContext.getCookies()">
                         <tr>
                             <td>@cookie.name()</td>
-                            <td style="text-align: right; word-wrap: break-word; word-break: break-all">
+                            <td class="text-right">
                                 @cookie.value()
                             </td>
-                            <td>@cookie.isSecure()</td>
-                            <td>@cookie.isHttpOnly()</td>
+                            <td class="text-center">@cookie.isSecure()</td>
+                            <td class="text-center">@cookie.isHttpOnly()</td>
                         </tr>
                     </i:for>
                 </table>
-            </div>
-        </i:if>
+            </t:datacard>
+        </div>
+    </i:if>
 
-        <i:if test="!webContext.getSessionKeys().isEmpty()">
-            <h1>Client Session</h1>
-            <div class="">
-                <table class="table table-bordered">
+    <i:if test="!webContext.getSessionKeys().isEmpty()">
+        <div class="row">
+            <t:datacard title="Client Session">
+                <table class="table">
                     <i:for type="String" var="name" items="webContext.getSessionKeys()">
                         <tr>
                             <td>@name</td>
-                            <td style="text-align: right">
+                            <td class="text-right">
                                 @webContext.getSessionValue(name)
                             </td>
                         </tr>
                     </i:for>
                 </table>
-            </div>
-        </i:if>
-
-        <div class="row">
-            <div class="col-md-12">
-                <div class="well">
-                    <div class="pull-right">
-                        <a class="btn" href="javascript:window.print();">Print</a>
-                    </div>
-                    <div class="clearfix"></div>
-                </div>
-            </div>
+            </t:datacard>
         </div>
-    </div>
-
-</w:page>
+    </i:if>
+</t:page>
 

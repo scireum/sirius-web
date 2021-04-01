@@ -1,12 +1,22 @@
+/*!
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
 .dot-block {
   .dot {
     width: 8px;
     height: 8px;
-    border-radius: 8px;
+    border-radius: 5px;
     align-self: center;
     color: $grayDark;
   }
 
+  display: flex;
+  flex-flow: row;
   font-size: 0.85rem;
 }
 
@@ -24,4 +34,15 @@
   justify-content: start;
   align-items: center;
   flex-wrap: wrap;
+}
+
+.inline-info {
+  display: flex;
+  flex-flow: row;
+  color: $grayDark;
+  font-size: 0.85rem;
+
+  .name {
+    font-weight: bold;
+  }
 }

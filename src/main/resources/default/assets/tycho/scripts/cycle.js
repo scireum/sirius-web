@@ -1,0 +1,18 @@
+/**
+ * Provides a tiny helper for links which have a "cycle" class. For such links, on click, their contents
+ * is exchanged with the value given in data-cycle. This is e.g. used by t:smartDateTime or t:smartDate
+ * to display user friendly timestamps.
+ */
+sirius.ready(function () {
+   document.querySelectorAll('.cycle').forEach(function(_node) {
+       if (sirius.isFilled(_node.dataset.cycle)) {
+           _node.setAttribute('title', _node.dataset.cycle);
+           _node.addEventListener('click', function() {
+               let originalText = _node.textContent.trim();
+               _node.textContent = _node.dataset.cycle;
+               _node.setAttribute('title', originalText);
+               _node.dataset.cycle = originalText;
+           });
+       }
+   });
+});

@@ -1,19 +1,19 @@
 <i:arg type="sirius.kernel.async.CallContext" name="ctx" />
 <i:arg type="String" name="message" />
-<w:page title="@i18n('BasicController.404')">
+<t:page title="@i18n('BasicController.404')">
     <i:block name="breadcrumbBar" />
 
-    <w:pageHeader>
-        @i18n('BasicController.404')
-    </w:pageHeader>
+    <i:block name="page-header">
+        <t:pageHeader titleKey="BasicController.404">
+            <t:dot color="yellow">404 - Not Found</t:dot>
+        </t:pageHeader>
+    </i:block>
 
-    <div class="well">
-        <pre style="font-size: small">@message</pre>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Diagnostic</h5>
+            <pre>@message</pre>
+        </div>
     </div>
 
-    <div class="form-actions">
-        <a href="@config('product.wondergemRoot')" class="btn">
-            <i class="fa fa-angle-double-left"></i> @i18n('BasicController.toDashboard')
-        </a>
-    </div>
-</w:page>
+</t:page>

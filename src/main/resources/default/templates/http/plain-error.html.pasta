@@ -2,17 +2,17 @@
 <i:arg type="String" name="message" />
 <html>
     <head>
-        <title>Error</title>
+        <title>Program Alarm</title>
     </head>
     <body>
-        <h1>An error occurred!</h1>
+        <h1>Program Alarm - A fatal error occurred</h1>
         <hr />
         <pre>@message</pre>
         <hr />
         <h2>Diagnostic:</h2>
         <ul>
-            <li><b>node:</b> @CallContext.getNodeName()</li>
-            <li><b>duration:</b> @ctx.getWatch().duration()</li>
+            <li><b>Node:</b> @CallContext.getNodeName()</li>
+            <li><b>Duration:</b> @ctx.getWatch().duration()</li>
             <i:for type="Tuple" var="t" items="ctx.getMDC()">
                 <li>
                     <b>@t.getFirst():</b> @t.getSecond()

@@ -1,0 +1,15 @@
+<i:arg type="String" name="message" />
+<t:page title="@i18n('BasicController.error')">
+    <i:block name="breadcrumbBar" />
+    <i:block name="page-header">
+        <t:pageHeader titleKey="BasicController.error" />
+    </i:block>
+
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Diagnostic</h5>
+            <pre>@message</pre>
+        </div>
+    </div>
+
+</t:page>

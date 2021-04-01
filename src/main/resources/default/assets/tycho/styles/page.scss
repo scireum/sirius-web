@@ -1,5 +1,13 @@
-#wrapper-body {
-  background-color: #FAFAFA;
+/*!
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+body {
+  background-color: $backgroundGray;
 }
 
 #wrapper {
@@ -8,17 +16,18 @@
   grid-template-rows: 80px 1fr 40px;
 }
 
+
 nav.navbar {
+  z-index: 1000;
   border-bottom: 3px solid $accent-color;
   background-color: #fff;
+  padding: 0.5rem 2%;
 }
 
 #page-header {
-  background-color: #fff;
-  border-bottom: 1px solid #ACACAC;
 
   .breadcrumb {
-    background-color: #fff;
+    background-color: $backgroundGray;
     font-size: 0.85rem;
     padding: 0;
     margin: 0;
@@ -52,8 +61,31 @@ nav.navbar {
 
 }
 
+#main-container {
+  padding-top: 1rem;
+  display: flex;
+  flex-flow: column;
+  justify-content: stretch;
+  flex-grow: 1;
+}
+
 .footer {
+  line-height: 36px;
   border-top: 2px solid $accent-color;
   background-color: #fff;
-  padding-top: 4px;
+}
+
+@media (min-width: 700px) {
+  .container-fluid {
+    padding-left: 2%;
+    padding-right: 2%;
+  }
+}
+
+.page-header {
+  h1 {
+    font-size: 2rem;
+    font-weight: lighter;
+    margin-bottom: 0px;
+  }
 }

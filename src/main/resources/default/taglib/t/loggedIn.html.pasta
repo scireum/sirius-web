@@ -1,0 +1,7 @@
+<i:pragma name="description">
+    Checks if the current user is logged in.
+</i:pragma>
+
+<i:if test="user().isLoggedIn()">
+    <i:render name="body" />
+</i:if>
