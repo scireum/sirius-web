@@ -17,6 +17,7 @@ public class NoodleExample {
 
     private static String privateStaticField = "Hello from the other side";
     private String privateField = "Hello World";
+    private NoodleTestRef ref = new NoodleTestRef();
 
     public static final int AN_INT = 3;
     public static final long A_LONG = 4L;
@@ -49,7 +50,7 @@ public class NoodleExample {
     }
 
     public static Stream<Integer> intStream() {
-        return Stream.of(1,2,3);
+        return Stream.of(1, 2, 3);
     }
 
     public static <E> Stream<E> stream(Class<E> type) {
@@ -71,5 +72,9 @@ public class NoodleExample {
                 // ignored
             }
         };
+    }
+
+    public NoodleTestRef getRef() {
+        return ref;
     }
 }
