@@ -109,5 +109,7 @@ class CompilerSpec extends BaseSpecification {
     def "types can be derived from generic super classes"() {
         given:
         compile("NoodleExample.longToString(NoodleExample.INSTANCE.getRef().getId())").call(new SimpleEnvironment()) == "42"
+        and:
+        compile("Strings.join(' ', NoodleExample.INSTANCE.getRef().getTest(), 'World')").call(new SimpleEnvironment()) == "Hello World"
     }
 }

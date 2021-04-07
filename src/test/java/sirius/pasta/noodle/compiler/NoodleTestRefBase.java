@@ -13,7 +13,7 @@ package sirius.pasta.noodle.compiler;
  *
  * @param <T> the generic type of the test member
  */
-public abstract class NoodleTestRefBase<T> {
+public abstract class NoodleTestRefBase<T> extends NoodleTestBase<String> {
 
     protected T id;
 

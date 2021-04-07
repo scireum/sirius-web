@@ -9,12 +9,15 @@
 package sirius.pasta.noodle.compiler;
 
 /**
- * An implementation of the generic test class.
+ * Represents another generic test class.
+ *
+ * @param <T> the generic type of the test member
  */
-public class NoodleTestRef extends NoodleTestRefBase<Long> {
+public abstract class NoodleTestBase<T> {
 
-    public NoodleTestRef() {
-        test = "Hello";
-        id = 42L;
+    protected T test;
+
+    public T getTest() {
+        return test;
     }
 }
