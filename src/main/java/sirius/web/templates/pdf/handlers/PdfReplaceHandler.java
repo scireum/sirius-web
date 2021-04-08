@@ -86,8 +86,7 @@ public abstract class PdfReplaceHandler implements Priorized {
      * @param cssHeight the requested image height in pixels
      * @return the resized image
      */
-    @Nonnull
-    protected FSImage resizeImage(@Nonnull FSImage image, int cssWidth, int cssHeight) {
+    protected FSImage resizeImage(FSImage image, int cssWidth, int cssHeight) {
         if (cssWidth != -1 || cssHeight != -1) {
             Tuple<Integer, Integer> newSize = computeResizeBox(cssWidth, cssHeight, image);
 
@@ -109,6 +108,9 @@ public abstract class PdfReplaceHandler implements Priorized {
      */
     private Tuple<Integer, Integer> computeResizeBox(int cssWidth, int cssHeight, FSImage fsImage) {
         if (cssWidth == -1 && cssHeight == -1) {
+            return null;
+        }
+        if (fsImage == null) {
             return null;
         }
 
