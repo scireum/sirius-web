@@ -132,15 +132,18 @@ public class Assembler {
 
         if (Long.class.equals(boxedOtherType) && Integer.class.equals(boxedType)) {
             emitByteCode(OpCode.COERCE_INT_TO_LONG, 0, position);
+            return;
         }
 
         if (Double.class.equals(boxedOtherType)) {
             if (Long.class.equals(boxedType)) {
                 emitByteCode(OpCode.COERCE_LONG_TO_DOUBLE, 0, position);
+                return;
             }
 
             if (Integer.class.equals(boxedType)) {
                 emitByteCode(OpCode.COERCE_INT_TO_DOUBLE, 0, position);
+                return;
             }
         }
     }
