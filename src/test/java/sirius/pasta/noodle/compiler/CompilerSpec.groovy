@@ -45,6 +45,10 @@ class CompilerSpec extends BaseSpecification {
         compile("NoodleExample.longToString(NoodleExample.AN_INT)").call(new SimpleEnvironment()) == "3"
         and:
         compile("NoodleExample.AN_INT + NoodleExample.A_LONG_OBJECT").call(new SimpleEnvironment()) == 36L
+        and:
+        compile("NoodleExample.A_DOUBLE + NoodleExample.AN_INT").call(new SimpleEnvironment()) == 4.2
+        and:
+        compile("NoodleExample.A_DOUBLE + NoodleExample.A_LONG").call(new SimpleEnvironment()) == 5.2
     }
 
 
