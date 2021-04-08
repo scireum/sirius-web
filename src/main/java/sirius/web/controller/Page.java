@@ -30,6 +30,13 @@ import java.util.function.Supplier;
 public class Page<E> {
 
     private static final int DEFAULT_PAGE_SIZE = 25;
+    /**
+     * The MAXIMUM_PAGE_SIZE is used to limit the {@link #bindToRequest(WebContext)}
+     * to not query loads of entities per page.
+     * Via {@link #withPageSize(int)} a higher maximum is available.
+     */
+    private static final int MAXIMUM_PAGE_SIZE = 250;
+    private static final String PARAM_PAGE_SIZE = "pageSize";
     private static final String PARAM_START = "start";
     private static final String PARAM_QUERY = "query";
     private String query;
@@ -132,7 +139,7 @@ public class Page<E> {
      *
      * @param field      the name of the field being filtered
      * @param title      the title of the filter shown to the user
-     * @param translator the trnanslater used to convert filter values to visual representations for the user
+     * @param translator the translator used to convert filter values to visual representations for the user
      * @return a newly created facet
      */
     public Facet addFacet(String field, String title, @Nullable ValueComputer<String, String> translator) {
@@ -172,7 +179,7 @@ public class Page<E> {
     /**
      * Binds the page to the request.
      * <p>
-     * This will read <tt>start</tt>, <tt>query</tt> and all facet values from the given request.
+     * This will read <tt>start</tt>, <tt>query</tt>, <tt>pageSize</tt> and all facet values from the given request.
      *
      * @param ctx the request to parse
      * @return the page itself for fluent method calls
@@ -180,6 +187,9 @@ public class Page<E> {
     public Page<E> bindToRequest(WebContext ctx) {
         if (ctx.get(PARAM_START).isFilled()) {
             withStart(ctx.get(PARAM_START).asInt(1));
+        }
+        if (ctx.get(PARAM_PAGE_SIZE).isFilled()){
+            withPageSize(Math.min(ctx.get(PARAM_PAGE_SIZE).asInt(DEFAULT_PAGE_SIZE), MAXIMUM_PAGE_SIZE));
         }
         withQuery(ctx.get(PARAM_QUERY).asString());
         for (Facet f : getFacets()) {
