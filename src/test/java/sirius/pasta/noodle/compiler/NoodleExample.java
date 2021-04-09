@@ -23,6 +23,7 @@ public class NoodleExample {
     public static final long A_LONG = 4L;
     public static final Integer AN_INTEGER_OBJECT = Integer.valueOf(12);
     public static final Long A_LONG_OBJECT = Long.valueOf(33);
+    public static final Double A_DOUBLE = 1.2;
     public static final NoodleExample INSTANCE = new NoodleExample();
 
     public static String intToString(int number) {

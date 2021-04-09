@@ -123,16 +123,27 @@ public class Assembler {
      * @param otherType the target type expected by the subsequent bytecodes
      */
     public void coerce(Position position, Class<?> type, Class<?> otherType) {
-        if (Long.class.equals(CompilationContext.autoboxClass(type)) && CompilationContext.isAssignableTo(Double.class,
-                                                                                                          CompilationContext
-                                                                                                                  .autoboxClass(
-                                                                                                                          otherType))) {
-            emitByteCode(OpCode.COERCE_LONG_TO_DOUBLE, 0, position);
-        } else if (Integer.class.equals(CompilationContext.autoboxClass(type))) {
-            if (CompilationContext.isAssignableTo(Double.class, CompilationContext.autoboxClass(otherType))) {
+        Class<?> boxedType = CompilationContext.autoboxClass(type);
+        Class<?> boxedOtherType = CompilationContext.autoboxClass(otherType);
+
+        if (boxedType.equals(boxedOtherType)) {
+            return;
+        }
+
+        if (Long.class.equals(boxedOtherType) && Integer.class.equals(boxedType)) {
+            emitByteCode(OpCode.COERCE_INT_TO_LONG, 0, position);
+            return;
+        }
+
+        if (Double.class.equals(boxedOtherType)) {
+            if (Long.class.equals(boxedType)) {
+                emitByteCode(OpCode.COERCE_LONG_TO_DOUBLE, 0, position);
+                return;
+            }
+
+            if (Integer.class.equals(boxedType)) {
                 emitByteCode(OpCode.COERCE_INT_TO_DOUBLE, 0, position);
-            } else if (CompilationContext.isAssignableTo(Long.class, CompilationContext.autoboxClass(otherType))) {
-                emitByteCode(OpCode.COERCE_INT_TO_LONG, 0, position);
+                return;
             }
         }
     }
