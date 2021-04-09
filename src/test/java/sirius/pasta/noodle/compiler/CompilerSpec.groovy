@@ -105,4 +105,11 @@ class CompilerSpec extends BaseSpecification {
         "null.as(java.lang.Boolean.class) || true"  | true
         "null.as(java.lang.Boolean.class) || false" | false
     }
+
+    def "types can be derived from generic super classes"() {
+        given:
+        compile("NoodleExample.longToString(NoodleExample.INSTANCE.getRef().getId())").call(new SimpleEnvironment()) == "42"
+        and:
+        compile("Strings.join(' ', NoodleExample.INSTANCE.getRef().getTest(), 'World')").call(new SimpleEnvironment()) == "Hello World"
+    }
 }
