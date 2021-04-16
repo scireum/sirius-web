@@ -102,7 +102,7 @@ public class Tagliatelle {
                 extensions.put(target, new ArrayList<>());
 
                 // Load and fill the result list. Note that we cannot use HashMap.computeIfAbsent here, as
-                // loadExtensions it self compiles templates which might end up calling this method leading
+                // loadExtensions itself compiles templates which might end up calling this method leading
                 // to a ConcurrentModificationException...
                 result = loadExtensions(target);
                 extensions.put(target, result);
