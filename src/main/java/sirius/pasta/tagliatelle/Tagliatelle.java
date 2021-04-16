@@ -34,6 +34,7 @@ import sirius.web.templates.Templates;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -93,7 +94,20 @@ public class Tagliatelle {
      */
     public List<TemplateExtension> getExtensions(String target) {
         synchronized (extensions) {
-            return Collections.unmodifiableList(extensions.computeIfAbsent(target, this::loadExtensions));
+            List<TemplateExtension> result = extensions.get(target);
+            if (result == null) {
+                // As we might re-enter this method while compiling templates in "loadExtensions" we provide a
+                // placeholder value here to avoid infinite recursions. (Under normal circumstances, this shouldn't
+                // happen anyway, as cyclic extensions make no sense at all).
+                extensions.put(target, new ArrayList<>());
+
+                // Load and fill the result list. Note that we cannot use HashMap.computeIfAbsent here, as
+                // loadExtensions it self compiles templates which might end up calling this method leading
+                // to a ConcurrentModificationException...
+                result = loadExtensions(target);
+                extensions.put(target, result);
+            }
+            return Collections.unmodifiableList(result);
         }
     }
 
