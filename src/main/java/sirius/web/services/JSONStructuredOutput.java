@@ -10,9 +10,11 @@ package sirius.web.services;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import sirius.kernel.commons.Amount;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
+import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.AbstractStructuredOutput;
 import sirius.kernel.xml.Attribute;
 import sirius.kernel.xml.StructuredOutput;
@@ -241,8 +243,10 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
                 writer.write("null");
             } else if (data instanceof Boolean || data instanceof Number) {
                 writer.write(data.toString());
+            } else if (data instanceof Amount) {
+                writer.write(((Amount)data).toMachineString());
             } else {
-                writeString(data.toString());
+                writeString(transformToStringRepresentation(data));
             }
         } catch (ClosedChannelException e) {
             throw handleClosedChannel(e);
