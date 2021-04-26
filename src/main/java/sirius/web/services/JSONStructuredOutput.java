@@ -246,7 +246,7 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
             } else if (data instanceof Amount) {
                 writer.write(((Amount)data).toMachineString());
             } else {
-                writeString(NLS.toMachineString(data));
+                writeString(transformToStringRepresentation(data));
             }
         } catch (ClosedChannelException e) {
             throw handleClosedChannel(e);
