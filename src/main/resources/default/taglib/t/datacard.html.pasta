@@ -33,9 +33,9 @@
         <i:local name="footer" value="@renderToString('footer')"/>
         <i:if test="isFilled(footer)">
             <div class="card-footer">
-        <span class="d-flex flex-row flex-wrap">
-            <i:raw>@footer</i:raw>
-        </span>
+                <span class="d-flex flex-row flex-wrap">
+                    <i:raw>@footer</i:raw>
+                </span>
             </div>
         </i:if>
     </div>
