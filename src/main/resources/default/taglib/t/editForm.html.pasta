@@ -1,0 +1,9 @@
+<i:arg type="String" name="url" />
+<i:arg type="String" name="classes" default=""/>
+
+<i:pragma name="description" value="Renders an editor form within a Tycho template" />
+
+<form action="@url" method="post" class="edit-form @classes">
+    <i:render name="body" />
+    <input name="CSRFToken" value="@part(sirius.web.http.CSRFHelper.class).getCSRFToken()" type="hidden"/>
+</form>

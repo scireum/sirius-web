@@ -1,2 +1,3 @@
+___include("/assets/tycho/scripts/form.js")
 ___include("/assets/tycho/scripts/sidebar.js")
 ___include("/assets/tycho/scripts/cycle.js")

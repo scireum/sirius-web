@@ -18,3 +18,18 @@ sirius.ready = function (callback) {
         callback();
     }
 }
+
+// Tries to find the parent node of the given type.
+// Note that the type is UPPERCASE like 'FORM'.
+sirius.findParentOfType = function(_node, type) {
+    let _parent = _node.parentNode;
+    while(_parent != null) {
+        if (_parent.nodeName === type) {
+            return _parent;
+        } else {
+            _parent = _parent.parentNode;
+        }
+    }
+
+    return null;
+}

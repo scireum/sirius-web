@@ -1,0 +1,19 @@
+<i:arg name="backButton" type="boolean" default="false" />
+<i:arg name="singleClick" type="boolean" default="true" />
+<i:arg name="btnLabelKey" type="String" default="NLS.save" />
+<i:arg name="btnLabel" type="String" default="@i18n(btnLabelKey)" />
+<i:arg name="icon" type="String" default="fa-check" />
+<i:arg name="class" type="String" default="" />
+
+<i:pragma name="description" value="Renders a footer bar for forms within a Tycho template" />
+
+<div class="form-actions mb-4 @class">
+    <a class="btn btn-primary submit-link @if (singleClick) { single-click-link }">
+        <i class="fa @icon"></i> @btnLabel
+    </a>
+    <i:if test="backButton">
+        <a href="javascript:window.history.back()" class="btn">@i18n("NLS.back")</a>
+    </i:if>
+
+    <i:render name="body" />
+</div>
