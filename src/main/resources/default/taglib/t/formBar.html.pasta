@@ -12,7 +12,7 @@
         <i class="fa @icon"></i> @btnLabel
     </a>
     <i:if test="backButton">
-        <a href="todo" class="btn">@i18n("NLS.back")</a>
+        <a href="javascript:window.history.back()" class="btn">@i18n("NLS.back")</a>
     </i:if>
 
     <i:render name="body" />
