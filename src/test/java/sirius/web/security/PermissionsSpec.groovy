@@ -42,7 +42,7 @@ class PermissionsSpec extends BaseSpecification {
         expect:
         Permissions.hasPermission(permissionExpression, hasSinglePermissionPredicate) == expectedResult
         where:
-        permissionExpression | hasSinglePermissionPredicate                                        | expectedResult
+        permissionExpression | hasSinglePermissionPredicate                                           | expectedResult
         "a"                  | { permission -> ["a", "b", "c"].contains(permission) } as Predicate | true
         "!a"                 | { permission -> ["a", "b", "c"].contains(permission) } as Predicate | false
         "d"                  | { permission -> ["a", "b", "c"].contains(permission) } as Predicate | false
@@ -51,7 +51,10 @@ class PermissionsSpec extends BaseSpecification {
         "a+d"                | { permission -> ["a", "b", "c"].contains(permission) } as Predicate | false
         "a,d"                | { permission -> ["a", "b", "c"].contains(permission) } as Predicate | true
         "d,e"                | { permission -> ["a", "b", "c"].contains(permission) } as Predicate | false
-        "a"                  | null                                                                | false
-        "!a"                 | null                                                                | true
+        "a"                  | null                                                                   | false
+        "!a"                 | null                                                                   | true
+        "enabled"            | null                                                                   | true
+        "!enabled"           | null                                                                   | false
+        "enabled+a"          | { permission -> ("a" == permission) }
     }
 }
