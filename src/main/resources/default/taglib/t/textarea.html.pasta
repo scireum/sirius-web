@@ -18,12 +18,13 @@
     <i:if test="isFilled(label)">
         <label><span>@label</span></label>
     </i:if>
+
     <textarea @id="@id" name="@name" rows="@rows" class="form-control input-block-level" @readonly="readonly">@UserContext.get().getFieldValue(name, value)</textarea>
 
     <i:if test="isFilled(help)">
-        <span class="help-block"><i:raw>@help</i:raw></span>
+        <small class="form-text text-muted"><i:raw>@help</i:raw></small>
     </i:if>
     <i:if test="UserContext.get().hasError(name)">
-        <span class="error-block help-block">@UserContext.get().getFieldErrorMessage(name)</span>
+        <small class="error-block form-text">@UserContext.get().getFieldErrorMessage(name)</small>
     </i:if>
 </div>
