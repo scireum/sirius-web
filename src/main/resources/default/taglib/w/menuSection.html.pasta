@@ -5,10 +5,10 @@
 <i:local name="contents" value="@renderToString('body')" />
 
 <i:if test="isFrameworkEnabled(framework)">
-    <t:permission permission="@permission">
+    <w:permission permission="@permission">
         <i:if test="isFilled(contents)">
-            <div class="divider"></div>
+            <li class="divider"></li>
         </i:if>
         <i:raw>@contents</i:raw>
-    </t:permission>
+    </w:permission>
 </i:if>
