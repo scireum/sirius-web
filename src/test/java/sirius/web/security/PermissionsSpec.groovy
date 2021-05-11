@@ -55,6 +55,6 @@ class PermissionsSpec extends BaseSpecification {
         "!a"                 | null                                                                   | true
         "enabled"            | null                                                                   | true
         "!enabled"           | null                                                                   | false
-        "enabled+a"          | { permission -> ("a" == permission) }
+        "enabled+a"          | { permission -> ("a" == permission) }                                  | true
     }
 }
