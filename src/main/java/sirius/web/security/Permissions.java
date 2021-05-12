@@ -177,14 +177,6 @@ public class Permissions {
             return true;
         }
 
-        if (DISABLED.equals(permissionExpression)) {
-            return false;
-        }
-
-        if (ENABLED.equals(permissionExpression)) {
-            return true;
-        }
-
         for (String orClause : permissionExpression.split(",")) {
             if (permissionsFullfilled(orClause, containsPermission)) {
                 return true;
@@ -205,10 +197,15 @@ public class Permissions {
 
     protected static boolean permissionFullfilled(String permission, Predicate<String> containsPermission) {
         if (permission.startsWith("!")) {
-            return containsPermission == null || !containsPermission.test(permission.substring(1));
-        } else {
-            return containsPermission != null && containsPermission.test(permission);
+            return !permissionFullfilled(permission.substring(1), containsPermission);
         }
+        if (DISABLED.equals(permission)) {
+            return false;
+        }
+        if (ENABLED.equals(permission)) {
+            return true;
+        }
+        return containsPermission != null && containsPermission.test(permission);
     }
 
     /**
