@@ -29,15 +29,6 @@
                             url="@apply('/system/scope-config/%s', file)"
                             label="@file"/>
                 </i:for>
-                <t:navboxLink
-                        url="X"
-                        label="Test"/>
-                <t:navboxLink
-                        url="X"
-                        label="Test"/>
-                <t:navboxLink
-                        url="X"
-                        label="Test"/>
             </t:navbox>
         </i:block>
         <t:codeEditor mode="text" readonly="true">@contents</t:codeEditor>
