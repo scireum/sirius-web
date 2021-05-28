@@ -63,5 +63,5 @@ public abstract class LineBasedProcessor {
      *                     handled and <tt>false</tt> if the exception should be rethrown.
      * @throws Exception in case an error occurred while processing.
      */
-    abstract void run(RowProcessor rowProcessor, Predicate<Exception> errorHandler) throws Exception;
+    public abstract void run(RowProcessor rowProcessor, Predicate<Exception> errorHandler) throws Exception;
 }
