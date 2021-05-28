@@ -8,6 +8,7 @@
 
 package sirius.web.data;
 
+import sirius.kernel.commons.Explain;
 import sirius.kernel.health.Exceptions;
 
 import java.io.InputStream;
@@ -16,6 +17,8 @@ import java.util.function.Predicate;
 /**
  * Processes line based input files like MS Excel or CSV.
  */
+@SuppressWarnings("java:S1610")
+@Explain("We dont use an interface with static methods here as it results in test failures because of reflections")
 public abstract class LineBasedProcessor {
 
     /**
