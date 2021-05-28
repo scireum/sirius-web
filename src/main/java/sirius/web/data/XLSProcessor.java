@@ -34,7 +34,7 @@ import java.util.function.Predicate;
 /**
  * In charge of processing XLS (MS Excel) files.
  */
-public class XLSProcessor implements LineBasedProcessor {
+public class XLSProcessor extends LineBasedProcessor {
 
     protected final InputStream input;
     protected final boolean importAllSheets;

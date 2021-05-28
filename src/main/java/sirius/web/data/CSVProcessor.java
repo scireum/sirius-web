@@ -11,7 +11,6 @@ package sirius.web.data;
 import sirius.kernel.async.TaskContext;
 import sirius.kernel.commons.BOMReader;
 import sirius.kernel.commons.CSVReader;
-import sirius.kernel.commons.RateLimit;
 import sirius.kernel.nls.NLS;
 
 import java.io.InputStream;
@@ -23,7 +22,7 @@ import java.util.function.Predicate;
 /**
  * In charge of processing CSV (comma separated values) files.
  */
-public class CSVProcessor implements LineBasedProcessor {
+public class CSVProcessor extends LineBasedProcessor {
 
     private InputStream input;
 
@@ -41,7 +40,7 @@ public class CSVProcessor implements LineBasedProcessor {
         reader.execute(row -> {
             try {
                 rowProcessor.handleRow(rowCounter.incrementAndGet(), row);
-                    tc.tryUpdateState(NLS.get("LineBasedProcessor.linesProcessed"), rowCounter.get());
+                tc.tryUpdateState(NLS.get("LineBasedProcessor.linesProcessed"), rowCounter.get());
             } catch (Exception e) {
                 if (!errorHandler.test(e)) {
                     throw e;

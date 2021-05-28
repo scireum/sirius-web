@@ -16,7 +16,7 @@ import java.util.function.Predicate;
 /**
  * Processes line based input files like MS Excel or CSV.
  */
-public interface LineBasedProcessor {
+public abstract class LineBasedProcessor {
 
     /**
      * Generates an appropriate LineBasedProcessor based on the file extension of the given file.
@@ -27,7 +27,7 @@ public interface LineBasedProcessor {
      * @return an appropriate processor for the given file
      * @throws sirius.kernel.health.HandledException if no processor can handle the given file
      */
-    static LineBasedProcessor create(String name, InputStream input, boolean importAllSheets) {
+    public static LineBasedProcessor create(String name, InputStream input, boolean importAllSheets) {
         if (name.toLowerCase().endsWith("xls")) {
             return new XLSProcessor(input, importAllSheets);
         }
@@ -48,7 +48,7 @@ public interface LineBasedProcessor {
      * @return an appropriate processor for the given file
      * @throws sirius.kernel.health.HandledException if no processor can handle the given file
      */
-    static LineBasedProcessor create(String name, InputStream input) {
+    public static LineBasedProcessor create(String name, InputStream input) {
         return create(name, input, false);
     }
 
@@ -60,5 +60,5 @@ public interface LineBasedProcessor {
      *                     handled and <tt>false</tt> if the exception should be rethrown.
      * @throws Exception in case an error occurred while processing.
      */
-    void run(RowProcessor rowProcessor, Predicate<Exception> errorHandler) throws Exception;
+    abstract void run(RowProcessor rowProcessor, Predicate<Exception> errorHandler) throws Exception;
 }
