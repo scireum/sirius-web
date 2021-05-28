@@ -17,6 +17,7 @@ import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiPredicate;
@@ -46,7 +47,7 @@ public class UserInfo extends Composable {
     protected String userId;
     protected String username;
     protected String lang;
-    protected Set<String> permissions = null;
+    protected Set<String> permissions = new HashSet<>();
     protected Supplier<String> nameAppendixSupplier;
     protected Function<UserInfo, UserSettings> settingsSupplier;
     protected Function<UserInfo, Object> userSupplier;
@@ -167,7 +168,11 @@ public class UserInfo extends Composable {
          */
         public Builder withPermissions(Set<String> permissions) {
             verifyState();
+            if (permissions == null) {
+                user.permissions = new HashSet<>();
+            } else {
             user.permissions = permissions;
+            }
             return this;
         }
 
@@ -400,9 +405,6 @@ public class UserInfo extends Composable {
      * @return all permissions granted to the user.
      */
     public Set<String> getPermissions() {
-        if (permissions == null) {
-            return Collections.emptySet();
-        }
         return Collections.unmodifiableSet(permissions);
     }
 
