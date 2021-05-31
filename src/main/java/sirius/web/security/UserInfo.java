@@ -17,6 +17,7 @@ import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiPredicate;
@@ -46,7 +47,8 @@ public class UserInfo extends Composable {
     protected String userId;
     protected String username;
     protected String lang;
-    protected Set<String> permissions = null;
+    protected Set<String> permissions = new HashSet<>();
+    protected boolean hasEveryPermission = false;
     protected Supplier<String> nameAppendixSupplier;
     protected Function<UserInfo, UserSettings> settingsSupplier;
     protected Function<UserInfo, Object> userSupplier;
@@ -167,7 +169,23 @@ public class UserInfo extends Composable {
          */
         public Builder withPermissions(Set<String> permissions) {
             verifyState();
-            user.permissions = permissions;
+            if (permissions == null) {
+                user.permissions = new HashSet<>();
+            } else {
+                user.permissions = permissions;
+            }
+            return this;
+        }
+
+        /**
+         * Indicates whether the user has all available permissions by default
+         *
+         * @param hasEveryPermission true when the user should have all permissions
+         * @return the builder itself for fluent method calls
+         */
+        public Builder withEveryPermission(boolean hasEveryPermission) {
+            verifyState();
+            user.hasEveryPermission = hasEveryPermission;
             return this;
         }
 
@@ -309,7 +327,7 @@ public class UserInfo extends Composable {
      * @return <tt>true</tt> if the user has the permission, <tt>false</tt> otherwise
      */
     public boolean hasPermission(String permission) {
-        return Permissions.hasPermission(permission, permissions == null ? s -> false : permissions::contains);
+        return Permissions.hasPermission(permission, hasEveryPermission ? s -> true : permissions::contains);
     }
 
     /**
@@ -396,13 +414,12 @@ public class UserInfo extends Composable {
 
     /**
      * Returns a set of all permissions granted to the user.
+     * <p>
+     * This does not honor {@link #hasEveryPermission}, because the total set of all permissions is unknown.
      *
      * @return all permissions granted to the user.
      */
     public Set<String> getPermissions() {
-        if (permissions == null) {
-            return Collections.emptySet();
-        }
         return Collections.unmodifiableSet(permissions);
     }
 
