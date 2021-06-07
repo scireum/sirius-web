@@ -90,7 +90,7 @@
                             <t:dot color="green">Norminal</t:dot>
                         </i:block>
                         <i:block name="YELLOW">
-                            <t:dot color="green">Warnings Present</t:dot>
+                            <t:dot color="yellow">Warnings Present</t:dot>
                         </i:block>
                         <i:block name="RED">
                             <t:dot color="red">Critical</t:dot>
