@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.scireum</groupId>
         <artifactId>sirius-parent</artifactId>
-        <version>7.1</version>
+        <version>8.0.1</version>
     </parent>
     <artifactId>sirius-web</artifactId>
     <version>DEVELOPMENT-SNAPSHOT</version>
@@ -14,7 +14,7 @@
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
     <properties>
-        <sirius.kernel>ga-2.0.0</sirius.kernel>
+        <sirius.kernel>dev-23.0.0</sirius.kernel>
     </properties>
 
     <repositories>
@@ -134,7 +134,12 @@
             <version>2.3.4</version>
         </dependency>
 
-
+        <dependency>
+            <groupId>org.openjdk.nashorn</groupId>
+            <artifactId>nashorn-core</artifactId>
+            <version>15.2</version>
+        </dependency>
+        
     </dependencies>
 
     <dependencyManagement>
