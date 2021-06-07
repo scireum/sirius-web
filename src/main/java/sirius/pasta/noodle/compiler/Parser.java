@@ -832,10 +832,10 @@ public class Parser extends InputProcessor {
             return parseInvalidLambda();
         }
 
-        LambdaNode lambdaNode = new LambdaNode(start);
+        int numVariablesBeforeLambda = context.getVariableScoper().getMaxVariables();
+        LambdaNode lambdaNode = new LambdaNode(start, numVariablesBeforeLambda);
         lambdaNode.setSamInterface(TypeTools.simplifyToClass(calleeType, Object.class));
         VariableScoper.Scope scope = context.getVariableScoper().pushScope();
-        int numVariablesBeforeLambda = context.getVariableScoper().getMaxVariables();
         parseLambdaParameters(lambdaNode, calleeType, targetMethod);
         parseLambdaBody(lambdaNode, targetMethod);
         lambdaNode.setNumberOfLocals(context.getVariableScoper().getMaxVariables() - numVariablesBeforeLambda);

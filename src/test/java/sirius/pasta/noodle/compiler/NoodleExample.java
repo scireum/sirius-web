@@ -8,6 +8,8 @@
 
 package sirius.pasta.noodle.compiler;
 
+import sirius.kernel.commons.UnitOfWork;
+
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
@@ -48,6 +50,10 @@ public class NoodleExample {
 
     public static void invokeConsumer(IntConsumer consumer) {
         consumer.accept(3);
+    }
+
+    public static void invokeUnitOfWork(UnitOfWork unit) throws Exception {
+        unit.execute();
     }
 
     public static Stream<Integer> intStream() {

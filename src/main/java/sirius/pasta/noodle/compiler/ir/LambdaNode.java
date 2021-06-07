@@ -42,6 +42,7 @@ import java.util.List;
 public class LambdaNode extends Node {
 
     private final List<VariableScoper.Variable> arguments = new ArrayList<>();
+    private final int localsOffset;
     private Type samInterface;
     private Node body;
     private int numberOfLocals;
@@ -50,9 +51,11 @@ public class LambdaNode extends Node {
      * Creates a new node for the given position.
      *
      * @param position the position where the lambda starts
+     * @param localsOffset the first argument or local within the variable to shadow...
      */
-    public LambdaNode(Position position) {
+    public LambdaNode(Position position, int localsOffset) {
         super(position);
+        this.localsOffset = localsOffset;
     }
 
     /**
@@ -97,7 +100,7 @@ public class LambdaNode extends Node {
     @Override
     public void emit(Assembler assembler) {
         assembler.emitPushConstant(samInterface, position);
-        assembler.emitPushConstant(arguments.get(0).getLocalIndex(), position);
+        assembler.emitPushConstant(localsOffset, position);
         assembler.emitByteCode(OpCode.LAMBDA, numberOfLocals, position);
         Assembler.Label endLabel = assembler.createLabel();
         assembler.emitJump(OpCode.JMP, endLabel, position);
