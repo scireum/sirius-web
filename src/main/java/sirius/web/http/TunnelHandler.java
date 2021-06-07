@@ -418,7 +418,7 @@ class TunnelHandler implements AsyncHandler<String> {
         CallContext.setCurrent(cc);
 
         WebServer.LOG.WARN("Tunnel - ERROR %s for %s",
-                           t.getMessage() + " (" + t.getMessage() + ")",
+                           t.getMessage() + " (" + t.getClass().getName() + ")",
                            webContext.getRequestedURI());
         if (!(t instanceof ClosedChannelException)) {
             if (failureHandler != null) {
