@@ -91,6 +91,8 @@ class CompilerSpec extends BaseSpecification {
         and: "Var-args generic type propagation works"
         compile("let sum = 0; java.util.Arrays.asList(3,4).forEach(|x| sum = sum + x); return sum;").
                 call(new SimpleEnvironment()) == 7
+        and: "zero-arg lambdas work"
+        compile("let x = 0; NoodleExample.invokeUnitOfWork(|| x = 42); return x;").call(new SimpleEnvironment()) == 42
     }
 
     def "conditions work as expected"() {

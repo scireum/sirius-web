@@ -43,13 +43,20 @@ class LambdaHandler implements InvocationHandler {
             return method.invoke(proxy);
         }
 
-        // Transfer arguments...
-        for (int i = 0; i < Math.min(args.length, numLocals); i++) {
-            environment.writeVariable(contextOffset + i, args[i]);
-        }
-        // Null all remaning locals...
-        for (int i = args.length; i < numLocals; i++) {
-            environment.writeVariable(contextOffset + i, null);
+        if (args != null) {
+            // Transfer arguments...
+            for (int i = 0; i < Math.min(args.length, numLocals); i++) {
+                environment.writeVariable(contextOffset + i, args[i]);
+            }
+            // Null all remaining locals...
+            for (int i = args.length; i < numLocals; i++) {
+                environment.writeVariable(contextOffset + i, null);
+            }
+        } else {
+            // Null all locals...
+            for (int i = 0; i < numLocals; i++) {
+                environment.writeVariable(contextOffset + i, null);
+            }
         }
 
         // Creates another invocation, with appropriate instruction pointer offset, custom stack and shared
