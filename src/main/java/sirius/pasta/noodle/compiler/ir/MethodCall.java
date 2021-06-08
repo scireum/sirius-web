@@ -157,8 +157,6 @@ public class MethodCall extends Call {
      * @param compilationContext the compilation context for error reporting
      * @return <tt>true</tt> if the method was bound successfully, <tt>false</tt> otherwise
      */
-    @SuppressWarnings("ArrayEquality")
-    @Explain("This is a re-used constant so an identity check works fine here")
     public boolean tryBindToMethod(CompilationContext compilationContext) {
         try {
             Class<?>[] parameterTypes = new Class<?>[parameterNodes.length];
