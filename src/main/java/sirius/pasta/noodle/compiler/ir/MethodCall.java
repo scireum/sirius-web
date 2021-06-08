@@ -211,15 +211,18 @@ public class MethodCall extends Call {
         // This is reasonable, as this takes generic type parameters
         // into account and selects the proper method...
         try {
-            return type.getMethod(name, parameterTypes);
+            Method fastMatch = type.getMethod(name, parameterTypes);
+            if (!fastMatch.isBridge()) {
+                return fastMatch;
+            }
         } catch (NoSuchMethodException e) {
             Exceptions.ignore(e);
         }
 
         // Try to find an appropriate method using coercions known to the system...
-        for (Method m : type.getMethods()) {
-            if (signatureMatch(m, name, parameterTypes)) {
-                return m;
+        for (Method candidateMethod : type.getMethods()) {
+            if (!candidateMethod.isBridge() && signatureMatch(candidateMethod, name, parameterTypes)) {
+                return candidateMethod;
             }
         }
 
