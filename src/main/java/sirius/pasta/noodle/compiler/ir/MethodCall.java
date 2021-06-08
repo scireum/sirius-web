@@ -160,18 +160,6 @@ public class MethodCall extends Call {
     @SuppressWarnings("ArrayEquality")
     @Explain("This is a re-used constant so an identity check works fine here")
     public boolean tryBindToMethod(CompilationContext compilationContext) {
-        if (parameterNodes == NO_ARGS) {
-            try {
-                this.method = selfNode.getType().getMethod(methodName);
-                checkDeprecation(compilationContext);
-                checkStaticCallSite(compilationContext);
-                checkSandbox(compilationContext);
-                return true;
-            } catch (NoSuchMethodException e) {
-                Exceptions.ignore(e);
-            }
-        }
-
         try {
             Class<?>[] parameterTypes = new Class<?>[parameterNodes.length];
             for (int i = 0; i < parameterNodes.length; i++) {
