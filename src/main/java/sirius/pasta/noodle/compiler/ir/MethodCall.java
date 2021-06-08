@@ -157,21 +157,7 @@ public class MethodCall extends Call {
      * @param compilationContext the compilation context for error reporting
      * @return <tt>true</tt> if the method was bound successfully, <tt>false</tt> otherwise
      */
-    @SuppressWarnings("ArrayEquality")
-    @Explain("This is a re-used constant so an identity check works fine here")
     public boolean tryBindToMethod(CompilationContext compilationContext) {
-        if (parameterNodes == NO_ARGS) {
-            try {
-                this.method = selfNode.getType().getMethod(methodName);
-                checkDeprecation(compilationContext);
-                checkStaticCallSite(compilationContext);
-                checkSandbox(compilationContext);
-                return true;
-            } catch (NoSuchMethodException e) {
-                Exceptions.ignore(e);
-            }
-        }
-
         try {
             Class<?>[] parameterTypes = new Class<?>[parameterNodes.length];
             for (int i = 0; i < parameterNodes.length; i++) {
@@ -223,15 +209,18 @@ public class MethodCall extends Call {
         // This is reasonable, as this takes generic type parameters
         // into account and selects the proper method...
         try {
-            return type.getMethod(name, parameterTypes);
+            Method fastMatch = type.getMethod(name, parameterTypes);
+            if (!fastMatch.isBridge()) {
+                return fastMatch;
+            }
         } catch (NoSuchMethodException e) {
             Exceptions.ignore(e);
         }
 
         // Try to find an appropriate method using coercions known to the system...
-        for (Method m : type.getMethods()) {
-            if (signatureMatch(m, name, parameterTypes)) {
-                return m;
+        for (Method candidateMethod : type.getMethods()) {
+            if (!candidateMethod.isBridge() && signatureMatch(candidateMethod, name, parameterTypes)) {
+                return candidateMethod;
             }
         }
 
