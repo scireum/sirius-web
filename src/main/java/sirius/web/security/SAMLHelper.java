@@ -111,7 +111,7 @@ public class SAMLHelper {
         out.endOutput();
 
         if (LOG.isFINE()) {
-            LOG.FINE("Generating SAML request: %s", new String(buffer.toByteArray(), StandardCharsets.UTF_8));
+            LOG.FINE("Generating SAML request: %s", buffer.toString(StandardCharsets.UTF_8));
         }
 
         return buffer.toByteArray();
@@ -277,7 +277,7 @@ public class SAMLHelper {
      * @param signature the signature to parse
      * @return the effective reference URI
      */
-    @SuppressWarnings({"unchecked", "squid:S1905"})
+    @SuppressWarnings({"squid:S1905", "RedundantCast"})
     @Nonnull
     @Explain("The cast helps the type-interference of the compiler - otherwise it sometimes reports an error")
     private String getReferenceBeingSigned(XMLSignature signature) {
@@ -292,7 +292,6 @@ public class SAMLHelper {
      */
     private static class KeyValueKeySelector extends KeySelector {
 
-        @SuppressWarnings("unchecked")
         @Override
         public KeySelectorResult select(KeyInfo keyInfo,
                                         KeySelector.Purpose purpose,
@@ -304,7 +303,7 @@ public class SAMLHelper {
                                 .handle();
             }
 
-            for (XMLStructure xmlStructure : (List<XMLStructure>) keyInfo.getContent()) {
+            for (XMLStructure xmlStructure : keyInfo.getContent()) {
                 if (xmlStructure instanceof X509Data) {
                     X509Certificate x509Certificate = (X509Certificate) ((X509Data) xmlStructure).getContent().get(0);
                     return new X509CertificateResult(x509Certificate);
@@ -323,7 +322,7 @@ public class SAMLHelper {
      */
     private static class X509CertificateResult implements KeySelectorResult {
 
-        private X509Certificate cert;
+        private final X509Certificate cert;
 
         X509CertificateResult(X509Certificate cert) {
             this.cert = cert;
