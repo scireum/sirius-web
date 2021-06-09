@@ -50,6 +50,7 @@ import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.List;
 
@@ -98,7 +99,9 @@ public class SAMLHelper {
                         Attribute.set("xmlns:saml", "urn:oasis:names:tc:SAML:2.0:assertion"),
                         Attribute.set("ID", "identifier_" + System.currentTimeMillis()),
                         Attribute.set("Version", "2.0"),
-                        Attribute.set("IssueInstant", DateTimeFormatter.ISO_INSTANT.format(Instant.now())),
+                        Attribute.set("IssueInstant",
+                                      DateTimeFormatter.ISO_INSTANT.format(Instant.now()
+                                                                                  .truncatedTo(ChronoUnit.SECONDS))),
                         Attribute.set("AssertionConsumerServiceIndex", issuerIndex));
         out.property("saml:Issuer", issuer);
         out.beginObject("samlp:NameIDPolicy",
