@@ -52,7 +52,7 @@ if (!Array.prototype.includes) {
  * see https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith#Polyfill
  */
 if (!String.prototype.startsWith) {
-    String.prototype.startsWith = function(searchString, position) {
+    String.prototype.startsWith = function (searchString, position) {
         position = position || 0;
         return this.indexOf(searchString, position) === position;
     };
@@ -63,7 +63,7 @@ if (!String.prototype.startsWith) {
  * see https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/String/endsWith
  */
 if (!String.prototype.endsWith) {
-    String.prototype.endsWith = function(searchString, position) {
+    String.prototype.endsWith = function (searchString, position) {
         var subjectString = this.toString();
         if (typeof position !== 'number' || !isFinite(position) || Math.floor(position) !== position || position > subjectString.length) {
             position = subjectString.length;
@@ -80,7 +80,7 @@ if (!String.prototype.endsWith) {
  * see https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/String/includes
  */
 if (!String.prototype.includes) {
-    String.prototype.includes = function(search, start) {
+    String.prototype.includes = function (search, start) {
         'use strict';
         if (typeof start !== 'number') {
             start = 0;
@@ -101,3 +101,23 @@ if (!String.prototype.includes) {
 if (window.NodeList && !NodeList.prototype.forEach) {
     NodeList.prototype.forEach = Array.prototype.forEach;
 }
+
+/**
+ * Polyfill for CustomEvent object
+ * see https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent
+ */
+(function () {
+
+    if (typeof window.CustomEvent === 'function') return false;
+
+    function CustomEvent(event, params) {
+        params = params || {bubbles: false, cancelable: false, detail: undefined};
+        var evt = document.createEvent('CustomEvent');
+        evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
+        return evt;
+    }
+
+    CustomEvent.prototype = window.Event.prototype;
+
+    window.CustomEvent = CustomEvent;
+})();
