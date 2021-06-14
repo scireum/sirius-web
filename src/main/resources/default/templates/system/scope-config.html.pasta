@@ -4,7 +4,7 @@
 
 <t:page titleKey="ScopeDefaultConfigController.config">
     <i:block name="head">
-        <script src="/assets/libs/ace/ace.js" type="text/javascript"></script>
+        <script src="/assets/tycho/libs/ace/ace.js" type="text/javascript"></script>
     </i:block>
 
     <i:block name="breadcrumbs">

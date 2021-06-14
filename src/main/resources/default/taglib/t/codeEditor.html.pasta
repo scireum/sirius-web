@@ -1,10 +1,10 @@
-<i:arg type="String" name="id" default="@generateId('codeEditor_%s')" />
+<i:arg type="String" name="id" default="@generateId('codeEditor_%s')" description="Contains a unique id for the generated div." />
 <i:arg type="boolean" name="readonly" default="false" />
-<i:arg type="String" name="mode" default="html" />
+<i:arg type="String" name="mode" default="html" description="Determines what kind of content is being highlighted." />
 <i:arg type="String" name="class" default="" description="May contain additional CSS classes to be added to the generated div." />
 
 <i:pragma name="description">
-    Provides a ACE based code editor
+    Provides a ACE based code editor. Note that "/assets/tycho/libs/ace/ace.js" needs to be present when using this.
 </i:pragma>
 
 <div class="flex-grow-1 mb-4">

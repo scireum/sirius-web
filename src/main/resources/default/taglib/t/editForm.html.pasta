@@ -1,4 +1,4 @@
-<i:arg type="String" name="url" />
+<i:arg type="String" name="url" description="Contains the target URL to post to." />
 <i:arg type="String" name="class" default="" description="Contains additional classes to be added to the form tag."/>
 
 <i:pragma name="description" value="Renders an editor form within a Tycho template" />

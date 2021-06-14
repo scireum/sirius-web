@@ -14,7 +14,15 @@
     <div class="card card-border h-100 @class">
         <div class="card-body">
             <div class="d-flex justify-content-between">
-                <h5 class="card-title">@title</h5>
+                <i:if test="isFilled(title)">
+                    <h5 class="card-title">@title</h5>
+                    <i:else>
+                        <i:local name="markupTitle" value="@renderToString('title')"/>
+                        <i:if test="isFilled(markupTitle)">
+                            <h5 class="card-title"><i:raw>@markupTitle</i:raw></h5>
+                        </i:if>
+                    </i:else>
+                </i:if>
                 <t:additionalActions>
                     <i:render name="actions"/>
                 </t:additionalActions>
