@@ -1,6 +1,6 @@
 <i:arg type="String" name="labelKey" default="" description="Contains the i18n key of the label to show."/>
 <i:arg type="String" name="label" default="@i18n(labelKey)" description="Contains an additional label to show."/>
-<i:arg type="String" name="labelClasses" default=""
+<i:arg type="String" name="labelClass" default=""
        description="Defines addition classes to add to the label."/>
 
 <i:pragma name="description">
@@ -15,7 +15,7 @@
            aria-expanded="false">
             <span class="d-flex flex-row">
                 <i:if test="isFilled(label)">
-                    <span class="@labelClasses pr-2">@label</span>
+                    <span class="@labelClass pr-2">@label</span>
                 </i:if>
                 <span><i class="fa fa-ellipsis-v"></i></span>
             </span>

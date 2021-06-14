@@ -3,7 +3,8 @@
 <i:arg type="String" name="icon" default=""/>
 <i:arg type="String" name="permission" default=""/>
 <i:arg type="String" name="framework" default=""/>
-<i:arg type="String" name="menuClasses" default=""/>
+<i:arg type="String" name="menuClasses" default="" deprecated="true"/>
+<i:arg type="String" name="class" default="@menuClasses"/>
 
 <i:pragma name="description" value="Renders menu dropdown within a tycho template"/>
 <i:local name="contents" value="@renderToString('body')"/>
@@ -23,7 +24,7 @@
                     </i:if>
                     @title
                 </a>
-                <div class="dropdown-menu @menuClasses" aria-labelledby="navbarDropdown">
+                <div class="dropdown-menu @class" aria-labelledby="navbarDropdown">
                     <i:raw>@contents</i:raw>
                 </div>
             </li>

@@ -1,14 +1,14 @@
 <i:arg type="String" name="id" default="@generateId('codeEditor_%s')" />
 <i:arg type="boolean" name="readonly" default="false" />
 <i:arg type="String" name="mode" default="html" />
-<i:arg type="String" name="classes" default="" />
+<i:arg type="String" name="class" default="" description="May contain additional CSS classes to be added to the generated div." />
 
 <i:pragma name="description">
     Provides a ACE based code editor
 </i:pragma>
 
 <div class="flex-grow-1 mb-4">
-    <div id="@id" class="@classes" style="min-height: 350px; height: 100%"><i:render name="body" /></div>
+    <div id="@id" class="@class" style="min-height: 350px; height: 100%"><i:render name="body" /></div>
 </div>
 
 <script type="text/javascript">

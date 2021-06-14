@@ -1,8 +1,8 @@
-<i:arg type="String" name="classes" default="" description="Permits to add additional classes to the container."/>
+<i:arg type="String" name="class" default="" description="Permits adding additional classes to the container."/>
 <i:arg type="String" name="size" default="medium" description="Determines the size of cards."/>
 
 <i:pragma name="description">
-    Renders a list of datacards. Using the 'size' on can determine of the cards should be
+    Renders a list of datacards. Using the 'size' on can determine if the cards should be
     kept medium sized (3 in a row on a large screen), small (4 in a row on a large screen)
     or large (2 in a row on a large screen). Note that for smaller screens, the number of
     cards is reduced appropriately.
@@ -10,17 +10,17 @@
 
 <i:switch test="@size">
     <i:block name="small">
-        <div class="row row-cols-1 row-cols-lg-3 row-cols-xl-4 @classes">
+        <div class="row row-cols-1 row-cols-lg-3 row-cols-xl-4 @class">
             <i:render name="body" />
         </div>
     </i:block>
     <i:block name="medium">
-        <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3 @classes">
+        <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3 @class">
             <i:render name="body" />
         </div>
     </i:block>
     <i:block name="large">
-        <div class="row row-cols-1 row-cols-lg-1 row-cols-xl-2 @classes">
+        <div class="row row-cols-1 row-cols-lg-1 row-cols-xl-2 @class">
             <i:render name="body" />
         </div>
     </i:block>

@@ -1,6 +1,6 @@
 <i:arg name="page" type="Page"/>
 <i:arg name="baseUrl" type="String"/>
-<i:arg name="searchClasses" type="String" default=""/>
+<i:arg name="class" type="String" default=""/>
 
 
 <i:pragma name="description">
@@ -10,7 +10,7 @@
 <div class="card mb-4">
     <div class="card-body">
         <div class="row">
-            <div class="col-8 col-lg-9 @searchClasses">
+            <div class="col-8 col-lg-9 @class">
                 <i:local name="linkAndQueryString" value="@Strings.split(baseUrl,'?')" />
                 <form action="@linkAndQueryString.getFirst()" method="get" id="search">
                     <i:if test="linkAndQueryString.getSecond() != null">
