@@ -164,7 +164,7 @@ public class AssetsDispatcher implements WebDispatcher {
 
         String scssUri = uri.substring(0, uri.length() - 4) + ".scss";
         Optional<Resource> resource = resources.resolve(scssUri);
-        if (!resource.isPresent()) {
+        if (resource.isEmpty()) {
             return DispatchDecision.CONTINUE;
         }
 
