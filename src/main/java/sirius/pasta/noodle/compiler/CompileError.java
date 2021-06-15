@@ -13,9 +13,9 @@ import parsii.tokenizer.ParseError;
 import javax.annotation.Nullable;
 
 /**
- * Represents an error which occured during compilation.
+ * Represents an error which occurred during compilation.
  * <p>
- * If possible, it contains the source line and the exact position along with the error message to assist in
+ * If possible, it contains the source line, and the exact position along with the error message to assist in
  * fixing the recorded error.
  */
 public class CompileError {
@@ -44,9 +44,9 @@ public class CompileError {
     }
 
     /**
-     * Returns the line within the source code where the error occured.
+     * Returns the line within the source code where the error occurred.
      *
-     * @return the source line where the error occured
+     * @return the source line where the error occurred
      */
     @Nullable
     public String getLine() {

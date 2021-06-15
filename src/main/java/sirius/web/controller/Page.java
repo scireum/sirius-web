@@ -84,19 +84,11 @@ public class Page<E> {
     }
 
     /**
-     * Easy method for supplying items the page contains to avoid boiler code.
+     * Provides a simple way of supplying the proper number of items for this page.
      * <p>
-     * The supplier provides the {@link Limit} of the current page for easy iteration
-     * over a result set.
-     * <p>
-     * This method should be supplied with a {@link List} which size was determined by
-     * the supplied {@link Limit} as this method does also is able to determine whether
-     * this page {@link Page#withHasMore(boolean) has more items to show} which are currently
-     * not being displayed.
-     * <p>
-     * Using the supplied limit e.g. via {@link Limit#asPredicate()} for slicing the provided list results
-     * in a list of size {@link Page#pageSize} + 1 for easier handling whether there are more elements to
-     * determine if there is another page.
+     * The <tt>itemsSupplier</tt> receives a pre-computed {@link Limit} and returns the expected number of
+     * items als list. The limit it computed in a way, that we can then determine if more items are available,
+     * and we thus should render a "show more" button.
      *
      * @param itemsSupplier the supplier to supply items to the current page limited by the provided limit
      * @return the page itself for fluent method calls
