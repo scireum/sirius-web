@@ -56,7 +56,7 @@ public class InputProcessor {
      * @return <tt>true</tt> if the current char we're looking at is a whitespace, <tt>false</tt> otherwise
      */
     protected boolean isAtWhitespace() {
-        return reader.current().isWhitepace() || reader.current().is('\u00A0');
+        return reader.current().isWhitespace() || reader.current().is('\u00A0');
     }
 
     /**

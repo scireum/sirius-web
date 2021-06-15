@@ -223,7 +223,7 @@ public class TemplateCompiler extends InputProcessor {
      */
     private boolean isAtWaitFor(int initialOffset, String waitFor) {
         int offset = initialOffset;
-        while (reader.next(offset).isWhitepace()) {
+        while (reader.next(offset).isWhitespace()) {
             offset++;
         }
 
@@ -595,7 +595,7 @@ public class TemplateCompiler extends InputProcessor {
             return true;
         }
 
-        return reader.current().is('<') && !reader.next().isWhitepace();
+        return reader.current().is('<') && !reader.next().isWhitespace();
     }
 
     /**

@@ -102,7 +102,7 @@ public class CommandParser {
     }
 
     private void skipWhitespace(LookaheadReader reader) {
-        while (reader.current().isWhitepace()) {
+        while (reader.current().isWhitespace()) {
             reader.consume();
         }
     }
@@ -118,7 +118,7 @@ public class CommandParser {
     private String parseNormalToken(LookaheadReader reader) {
         StringBuilder current = new StringBuilder();
 
-        while (!reader.current().isEndOfInput() && !reader.current().isWhitepace()) {
+        while (!reader.current().isEndOfInput() && !reader.current().isWhitespace()) {
             current.append(reader.consume().getValue());
         }
 
