@@ -11,7 +11,7 @@ package sirius.web.services;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.xml.StructuredOutput;
-import sirius.web.ErrorCodeException;
+import sirius.web.controller.Controller;
 import sirius.web.controller.Routed;
 
 /**
@@ -59,13 +59,7 @@ public interface StructuredService {
             }
 
             out.property("type", cause.getClass().getName());
-
-            if (e instanceof ErrorCodeException) {
-                out.property("code", ((ErrorCodeException) e).getCode());
-            } else {
-                out.property("code", "ERROR");
-            }
-
+            out.property("code", e.getHint(Controller.ERROR_CODE).asString("ERROR"));
             out.property("flow", CallContext.getCurrent().getMDCValue(CallContext.MDC_FLOW));
         } finally {
             out.endResult();

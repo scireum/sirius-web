@@ -9,10 +9,10 @@
 package sirius.web.controller;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import sirius.kernel.commons.Value;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.nls.NLS;
-import sirius.web.ErrorCodeException;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebServer;
 import sirius.web.security.Permissions;
@@ -20,6 +20,7 @@ import sirius.web.security.UserContext;
 import sirius.web.security.UserInfo;
 import sirius.web.services.JSONStructuredOutput;
 
+import javax.annotation.Nonnull;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -151,13 +152,16 @@ public class BasicController implements Controller {
      * Most of the time this method should not be called directly, rather a HandledException should be thrown.
      *
      * @param ctx   the current request
-     * @param error the error which occured
+     * @param error the error which occurred
      */
-    public void fail(WebContext ctx, HandledException error) {
+    public void fail(WebContext ctx, @Nonnull HandledException error) {
         if (ctx.isResponseCommitted()) {
             // Force underlying request / response to be closed...
-            if (error instanceof ErrorCodeException) {
-                ctx.respondWith().error(((ErrorCodeException) error).getHttpResponseStatus(), error);
+            Value status = error.getHint(Controller.HTTP_STATUS);
+            if (status.isNumeric()) {
+                ctx.respondWith()
+                   .error(HttpResponseStatus.valueOf(status.asInt(HttpResponseStatus.INTERNAL_SERVER_ERROR.code())),
+                          error);
             } else {
                 ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
             }
@@ -167,8 +171,9 @@ public class BasicController implements Controller {
     }
 
     @Override
-    public void onError(WebContext webContext, HandledException error) {
-        if (webContext.isResponseCommitted() || defaultRoute == null) {
+    public void onError(WebContext webContext, @Nonnull HandledException error) {
+        if (webContext.isResponseCommitted() || defaultRoute == null || error.getHint(Controller.HTTP_STATUS)
+                                                                             .isNumeric()) {
             fail(webContext, error);
             return;
         }
@@ -186,29 +191,18 @@ public class BasicController implements Controller {
             return;
         }
 
-        if (error instanceof ErrorCodeException) {
-            createJsonErrorInformation(webContext, error, ((ErrorCodeException) error).getHttpResponseStatus());
-        } else {
-            // Return 200 to keep legacy behaviour
-            createJsonErrorInformation(webContext, error, HttpResponseStatus.OK);
+        HttpResponseStatus status = HttpResponseStatus.OK;
+        if (error.getHint(Controller.HTTP_STATUS).isNumeric()) {
+            status = HttpResponseStatus.valueOf(error.getHint(Controller.HTTP_STATUS)
+                                                     .asInt(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()));
         }
-    }
 
-    /**
-     * Creates a JSON response from the given {@link HttpResponseStatus}.
-     *
-     * @param ctx    the context conatining the request
-     * @param error  the error which occurred
-     * @param status the given {@link HttpResponseStatus} to respond with
-     */
-    protected void createJsonErrorInformation(WebContext ctx, HandledException error, HttpResponseStatus status) {
-        JSONStructuredOutput out = ctx.respondWith().json(status);
-
+        JSONStructuredOutput out = webContext.respondWith().json(status);
         out.beginResult();
         out.property("success", false);
         out.property("error", true);
-        if(error instanceof ErrorCodeException) {
-            out.property("code", ((ErrorCodeException) error).getCode());
+        if (error.getHint(Controller.ERROR_CODE).isFilled()) {
+            out.property("code", error.getHint(Controller.ERROR_CODE).asString());
         }
         out.property("message", error.getMessage());
         out.endResult();

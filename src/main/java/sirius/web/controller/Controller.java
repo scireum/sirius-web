@@ -9,6 +9,7 @@
 package sirius.web.controller;
 
 import sirius.kernel.di.std.AutoRegister;
+import sirius.kernel.health.ExceptionHint;
 import sirius.kernel.health.HandledException;
 import sirius.web.http.WebContext;
 
@@ -42,6 +43,16 @@ import sirius.web.http.WebContext;
 public interface Controller {
 
     /**
+     * Used to specify the desired HTTP status code when handling the exception.
+     */
+    ExceptionHint HTTP_STATUS = new ExceptionHint("httpStatus");
+
+    /**
+     * Specifies an explicit error code to output when handling the exception.
+     */
+    ExceptionHint ERROR_CODE = new ExceptionHint("errorCode");
+
+    /**
      * In case processing a request via a method fails (throws an exception), this method will be called.
      * <p>
      * This provides a convenient way to render a "fallback" page like a list view, if a specialized details view
@@ -57,7 +68,7 @@ public interface Controller {
      * <p>
      * This provides a convenient way to generate a "fallback" JSON response.
      *
-     * @param webContext the context conatining the request
+     * @param webContext the context containing the request
      * @param error the error which occurred
      */
     void onJsonError(WebContext webContext, HandledException error);
