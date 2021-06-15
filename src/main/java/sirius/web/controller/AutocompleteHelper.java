@@ -35,9 +35,10 @@ public class AutocompleteHelper {
      * Represents a suggestion or completion of a given keyword
      */
     public static class Completion {
-        private String value;
-        private String label;
-        private String description;
+        private final String value;
+        private String fieldLabel;
+        private String completionLabel;
+        private String completionDescription;
         private boolean disabled = false;
 
         /**
@@ -45,8 +46,10 @@ public class AutocompleteHelper {
          *
          * @param value the effective value to fill into the field
          */
-        public Completion(String value) {
-            this(value, value);
+        protected Completion(String value) {
+            this.value = value;
+            this.fieldLabel = value;
+            this.completionLabel = value;
         }
 
         /**
@@ -54,9 +57,12 @@ public class AutocompleteHelper {
          *
          * @param value the effective value to fill into the field
          * @param label the text to display to the user
+         * @deprecated Use the simple constructor and the withXXX methods.
          */
+        @Deprecated
         public Completion(String value, String label) {
-            this(value, label, null);
+            this.value = value;
+            this.fieldLabel = label;
         }
 
         /**
@@ -65,70 +71,45 @@ public class AutocompleteHelper {
          * @param value       the effective value to fill into the field
          * @param label       the text to display to the user
          * @param description the text shown in the autocomplete-dropdown
+         * @deprecated Use the simple constructor and the withXXX methods.
          */
+        @Deprecated
         public Completion(String value, String label, @Nullable String description) {
             this.value = value;
-            this.label = label;
-            this.description = description;
+            this.fieldLabel = label;
+            this.completionDescription = description;
         }
 
         /**
-         * Sets the label for the suggestion
+         * Specifies the label to be shown in the field itself.
          *
-         * @param label the label shown to the user
+         * @param fieldLabel the label shown to the user
          * @return the completion itself for fluent method calls
          */
-        public Completion setLabel(String label) {
-            this.label = label;
+        public Completion withFieldLabel(String fieldLabel) {
+            this.fieldLabel = fieldLabel;
             return this;
         }
 
         /**
-         * Sets the value for the suggestion
+         * Specifies the label to be shown within the completion of the autocomplete.
          *
-         * @param value the value used in the entry field
+         * @param completionLabel the label shown to the user
          * @return the completion itself for fluent method calls
          */
-        public Completion setValue(String value) {
-            this.value = value;
+        public Completion withCompletionLabel(String completionLabel) {
+            this.completionLabel = completionLabel;
             return this;
-        }
-
-        /**
-         * Returns the effective value of the suggestion
-         *
-         * @return the effective value
-         */
-        public String getValue() {
-            return value;
-        }
-
-        /**
-         * Returns the label shown to the user
-         *
-         * @return the label of the suggestion
-         */
-        public String getLabel() {
-            return label;
-        }
-
-        /**
-         * Returns the description of the suggestion
-         *
-         * @return the description to show to the user
-         */
-        public String getDescription() {
-            return description;
         }
 
         /**
          * Sets the description for the suggestion
          *
-         * @param description the description to show to the user
+         * @param completionDescription the description to show to the user
          * @return the completion itself for fluent method calls
          */
-        public Completion setDescription(String description) {
-            this.description = description;
+        public Completion withCompletionDescription(String completionDescription) {
+            this.completionDescription = completionDescription;
             return this;
         }
 
@@ -137,20 +118,39 @@ public class AutocompleteHelper {
          *
          * @param disabled <tt>true</tt> if the suggestion is disabled, <tt>false</tt> otherwise
          * @return the completion itself for fluent method calls
+         * @deprecated Use {@link #markDisabled()}.
          */
+        @Deprecated
         public Completion setDisabled(boolean disabled) {
             this.disabled = disabled;
+            return this;
+        }
+
+        /**
+         * Marks the suggestion as disabled.
+         *
+         * @return the completion itself for fluent method calls
+         */
+        public Completion markDisabled() {
+            this.disabled = true;
             return this;
         }
 
         private void writeTo(StructuredOutput out) {
             out.beginObject("completion");
             {
-                out.property("id", value);
-                out.property("text", label == null ? "" : label);
-                if (Strings.isFilled(description)) {
-                    out.property("description", description);
+                out.property("value", value);
+                out.property("fieldLabel", fieldLabel);
+                out.property("completionLabel", Strings.isFilled(completionLabel) ? completionLabel : fieldLabel);
+                out.property("completionDescription", completionDescription);
+
+                // LEGACY SUPPORT....
+                out.property("text", fieldLabel == null ? "" : fieldLabel);
+                if (Strings.isFilled(completionDescription)) {
+                    out.property("description", completionDescription);
                 }
+                // END OF LEGACY SUPPORT
+
                 if (disabled) {
                     out.property("disabled", true);
                 }
@@ -173,6 +173,19 @@ public class AutocompleteHelper {
     }
 
     /**
+     * Creates a new completion for the given code.
+     * <p>
+     * Note that most probably at least {@link Completion#withFieldLabel(String)} should be used to provide
+     * a proper label for the completion.
+     *
+     * @param code the code to use as value.
+     * @return the completion for the given code
+     */
+    public static Completion suggest(String code) {
+        return new AutocompleteHelper.Completion(code);
+    }
+
+    /**
      * Handles the given request and generates the appropriate JSON as expected by the autocomplete in JavaScript.
      *
      * @param ctx    the request to handle
@@ -183,7 +196,7 @@ public class AutocompleteHelper {
         out.beginResult();
         out.beginArray("completions");
         search.search(ctx.get("query").asString(), c -> {
-            if (Strings.isFilled(c.getValue())) {
+            if (Strings.isFilled(c.value)) {
                 c.writeTo(out);
             }
         });
