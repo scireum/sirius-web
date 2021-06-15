@@ -1191,7 +1191,7 @@ public class Response {
     }
 
     /**
-     * Renders the given Rythm template and sends the output as response.
+     * Renders the given Tagliatelle template and sends the output as response.
      * <p>
      * By default caching will be disabled. If the file ends with .html, <tt>text/html; charset=UTF-8</tt> will be set
      * as content type. Otherwise the content type will be guessed from the filename.

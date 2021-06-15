@@ -81,7 +81,7 @@ public class TestResponse extends Response {
     private byte[] content;
     private String errorMessage;
     private String tunnelTargetUrl;
-    private Promise<TestResponse> responsePromise;
+    private final Promise<TestResponse> responsePromise;
     private JSONObject jsonContent;
     private XMLStructuredInput xmlContent;
     private CallContext innerCallContext;
@@ -106,7 +106,7 @@ public class TestResponse extends Response {
     }
 
     /**
-     * Contains the name of the Rythm template used to generate the response
+     * Contains the name of the template used to generate the response
      *
      * @return the name of the template used to generate the response
      */
@@ -115,7 +115,7 @@ public class TestResponse extends Response {
     }
 
     /**
-     * Returns the template paramters passed to Rythm when rendering the template
+     * Returns the template parameters passed in when rendering the template
      *
      * @return the template parameters used to render the response
      */

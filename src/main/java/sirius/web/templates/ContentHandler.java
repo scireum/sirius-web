@@ -30,7 +30,7 @@ public interface ContentHandler extends Priorized {
     /**
      * Generates the appropriate output if the settings of the generator match.
      *
-     * @param generator the generate settings given by the caller
+     * @param generator the generator settings given by the caller
      * @param out       the output stream used to write the generated content to
      * @return <tt>true</tt> if output was generated, <tt>false</tt> if the settings didn't match
      * @throws Exception if an error occurs while generating content
