@@ -59,7 +59,7 @@ public class IfHandler extends ExpressionHandler {
 
     private boolean isAtElse(TemplateCompiler compiler) {
         int offset = 0;
-        while (compiler.getReader().next(offset).isWhitepace()) {
+        while (compiler.getReader().next(offset).isWhitespace()) {
             offset++;
         }
         return compiler.isAtText(offset, "else");
