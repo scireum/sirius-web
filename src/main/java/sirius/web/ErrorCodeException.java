@@ -12,6 +12,8 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.health.HandledException;
 import sirius.web.controller.Routed;
 
+import java.util.Collections;
+
 /**
  * Can be thrown in {@link sirius.web.services.StructuredService}s or in JSON calls ({@link Routed#jsonCall()}).
  * <p>
@@ -34,7 +36,7 @@ public class ErrorCodeException extends HandledException {
      * @param message the message to add to the output
      */
     public ErrorCodeException(String code, String message) {
-        super(message);
+        super(message, Collections.emptyMap(), null);
         this.code = code;
         this.httpResponseStatus = HttpResponseStatus.OK;
     }
@@ -45,12 +47,12 @@ public class ErrorCodeException extends HandledException {
      * Note tha this is a <tt>HandledException</tt> so no further logging or error reporting will be performed by the
      * system.
      *
-     * @param code the error code to report
-     * @param message the message to add to the output
+     * @param code               the error code to report
+     * @param message            the message to add to the output
      * @param httpResponseStatus the {@link HttpResponseStatus} to report
      */
     public ErrorCodeException(String code, String message, HttpResponseStatus httpResponseStatus) {
-        super(message);
+        super(message, Collections.emptyMap(), null);
         this.code = code;
         this.httpResponseStatus = httpResponseStatus;
     }
