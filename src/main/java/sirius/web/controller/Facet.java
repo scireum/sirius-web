@@ -22,13 +22,15 @@ import java.util.List;
  */
 public class Facet {
     protected Page<?> parent;
-    private String name;
-    private String title;
-    private List<String> values;
+    private final String name;
+    private final String title;
+    protected final List<String> values = new ArrayList<>();
     private final ValueComputer<String, String> translator;
     private boolean facetCollapsingEnabled = false;
     private int maxVisibleFacetItems;
-    private List<FacetItem> items = new ArrayList<>();
+    private final List<FacetItem> items = new ArrayList<>();
+
+    @Deprecated
     private FacetRange facetRange;
 
     /**
@@ -45,7 +47,6 @@ public class Facet {
                  @Nullable ValueComputer<String, String> translator) {
         this.name = field;
         this.title = title;
-        this.values = new ArrayList<>();
         if (value != null) {
             this.values.add(value);
         }
@@ -58,6 +59,8 @@ public class Facet {
      * @return a list of all items of this facet
      */
     public List<FacetItem> getAllItems() {
+        // Note that we intentionally return the list here as the list of items might be filtered after a
+        // query or aggregation has been performed.
         return items;
     }
 
@@ -133,17 +136,14 @@ public class Facet {
      *
      * @param key   the filter value of the item
      * @param title the public visible name of the item
-     * @param count the number of matched for this item
+     * @param count the number of matched for this item or <b>-1</b> if no proper count is available
      * @return the facet itself for fluent method calls
      */
     public Facet addItem(String key, String title, int count) {
         if (Strings.isFilled(key)) {
             String effectiveTitle = translator == null ? title : translator.compute(key);
             if (effectiveTitle != null) {
-                items.add(new FacetItem(key,
-                                        effectiveTitle,
-                                        count,
-                                        values.stream().anyMatch(value -> Strings.areEqual(value, key))));
+                items.add(new FacetItem(this, key, effectiveTitle, count));
             }
         }
         return this;
@@ -283,7 +283,8 @@ public class Facet {
      * @return the facet itself for fluent method calls
      */
     public Facet withValues(List<String> values) {
-        this.values = values;
+        this.values.clear();
+        this.values.addAll(values);
 
         return this;
     }
@@ -292,7 +293,9 @@ public class Facet {
      * Returns the used facet range.
      *
      * @return the facet range
+     * @deprecated FacetRange has been deprecated.
      */
+    @Deprecated
     public FacetRange getRange() {
         return facetRange;
     }
@@ -302,7 +305,9 @@ public class Facet {
      *
      * @param facetRange the facet range to use
      * @return the facet itself for fluent method calls
+     * @deprecated FacetRange has been deprecated.
      */
+    @Deprecated
     public Facet withRange(FacetRange facetRange) {
         this.facetRange = facetRange;
 
