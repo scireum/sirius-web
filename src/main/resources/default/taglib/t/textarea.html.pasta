@@ -22,7 +22,7 @@
     <textarea @id="@id" name="@name" rows="@rows" class="form-control input-block-level" @readonly="readonly">@UserContext.get().getFieldValue(name, value)</textarea>
 
     <i:if test="isFilled(help)">
-        <small class="form-text text-muted"><i:raw>@help</i:raw></small>
+        <small class="form-text text-muted"><i:raw>@expandMessage(help)</i:raw></small>
     </i:if>
     <i:if test="UserContext.get().hasError(name)">
         <small class="error-block form-text">@UserContext.get().getFieldErrorMessage(name)</small>
