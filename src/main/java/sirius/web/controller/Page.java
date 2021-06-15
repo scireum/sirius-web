@@ -30,6 +30,7 @@ import java.util.function.Supplier;
 public class Page<E> {
 
     private static final int DEFAULT_PAGE_SIZE = 25;
+
     /**
      * The MAXIMUM_PAGE_SIZE is used to limit the {@link #bindToRequest(WebContext)}
      * to not query loads of entities per page.
@@ -46,7 +47,6 @@ public class Page<E> {
     private boolean more;
     private String duration;
     private List<Facet> facets = new ArrayList<>();
-    private Supplier<List<Facet>> facetsSupplier;
     private Boolean hasFacets = null;
     private int pageSize = DEFAULT_PAGE_SIZE;
 
@@ -84,19 +84,11 @@ public class Page<E> {
     }
 
     /**
-     * Easy method for supplying items the page contains to avoid boiler code.
+     * Provides a simple way of supplying the proper number of items for this page.
      * <p>
-     * The supplier provides the {@link Limit} of the current page for easy iteration
-     * over a result set.
-     * <p>
-     * This method should be supplied with a {@link List} which size was determined by
-     * the supplied {@link Limit} as this method does also is able to determine whether
-     * this page {@link Page#withHasMore(boolean) has more items to show} which are currently
-     * not being displayed.
-     * <p>
-     * Using the supplied limit e.g. via {@link Limit#asPredicate()} for slicing the provided list results
-     * in a list of size {@link Page#pageSize} + 1 for easier handling whether there are more elements to
-     * determine if there is another page.
+     * The <tt>itemsSupplier</tt> receives a pre-computed {@link Limit} and returns the expected number of
+     * items als list. The limit it computed in a way, that we can then determine if more items are available,
+     * and we thus should render a "show more" button.
      *
      * @param itemsSupplier the supplier to supply items to the current page limited by the provided limit
      * @return the page itself for fluent method calls
@@ -104,9 +96,9 @@ public class Page<E> {
     public Page<E> withLimitedItemsSupplier(Function<Limit, List<E>> itemsSupplier) {
         Limit supplierLimit = new Limit(getStart() - 1, getPageSize() + 1);
         List<E> suppliedItems = itemsSupplier.apply(supplierLimit);
-        if (suppliedItems.size() > supplierLimit.getMaxItems() - 1) {
+        if (suppliedItems.size() > getPageSize()) {
             more = true;
-            suppliedItems = suppliedItems.subList(0, supplierLimit.getMaxItems() - 1);
+            suppliedItems = suppliedItems.subList(0, getPageSize());
         }
         return withItems(suppliedItems);
     }
@@ -172,6 +164,7 @@ public class Page<E> {
      *
      * @return number of the current page
      */
+    @Deprecated
     public int getCurrentPageNumber() {
         return (this.start / this.pageSize) + 1;
     }
@@ -188,7 +181,7 @@ public class Page<E> {
         if (ctx.get(PARAM_START).isFilled()) {
             withStart(ctx.get(PARAM_START).asInt(1));
         }
-        if (ctx.get(PARAM_PAGE_SIZE).isFilled()){
+        if (ctx.get(PARAM_PAGE_SIZE).isFilled()) {
             withPageSize(Math.min(ctx.get(PARAM_PAGE_SIZE).asInt(DEFAULT_PAGE_SIZE), MAXIMUM_PAGE_SIZE));
         }
         withQuery(ctx.get(PARAM_QUERY).asString());
@@ -205,10 +198,15 @@ public class Page<E> {
      *
      * @param facetsSupplier the facets supplier computing the facets available for further filtering
      * @return the page itself for fluent method calls
+     * @deprecated This method provides unneeded complexity and was never used.
      */
+    @Deprecated
     public Page<E> withFacetsSupplier(Supplier<List<Facet>> facetsSupplier) {
-        this.facetsSupplier = facetsSupplier;
-        return this;
+        if (facetsSupplier != null) {
+            return withFacets(facetsSupplier.get());
+        } else {
+            return this;
+        }
     }
 
     /**
@@ -415,11 +413,6 @@ public class Page<E> {
      * @return all filter facets of the underlying result set
      */
     public List<Facet> getFacets() {
-        if (facetsSupplier != null) {
-            facets.addAll(facetsSupplier.get());
-            facetsSupplier = null;
-            hasFacets = null;
-        }
         if (hasFacets == null) {
             hasFacets = false;
             for (Facet facet : facets) {
@@ -444,6 +437,16 @@ public class Page<E> {
         }
 
         return hasFacets;
+    }
+
+    /**
+     * Determines if any kind of filtering is being applied.
+     *
+     * @return <tt>true</tt> if a filter is set, <tt>false</tt> otherwise
+     */
+    public boolean isFiltered() {
+        return Strings.isFilled(getQuery()) || getFacets().stream()
+                                                          .anyMatch(facet -> Strings.isFilled(facet.getValue()));
     }
 
     /**

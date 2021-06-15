@@ -8,28 +8,24 @@
 
 package sirius.web.controller;
 
+import sirius.kernel.commons.Strings;
+
 /**
  * Represents a single item of a {@link Facet}.
  */
 public class FacetItem {
-    private String key;
-    private String title;
-    private int count;
-    private boolean active;
 
-    /**
-     * Creates a new FacesItem.
-     *
-     * @param key    the content value represented by this item
-     * @param title  the visual item used to display this item to the user
-     * @param count  the number of matches found
-     * @param active determines if this item is an active filter setting
-     */
-    public FacetItem(String key, String title, int count, boolean active) {
+    private final Facet facet;
+    private final String key;
+    private final String title;
+    private int count;
+    private boolean forceActive;
+
+    protected FacetItem(Facet facet, String key, String title, int count) {
+        this.facet = facet;
         this.key = key;
         this.title = title;
         this.count = count;
-        this.active = active;
     }
 
     /**
@@ -42,30 +38,12 @@ public class FacetItem {
     }
 
     /**
-     * Sets the key or content represented by this item.
-     *
-     * @param key the content to set
-     */
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    /**
      * Returns the title shown to the user when displaying this item.
      *
      * @return the user representation of this item
      */
     public String getTitle() {
         return title;
-    }
-
-    /**
-     * Sets the title shown to the user when displaying this item.
-     *
-     * @param title the new title
-     */
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     /**
@@ -78,30 +56,37 @@ public class FacetItem {
     }
 
     /**
-     * Sets the number of matches.
+     * Permits to update the count of this facet item.
+     * <p>
+     * This might be used if a facet is built first and later updated using aggregation results of a query.
      *
-     * @param count the new number of matches
+     * @param count the new count to apply
+     * @return the item itself for fluent method calls
      */
-    public void setCount(int count) {
+    public FacetItem withCount(int count) {
         this.count = count;
+        return this;
     }
 
     /**
-     * Determines if this item is an currently active filter.
+     * Forces the item to be active, even if its value isn't selected in the underlying {@link Facet}.
+     * <p>
+     * This might be used if this item represents the default value which isn't <tt>null</tt> internally.
+     *
+     * @return the item itself for fluent method calls
+     */
+    public FacetItem forceActive() {
+        this.forceActive = true;
+        return this;
+    }
+
+    /**
+     * Determines if this item is currently an active filter.
      *
      * @return <tt>true</tt> if this is currently an active filter, <tt>false</tt> otherwise
      */
     public boolean isActive() {
-        return active;
-    }
-
-    /**
-     * Sets the active flag indicating if this is currently an active filter.
-     *
-     * @param active <tt>true</tt> to mark this as an active filter, <tt>false</tt> otherwise
-     */
-    public void setActive(boolean active) {
-        this.active = active;
+        return forceActive || facet.values.stream().anyMatch(value -> Strings.areEqual(value, key));
     }
 
     @Override

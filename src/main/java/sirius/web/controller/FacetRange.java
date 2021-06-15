@@ -12,10 +12,12 @@ import sirius.kernel.commons.Amount;
 
 /**
  * Represents a range filter for a {@link Facet} used for filtering on lower and/or upper bounds.
+ * @deprecated This makes the API overly complex and the only use-case is about to vanish
  */
+@Deprecated
 public class FacetRange {
-    private Amount min;
-    private Amount max;
+    private final Amount min;
+    private final Amount max;
     private Amount from = Amount.NOTHING;
     private Amount to = Amount.NOTHING;
 
