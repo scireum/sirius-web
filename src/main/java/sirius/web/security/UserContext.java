@@ -16,6 +16,7 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
+import sirius.web.controller.ErrorMessageTransformer;
 import sirius.web.controller.Message;
 import sirius.web.http.UserMessagesCache;
 import sirius.web.http.WebContext;
@@ -147,15 +148,16 @@ public class UserContext implements SubContext {
     /**
      * Handles the given exception by passing it to {@link sirius.kernel.health.Exceptions} and by creating an
      * appropriate message for the user.
+     * <p>
+     * Note that this might utilize {@link ErrorMessageTransformer error message transformers} to yield an optimal
+     * error message.
      *
-     * @param e the exception to handle. If the given exception is <tt>null</tt> nothing will happen.
+     * @param exception the exception to handle. If the given exception is <tt>null</tt>, nothing will happen.
      */
-    public static void handle(@Nullable Throwable e) {
-        if (e == null) {
-            return;
+    public static void handle(@Nullable Throwable exception) {
+        if (exception != null) {
+            message(Message.error(exception));
         }
-
-        message(Message.error(e));
     }
 
     /**

@@ -5,7 +5,7 @@
             <div class="mt-4 mb-2">
                 <i:local name="currentScope" value="UserContext.getCurrentScope()"/>
                 <i:if test="currentScope.as(sirius.web.security.MaintenanceInfo.class).maintenanceMessage() != null">
-                    @currentScope.as(sirius.web.security.MaintenanceInfo.class).maintenanceMessage().getMessage()
+                    <i:raw>@currentScope.as(sirius.web.security.MaintenanceInfo.class).maintenanceMessage().getHtml()</i:raw>
                     <i:else>
                         @i18n("template.html.maintenanceInfo")
                     </i:else>

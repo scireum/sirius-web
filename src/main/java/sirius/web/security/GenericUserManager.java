@@ -129,7 +129,7 @@ public abstract class GenericUserManager implements UserManager {
         } catch (HandledException e) {
             UserContext.message(Message.error(e.getMessage()));
         } catch (Exception e) {
-            UserContext.message(Message.error(Exceptions.handle(UserContext.LOG, e)));
+            UserContext.handle(e);
         }
 
         result = loginViaSSOToken(webContext);

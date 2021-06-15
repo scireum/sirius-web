@@ -178,9 +178,7 @@ public class BasicController implements Controller {
             return;
         }
 
-        if (error != null) {
-            UserContext.message(Message.error(error.getMessage()));
-        }
+        UserContext.handle(error);
         defaultRoute.accept(webContext);
     }
 

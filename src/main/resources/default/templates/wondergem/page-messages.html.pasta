@@ -2,17 +2,7 @@
     <div class="col-md-12" id="messageBox">
         <i:for type="sirius.web.controller.Message" var="msg" items="UserContext.get().getMessages()">
             <div class="alert @msg.getType().getCssClass()">
-                <i:raw>@msg.getMessage()</i:raw>
-                <i:if test="msg.getAction() != null">
-                    <i:if test="msg.isActionJavascript()">
-                        <a onclick="@msg.getAction()"
-                           class="link link-info">@msg.getActionLabel()</a>
-                        <i:else>
-                            <a href="@msg.getAction()"
-                               class="link link-info">@msg.getActionLabel()</a>
-                        </i:else>
-                    </i:if>
-                </i:if>
+                <i:raw>@msg.getHtml()</i:raw>
             </div>
         </i:for>
     </div>

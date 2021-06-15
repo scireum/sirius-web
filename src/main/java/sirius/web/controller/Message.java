@@ -8,201 +8,231 @@
 
 package sirius.web.controller;
 
+import sirius.kernel.commons.Strings;
+import sirius.kernel.di.std.Part;
+import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.web.security.UserContext;
+import sirius.web.templates.ContentHelper;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Used by the {@link sirius.web.security.UserContext} to collect error or success messages.
  */
 public class Message {
 
-    private String messageText;
-    private String details;
-    private MessageLevel type = MessageLevel.INFO;
-    private String action;
-    private String actionLabel;
-    private boolean actionJavascript;
+    @Part
+    private static MessageExpanders messageExpanders;
+
+    @PriorityParts(ErrorMessageTransformer.class)
+    private static List<ErrorMessageTransformer> errorMessageTransformers;
+
+    private final MessageLevel type;
+    private final String html;
 
     /**
-     * Creates a new message with the given content, details info and message type.
-     *
-     * @param message the message to show to the user
-     * @param details the details for this message
-     * @param type    the type for the message
+     * Provides a simple builder/helper to generate a message.
      */
-    public Message(String message, String details, MessageLevel type) {
-        this.messageText = message;
-        this.details = details;
-        this.type = type;
-    }
+    public static class Builder {
 
-    /**
-     * Creates a new empty message.
-     */
-    public Message() {
-    }
+        private final MessageLevel type;
 
-    /**
-     * Returns the message for the user.
-     *
-     * @return the message to show
-     */
-    public String getMessage() {
-        return messageText;
-    }
+        protected Builder(MessageLevel type) {
+            this.type = type;
+        }
 
-    /**
-     * Returns detailed infos for this message
-     *
-     * @return the details to show to the user
-     */
-    public String getDetails() {
-        return details;
-    }
+        /**
+         * Specifies a text message to show.
+         *
+         * @param textMessage the text message to show
+         * @return the generated message
+         */
+        public Message withTextMessage(String textMessage) {
+            return new Message(type, ContentHelper.escapeXML(textMessage));
+        }
 
-    /**
-     * Returns the type of the message
-     *
-     * @return the {@link MessageLevel type}
-     */
-    public MessageLevel getType() {
-        return type;
-    }
+        /**
+         * Specifies an HTML message to show.
+         *
+         * @param htmlMessage the HTML message to show
+         * @return the generated message
+         */
+        public Message withHTMLMessage(String htmlMessage) {
+            return new Message(type, htmlMessage);
+        }
 
-    /**
-     * Returns the action associated with the message
-     *
-     * @return a URL which will be invoked when the user clicks on the message
-     */
-    public String getAction() {
-        return action;
-    }
+        /**
+         * Specifies a text message followed by a link.
+         *
+         * @param textMessage the plain text message to show
+         * @param label       the label of the link to show
+         * @param link        the target of the link. Use <tt>javascript:</tt> as prefix to invoke a JavaScript function
+         * @param icon        the (optional) icon to show. This is most probably a fontawesome icon like <tt>fa-refresh</tt>
+         * @return the generated message
+         */
+        public Message withTextAndLink(String textMessage, String label, String link, @Nullable String icon) {
+            if (Strings.isFilled(icon)) {
+                return new Message(type,
+                                   Strings.apply("<span>%s</span><a href=\"%s\"><i class=\"fa %s\"></i> %s</a>",
+                                                 ContentHelper.escapeXML(textMessage),
+                                                 ContentHelper.escapeXML(link),
+                                                 icon,
+                                                 ContentHelper.escapeXML(label)));
+            } else {
+                return new Message(type,
+                                   Strings.apply("<span>%s</span><a href=\"%s\">%s</a>",
+                                                 ContentHelper.escapeXML(textMessage),
+                                                 ContentHelper.escapeXML(link),
+                                                 ContentHelper.escapeXML(label)));
+            }
+        }
 
-    /**
-     * Returns the label to be used for the action
-     *
-     * @return the label for the action which is shown to the user
-     */
-    public String getActionLabel() {
-        return actionLabel;
-    }
-
-    /**
-     * Determines if the action is an URL or a piece of JavaScript
-     *
-     * @return <tt>true</tt> if it is JS, <tt>false</tt> otherwise
-     */
-    public boolean isActionJavascript() {
-        return actionJavascript;
-    }
-
-    /**
-     * Adds an action as URL to the message
-     *
-     * @param link  the URL to invoke if the user clicks on the message
-     * @param label the label to use for the given action
-     * @return the message itself for further use
-     */
-    public Message withAction(String link, String label) {
-        this.action = link;
-        this.actionLabel = label;
-        return this;
-    }
-
-    /**
-     * Adds an action as URL to the message
-     *
-     * @param codeFragment the URL to invoke if the user clicks on the message
-     * @param label        the label to use for the given action
-     * @return the message itself for further use
-     */
-    public Message withJavascriptAction(String codeFragment, String label) {
-        this.action = codeFragment;
-        this.actionLabel = label;
-        this.actionJavascript = true;
-        return this;
-    }
-
-    @Override
-    public String toString() {
-        return messageText;
+        /**
+         * Specifies a text message followed by a link to an external target.
+         * <p>
+         * This behaves just like {@link #withTextAndLink(String, String, String, String)} but the link is opened
+         * in a new browser tab or window.
+         *
+         * @param textMessage the plain text message to show
+         * @param label       the label of the link to show
+         * @param link        the target of the link. Use <tt>javascript:</tt> as prefix to invoke a JavaScript function
+         * @param icon        the (optional) icon to show. This is most probably a fontawesome icon like <tt>fa-refresh</tt>
+         * @return the generated message
+         */
+        public Message withTextAndExternalLink(String textMessage, String label, String link, @Nullable String icon) {
+            if (Strings.isFilled(icon)) {
+                return new Message(type,
+                                   Strings.apply(
+                                           "<span>%s</span><a href=\"%s\" target=\"_blank\"><i class=\"fa %s\"></i> %s</a>",
+                                           ContentHelper.escapeXML(textMessage),
+                                           ContentHelper.escapeXML(link),
+                                           icon,
+                                           ContentHelper.escapeXML(label)));
+            } else {
+                return new Message(type,
+                                   Strings.apply("<span>%s</span><a href=\"%s\" target=\"_blank\">%s</a>",
+                                                 ContentHelper.escapeXML(textMessage),
+                                                 ContentHelper.escapeXML(link),
+                                                 ContentHelper.escapeXML(label)));
+            }
+        }
     }
 
     /**
      * Factory method to create a success message
      *
-     * @param message the message content
+     * @return a new message with SUCCESS as type
+     */
+    public static Builder success() {
+        return new Builder(MessageLevel.SUCCESS);
+    }
+
+    /**
+     * Factory method to create a success message
+     *
+     * @param textMessage the message content
      * @return a new message with the given content and SUCCESS as type
      */
-    public static Message success(String message) {
-        return new Message(message, null, MessageLevel.SUCCESS);
+    public static Message success(String textMessage) {
+        return success().withTextMessage(textMessage);
     }
 
     /**
-     * Factory method to create a info message
+     * Factory method to create an info message
      *
-     * @param message the message content
+     * @return a new message with INFO as type
+     */
+    public static Builder info() {
+        return new Builder(MessageLevel.INFO);
+    }
+
+    /**
+     * Factory method to create an info message
+     *
+     * @param textMessage the message content
      * @return a new message with the given content and INFO as type
      */
-    public static Message info(String message) {
-        return new Message(message, null, MessageLevel.INFO);
+    public static Message info(String textMessage) {
+        return info().withTextMessage(textMessage);
     }
 
     /**
-     * Factory method to create a warning as message
+     * Factory method to create a warning message.
      *
-     * @param message the message content
+     * @return a new message with WARN as type
+     */
+    public static Builder warn() {
+        return new Builder(MessageLevel.WARNING);
+    }
+
+    /**
+     * Factory method to create a warning message
+     *
+     * @param textMessage the message content
      * @return a new message with the given content and WARN as type
      */
-    public static Message warn(String message) {
-        return new Message(message, null, MessageLevel.WARNING);
+    public static Message warn(String textMessage) {
+        return warn().withTextMessage(textMessage);
     }
 
     /**
      * Factory method to create an error message
      *
-     * @param message the message content
-     * @return a new message with the given content and ERROR as type
+     * @return a new message with ERROR as type
      */
-    public static Message error(String message) {
-        return new Message(message, null, MessageLevel.PROBLEM);
+    public static Builder error() {
+        return new Builder(MessageLevel.PROBLEM);
     }
 
     /**
      * Factory method to create an error message
      *
-     * @param t the exception containing the error message
+     * @param textMessage the message content
      * @return a new message with the given content and ERROR as type
      */
-    public static Message error(Throwable t) {
-        if (t instanceof HandledException) {
-            return error(t.getMessage());
+    public static Message error(String textMessage) {
+        return error().withTextMessage(textMessage);
+    }
+
+    /**
+     * Handles the given exception and creates an appropriate error message.
+     * <p>
+     * Note that this might utilize {@link ErrorMessageTransformer error message transformers} to yield an optimal
+     * error message.
+     *
+     * @param exception the error to handle
+     * @return the appropriate error message
+     */
+    public static Message error(Throwable exception) {
+        HandledException handledException = Exceptions.handle(UserContext.LOG, exception);
+
+        String message = ContentHelper.escapeXML(handledException.getMessage());
+        for (ErrorMessageTransformer transformer : errorMessageTransformers) {
+            message = transformer.transform(handledException, message);
         }
-        return new Message(Exceptions.handle(UserContext.LOG, t).getMessage(), null, MessageLevel.PROBLEM);
+
+        return error().withHTMLMessage(message);
     }
 
-    public void setMessage(String message) {
-        this.messageText = message;
-    }
-
-    public void setDetails(String details) {
-        this.details = details;
-    }
-
-    public void setType(MessageLevel type) {
+    /**
+     * Directly creates a new message with the given type and raw HTML content.
+     *
+     * @param type the severity of the message
+     * @param html the HTML contents to show
+     */
+    public Message(MessageLevel type, String html) {
         this.type = type;
+        this.html = messageExpanders.expand(html);
     }
 
-    public void setAction(String action) {
-        this.action = action;
+    public MessageLevel getType() {
+        return type;
     }
 
-    public void setActionLabel(String actionLabel) {
-        this.actionLabel = actionLabel;
-    }
-
-    public void setActionJavascript(boolean actionJavascript) {
-        this.actionJavascript = actionJavascript;
+    public String getHtml() {
+        return html;
     }
 }
