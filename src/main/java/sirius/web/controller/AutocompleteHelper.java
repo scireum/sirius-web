@@ -77,7 +77,7 @@ public class AutocompleteHelper {
         public Completion(String value, String label, @Nullable String description) {
             this.value = value;
             this.fieldLabel = label;
-            this.completionDescription = description;
+            this.completionLabel = description;
         }
 
         /**
@@ -146,9 +146,7 @@ public class AutocompleteHelper {
 
                 // LEGACY SUPPORT....
                 out.property("text", fieldLabel == null ? "" : fieldLabel);
-                if (Strings.isFilled(completionDescription)) {
-                    out.property("description", completionDescription);
-                }
+                out.property("description",  Strings.isFilled(completionLabel) ? completionLabel : fieldLabel);
                 // END OF LEGACY SUPPORT
 
                 if (disabled) {
