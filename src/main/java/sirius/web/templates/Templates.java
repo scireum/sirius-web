@@ -120,7 +120,7 @@ public class Templates {
      * components. Think of a generic template containing a menu. Items can be added to this menu
      * using this mechanism.
      * <p>
-     * Internally the {@link sirius.kernel.settings.ExtendedSettings} framework is used. Therefore all extensions
+     * Internally the {@link sirius.kernel.settings.ExtendedSettings} framework is used. Therefore, all extensions
      * for the key X have to be defined in <tt>content.extensions.X</tt> like this:
      * <pre>
      *   content.extensions {
@@ -137,8 +137,7 @@ public class Templates {
      *   }
      * </pre>
      * <p>
-     * To utilize these extensions in Rythm, use the includeExtensions("name") tag. For Velocity a macro with
-     * the same name is provided.
+     * To utilize these extensions in Tagliatelle, use the {@link sirius.pasta.tagliatelle.tags.ExtensionsTag}.
      *
      * @param key the name of the list of content extensions to retrieve
      * @return a list of templates registered for the given extension using the system config and the Extensions

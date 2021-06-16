@@ -45,22 +45,4 @@ class TemplatesSpec extends BaseSpecification {
         result == "var text = 'World';"
     }
 
-    def "javascript execution works"() {
-        when:
-        def result = templates.generator().useTemplate("template.js")
-                .applyContext(Context.create().set("x", "5"))
-                .generate()
-        then:
-        result == "25.0"
-    }
-
-    def "javascript generating XML works"() {
-        when:
-        def result = templates.generator().useTemplate("template.xml.js")
-                .applyContext(Context.create().set("x", "5"))
-                .generate()
-        then:
-        result == '<?xml version="1.0" encoding="UTF-8"?><result>\n    <x>5</x>\n</result>\n'
-    }
-
 }

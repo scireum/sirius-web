@@ -1,1 +1,0 @@
-out.print(x * x);

@@ -10,6 +10,7 @@ package sirius.web.templates;
 
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Context;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
@@ -66,7 +67,7 @@ public class Generator {
     private String templateName;
     private String templateCode;
     private String handlerType;
-    private Context context = Context.create();
+    private final Context context = Context.create();
     private String encoding;
 
     protected Generator() {
@@ -243,7 +244,7 @@ public class Generator {
     public String generate() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         generateTo(out);
-        return new String(out.toByteArray(), StandardCharsets.UTF_8);
+        return out.toString(StandardCharsets.UTF_8);
     }
 
     /**
@@ -269,6 +270,8 @@ public class Generator {
      *
      * @return the previously set context containing all applied variables.
      */
+    @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
+    @Explain("We intentionally return a mutable reference here as the context can be extended")
     public Context getContext() {
         return context;
     }
