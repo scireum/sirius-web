@@ -65,6 +65,7 @@ public class ReportBrokenTemplates implements TestLifecycleParticipant {
                                                 .find(Pattern.compile(".*.pasta"))
                                                 .map(this::resolveAsResource)
                                                 .filter(Objects::nonNull)
+                                                .filter(this::isLocalTemplate)
                                                 .map(this::compile)
                                                 .filter(this::isExpectedToCompile)
                                                 .filter(this::hasErrorsOrWarnings)
@@ -81,6 +82,10 @@ public class ReportBrokenTemplates implements TestLifecycleParticipant {
                                     output.toString())
                             .handle();
         }
+    }
+
+    private boolean isLocalTemplate(Resource resource) {
+        return !resource.getUrl().toString().startsWith("jar:file:");
     }
 
     private Resource resolveAsResource(Matcher matchedResource) {

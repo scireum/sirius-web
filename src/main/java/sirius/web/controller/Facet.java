@@ -14,6 +14,7 @@ import sirius.kernel.commons.Strings;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class Facet {
     private final String name;
     private final String title;
     protected final List<String> values = new ArrayList<>();
-    private final ValueComputer<String, String> translator;
+    private ValueComputer<String, String> translator;
     private boolean facetCollapsingEnabled = false;
     private int maxVisibleFacetItems;
     private final List<FacetItem> items = new ArrayList<>();
@@ -40,7 +41,9 @@ public class Facet {
      * @param field      the internal name of the facet
      * @param value      the selected value
      * @param translator the translator which provides "official" labels for filter values.
+     * @deprecated Use the constructor which doesn't require a value - as this is most probably supplied later anyway.
      */
+    @Deprecated
     public Facet(String title,
                  String field,
                  @Nullable String value,
@@ -54,10 +57,34 @@ public class Facet {
     }
 
     /**
+     * Creates a new facet with the given parameters.
+     *
+     * @param title the visible name of the facet
+     * @param field the internal name of the facet
+     */
+    public Facet(String title, String field) {
+        this.name = field;
+        this.title = title;
+    }
+
+    /**
+     * Specifies the value translator to use.
+     *
+     * @param translator the translator which computes the visible name for a given facet item key.
+     * @return the facet itself for fluent method calls
+     */
+    public Facet withTranslator(ValueComputer<String, String> translator) {
+        this.translator = translator;
+        return this;
+    }
+
+    /**
      * Returns all items collected for this facet.
      *
      * @return a list of all items of this facet
      */
+    @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
+    @Explain("We want to provide mutable access here.")
     public List<FacetItem> getAllItems() {
         // Note that we intentionally return the list here as the list of items might be filtered after a
         // query or aggregation has been performed.
@@ -183,9 +210,22 @@ public class Facet {
      * @return the facet itself for fluent method calls
      */
     public <E extends Enum<E>> Facet addEnumItem(Class<E> enumClass) {
-        for (E item : enumClass.getEnumConstants()) {
-            addItem(item.name(), item.toString(), -1);
-        }
+        return addEnumItem(enumClass.getEnumConstants());
+    }
+
+    /**
+     * Adds the given enum constants of the given enum to the facet.
+     *
+     * <p>
+     * In contrast to {@link #addEnumItem(Class)}, this permits to only add a list of selected enum constants.
+     *
+     * @param constants the enum constants to add
+     * @param <E>       the type of the enum
+     * @return the facet itself for fluent method calls
+     */
+    @SafeVarargs
+    public final <E extends Enum<E>> Facet addEnumItem(E... constants) {
+        Arrays.stream(constants).forEach(e -> addItem(e.name(), e.toString(), -1));
         return this;
     }
 

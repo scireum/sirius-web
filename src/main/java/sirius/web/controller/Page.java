@@ -135,7 +135,7 @@ public class Page<E> {
      * @return a newly created facet
      */
     public Facet addFacet(String field, String title, @Nullable ValueComputer<String, String> translator) {
-        Facet facet = new Facet(title, field, null, translator);
+        Facet facet = new Facet(title, field).withTranslator(translator);
         addFacet(facet);
 
         return facet;
