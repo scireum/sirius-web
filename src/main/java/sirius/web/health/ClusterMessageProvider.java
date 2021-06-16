@@ -35,10 +35,13 @@ public class ClusterMessageProvider implements MessageProvider {
     @Override
     public void addMessages(Consumer<Message> messageConsumer) {
         if (cluster.isAlarmPresent() && UserContext.getCurrentUser().hasPermission(PERMISSION_SYSTEM_NOTIFY_STATE)) {
-            messageConsumer.accept(Message.error(Strings.apply("System state is %s (Cluster state is %s)",
-                                                               cluster.getNodeState(),
-                                                               cluster.getClusterState()))
-                                          .withAction("/system/state", "View System State"));
+            messageConsumer.accept(Message.error()
+                                          .withTextAndLink(Strings.apply("System state is %s (Cluster state is %s)",
+                                                                         cluster.getNodeState(),
+                                                                         cluster.getClusterState()),
+                                                           "View System State",
+                                                           "/system/state",
+                                                           null));
         }
     }
 }

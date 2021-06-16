@@ -53,6 +53,7 @@ import sirius.pasta.tagliatelle.Template;
 import sirius.pasta.tagliatelle.rendering.GlobalRenderContext;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
+import sirius.web.controller.PreserveErrorMessageTransformer;
 import sirius.web.services.JSONStructuredOutput;
 
 import javax.annotation.Nonnull;
@@ -886,8 +887,7 @@ public class Response {
             addHeaderIfNotExists(HttpHeaderNames.CACHE_CONTROL, NO_CACHE);
         }
         if (lastModifiedMillis > 0 && !headers().contains(HttpHeaderNames.LAST_MODIFIED)) {
-            addHeaderIfNotExists(HttpHeaderNames.
-                                         LAST_MODIFIED, formatter.format(new Date(lastModifiedMillis)));
+            addHeaderIfNotExists(HttpHeaderNames.LAST_MODIFIED, formatter.format(new Date(lastModifiedMillis)));
         }
     }
 
@@ -1186,7 +1186,12 @@ public class Response {
                                                                    .handle());
             template(status, template, params);
         } catch (CompileException e) {
-            throw Exceptions.handle().to(Resources.LOG).error(e).withSystemErrorMessage("%s", e.getMessage()).handle();
+            throw Exceptions.handle()
+                            .to(Resources.LOG)
+                            .hint(PreserveErrorMessageTransformer.PRESERVE, true)
+                            .error(e)
+                            .withDirectMessage(e.getMessage())
+                            .handle();
         }
     }
 
