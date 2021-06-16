@@ -14,6 +14,7 @@ import sirius.kernel.commons.Strings;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -82,6 +83,8 @@ public class Facet {
      *
      * @return a list of all items of this facet
      */
+    @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
+    @Explain("We want to provide mutable access here.")
     public List<FacetItem> getAllItems() {
         // Note that we intentionally return the list here as the list of items might be filtered after a
         // query or aggregation has been performed.
