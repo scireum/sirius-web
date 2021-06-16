@@ -126,10 +126,10 @@ public abstract class GenericUserManager implements UserManager {
                 onLogin(webContext, result);
                 return result;
             }
-        } catch (HandledException e) {
-            UserContext.message(Message.error(e.getMessage()));
-        } catch (Exception e) {
-            UserContext.handle(e);
+        } catch (HandledException exception) {
+            UserContext.message(Message.error(exception));
+        } catch (Exception exception) {
+            UserContext.handle(exception);
         }
 
         result = loginViaSSOToken(webContext);
@@ -222,7 +222,7 @@ public abstract class GenericUserManager implements UserManager {
         webContext.hidePost();
         UserInfo result = findUserByName(webContext, user);
         if (result == null) {
-            UserContext.message(Message.error(NLS.get("GenericUserManager.invalidSSO")));
+            UserContext.message(Message.error().withTextMessage(NLS.get("GenericUserManager.invalidSSO")));
             return null;
         }
         if (checkTokenTTL(Value.of(challengeResponse.getFirst()).asLong(0), ssoGraceInterval)) {
@@ -375,7 +375,7 @@ public abstract class GenericUserManager implements UserManager {
 
         if (passwordPresent) {
             log("Login of %s failed using password", user);
-            UserContext.message(Message.error(NLS.get("GenericUserManager.invalidLogin")));
+            UserContext.message(Message.error().withTextMessage(NLS.get("GenericUserManager.invalidLogin")));
         }
 
         return null;

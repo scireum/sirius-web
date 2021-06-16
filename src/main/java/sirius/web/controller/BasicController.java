@@ -134,14 +134,14 @@ public class BasicController implements Controller {
      * Displays a generic "Changes have been saved" message.
      */
     public void showSavedMessage() {
-        UserContext.message(Message.info(NLS.get("BasicController.changesSaved")));
+        UserContext.message(Message.info().withTextMessage(NLS.get("BasicController.changesSaved")));
     }
 
     /**
      * Displays a genric "Object was deleted" message.
      */
     public void showDeletedMessage() {
-        UserContext.message(Message.info(NLS.get("BasicController.objectDeleted")));
+        UserContext.message(Message.info().withTextMessage(NLS.get("BasicController.objectDeleted")));
     }
 
     /**

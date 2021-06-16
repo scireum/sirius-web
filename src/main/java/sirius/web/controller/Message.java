@@ -135,7 +135,9 @@ public class Message {
      *
      * @param textMessage the message content
      * @return a new message with the given content and SUCCESS as type
+     * @deprecated User {@code success().withText(textMessage)}
      */
+    @Deprecated
     public static Message success(String textMessage) {
         return success().withTextMessage(textMessage);
     }
@@ -154,7 +156,9 @@ public class Message {
      *
      * @param textMessage the message content
      * @return a new message with the given content and INFO as type
+     * @deprecated User {@code info().withText(textMessage)}
      */
+    @Deprecated
     public static Message info(String textMessage) {
         return info().withTextMessage(textMessage);
     }
@@ -173,7 +177,9 @@ public class Message {
      *
      * @param textMessage the message content
      * @return a new message with the given content and WARN as type
+     *      @deprecated User {@code warn().withText(textMessage)}
      */
+    @Deprecated
     public static Message warn(String textMessage) {
         return warn().withTextMessage(textMessage);
     }
@@ -192,7 +198,9 @@ public class Message {
      *
      * @param textMessage the message content
      * @return a new message with the given content and ERROR as type
+     * @deprecated User {@code success().withText(textMessage)}
      */
+    @Deprecated
     public static Message error(String textMessage) {
         return error().withTextMessage(textMessage);
     }
@@ -223,7 +231,7 @@ public class Message {
      * @param type the severity of the message
      * @param html the HTML contents to show
      */
-    public Message(MessageLevel type, String html) {
+    protected Message(MessageLevel type, String html) {
         this.type = type;
         this.html = messageExpanders.expand(html);
     }
