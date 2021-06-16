@@ -118,7 +118,7 @@ public class HelpDispatcher implements WebDispatcher {
             return DispatchDecision.DONE;
         }
 
-        UserContext.get().addMessage(Message.error(NLS.get("HelpDispatcher.unknownTopic")));
+        UserContext.get().addMessage(Message.error().withTextMessage(NLS.get("HelpDispatcher.unknownTopic")));
         return DispatchDecision.CONTINUE;
     }
 
