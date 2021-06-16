@@ -57,7 +57,7 @@ public class Facet {
     }
 
     /**
-     * Creates a new faced with the given parameters.
+     * Creates a new facet with the given parameters.
      *
      * @param title the visible name of the facet
      * @param field the internal name of the facet
