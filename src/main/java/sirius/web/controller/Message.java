@@ -135,7 +135,7 @@ public class Message {
      *
      * @param textMessage the message content
      * @return a new message with the given content and SUCCESS as type
-     * @deprecated User {@code success().withText(textMessage)}
+     * @deprecated Use {@code success().withText(textMessage)}
      */
     @Deprecated
     public static Message success(String textMessage) {
@@ -156,7 +156,7 @@ public class Message {
      *
      * @param textMessage the message content
      * @return a new message with the given content and INFO as type
-     * @deprecated User {@code info().withText(textMessage)}
+     * @deprecated Use {@code info().withText(textMessage)}
      */
     @Deprecated
     public static Message info(String textMessage) {
@@ -177,7 +177,7 @@ public class Message {
      *
      * @param textMessage the message content
      * @return a new message with the given content and WARN as type
-     *      @deprecated User {@code warn().withText(textMessage)}
+     *      @deprecated Use {@code warn().withText(textMessage)}
      */
     @Deprecated
     public static Message warn(String textMessage) {
@@ -198,7 +198,7 @@ public class Message {
      *
      * @param textMessage the message content
      * @return a new message with the given content and ERROR as type
-     * @deprecated User {@code success().withText(textMessage)}
+     * @deprecated Use {@code success().withText(textMessage)}
      */
     @Deprecated
     public static Message error(String textMessage) {
