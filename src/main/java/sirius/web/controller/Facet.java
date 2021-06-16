@@ -207,9 +207,22 @@ public class Facet {
      * @return the facet itself for fluent method calls
      */
     public <E extends Enum<E>> Facet addEnumItem(Class<E> enumClass) {
-        for (E item : enumClass.getEnumConstants()) {
-            addItem(item.name(), item.toString(), -1);
-        }
+        return addEnumItem(enumClass.getEnumConstants());
+    }
+
+    /**
+     * Adds the given enum constants of the given enum to the facet.
+     *
+     * <p>
+     * In contrast to {@link #addEnumItem(Class)}, this permits to only add a list of selected enum constants.
+     *
+     * @param constants the enum constants to add
+     * @param <E>       the type of the enum
+     * @return the facet itself for fluent method calls
+     */
+    @SafeVarargs
+    public final <E extends Enum<E>> Facet addEnumItem(E... constants) {
+        Arrays.stream(constants).forEach(e -> addItem(e.name(), e.toString(), -1));
         return this;
     }
 
