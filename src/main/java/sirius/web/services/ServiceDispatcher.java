@@ -35,7 +35,10 @@ import java.util.Optional;
  * Processes calls to <tt>/service/[format]/service-name</tt>, by dispatching them to the appropriate
  * {@link StructuredService} and selecting the matching {@link sirius.kernel.xml.StructuredOutput} based on the given
  * <tt>format</tt> (either json or xml).
+ *
+ * @deprecated the whole StructuredService framework has been deprecated.
  */
+@Deprecated
 @Register
 public class ServiceDispatcher implements WebDispatcher {
 
