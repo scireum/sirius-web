@@ -76,14 +76,14 @@ public class Message {
         public Message withTextAndLink(String textMessage, String label, String link, @Nullable String icon) {
             if (Strings.isFilled(icon)) {
                 return new Message(type,
-                                   Strings.apply("<span>%s</span><a href=\"%s\"><i class=\"fa %s\"></i> %s</a>",
+                                   Strings.apply("<span class\"pr-2\">%s</span><a href=\"%s\"><i class=\"fa %s\"></i> %s</a>",
                                                  ContentHelper.escapeXML(textMessage),
                                                  ContentHelper.escapeXML(link),
                                                  icon,
                                                  ContentHelper.escapeXML(label)));
             } else {
                 return new Message(type,
-                                   Strings.apply("<span>%s</span><a href=\"%s\">%s</a>",
+                                   Strings.apply("<span class\"pr-2\">%s</span><a href=\"%s\">%s</a>",
                                                  ContentHelper.escapeXML(textMessage),
                                                  ContentHelper.escapeXML(link),
                                                  ContentHelper.escapeXML(label)));
@@ -106,14 +106,14 @@ public class Message {
             if (Strings.isFilled(icon)) {
                 return new Message(type,
                                    Strings.apply(
-                                           "<span>%s</span><a href=\"%s\" target=\"_blank\"><i class=\"fa %s\"></i> %s</a>",
+                                           "<span class\"pr-2\">%s</span><a href=\"%s\" target=\"_blank\"><i class=\"fa %s\"></i> %s</a>",
                                            ContentHelper.escapeXML(textMessage),
                                            ContentHelper.escapeXML(link),
                                            icon,
                                            ContentHelper.escapeXML(label)));
             } else {
                 return new Message(type,
-                                   Strings.apply("<span>%s</span><a href=\"%s\" target=\"_blank\">%s</a>",
+                                   Strings.apply("<span class\"pr-2\">%s</span><a href=\"%s\" target=\"_blank\">%s</a>",
                                                  ContentHelper.escapeXML(textMessage),
                                                  ContentHelper.escapeXML(link),
                                                  ContentHelper.escapeXML(label)));
