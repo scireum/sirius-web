@@ -23,6 +23,8 @@ import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
+import sirius.kernel.xml.StructuredOutput;
+import sirius.web.services.Format;
 import sirius.web.http.Firewall;
 import sirius.web.http.InputStreamHandler;
 import sirius.web.http.Limited;
@@ -30,7 +32,6 @@ import sirius.web.http.Unlimited;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 import sirius.web.security.UserContext;
-import sirius.web.services.JSONStructuredOutput;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
@@ -116,7 +117,7 @@ public class ControllerDispatcher implements WebDispatcher {
         }
         // Check if interceptors permit execution of route...
         for (Interceptor interceptor : interceptors) {
-            if (!interceptor.shouldExecuteRoute(ctx, route.isJSONCall(), route.getController())) {
+            if (!interceptor.shouldExecuteRoute(ctx, route)) {
                 return Route.NO_MATCH;
             }
         }
@@ -177,7 +178,7 @@ public class ControllerDispatcher implements WebDispatcher {
 
             // Intercept call...
             for (Interceptor interceptor : interceptors) {
-                if (interceptor.before(ctx, route.isJSONCall(), route.getController(), route.getMethod())) {
+                if (interceptor.before(ctx, route)) {
                     return;
                 }
             }
@@ -192,8 +193,8 @@ public class ControllerDispatcher implements WebDispatcher {
         } catch (InvocationTargetException ex) {
             handleFailure(ctx, route, ex.getTargetException());
         } catch (ClosedChannelException ex) {
-            // Especially a JSON call might re-throw this. As this simply states, the connection was
-            // closed while writing JSON data, we can safely ignore it....
+            // Especially a service call might re-throw this. As this simply states, the connection was
+            // closed while writing data, we can safely ignore it....
             Exceptions.ignore(ex);
         } catch (Exception ex) {
             handleFailure(ctx, route, ex);
@@ -203,15 +204,17 @@ public class ControllerDispatcher implements WebDispatcher {
 
     private void executeRoute(WebContext ctx, Route route, List<Object> params) throws Exception {
         ctx.setAttribute(ATTRIBUTE_MATCHED_ROUTE, route.getPattern());
-        if (route.isJSONCall()) {
-            executeJSONCall(ctx, route, params);
+        if (route.getApiResponseFormat() == Format.JSON) {
+            executeApiCall(ctx, route, ctx.respondWith().json(), params);
+        } else if (route.getApiResponseFormat() == Format.XML) {
+            executeApiCall(ctx, route, ctx.respondWith().xml(), params);
         } else {
             route.invoke(params);
         }
     }
 
-    private void executeJSONCall(WebContext ctx, Route route, List<Object> params) throws Exception {
-        JSONStructuredOutput out = ctx.respondWith().json();
+    private void executeApiCall(WebContext ctx, Route route, StructuredOutput out, List<Object> params)
+            throws Exception {
         params.add(1, out);
         out.beginResult();
         out.property("success", true);
@@ -228,16 +231,12 @@ public class ControllerDispatcher implements WebDispatcher {
 
     private void handlePermissionError(WebContext ctx, Route route, String missingPermission) throws Exception {
         for (Interceptor interceptor : interceptors) {
-            if (interceptor.beforePermissionError(missingPermission,
-                                                  ctx,
-                                                  route.isJSONCall(),
-                                                  route.getController(),
-                                                  route.getMethod())) {
+            if (interceptor.beforePermissionError(missingPermission, ctx, route)) {
                 return;
             }
         }
 
-        if (route.isJSONCall()) {
+        if (route.isServiceCall()) {
             throw Exceptions.createHandled()
                             .withSystemErrorMessage("Missing permission: %s", missingPermission)
                             .handle();
@@ -249,11 +248,18 @@ public class ControllerDispatcher implements WebDispatcher {
 
     private void handleFailure(WebContext ctx, Route route, Throwable ex) {
         try {
+            // We never want to log or handle exceptions which are caused by the user which
+            // closed the browser / socket mid processing...
+            if (ex instanceof ClosedChannelException && ctx.isResponseCommitted()) {
+                Exceptions.ignore(ex);
+                return;
+            }
+
             CallContext.getCurrent()
                        .addToMDC("controller",
                                  route.getController().getClass().getName() + "." + route.getMethod().getName());
-            if (route.isJSONCall()) {
-                route.getController().onJsonError(ctx, Exceptions.handle(LOG, ex));
+            if (route.isServiceCall()) {
+                route.getController().onApiError(ctx, Exceptions.handle(LOG, ex), route.getApiResponseFormat());
             } else {
                 route.getController().onError(ctx, Exceptions.handle(LOG, ex));
             }

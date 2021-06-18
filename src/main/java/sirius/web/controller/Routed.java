@@ -9,6 +9,8 @@
 package sirius.web.controller;
 
 import sirius.kernel.commons.PriorityCollector;
+import sirius.web.services.InternalService;
+import sirius.web.services.PublicService;
 import sirius.web.services.JSONStructuredOutput;
 
 import java.lang.annotation.Documented;
@@ -92,6 +94,7 @@ public @interface Routed {
      * </p>
      *
      * @return <tt>true</tt> if the method is used to create a JSON response for an AJAX call, <tt>false</tt> otherwise
+     * @deprecated User {@link InternalService} or {@link PublicService}
      */
     @Deprecated
     boolean jsonCall() default false;

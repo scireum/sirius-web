@@ -183,7 +183,7 @@ public class BasicController implements Controller {
     }
 
     @Override
-    public void onJsonError(WebContext webContext, HandledException error) {
+    public void onApiError(WebContext webContext, HandledException error, Format format) {
         if (webContext.isResponseCommitted()) {
             fail(webContext, error);
             return;
@@ -195,7 +195,7 @@ public class BasicController implements Controller {
                                                      .asInt(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()));
         }
 
-        JSONStructuredOutput out = webContext.respondWith().json(status);
+        StructuredOutput out = createStructuredOutput(webContext, format, status);
         out.beginResult();
         out.property("success", false);
         out.property("error", true);
@@ -204,5 +204,13 @@ public class BasicController implements Controller {
         }
         out.property("message", error.getMessage());
         out.endResult();
+    }
+
+    private StructuredOutput createStructuredOutput(WebContext webContext, Format format, HttpResponseStatus status) {
+        if (format == Format.JSON) {
+            return webContext.respondWith().json(status);
+        } else {
+            return webContext.respondWith().xml(status);
+        }
     }
 }
