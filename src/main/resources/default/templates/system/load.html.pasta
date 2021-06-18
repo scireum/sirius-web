@@ -7,26 +7,28 @@
         <li><a href="/system/load">System Load</a></li>
     </i:block>
 
-    <t:pageHeader title="System Load">
-        <i:block name="actions">
-            <i:if test="all">
-                <a href="/system/load" class="btn btn-link active mr-2">
-                    <i class="fa fa-plus"></i>
-                    <span class="d-none d-lg-inline">Show all</span>
-                    <a class="btn btn-link mr-2 d-none d-md-inline-block" href="/system/load?all=true"><i
-                            class="fa fa-sync"></i></a>
-                </a>
-                <i:else>
-                    <a href="/system/load?all=true" class="btn btn-link mr-2">
+    <i:block name="page-header">
+        <t:pageHeader title="System Load">
+            <i:block name="actions">
+                <i:if test="all">
+                    <a href="/system/load" class="btn btn-link active mr-2">
                         <i class="fa fa-plus"></i>
                         <span class="d-none d-lg-inline">Show all</span>
+                        <a class="btn btn-link mr-2 d-none d-md-inline-block" href="/system/load?all=true"><i
+                                class="fa fa-sync"></i></a>
                     </a>
-                    <a class="btn btn-link mr-2 d-none d-md-inline-block" href="/system/load"><i
-                            class="fa fa-sync"></i></a>
-                </i:else>
-            </i:if>
-        </i:block>
-    </t:pageHeader>
+                    <i:else>
+                        <a href="/system/load?all=true" class="btn btn-link mr-2">
+                            <i class="fa fa-plus"></i>
+                            <span class="d-none d-lg-inline">Show all</span>
+                        </a>
+                        <a class="btn btn-link mr-2 d-none d-md-inline-block" href="/system/load"><i
+                                class="fa fa-sync"></i></a>
+                    </i:else>
+                </i:if>
+            </i:block>
+        </t:pageHeader>
+    </i:block>
 
     <t:datacards>
         <i:for type="sirius.web.health.LoadInfoProvider" var="provider" items="providers">
