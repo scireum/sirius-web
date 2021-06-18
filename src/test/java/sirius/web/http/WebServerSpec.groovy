@@ -180,16 +180,16 @@ class WebServerSpec extends BaseSpecification {
      * <p>
      * We expect an appropriate error in this case.
      */
-    def "Invoke /service/xml/test_large_failure and expect a proper error"() {
+    def "Invoke /api/test/test_large_failure and expect a proper error"() {
         given:
-        def uri = "/service/xml/test_large_failure"
+        def uri = "/api/test/test_large_failure"
         def expectedHeaders = ['content-type': 'text/xml;charset=UTF-8']
         when:
         LogHelper.clearMessages()
         and:
         def data = callAndRead(uri, null, expectedHeaders)
         then: "We expect a warning as the server was unable to send an error"
-        LogHelper.hasMessage(Level.WARNING, "services", "Cannot send service error for.*")
+        LogHelper.hasMessage(Level.WARNING, "web", "Cannot send service error for.*")
         and: "As the connection is closed due to an inconsistent state, an IO exception will occur on the client side"
         thrown(IOException)
     }

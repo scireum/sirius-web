@@ -18,7 +18,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Parses command invocations as e.g. seen in the {@link ConsoleService}.
+ * Parses command invocations as e.g. seen in the {@link ConsoleController}.
  * <p>
  * A command is a verb, followed by additional parameters (0..N). Parameters are separated by one or more
  * whitespaces. If a parameter value itself contains whitespaces, it can be put into quotes:

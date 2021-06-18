@@ -26,18 +26,6 @@ class SystemControllerSpec extends BaseSpecification {
         result.getStatus() == HttpResponseStatus.OK
     }
 
-    def "/system/console renders its template"() {
-        given:
-        UserContext.get().setCurrentUser(UserInfo.Builder.createUser("test")
-                .withPermissions(Collections.singleton(SystemController.PERMISSION_SYSTEM_CONSOLE)).build())
-        when:
-        def result = TestRequest.GET("/system/console").execute()
-        then:
-        result.getStatus() == HttpResponseStatus.OK
-        result.getType() == TestResponse.ResponseType.TEMPLATE
-        result.getTemplateName() == "/templates/system/console.html.pasta"
-    }
-
     def "/system/state renders its template"() {
         given:
         UserContext.get().setCurrentUser(UserInfo.Builder.createUser("test")
