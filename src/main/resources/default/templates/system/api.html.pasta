@@ -1,0 +1,112 @@
+<i:arg type="sirius.web.services.PublicApiInfo" name="api"/>
+<t:page title="@apply('Public API: %s', api.getLabel())">
+    <i:block name="head">
+        <link rel="stylesheet" type="text/css" href="/assets/libs/prettify/skins/desert.css">
+        <script type="text/javascript" src="/assets/libs/prettify/prettify.js"></script>
+    </i:block>
+
+    <i:block name="breadcrumbs">
+        <li><a href="/system/api">Public API Explorer</a></li>
+        <li><a href="/system/api/@api.getApiName()">@api.getLabel()</a></li>
+    </i:block>
+
+    <i:block name="page-header">
+        <t:pageHeader title="@apply('Public API: %s', api.getLabel())">
+            <i:if test="api.isDeprecated()">
+                <t:dot color="red-light">Deprecated</t:dot>
+                <i:else>
+                    <t:dot color="green">Active</t:dot>
+                </i:else>
+            </i:if>
+        </t:pageHeader>
+    </i:block>
+
+    <i:if test="isFilled(api.getDescription()) || isFilled(api.getDocumentationUri())">
+        <t:helpbox>
+            <div>
+                @api.getDescription()
+            </div>
+            <i:if test="isFilled(api.getDocumentationUri())">
+                <div class="mt-2">
+                    <a href="@api.getDocumentationUri()"><i class="fa fa-file-alt"></i> Documentation</a>
+                </div>
+            </i:if>
+        </t:helpbox>
+    </i:if>
+
+    <i:for type="sirius.web.services.PublicServiceInfo" var="service" items="api.getServices()">
+        <div class="card card-border mb-4">
+            <div class="card-body">
+                <h5 class="card-title">@service.getLabel()</h5>
+                <p>
+                    @service.getDescription()
+                </p>
+                <i:if test="isFilled(service.getDocumentationUri())">
+                    <p>
+                        <a href="@service.getDocumentationUri()"><i class="fa fa-file-alt"></i> Documentation</a>
+                    </p>
+                </i:if>
+
+                <div>
+                    <div class="p-2" style="border-radius: 4px; background-color: #EEEEEE">
+                        <i:if test="service.getFormat() == sirius.web.services.Format.JSON">
+                            <span class="badge badge-primary bg-sirius-blue">JSON</span>
+                        </i:if>
+                        <i:if test="service.getFormat() == sirius.web.services.Format.XML">
+                            <span class="badge badge-primary bg-sirius-green">XML</span>
+                        </i:if>
+                        <i:if test="service.getFormat() == sirius.web.services.Format.RAW">
+                            <span class="badge badge-primary bg-sirius-violet">RAW</span>
+                        </i:if>
+                        <span class="text-monospace whitespace-pre-wrap">@service.getUri()</span>
+                    </div>
+                </div>
+
+                <i:if test="!service.getParameters().isEmpty()">
+                    <div class="mt-4">
+                        <h6>Parameters</h6>
+                        <table class="table">
+                            <tr>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Required</th>
+                                <th>Example</th>
+                            </tr>
+                            <i:for type="sirius.web.services.ServiceParameter" var="parameter"
+                                   items="service.getParameters()">
+                                <tr>
+                                    <td class="@if (parameter.required()) { font-weight-bold }">
+                                        @parameter.name()
+                                    </td>
+                                    <td>@smartTranslate(parameter.description())</td>
+                                    <td>@toUserString(parameter.required())</td>
+                                    <td class="text-monospace whitespace-pre-wrap">@parameter.example()</td>
+                                </tr>
+                            </i:for>
+                        </table>
+                    </div>
+                </i:if>
+                <i:if test="isFilled(service.getExampleResponse())">
+                    <div class="mt-4">
+                        <h6>Example Response</h6>
+                        <pre class="prettyprint p-2">@service.getExampleResponse()</pre>
+                    </div>
+                </i:if>
+            </div>
+            <div class="card-footer">
+                <i:if test="service.isDeprecated()">
+                    <t:dot color="red-light">Deprecated</t:dot>
+                    <i:else>
+                        <t:dot color="green">Active</t:dot>
+                    </i:else>
+                </i:if>
+            </div>
+        </div>
+    </i:for>
+
+    <script>
+        sirius.ready(function () {
+            PR.prettyPrint();
+        });
+    </script>
+</t:page>
