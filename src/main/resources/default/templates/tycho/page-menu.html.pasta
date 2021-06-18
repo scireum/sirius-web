@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-white">
     <a class="navbar-brand" href="@config('product.tychoRoot')">
-        <img src="/assets/tycho/images/menu_logo.svg"
+        <img src="@staticAssetUri()/tycho/images/menu_logo.svg"
              height="33px"
              alt="Start"/>
     </a>

@@ -1,1 +1,1 @@
-@CallContext.getCurrent().get(WebContext.class).getDynamicAssetToken()
+@staticAssetUri()
