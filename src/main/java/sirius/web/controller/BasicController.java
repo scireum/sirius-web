@@ -9,16 +9,16 @@
 package sirius.web.controller;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import sirius.kernel.commons.Value;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.nls.NLS;
+import sirius.kernel.xml.StructuredOutput;
+import sirius.web.services.Format;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebServer;
 import sirius.web.security.Permissions;
 import sirius.web.security.UserContext;
 import sirius.web.security.UserInfo;
-import sirius.web.services.JSONStructuredOutput;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.InvocationTargetException;
@@ -151,22 +151,19 @@ public class BasicController implements Controller {
      * <p>
      * Most of the time this method should not be called directly, rather a HandledException should be thrown.
      *
-     * @param ctx   the current request
-     * @param error the error which occurred
+     * @param webContext the current request
+     * @param error      the error which occurred
      */
-    public void fail(WebContext ctx, @Nonnull HandledException error) {
-        if (ctx.isResponseCommitted()) {
+    public void fail(WebContext webContext, @Nonnull HandledException error) {
+        if (webContext.isResponseCommitted()) {
             // Force underlying request / response to be closed...
-            Value status = error.getHint(Controller.HTTP_STATUS);
-            if (status.isNumeric()) {
-                ctx.respondWith()
-                   .error(HttpResponseStatus.valueOf(status.asInt(HttpResponseStatus.INTERNAL_SERVER_ERROR.code())),
-                          error);
-            } else {
-                ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
-            }
+            webContext.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
         } else {
-            ctx.respondWith().template("/templates/tycho/error.html.pasta", error.getMessage());
+            int status = error.getHint(Controller.HTTP_STATUS).asInt(HttpResponseStatus.OK.code());
+            webContext.respondWith()
+                      .template(HttpResponseStatus.valueOf(status),
+                                "/templates/tycho/error.html.pasta",
+                                error.getMessage());
         }
     }
 
@@ -185,7 +182,13 @@ public class BasicController implements Controller {
     @Override
     public void onApiError(WebContext webContext, HandledException error, Format format) {
         if (webContext.isResponseCommitted()) {
-            fail(webContext, error);
+            WebServer.LOG.WARN("""
+                                       Cannot send service error for: %s - %s
+                                       As a partially successful response has already been created and committed!
+                                       """, webContext.getRequest().uri(), error.getMessage());
+
+            // Force underlying request / response to be closed...
+            webContext.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
             return;
         }
 
