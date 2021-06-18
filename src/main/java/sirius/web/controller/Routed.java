@@ -64,7 +64,7 @@ public @interface Routed {
     /**
      * Determines if the annotated method supports pre-dispatching.
      * <p>
-     * A pre-dispatchable method takes care of the requests payload itself. Therefore the method must declare an
+     * A pre-dispatchable method takes care of the request's payload itself. Therefore, the method must declare an
      * additional parameter of type {@link sirius.web.http.InputStreamHandler} which will be used to consume
      * the data sent via POST or PUT.
      *
