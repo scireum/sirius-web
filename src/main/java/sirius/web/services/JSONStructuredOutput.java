@@ -14,7 +14,6 @@ import sirius.kernel.commons.Amount;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
-import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.AbstractStructuredOutput;
 import sirius.kernel.xml.Attribute;
 import sirius.kernel.xml.StructuredOutput;
@@ -32,7 +31,7 @@ import java.nio.channels.ClosedChannelException;
  */
 public class JSONStructuredOutput extends AbstractStructuredOutput {
 
-    private Writer writer;
+    private final Writer writer;
     private final String callback;
 
     /**
@@ -244,7 +243,7 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
             } else if (data instanceof Boolean || data instanceof Number) {
                 writer.write(data.toString());
             } else if (data instanceof Amount) {
-                writer.write(((Amount)data).toMachineString());
+                writer.write(((Amount) data).toMachineString());
             } else {
                 writeString(transformToStringRepresentation(data));
             }
