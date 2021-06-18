@@ -20,7 +20,7 @@
   font-size: 0.85rem;
 }
 
-.tag {
+.tycho-tag {
   padding: 4px 8px;
   background-color: $whiteDark;
   border-left: 4px solid $whiteDark;
@@ -30,7 +30,7 @@
   line-height: 1;
 }
 
-.tags {
+.tycho-tags {
   display: flex;
   justify-content: start;
   align-items: center;
