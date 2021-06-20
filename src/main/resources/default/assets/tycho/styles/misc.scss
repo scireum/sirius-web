@@ -33,3 +33,15 @@ a {
   vertical-align: top;
   margin-left: 0.5em;
 }
+
+@media (min-width: 1400px) {
+
+  .d-xxl-inline {
+    display: inline !important;
+  }
+
+  .d-xxl-none {
+    display: none !important;
+  }
+
+}
