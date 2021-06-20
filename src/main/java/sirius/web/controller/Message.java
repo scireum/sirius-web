@@ -70,17 +70,30 @@ public class Message {
          * @param textMessage the plain text message to show
          * @param label       the label of the link to show
          * @param link        the target of the link. Use <tt>javascript:</tt> as prefix to invoke a JavaScript function
+         * @return the generated message
+         */
+        public Message withTextAndLink(String textMessage, String label, String link) {
+            return withTextAndLink(textMessage, label, link, null);
+        }
+
+        /**
+         * Specifies a text message followed by a link.
+         *
+         * @param textMessage the plain text message to show
+         * @param label       the label of the link to show
+         * @param link        the target of the link. Use <tt>javascript:</tt> as prefix to invoke a JavaScript function
          * @param icon        the (optional) icon to show. This is most probably a fontawesome icon like <tt>fa-refresh</tt>
          * @return the generated message
          */
         public Message withTextAndLink(String textMessage, String label, String link, @Nullable String icon) {
             if (Strings.isFilled(icon)) {
                 return new Message(type,
-                                   Strings.apply("<span class\"pr-2\">%s</span><a href=\"%s\"><i class=\"fa %s\"></i> %s</a>",
-                                                 ContentHelper.escapeXML(textMessage),
-                                                 ContentHelper.escapeXML(link),
-                                                 icon,
-                                                 ContentHelper.escapeXML(label)));
+                                   Strings.apply(
+                                           "<span class\"pr-2\">%s</span><a href=\"%s\"><i class=\"fa %s\"></i> %s</a>",
+                                           ContentHelper.escapeXML(textMessage),
+                                           ContentHelper.escapeXML(link),
+                                           icon,
+                                           ContentHelper.escapeXML(label)));
             } else {
                 return new Message(type,
                                    Strings.apply("<span class\"pr-2\">%s</span><a href=\"%s\">%s</a>",
@@ -88,6 +101,21 @@ public class Message {
                                                  ContentHelper.escapeXML(link),
                                                  ContentHelper.escapeXML(label)));
             }
+        }
+
+        /**
+         * Specifies a text message followed by a link to an external target.
+         * <p>
+         * This behaves just like {@link #withTextAndLink(String, String, String, String)} but the link is opened
+         * in a new browser tab or window.
+         *
+         * @param textMessage the plain text message to show
+         * @param label       the label of the link to show
+         * @param link        the target of the link. Use <tt>javascript:</tt> as prefix to invoke a JavaScript function
+         * @return the generated message
+         */
+        public Message withTextAndExternalLink(String textMessage, String label, String link) {
+            return withTextAndExternalLink(textMessage, label, link, null);
         }
 
         /**
@@ -177,7 +205,7 @@ public class Message {
      *
      * @param textMessage the message content
      * @return a new message with the given content and WARN as type
-     *      @deprecated Use {@code warn().withText(textMessage)}
+     * @deprecated Use {@code warn().withText(textMessage)}
      */
     @Deprecated
     public static Message warn(String textMessage) {
