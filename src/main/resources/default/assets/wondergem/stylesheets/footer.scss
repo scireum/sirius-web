@@ -11,13 +11,13 @@
 // --------------------------------------------------
 .footer {
   padding: 15px 0;
-  border-top: 3px solid $primary-color;
-  background-color: $grayDark;
-  color: #E7E7E7;
+  border-top: 3px solid $accent-color;
+  background-color: white;
+  color: rgba(0,0,0,0.5);
 }
 
 .footer a:hover {
-  color: $primary-color-light;
+  color: $primary-color;
   text-decoration: none;
 }
 

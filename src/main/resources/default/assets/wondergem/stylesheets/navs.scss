@@ -13,11 +13,11 @@
 
 // Navbar Variables
 // -------------------------
-$navbarBackground:              $grayDark;
+$navbarBackground:              white;
 $navbarBorder:                  $accent-color;
-$navbarLinkColor:               darken($whiteDark, 5%);
-$navbarLinkColorHover:          $white;
-$navbarLinkColorActive:         $white;
+$navbarLinkColor:               rgba(0,0,0,0.5);
+$navbarLinkColorHover:          rgba(0,0,0,0.7);
+$navbarLinkColorActive:         rgba(0,0,0,0.7);
 
 
 // BASE CLASS
@@ -178,21 +178,18 @@ $navbarLinkColorActive:         $white;
 // Navbars
 // --------------------------------------------------
 
-.nav.nav-bar > li > a:hover,
-.nav.nav-bar > li > a:focus {
-  background-color: $accent-color;
-}
-
 // Inner for background effects
 .navbar-static-top {
-  border-top: 3px solid $navbarBorder;
-  border-bottom: none;
+  border-bottom: 3px solid $navbarBorder;
+  border-top: none;
   background-color: $navbarBackground;
   border-radius: none;
+  padding-left: 2%;
+  padding-right: 2%;
 }
 
 .navbar-default .navbar-nav > li > a {
-  color: #e7e7e7;
+  color: rgba(0,0,0,0.5) !important;
   font-size: 16px;
   padding: 20px 15px;
   
@@ -207,8 +204,7 @@ $navbarLinkColorActive:         $white;
   text-decoration: none;
 
   &:hover, &:focus {
-    background-color: $accent-color;
-    color: #e7e7e7;
+    color: rgba(0,0,0,0.7) !important;
   }
 }
 
@@ -218,7 +214,7 @@ $navbarLinkColorActive:         $white;
 
 @media(max-width: 767px) {
   .navbar-default .navbar-nav .open .dropdown-menu > li > a {
-    color: #e7e7e7;
+    color: rgba(0,0,0,0.7) !important;
   }
 
   .navbar-nav.nav-right {
@@ -232,4 +228,48 @@ $navbarLinkColorActive:         $white;
 .navbar .navbar-brand svg {
   max-height: 33px;
   max-width: 100px;
+}
+
+li.right-menu-icon {
+  padding-top: 0.5rem;
+  padding-bottom: 0.75rem;
+  padding-left: 0.75em;
+
+  a {
+    padding: 0.5rem !important;
+  }
+
+  img {
+    height: 1.5rem;
+  }
+
+  &:not(:last-child) {
+    border-right: 1px solid #ddd;
+    padding-right: 0.75em;
+  }
+
+}
+
+li.right-large-menu-icon {
+  a {
+    padding-top: 0.25rem;
+    padding-bottom: 0 !important;
+
+    img {
+      height: 2rem;
+    }
+  }
+}
+
+.menu-search-form {
+  padding-top: 0.25rem;
+
+  input {
+    border: none;
+    border-bottom: 1px solid #ddd;
+    border-radius: 0px;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+    box-shadow: none !important;
+  }
 }
