@@ -231,7 +231,7 @@ public class Message {
      * @param type the severity of the message
      * @param html the HTML contents to show
      */
-    protected Message(MessageLevel type, String html) {
+    public Message(MessageLevel type, String html) {
         this.type = type;
         this.html = messageExpanders.expand(html);
     }
