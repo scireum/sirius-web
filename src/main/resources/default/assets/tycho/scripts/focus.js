@@ -8,36 +8,36 @@
 
 sirius.ready(function() {
 
-    function focus(field) {
-        field.focus();
+    function focus(_field) {
+        _field.focus();
 
-        if (typeof field.selectionStart == "number") {
-            field.selectionStart = field.selectionEnd = field.value.length;
-        } else if (typeof field.createTextRange != "undefined") {
-            field.focus();
+        if (typeof _field.selectionStart == "number") {
+            _field.selectionStart = _field.selectionEnd = _field.value.length;
+        } else if (typeof _field.createTextRange != "undefined") {
+            _field.focus();
             let range = el.createTextRange();
             range.collapse(false);
             range.select();
         }
     }
 
-    let primaryField = document.querySelector('.primary-autofocus');
-    if (primaryField !== null) {
-        focus(primaryField);
+    let _primaryField = document.querySelector('.primary-autofocus');
+    if (_primaryField !== null) {
+        focus(_primaryField);
 
         return;
     }
-    let autofocusField = document.querySelector('.autofocus');
-    if (autofocusField !== null) {
-        focus(autofocusField);
+    let _autofocusField = document.querySelector('.autofocus');
+    if (_autofocusField !== null) {
+        focus(_autofocusField);
         return;
     }
 
-    document.querySelectorAll('.submit-on-enter').forEach(function(field) {
-       sirius.addEnterListener(field, function() {
-           let form = sirius.findParentOfType(field,'form');
-           if (form !== null) {
-               form.submit();
+    document.querySelectorAll('.submit-on-enter').forEach(function(_field) {
+       sirius.addEnterListener(_field, function() {
+           let _form = sirius.findParentOfType(_field,'form');
+           if (_form !== null) {
+               _form.submit();
            }
        });
     });
