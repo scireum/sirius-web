@@ -88,17 +88,17 @@ public class Message {
          */
         public Message withTextAndLink(String textMessage, String label, String link, @Nullable String icon) {
             if (Strings.isFilled(icon)) {
-                return withTextAndLink(TEXT_AND_LINK_WITH_ICON_PATTERN, textMessage, label, link, icon);
+                return generateWithTextAndLink(TEXT_AND_LINK_WITH_ICON_PATTERN, textMessage, label, link, icon);
             } else {
-                return withTextAndLink(TEXT_AND_LINK_PATTERN, textMessage, label, link, icon);
+                return generateWithTextAndLink(TEXT_AND_LINK_PATTERN, textMessage, label, link, icon);
             }
         }
 
-        private Message withTextAndLink(String pattern,
-                                        String textMessage,
-                                        String label,
-                                        String link,
-                                        @Nullable String icon) {
+        private Message generateWithTextAndLink(String pattern,
+                                                String textMessage,
+                                                String label,
+                                                String link,
+                                                @Nullable String icon) {
             return new Message(type,
                                Strings.apply(pattern,
                                              ContentHelper.escapeXML(textMessage),
@@ -133,9 +133,13 @@ public class Message {
          */
         public Message withTextAndExternalLink(String textMessage, String label, String link, @Nullable String icon) {
             if (Strings.isFilled(icon)) {
-                return withTextAndLink(EXTERNAL_TEXT_AND_LINK_WITH_ICON_PATTERN, textMessage, label, link, icon);
+                return generateWithTextAndLink(EXTERNAL_TEXT_AND_LINK_WITH_ICON_PATTERN,
+                                               textMessage,
+                                               label,
+                                               link,
+                                               icon);
             } else {
-                return withTextAndLink(EXTERNAL_TEXT_AND_LINK_PATTERN, textMessage, label, link, icon);
+                return generateWithTextAndLink(EXTERNAL_TEXT_AND_LINK_PATTERN, textMessage, label, link, icon);
             }
         }
 
