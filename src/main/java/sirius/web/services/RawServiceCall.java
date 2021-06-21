@@ -17,7 +17,10 @@ import java.nio.channels.ClosedChannelException;
 
 /**
  * RAW encoder for calls to a {@link sirius.web.services.StructuredService}.
+ *
+ * @deprecated the whole StructuredService framework has been deprecated.
  */
+@Deprecated
 class RawServiceCall extends ServiceCall {
 
     RawServiceCall(WebContext ctx) {

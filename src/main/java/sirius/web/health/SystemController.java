@@ -27,13 +27,13 @@ import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.health.metrics.Metrics;
 import sirius.kernel.nls.NLS;
 import sirius.web.controller.BasicController;
-import sirius.web.controller.Message;
 import sirius.web.controller.Page;
 import sirius.web.controller.Routed;
+import sirius.web.services.Format;
+import sirius.web.services.PublicService;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebServer;
 import sirius.web.security.Permission;
-import sirius.web.security.UserContext;
 
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -73,11 +73,6 @@ public class SystemController extends BasicController {
     /**
      * Describes the permission required to access the system console.
      */
-    public static final String PERMISSION_SYSTEM_CONSOLE = "permission-system-console";
-
-    /**
-     * Describes the permission required to access the system console.
-     */
     public static final String PERMISSION_SYSTEM_TIMING = "permission-system-timing";
 
     /**
@@ -91,17 +86,6 @@ public class SystemController extends BasicController {
     public static final String PERMISSION_SYSTEM_LOAD = "permission-system-load";
 
     /**
-     * Renders the UI for the system console.
-     *
-     * @param ctx the request being handled
-     */
-    @Routed("/system/console")
-    @Permission(PERMISSION_SYSTEM_CONSOLE)
-    public void console(WebContext ctx) {
-        ctx.respondWith().template("/templates/system/console.html.pasta");
-    }
-
-    /**
      * Simply responds with OK for <tt>/system/ok</tt>
      * <p>
      * This can be used to monitoring tools the check the system health.
@@ -109,6 +93,9 @@ public class SystemController extends BasicController {
      * @param ctx the request being handled
      */
     @Routed("/system/ok")
+    @PublicService(apiName = "health", label = "Health check", description = """
+            Provides a very simple API to "ping" the system. This will constantly return "OK".
+            """, format = Format.RAW, exampleResponse = "OK")
     public void ok(WebContext ctx) {
         ctx.respondWith().direct(HttpResponseStatus.OK, "OK");
     }
@@ -121,6 +108,10 @@ public class SystemController extends BasicController {
      * @param ctx the request being handled
      */
     @Routed("/system/monitor")
+    @PublicService(apiName = "health", label = "Monitoring API", description = """
+            Provides a simple monitoring service. As long as the system operates normally,
+            it returns "OK", otherwise, "ERROR" and the reason are returned.
+            """, format = Format.RAW, exampleResponse = "OK")
     public void monitorNode(WebContext ctx) {
         if (!cluster.isAlarmPresent() || cluster.getNodeState() != MetricState.RED) {
             ctx.respondWith().direct(HttpResponseStatus.OK, "OK");
@@ -168,6 +159,16 @@ public class SystemController extends BasicController {
      * @param ctx the request being handled
      */
     @Routed("/system/metrics")
+    @PublicService(apiName = "health", label = "Metrics API", description = """
+            Provides all collected metrics in Prometheus compatible format.
+            """, format = Format.RAW, exampleResponse = """
+            # HELP sirius_node_state Node State
+            # TYPE sirius_node_state gauge
+            sirius_node_state 0.0
+            # HELP sirius_http_open_connections HTTP Open Connections
+            # TYPE sirius_http_open_connections gauge
+            sirius_http_open_connections 7.0
+            """)
     public void metrics(WebContext ctx) {
         if (blockPublicAccess && ctx.getHeaderValue(WebServer.HEADER_X_FORWARDED_FOR).isFilled()) {
             ctx.respondWith().error(HttpResponseStatus.FORBIDDEN);
@@ -318,7 +319,8 @@ public class SystemController extends BasicController {
             Microtiming.setEnabled(false);
         }
 
-        String periodSinceReset = NLS.convertDuration(System.currentTimeMillis() - Microtiming.getLastReset(), true, false);
+        String periodSinceReset =
+                NLS.convertDuration(System.currentTimeMillis() - Microtiming.getLastReset(), true, false);
 
         Page<String> page = new Page<>();
         page.bindToRequest(ctx);
@@ -357,5 +359,4 @@ public class SystemController extends BasicController {
                                                                                        .toLowerCase()
                                                                                        .contains(query);
     }
-
 }

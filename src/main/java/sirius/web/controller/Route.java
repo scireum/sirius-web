@@ -14,8 +14,14 @@ import sirius.kernel.async.Promise;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
+import sirius.kernel.xml.XMLStructuredOutput;
+import sirius.web.services.Format;
+import sirius.web.services.InternalService;
+import sirius.web.services.PublicService;
+import sirius.web.services.PublicServices;
 import sirius.web.http.InputStreamHandler;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebServer;
@@ -23,6 +29,7 @@ import sirius.web.security.Permissions;
 import sirius.web.security.UserInfo;
 import sirius.web.services.JSONStructuredOutput;
 
+import javax.annotation.Nonnull;
 import java.io.UnsupportedEncodingException;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -44,6 +51,9 @@ import java.util.stream.Collectors;
  */
 public class Route {
 
+    @Part
+    private static PublicServices publicServices;
+
     protected static final List<Object> NO_MATCH = Collections.unmodifiableList(new ArrayList<>());
     private static final Class<?>[] CLASS_ARRAY = new Class[0];
     private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
@@ -59,7 +69,7 @@ public class Route {
     private Class<?>[] parameterTypes;
     private Controller controller;
     private boolean preDispatchable;
-    private boolean jsonCall;
+    private Format format;
     private Set<String> permissions = null;
     private String subScope;
 
@@ -77,9 +87,59 @@ public class Route {
         result.method = method;
         result.uri = applyRewrites(controller, routed.value());
         result.label = result.uri + " -> " + method.getDeclaringClass().getName() + "#" + method.getName();
-        result.jsonCall = routed.jsonCall();
         result.preDispatchable = routed.preDispatchable();
         result.permissions = Permissions.computePermissionsFromAnnotations(method);
+        determineAPIFormat(method, routed, result);
+        determineSubScope(method, result);
+        createMethodHandle(method, result);
+
+        List<Class<?>> parameterTypes = determineParameterTypes(method, result);
+
+        String[] elements = result.uri.substring(1).split("/");
+        StringBuilder finalPattern = new StringBuilder();
+        int params = compileRouteURI(result, elements, finalPattern);
+        if (finalPattern.length() == 0) {
+            finalPattern = new StringBuilder("/");
+        }
+        failForInvalidParameterCount(routed, parameterTypes, params);
+
+        result.parameterTypes = parameterTypes.toArray(CLASS_ARRAY);
+        result.pattern = Pattern.compile(finalPattern.toString());
+        return result;
+    }
+
+    @Nonnull
+    private static List<Class<?>> determineParameterTypes(Method method, Route result) {
+        List<Class<?>> parameterTypes = new ArrayList<>(Arrays.asList(method.getParameterTypes()));
+        if (parameterTypes.isEmpty() || !WebContext.class.equals(parameterTypes.get(0))) {
+            throw new IllegalArgumentException(Strings.apply("Method needs '%s' as first parameter",
+                                                             WebContext.class.getName()));
+        }
+        parameterTypes.remove(0);
+        if (result.format == Format.JSON) {
+            failForInvalidJSONMethod(parameterTypes);
+            parameterTypes.remove(0);
+        }
+        if (result.format == Format.XML) {
+            failForInvalidXMLMethod(parameterTypes);
+            parameterTypes.remove(0);
+        }
+        if (result.preDispatchable) {
+            failForInvalidPredispatchableMethod(parameterTypes);
+            parameterTypes.remove(parameterTypes.size() - 1);
+        }
+        return parameterTypes;
+    }
+
+    private static void createMethodHandle(Method method, Route result) {
+        try {
+            result.methodHandle = LOOKUP.unreflect(method);
+        } catch (IllegalAccessException e) {
+            throw new IllegalArgumentException("Callback method is not accessible!");
+        }
+    }
+
+    private static void determineSubScope(Method method, Route result) {
         if (method.isAnnotationPresent(SubScope.class)) {
             if (result.permissions.isEmpty()) {
                 ControllerDispatcher.LOG.WARN(
@@ -90,48 +150,31 @@ public class Route {
         } else {
             result.subScope = SubScope.SUB_SCOPE_UI;
         }
-        List<Class<?>> parameterTypes = new ArrayList<>(Arrays.asList(method.getParameterTypes()));
+    }
 
-        if (!routed.value().startsWith("/")) {
-            throw new IllegalArgumentException("Route does not start with /");
+    @SuppressWarnings("deprecation")
+    private static void determineAPIFormat(Method method, Routed routed, Route result) {
+        if (method.isAnnotationPresent(PublicService.class)) {
+            result.format = method.getAnnotation(PublicService.class).format();
+            publicServices.recordPublicService(method);
+        } else if (method.isAnnotationPresent(InternalService.class)) {
+            result.format = method.getAnnotation(InternalService.class).format();
+        } else if (routed.jsonCall()) {
+            result.format = Format.JSON;
         }
 
-        try {
-            result.methodHandle = LOOKUP.unreflect(method);
-        } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException("Callback method is not accessible!");
+        if (result.format == Format.RAW) {
+            // RAW services don't need any special parameters. Therefore, we treat them as if there wasn't any special
+            // setting at all.
+            result.format = null;
         }
-
-        String[] elements = result.uri.substring(1).split("/");
-        StringBuilder finalPattern = new StringBuilder();
-        int params = compileRouteURI(result, elements, finalPattern);
-
-        if (parameterTypes.isEmpty() || !WebContext.class.equals(parameterTypes.get(0))) {
-            throw new IllegalArgumentException(Strings.apply("Method needs '%s' as first parameter",
-                                                             WebContext.class.getName()));
-        }
-        parameterTypes.remove(0);
-
-        if (result.preDispatchable) {
-            failForInvalidPredispatchableMethod(parameterTypes);
-            parameterTypes.remove(parameterTypes.size() - 1);
-        }
-        if (result.jsonCall) {
-            failForInvalidJSONMethod(parameterTypes);
-            parameterTypes.remove(0);
-        }
-        failForInvalidParameterCount(routed, parameterTypes, params);
-
-        if (finalPattern.length() == 0) {
-            finalPattern = new StringBuilder("/");
-        }
-
-        result.parameterTypes = parameterTypes.toArray(CLASS_ARRAY);
-        result.pattern = Pattern.compile(finalPattern.toString());
-        return result;
     }
 
     private static String applyRewrites(Controller controller, String uri) {
+        if (!uri.startsWith("/")) {
+            throw new IllegalArgumentException("Route does not start with /");
+        }
+
         String rewrittenUri = Sirius.getSettings()
                                     .getExtensions("controller.rewrites")
                                     .stream()
@@ -161,8 +204,15 @@ public class Route {
 
     private static void failForInvalidJSONMethod(List<Class<?>> parameterTypes) {
         if (parameterTypes.isEmpty() || !JSONStructuredOutput.class.equals(parameterTypes.get(0))) {
-            throw new IllegalArgumentException(Strings.apply("JSON method needs '%s' as second parameter",
+            throw new IllegalArgumentException(Strings.apply("JSON API method needs '%s' as second parameter",
                                                              JSONStructuredOutput.class.getName()));
+        }
+    }
+
+    private static void failForInvalidXMLMethod(List<Class<?>> parameterTypes) {
+        if (parameterTypes.isEmpty() || !XMLStructuredOutput.class.equals(parameterTypes.get(0))) {
+            throw new IllegalArgumentException(Strings.apply("XML API method needs '%s' as second parameter",
+                                                             XMLStructuredOutput.class.getName()));
         }
     }
 
@@ -324,7 +374,7 @@ public class Route {
      *
      * @return the method to be invoke in order to route a request using this route
      */
-    protected Method getMethod() {
+    public Method getMethod() {
         return method;
     }
 
@@ -343,17 +393,21 @@ public class Route {
      *
      * @return <tt>true</tt> if the request is pre dispatchable, <tt>false</tt> otherwise
      */
-    protected boolean isPreDispatchable() {
+    public boolean isPreDispatchable() {
         return preDispatchable;
     }
 
     /**
-     * Determines if the route will result in a JSON response.
+     * Determines if the route is a special service call which will either generate JSON or XML.
      *
-     * @return the value of {@link Route#isJSONCall()} of the annotation which created this route
+     * @return <tt>true</tt> if this route is a service call, <tt>false</tt> otherwise
      */
-    protected boolean isJSONCall() {
-        return jsonCall;
+    public boolean isServiceCall() {
+        return format != null;
+    }
+
+    public Format getApiResponseFormat() {
+        return format;
     }
 
     /**

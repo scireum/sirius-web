@@ -9,6 +9,8 @@
 package sirius.web.controller;
 
 import sirius.kernel.commons.PriorityCollector;
+import sirius.web.services.InternalService;
+import sirius.web.services.PublicService;
 import sirius.web.services.JSONStructuredOutput;
 
 import java.lang.annotation.Documented;
@@ -62,7 +64,7 @@ public @interface Routed {
     /**
      * Determines if the annotated method supports pre-dispatching.
      * <p>
-     * A pre-dispatchable method takes care of the requests payload itself. Therefore the method must declare an
+     * A pre-dispatchable method takes care of the request's payload itself. Therefore, the method must declare an
      * additional parameter of type {@link sirius.web.http.InputStreamHandler} which will be used to consume
      * the data sent via POST or PUT.
      *
@@ -92,6 +94,8 @@ public @interface Routed {
      * </p>
      *
      * @return <tt>true</tt> if the method is used to create a JSON response for an AJAX call, <tt>false</tt> otherwise
+     * @deprecated Use {@link InternalService} or {@link PublicService}
      */
+    @Deprecated
     boolean jsonCall() default false;
 }

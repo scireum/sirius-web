@@ -22,7 +22,10 @@ import java.util.List;
 
 /**
  * Provides access to the underlying request of a call to a {@link StructuredService}
+ *
+ * @deprecated the whole StructuredService framework has been deprecated.
  */
+@Deprecated
 public abstract class ServiceCall {
 
     protected static final Log LOG = Log.get("services");
