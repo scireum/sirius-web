@@ -51,9 +51,9 @@ import sirius.pasta.noodle.compiler.CompileException;
 import sirius.pasta.tagliatelle.Tagliatelle;
 import sirius.pasta.tagliatelle.Template;
 import sirius.pasta.tagliatelle.rendering.GlobalRenderContext;
+import sirius.web.controller.PreserveErrorMessageTransformer;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
-import sirius.web.controller.PreserveErrorMessageTransformer;
 import sirius.web.services.JSONStructuredOutput;
 
 import javax.annotation.Nonnull;
@@ -1486,12 +1486,25 @@ public class Response {
      * Creates a XML output which can be used to generate well formed XML.
      * <p>
      * By default, caching will be disabled. If the generated XML is small enough, it will be transmitted in
-     * one go. Otherwise a chunked response will be sent.
+     * one go. Otherwise, a chunked response will be sent.
      *
      * @return a structured output which will be sent as XML response
      */
     public XMLStructuredOutput xml() {
-        return new XMLStructuredOutput(outputStream(HttpResponseStatus.OK, MimeHelper.TEXT_XML));
+        return xml(HttpResponseStatus.OK);
+    }
+
+    /**
+     * Creates a XML output which can be used to generate well formed XML.
+     * <p>
+     * By default, caching will be disabled. If the generated XML is small enough, it will be transmitted in
+     * one go. Otherwise, a chunked response will be sent.
+     *
+     * @param status the {@link HttpResponseStatus} the response shall have.
+     * @return a structured output which will be sent as XML response
+     */
+    public XMLStructuredOutput xml(HttpResponseStatus status) {
+        return new XMLStructuredOutput(outputStream(status, MimeHelper.TEXT_XML));
     }
 
     /**

@@ -1,0 +1,35 @@
+<i:arg type="List" name="apis"/>
+<t:page title="Public API Explorer">
+
+    <i:block name="breadcrumbs">
+        <li><a href="/system/api">Public API Explorer</a></li>
+    </i:block>
+
+    <i:block name="page-header">
+        <t:pageHeader title="Public API Explorer"/>
+    </i:block>
+
+    <t:datacards>
+        <i:for type="sirius.web.services.PublicApiInfo" var="api" items="apis">
+            <t:datacard title="@api.getLabel()"
+                        link="@apply('/system/api/%s', api.getApiName())">
+                <div>
+                    @api.getDescription()
+                </div>
+                <i:if test="isFilled(api.getDocumentationUri())">
+                    <div class="mt-2">
+                        <a class="card-link" href="@api.getDocumentationUri()"><i class="fa fa-file-alt"></i> Documentation</a>
+                    </div>
+                </i:if>
+                <i:block name="footer">
+                    <i:if test="api.isDeprecated()">
+                        <t:dot color="red-light">Deprecated</t:dot>
+                        <i:else>
+                            <t:dot color="green">Active</t:dot>
+                        </i:else>
+                    </i:if>
+                </i:block>
+            </t:datacard>
+        </i:for>
+    </t:datacards>
+</t:page>

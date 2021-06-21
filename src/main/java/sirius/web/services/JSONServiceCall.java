@@ -13,7 +13,10 @@ import sirius.web.http.WebContext;
 
 /**
  * JSON encoder for calls to a {@link StructuredService}.
+ *
+ * @deprecated the whole StructuredService framework has been deprecated.
  */
+@Deprecated
 class JSONServiceCall extends ServiceCall {
 
     JSONServiceCall(WebContext ctx) {

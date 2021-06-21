@@ -25,7 +25,10 @@ import sirius.web.controller.Routed;
  * <p>
  * Note: Simple AJAX calls using JSON can also be realized using the controller framework. See {@link
  * Routed#jsonCall()} for further information.
+ *
+ * @deprecated the whole StructuredService framework has been deprecated.
  */
+@Deprecated
 public interface StructuredService {
 
     /**

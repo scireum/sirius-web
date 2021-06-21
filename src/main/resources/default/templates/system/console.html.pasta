@@ -6,9 +6,9 @@
             $(document).ready(function ($) {
                 $('#term').terminal(function (command, term) {
                     term.pause();
-                    $.post('/service/json/system/console', {command: command}).then(function (response) {
+                    $.post('/system/console/api', {command: command}).then(function (response) {
                         if (response.error) {
-                            term.error(response.error.message).resume();
+                            term.echo("\n", {exec: false}).error(response.message).echo("\n\n", {exec: false}).resume();
                         } else {
                             term.echo(response.result, {exec: false}).resume();
                         }

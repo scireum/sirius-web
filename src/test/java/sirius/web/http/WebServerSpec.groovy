@@ -145,34 +145,34 @@ class WebServerSpec extends BaseSpecification {
         when:
         def data = callAndRead(uri, null, expectedHeaders)
         then:
-        '{"test":true}' == data
+        '{"success":true,"error":false,"test":true}' == data
     }
 
     /**
      * Call a small service which result fits into a single response chunk...
      */
-    def "Invoke /service/json/test"() {
+    def "Invoke /api/test"() {
         given:
-        def uri = "/service/json/test"
+        def uri = "/api/test"
         def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
         when:
         def data = callAndRead(uri, null, expectedHeaders)
         then:
-        '{"test":true}' == data
+        '{"success":true,"error":false,"test":true}' == data
     }
 
     /**
      * Call a large service to test buffer-based output streams
      */
-    def "Invoke /service/json/test_large"() {
+    def "Invoke /api/test/test_large"() {
         given:
-        def uri = "/service/json/test_large"
+        def uri = "/api/test/test_large"
         def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
         when:
         def data = callAndRead(uri, null, expectedHeaders)
         then:
         // Size should be contents of large test file plus json overhead and escaping....
-        60543 == data.length()
+        60572 == data.length()
     }
 
     /**
@@ -180,16 +180,16 @@ class WebServerSpec extends BaseSpecification {
      * <p>
      * We expect an appropriate error in this case.
      */
-    def "Invoke /service/xml/test_large_failure and expect a proper error"() {
+    def "Invoke /api/test/test_large_failure and expect a proper error"() {
         given:
-        def uri = "/service/xml/test_large_failure"
+        def uri = "/api/test/test_large_failure"
         def expectedHeaders = ['content-type': 'text/xml;charset=UTF-8']
         when:
         LogHelper.clearMessages()
         and:
         def data = callAndRead(uri, null, expectedHeaders)
         then: "We expect a warning as the server was unable to send an error"
-        LogHelper.hasMessage(Level.WARNING, "services", "Cannot send service error for.*")
+        LogHelper.hasMessage(Level.WARNING, "web", "Cannot send service error for.*")
         and: "As the connection is closed due to an inconsistent state, an IO exception will occur on the client side"
         thrown(IOException)
     }
@@ -204,7 +204,7 @@ class WebServerSpec extends BaseSpecification {
         when:
         def data = callAndRead(uri, null, expectedHeaders)
         then:
-        '{"test":true}' == data
+        '{"success":true,"error":false,"test":true}' == data
     }
 
     /**
@@ -230,7 +230,7 @@ class WebServerSpec extends BaseSpecification {
         def data = callAndRead(uri, null, expectedHeaders)
         then:
         // Size should be contents of large test file plus json overhead and escaping....
-        60543 == data.length()
+        60572 == data.length()
     }
 
     /**
@@ -265,7 +265,7 @@ class WebServerSpec extends BaseSpecification {
         when:
         def data = callAndRead(uri, null, expectedHeaders)
         then:
-        '{"test":true}' == data
+        '{"success":true,"error":false,"test":true}' == data
     }
 
     /**
@@ -278,7 +278,7 @@ class WebServerSpec extends BaseSpecification {
         when:
         def data = callAndRead(uri, null, expectedHeaders)
         then:
-        '{"test":true}' == data
+        '{"success":true,"error":false,"test":true}' == data
     }
 
     /**

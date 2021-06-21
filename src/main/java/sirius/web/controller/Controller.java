@@ -11,6 +11,7 @@ package sirius.web.controller;
 import sirius.kernel.di.std.AutoRegister;
 import sirius.kernel.health.ExceptionHint;
 import sirius.kernel.health.HandledException;
+import sirius.web.services.Format;
 import sirius.web.http.WebContext;
 
 /**
@@ -70,6 +71,8 @@ public interface Controller {
      *
      * @param webContext the context containing the request
      * @param error the error which occurred
+     * @param format the expected response format
      */
-    void onJsonError(WebContext webContext, HandledException error);
+    void onApiError(WebContext webContext, HandledException error, Format format);
+
 }

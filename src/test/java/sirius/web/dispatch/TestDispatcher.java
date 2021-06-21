@@ -36,8 +36,8 @@ public class TestDispatcher implements WebDispatcher {
             return DispatchDecision.DONE;
         }
         if ("/redispatch".equalsIgnoreCase(ctx.getRequestedURI())) {
-            // See WebServerSepc->"Redispatching works" to the appropriate test and explanation...
-            ctx.withCustomPath("/service/json/test");
+            // See WebServerSpec->"Redispatching works" to the appropriate test and explanation...
+            ctx.withCustomPath("/api/test");
             return DispatchDecision.RESTART;
         } else {
             return DispatchDecision.CONTINUE;
