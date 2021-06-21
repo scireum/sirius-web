@@ -46,7 +46,7 @@ public @interface PublicService {
      * Specifies the API to which this service belongs.
      * <p>
      * An API is a collection of services which are grouped together in the UI ({@link ApiController}). For each
-     * API there has to be a block ins the system config (see <tt>http.api</tt>).
+     * API there has to be a block in the system config (see <tt>http.api</tt>).
      *
      * @return the name of the API to which this service belongs
      */
