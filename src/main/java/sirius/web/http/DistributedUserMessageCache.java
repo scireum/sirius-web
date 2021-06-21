@@ -18,15 +18,15 @@ import java.util.List;
 public interface DistributedUserMessageCache {
 
     /**
-     * Puts a value inside the cache identified by the key.
+     * Stores a list of messages for the given identifier.
      *
-     * @param key      the key identifying the value
+     * @param key      the key identifying the user to store the messages for
      * @param messages the messages to put inside the cache
      */
     void put(String key, List<Message> messages);
 
     /**
-     * Gets the value identified by the given key and removes it from the cache.
+     * Obtains and removes the messages stored for the given identifier
      *
      * @param key the key identifying the value
      * @return the value identified by the key
