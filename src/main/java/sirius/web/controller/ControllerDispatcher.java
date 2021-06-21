@@ -17,6 +17,7 @@ import sirius.kernel.commons.CachingSupplier;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.PriorityCollector;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.Injector;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.PriorityParts;
@@ -24,7 +25,6 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.xml.StructuredOutput;
-import sirius.web.services.Format;
 import sirius.web.http.Firewall;
 import sirius.web.http.InputStreamHandler;
 import sirius.web.http.Limited;
@@ -32,6 +32,7 @@ import sirius.web.http.Unlimited;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 import sirius.web.security.UserContext;
+import sirius.web.services.Format;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
@@ -202,19 +203,17 @@ public class ControllerDispatcher implements WebDispatcher {
         ctx.enableTiming(route.toString());
     }
 
-    private void executeRoute(WebContext ctx, Route route, List<Object> params) throws Exception {
-        ctx.setAttribute(ATTRIBUTE_MATCHED_ROUTE, route.getPattern());
-        if (route.getApiResponseFormat() == Format.JSON) {
-            executeApiCall(ctx, route, ctx.respondWith().json(), params);
-        } else if (route.getApiResponseFormat() == Format.XML) {
-            executeApiCall(ctx, route, ctx.respondWith().xml(), params);
+    private void executeRoute(WebContext webContext, Route route, List<Object> params) throws Exception {
+        webContext.setAttribute(ATTRIBUTE_MATCHED_ROUTE, route.getPattern());
+        if (route.getApiResponseFormat() != null) {
+            executeApiCall(webContext, route, params);
         } else {
             route.invoke(params);
         }
     }
 
-    private void executeApiCall(WebContext ctx, Route route, StructuredOutput out, List<Object> params)
-            throws Exception {
+    private void executeApiCall(WebContext webContext, Route route, List<Object> params) throws Exception {
+        StructuredOutput out = createOutput(webContext, route.getApiResponseFormat());
         params.add(1, out);
         out.beginResult();
         out.property("success", true);
@@ -222,11 +221,19 @@ public class ControllerDispatcher implements WebDispatcher {
         Object result = route.invoke(params);
         if (result instanceof Promise) {
             ((Promise<?>) result).onSuccess(ignored -> out.endResult()).onFailure(e -> {
-                handleFailure(ctx, route, e);
+                handleFailure(webContext, route, e);
             });
         } else {
             out.endResult();
         }
+    }
+
+    private StructuredOutput createOutput(WebContext webContext, Format apiResponseFormat) {
+        return switch (apiResponseFormat) {
+            case JSON ->  webContext.respondWith().json();
+            case XML ->  webContext.respondWith().xml();
+            default -> throw new IllegalStateException("Unexpected value: " + apiResponseFormat);
+        };
     }
 
     private void handlePermissionError(WebContext ctx, Route route, String missingPermission) throws Exception {
@@ -246,12 +253,12 @@ public class ControllerDispatcher implements WebDispatcher {
         ctx.respondWith().error(HttpResponseStatus.UNAUTHORIZED);
     }
 
-    private void handleFailure(WebContext ctx, Route route, Throwable ex) {
+    private void handleFailure(WebContext webContext, Route route, Throwable cause) {
         try {
             // We never want to log or handle exceptions which are caused by the user which
             // closed the browser / socket mid processing...
-            if (ex instanceof ClosedChannelException && ctx.isResponseCommitted()) {
-                Exceptions.ignore(ex);
+            if (cause instanceof ClosedChannelException && webContext.isResponseCommitted()) {
+                Exceptions.ignore(cause);
                 return;
             }
 
@@ -259,12 +266,12 @@ public class ControllerDispatcher implements WebDispatcher {
                        .addToMDC("controller",
                                  route.getController().getClass().getName() + "." + route.getMethod().getName());
             if (route.isServiceCall()) {
-                route.getController().onApiError(ctx, Exceptions.handle(LOG, ex), route.getApiResponseFormat());
+                route.getController().onApiError(webContext, Exceptions.handle(LOG, cause), route.getApiResponseFormat());
             } else {
-                route.getController().onError(ctx, Exceptions.handle(LOG, ex));
+                route.getController().onError(webContext, Exceptions.handle(LOG, cause));
             }
         } catch (Exception t) {
-            ctx.respondWith()
+            webContext.respondWith()
                .error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(ControllerDispatcher.LOG, t));
         }
     }

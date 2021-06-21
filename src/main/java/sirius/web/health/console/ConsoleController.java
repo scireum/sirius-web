@@ -16,10 +16,10 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.console.Command;
 import sirius.web.controller.BasicController;
-import sirius.web.services.InternalService;
 import sirius.web.controller.Routed;
 import sirius.web.http.WebContext;
 import sirius.web.security.Permission;
+import sirius.web.services.InternalService;
 import sirius.web.services.JSONStructuredOutput;
 
 import java.io.PrintWriter;
@@ -42,14 +42,21 @@ public class ConsoleController extends BasicController {
     /**
      * Renders the UI for the system console.
      *
-     * @param ctx the request being handled
+     * @param webContext the request being handled
      */
     @Routed("/system/console")
     @Permission(PERMISSION_SYSTEM_CONSOLE)
-    public void console(WebContext ctx) {
-        ctx.respondWith().template("/templates/system/console.html.pasta");
+    public void console(WebContext webContext) {
+        webContext.respondWith().template("/templates/system/console.html.pasta");
     }
 
+    /**
+     * Provides the JSON API used by the console to submit commands.
+     *
+     * @param webContext the request to respond to
+     * @param out        the output to write the command result to
+     * @throws Exception in case of an error when handling a command
+     */
     @Routed("/system/console/api")
     @Permission(PERMISSION_SYSTEM_CONSOLE)
     @InternalService
@@ -61,13 +68,13 @@ public class ConsoleController extends BasicController {
             throw Exceptions.createHandled().withSystemErrorMessage("Please enter a command!").handle();
         }
 
-        Command cmd = globalContext.getPart(parser.parseCommand(), Command.class);
+        Command command = globalContext.getPart(parser.parseCommand(), Command.class);
         try (StringWriter buffer = new StringWriter(); PrintWriter pw = new PrintWriter(buffer)) {
             pw.println();
-            if (cmd == null) {
+            if (command == null) {
                 pw.println(Strings.apply("Unknown command: %s", parser.parseCommand()));
             } else {
-                cmd.execute(new CommandOutput(pw), parser.getArgArray());
+                command.execute(new CommandOutput(pw), parser.getArgArray());
                 pw.println(w.duration());
             }
             pw.println();
@@ -76,26 +83,26 @@ public class ConsoleController extends BasicController {
     }
 
     private static class CommandOutput implements Command.Output {
-        private final PrintWriter pw;
+        private final PrintWriter outputWriter;
 
-        private CommandOutput(PrintWriter pw) {
-            this.pw = pw;
+        private CommandOutput(PrintWriter outputWriter) {
+            this.outputWriter = outputWriter;
         }
 
         @Override
         public PrintWriter getWriter() {
-            return pw;
+            return outputWriter;
         }
 
         @Override
         public Command.Output blankLine() {
-            pw.println();
+            outputWriter.println();
             return this;
         }
 
         @Override
         public Command.Output line(String contents) {
-            pw.println(contents);
+            outputWriter.println(contents);
             return this;
         }
 
