@@ -242,8 +242,8 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
                 writer.write("null");
             } else if (data instanceof Boolean || data instanceof Number) {
                 writer.write(data.toString());
-            } else if (data instanceof Amount) {
-                writer.write(((Amount) data).toMachineString());
+            } else if (data instanceof Amount amount) {
+                writer.write(amount.toMachineString());
             } else {
                 writeString(transformToStringRepresentation(data));
             }
