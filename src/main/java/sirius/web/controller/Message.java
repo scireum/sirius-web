@@ -83,10 +83,28 @@ public class Message {
          * @param textMessage the plain text message to show
          * @param label       the label of the link to show
          * @param link        the target of the link. Use <tt>javascript:</tt> as prefix to invoke a JavaScript function
+         * @param icon        the (optional) icon to show. This is most probably a fontawesome icon like <tt>fa-refresh</tt>
          * @return the generated message
          */
-        public Message withTextAndLink(String textMessage, String label, String link) {
-            return withTextAndLink(textMessage, label, link, null);
+        public Message withTextAndLink(String textMessage, String label, String link, @Nullable String icon) {
+            if (Strings.isFilled(icon)) {
+                return withTextAndLink(TEXT_AND_LINK_WITH_ICON_PATTERN, textMessage, label, link, icon);
+            } else {
+                return withTextAndLink(TEXT_AND_LINK_PATTERN, textMessage, label, link, icon);
+            }
+        }
+
+        private Message withTextAndLink(String pattern,
+                                        String textMessage,
+                                        String label,
+                                        String link,
+                                        @Nullable String icon) {
+            return new Message(type,
+                               Strings.apply(pattern,
+                                             ContentHelper.escapeXML(textMessage),
+                                             ContentHelper.escapeXML(link),
+                                             icon,
+                                             ContentHelper.escapeXML(label)));
         }
 
         /**
@@ -95,39 +113,10 @@ public class Message {
          * @param textMessage the plain text message to show
          * @param label       the label of the link to show
          * @param link        the target of the link. Use <tt>javascript:</tt> as prefix to invoke a JavaScript function
-         * @param icon        the (optional) icon to show. This is most probably a fontawesome icon like <tt>fa-refresh</tt>
          * @return the generated message
          */
-        public Message withTextAndLink(String textMessage, String label, String link, @Nullable String icon) {
-            if (Strings.isFilled(icon)) {
-                return new Message(type,
-                                   Strings.apply(TEXT_AND_LINK_WITH_ICON_PATTERN,
-                                                 ContentHelper.escapeXML(textMessage),
-                                                 ContentHelper.escapeXML(link),
-                                                 icon,
-                                                 ContentHelper.escapeXML(label)));
-            } else {
-                return new Message(type,
-                                   Strings.apply(TEXT_AND_LINK_PATTERN,
-                                                 ContentHelper.escapeXML(textMessage),
-                                                 ContentHelper.escapeXML(link),
-                                                 ContentHelper.escapeXML(label)));
-            }
-        }
-
-        /**
-         * Specifies a text message followed by a link to an external target.
-         * <p>
-         * This behaves just like {@link #withTextAndLink(String, String, String, String)} but the link is opened
-         * in a new browser tab or window.
-         *
-         * @param textMessage the plain text message to show
-         * @param label       the label of the link to show
-         * @param link        the target of the link. Use <tt>javascript:</tt> as prefix to invoke a JavaScript function
-         * @return the generated message
-         */
-        public Message withTextAndExternalLink(String textMessage, String label, String link) {
-            return withTextAndExternalLink(textMessage, label, link, null);
+        public Message withTextAndLink(String textMessage, String label, String link) {
+            return withTextAndLink(TEXT_AND_LINK_PATTERN, textMessage, label, link);
         }
 
         /**
@@ -144,19 +133,25 @@ public class Message {
          */
         public Message withTextAndExternalLink(String textMessage, String label, String link, @Nullable String icon) {
             if (Strings.isFilled(icon)) {
-                return new Message(type,
-                                   Strings.apply(EXTERNAL_TEXT_AND_LINK_WITH_ICON_PATTERN,
-                                                 ContentHelper.escapeXML(textMessage),
-                                                 ContentHelper.escapeXML(link),
-                                                 icon,
-                                                 ContentHelper.escapeXML(label)));
+                return withTextAndLink(EXTERNAL_TEXT_AND_LINK_WITH_ICON_PATTERN, textMessage, label, link, icon);
             } else {
-                return new Message(type,
-                                   Strings.apply(EXTERNAL_TEXT_AND_LINK_PATTERN,
-                                                 ContentHelper.escapeXML(textMessage),
-                                                 ContentHelper.escapeXML(link),
-                                                 ContentHelper.escapeXML(label)));
+                return withTextAndLink(EXTERNAL_TEXT_AND_LINK_PATTERN, textMessage, label, link, icon);
             }
+        }
+
+        /**
+         * Specifies a text message followed by a link to an external target.
+         * <p>
+         * This behaves just like {@link #withTextAndLink(String, String, String, String)} but the link is opened
+         * in a new browser tab or window.
+         *
+         * @param textMessage the plain text message to show
+         * @param label       the label of the link to show
+         * @param link        the target of the link. Use <tt>javascript:</tt> as prefix to invoke a JavaScript function
+         * @return the generated message
+         */
+        public Message withTextAndExternalLink(String textMessage, String label, String link) {
+            return withTextAndLink(EXTERNAL_TEXT_AND_LINK_PATTERN, textMessage, label, link);
         }
     }
 
