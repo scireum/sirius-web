@@ -17,7 +17,6 @@ import sirius.kernel.commons.CachingSupplier;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.PriorityCollector;
-import sirius.kernel.commons.Strings;
 import sirius.kernel.di.Injector;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.PriorityParts;
@@ -85,13 +84,13 @@ public class ControllerDispatcher implements WebDispatcher {
     @Override
     @SuppressWarnings("squid:S1698")
     @Explain("We actually can use object identity here as this is a marker object.")
-    public Callback<WebContext> preparePreDispatch(WebContext ctx) {
-        String uri = determineEffectiveURI(ctx);
+    public Callback<WebContext> preparePreDispatch(WebContext webContext) {
+        String uri = determineEffectiveURI(webContext);
         for (final Route route : getRoutes()) {
-            final List<Object> params = shouldExecute(ctx, uri, route, true);
+            final List<Object> params = shouldExecute(webContext, uri, route, true);
             if (params != Route.NO_MATCH) {
                 InputStreamHandler handler = new InputStreamHandler();
-                ctx.setContentHandler(handler);
+                webContext.setContentHandler(handler);
 
                 return newCtx -> preparePerformRoute(newCtx, route, params, handler);
             }
@@ -100,8 +99,8 @@ public class ControllerDispatcher implements WebDispatcher {
         return null;
     }
 
-    private String determineEffectiveURI(WebContext ctx) {
-        String uri = ctx.getRawRequestedURI();
+    private String determineEffectiveURI(WebContext webContext) {
+        String uri = webContext.getRawRequestedURI();
         if (uri.endsWith("/") && !"/".equals(uri)) {
             uri = uri.substring(0, uri.length() - 1);
         }
@@ -110,15 +109,15 @@ public class ControllerDispatcher implements WebDispatcher {
 
     @SuppressWarnings("squid:S1698")
     @Explain("We actually can use object identity here as this is a marker object.")
-    private List<Object> shouldExecute(WebContext ctx, String uri, Route route, boolean preDispatch) {
-        final List<Object> params = route.matches(ctx, uri, preDispatch);
+    private List<Object> shouldExecute(WebContext webContext, String uri, Route route, boolean preDispatch) {
+        final List<Object> params = route.matches(webContext, uri, preDispatch);
         if (params == Route.NO_MATCH) {
             // Route did not match...
             return params;
         }
         // Check if interceptors permit execution of route...
         for (Interceptor interceptor : interceptors) {
-            if (!interceptor.shouldExecuteRoute(ctx, route)) {
+            if (!interceptor.shouldExecuteRoute(webContext, route)) {
                 return Route.NO_MATCH;
             }
         }
@@ -126,14 +125,14 @@ public class ControllerDispatcher implements WebDispatcher {
         return params;
     }
 
-    private void preparePerformRoute(WebContext ctx,
+    private void preparePerformRoute(WebContext webContext,
                                      Route route,
                                      List<Object> params,
                                      InputStreamHandler inputStreamHandler) {
         try {
             if (firewall != null
                 && !route.getMethod().isAnnotationPresent(Unlimited.class)
-                && firewall.handleRateLimiting(ctx,
+                && firewall.handleRateLimiting(webContext,
                                                Optional.ofNullable(route.getMethod().getAnnotation(Limited.class))
                                                        .map(Limited::value)
                                                        .orElse(Limited.HTTP))) {
@@ -141,28 +140,28 @@ public class ControllerDispatcher implements WebDispatcher {
             }
 
             // Inject WebContext as first parameter...
-            params.add(0, ctx);
+            params.add(0, webContext);
 
             // If a route is pre-dispatchable we inject an InputStream as last parameter of the
             // call. This is also checked by the route-compiler
             if (inputStreamHandler != null) {
                 params.add(inputStreamHandler);
             }
-            performRoute(ctx, route, params);
+            performRoute(webContext, route, params);
         } catch (final Exception e) {
-            handleFailure(ctx, route, e);
+            handleFailure(webContext, route, e);
         }
     }
 
     @Override
     @SuppressWarnings("squid:S1698")
     @Explain("We actually can use object identity here as this is a marker object.")
-    public DispatchDecision dispatch(WebContext ctx) throws Exception {
-        String uri = determineEffectiveURI(ctx);
+    public DispatchDecision dispatch(WebContext webContext) throws Exception {
+        String uri = determineEffectiveURI(webContext);
         for (final Route route : getRoutes()) {
-            final List<Object> params = shouldExecute(ctx, uri, route, false);
+            final List<Object> params = shouldExecute(webContext, uri, route, false);
             if (params != Route.NO_MATCH) {
-                preparePerformRoute(ctx, route, params, null);
+                preparePerformRoute(webContext, route, params, null);
                 return DispatchDecision.DONE;
             }
         }
@@ -170,16 +169,16 @@ public class ControllerDispatcher implements WebDispatcher {
         return DispatchDecision.CONTINUE;
     }
 
-    private void performRoute(WebContext ctx, Route route, List<Object> params) {
+    private void performRoute(WebContext webContext, Route route, List<Object> params) {
         try {
             TaskContext.get()
                        .setSystem(SYSTEM_MVC)
                        .setSubSystem(route.getController().getClass().getSimpleName())
-                       .setJob(ctx.getRequestedURI());
+                       .setJob(webContext.getRequestedURI());
 
             // Intercept call...
             for (Interceptor interceptor : interceptors) {
-                if (interceptor.before(ctx, route)) {
+                if (interceptor.before(webContext, route)) {
                     return;
                 }
             }
@@ -187,20 +186,20 @@ public class ControllerDispatcher implements WebDispatcher {
             String missingPermission = route.checkAuth(new CachingSupplier<>(UserContext::getCurrentUser));
 
             if (missingPermission != null) {
-                handlePermissionError(ctx, route, missingPermission);
+                handlePermissionError(webContext, route, missingPermission);
             } else {
-                executeRoute(ctx, route, params);
+                executeRoute(webContext, route, params);
             }
         } catch (InvocationTargetException ex) {
-            handleFailure(ctx, route, ex.getTargetException());
+            handleFailure(webContext, route, ex.getTargetException());
         } catch (ClosedChannelException ex) {
             // Especially a service call might re-throw this. As this simply states, the connection was
             // closed while writing data, we can safely ignore it....
             Exceptions.ignore(ex);
         } catch (Exception ex) {
-            handleFailure(ctx, route, ex);
+            handleFailure(webContext, route, ex);
         }
-        ctx.enableTiming(route.toString());
+        webContext.enableTiming(route.toString());
     }
 
     private void executeRoute(WebContext webContext, Route route, List<Object> params) throws Exception {
@@ -230,15 +229,15 @@ public class ControllerDispatcher implements WebDispatcher {
 
     private StructuredOutput createOutput(WebContext webContext, Format apiResponseFormat) {
         return switch (apiResponseFormat) {
-            case JSON ->  webContext.respondWith().json();
-            case XML ->  webContext.respondWith().xml();
+            case JSON -> webContext.respondWith().json();
+            case XML -> webContext.respondWith().xml();
             default -> throw new IllegalStateException("Unexpected value: " + apiResponseFormat);
         };
     }
 
-    private void handlePermissionError(WebContext ctx, Route route, String missingPermission) throws Exception {
+    private void handlePermissionError(WebContext webContext, Route route, String missingPermission) throws Exception {
         for (Interceptor interceptor : interceptors) {
-            if (interceptor.beforePermissionError(missingPermission, ctx, route)) {
+            if (interceptor.beforePermissionError(missingPermission, webContext, route)) {
                 return;
             }
         }
@@ -250,7 +249,7 @@ public class ControllerDispatcher implements WebDispatcher {
         }
 
         // No Interceptor is in charge...report error...
-        ctx.respondWith().error(HttpResponseStatus.UNAUTHORIZED);
+        webContext.respondWith().error(HttpResponseStatus.UNAUTHORIZED);
     }
 
     private void handleFailure(WebContext webContext, Route route, Throwable cause) {
@@ -266,13 +265,14 @@ public class ControllerDispatcher implements WebDispatcher {
                        .addToMDC("controller",
                                  route.getController().getClass().getName() + "." + route.getMethod().getName());
             if (route.isServiceCall()) {
-                route.getController().onApiError(webContext, Exceptions.handle(LOG, cause), route.getApiResponseFormat());
+                route.getController()
+                     .onApiError(webContext, Exceptions.handle(LOG, cause), route.getApiResponseFormat());
             } else {
                 route.getController().onError(webContext, Exceptions.handle(LOG, cause));
             }
         } catch (Exception t) {
             webContext.respondWith()
-               .error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(ControllerDispatcher.LOG, t));
+                      .error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(ControllerDispatcher.LOG, t));
         }
     }
 
@@ -360,12 +360,12 @@ public class ControllerDispatcher implements WebDispatcher {
     /*
      * Compiles a method wearing a Routed annotation.
      */
-    private Route compileMethod(Routed routed, final Controller controller, final Method m) {
+    private Route compileMethod(Routed routed, final Controller controller, final Method method) {
         try {
-            return Route.compile(controller, m, routed);
+            return Route.compile(controller, method, routed);
         } catch (Exception e) {
             LOG.WARN("Skipping '%s' in controller '%s' - Cannot compile route '%s': %s (%s)",
-                     m.getName(),
+                     method.getName(),
                      controller.getClass().getName(),
                      routed.value(),
                      e.getMessage(),
