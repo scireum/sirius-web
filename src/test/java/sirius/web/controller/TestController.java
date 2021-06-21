@@ -102,7 +102,7 @@ public class TestController extends BasicController {
     public void tunnelTest(WebContext ctx) {
         ctx.respondWith()
            .setHeader(HttpHeaderNames.CONTENT_TYPE, "text/test")
-           .tunnel("http://localhost:9999/service/json/test");
+           .tunnel("http://localhost:9999/api/test");
     }
 
     @Routed("/tunnel/test/tune")
@@ -121,10 +121,10 @@ public class TestController extends BasicController {
     public void tunnelFallbackFor404(WebContext ctx) {
         ctx.respondWith()
            .setHeader(HttpHeaderNames.CONTENT_TYPE, "text/test")
-           .tunnel("http://localhost:9999/service/json/DOES_NOT_EXIST",
+           .tunnel("http://localhost:9999/api/DOES_NOT_EXIST",
                    (code) -> ctx.respondWith()
                                 .setHeader(HttpHeaderNames.CONTENT_TYPE, "text/test")
-                                .tunnel("http://localhost:9999/service/json/test"));
+                                .tunnel("http://localhost:9999/api/test"));
     }
 
     @Routed("/tunnel/fallback_for_error")
@@ -134,17 +134,17 @@ public class TestController extends BasicController {
            .tunnel("http://localhost:1",
                    (code) -> ctx.respondWith()
                                 .setHeader(HttpHeaderNames.CONTENT_TYPE, "text/test")
-                                .tunnel("http://localhost:9999/service/json/test"));
+                                .tunnel("http://localhost:9999/api/test"));
     }
 
     @Routed("/tunnel/test_large")
     public void tunnelTestLarge(WebContext ctx) {
-        ctx.respondWith().tunnel("http://localhost:9999/service/json/test_large");
+        ctx.respondWith().tunnel("http://localhost:9999/api/test/test_large");
     }
 
     @Routed("/tunnel/test_transform")
     public void tunnelTestTransform(WebContext ctx) {
-        ctx.respondWith().tunnel("http://localhost:9999/service/json/test_large", buf -> {
+        ctx.respondWith().tunnel("http://localhost:9999/api/test/test_large", buf -> {
             if (buf.readableBytes() == 0) {
                 return Optional.empty();
             }
