@@ -25,7 +25,7 @@ public class PreserveErrorMessageTransformer implements ErrorMessageTransformer 
     @Override
     public String transform(HandledException exception, String message) {
         if (exception.getHint(PRESERVE).asBoolean()) {
-            return "<div class=\"pre-message\">" + message + "</div>";
+            return "<div class=\"text-monospace whitespace-pre-wrap\">" + message + "</div>";
         } else {
             return message;
         }

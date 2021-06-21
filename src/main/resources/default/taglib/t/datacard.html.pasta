@@ -1,7 +1,10 @@
 <i:arg type="String" name="class" default="" description="Permits adding additional classes to the card."/>
 <i:arg type="String" name="title" default="" description="Specifies the card title."/>
 <i:arg type="String" name="subTitle" default="" description="Specifies the card sub-title."/>
-<i:arg type="String" name="link" default="" description="Specifies the target this card points to."/>
+<i:arg type="String"
+       name="link"
+       default=""
+       description="Specifies the target this card points to. Use the CSS class card-link for links within the card to win over this link."/>
 
 <i:pragma name="description">
     Renders a data centric card which has a title an optional subtitle and body contents.

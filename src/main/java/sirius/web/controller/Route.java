@@ -369,7 +369,7 @@ public class Route {
     }
 
     /**
-     * Returns the method which is to be invoked if the an URI can be successfully routed using this route
+     * Returns the method which is to be invoked if an URI can be successfully routed using this route
      * (all parameters match).
      *
      * @return the method to be invoke in order to route a request using this route

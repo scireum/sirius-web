@@ -33,3 +33,13 @@ sirius.findParentOfType = function(_node, type) {
 
     return null;
 }
+
+// Invokes the given listener if enter is pressed in the given input field.
+sirius.addEnterListener = function(_node, listener) {
+    _node.addEventListener('keyup', function(event) {
+        if (event.code === 'Enter') {
+            event.preventDefault();
+            listener();
+        }
+    });
+}

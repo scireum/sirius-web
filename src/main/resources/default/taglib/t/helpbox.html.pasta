@@ -1,8 +1,9 @@
+<i:arg type="String" name="class" default="" description="Permits to supply additional CSS classes" />
 <i:pragma name="description">
     Renders a card/box with hopefully helpful content.
 </i:pragma>
 
-<div class="card left-border border-sirius-blue-dark">
+<div class="card mb-4 left-border border-sirius-blue-dark @class">
     <div class="card-body">
         <div class="d-flex flex-row">
             <div class="mr-auto">

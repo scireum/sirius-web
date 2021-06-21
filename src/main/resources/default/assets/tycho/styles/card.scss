@@ -43,6 +43,11 @@
   border-top: 0;
 }
 
+.card .card-link, .card .btn {
+  z-index: 2;
+  position: relative;
+}
+
 .shadow {
   box-shadow: 0 .25rem 0.5rem rgba(0,0,0,.10) !important;
 }

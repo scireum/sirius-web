@@ -34,9 +34,14 @@ a {
   margin-left: 0.5em;
 }
 
-// Renders "pre" errors, e.g. for Tagliatelle.
-.pre-message {
-  white-space: pre-wrap;
-  font-family: monospace;
-}
+@media (min-width: 1400px) {
 
+  .d-xxl-inline {
+    display: inline !important;
+  }
+
+  .d-xxl-none {
+    display: none !important;
+  }
+
+}

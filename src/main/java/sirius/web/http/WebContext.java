@@ -10,7 +10,6 @@ package sirius.web.http;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
@@ -2091,7 +2090,9 @@ public class WebContext implements SubContext {
      * As tagliatelle cannot call static methods, this is a copy of {@link #dynamicAssetToken()}.
      *
      * @return a random token which is guaranteed to be free of special chars (like / and the like)
+     * @deprecated Use {@link sirius.pasta.tagliatelle.macros.StaticAssetUriMacro} instead.
      */
+    @Deprecated
     public String getDynamicAssetToken() {
         return dynamicAssetToken();
     }
@@ -2101,7 +2102,9 @@ public class WebContext implements SubContext {
      * specified resource.
      *
      * @return a random token which is guaranteed to be free of special chars (like / and the like)
+     * @deprecated Use {@link sirius.pasta.tagliatelle.macros.StaticAssetUriMacro} instead.
      */
+    @Deprecated
     public static String dynamicAssetToken() {
         return Product.getProduct().getUniqueVersionString();
     }

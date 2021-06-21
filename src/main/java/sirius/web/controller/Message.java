@@ -38,6 +38,19 @@ public class Message {
      */
     public static class Builder {
 
+        private static final String TEXT_AND_LINK_WITH_ICON_PATTERN = """
+                 <span class="pr-2">%s</span><a href="%s"><i class="fa %s"></i> %s</a>
+                """;
+        private static final String TEXT_AND_LINK_PATTERN = """
+                <span class="pr-2">%s</span><a href="%s">%s</a>
+                """;
+        private static final String EXTERNAL_TEXT_AND_LINK_WITH_ICON_PATTERN = """
+                <span class="pr-2">%s</span><a href="%s" target="_blank"><i class="fa %s"></i> %s</a>
+                """;
+        private static final String EXTERNAL_TEXT_AND_LINK_PATTERN = """
+                <span class="pr-2">%s</span><a href="%s" target="_blank">%s</a>
+                """;
+
         private final MessageLevel type;
 
         protected Builder(MessageLevel type) {
@@ -75,19 +88,35 @@ public class Message {
          */
         public Message withTextAndLink(String textMessage, String label, String link, @Nullable String icon) {
             if (Strings.isFilled(icon)) {
-                return new Message(type,
-                                   Strings.apply("<span>%s</span><a href=\"%s\"><i class=\"fa %s\"></i> %s</a>",
-                                                 ContentHelper.escapeXML(textMessage),
-                                                 ContentHelper.escapeXML(link),
-                                                 icon,
-                                                 ContentHelper.escapeXML(label)));
+                return withTextAndLink(TEXT_AND_LINK_WITH_ICON_PATTERN, textMessage, label, link, icon);
             } else {
-                return new Message(type,
-                                   Strings.apply("<span>%s</span><a href=\"%s\">%s</a>",
-                                                 ContentHelper.escapeXML(textMessage),
-                                                 ContentHelper.escapeXML(link),
-                                                 ContentHelper.escapeXML(label)));
+                return withTextAndLink(TEXT_AND_LINK_PATTERN, textMessage, label, link, icon);
             }
+        }
+
+        private Message withTextAndLink(String pattern,
+                                        String textMessage,
+                                        String label,
+                                        String link,
+                                        @Nullable String icon) {
+            return new Message(type,
+                               Strings.apply(pattern,
+                                             ContentHelper.escapeXML(textMessage),
+                                             ContentHelper.escapeXML(link),
+                                             icon,
+                                             ContentHelper.escapeXML(label)));
+        }
+
+        /**
+         * Specifies a text message followed by a link.
+         *
+         * @param textMessage the plain text message to show
+         * @param label       the label of the link to show
+         * @param link        the target of the link. Use <tt>javascript:</tt> as prefix to invoke a JavaScript function
+         * @return the generated message
+         */
+        public Message withTextAndLink(String textMessage, String label, String link) {
+            return withTextAndLink(TEXT_AND_LINK_PATTERN, textMessage, label, link);
         }
 
         /**
@@ -104,20 +133,25 @@ public class Message {
          */
         public Message withTextAndExternalLink(String textMessage, String label, String link, @Nullable String icon) {
             if (Strings.isFilled(icon)) {
-                return new Message(type,
-                                   Strings.apply(
-                                           "<span>%s</span><a href=\"%s\" target=\"_blank\"><i class=\"fa %s\"></i> %s</a>",
-                                           ContentHelper.escapeXML(textMessage),
-                                           ContentHelper.escapeXML(link),
-                                           icon,
-                                           ContentHelper.escapeXML(label)));
+                return withTextAndLink(EXTERNAL_TEXT_AND_LINK_WITH_ICON_PATTERN, textMessage, label, link, icon);
             } else {
-                return new Message(type,
-                                   Strings.apply("<span>%s</span><a href=\"%s\" target=\"_blank\">%s</a>",
-                                                 ContentHelper.escapeXML(textMessage),
-                                                 ContentHelper.escapeXML(link),
-                                                 ContentHelper.escapeXML(label)));
+                return withTextAndLink(EXTERNAL_TEXT_AND_LINK_PATTERN, textMessage, label, link, icon);
             }
+        }
+
+        /**
+         * Specifies a text message followed by a link to an external target.
+         * <p>
+         * This behaves just like {@link #withTextAndLink(String, String, String, String)} but the link is opened
+         * in a new browser tab or window.
+         *
+         * @param textMessage the plain text message to show
+         * @param label       the label of the link to show
+         * @param link        the target of the link. Use <tt>javascript:</tt> as prefix to invoke a JavaScript function
+         * @return the generated message
+         */
+        public Message withTextAndExternalLink(String textMessage, String label, String link) {
+            return withTextAndLink(EXTERNAL_TEXT_AND_LINK_PATTERN, textMessage, label, link);
         }
     }
 
@@ -177,7 +211,7 @@ public class Message {
      *
      * @param textMessage the message content
      * @return a new message with the given content and WARN as type
-     *      @deprecated Use {@code warn().withText(textMessage)}
+     * @deprecated Use {@code warn().withText(textMessage)}
      */
     @Deprecated
     public static Message warn(String textMessage) {
@@ -231,7 +265,7 @@ public class Message {
      * @param type the severity of the message
      * @param html the HTML contents to show
      */
-    protected Message(MessageLevel type, String html) {
+    public Message(MessageLevel type, String html) {
         this.type = type;
         this.html = messageExpanders.expand(html);
     }
