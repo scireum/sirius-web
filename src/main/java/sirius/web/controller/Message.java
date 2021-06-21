@@ -38,6 +38,19 @@ public class Message {
      */
     public static class Builder {
 
+        private static final String TEXT_AND_LINK_WITH_ICON_PATTERN = """
+                 <span class="pr-2">%s</span><a href="%s"><i class="fa %s"></i> %s</a>
+                """;
+        private static final String TEXT_AND_LINK_PATTERN = """
+                <span class="pr-2">%s</span><a href="%s">%s</a>
+                """;
+        private static final String EXTERNAL_TEXT_AND_LINK_WITH_ICON_PATTERN = """
+                <span class="pr-2">%s</span><a href="%s" target="_blank"><i class="fa %s"></i> %s</a>
+                """;
+        private static final String EXTERNAL_TEXT_AND_LINK_PATTERN = """
+                <span class="pr-2">%s</span><a href="%s" target="_blank">%s</a>
+                """;
+
         private final MessageLevel type;
 
         protected Builder(MessageLevel type) {
@@ -88,15 +101,14 @@ public class Message {
         public Message withTextAndLink(String textMessage, String label, String link, @Nullable String icon) {
             if (Strings.isFilled(icon)) {
                 return new Message(type,
-                                   Strings.apply(
-                                           "<span class\"pr-2\">%s</span><a href=\"%s\"><i class=\"fa %s\"></i> %s</a>",
-                                           ContentHelper.escapeXML(textMessage),
-                                           ContentHelper.escapeXML(link),
-                                           icon,
-                                           ContentHelper.escapeXML(label)));
+                                   Strings.apply(TEXT_AND_LINK_WITH_ICON_PATTERN,
+                                                 ContentHelper.escapeXML(textMessage),
+                                                 ContentHelper.escapeXML(link),
+                                                 icon,
+                                                 ContentHelper.escapeXML(label)));
             } else {
                 return new Message(type,
-                                   Strings.apply("<span class\"pr-2\">%s</span><a href=\"%s\">%s</a>",
+                                   Strings.apply(TEXT_AND_LINK_PATTERN,
                                                  ContentHelper.escapeXML(textMessage),
                                                  ContentHelper.escapeXML(link),
                                                  ContentHelper.escapeXML(label)));
@@ -133,15 +145,14 @@ public class Message {
         public Message withTextAndExternalLink(String textMessage, String label, String link, @Nullable String icon) {
             if (Strings.isFilled(icon)) {
                 return new Message(type,
-                                   Strings.apply(
-                                           "<span class\"pr-2\">%s</span><a href=\"%s\" target=\"_blank\"><i class=\"fa %s\"></i> %s</a>",
-                                           ContentHelper.escapeXML(textMessage),
-                                           ContentHelper.escapeXML(link),
-                                           icon,
-                                           ContentHelper.escapeXML(label)));
+                                   Strings.apply(EXTERNAL_TEXT_AND_LINK_WITH_ICON_PATTERN,
+                                                 ContentHelper.escapeXML(textMessage),
+                                                 ContentHelper.escapeXML(link),
+                                                 icon,
+                                                 ContentHelper.escapeXML(label)));
             } else {
                 return new Message(type,
-                                   Strings.apply("<span class\"pr-2\">%s</span><a href=\"%s\" target=\"_blank\">%s</a>",
+                                   Strings.apply(EXTERNAL_TEXT_AND_LINK_PATTERN,
                                                  ContentHelper.escapeXML(textMessage),
                                                  ContentHelper.escapeXML(link),
                                                  ContentHelper.escapeXML(label)));
