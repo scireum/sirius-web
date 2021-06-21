@@ -116,7 +116,7 @@ public class Message {
          * @return the generated message
          */
         public Message withTextAndLink(String textMessage, String label, String link) {
-            return withTextAndLink(TEXT_AND_LINK_PATTERN, textMessage, label, link);
+            return generateWithTextAndLink(TEXT_AND_LINK_PATTERN, textMessage, label, link, null);
         }
 
         /**
@@ -155,7 +155,7 @@ public class Message {
          * @return the generated message
          */
         public Message withTextAndExternalLink(String textMessage, String label, String link) {
-            return withTextAndLink(EXTERNAL_TEXT_AND_LINK_PATTERN, textMessage, label, link);
+            return generateWithTextAndLink(EXTERNAL_TEXT_AND_LINK_PATTERN, textMessage, label, link, null);
         }
     }
 
