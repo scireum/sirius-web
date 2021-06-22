@@ -10,6 +10,7 @@ package sirius.web.controller;
 
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.PriorityParts;
+import sirius.kernel.health.ExceptionHint;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.nls.Formatter;
@@ -29,6 +30,11 @@ public class Message {
 
     @PriorityParts(ErrorMessageTransformer.class)
     private static List<ErrorMessageTransformer> errorMessageTransformers;
+
+    /**
+     * Specifies that the error message should be handled directly as HTML instead of text when handling the exception.
+     */
+    public static final ExceptionHint HTML_ERROR_MESSAGE = new ExceptionHint("htmlErrorMessage");
 
     private final MessageLevel type;
     private final String html;
@@ -238,11 +244,26 @@ public class Message {
      * @return the appropriate error message
      */
     public static Message error(Throwable exception) {
-        HandledException handledException = Exceptions.handle(UserContext.LOG, exception);
+        return error(Exceptions.handle(UserContext.LOG, exception));
+    }
 
-        String message = ContentHelper.escapeXML(handledException.getMessage());
+    /**
+     * Handles the given exception and creates an appropriate error message.
+     * <p>
+     * Note that this might utilize {@link ErrorMessageTransformer error message transformers} to yield an optimal
+     * error message.
+     *
+     * @param exception the error to handle
+     * @return the appropriate error message
+     */
+    public static Message error(HandledException exception) {
+        String message = exception.getMessage();
+        if (!exception.getHint(HTML_ERROR_MESSAGE).asBoolean()) {
+            message = ContentHelper.escapeXML(message);
+        }
+
         for (ErrorMessageTransformer transformer : errorMessageTransformers) {
-            message = transformer.transform(handledException, message);
+            message = transformer.transform(exception, message);
         }
 
         return error().withHTMLMessage(message);
