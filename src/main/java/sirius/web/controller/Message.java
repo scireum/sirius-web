@@ -8,11 +8,11 @@
 
 package sirius.web.controller;
 
-import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
+import sirius.kernel.nls.Formatter;
 import sirius.web.security.UserContext;
 import sirius.web.templates.ContentHelper;
 
@@ -38,18 +38,16 @@ public class Message {
      */
     public static class Builder {
 
-        private static final String TEXT_AND_LINK_WITH_ICON_PATTERN = """
-                 <span class="pr-2">%s</span><a href="%s"><i class="fa %s"></i> %s</a>
-                """;
-        private static final String TEXT_AND_LINK_PATTERN = """
-                <span class="pr-2">%s</span><a href="%s">%s</a>
-                """;
-        private static final String EXTERNAL_TEXT_AND_LINK_WITH_ICON_PATTERN = """
-                <span class="pr-2">%s</span><a href="%s" target="_blank"><i class="fa %s"></i> %s</a>
-                """;
-        private static final String EXTERNAL_TEXT_AND_LINK_PATTERN = """
-                <span class="pr-2">%s</span><a href="%s" target="_blank">%s</a>
-                """;
+        private static final Formatter TEXT_AND_LINK_FORMAT;
+
+        static {
+            TEXT_AND_LINK_FORMAT = Formatter.create("""
+                                                            <span class="pr-2">${text}</span>
+                                                            <a href="${link}"[ target="${target}"]>
+                                                                [<i class="fa ${icon}"></i> ]${label}
+                                                            </a>
+                                                            """);
+        }
 
         private final MessageLevel type;
 
@@ -87,24 +85,13 @@ public class Message {
          * @return the generated message
          */
         public Message withTextAndLink(String textMessage, String label, String link, @Nullable String icon) {
-            if (Strings.isFilled(icon)) {
-                return generateWithTextAndLink(TEXT_AND_LINK_WITH_ICON_PATTERN, textMessage, label, link, icon);
-            } else {
-                return generateWithTextAndLink(TEXT_AND_LINK_PATTERN, textMessage, label, link, icon);
-            }
-        }
-
-        private Message generateWithTextAndLink(String pattern,
-                                                String textMessage,
-                                                String label,
-                                                String link,
-                                                @Nullable String icon) {
             return new Message(type,
-                               Strings.apply(pattern,
-                                             ContentHelper.escapeXML(textMessage),
-                                             ContentHelper.escapeXML(link),
-                                             icon,
-                                             ContentHelper.escapeXML(label)));
+                               TEXT_AND_LINK_FORMAT.set("text", textMessage)
+                                                   .set("label", label)
+                                                   .set("link", link)
+                                                   .set("target", null)
+                                                   .set("icon", icon)
+                                                   .smartFormat());
         }
 
         /**
@@ -116,7 +103,7 @@ public class Message {
          * @return the generated message
          */
         public Message withTextAndLink(String textMessage, String label, String link) {
-            return generateWithTextAndLink(TEXT_AND_LINK_PATTERN, textMessage, label, link, null);
+            return withTextAndLink(textMessage, label, link, null);
         }
 
         /**
@@ -132,15 +119,13 @@ public class Message {
          * @return the generated message
          */
         public Message withTextAndExternalLink(String textMessage, String label, String link, @Nullable String icon) {
-            if (Strings.isFilled(icon)) {
-                return generateWithTextAndLink(EXTERNAL_TEXT_AND_LINK_WITH_ICON_PATTERN,
-                                               textMessage,
-                                               label,
-                                               link,
-                                               icon);
-            } else {
-                return generateWithTextAndLink(EXTERNAL_TEXT_AND_LINK_PATTERN, textMessage, label, link, icon);
-            }
+            return new Message(type,
+                               TEXT_AND_LINK_FORMAT.set("text", textMessage)
+                                                   .set("label", label)
+                                                   .set("link", link)
+                                                   .set("target", "_blank")
+                                                   .set("icon", icon)
+                                                   .smartFormat());
         }
 
         /**
@@ -155,7 +140,7 @@ public class Message {
          * @return the generated message
          */
         public Message withTextAndExternalLink(String textMessage, String label, String link) {
-            return generateWithTextAndLink(EXTERNAL_TEXT_AND_LINK_PATTERN, textMessage, label, link, null);
+            return withTextAndExternalLink(textMessage, label, link, null);
         }
     }
 
