@@ -237,6 +237,6 @@ class UserContextHelper {
     private static void expectMessageOfTypeContaining(TestResponse response, MessageLevel type, String textPart) {
         assert getUserContext(response)
                 .getMessages()
-                .any { msg -> msg.getType() == type && msg.getMessage().contains(textPart) }
+                .any { msg -> msg.getType() == type && msg.getHtml().contains(textPart) }
     }
 }
