@@ -49,7 +49,7 @@ public class StaticAssetUriMacro extends BasicMacro {
         if (Sirius.isDev()) {
             return "/assets/no-cache";
         } else {
-            return "/assets/dynamic" + Product.getProduct().getUniqueVersionString() + "/";
+            return "/assets/dynamic/" + Product.getProduct().getUniqueVersionString();
         }
     }
 
