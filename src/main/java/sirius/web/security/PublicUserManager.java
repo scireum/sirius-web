@@ -102,7 +102,8 @@ public class PublicUserManager extends GenericUserManager {
     @Nonnull
     @Override
     protected String computeLang(WebContext webContext, String userId) {
-        return NLS.getDefaultLanguage();
+        var language = getDefaultLanguageOrFallback();
+        return "auto".equals(language) ? NLS.getSystemLanguage() : language;
     }
 
     @Override

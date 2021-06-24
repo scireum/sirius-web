@@ -10,7 +10,7 @@ package sirius.web.http;
 
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
-import sirius.kernel.nls.NLS;
+import sirius.web.security.UserContext;
 
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -46,7 +46,7 @@ public class LangHelper {
             if (m.matches()) {
                 double q = Value.of(m.group(4)).asDouble(1.0d);
                 String language = m.group(1);
-                if (q > bestQ && NLS.isSupportedLanguage(language)) {
+                if (q > bestQ && UserContext.get().getUserManager().isSupportedLanguage(language)) {
                     bestQ = q;
                     currentLang = language;
                 }
