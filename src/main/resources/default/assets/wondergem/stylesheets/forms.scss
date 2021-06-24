@@ -161,6 +161,10 @@ label .help-inline {
   }
 }
 
+// --------------------------
+// Token Autocomplete Multiselect
+// --------------------------
+
 .form-control.token-autocomplete-container {
   min-height: 34px;
   height: auto;
@@ -244,5 +248,21 @@ label .help-inline {
 .form-control.token-autocomplete-container .token-autocomplete-suggestions li.token-autocomplete-suggestion-highlighted .token-autocomplete-suggestion-description {
   background-color: #66afe9;
   color: #ffffff;
+}
+
+// --------------------------
+// Token Autocomplete Singleselect
+// --------------------------
+
+.form-control.token-autocomplete-container.token-autocomplete-singleselect .token-autocomplete-input {
+  padding-left: 0;
+  color: #000000;
+}
+
+.form-control.token-autocomplete-container.token-autocomplete-singleselect .token-autocomplete-input:after {
+  border-color: #888 transparent transparent transparent;
+  border-width: 5px 4px 0 4px;
+  top: 9px;
+  right: 0px;
 }
 
