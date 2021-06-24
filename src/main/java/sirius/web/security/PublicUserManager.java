@@ -102,7 +102,7 @@ public class PublicUserManager extends GenericUserManager {
     @Nonnull
     @Override
     protected String computeLang(WebContext webContext, String userId) {
-        var language = getDefaultLanguageOrFallback();
+        String language = scope.getDefaultLanguageOrFallback();
         return "auto".equals(language) ? NLS.getSystemLanguage() : language;
     }
 

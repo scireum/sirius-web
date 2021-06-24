@@ -113,26 +113,4 @@ public interface UserManager {
      * @return <tt>true</tt> if a "keep me logged in" function is available, <tt>false</tt> otherwise.
      */
     boolean isKeepLoginSupported();
-
-    /**
-     * Determines if the given language is supported.
-     *
-     * @param language a lower-case two-letter language code
-     * @return <tt>true</tt> if the language is supported, <tt>false</tt> otherwise.
-     */
-    boolean isSupportedLanguage(String language);
-
-    /**
-     * Checks if the given language is supported. Returns the default language otherwise.
-     * <p>
-     * Note that if the given lang is empty or <tt>null</tt>, this method will also return <tt>null</tt> as a call
-     * to {@link sirius.kernel.async.CallContext#setLang(String)} with <tt>null</tt> as parameter won't change
-     * the language at all.
-     *
-     * @param lang the language to check
-     * @return <tt>lang</tt> if it was a supported language or the defaultLanguage otherwise, unless an empty string
-     * was passed in, in which case <tt>null</tt> is returned.
-     */
-    @Nullable
-    String makeLang(@Nullable String lang);
 }

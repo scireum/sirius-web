@@ -62,7 +62,6 @@ public abstract class GenericUserManager implements UserManager {
     protected List<String> defaultRoles;
     protected Duration loginTTL;
     protected UserInfo defaultUser;
-    protected List<String> availableLanguages;
 
     @SuppressWarnings("unchecked")
     protected GenericUserManager(ScopeInfo scope, Extension config) {
@@ -79,8 +78,6 @@ public abstract class GenericUserManager implements UserManager {
                 Collections.unmodifiableList(config.get("defaultRoles").get(List.class, Collections.emptyList()));
         this.loginTTL = config.get("loginTTL").get(Duration.class, Duration.ofDays(90));
         this.defaultUser = buildDefaultUser();
-        this.availableLanguages =
-                Collections.unmodifiableList(config.get("availableLanguages").get(List.class, Collections.emptyList()));
     }
 
     protected UserInfo buildDefaultUser() {
@@ -520,36 +517,5 @@ public abstract class GenericUserManager implements UserManager {
     @Override
     public boolean isKeepLoginSupported() {
         return keepLoginEnabled;
-    }
-
-    @Override
-    public boolean isSupportedLanguage(String language) {
-        return this.availableLanguages.contains(language);
-    }
-
-    @Nullable
-    @Override
-    public String makeLang(@Nullable String lang) {
-        if (Strings.isEmpty(lang)) {
-            return null;
-        }
-        String langAsLowerCase = lang.toLowerCase();
-        if (isSupportedLanguage(langAsLowerCase)) {
-            return langAsLowerCase;
-        } else {
-            return getDefaultLanguageOrFallback();
-        }
-    }
-
-    /**
-     * Returns the default language according to the configuration for the current scope. If none is configured,
-     * this returns the fallback language for the scope. Defaults to "en", if the fallback is also not configured.
-     *
-     * @return the configured default language, or the configured fallback language, or "en" if the others were
-     * not configured
-     */
-    @Nonnull
-    protected String getDefaultLanguageOrFallback() {
-        return config.get("defaultLanguage").replaceEmptyWith(config.get("fallbackLanguage")).asString("en");
     }
 }
