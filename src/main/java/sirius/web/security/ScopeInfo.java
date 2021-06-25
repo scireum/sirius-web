@@ -546,8 +546,10 @@ public class ScopeInfo extends Composable {
     @Nonnull
     public String getDefaultLanguageOrFallback() {
         return getScopeTypeExtension().get("default-language")
-                                      .replaceEmptyWith(getScopeTypeExtension().get("fallback-language"))
-                                      .asString(NLS.getDefaultLanguage());
+                                      .asOptionalString()
+                                      .orElse(getScopeTypeExtension().get("fallback-language")
+                                                                     .asOptionalString()
+                                                                     .orElse(NLS.getDefaultLanguage()));
     }
 
     private Extension getScopeTypeExtension() {
