@@ -21,6 +21,7 @@ import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.di.transformers.Composable;
 import sirius.kernel.di.transformers.Transformable;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.nls.NLS;
 import sirius.kernel.settings.Extension;
 import sirius.kernel.settings.Settings;
 
@@ -37,12 +38,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Represents the scope the current call is being processed in.
@@ -73,7 +77,7 @@ public class ScopeInfo extends Composable {
     private final Map<Class<?>, Object> helpersByType = new ConcurrentHashMap<>();
     private UserSettings settings;
     private UserManager userManager;
-    private List<String> availableLanguages;
+    private Set<String> availableLanguages;
 
     private static Config scopeDefaultConfig;
     private static Map<String, String> scopeDefaultConfigFiles;
@@ -480,14 +484,21 @@ public class ScopeInfo extends Composable {
         return userManager;
     }
 
-    @SuppressWarnings("unchecked")
-    private List<String> getAvailableLanguages() {
+    /**
+     * Returns a set of two-letter codes enumerating all supported languages. Provided via the config in
+     * {@code scope.[type].available-languages}
+     *
+     * @return a set of supported language codes
+     */
+    public Set<String> getAvailableLanguages() {
         if (availableLanguages == null) {
-            availableLanguages = Collections.unmodifiableList(getScopeTypeExtension().get("availableLanguages")
-                                                                                     .get(List.class,
-                                                                                          Collections.emptyList()));
+            List<String> languages = getScopeTypeExtension().getStringList("available-languages").isEmpty() ?
+                                     Collections.singletonList(getDefaultLanguageOrFallback()) :
+                                     getScopeTypeExtension().getStringList("available-languages");
+            availableLanguages =
+                    languages.stream().map(String::toLowerCase).collect(Collectors.toCollection(LinkedHashSet::new));
         }
-        return availableLanguages;
+        return Collections.unmodifiableSet(availableLanguages);
     }
 
     /**
@@ -525,17 +536,18 @@ public class ScopeInfo extends Composable {
     }
 
     /**
-     * Returns the default language according to the configuration for the current scope. If none is configured,
-     * this returns the fallback language for the scope. Defaults to "en", if the fallback is also not configured.
+     * Returns the default language according to the configuration for this scope. If none is configured,
+     * this returns the fallback language for the scope. Falls back to the default determined by
+     * {@link NLS#getDefaultLanguage()} if no scope configurations are present.
      *
-     * @return the configured default language, or the configured fallback language, or "en" if the others were
-     * not configured
+     * @return the configured default language, or fallback language for this scope, or the default language for NLS,
+     * or "en" if none of the others were configured
      */
     @Nonnull
     public String getDefaultLanguageOrFallback() {
-        return getScopeTypeExtension().get("defaultLanguage")
-                                      .replaceEmptyWith(getScopeTypeExtension().get("fallbackLanguage"))
-                                      .asString("en");
+        return getScopeTypeExtension().get("default-language")
+                                      .replaceEmptyWith(getScopeTypeExtension().get("fallback-language"))
+                                      .asString(NLS.getDefaultLanguage());
     }
 
     private Extension getScopeTypeExtension() {
