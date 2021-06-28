@@ -1,0 +1,6 @@
+<i:pragma name="description" value="Renders a back button within a Tycho template. This is only shown, if a tycho history is present." />
+
+<a href="javascript:window.history.back()" class="btn btn-outline-secondary back-button">
+    <i class="fa fa-chevron-left"></i>
+    @i18n("NLS.back")
+</a>

@@ -3,6 +3,7 @@
 <i:arg type="boolean" name="ignoreDisasterMode" default="false"/>
 <i:arg type="boolean" name="noindex" default="false"
        description="if set to true, search engine bots are advised to not index this page"/>
+<i:arg type="String" name="historyUri" default="" description="Permits to specify a custom history URI for this page." />
 
 
 <i:pragma name="description" value="Provides the base layout for a Tycho page"/>
@@ -90,5 +91,10 @@
 
 <i:invoke template="/templates/tycho/page-dialogs.html.pasta"/>
 <i:extensions target="tycho-page" point="footer"/>
+<i:if test="historyUri != '-'">
+    <script type="text/javascript">
+        appendHistoryUrl('@historyUri');
+    </script>
+</i:if>
 </body>
 </html>
