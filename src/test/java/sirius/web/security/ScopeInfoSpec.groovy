@@ -35,7 +35,7 @@ class ScopeInfoSpec extends BaseSpecification {
 
     def "default config original contents are available"() {
         when:
-        String value = UserContext.getCurrentScope().getDefaulScopeConfigContents("test")
+        String value = UserContext.getCurrentScope().getDefaultScopeConfigContents("test")
         then:
         value == "# Test\nsettings.test =\"Hello\""
     }

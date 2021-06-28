@@ -60,6 +60,6 @@ public class ScopeDefaultConfigController extends BasicController {
            .template("/templates/system/scope-config.html.pasta",
                      name,
                      files,
-                     ScopeInfo.getDefaulScopeConfigContents(name));
+                     ScopeInfo.getDefaultScopeConfigContents(name));
     }
 }

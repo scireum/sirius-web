@@ -339,7 +339,7 @@ public class ScopeInfo extends Composable {
     /**
      * Lists the names of all loaded default config files.
      * <p>
-     * This and {@link #getDefaulScopeConfigContents(String)} can be used to output the default configuration for
+     * This and {@link #getDefaultScopeConfigContents(String)} can be used to output the default configuration for
      * users which customizes the scope configuration.
      *
      * @return the names of all known default config files.
@@ -360,7 +360,7 @@ public class ScopeInfo extends Composable {
      * @param name the name of the config file to show
      * @return the string contents of the config file
      */
-    public static String getDefaulScopeConfigContents(String name) {
+    public static String getDefaultScopeConfigContents(String name) {
         if (scopeDefaultConfigFiles == null) {
             determineScopeConfigFiles();
         }
@@ -384,7 +384,7 @@ public class ScopeInfo extends Composable {
     /**
      * Returns the default config for all scopes.
      * <p>
-     * This is built by loading all <tt>scope-*.conf</tt> files. Additionaly the <tt>scope-settings.conf</tt> for
+     * This is built by loading all <tt>scope-*.conf</tt> files. Additionally the <tt>scope-settings.conf</tt> for
      * all active customizations are used as well (if present).
      *
      * @return the default config object shared by all scopes
