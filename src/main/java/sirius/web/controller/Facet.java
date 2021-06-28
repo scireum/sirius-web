@@ -331,11 +331,12 @@ public class Facet {
 
     /**
      * Returns the used facet range.
+     * <p>
+     * Note: This will be deprecated soon.
      *
      * @return the facet range
-     * @deprecated FacetRange has been deprecated.
      */
-    @Deprecated
+    @SuppressWarnings("deprecation")
     public FacetRange getRange() {
         return facetRange;
     }
