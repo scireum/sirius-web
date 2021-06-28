@@ -15,8 +15,10 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 col-lg-8 col-xl-9 d-flex">
-            <i:render name="body"/>
+        <div class="col-12 col-lg-8 col-xl-9 d-flex mb-4">
+            <div class="flex-grow-1">
+                <i:render name="body"/>
+            </div>
         </div>
     </div>
 
