@@ -24,4 +24,9 @@
             <i:render name="body" />
         </div>
     </i:block>
+    <i:block name="x-large">
+        <div class="row row-cols-1 @class">
+            <i:render name="body" />
+        </div>
+    </i:block>
 </i:switch>
