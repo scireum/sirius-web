@@ -15,6 +15,10 @@
   border-width: 0;
   border-radius: 0;
 
+  .card-img, .card-img-top {
+    border-radius: 0;
+  }
+
 }
 
 .card.card-border {

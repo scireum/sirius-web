@@ -43,3 +43,31 @@ sirius.addEnterListener = function(_node, listener) {
         }
     });
 }
+
+sirius.getJSON = function(url, params) {
+    let formData = new FormData();
+    params.forEach(function(key, value) {
+        formData.append(key, value);
+    });
+
+    return fetch(url, {
+        method: "get",
+        body: formData
+    }).then(function (response) {
+        return response.json();
+    });
+}
+
+sirius.postJSON = function(url, params) {
+    let formData = new FormData();
+    Object.keys(params).forEach(function(key) {
+        formData.append(key, params[key]);
+    });
+
+    return fetch(url, {
+        method: "post",
+        body: formData
+    }).then(function (response) {
+        return response.json();
+    });
+}

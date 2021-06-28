@@ -1,6 +1,6 @@
 <i:arg type="sirius.kernel.async.CallContext" name="ctx" />
 <i:arg type="String" name="message" />
-<t:page title="@i18n('BasicController.404')">
+<t:page title="@i18n('BasicController.404')" historyUri="-">
     <i:block name="breadcrumbBar" />
 
     <i:block name="page-header">
@@ -14,6 +14,10 @@
             <h5 class="card-title">Diagnostic</h5>
             <pre>@message</pre>
         </div>
+    </div>
+
+    <div class="mt-4">
+        <t:backbutton />
     </div>
 
 </t:page>

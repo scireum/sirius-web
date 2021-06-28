@@ -3,12 +3,14 @@
         <div>
             <i:invoke template="/templates/tycho/page-footer-menu.html.pasta"  />
         </div>
-        <div class="text-right text-muted small">
+        <div class="text-right">
+            <i:extensions target="tycho-page-menu" point="footer-right-start"/>
             <span class="d-none d-md-inline-block">
-                <a class="cycle cursor-pointer" data-cycle="@CallContext.getCurrent().getWatch().elapsedMillis() ms (@const(sirius.kernel.info.Product.getProduct().getDetails()))">
+                <a class="text-muted small cycle cursor-pointer" data-cycle="@CallContext.getCurrent().getWatch().elapsedMillis() ms (@const(sirius.kernel.info.Product.getProduct().getDetails()))">
                     @CallContext.getNodeName()
                 </a>
             </span>
+            <i:extensions target="tycho-page-menu" point="footer-right-end"/>
         </div>
     </div>
 </div>
