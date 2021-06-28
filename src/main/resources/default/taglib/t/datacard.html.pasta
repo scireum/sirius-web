@@ -33,6 +33,12 @@
             </div>
             <i:if test="isFilled(subTitle)">
                 <h6 class="card-subtitle mb-4 text-muted">@subTitle</h6>
+                <i:else>
+                    <i:local name="markupSubTitle" value="@renderToString('subtitle')"/>
+                    <i:if test="isFilled(markupSubTitle)">
+                        <h6 class="card-subtitle mb-4 text-muted"><i:raw>@markupSubTitle</i:raw></h6>
+                    </i:if>
+                </i:else>
             </i:if>
 
             <i:render name="body"/>
