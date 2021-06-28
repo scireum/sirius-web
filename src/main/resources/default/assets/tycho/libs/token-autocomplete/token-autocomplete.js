@@ -724,7 +724,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 var me = this;
                 element.addEventListener('click', function (_event) {
                     if (text == me.options.noMatchesText) {
-                        return true;
+                        return;
                     }
                     if (me.parent.options.selectMode == SelectModes.SINGLE) {
                         if (element.classList.contains('token-autocomplete-suggestion-active')) {
