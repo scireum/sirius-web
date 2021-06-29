@@ -77,7 +77,8 @@ public class ScopeInfo extends Composable {
     private final Map<Class<?>, Object> helpersByType = new ConcurrentHashMap<>();
     private UserSettings settings;
     private UserManager userManager;
-    private Set<String> availableLanguages;
+    private Set<String> displayLanguages;
+    private Set<String> knownLanguages;
 
     private static Config scopeDefaultConfig;
     private static Map<String, String> scopeDefaultConfigFiles;
@@ -485,30 +486,60 @@ public class ScopeInfo extends Composable {
     }
 
     /**
-     * Returns a set of two-letter codes enumerating all supported languages. Provided via the config in
-     * {@code scope.[type].available-languages}.
+     * Returns a set of two-letter codes enumerating all languages that site content can be displayed in.
+     * Provided via the config in {@code scope.[type].display-languages}.
+     * <p>
+     * This can be a subset of {@link #getKnownLanguages()}.
      *
-     * @return a set of supported language codes
+     * @return a set of language codes supported for display
      */
-    public Set<String> getAvailableLanguages() {
-        if (availableLanguages == null) {
-            List<String> languages = getScopeTypeExtension().getStringList("available-languages").isEmpty() ?
+    public Set<String> getDisplayLanguages() {
+        if (displayLanguages == null) {
+            List<String> languages = getScopeTypeExtension().getStringList("display-languages").isEmpty() ?
                                      Collections.singletonList(getDefaultLanguageOrFallback()) :
-                                     getScopeTypeExtension().getStringList("available-languages");
-            availableLanguages =
+                                     getScopeTypeExtension().getStringList("display-languages");
+            displayLanguages =
                     languages.stream().map(String::toLowerCase).collect(Collectors.toCollection(LinkedHashSet::new));
         }
-        return Collections.unmodifiableSet(availableLanguages);
+        return Collections.unmodifiableSet(displayLanguages);
     }
 
     /**
-     * Determines if the given language is supported.
+     * Returns a set of two-letter codes enumerating all languages known across all scopes. Provided via the config in
+     * {@code scope.default.known-languages}.
+     *
+     * @return the set of known language codes
+     */
+    public Set<String> getKnownLanguages() {
+        if (knownLanguages == null) {
+            List<String> languages =
+                    getScopeTypeExtension(DEFAULT_SCOPE_ID).getStringList("known-languages").isEmpty() ?
+                    Collections.singletonList(getDefaultLanguageOrFallback()) :
+                    getScopeTypeExtension(DEFAULT_SCOPE_ID).getStringList("known-languages");
+            knownLanguages =
+                    languages.stream().map(String::toLowerCase).collect(Collectors.toCollection(LinkedHashSet::new));
+        }
+        return Collections.unmodifiableSet(knownLanguages);
+    }
+
+    /**
+     * Determines if the given language can be displayed.
      *
      * @param language a lower-case two-letter language code
      * @return <tt>true</tt> if the language is supported, <tt>false</tt> otherwise.
      */
-    public boolean isSupportedLanguage(String language) {
-        return getAvailableLanguages().contains(language);
+    public boolean isDisplayLanguage(String language) {
+        return getDisplayLanguages().contains(language);
+    }
+
+    /**
+     * Determines if the given language is known to the system.
+     *
+     * @param language a lower-case two-letter language code
+     * @return <tt>true</tt> if the language is supported, <tt>false</tt> otherwise.
+     */
+    public boolean isKnownLanguage(String language) {
+        return getKnownLanguages().contains(language);
     }
 
     /**
@@ -528,7 +559,7 @@ public class ScopeInfo extends Composable {
             return null;
         }
         String lowercaseLanguage = language.toLowerCase();
-        if (isSupportedLanguage(lowercaseLanguage)) {
+        if (isDisplayLanguage(lowercaseLanguage)) {
             return lowercaseLanguage;
         } else {
             return getDefaultLanguageOrFallback();
@@ -554,5 +585,9 @@ public class ScopeInfo extends Composable {
 
     private Extension getScopeTypeExtension() {
         return Sirius.getSettings().getExtension("security.scopes", getScopeType());
+    }
+
+    private Extension getScopeTypeExtension(String scopeType) {
+        return Sirius.getSettings().getExtension("security.scopes", scopeType);
     }
 }

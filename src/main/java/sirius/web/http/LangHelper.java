@@ -46,7 +46,7 @@ public class LangHelper {
             if (m.matches()) {
                 double q = Value.of(m.group(4)).asDouble(1.0d);
                 String language = m.group(1);
-                if (q > bestQ && UserContext.getCurrentScope().isSupportedLanguage(language)) {
+                if (q > bestQ && UserContext.getCurrentScope().isDisplayLanguage(language)) {
                     bestQ = q;
                     currentLang = language;
                 }
