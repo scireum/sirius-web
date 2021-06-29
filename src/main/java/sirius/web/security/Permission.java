@@ -33,7 +33,7 @@ import java.lang.annotation.Target;
 @Repeatable(PermissionList.class)
 public @interface Permission {
     /**
-     * Names the permission which has to be presnet for the current user in order to execute the annotated element
+     * Names the permission which has to be present for the current user in order to execute the annotated element
      *
      * @return the permission to check
      */

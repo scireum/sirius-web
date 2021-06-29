@@ -15,6 +15,7 @@
 
 <div class="col mb-4">
     <div class="card card-border h-100 @class">
+        <i:render name="header"></i:render>
         <div class="card-body">
             <div class="d-flex justify-content-between">
                 <i:if test="isFilled(title)">
@@ -32,6 +33,12 @@
             </div>
             <i:if test="isFilled(subTitle)">
                 <h6 class="card-subtitle mb-4 text-muted">@subTitle</h6>
+                <i:else>
+                    <i:local name="markupSubTitle" value="@renderToString('subtitle')"/>
+                    <i:if test="isFilled(markupSubTitle)">
+                        <h6 class="card-subtitle mb-4 text-muted"><i:raw>@markupSubTitle</i:raw></h6>
+                    </i:if>
+                </i:else>
             </i:if>
 
             <i:render name="body"/>

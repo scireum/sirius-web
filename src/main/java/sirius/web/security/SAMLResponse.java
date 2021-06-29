@@ -19,10 +19,10 @@ import java.util.Collection;
  */
 public class SAMLResponse {
 
-    private String issuer;
-    private String fingerprint;
-    private String nameId;
-    private MultiMap<String, String> attributes;
+    private final String issuer;
+    private final String fingerprint;
+    private final String nameId;
+    private final MultiMap<String, String> attributes;
 
     /**
      * Contains the attribute URI used to transmit a security group.
@@ -72,7 +72,7 @@ public class SAMLResponse {
     /**
      * Returns the fingerprint of the certificate which was used to sign the response.
      *
-     * @return the fungerprint of the X509 certificate
+     * @return the fingerprint of the X509 certificate
      */
     public String getFingerprint() {
         return fingerprint;

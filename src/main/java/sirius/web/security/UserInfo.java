@@ -18,6 +18,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiPredicate;
@@ -169,11 +170,7 @@ public class UserInfo extends Composable {
          */
         public Builder withPermissions(Set<String> permissions) {
             verifyState();
-            if (permissions == null) {
-                user.permissions = new HashSet<>();
-            } else {
-                user.permissions = permissions;
-            }
+            user.permissions = Objects.requireNonNullElseGet(permissions, HashSet::new);
             return this;
         }
 
@@ -317,7 +314,7 @@ public class UserInfo extends Composable {
      * <p>
      * Next to plain permission names, permissions can also negated using <tt>!permission</tt> and on top of that,
      * whole
-     * logical expressions in DNF (disjuctive normal form)can be passed in.
+     * logical expressions in DNF (disjunctive normal form) can be passed in.
      * <p>
      * Such a formula is a set of expressions where a <b>,</b> represents an <tt>or</tt> and a <b>+</b> represents an
      * <tt>and</tt>. An example would be "logged-in,important-customer+!locked". This would translate to "the user has

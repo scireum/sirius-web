@@ -34,7 +34,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -347,7 +346,7 @@ public class ScopeInfo extends Composable {
     /**
      * Lists the names of all loaded default config files.
      * <p>
-     * This and {@link #getDefaulScopeConfigContents(String)} can be used to output the default configuration for
+     * This and {@link #getDefaultScopeConfigContents(String)} can be used to output the default configuration for
      * users which customizes the scope configuration.
      *
      * @return the names of all known default config files.
@@ -356,7 +355,7 @@ public class ScopeInfo extends Composable {
         if (scopeDefaultConfigFiles == null) {
             determineScopeConfigFiles();
         }
-        return new ArrayList<>(scopeDefaultConfigFiles.keySet());
+        return scopeDefaultConfigFiles.keySet().stream().sorted().collect(Collectors.toList());
     }
 
     /**
@@ -368,7 +367,7 @@ public class ScopeInfo extends Composable {
      * @param name the name of the config file to show
      * @return the string contents of the config file
      */
-    public static String getDefaulScopeConfigContents(String name) {
+    public static String getDefaultScopeConfigContents(String name) {
         if (scopeDefaultConfigFiles == null) {
             determineScopeConfigFiles();
         }

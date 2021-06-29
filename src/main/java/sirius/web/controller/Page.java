@@ -161,10 +161,12 @@ public class Page<E> {
 
     /**
      * Calculates the current page number
+     * <p>
+     * Note: This will be deprecated soon as we prefer pagination
+     * by indices over page number and size.
      *
      * @return number of the current page
      */
-    @Deprecated
     public int getCurrentPageNumber() {
         return (this.start / this.pageSize) + 1;
     }

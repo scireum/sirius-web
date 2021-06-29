@@ -12,8 +12,8 @@
 
 // Variables Forms
 // -------------------------
-$inputBorder:                   $borderColor;
-$inputDisabledBackground:       $whiteDark;
+$inputBorder: $borderColor;
+$inputDisabledBackground: $whiteDark;
 
 // Groups of fields with labels on top (legends)
 legend, .legend, h1 {
@@ -93,14 +93,17 @@ textarea[readonly] {
   margin-top: 20px;
   padding: 19px 0;
 }
+
 .form-actions:before, .form-actions:after {
   content: "";
   display: table;
   line-height: 0;
 }
+
 .form-actions:after {
   clear: both;
 }
+
 .form-actions a.pull-right {
   margin-left: 5px;
 }
@@ -111,7 +114,7 @@ textarea[readonly] {
 .help-inline,
 label .help-block,
 label .help-inline {
-  color: lighten( $textColor, 15%); // lighten the text some for contrast
+  color: lighten($textColor, 15%); // lighten the text some for contrast
 }
 
 .help-block, label .help-block {
@@ -136,6 +139,7 @@ label .help-inline {
 .checkbox, .radio {
   margin-top: 0;
 }
+
 .admin-link:after {
   font-family: "FontAwesome";
   font-size: 10px;
@@ -149,10 +153,117 @@ label .help-inline {
   .btn table td span:hover {
     background: #8c8d91;
   }
+
   .picker-switch td span {
     line-height: 1.5;
     height: 1.5em;
     font-size: 24px;
   }
-} 
+}
+
+// --------------------------
+// Token Autocomplete Multiselect
+// --------------------------
+
+.form-control.token-autocomplete-container {
+  position: relative;
+  min-height: 34px;
+  height: auto;
+  border-color: #ccc;
+  padding-bottom: 0;
+}
+
+.form-control.token-autocomplete-container, .form-control.token-autocomplete-container * {
+  font-family: 'Open Sans', Verdana, Tahoma, Arial, sans-serif;
+}
+
+.form-control.token-autocomplete-container .token-autocomplete-token {
+  border-radius: 3px;
+  border: 1px solid #d9d9d9;
+  background-color: #ededed;
+  margin: -1px 5px 5px 0;
+  height: 22px;
+  font-size: 14px;
+  line-height: 1.43;
+  color: #555;
+  padding-left: 4px;
+  padding-right: 0;
+  pointer-events: auto;
+  cursor: default;
+}
+
+.form-control.token-autocomplete-container .token-autocomplete-token:hover {
+  border-color: #b9b9b9;
+  background-color: #ededed;
+}
+
+.form-control.token-autocomplete-container .token-autocomplete-token .token-autocomplete-token-delete {
+  font-family: Arial;
+  font-size: 1.1em;
+  font-weight: 700;
+  line-height: 1.49em;
+  vertical-align: top;
+  color: #000;
+  text-shadow: 0 1px 0 #fff;
+  opacity: 0.2;
+  margin-left: 0;
+}
+
+.form-control.token-autocomplete-container .token-autocomplete-token .token-autocomplete-token-delete:hover {
+  background-color: transparent;
+  opacity: .5;
+}
+
+.form-control.token-autocomplete-container .token-autocomplete-input {
+  font-size: 14px;
+  line-height: 1.43;
+  margin: 0 2px 4px 2px;
+  color: #757575;
+  padding: 0;
+}
+
+.form-control.token-autocomplete-container .token-autocomplete-suggestions {
+  position: absolute;
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  z-index: 999;
+  margin-left: -12px;
+  margin-right: -12px;
+  margin-top: 26px;
+}
+
+.form-control.token-autocomplete-container .token-autocomplete-suggestions li.token-autocomplete-suggestion-active {
+  background-color: #ededed;
+  border-top: 1px solid #d9d9d9;
+  border-bottom: 1px solid #d9d9d9;
+}
+
+.form-control.token-autocomplete-container .token-autocomplete-suggestions li:hover,
+.form-control.token-autocomplete-container .token-autocomplete-suggestions li.token-autocomplete-suggestion-active:hover,
+.form-control.token-autocomplete-container .token-autocomplete-suggestions li.token-autocomplete-suggestion-highlighted {
+  background-color: #66afe9;
+  color: #ffffff;
+}
+
+.form-control.token-autocomplete-container .token-autocomplete-suggestions li:hover .token-autocomplete-suggestion-description,
+.form-control.token-autocomplete-container .token-autocomplete-suggestions li.token-autocomplete-suggestion-highlighted .token-autocomplete-suggestion-description {
+  background-color: #66afe9;
+  color: #ffffff;
+}
+
+// --------------------------
+// Token Autocomplete Singleselect
+// --------------------------
+
+.form-control.token-autocomplete-container.token-autocomplete-singleselect .token-autocomplete-input {
+  padding-left: 0;
+  color: #000000;
+}
+
+.form-control.token-autocomplete-container.token-autocomplete-singleselect .token-autocomplete-input:after {
+  border-color: #888 transparent transparent transparent;
+  border-width: 5px 4px 0 4px;
+  top: 9px;
+  right: 0px;
+}
 
