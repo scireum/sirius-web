@@ -13,6 +13,7 @@ import com.typesafe.config.ConfigFactory;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Reflection;
 import sirius.kernel.commons.Streams;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.ValueHolder;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
@@ -20,6 +21,7 @@ import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.di.transformers.Composable;
 import sirius.kernel.di.transformers.Transformable;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.nls.NLS;
 import sirius.kernel.settings.Extension;
 import sirius.kernel.settings.Settings;
 
@@ -32,11 +34,14 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -71,6 +76,8 @@ public class ScopeInfo extends Composable {
     private final Map<Class<?>, Object> helpersByType = new ConcurrentHashMap<>();
     private UserSettings settings;
     private UserManager userManager;
+    private Set<String> displayLanguages;
+    private Set<String> knownLanguages;
 
     private static Config scopeDefaultConfig;
     private static Map<String, String> scopeDefaultConfigFiles;
@@ -469,11 +476,117 @@ public class ScopeInfo extends Composable {
      */
     public UserManager getUserManager() {
         if (userManager == null) {
-            Extension ext = Sirius.getSettings().getExtension("security.scopes", getScopeType());
-            userManager = globalContext.getPart(ext.get("manager").asString("public"), UserManagerFactory.class)
-                                       .createManager(this, ext);
+            Extension extension = getScopeTypeExtension();
+            userManager = globalContext.getPart(extension.get("manager").asString("public"), UserManagerFactory.class)
+                                       .createManager(this, extension);
         }
 
         return userManager;
+    }
+
+    /**
+     * Returns a set of two-letter codes enumerating all languages that site content can be displayed in.
+     * Provided via the config in {@code scope.[type].display-languages}.
+     * <p>
+     * This can be a subset of {@link #getKnownLanguages()}.
+     *
+     * @return a set of language codes supported for display
+     */
+    public Set<String> getDisplayLanguages() {
+        if (displayLanguages == null) {
+            List<String> languages = getScopeTypeExtension().getStringList("display-languages").isEmpty() ?
+                                     Collections.singletonList(getDefaultLanguageOrFallback()) :
+                                     getScopeTypeExtension().getStringList("display-languages");
+            displayLanguages =
+                    languages.stream().map(String::toLowerCase).collect(Collectors.toCollection(LinkedHashSet::new));
+        }
+        return Collections.unmodifiableSet(displayLanguages);
+    }
+
+    /**
+     * Returns a set of two-letter codes enumerating all languages known across all scopes. Provided via the config in
+     * {@code scope.default.known-languages}.
+     *
+     * @return the set of known language codes
+     */
+    public Set<String> getKnownLanguages() {
+        if (knownLanguages == null) {
+            List<String> languages =
+                    getScopeTypeExtension(DEFAULT_SCOPE_ID).getStringList("known-languages").isEmpty() ?
+                    Collections.singletonList(getDefaultLanguageOrFallback()) :
+                    getScopeTypeExtension(DEFAULT_SCOPE_ID).getStringList("known-languages");
+            knownLanguages =
+                    languages.stream().map(String::toLowerCase).collect(Collectors.toCollection(LinkedHashSet::new));
+        }
+        return Collections.unmodifiableSet(knownLanguages);
+    }
+
+    /**
+     * Determines if the given language can be displayed.
+     *
+     * @param language a lower-case two-letter language code
+     * @return <tt>true</tt> if the language is supported, <tt>false</tt> otherwise.
+     */
+    public boolean isDisplayLanguage(String language) {
+        return getDisplayLanguages().contains(language);
+    }
+
+    /**
+     * Determines if the given language is known to the system.
+     *
+     * @param language a lower-case two-letter language code
+     * @return <tt>true</tt> if the language is supported, <tt>false</tt> otherwise.
+     */
+    public boolean isKnownLanguage(String language) {
+        return getKnownLanguages().contains(language);
+    }
+
+    /**
+     * Checks if the given language is supported. Returns the default language otherwise.
+     * <p>
+     * Note that if the given language is empty or <tt>null</tt>, this method will also return <tt>null</tt> as a call
+     * to {@link sirius.kernel.async.CallContext#setLang(String)} with <tt>null</tt> as parameter won't change
+     * the language at all.
+     *
+     * @param language the language to check
+     * @return <tt>lang</tt> if it was a supported language or the defaultLanguage otherwise, unless an empty string
+     * was passed in, in which case <tt>null</tt> is returned.
+     */
+    @Nullable
+    public String makeLang(@Nullable String language) {
+        if (Strings.isEmpty(language)) {
+            return null;
+        }
+        String lowercaseLanguage = language.toLowerCase();
+        if (isDisplayLanguage(lowercaseLanguage)) {
+            return lowercaseLanguage;
+        } else {
+            return getDefaultLanguageOrFallback();
+        }
+    }
+
+    /**
+     * Returns the default language according to the configuration for this scope. If none is configured,
+     * this returns the fallback language for the scope. Falls back to the default determined by
+     * {@link NLS#getDefaultLanguage()} if no scope configurations are present.
+     *
+     * @return the configured default language, or fallback language for this scope, or the default language for NLS,
+     * or "en" if none of the others were configured
+     */
+    @Nonnull
+    public String getDefaultLanguageOrFallback() {
+        return getScopeTypeExtension().get("default-language")
+                                      .asOptionalString()
+                                      .orElse(getScopeTypeExtension().get("fallback-language")
+                                                                     .asOptionalString()
+                                                                     .orElse(NLS.getDefaultLanguage()));
+    }
+
+    private Extension getScopeTypeExtension() {
+        return Sirius.getSettings().getExtension("security.scopes", getScopeType());
+    }
+
+    private Extension getScopeTypeExtension(String scopeType) {
+        return Sirius.getSettings().getExtension("security.scopes", scopeType);
     }
 }

@@ -37,7 +37,6 @@ import java.util.concurrent.TimeUnit;
 public abstract class GenericUserManager implements UserManager {
 
     /**
-     * /**
      * Defines the default grace period (max age of an sso timestamp) which is accepted by the system
      */
     private static final long DEFAULT_SSO_GRACE_INTERVAL = TimeUnit.HOURS.toSeconds(24);

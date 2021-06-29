@@ -10,7 +10,7 @@ package sirius.web.http;
 
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
-import sirius.kernel.nls.NLS;
+import sirius.web.security.UserContext;
 
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -38,21 +38,21 @@ public class LangHelper {
             return Optional.empty();
         }
 
-        double bestQ = 0;
-        String currentLang = null;
+        double bestQuality = 0;
+        String currentLanguage = null;
 
         for (String languageBlock : acceptLanguage.toLowerCase().split(",")) {
-            Matcher m = ACCEPT_LANGUAGE_PATTERN.matcher(languageBlock);
-            if (m.matches()) {
-                double q = Value.of(m.group(4)).asDouble(1.0d);
-                String language = m.group(1);
-                if (q > bestQ && NLS.isSupportedLanguage(language)) {
-                    bestQ = q;
-                    currentLang = language;
+            Matcher matcher = ACCEPT_LANGUAGE_PATTERN.matcher(languageBlock);
+            if (matcher.matches()) {
+                double quality = Value.of(matcher.group(4)).asDouble(1.0d);
+                String language = matcher.group(1);
+                if (quality > bestQuality && UserContext.getCurrentScope().isDisplayLanguage(language)) {
+                    bestQuality = quality;
+                    currentLanguage = language;
                 }
             }
         }
 
-        return Optional.ofNullable(currentLang);
+        return Optional.ofNullable(currentLanguage);
     }
 }
