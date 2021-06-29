@@ -469,7 +469,7 @@ public abstract class GenericUserManager implements UserManager {
     protected abstract Set<String> computeRoles(@Nullable WebContext webContext, String userId);
 
     /**
-     * Compues the name of the given user and request.
+     * Computes the name of the given user and request.
      *
      * @param webContext the current request
      * @param userId     the id of the user to fetch the name for
@@ -479,7 +479,7 @@ public abstract class GenericUserManager implements UserManager {
     protected abstract String computeUsername(@Nullable WebContext webContext, String userId);
 
     /**
-     * Compues the name of the given tenant and request.
+     * Computes the name of the given tenant and request.
      *
      * @param webContext the current request
      * @param tenantId   the id of the tenant to fetch the name for
@@ -489,7 +489,7 @@ public abstract class GenericUserManager implements UserManager {
     protected abstract String computeTenantname(@Nullable WebContext webContext, String tenantId);
 
     /**
-     * Compues the langange code of the given user and request.
+     * Computes the language code of the given user and request.
      *
      * @param webContext the current request
      * @param userId     the id of the user to fetch the language for

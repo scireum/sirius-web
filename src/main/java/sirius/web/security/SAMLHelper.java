@@ -57,7 +57,7 @@ import java.util.List;
 /**
  * Provides a helper to generate SAML 2 requests and to process responses.
  * <p>
- * The <b>Security Assertion Markup Language</b> is an XML beast to permit identity federation accross cloud services.
+ * The <b>Security Assertion Markup Language</b> is an XML beast to permit identity federation across cloud services.
  * This implementation provides all the tools required to become an identity consumer, which can call an identity
  * provider to authenticate a user.
  */
@@ -74,7 +74,7 @@ public class SAMLHelper {
     /**
      * A response as a timestamp called <tt>IssueInstant</tt>. We enforce that a received response isn't older than
      * <tt>MAX_TIMESTAMP_DELTA_IN_HOURS</tt> hours. The value should be chosen to accept clock drift and differences
-     * in dailight saving time settings.
+     * in daylight saving time settings.
      */
     public static final int MAX_TIMESTAMP_DELTA_IN_HOURS = 3;
 
@@ -157,7 +157,7 @@ public class SAMLHelper {
      * one <tt>Signature</tt> for it.
      *
      * @param doc       the XML document
-     * @param namespace the optional namesapce URI
+     * @param namespace the optional namespace URI
      * @param nodeName  the name of the node
      * @return the element with the given name
      * @throws HandledException if there are zero or more thant one nodes found
@@ -238,7 +238,7 @@ public class SAMLHelper {
      * @param doc       the XML document
      * @param assertion the assertion which must be signed
      * @return the fingerprint of the X509 certificate which was used to generate the signature
-     * @throws Exception in case an XML or signung error occurs
+     * @throws Exception in case an XML or signing error occurs
      */
     private String validateXMLSignature(Document doc, Element assertion) throws Exception {
         assertion.setIdAttribute("ID", true);

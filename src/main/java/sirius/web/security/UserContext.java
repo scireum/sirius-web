@@ -437,7 +437,7 @@ public class UserContext implements SubContext {
      * Returns an error message for the given field
      *
      * @param field name of the form field
-     * @return error message if existant else an empty string
+     * @return error message if existent else an empty string
      */
     public String getFieldErrorMessage(String field) {
         if (fieldErrorMessages.containsKey(field)) {
@@ -496,7 +496,7 @@ public class UserContext implements SubContext {
     /**
      * Determines if the user is present.
      * <p>
-     * This can be either direclty via a {@link #setCurrentUser(UserInfo)} or implicitely via {@link #getUser()}
+     * This can be either directly via a {@link #setCurrentUser(UserInfo)} or implicitly via {@link #getUser()}
      *
      * @return the currently active user
      */
@@ -559,7 +559,7 @@ public class UserContext implements SubContext {
     public SubContext fork() {
         // We return a copy which keeps the same user and scope - but which can be change independently.
         // Otherwise a UserContext.runAs(...) which forks a task, would run into trouble as the
-        // context is immediatelly switched back.
+        // context is immediately switched back.
         UserContext child = new UserContext();
         child.currentUser = currentUser;
         child.currentScope = currentScope;

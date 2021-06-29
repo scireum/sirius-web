@@ -159,7 +159,7 @@ public class Permissions {
      * Determines if the permission expression is contained for an object.
      * <p>
      * Next to plain permission names, permissions can also negated using <tt>!permission</tt> and on top of that,
-     * whole logical expressions in DNF (disjuctive normal form) can be passed in.
+     * whole logical expressions in DNF (disjunctive normal form) can be passed in.
      * <p>
      * Such a formula is a set of expressions where a <b>,</b> represents an <tt>or</tt> and a <b>+</b> represents an
      * <tt>and</tt>. An example would be "logged-in,important-customer+!locked". This would translate to "the user has
@@ -178,7 +178,7 @@ public class Permissions {
         }
 
         for (String orClause : permissionExpression.split(",")) {
-            if (permissionsFullfilled(orClause, containsPermission)) {
+            if (permissionsFulfilled(orClause, containsPermission)) {
                 return true;
             }
         }
@@ -186,18 +186,18 @@ public class Permissions {
         return false;
     }
 
-    protected static boolean permissionsFullfilled(String permisssionString, Predicate<String> containsPermission) {
-        for (String permission : permisssionString.split("\\+")) {
-            if (!permissionFullfilled(permission, containsPermission)) {
+    protected static boolean permissionsFulfilled(String permissionString, Predicate<String> containsPermission) {
+        for (String permission : permissionString.split("\\+")) {
+            if (!permissionFulfilled(permission, containsPermission)) {
                 return false;
             }
         }
         return true;
     }
 
-    protected static boolean permissionFullfilled(String permission, Predicate<String> containsPermission) {
+    protected static boolean permissionFulfilled(String permission, Predicate<String> containsPermission) {
         if (permission.startsWith("!")) {
-            return !permissionFullfilled(permission.substring(1), containsPermission);
+            return !permissionFulfilled(permission.substring(1), containsPermission);
         }
         if (DISABLED.equals(permission)) {
             return false;
