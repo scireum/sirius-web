@@ -30,6 +30,7 @@ import java.util.Set;
  */
 public class PublicUserManager extends GenericUserManager {
 
+    private static final String AUTO_LANGUAGE = "auto";
     private static final String PUBLIC_PLACEHOLDER = "(public)";
     private final UserInfo user;
 
@@ -103,7 +104,7 @@ public class PublicUserManager extends GenericUserManager {
     @Override
     protected String computeLang(WebContext webContext, String userId) {
         String language = scope.getDefaultLanguageOrFallback();
-        return "auto".equals(language) ? NLS.getSystemLanguage() : language;
+        return AUTO_LANGUAGE.equals(language) ? NLS.getSystemLanguage() : language;
     }
 
     @Override

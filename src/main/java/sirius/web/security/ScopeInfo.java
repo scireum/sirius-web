@@ -476,9 +476,9 @@ public class ScopeInfo extends Composable {
      */
     public UserManager getUserManager() {
         if (userManager == null) {
-            Extension ext = getScopeTypeExtension();
-            userManager = globalContext.getPart(ext.get("manager").asString("public"), UserManagerFactory.class)
-                                       .createManager(this, ext);
+            Extension extension = getScopeTypeExtension();
+            userManager = globalContext.getPart(extension.get("manager").asString("public"), UserManagerFactory.class)
+                                       .createManager(this, extension);
         }
 
         return userManager;
@@ -486,7 +486,7 @@ public class ScopeInfo extends Composable {
 
     /**
      * Returns a set of two-letter codes enumerating all supported languages. Provided via the config in
-     * {@code scope.[type].available-languages}
+     * {@code scope.[type].available-languages}.
      *
      * @return a set of supported language codes
      */
@@ -514,22 +514,22 @@ public class ScopeInfo extends Composable {
     /**
      * Checks if the given language is supported. Returns the default language otherwise.
      * <p>
-     * Note that if the given lang is empty or <tt>null</tt>, this method will also return <tt>null</tt> as a call
+     * Note that if the given language is empty or <tt>null</tt>, this method will also return <tt>null</tt> as a call
      * to {@link sirius.kernel.async.CallContext#setLang(String)} with <tt>null</tt> as parameter won't change
      * the language at all.
      *
-     * @param lang the language to check
+     * @param language the language to check
      * @return <tt>lang</tt> if it was a supported language or the defaultLanguage otherwise, unless an empty string
      * was passed in, in which case <tt>null</tt> is returned.
      */
     @Nullable
-    public String makeLang(@Nullable String lang) {
-        if (Strings.isEmpty(lang)) {
+    public String makeLang(@Nullable String language) {
+        if (Strings.isEmpty(language)) {
             return null;
         }
-        String langAsLowerCase = lang.toLowerCase();
-        if (isSupportedLanguage(langAsLowerCase)) {
-            return langAsLowerCase;
+        String lowercaseLanguage = language.toLowerCase();
+        if (isSupportedLanguage(lowercaseLanguage)) {
+            return lowercaseLanguage;
         } else {
             return getDefaultLanguageOrFallback();
         }
