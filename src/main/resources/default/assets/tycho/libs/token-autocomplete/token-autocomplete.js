@@ -54,7 +54,8 @@ var TokenAutocomplete = /** @class */ (function () {
             suggestionRenderer: TokenAutocomplete.Autocomplete.defaultRenderer,
             minCharactersForSuggestion: 1,
             allowCustomEntries: true,
-            readonly: false
+            readonly: false,
+            optional: false
         };
         this.options = __assign(__assign({}, this.defaults), options);
         var passedContainer = document.querySelector(this.options.selector);
@@ -250,6 +251,7 @@ var TokenAutocomplete = /** @class */ (function () {
                             else {
                                 me.addToken(highlightedSuggestion.dataset.value, highlightedSuggestion.dataset.text, highlightedSuggestion.dataset.type, false);
                             }
+                            parent.autocomplete.hideSuggestions();
                         }
                         else {
                             me.handleInputAsValue(parent.getCurrentInput());
@@ -447,7 +449,7 @@ var TokenAutocomplete = /** @class */ (function () {
             if (this.parent.autocomplete.suggestions.childNodes.length === 1) {
                 this.parent.autocomplete.suggestions.firstChild.click();
             }
-            else {
+            else if (this.parent.options.optional) {
                 this.clearCurrentInput();
             }
         };
@@ -487,6 +489,7 @@ var TokenAutocomplete = /** @class */ (function () {
                     }
                     if (highlightedSuggestion !== null) {
                         me.addToken(highlightedSuggestion.dataset.value, highlightedSuggestion.dataset.text, highlightedSuggestion.dataset.type, false);
+                        parent.autocomplete.hideSuggestions();
                     }
                     else {
                         me.handleInputAsValue(parent.getCurrentInput());
@@ -497,10 +500,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 }
             });
             parent.textInput.addEventListener('click', function (event) {
-                if (parent.autocomplete.areSuggestionsDisplayed()) {
-                    parent.autocomplete.hideSuggestions();
-                }
-                else {
+                if (!parent.autocomplete.areSuggestionsDisplayed()) {
                     parent.autocomplete.showSuggestions();
                     parent.autocomplete.loadSuggestions();
                     parent.textInput.focus();
@@ -546,7 +546,7 @@ var TokenAutocomplete = /** @class */ (function () {
                     return;
                 }
                 this.parent.textInput.addEventListener('keyup', function (event) {
-                    if (event.key == me.parent.KEY_ESC || event.key == me.parent.KEY_ENTER) {
+                    if (event.key == me.parent.KEY_ESC) {
                         me.hideSuggestions();
                         return;
                     }
