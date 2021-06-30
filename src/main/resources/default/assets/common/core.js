@@ -107,7 +107,7 @@ sirius.throttle = function (fn, threshold) {
 /**
  * Adds an event listener that triggers exactly once per element when it becomes visible or is about to become visible.
  * <p>
- * The event will trigger once a element comes within a certain distance to the viewport. By default the vertical and
+ * The event will trigger once an element comes within a certain distance to the viewport. By default the vertical and
  * horizontal distances are equal to the element's height and width respectively. This distance can be increased by
  * specifying a value greater than 1 as the distanceFactor.
  *
@@ -146,7 +146,7 @@ sirius.addElementVisibleListener = function (selector, listener, distanceFactor)
     };
 
     // Check after the page is loaded and when resizing or scrolling the page
-    sirius.ready(handleVisibleElements)
+    sirius.ready(handleVisibleElements);
     window.addEventListener('resize', sirius.throttle(handleVisibleElements, 20));
     document.addEventListener('scroll', sirius.throttle(handleVisibleElements, 20));
 
