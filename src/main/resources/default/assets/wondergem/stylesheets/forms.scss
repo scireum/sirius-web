@@ -283,6 +283,9 @@ label .help-inline {
     border-width: 5px 4px 0 4px;
     top: 9px;
     right: 0px;
+    &:hover {
+      border-color: #555;
+    }
   }
 
   &.optional-singleselect-with-value {
@@ -291,18 +294,17 @@ label .help-inline {
     }
 
     .token-singleselect-token-delete {
-      border-radius: 5px;
       padding-bottom: 0px;
-      border: 1px solid #d9d9d9;
-      background-color: #ededed;
+      border: none;
+      background-color: transparent;
       text-shadow: 0 1px 0 #fff;
-      color: rgba(0, 0, 0, 0.4);
-      top: 6px;
+      color: #888;
+      top: 8px;
       font-weight: 700;
       right: 30px;
 
       &:hover {
-        color: rgba(0, 0, 0, 0.7);
+        color: #555;
         text-decoration: none;
       }
     }
