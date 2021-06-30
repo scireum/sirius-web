@@ -245,10 +245,14 @@ label .help-inline {
   overflow-y: scroll;
 }
 
-.form-control.token-autocomplete-container .token-autocomplete-suggestions li.token-autocomplete-suggestion-active {
-  background-color: #ededed;
-  border-top: 1px solid #d9d9d9;
-  border-bottom: 1px solid #d9d9d9;
+.form-control.token-autocomplete-container .token-autocomplete-suggestions {
+  color: #555;
+
+  li.token-autocomplete-suggestion-active {
+    background-color: #ededed;
+    border-top: 1px solid #d9d9d9;
+    border-bottom: 1px solid #d9d9d9;
+  }
 }
 
 .form-control.token-autocomplete-container .token-autocomplete-suggestions li:hover,
@@ -270,7 +274,7 @@ label .help-inline {
 
 .form-control.token-autocomplete-container.token-autocomplete-singleselect .token-autocomplete-input {
   padding-left: 0;
-  color: #000000;
+  color: #555;
 }
 
 .form-control.token-autocomplete-container.token-autocomplete-singleselect {
