@@ -96,7 +96,7 @@ sirius.throttle = function (fn, threshold) {
             deferTimer = setTimeout(function () {
                 last = now;
                 fn.apply(context, args);
-            }, threshold);
+            }, threshold + last - now);
         } else {
             last = now;
             fn.apply(context, args);
