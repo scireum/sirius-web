@@ -424,8 +424,13 @@ var TokenAutocomplete = /** @class */ (function () {
             this.parent = parent;
             this.container = parent.container;
             this.options = parent.options;
-            this.renderer = parent.options.tokenRenderer;
             this.container.classList.add('token-autocomplete-singleselect');
+            if (this.options.optional) {
+                var deleteToken = document.createElement('span');
+                deleteToken.classList.add('token-singleselect-token-delete');
+                deleteToken.textContent = '\u00D7';
+                this.container.append(deleteToken);
+            }
         }
         class_2.prototype.clear = function (silent) {
             var _a;
@@ -435,6 +440,14 @@ var TokenAutocomplete = /** @class */ (function () {
             var me = this;
             var tokenText = me.parent.textInput.textContent;
             var hiddenOption = me.parent.hiddenSelect.querySelector('option[data-text="' + tokenText + '"]');
+            if (!me.options.optional) {
+                me.previousValue = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.dataset.value;
+                me.previousText = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.dataset.text;
+                me.previousType = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.dataset.text;
+            }
+            else {
+                this.container.classList.remove('optional-singleselect-with-value');
+            }
             (_a = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.parentElement) === null || _a === void 0 ? void 0 : _a.removeChild(hiddenOption);
             me.parent.addHiddenEmptyOption();
             me.parent.textInput.textContent = '';
@@ -449,7 +462,7 @@ var TokenAutocomplete = /** @class */ (function () {
             if (this.parent.autocomplete.suggestions.childNodes.length === 1) {
                 this.parent.autocomplete.suggestions.firstChild.click();
             }
-            else if (this.parent.options.optional) {
+            else {
                 this.clearCurrentInput();
             }
         };
@@ -472,9 +485,13 @@ var TokenAutocomplete = /** @class */ (function () {
             this.clear(true);
             this.parent.textInput.textContent = tokenText;
             this.parent.textInput.contentEditable = 'false';
+            if (this.options.optional && tokenText !== '') {
+                this.container.classList.add('optional-singleselect-with-value');
+            }
             this.parent.addHiddenOption(tokenValue, tokenText, tokenType);
         };
         class_2.prototype.initEventListeners = function () {
+            var _a;
             var me = this;
             var parent = this.parent;
             if (this.parent.options.readonly) {
@@ -505,6 +522,17 @@ var TokenAutocomplete = /** @class */ (function () {
                     parent.autocomplete.loadSuggestions();
                     parent.textInput.focus();
                 }
+            });
+            parent.textInput.addEventListener('focusout', function (event) {
+                // we use setTimeout here so we won't interfere with a user clicking on a suggestion
+                setTimeout(function () {
+                    if (!me.options.optional && (me.currentTokens().length === 0 || me.currentTokens()[0] === '')) {
+                        me.addToken(me.previousValue, me.previousText, me.previousType, true);
+                    }
+                }, 200);
+            });
+            (_a = parent.container.querySelector('.token-singleselect-token-delete')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', function () {
+                me.clear(false);
             });
         };
         return class_2;
@@ -542,12 +570,13 @@ var TokenAutocomplete = /** @class */ (function () {
             }
             class_4.prototype.initEventListeners = function () {
                 var me = this;
-                if (this.parent.options.readonly) {
+                if (me.parent.options.readonly) {
                     return;
                 }
-                this.parent.textInput.addEventListener('keyup', function (event) {
+                me.parent.textInput.addEventListener('keyup', function (event) {
                     if (event.key == me.parent.KEY_ESC) {
                         me.hideSuggestions();
+                        me.parent.textInput.blur();
                         return;
                     }
                     if (event.key == me.parent.KEY_UP && me.suggestions.childNodes.length > 0) {
@@ -588,15 +617,22 @@ var TokenAutocomplete = /** @class */ (function () {
                     }
                     me.loadSuggestions();
                 });
+                me.parent.textInput.addEventListener('focusout', function (event) {
+                    // we use setTimeout here so we won't interfere with a user clicking on a suggestion
+                    setTimeout(function () {
+                        me.hideSuggestions();
+                    }, 200);
+                });
+                me.parent.textInput.addEventListener('focusin', function (event) {
+                    me.loadSuggestions();
+                });
             };
             class_4.prototype.loadSuggestions = function () {
                 var me = this;
                 var value = me.parent.getCurrentInput();
                 if (me.parent.options.selectMode == SelectModes.SINGLE) {
                     if (!me.parent.textInput.isContentEditable) {
-                        me.parent.select.clearCurrentInput();
-                        value = '';
-                        me.parent.addHiddenEmptyOption();
+                        me.parent.select.clear(true);
                     }
                 }
                 else if (value.length < me.parent.options.minCharactersForSuggestion) {
