@@ -173,6 +173,10 @@ label .help-inline {
   padding-bottom: 0;
 }
 
+.has-error .form-control.token-autocomplete-container {
+  border-color: #a94442;
+}
+
 .form-control.token-autocomplete-container, .form-control.token-autocomplete-container * {
   font-family: 'Open Sans', Verdana, Tahoma, Arial, sans-serif;
 }
