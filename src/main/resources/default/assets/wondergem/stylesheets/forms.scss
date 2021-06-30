@@ -234,6 +234,8 @@ label .help-inline {
   margin-left: -12px;
   margin-right: -12px;
   top: 100%;
+  max-height: 220px;
+  overflow-y: scroll;
 }
 
 .form-control.token-autocomplete-container .token-autocomplete-suggestions li.token-autocomplete-suggestion-active {
