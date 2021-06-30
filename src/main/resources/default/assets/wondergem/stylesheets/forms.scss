@@ -166,6 +166,7 @@ label .help-inline {
 // --------------------------
 
 .form-control.token-autocomplete-container {
+  position: relative;
   min-height: 34px;
   height: auto;
   border-color: #ccc;
@@ -222,12 +223,13 @@ label .help-inline {
 }
 
 .form-control.token-autocomplete-container .token-autocomplete-suggestions {
+  position: absolute;
   border: 1px solid #ddd;
   border-radius: 2px;
   z-index: 999;
   margin-left: -12px;
   margin-right: -12px;
-  width: calc(100% + 24px);
+  margin-top: 26px;
 }
 
 .form-control.token-autocomplete-container .token-autocomplete-suggestions li.token-autocomplete-suggestion-active {

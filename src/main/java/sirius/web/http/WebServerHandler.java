@@ -168,7 +168,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
      *
      * @param ctx   the current handler
      * @param req   the current request
-     * @param isSSL true if the current conntection is known to be SSL protected
+     * @param isSSL true if the current connection is known to be SSL protected
      * @return the newly initialized call context
      */
     protected static CallContext initializeContext(ChannelHandlerContext ctx, HttpRequest req, boolean isSSL) {
@@ -177,7 +177,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         WebContext wc = currentCall.get(WebContext.class);
         // If we know we're an SSL endpoint, tell the WebContext, otherwise let the null value remain
         // so that the automatic detection (headers set by an upstream proxy like X-Forwarded-Proto)
-        // is performend when needed...
+        // is performed when needed...
         if (isSSL) {
             wc.ssl = true;
         }
@@ -191,7 +191,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         // if everything else fails, parse the lang header.
         currentCall.deferredSetLang(callContext -> {
             if (!callContext.get(UserContext.class).bindUserIfPresent(wc).isPresent()) {
-                callContext.setLangIfEmpty(NLS.makeLang(wc.getLang().orElse(null)));
+                callContext.setLangIfEmpty(UserContext.getCurrentScope().makeLang(wc.getLang().orElse(null)));
             }
         });
 

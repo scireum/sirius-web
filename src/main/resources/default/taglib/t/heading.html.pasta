@@ -1,0 +1,12 @@
+<i:arg type="String" name="titleKey" default=""/>
+<i:arg type="String" name="title" default="@i18n(titleKey)"/>
+<i:arg type="String" name="class" default="" />
+<i:local name="markupTitle" value="@renderToString('body')" />
+<i:if test="isFilled(title)">
+    <div class="bb-gray pb-2 mb-4 h5 text-black-75 @class">@title</div>
+    <i:else>
+        <i:if test="isFilled(markupTitle)">
+            <div class="bb-gray pb-2 mb-4 h5 text-black-75 @class"><i:raw>@markupTitle</i:raw></div>
+        </i:if>
+    </i:else>
+</i:if>

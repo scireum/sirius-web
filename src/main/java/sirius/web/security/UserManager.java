@@ -20,7 +20,7 @@ import javax.annotation.Nullable;
  * in the request to authenticate the user.
  * <p>
  * Each scope (e.g. frontend, backend) has its own user manager, which is defined in the system configuration
- * (<tt>security.scopes.[scope-type].manager</tt>). This acutally references the name of the {@link UserManagerFactory}
+ * (<tt>security.scopes.[scope-type].manager</tt>). This actually references the name of the {@link UserManagerFactory}
  * used to create a user manager for the scope.
  */
 public interface UserManager {

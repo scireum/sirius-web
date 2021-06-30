@@ -25,7 +25,7 @@
                         </i:if>
                     </i:for>
                     <div class="input-group">
-                        <input type="text" name="query" class="form-control autofocus submit-on-enter" value="@page.getQuery()"
+                        <input type="text" name="query" class="form-control primary-autofocus submit-on-enter" value="@page.getQuery()"
                                placeholder="@i18n('NLS.searchkey')" autofocus/>
                         <div class="input-group-append">
                             <a class="btn btn-outline-secondary" onclick="$('#search').submit()">
