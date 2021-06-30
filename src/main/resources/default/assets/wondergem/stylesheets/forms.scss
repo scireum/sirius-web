@@ -173,6 +173,10 @@ label .help-inline {
   padding-bottom: 0;
 }
 
+.has-error .form-control.token-autocomplete-container {
+  border-color: #a94442;
+}
+
 .form-control.token-autocomplete-container, .form-control.token-autocomplete-container * {
   font-family: 'Open Sans', Verdana, Tahoma, Arial, sans-serif;
 }
@@ -229,7 +233,9 @@ label .help-inline {
   z-index: 999;
   margin-left: -12px;
   margin-right: -12px;
-  margin-top: 26px;
+  top: 100%;
+  max-height: 220px;
+  overflow-y: scroll;
 }
 
 .form-control.token-autocomplete-container .token-autocomplete-suggestions li.token-autocomplete-suggestion-active {
@@ -260,10 +266,36 @@ label .help-inline {
   color: #000000;
 }
 
-.form-control.token-autocomplete-container.token-autocomplete-singleselect .token-autocomplete-input:after {
-  border-color: #888 transparent transparent transparent;
-  border-width: 5px 4px 0 4px;
-  top: 9px;
-  right: 0px;
+.form-control.token-autocomplete-container.token-autocomplete-singleselect {
+  .token-autocomplete-input:after {
+    border-color: #888 transparent transparent transparent;
+    border-width: 5px 4px 0 4px;
+    top: 9px;
+    right: 0px;
+  }
+
+  &.optional-singleselect-with-value {
+    .token-autocomplete-input:after {
+      right: -10px;
+    }
+    .token-singleselect-token-delete {
+      border-radius: 5px;
+      padding-bottom: 0px;
+      border: 1px solid #d9d9d9;
+      background-color: #ededed;
+      text-shadow: 0 1px 0 #fff;
+      color: rgba(0, 0, 0, 0.4);
+      top: 6px;
+      font-weight: 700;
+      right: 30px;
+
+      &:hover {
+        color: rgba(0, 0, 0, 0.7);
+        text-decoration: none;
+      }
+    }
+  }
 }
+
+
 

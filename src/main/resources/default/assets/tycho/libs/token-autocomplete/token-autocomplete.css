@@ -139,3 +139,30 @@
     font-size: 0.7em;
     color: #808080;
 }
+
+.token-autocomplete-container.optional-singleselect-with-value {
+    position: relative;
+    padding-right: 20px;
+}
+
+.token-autocomplete-container.token-autocomplete-singleselect.optional-singleselect-with-value .token-autocomplete-input:after {
+    right: -20px;
+}
+
+.token-autocomplete-container.token-autocomplete-singleselect.optional-singleselect-with-value .token-singleselect-token-delete {
+    color: #000;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    background-color: #cccccc;
+    border-radius: 20px;
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-bottom: 2px;
+    cursor: pointer;
+    display: block;
+}
+
+.token-autocomplete-container.token-autocomplete-singleselect .token-singleselect-token-delete {
+    display: none;
+}
