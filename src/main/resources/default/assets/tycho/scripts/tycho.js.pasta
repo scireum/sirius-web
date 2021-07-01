@@ -6,5 +6,7 @@ ___include("/assets/tycho/scripts/focus.js")
 ___include("/assets/tycho/scripts/history.js")
 ___include("/assets/tycho/scripts/clipboard.js")
 ___include("/assets/tycho/scripts/messages.js")
+___include("/assets/tycho/scripts/colors.js")
+___include("/assets/tycho/scripts/charts.js")
 
 <i:extensions target="tycho-script" point="tycho-script" />
