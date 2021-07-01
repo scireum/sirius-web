@@ -171,6 +171,13 @@ label .help-inline {
   height: auto;
   border-color: #ccc;
   padding-bottom: 0;
+
+  &:focus-within {
+    border-color: #66afe9;
+    outline: 0;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6);
+  }
 }
 
 .has-error .form-control.token-autocomplete-container {
@@ -238,10 +245,14 @@ label .help-inline {
   overflow-y: scroll;
 }
 
-.form-control.token-autocomplete-container .token-autocomplete-suggestions li.token-autocomplete-suggestion-active {
-  background-color: #ededed;
-  border-top: 1px solid #d9d9d9;
-  border-bottom: 1px solid #d9d9d9;
+.form-control.token-autocomplete-container .token-autocomplete-suggestions {
+  color: #555;
+
+  li.token-autocomplete-suggestion-active {
+    background-color: #ededed;
+    border-top: 1px solid #d9d9d9;
+    border-bottom: 1px solid #d9d9d9;
+  }
 }
 
 .form-control.token-autocomplete-container .token-autocomplete-suggestions li:hover,
@@ -263,7 +274,7 @@ label .help-inline {
 
 .form-control.token-autocomplete-container.token-autocomplete-singleselect .token-autocomplete-input {
   padding-left: 0;
-  color: #000000;
+  color: #555;
 }
 
 .form-control.token-autocomplete-container.token-autocomplete-singleselect {
@@ -272,25 +283,28 @@ label .help-inline {
     border-width: 5px 4px 0 4px;
     top: 9px;
     right: 0px;
+    &:hover {
+      border-color: #555;
+    }
   }
 
   &.optional-singleselect-with-value {
     .token-autocomplete-input:after {
       right: -10px;
     }
+
     .token-singleselect-token-delete {
-      border-radius: 5px;
       padding-bottom: 0px;
-      border: 1px solid #d9d9d9;
-      background-color: #ededed;
+      border: none;
+      background-color: transparent;
       text-shadow: 0 1px 0 #fff;
-      color: rgba(0, 0, 0, 0.4);
-      top: 6px;
+      color: #888;
+      top: 8px;
       font-weight: 700;
       right: 30px;
 
       &:hover {
-        color: rgba(0, 0, 0, 0.7);
+        color: #555;
         text-decoration: none;
       }
     }
