@@ -94,20 +94,32 @@ public class Tagliatelle {
      */
     public List<TemplateExtension> getExtensions(String target) {
         synchronized (extensions) {
-            List<TemplateExtension> result = extensions.get(target);
-            if (result == null) {
-                // As we might re-enter this method while compiling templates in "loadExtensions" we provide a
-                // placeholder value here to avoid infinite recursions. (Under normal circumstances, this shouldn't
-                // happen anyway, as cyclic extensions make no sense at all).
-                extensions.put(target, new ArrayList<>());
+            try {
+                List<TemplateExtension> result = extensions.get(target);
+                if (result == null) {
+                    // As we might re-enter this method while compiling templates in "loadExtensions" we provide a
+                    // placeholder value here to avoid infinite recursions. (Under normal circumstances, this shouldn't
+                    // happen anyway, as cyclic extensions make no sense at all).
+                    extensions.put(target, new ArrayList<>());
 
-                // Load and fill the result list. Note that we cannot use HashMap.computeIfAbsent here, as
-                // loadExtensions itself compiles templates which might end up calling this method leading
-                // to a ConcurrentModificationException...
-                result = loadExtensions(target);
-                extensions.put(target, result);
+                    // Load and fill the result list. Note that we cannot use HashMap.computeIfAbsent here, as
+                    // loadExtensions itself compiles templates which might end up calling this method leading
+                    // to a ConcurrentModificationException...
+                    result = loadExtensions(target);
+                    extensions.put(target, result);
+                }
+                return Collections.unmodifiableList(result);
+            } catch (Exception exception) {
+                // If an error occurs while compiling the extensions, we remove our empty placeholder in debug
+                // environments, as it is very likely that the developer will fix the template and attempt to
+                // reload the page. If we didn't clear the extension, the page will simply show up empty.
+                // Note that if this happens in prod environments, we keep the empty list so that the same error
+                // only get reported once...
+                if (Sirius.isDev()) {
+                    extensions.remove(target);
+                }
+                throw exception;
             }
-            return Collections.unmodifiableList(result);
         }
     }
 
@@ -126,7 +138,7 @@ public class Tagliatelle {
     private TemplateExtension resolveToTemplateExtension(String path) {
         try {
             Optional<Template> template = resolve("/" + path);
-            if (!template.isPresent()) {
+            if (template.isEmpty()) {
                 throw Exceptions.handle()
                                 .to(Pasta.LOG)
                                 .withSystemErrorMessage("Cannot resolve extension '%s' into a template!", path)
@@ -234,7 +246,7 @@ public class Tagliatelle {
             throws CompileException {
         ensureProperTemplatePath(path);
         Optional<Resource> optionalResource = resources.resolve(path);
-        if (!optionalResource.isPresent()) {
+        if (optionalResource.isEmpty()) {
             return Optional.empty();
         }
 
