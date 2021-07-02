@@ -12,7 +12,7 @@
 }
 
 .btn-link {
-  color: inherit;
+  color: $grayDark;
 }
 
 .btn-link.active,
@@ -20,7 +20,7 @@
 .dropdown.show > .btn-link {
   color: #fff !important;
   background-color: $primary-color;
-  border-color: $primary-color-dark;
+  border-color: $primary-color;
 }
 
 .btn-primary {

@@ -18,16 +18,16 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.XMLStructuredOutput;
-import sirius.web.services.Format;
-import sirius.web.services.InternalService;
-import sirius.web.services.PublicService;
-import sirius.web.services.PublicServices;
 import sirius.web.http.InputStreamHandler;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebServer;
 import sirius.web.security.Permissions;
 import sirius.web.security.UserInfo;
+import sirius.web.services.Format;
+import sirius.web.services.InternalService;
 import sirius.web.services.JSONStructuredOutput;
+import sirius.web.services.PublicService;
+import sirius.web.services.PublicServices;
 
 import javax.annotation.Nonnull;
 import java.io.UnsupportedEncodingException;
@@ -147,6 +147,8 @@ public class Route {
                         result.label);
             }
             result.subScope = method.getAnnotation(SubScope.class).value();
+        } else if (method.isAnnotationPresent(PublicService.class)) {
+            result.subScope = SubScope.SUB_SCOPE_API;
         } else {
             result.subScope = SubScope.SUB_SCOPE_UI;
         }
