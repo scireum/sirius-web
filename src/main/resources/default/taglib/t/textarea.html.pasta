@@ -1,5 +1,5 @@
 <i:arg name="id" type="String" default="" />
-<i:arg name="class" type="String" default="Lists additional CSS classes to apply to the field."/>
+<i:arg name="class" type="String" default="" description="Lists additional CSS classes to apply to the field."/>
 <i:arg name="rows" type="int" default="3" />
 <i:arg name="name" type="String" />
 <i:arg name="value" type="String" />

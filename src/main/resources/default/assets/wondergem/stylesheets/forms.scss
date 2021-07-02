@@ -245,10 +245,10 @@ label .help-inline {
   overflow-y: scroll;
 }
 
-.form-control.token-autocomplete-container .token-autocomplete-suggestions {
+.form-control.token-autocomplete-container .token-autocomplete-suggestions li {
   color: #555;
 
-  li.token-autocomplete-suggestion-active {
+  &.token-autocomplete-suggestion-active {
     background-color: #ededed;
     border-top: 1px solid #d9d9d9;
     border-bottom: 1px solid #d9d9d9;
@@ -283,6 +283,7 @@ label .help-inline {
     border-width: 5px 4px 0 4px;
     top: 9px;
     right: 0px;
+
     &:hover {
       border-color: #555;
     }

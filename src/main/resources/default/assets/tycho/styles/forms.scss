@@ -1,0 +1,35 @@
+/*!
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+// --------------------------
+// Token Autocomplete
+// --------------------------
+
+.form-control.token-autocomplete-container {
+  align-content: center;
+}
+
+.token-autocomplete-container .token-autocomplete-token {
+  border-radius: 0;
+}
+
+
+.form-control.token-autocomplete-container.token-autocomplete-singleselect.optional-singleselect-with-value {
+  .token-autocomplete-input:after {
+    right: -10px;
+  }
+
+  .token-singleselect-token-delete {
+    padding-bottom: 0px;
+    border: none;
+    background-color: transparent;
+    top: 6px;
+    font-weight: 700;
+    right: 30px;
+  }
+}
