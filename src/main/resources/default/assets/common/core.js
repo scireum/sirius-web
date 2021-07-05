@@ -1,11 +1,11 @@
-// Checks if the given string is empty or null.
-sirius.isEmpty = function (aString) {
-    return aString === null || aString === undefined || aString === '';
+// Checks if the given value is empty or null.
+sirius.isEmpty = function (value) {
+    return value === null || value === undefined || typeof value === 'undefined' || value === '';
 }
 
-// Checks if the given string is non-empty.
-sirius.isFilled = function (aString) {
-    return aString !== null && aString !== undefined && aString !== '';
+// Checks if the given value is non-empty.
+sirius.isFilled = function (value) {
+    return value !== null && value !== undefined && typeof value !== 'undefined' && value !== '';
 }
 
 // Executes the given callback once the DOM is completely loaded.
