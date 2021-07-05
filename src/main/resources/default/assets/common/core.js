@@ -5,7 +5,7 @@ sirius.isEmpty = function (value) {
 
 // Checks if the given value is non-empty.
 sirius.isFilled = function (value) {
-    return value !== null && value !== undefined && typeof value !== 'undefined' && value !== '';
+    return !sirius.isEmpty(value);
 }
 
 // Executes the given callback once the DOM is completely loaded.
