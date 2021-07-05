@@ -49,7 +49,6 @@ public class AutocompleteHelper {
         protected Completion(String value) {
             this.value = value;
             this.fieldLabel = value;
-            this.completionLabel = value;
         }
 
         /**
@@ -59,7 +58,7 @@ public class AutocompleteHelper {
          * @param label the text to display to the user
          * @deprecated Use the simple constructor and the withXXX methods.
          */
-        @Deprecated
+        @Deprecated(forRemoval = true)
         public Completion(String value, String label) {
             this.value = value;
             this.fieldLabel = label;
@@ -73,7 +72,7 @@ public class AutocompleteHelper {
          * @param description the text shown in the autocomplete-dropdown
          * @deprecated Use the simple constructor and the withXXX methods.
          */
-        @Deprecated
+        @Deprecated(forRemoval = true)
         public Completion(String value, String label, @Nullable String description) {
             this.value = value;
             this.fieldLabel = label;
@@ -120,7 +119,7 @@ public class AutocompleteHelper {
          * @return the completion itself for fluent method calls
          * @deprecated Use {@link #markDisabled()}.
          */
-        @Deprecated
+        @Deprecated(forRemoval = true)
         public Completion setDisabled(boolean disabled) {
             this.disabled = disabled;
             return this;
@@ -181,7 +180,7 @@ public class AutocompleteHelper {
      * @return the completion for the given code
      */
     public static Completion suggest(String code) {
-        return new AutocompleteHelper.Completion(code);
+        return new Completion(code);
     }
 
     /**
