@@ -1,6 +1,6 @@
 // Checks if the given value is empty or null.
 sirius.isEmpty = function (value) {
-    return value === null || value === undefined || typeof value === 'undefined' || value === '';
+    return typeof value === 'undefined' || value === null || value === undefined || value === '';
 }
 
 // Checks if the given value is non-empty.
