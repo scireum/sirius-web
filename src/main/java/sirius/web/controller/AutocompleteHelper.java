@@ -146,7 +146,7 @@ public class AutocompleteHelper {
                 // LEGACY SUPPORT....
                 out.property("id", value);
                 out.property("text", fieldLabel == null ? "" : fieldLabel);
-                out.property("description",  Strings.isFilled(completionLabel) ? completionLabel : fieldLabel);
+                out.property("description", Strings.isFilled(completionLabel) ? completionLabel : fieldLabel);
                 // END OF LEGACY SUPPORT
 
                 if (disabled) {
@@ -180,7 +180,7 @@ public class AutocompleteHelper {
      * @return the completion for the given code
      */
     public static Completion suggest(String code) {
-        return new AutocompleteHelper.Completion(code);
+        return new Completion(code);
     }
 
     /**
