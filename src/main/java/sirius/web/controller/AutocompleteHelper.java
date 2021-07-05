@@ -49,7 +49,6 @@ public class AutocompleteHelper {
         protected Completion(String value) {
             this.value = value;
             this.fieldLabel = value;
-            this.completionLabel = value;
         }
 
         /**
