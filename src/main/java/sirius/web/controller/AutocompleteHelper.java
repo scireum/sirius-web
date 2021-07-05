@@ -58,7 +58,7 @@ public class AutocompleteHelper {
          * @param label the text to display to the user
          * @deprecated Use the simple constructor and the withXXX methods.
          */
-        @Deprecated
+        @Deprecated(forRemoval = true)
         public Completion(String value, String label) {
             this.value = value;
             this.fieldLabel = label;
@@ -72,7 +72,7 @@ public class AutocompleteHelper {
          * @param description the text shown in the autocomplete-dropdown
          * @deprecated Use the simple constructor and the withXXX methods.
          */
-        @Deprecated
+        @Deprecated(forRemoval = true)
         public Completion(String value, String label, @Nullable String description) {
             this.value = value;
             this.fieldLabel = label;
@@ -119,7 +119,7 @@ public class AutocompleteHelper {
          * @return the completion itself for fluent method calls
          * @deprecated Use {@link #markDisabled()}.
          */
-        @Deprecated
+        @Deprecated(forRemoval = true)
         public Completion setDisabled(boolean disabled) {
             this.disabled = disabled;
             return this;
@@ -146,7 +146,7 @@ public class AutocompleteHelper {
                 // LEGACY SUPPORT....
                 out.property("id", value);
                 out.property("text", fieldLabel == null ? "" : fieldLabel);
-                out.property("description", Strings.isFilled(completionLabel) ? completionLabel : fieldLabel);
+                out.property("description",  Strings.isFilled(completionLabel) ? completionLabel : fieldLabel);
                 // END OF LEGACY SUPPORT
 
                 if (disabled) {
