@@ -817,7 +817,7 @@ var TokenAutocomplete = /** @class */ (function () {
                     me.clearSuggestions();
                     me.hideSuggestions();
                 });
-                if (this.container.querySelector('.token-autocomplete-token[data-text="' + text + '"]') !== null) {
+                if (this.container.querySelector('.token-autocomplete-token[data-value="' + value + '"]') !== null) {
                     element.classList.add('token-autocomplete-suggestion-active');
                 }
                 this.suggestions.appendChild(element);
