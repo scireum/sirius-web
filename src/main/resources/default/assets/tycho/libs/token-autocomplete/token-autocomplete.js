@@ -808,7 +808,7 @@ var TokenAutocomplete = /** @class */ (function () {
                         me.parent.select.clearCurrentInput();
                         if (element.classList.contains('token-autocomplete-suggestion-active')) {
                             var multiSelect = me.parent.select;
-                            multiSelect.removeTokenWithText(text);
+                            multiSelect.removeTokenWithText(suggestion.fieldLabel);
                         }
                         else {
                             me.parent.select.addToken(value, suggestion.fieldLabel, suggestion.type, false);
