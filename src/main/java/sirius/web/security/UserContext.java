@@ -218,7 +218,7 @@ public class UserContext implements SubContext {
         }
 
         if (currentUser != null) {
-            return Optional.of(currentUser);
+            return Optional.of(currentUser).filter(UserInfo::isLoggedIn);
         }
 
         // As this method might be called concurrently (e.g. by the deferred language installer of the WebServerHandler),
