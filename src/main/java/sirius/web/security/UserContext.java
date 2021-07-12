@@ -219,7 +219,6 @@ public class UserContext implements SubContext {
 
         if (currentUser != null) {
             if (currentUser.isLoggedIn()) {
-                setCurrentUser(currentUser);
                 return Optional.of(currentUser);
             } else {
                 return Optional.empty();
