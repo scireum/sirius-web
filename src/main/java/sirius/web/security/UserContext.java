@@ -218,7 +218,12 @@ public class UserContext implements SubContext {
         }
 
         if (currentUser != null) {
-            return Optional.of(currentUser);
+            if (currentUser.isLoggedIn()) {
+                setCurrentUser(currentUser);
+                return Optional.of(currentUser);
+            } else {
+                return Optional.empty();
+            }
         }
 
         // As this method might be called concurrently (e.g. by the deferred language installer of the WebServerHandler),
