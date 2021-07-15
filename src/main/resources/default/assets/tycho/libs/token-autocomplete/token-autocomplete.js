@@ -2,10 +2,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -149,25 +151,40 @@ var TokenAutocomplete = /** @class */ (function () {
         }
     };
     /**
-     * Clears the currently present tokens and creates new ones from the given input value.
+     * Clears the currently present tokens and creates new ones from the given input value, returns new tokens afterwards.
+     *
+     * The current tokens are only overwritten (cleared and added) when a value parameter is given.
+     * In addition to the possibility of setting the value of the input this method also returns the values of all present tokens.
      *
      * @param {(Array<Token>|string)} value - either the name of a single token or a list of tokens to create
      * @param {boolean} silent - whether appropriate events should be triggered when changing tokens or not
+     *
+     * @returns an array of the values of all current (after update) tokens of the input field
      */
     TokenAutocomplete.prototype.val = function (value, silent) {
+        if (value === void 0) { value = null; }
         if (silent === void 0) { silent = false; }
-        this.select.clear(silent);
-        if (Array.isArray(value)) {
-            var me_1 = this;
-            value.forEach(function (token) {
-                if (typeof token === 'object') {
-                    me_1.select.addToken(token.value, token.text, token.type, silent);
-                }
-            });
+        if (typeof value !== 'undefined' && value !== null) {
+            this.select.clear(silent);
+            if (Array.isArray(value)) {
+                var me_1 = this;
+                value.forEach(function (token) {
+                    if (typeof token === 'object') {
+                        me_1.select.addToken(token.value, token.text, token.type, silent);
+                    }
+                });
+            }
+            else {
+                this.select.addToken(value.value, value.text, value.type, silent);
+            }
         }
-        else {
-            this.select.addToken(value.value, value.text, value.type, silent);
-        }
+        var tokens = [];
+        this.hiddenSelect.querySelectorAll('option').forEach(function (option) {
+            if (option.dataset.value != null) {
+                tokens.push(option.dataset.value);
+            }
+        });
+        return tokens;
     };
     /**
      * Returns the current text the user has input which is not converted into a token.
@@ -217,6 +234,7 @@ var TokenAutocomplete = /** @class */ (function () {
         }
         else {
             this.log = function () {
+                // Intentionally left empty to only log when debugging is enabled.
             };
         }
     };
@@ -314,7 +332,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 if (!silent) {
                     this.container.dispatchEvent(new CustomEvent('tokens-changed', {
                         detail: {
-                            tokens: this.currentTokens(),
+                            tokens: this.parent.val(),
                             added: addedToken
                         }
                     }));
@@ -363,12 +381,12 @@ var TokenAutocomplete = /** @class */ (function () {
                 if (!silent) {
                     this.container.dispatchEvent(new CustomEvent('tokens-changed', {
                         detail: {
-                            tokens: this.currentTokens(),
+                            tokens: this.parent.val(),
                             removed: addedToken
                         }
                     }));
                 }
-                if (this.currentTokens().length === 0) {
+                if (this.parent.val().length === 0) {
                     this.parent.addHiddenEmptyOption();
                 }
                 this.parent.log('removed token', token.textContent);
@@ -381,15 +399,6 @@ var TokenAutocomplete = /** @class */ (function () {
                 if (token !== null) {
                     this.removeToken(token);
                 }
-            };
-            class_1.prototype.currentTokens = function () {
-                var tokens = [];
-                this.parent.hiddenSelect.querySelectorAll('option').forEach(function (option) {
-                    if (option.dataset.value != null) {
-                        tokens.push(option.dataset.value);
-                    }
-                });
-                return tokens;
             };
             return class_1;
         }()),
@@ -468,15 +477,6 @@ var TokenAutocomplete = /** @class */ (function () {
                 this.clearCurrentInput();
             }
         };
-        class_2.prototype.currentTokens = function () {
-            var tokens = [];
-            this.parent.hiddenSelect.querySelectorAll('option').forEach(function (option) {
-                if (option.dataset.value != null) {
-                    tokens.push(option.dataset.value);
-                }
-            });
-            return tokens;
-        };
         class_2.prototype.clearCurrentInput = function () {
             this.clear(true);
         };
@@ -518,12 +518,12 @@ var TokenAutocomplete = /** @class */ (function () {
                     event.preventDefault();
                 }
             });
-            parent.textInput.addEventListener('click', function (event) {
+            parent.textInput.addEventListener('click', function () {
                 if (!parent.autocomplete.areSuggestionsDisplayed()) {
                     parent.textInput.focus();
                 }
             });
-            me.parent.textInput.addEventListener('focusin', function (event) {
+            me.parent.textInput.addEventListener('focusin', function () {
                 if (!parent.autocomplete.areSuggestionsDisplayed()) {
                     parent.autocomplete.showSuggestions();
                     parent.autocomplete.loadSuggestions();
@@ -537,10 +537,10 @@ var TokenAutocomplete = /** @class */ (function () {
                 selection === null || selection === void 0 ? void 0 : selection.addRange(range);
                 parent.textInput.focus();
             });
-            parent.textInput.addEventListener('focusout', function (event) {
-                // we use setTimeout here so we won't interfere with a user clicking on a suggestion
+            parent.textInput.addEventListener('focusout', function () {
+                // We use setTimeout here, so we won't interfere with a user clicking on a suggestion.
                 setTimeout(function () {
-                    if (!me.options.optional && (me.currentTokens().length === 0 || me.currentTokens()[0] === '')) {
+                    if (!me.options.optional && (me.parent.val().length === 0 || me.parent.val()[0] === '')) {
                         me.addToken(me.previousValue, me.previousText, me.previousType, true);
                     }
                 }, 200);
@@ -640,18 +640,18 @@ var TokenAutocomplete = /** @class */ (function () {
                         return;
                     }
                     if (event.key == me.parent.KEY_LEFT || event.key == me.parent.KEY_RIGHT || event.key == me.parent.KEY_ENTER) {
-                        // We dont want to retrigger the autocompletion when the user navigates the cursor inside the input.
+                        // We don't want to re-trigger the autocompletion when the user navigates the cursor inside the input.
                         return;
                     }
                     me.loadSuggestions();
                 });
-                me.parent.textInput.addEventListener('focusout', function (event) {
-                    // we use setTimeout here so we won't interfere with a user clicking on a suggestion
+                me.parent.textInput.addEventListener('focusout', function () {
+                    // We use setTimeout here, so we won't interfere with a user clicking on a suggestion.
                     setTimeout(function () {
                         me.hideSuggestions();
                     }, 200);
                 });
-                me.parent.textInput.addEventListener('focusin', function (event) {
+                me.parent.textInput.addEventListener('focusin', function () {
                     me.loadSuggestions();
                 });
             };
@@ -676,12 +676,12 @@ var TokenAutocomplete = /** @class */ (function () {
                     me.clearSuggestions();
                     me.parent.options.initialSuggestions.forEach(function (suggestion) {
                         if (typeof suggestion !== 'object') {
-                            // the suggestion is of wrong type and therefore ignored
+                            // The suggestion is of wrong type and therefore ignored.
                             return;
                         }
                         var text = suggestion.fieldLabel;
                         if (value.localeCompare(text.slice(0, value.length), undefined, { sensitivity: 'base' }) === 0) {
-                            // The suggestion starts with the query text the user entered and will be displayed
+                            // The suggestion starts with the query text the user entered and will be displayed.
                             me.addSuggestion(suggestion);
                         }
                     });
@@ -750,7 +750,7 @@ var TokenAutocomplete = /** @class */ (function () {
                     me.request = null;
                     me.clearSuggestions();
                     var answer = this.response;
-                    //IE 11 doesnt properly respect content type header, need to parse json string by hand..
+                    // IE 11 doesn't properly respect content type header, need to parse json string by hand.
                     if (typeof answer === 'string') {
                         answer = JSON.parse(answer);
                     }
