@@ -30,6 +30,14 @@ public class SAMLResponse {
     public static final String ATTRIBUTE_GROUP = "http://schemas.xmlsoap.org/claims/Group";
 
     /**
+     * Contains the attribute URI used to transmit a role of the user.
+     * <p>
+     * This can be used to submit a readable security group in Azure AD as the {@link #ATTRIBUTE_GROUP groups} are
+     * always UUIDs.
+     */
+    public static final String ATTRIBUTE_ROLE = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
+
+    /**
      * Contains the attribute URI used to transmit the given name of the user being authenticated.
      */
     public static final String ATTRIBUTE_GIVEN_NAME = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname";
