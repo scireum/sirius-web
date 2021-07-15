@@ -62,9 +62,9 @@
 
                 <i:render name="aboveMessages"/>
 
-                <i:extensions target="wondergem-page" point="above-messages" />
 
                 <i:render name="breadcrumbBar">
+                    <i:extensions target="wondergem-page" point="above-messages" />
                     <i:invoke template="/templates/wondergem/page-breadcrumbs.html.pasta">
                         <i:render name="breadcrumbs"/>
                     </i:invoke>
