@@ -17,7 +17,7 @@ import sirius.pasta.tagliatelle.rendering.LocalRenderContext;
  */
 public class PushLocalEmitter extends Emitter {
 
-    private Callable expression;
+    private final Callable expression;
     private int localIndex;
 
     /**

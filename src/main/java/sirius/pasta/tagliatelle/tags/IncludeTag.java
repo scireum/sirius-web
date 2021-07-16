@@ -70,7 +70,7 @@ public class IncludeTag extends TagHandler {
         }
 
         Optional<Resource> resource = resources.resolve(resourcePath);
-        if (!resource.isPresent()) {
+        if (resource.isEmpty()) {
             getCompilationContext().error(getStartOfTag(), "Cannot find the resource: %s", resourcePath);
             return;
         }

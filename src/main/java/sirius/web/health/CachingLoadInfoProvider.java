@@ -21,7 +21,7 @@ import java.util.function.Consumer;
  */
 public abstract class CachingLoadInfoProvider implements LoadInfoProvider {
 
-    private InlineCache<List<LoadInfo>> inlineCache = CacheManager.createTenSecondsInlineCache(this::computeLoadInfos);
+    private final InlineCache<List<LoadInfo>> inlineCache = CacheManager.createTenSecondsInlineCache(this::computeLoadInfos);
 
     @Override
     public List<LoadInfo> collectLoadInfos() {

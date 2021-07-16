@@ -65,13 +65,10 @@ import java.net.URLConnection;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -114,7 +111,7 @@ public class Response {
      * Contains a set of parameter names which are censored in any output as we do not want to log user passwords etc.
      */
     private static final Set<String> CENSORED_LOWERCASE_PARAMETER_NAMES =
-            Collections.unmodifiableSet(new HashSet<>(Arrays.asList("password", "passphrase", "secret", "secretKey")));
+            Set.of("password", "passphrase", "secret", "secretKey");
 
     /*
      * Caches the GMT TimeZone (lookup is synchronized)

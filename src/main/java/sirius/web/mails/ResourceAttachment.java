@@ -18,7 +18,7 @@ import java.io.InputStream;
  */
 public class ResourceAttachment extends Attachment {
 
-    private Resource resource;
+    private final Resource resource;
 
     /**
      * Generates a new attachment with the given name, mime type and contents.

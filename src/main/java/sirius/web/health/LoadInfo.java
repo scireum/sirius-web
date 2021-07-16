@@ -19,9 +19,9 @@ import sirius.kernel.commons.NumberFormat;
  */
 public class LoadInfo {
 
-    private String code;
-    private String label;
-    private double value;
+    private final String code;
+    private final String label;
+    private final double value;
     private String unit;
 
     /**

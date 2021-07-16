@@ -2128,7 +2128,7 @@ public class WebContext implements SubContext {
             return result;
         }
 
-        return result + request.toString();
+        return result + request;
     }
 
     @Override

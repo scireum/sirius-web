@@ -27,8 +27,8 @@ import java.util.Objects;
 public class TemplateExtension implements Comparable<TemplateExtension> {
 
     private final Template template;
-    private String name;
-    private int priority;
+    private final String name;
+    private final int priority;
 
     protected TemplateExtension(Template template) {
         this.template = template;

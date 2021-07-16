@@ -92,7 +92,7 @@ public class GlobalRenderContext {
         }
 
         Optional<Template> result = engine.resolve(templateName);
-        if (!result.isPresent()) {
+        if (result.isEmpty()) {
             return result;
         }
 

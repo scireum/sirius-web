@@ -110,15 +110,13 @@ public class NoodleCompiler {
             return Optional.of(new ConstantCall(syntaxTree.getConstantValue()));
         }
 
-        if (syntaxTree instanceof IntrinsicCall) {
-            IntrinsicCall call = (IntrinsicCall) syntaxTree;
+        if (syntaxTree instanceof IntrinsicCall call) {
             if (call.getOpCode() == OpCode.INTRINSIC_NLS_GET && call.getParameter(0).isConstant()) {
                 return Optional.of(new NLSCall((String) call.getParameter(0).getConstantValue()));
             }
         }
 
-        if (syntaxTree instanceof PushTemporary) {
-            PushTemporary pushTemporary = (PushTemporary) syntaxTree;
+        if (syntaxTree instanceof PushTemporary pushTemporary) {
             return Optional.of(new ReturnVariableCall(pushTemporary.getVariableName(),
                                                       pushTemporary.getVariableIndex(),
                                                       syntaxTree.getType(),

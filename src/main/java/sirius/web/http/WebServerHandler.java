@@ -43,7 +43,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -135,7 +134,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
 
         if (e instanceof SSLHandshakeException || e.getCause() instanceof SSLHandshakeException) {
             SSLWebServerInitializer.LOG.FINE(e);
-        } else if (e instanceof ClosedChannelException || e instanceof IOException || e instanceof DecoderException) {
+        } else if (e instanceof IOException || e instanceof DecoderException) {
             WebServer.LOG.FINE("Received an error for url: %s - %s", uri, NLS.toUserString(e));
         } else {
             Exceptions.handle()
@@ -190,7 +189,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         // language. If not, this handler will be evaluated, check for a user in the session or
         // if everything else fails, parse the lang header.
         currentCall.deferredSetLang(callContext -> {
-            if (!callContext.get(UserContext.class).bindUserIfPresent(wc).isPresent()) {
+            if (callContext.get(UserContext.class).bindUserIfPresent(wc).isEmpty()) {
                 callContext.setLangIfEmpty(UserContext.getCurrentScope().makeLang(wc.getLang().orElse(null)));
             }
         });

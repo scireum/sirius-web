@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
  */
 public class LinkBuilder {
 
-    private StringBuilder stringBuilder;
+    private final StringBuilder stringBuilder;
     private boolean queryStringStarted;
 
     /**

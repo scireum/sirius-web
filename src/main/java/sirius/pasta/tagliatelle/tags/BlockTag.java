@@ -19,6 +19,7 @@ import sirius.pasta.tagliatelle.emitter.ExtraBlockEmitter;
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Handles <tt>i:block</tt> which specifies a template section passed into a tag invocation.
@@ -68,11 +69,7 @@ public class BlockTag extends TagHandler {
 
         Emitter body = getBlock(BLOCK_BODY);
         if (getParentHandler() != null) {
-            if (body != null) {
-                getParentHandler().addBlock(name, body);
-            } else {
-                getParentHandler().addBlock(name, ConstantEmitter.EMPTY);
-            }
+            getParentHandler().addBlock(name, Objects.requireNonNullElse(body, ConstantEmitter.EMPTY));
         } else {
             if (body != null) {
                 targetBlock.addChild(new ExtraBlockEmitter(name, body));

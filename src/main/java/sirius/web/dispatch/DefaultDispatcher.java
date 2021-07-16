@@ -62,12 +62,18 @@ public class DefaultDispatcher implements WebDispatcher {
                 ctx.respondWith()
                    .infinitelyCached()
                    .setHeader(HttpHeaderNames.CONTENT_TYPE, MimeHelper.TEXT_PLAIN)
-                   .direct(HttpResponseStatus.OK, "User-agent: *\n" + "Disallow: /\n");
+                   .direct(HttpResponseStatus.OK, """
+                           User-agent: *
+                           Disallow: /
+                           """);
             } else {
                 ctx.respondWith()
                    .infinitelyCached()
                    .setHeader(HttpHeaderNames.CONTENT_TYPE, MimeHelper.TEXT_PLAIN)
-                   .direct(HttpResponseStatus.OK, "User-agent: *\n" + "Disallow:\n");
+                   .direct(HttpResponseStatus.OK, """
+                           User-agent: *
+                           Disallow:
+                           """);
             }
         } else if ("/reset".equals(ctx.getRequestedURI())) {
             ctx.clearSession();

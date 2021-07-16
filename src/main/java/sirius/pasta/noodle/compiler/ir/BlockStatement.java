@@ -16,6 +16,7 @@ import sirius.pasta.noodle.compiler.CompilationContext;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -58,11 +59,7 @@ public class BlockStatement extends Statement {
 
     @Override
     public Type getGenericType() {
-        if (returnType == null) {
-            return void.class;
-        } else {
-            return returnType;
-        }
+        return Objects.requireNonNullElse(returnType, void.class);
     }
 
     @Override
