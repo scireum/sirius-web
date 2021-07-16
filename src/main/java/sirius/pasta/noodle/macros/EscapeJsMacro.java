@@ -51,8 +51,8 @@ public class EscapeJsMacro extends BasicMacro {
 
         return value.toString()
                     .replace("\\", "\\\\")
-                    .replaceAll("\\r", "\\\\r")
-                    .replaceAll("\\n", "\\\\n")
+                    .replace("\\r", "\\\\r")
+                    .replace("\\n", "\\\\n")
                     .replace("'", "\\'")
                     .replace("/", "\\/");
     }
