@@ -31,7 +31,10 @@ public class Facet {
     private int maxVisibleFacetItems;
     private final List<FacetItem> items = new ArrayList<>();
 
-    @Deprecated
+    /**
+     * @deprecated Facet ranges are no longer supported
+     */
+    @Deprecated(forRemoval = true)
     private FacetRange facetRange;
 
     /**
@@ -43,7 +46,7 @@ public class Facet {
      * @param translator the translator which provides "official" labels for filter values.
      * @deprecated Use the constructor which doesn't require a value - as this is most probably supplied later anyway.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public Facet(String title,
                  String field,
                  @Nullable String value,
@@ -348,7 +351,7 @@ public class Facet {
      * @return the facet itself for fluent method calls
      * @deprecated FacetRange has been deprecated.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public Facet withRange(FacetRange facetRange) {
         this.facetRange = facetRange;
 
@@ -359,7 +362,9 @@ public class Facet {
      * Determines if this facet has a range for filtering values.
      *
      * @return <tt>true</tt> if this facet has a range, <tt>false</tt> otherwise
+     * @deprecated FacetRange has been deprecated.
      */
+    @Deprecated(forRemoval = true)
     public boolean hasRange() {
         return facetRange != null;
     }

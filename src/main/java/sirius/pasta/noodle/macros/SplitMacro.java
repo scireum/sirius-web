@@ -26,7 +26,7 @@ import java.util.List;
  * @deprecated Use <tt>Strings.split</tt> as it provides the proper generic types for the returned tuple.
  */
 @Register
-@Deprecated
+@Deprecated(forRemoval = true)
 public class SplitMacro extends BasicMacro {
 
     @Override

@@ -20,7 +20,7 @@ import java.nio.channels.ClosedChannelException;
  *
  * @deprecated the whole StructuredService framework has been deprecated.
  */
-@Deprecated
+@Deprecated(since = "2021/07/01")
 class RawServiceCall extends ServiceCall {
 
     RawServiceCall(WebContext ctx) {

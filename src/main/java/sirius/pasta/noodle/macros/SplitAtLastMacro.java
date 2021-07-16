@@ -26,7 +26,7 @@ import java.util.List;
  * @deprecated Use <tt>Strings.splitAtLast</tt> as it provides the proper generic types for the returned tuple.
  */
 @Register
-@Deprecated
+@Deprecated(forRemoval = true)
 public class SplitAtLastMacro extends BasicMacro {
 
     @Override

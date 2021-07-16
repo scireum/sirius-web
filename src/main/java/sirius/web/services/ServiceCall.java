@@ -25,7 +25,7 @@ import java.util.List;
  *
  * @deprecated the whole StructuredService framework has been deprecated.
  */
-@Deprecated
+@Deprecated(since = "2021/07/01")
 public abstract class ServiceCall {
 
     protected static final Log LOG = Log.get("services");

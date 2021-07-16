@@ -20,7 +20,7 @@ import java.nio.charset.StandardCharsets;
  *
  * @deprecated the whole StructuredService framework has been deprecated.
  */
-@Deprecated
+@Deprecated(since = "2021/07/01")
 class XMLServiceCall extends ServiceCall {
 
     XMLServiceCall(WebContext ctx) {
