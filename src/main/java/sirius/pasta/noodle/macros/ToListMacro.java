@@ -57,7 +57,7 @@ public class ToListMacro extends BasicMacro {
 
     @Override
     public String getDescription() {
-        return "Returns a list containing of the given items or the given array";
+        return "Returns a list containing of the given items ,or the given array";
     }
 
     @Override

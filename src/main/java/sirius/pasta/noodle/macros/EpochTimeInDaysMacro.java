@@ -51,7 +51,7 @@ public class EpochTimeInDaysMacro extends BasicMacro {
 
     @Override
     public String getDescription() {
-        return "Gets the current time since 1970 in days";
+        return "Gets the current time since 01.01.1970 in days";
     }
 
     @Override

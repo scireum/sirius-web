@@ -32,7 +32,7 @@ public class IsBeforeMacro extends DateComparingBaseMacro {
     @Override
     public String getDescription() {
         return "Compares if the first given date / date with time is before the second given date / "
-               + "date with time or the curent date / date with time if no second argument was given.";
+               + "date with time, or the current date / date with time if no second argument was given.";
     }
 
     @Nonnull

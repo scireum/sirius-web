@@ -50,7 +50,7 @@ public class SplitMacro extends BasicMacro {
 
     @Override
     public String getDescription() {
-        return "Splits the given string on the first occurence of the given separator.";
+        return "Splits the given string on the first occurrence of the given separator.";
     }
 
     @Nonnull

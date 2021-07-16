@@ -50,7 +50,7 @@ public class SplitAtLastMacro extends BasicMacro {
 
     @Override
     public String getDescription() {
-        return "Splits the given string on the last occurence of the given separator.";
+        return "Splits the given string on the last occurrence of the given separator.";
     }
 
     @Nonnull
