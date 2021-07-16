@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Handles incoming HTTP requests.
@@ -57,21 +58,21 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     private HttpRequest currentRequest;
     private WebContext currentContext;
     private CallContext currentCall;
-    private volatile long connected;
-    private volatile long bytesIn;
-    private volatile long bytesOut;
-    private volatile long currentBytesIn;
-    private volatile long currentBytesOut;
-    private volatile long uplink;
-    private volatile long downlink;
-    private volatile long lastBandwidthUpdate;
+    private final long connected;
+    private final AtomicLong bytesIn = new AtomicLong(0);
+    private final AtomicLong bytesOut = new AtomicLong(0);
+    private final AtomicLong currentBytesIn = new AtomicLong(0);
+    private final AtomicLong currentBytesOut = new AtomicLong(0);
+    private final AtomicLong uplink = new AtomicLong(0);
+    private final AtomicLong downlink = new AtomicLong(0);
+    private final AtomicLong lastBandwidthUpdate = new AtomicLong(0);
     private SocketAddress remoteAddress;
     private boolean preDispatched = false;
     private boolean dispatched = false;
-    private Average inboundLatency = new Average();
-    private Average processLatency = new Average();
+    private final Average inboundLatency = new Average();
+    private final Average processLatency = new Average();
     private Watch latencyWatch;
-    private boolean ssl;
+    private final boolean ssl;
 
     @Part
     private static DispatcherPipeline pipeline;
@@ -97,15 +98,15 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
      */
     protected void updateBandwidth() {
         long now = System.currentTimeMillis();
-        long lastUpdate = lastBandwidthUpdate;
+        long lastUpdate = lastBandwidthUpdate.get();
         long deltaInSeconds = TimeUnit.SECONDS.convert(now - lastUpdate, TimeUnit.MILLISECONDS);
         if (lastUpdate > 0 && deltaInSeconds > 0) {
-            uplink = currentBytesIn / deltaInSeconds;
-            downlink = currentBytesOut / deltaInSeconds;
+            uplink.set(currentBytesIn.get() / deltaInSeconds);
+            downlink.set(currentBytesOut.get() / deltaInSeconds);
         }
-        currentBytesIn = 0;
-        currentBytesOut = 0;
-        lastBandwidthUpdate = now;
+        currentBytesIn.set(0);
+        currentBytesOut.set(0);
+        lastBandwidthUpdate.set(now);
     }
 
     /*
@@ -352,8 +353,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
 
     private void channelReadRequest(ChannelHandlerContext ctx, HttpRequest msg) {
         // Reset stats
-        bytesIn = 0;
-        bytesOut = 0;
+        bytesIn.set(0);
+        bytesOut.set(0);
         inboundLatency.getAndClear();
         processLatency.getAndClear();
         if (WebServer.requests.incrementAndGet() < 0) {
@@ -658,16 +659,16 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
      * Updates inbound traffic (called via LowLevelHandler)
      */
     protected void inbound(long bytes) {
-        bytesIn += bytes;
-        currentBytesIn += bytes;
+        bytesIn.addAndGet(bytes);
+        currentBytesIn.addAndGet(bytes);
     }
 
     /*
      * Updates outbound traffic (called via LowLevelHandler)
      */
     protected void outbound(long bytes) {
-        bytesOut += bytes;
-        currentBytesOut += bytes;
+        bytesOut.addAndGet(bytes);
+        currentBytesOut.addAndGet(bytes);
     }
 
     @Override
@@ -677,34 +678,34 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
 
     @Override
     public String getBytesIn() {
-        if (bytesIn == 0) {
+        if (bytesIn.get() == 0) {
             return "-";
         }
-        return NLS.formatSize(bytesIn);
+        return NLS.formatSize(bytesIn.get());
     }
 
     @Override
     public String getBytesOut() {
-        if (bytesOut == 0) {
+        if (bytesOut.get() == 0) {
             return "-";
         }
-        return NLS.formatSize(bytesOut);
+        return NLS.formatSize(bytesOut.get());
     }
 
     @Override
     public String getUplink() {
-        if (uplink == 0) {
+        if (uplink.get() == 0) {
             return "-";
         }
-        return NLS.formatSize(uplink) + "/s";
+        return NLS.formatSize(uplink.get()) + "/s";
     }
 
     @Override
     public String getDownlink() {
-        if (downlink == 0) {
+        if (downlink.get() == 0) {
             return "-";
         }
-        return NLS.formatSize(downlink) + "/s";
+        return NLS.formatSize(downlink.get()) + "/s";
     }
 
     @Override
