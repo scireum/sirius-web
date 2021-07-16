@@ -9,6 +9,7 @@
 package sirius.pasta.tagliatelle.emitter;
 
 import parsii.tokenizer.Position;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
@@ -46,6 +47,9 @@ public class AttributeExpressionEmitter extends Emitter {
     }
 
     @Override
+    @SuppressWarnings("java:S2589")
+    @Explain("value is actually a tri-state here - it can be true/false to control the attribute "
+             + "OR it can contain a value to output if it is neither of both.")
     protected void emitToContext(@Nonnull LocalRenderContext context) throws Exception {
         Object value = attributeExpression.call(context);
         if (Boolean.TRUE.equals(value)) {
@@ -63,6 +67,9 @@ public class AttributeExpressionEmitter extends Emitter {
 
     @Nonnull
     @Override
+    @SuppressWarnings("java:S2589")
+    @Explain("value is actually a tri-state here - it can be true/false to control the attribute "
+             + "OR it can contain a value to output if it is neither of both.")
     public Emitter reduce() {
         if (attributeExpression instanceof ConstantCall) {
             try {

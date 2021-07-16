@@ -13,7 +13,6 @@ import sirius.pasta.noodle.OpCode;
 import sirius.pasta.noodle.compiler.Assembler;
 import sirius.pasta.noodle.compiler.CompilationContext;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +38,7 @@ public class BlockStatement extends Statement {
     /**
      * Adds a new statement to the block
      *
-     * @param statement the statement to add
+     * @param statement          the statement to add
      * @param compilationContext the current compilation context
      */
     public void addStatement(Node statement, CompilationContext compilationContext) {
@@ -65,7 +64,6 @@ public class BlockStatement extends Statement {
             return returnType;
         }
     }
-
 
     @Override
     public Node reduce(CompilationContext compilationContext) {
@@ -95,5 +93,4 @@ public class BlockStatement extends Statement {
                + statements.stream().map(Object::toString).collect(Collectors.joining(";\n"))
                + ";\n}\n";
     }
-
 }

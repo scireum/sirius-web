@@ -143,7 +143,6 @@ public class Assembler {
 
             if (Integer.class.equals(boxedType)) {
                 emitByteCode(OpCode.COERCE_INT_TO_DOUBLE, 0, position);
-                return;
             }
         }
     }

@@ -598,12 +598,11 @@ public class WebContext implements SubContext {
 
     private String transformHttpData(InterfaceHttpData data) {
         try {
-            if (data instanceof Attribute) {
-                Attribute attr = (Attribute) data;
+            if (data instanceof Attribute attr) {
                 ByteBuf byteBuf = attr.getByteBuf();
 
                 // If the request gets aborted prematurely, the underlying buffers might
-                // already be released. Therefore we have to check this here manually as
+                // already be released. Therefore, we have to check this here manually as
                 // the server might still try to process the request...
                 if (byteBuf != null) {
                     return byteBuf.toString(attr.getCharset());
@@ -1136,8 +1135,7 @@ public class WebContext implements SubContext {
 
         List<String> result = new ArrayList<>();
         for (InterfaceHttpData dataItem : data) {
-            if (dataItem instanceof Attribute) {
-                Attribute attr = (Attribute) dataItem;
+            if (dataItem instanceof Attribute attr) {
                 ByteBuf buffer = attr.getByteBuf();
                 if (buffer != null) {
                     result.add(buffer.toString(attr.getCharset()));
@@ -2092,7 +2090,7 @@ public class WebContext implements SubContext {
      * @return a random token which is guaranteed to be free of special chars (like / and the like)
      * @deprecated Use {@link sirius.pasta.tagliatelle.macros.StaticAssetUriMacro} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public String getDynamicAssetToken() {
         return dynamicAssetToken();
     }
@@ -2104,7 +2102,7 @@ public class WebContext implements SubContext {
      * @return a random token which is guaranteed to be free of special chars (like / and the like)
      * @deprecated Use {@link sirius.pasta.tagliatelle.macros.StaticAssetUriMacro} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public static String dynamicAssetToken() {
         return Product.getProduct().getUniqueVersionString();
     }
