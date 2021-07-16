@@ -12,6 +12,7 @@ import parsii.tokenizer.Position;
 import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
+import sirius.pasta.noodle.compiler.ir.Node;
 import sirius.pasta.noodle.sandbox.PublicAPI;
 import sirius.web.util.LinkBuilder;
 
@@ -51,4 +52,10 @@ public class LinkBuilderMacro extends BasicMacro {
     public String getName() {
         return "linkBuilder";
     }
+
+    @Override
+    public boolean isConstant(CompilationContext context, List<Node> args) {
+        return true;
+    }
+
 }

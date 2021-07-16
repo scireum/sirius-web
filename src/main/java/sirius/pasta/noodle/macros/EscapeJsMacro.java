@@ -13,6 +13,7 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
+import sirius.pasta.noodle.compiler.ir.Node;
 import sirius.pasta.noodle.sandbox.PublicAPI;
 import sirius.web.resources.Resources;
 
@@ -66,4 +67,10 @@ public class EscapeJsMacro extends BasicMacro {
     public String getDescription() {
         return "Converts the given argument to an escaped JavaScript string by replacing linebreaks by blanks and ' by \\'";
     }
+
+    @Override
+    public boolean isConstant(CompilationContext context, List<Node> args) {
+        return true;
+    }
+
 }

@@ -13,6 +13,7 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
+import sirius.pasta.noodle.compiler.ir.Node;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 
@@ -71,4 +72,10 @@ public class InlineResourceMacro extends BasicMacro {
     public String getDescription() {
         return "Returns the contents of the given asset as string. Use escapeJS() to place the data in a JS string.";
     }
+
+    @Override
+    public boolean isConstant(CompilationContext context, List<Node> args) {
+        return true;
+    }
+
 }

@@ -77,4 +77,10 @@ public class PartMacro extends BasicMacro {
     public String getName() {
         return "part";
     }
+
+    @Override
+    public boolean isConstant(CompilationContext context, List<Node> args) {
+        return true;
+    }
+
 }

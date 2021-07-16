@@ -12,6 +12,7 @@ import parsii.tokenizer.Position;
 import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
+import sirius.pasta.noodle.compiler.ir.Node;
 import sirius.pasta.noodle.sandbox.PublicAPI;
 
 import javax.annotation.Nonnull;
@@ -52,4 +53,10 @@ public class EpochTimeInDaysMacro extends BasicMacro {
     public String getDescription() {
         return "Gets the current time since 1970 in days";
     }
+
+    @Override
+    public boolean isConstant(CompilationContext context, List<Node> args) {
+        return true;
+    }
+
 }

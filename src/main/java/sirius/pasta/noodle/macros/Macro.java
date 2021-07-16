@@ -50,6 +50,13 @@ public interface Macro extends Named {
 
     /**
      * Determines if the macro is "constant" for the given parameter expressions.
+     * <p>
+     * Note that this only defines that the macro computation itself is constant, meaning that for the same input
+     * the marco will yield the same output. Therefore, nearly all macros will most probably be constant and only
+     * ones which rely on an internal state like language, current user, date or time won't.
+     * <p>
+     * If non-constant parameters are present, the macro call itself won't be considered constant independent of
+     * the return value of this method.
      *
      * @param context the compilation context which can be used to emit an error or warning
      * @param args    the arguments of the macro

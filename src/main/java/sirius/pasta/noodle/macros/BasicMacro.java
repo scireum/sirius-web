@@ -44,8 +44,4 @@ public abstract class BasicMacro implements Macro {
                                             Position position,
                                             List<Class<?>> args);
 
-    @Override
-    public boolean isConstant(CompilationContext context, List<Node> args) {
-        return true;
-    }
 }

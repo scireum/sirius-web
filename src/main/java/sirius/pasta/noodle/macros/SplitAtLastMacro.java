@@ -14,6 +14,7 @@ import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
+import sirius.pasta.noodle.compiler.ir.Node;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -57,4 +58,10 @@ public class SplitAtLastMacro extends BasicMacro {
     public String getName() {
         return "splitAtLast";
     }
+
+    @Override
+    public boolean isConstant(CompilationContext context, List<Node> args) {
+        return true;
+    }
+
 }

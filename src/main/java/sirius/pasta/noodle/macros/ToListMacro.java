@@ -12,6 +12,7 @@ import parsii.tokenizer.Position;
 import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
+import sirius.pasta.noodle.compiler.ir.Node;
 import sirius.pasta.noodle.sandbox.PublicAPI;
 
 import javax.annotation.Nonnull;
@@ -58,4 +59,10 @@ public class ToListMacro extends BasicMacro {
     public String getDescription() {
         return "Returns a list containing of the given items or the given array";
     }
+
+    @Override
+    public boolean isConstant(CompilationContext context, List<Node> args) {
+        return true;
+    }
+
 }

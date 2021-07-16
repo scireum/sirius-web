@@ -13,6 +13,7 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
+import sirius.pasta.noodle.compiler.ir.Node;
 import sirius.pasta.noodle.sandbox.PublicAPI;
 
 import javax.annotation.Nonnull;
@@ -54,4 +55,10 @@ public class JoinMacro extends BasicMacro {
     public String getDescription() {
         return "Returns a string concatenation of the given lists items";
     }
+
+    @Override
+    public boolean isConstant(CompilationContext context, List<Node> args) {
+        return true;
+    }
+
 }

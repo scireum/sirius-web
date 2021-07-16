@@ -68,4 +68,10 @@ public class ConfigMacro extends BasicMacro {
     public String getName() {
         return "config";
     }
+
+    @Override
+    public boolean isConstant(CompilationContext context, List<Node> args) {
+        return true;
+    }
+
 }
