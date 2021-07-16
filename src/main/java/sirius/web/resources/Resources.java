@@ -12,6 +12,7 @@ import sirius.kernel.Sirius;
 import sirius.kernel.cache.Cache;
 import sirius.kernel.cache.CacheManager;
 import sirius.kernel.commons.Explain;
+import sirius.kernel.commons.ValueHolder;
 import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Log;
@@ -42,7 +43,7 @@ public class Resources {
     /**
      * Cache used to map a scope name and local uri to an URL pointing to a resolved content.
      */
-    private Cache<String, Optional<Resource>> resolverCache = CacheManager.createLocalCache("resolver-cache");
+    private final Cache<String, ValueHolder<Resource>> resolverCache = CacheManager.createLocalCache("resolver-cache");
 
     /**
      * Tries to resolve a template or content-file into a {@link Resource}
@@ -71,24 +72,25 @@ public class Resources {
         String effectiveUri = uri.startsWith("/") ? uri : "/" + uri;
 
         String lookupKey = scopeId + "://" + effectiveUri;
-        Optional<Resource> result = resolverCache.get(lookupKey);
-        if (result != null) {
+        ValueHolder<Resource> cachedValue = resolverCache.get(lookupKey);
+        if (cachedValue != null) {
             if (Sirius.isDev()) {
                 // In dev environments, we always perform a lookup in case something changed
                 Optional<Resource> currentResult = resolveURI(scopeId, effectiveUri);
-                if (!result.isPresent()) {
+                if (cachedValue.get() == null) {
                     return currentResult;
                 }
-                if (!currentResult.isPresent() || !Objects.equals(result.get().getUrl(),
-                                                                  currentResult.get().getUrl())) {
+                if (currentResult.isEmpty() || !Objects.equals(cachedValue.get().getUrl(),
+                                                               currentResult.get().getUrl())) {
                     return currentResult;
                 }
             }
-            return result;
+            return cachedValue.asOptional();
         }
-        result = resolveURI(scopeId, effectiveUri);
-        resolverCache.put(lookupKey, result);
-        return result;
+
+        Optional<Resource> resolvedValue = resolveURI(scopeId, effectiveUri);
+        resolverCache.put(lookupKey, new ValueHolder<>(resolvedValue.orElse(null)));
+        return resolvedValue;
     }
 
     /**
