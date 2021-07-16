@@ -204,8 +204,10 @@ var TokenAutocomplete = /** @class */ (function () {
         }));
     };
     TokenAutocomplete.prototype.addHiddenOption = function (tokenValue, tokenText, tokenType) {
-        var _a;
-        (_a = this.hiddenSelect.querySelector('.empty-token')) === null || _a === void 0 ? void 0 : _a.remove();
+        var _emptyToken = this.hiddenSelect.querySelector('.empty-token');
+        if (_emptyToken) {
+            this.hiddenSelect.removeChild(_emptyToken);
+        }
         var option = document.createElement('option');
         option.text = tokenText;
         option.value = tokenValue;
@@ -440,7 +442,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 var deleteToken = document.createElement('span');
                 deleteToken.classList.add('token-singleselect-token-delete');
                 deleteToken.textContent = '\u00D7';
-                this.container.append(deleteToken);
+                this.container.appendChild(deleteToken);
             }
         }
         class_2.prototype.clear = function (silent) {
