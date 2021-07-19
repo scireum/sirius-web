@@ -174,7 +174,7 @@ public class ExcelExport {
             return switch (mimeType) {
                 case MimeHelper.IMAGE_PNG -> Workbook.PICTURE_TYPE_PNG;
                 case MimeHelper.IMAGE_JPEG -> Workbook.PICTURE_TYPE_JPEG;
-                case "image/bmp" -> Workbook.PICTURE_TYPE_DIB;
+                case MimeHelper.IMAGE_BMP -> Workbook.PICTURE_TYPE_DIB;
                 default -> -1;
             };
         }

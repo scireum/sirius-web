@@ -227,7 +227,7 @@ public class Message {
      *
      * @param textMessage the message content
      * @return a new message with the given content and ERROR as type
-     * @deprecated Use {@code success().withText(textMessage)}
+     * @deprecated Use {@code error().withText(textMessage)}
      */
     @Deprecated(forRemoval = true)
     public static Message error(String textMessage) {

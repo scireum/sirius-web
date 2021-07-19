@@ -227,8 +227,8 @@ public class TypeTools {
             return typeTable.getOrDefault(getTypeVariableKey(getScopeOfType(typeVariable), typeVariable.getName()),
                                           type);
         }
-        if ((type instanceof WildcardType) && ((WildcardType) type).getLowerBounds().length > 0) {
-            return simplify(((WildcardType) type).getLowerBounds()[0]);
+        if ((type instanceof WildcardType wildcardType) && wildcardType.getLowerBounds().length > 0) {
+            return simplify(wildcardType.getLowerBounds()[0]);
         }
         if (!(type instanceof ParameterizedType parameterizedType)) {
             return type;

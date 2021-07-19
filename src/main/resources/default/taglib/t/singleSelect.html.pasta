@@ -14,8 +14,7 @@
 
 <i:pragma name="description">
     Renders a select field for a single value using the given parameters. Note that additional flags can be set via CSS
-    classes
-    (i.e. "required", "admin-only").
+    classes (i.e. "required", "admin-only").
 </i:pragma>
 
 <div class="form-group @UserContext.get().signalFieldError(name) @class">
