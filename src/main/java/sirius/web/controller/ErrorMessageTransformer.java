@@ -11,12 +11,11 @@ package sirius.web.controller;
 import sirius.kernel.di.std.AutoRegister;
 import sirius.kernel.di.std.Priorized;
 import sirius.kernel.health.HandledException;
-import sirius.web.security.UserContext;
 
 /**
  * Can be used to further process or enhance error messages.
  *
- * @see Message#handle(Throwable)
+ * @see Message#error(Throwable)
  */
 @AutoRegister
 public interface ErrorMessageTransformer extends Priorized {

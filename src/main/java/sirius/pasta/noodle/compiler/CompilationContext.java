@@ -305,9 +305,7 @@ public class CompilationContext {
     }
 
     private static void addOptionalAlias(Map<String, Class<?>> aliasMap, String name, Class<?> type) {
-        if (!aliasMap.containsKey(name)) {
-            aliasMap.put(name, type);
-        }
+        aliasMap.computeIfAbsent(name, ignored -> type);
     }
 
     /**

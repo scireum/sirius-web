@@ -153,10 +153,9 @@ public class Parser extends InputProcessor {
             block.addStatement(statement(), context);
             skipWhitespaces();
             // Only enforce a ";" if we're not a single line script...
-            if (!(reader.current().getLine() == 1 && reader.current().isEndOfInput())) {
-                if (consumeExpectedCharacter(';')) {
-                    context.reEnableErrors();
-                }
+            if ((!(reader.current().getLine() == 1 && reader.current().isEndOfInput()))
+                && consumeExpectedCharacter(';')) {
+                context.reEnableErrors();
             }
             skipWhitespaces();
         }
@@ -183,8 +182,7 @@ public class Parser extends InputProcessor {
 
         Node expression = parseExpression();
         skipWhitespaces();
-        if (reader.current().is('=') && (expression instanceof PushField)) {
-            PushField pushField = (PushField) expression;
+        if (reader.current().is('=') && (expression instanceof PushField pushField)) {
             Field field = pushField.getField();
             PopField popField = new PopField(reader.consume(), field);
             popField.setSelfExpression(pushField.getSelfExpression());
@@ -1052,26 +1050,7 @@ public class Parser extends InputProcessor {
         }
 
         if (isAtIdentifier()) {
-            Char position = reader.current();
-            String identifier = readIdentifier();
-            if (reader.current().is('.')) {
-                Node result = tryVariable(position, identifier);
-                if (result != null) {
-                    return result;
-                }
-                return tryClassLiteral(position, identifier);
-            }
-
-            skipWhitespaces();
-
-            if (reader.current().is('(')) {
-                return macroCall(position, identifier);
-            }
-            if (reader.current().is('=') && !reader.next().is('=')) {
-                return assignmentTo(position, identifier);
-            }
-
-            return variable(position, identifier);
+            return identifier();
         }
 
         return literal();
@@ -1238,6 +1217,29 @@ public class Parser extends InputProcessor {
         } else {
             return result;
         }
+    }
+
+    private Node identifier() {
+        Char position = reader.current();
+        String identifier = readIdentifier();
+        if (reader.current().is('.')) {
+            Node result = tryVariable(position, identifier);
+            if (result != null) {
+                return result;
+            }
+            return tryClassLiteral(position, identifier);
+        }
+
+        skipWhitespaces();
+
+        if (reader.current().is('(')) {
+            return macroCall(position, identifier);
+        }
+        if (reader.current().is('=') && !reader.next().is('=')) {
+            return assignmentTo(position, identifier);
+        }
+
+        return variable(position, identifier);
     }
 
     /**

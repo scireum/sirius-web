@@ -171,16 +171,12 @@ public class ExcelExport {
 
         private static int determinePictureType(String fileName) {
             String mimeType = MimeHelper.guessMimeType(fileName);
-            switch (mimeType) {
-                case MimeHelper.IMAGE_PNG:
-                    return Workbook.PICTURE_TYPE_PNG;
-                case MimeHelper.IMAGE_JPEG:
-                    return Workbook.PICTURE_TYPE_JPEG;
-                case "image/bmp":
-                    return Workbook.PICTURE_TYPE_DIB;
-                default:
-                    return -1;
-            }
+            return switch (mimeType) {
+                case MimeHelper.IMAGE_PNG -> Workbook.PICTURE_TYPE_PNG;
+                case MimeHelper.IMAGE_JPEG -> Workbook.PICTURE_TYPE_JPEG;
+                case "image/bmp" -> Workbook.PICTURE_TYPE_DIB;
+                default -> -1;
+            };
         }
     }
 

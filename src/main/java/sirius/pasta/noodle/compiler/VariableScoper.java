@@ -13,12 +13,9 @@ import sirius.kernel.commons.Strings;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Responsible for keeping track which variables are currently visible.
@@ -30,11 +27,8 @@ public class VariableScoper {
     /**
      * Lists all keywords which cannot be used as variable name.
      */
-    private static final Set<String> RESERVED_NAMES = Collections.unmodifiableSet(Stream.of(Parser.KEYWORD_TRUE,
-                                                                                            Parser.KEYWORD_FALSE,
-                                                                                            Parser.KEYWORD_LET,
-                                                                                            Parser.KEYWORD_NULL)
-                                                                                        .collect(Collectors.toSet()));
+    private static final Set<String> RESERVED_NAMES =
+            Set.of(Parser.KEYWORD_TRUE, Parser.KEYWORD_FALSE, Parser.KEYWORD_LET, Parser.KEYWORD_NULL);
 
     /**
      * Represents a variable.

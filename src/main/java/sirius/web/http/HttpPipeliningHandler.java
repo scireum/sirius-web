@@ -31,7 +31,7 @@ import java.util.List;
 public class HttpPipeliningHandler extends ChannelDuplexHandler {
 
     private HttpRequest currentRequest;
-    private List<HttpRequest> bufferedRequests = new ArrayList<>();
+    private final List<HttpRequest> bufferedRequests = new ArrayList<>();
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {

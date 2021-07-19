@@ -22,7 +22,7 @@ import java.util.function.UnaryOperator;
  */
 public class ExpressionEmitter extends Emitter {
 
-    private Callable expression;
+    private final Callable expression;
 
     /**
      * Creates a new instance at the given position with the given expression.

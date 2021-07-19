@@ -9,10 +9,13 @@
 package sirius.pasta.noodle.macros;
 
 import sirius.kernel.di.std.Register;
+import sirius.pasta.noodle.compiler.CompilationContext;
+import sirius.pasta.noodle.compiler.ir.Node;
 import sirius.pasta.noodle.sandbox.PublicAPI;
 
 import javax.annotation.Nonnull;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Checks whether a given date is after another given date or now.
@@ -37,4 +40,10 @@ public class IsAfterMacro extends DateComparingBaseMacro {
     public String getName() {
         return "isAfter";
     }
+
+    @Override
+    public boolean isConstant(CompilationContext context, List<Node> args) {
+        return true;
+    }
+
 }

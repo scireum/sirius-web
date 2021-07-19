@@ -103,11 +103,10 @@ public class TypeTools {
      * @param parameterizedType the parameterized type to extract the type parameters from
      */
     private void propagateParameterizedTypeParameters(ParameterizedType parameterizedType) {
-        if (!(parameterizedType.getRawType() instanceof Class<?>)) {
+        if (!(parameterizedType.getRawType() instanceof Class<?> rawType)) {
             return;
         }
 
-        Class<?> rawType = (Class<?>) parameterizedType.getRawType();
         TypeVariable<?>[] variables = rawType.getTypeParameters();
         Type[] actualParameters = parameterizedType.getActualTypeArguments();
 
@@ -151,11 +150,9 @@ public class TypeTools {
 
     private void propagateConstantClassTypeInfos(Class<?> scope, Type parameterType, Node parameter) {
         // Ensure that the parameter is of type Class<X> - abort otherwise
-        if (!(parameterType instanceof ParameterizedType)) {
+        if (!(parameterType instanceof ParameterizedType parameterizedType)) {
             return;
         }
-
-        ParameterizedType parameterizedType = (ParameterizedType) parameterType;
 
         if (!(parameterizedType.getRawType() instanceof Class<?>)) {
             return;
@@ -226,26 +223,21 @@ public class TypeTools {
      * @return the simplified type
      */
     public Type simplify(Type type) {
-        if (type instanceof TypeVariable<?>) {
-            TypeVariable<?> typeVariable = (TypeVariable<?>) type;
+        if (type instanceof TypeVariable<?> typeVariable) {
             return typeTable.getOrDefault(getTypeVariableKey(getScopeOfType(typeVariable), typeVariable.getName()),
                                           type);
         }
-        if (type instanceof WildcardType) {
-            if (((WildcardType) type).getLowerBounds().length > 0) {
-                return simplify(((WildcardType) type).getLowerBounds()[0]);
-            }
+        if ((type instanceof WildcardType) && ((WildcardType) type).getLowerBounds().length > 0) {
+            return simplify(((WildcardType) type).getLowerBounds()[0]);
         }
-        if (!(type instanceof ParameterizedType)) {
+        if (!(type instanceof ParameterizedType parameterizedType)) {
             return type;
         }
 
-        ParameterizedType parameterizedType = (ParameterizedType) type;
-        if (!(parameterizedType.getRawType() instanceof Class<?>)) {
+        if (!(parameterizedType.getRawType() instanceof Class<?> rawType)) {
             return type;
         }
 
-        Class<?> rawType = (Class<?>) parameterizedType.getRawType();
         Type[] typeParameters = new Type[parameterizedType.getActualTypeArguments().length];
         for (int i = 0; i < typeParameters.length; i++) {
             typeParameters[i] = simplify(parameterizedType.getActualTypeArguments()[i]);

@@ -14,6 +14,7 @@ import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
+import sirius.pasta.noodle.compiler.ir.Node;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -25,7 +26,7 @@ import java.util.List;
  * @deprecated Use <tt>Strings.splitAtLast</tt> as it provides the proper generic types for the returned tuple.
  */
 @Register
-@Deprecated
+@Deprecated(forRemoval = true)
 public class SplitAtLastMacro extends BasicMacro {
 
     @Override
@@ -49,7 +50,7 @@ public class SplitAtLastMacro extends BasicMacro {
 
     @Override
     public String getDescription() {
-        return "Splits the given string on the last occurence of the given separator.";
+        return "Splits the given string on the last occurrence of the given separator.";
     }
 
     @Nonnull
@@ -57,4 +58,10 @@ public class SplitAtLastMacro extends BasicMacro {
     public String getName() {
         return "splitAtLast";
     }
+
+    @Override
+    public boolean isConstant(CompilationContext context, List<Node> args) {
+        return true;
+    }
+
 }

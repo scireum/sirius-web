@@ -17,7 +17,7 @@ import java.io.InputStream;
  */
 public class BufferedAttachment extends Attachment {
 
-    private byte[] buffer;
+    private final byte[] buffer;
 
     /**
      * Generates a new attachment with the given name, mime type and contents.

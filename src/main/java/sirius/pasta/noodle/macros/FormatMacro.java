@@ -13,6 +13,7 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.nls.Formatter;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
+import sirius.pasta.noodle.compiler.ir.Node;
 import sirius.pasta.noodle.sandbox.PublicAPI;
 
 import javax.annotation.Nonnull;
@@ -52,4 +53,10 @@ public class FormatMacro extends BasicMacro {
     public String getDescription() {
         return "Creates a new Formatter object for the given pattern.";
     }
+
+    @Override
+    public boolean isConstant(CompilationContext context, List<Node> args) {
+        return true;
+    }
+
 }

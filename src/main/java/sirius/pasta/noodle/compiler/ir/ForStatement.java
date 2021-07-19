@@ -16,8 +16,6 @@ import sirius.pasta.noodle.compiler.Assembler;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.VariableScoper;
 
-import javax.annotation.Nullable;
-import java.lang.reflect.Type;
 import java.util.Iterator;
 
 /**

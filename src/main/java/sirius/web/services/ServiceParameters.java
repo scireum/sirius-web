@@ -19,5 +19,10 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ServiceParameters {
+    /**
+     * Contains the list of service parameters.
+     *
+     * @return the list of expected parameters of this service
+     */
     ServiceParameter[] value();
 }

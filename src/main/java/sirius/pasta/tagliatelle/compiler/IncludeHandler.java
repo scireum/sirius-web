@@ -34,7 +34,7 @@ import java.util.Optional;
  * @see sirius.pasta.tagliatelle.emitter.InvokeTemplateEmitter
  * @see InvokeHandler
  * @see sirius.pasta.noodle.macros.InlineResourceMacro
- * @see sirius.pasta.noodle.macros.EscapeJSMacro
+ * @see sirius.pasta.noodle.macros.EscapeJsMacro
  */
 @Register(classes = ExpressionHandler.class)
 public class IncludeHandler extends ExpressionHandler {
@@ -79,7 +79,7 @@ public class IncludeHandler extends ExpressionHandler {
             }
 
             Optional<Resource> resource = resources.resolve(resourcePath);
-            if (!resource.isPresent()) {
+            if (resource.isEmpty()) {
                 compiler.getContext().error(position, "Cannot find the resource: %s", resourcePath);
                 return ConstantEmitter.EMPTY;
             }

@@ -36,7 +36,7 @@ class SendFile {
 
     private static final Pattern RANGE_HEADER = Pattern.compile("bytes=(\\d+)?-(\\d+)?");
 
-    private Response response;
+    private final Response response;
     private File file;
     private RandomAccessFile raf;
     private String contentType;

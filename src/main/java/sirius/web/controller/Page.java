@@ -202,7 +202,7 @@ public class Page<E> {
      * @return the page itself for fluent method calls
      * @deprecated This method provides unneeded complexity and was never used.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public Page<E> withFacetsSupplier(Supplier<List<Facet>> facetsSupplier) {
         if (facetsSupplier != null) {
             return withFacets(facetsSupplier.get());

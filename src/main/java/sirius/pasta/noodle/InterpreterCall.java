@@ -97,16 +97,12 @@ public class InterpreterCall implements Callable {
             int index = instruction & 0x0000FFFF;
             if (lastCol != position.getPos()) {
                 listing.append("          ");
-                for (int p = 1; p < position.getPos(); p++) {
-                    listing.append(" ");
-                }
+                listing.append(" ".repeat(Math.max(0, position.getPos() - 1)));
                 listing.append("^\n");
                 lastCol = position.getPos();
             }
             listing.append("          ");
-            for (int p = 1; p < position.getPos(); p++) {
-                listing.append(" ");
-            }
+            listing.append(" ".repeat(Math.max(0, position.getPos() - 1)));
             listing.append(i);
             listing.append(Strings.apply(": %s (%s)\n", opCode.name(), index));
         }

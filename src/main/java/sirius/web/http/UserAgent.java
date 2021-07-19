@@ -36,7 +36,7 @@ public class UserAgent {
     private static final String INTERNET_EXPLORER = "trident";
     private static final String MS_EDGE = "edge";
 
-    private String userAgentString;
+    private final String userAgentString;
 
     private boolean phone = false;
     private boolean tablet = false;

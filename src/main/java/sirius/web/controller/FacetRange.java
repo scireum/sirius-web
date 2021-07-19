@@ -14,7 +14,7 @@ import sirius.kernel.commons.Amount;
  * Represents a range filter for a {@link Facet} used for filtering on lower and/or upper bounds.
  * @deprecated This makes the API overly complex and the only use-case is about to vanish
  */
-@Deprecated
+@Deprecated(since = "2021/07/01")
 public class FacetRange {
     private final Amount min;
     private final Amount max;
