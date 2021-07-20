@@ -3,9 +3,9 @@
 
 <i:pragma name="description">
     Renders a list of datacards. Using the 'size' on can determine if the cards should be
-    kept medium sized (3 in a row on a large screen), small (4 in a row on a large screen)
-    or large (2 in a row on a large screen). Note that for smaller screens, the number of
-    cards is reduced appropriately.
+    kept medium sized (3 in a row on a large screen), small (4 in a row on a large screen),
+    large (2 in a row on a large screen) or x-large (always 1 in a row).
+    Note that for smaller screens, the number of cards is reduced appropriately.
 </i:pragma>
 
 <i:switch test="@size">
