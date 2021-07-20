@@ -17,7 +17,7 @@
             <i:if test="!readonly">
                 <input type="hidden" name="@apply('%s_marker',name)"/>
             </i:if>
-            <input type="checkbox" name="@name" value="@valueAttribute" @id="@checkboxId"
+            <input type="checkbox" name="@name" value="@valueAttribute" @id="@id"
                    @if (value) { checked="checked" } @if (readonly) { disabled="disabled" }/>
             <i:if test="isFilled(label)">
                 <label><span>@label</span></label>
