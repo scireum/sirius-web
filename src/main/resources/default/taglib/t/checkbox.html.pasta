@@ -1,0 +1,33 @@
+<i:arg name="id" type="String" default=""/>
+<i:arg name="class" type="String" default="Lists additional CSS classes to apply to the field."/>
+<i:arg name="name" type="String"/>
+<i:arg name="value" type="boolean"/>
+<i:arg name="valueAttribute" type="String" default="true"/>
+<i:arg name="labelKey" type="String" default=""/>
+<i:arg name="label" type="String" default="@i18n(labelKey)"/>
+<i:arg name="helpKey" type="String" default=""/>
+<i:arg name="help" type="String" default="@i18n(helpKey)"/>
+<i:arg name="readonly" type="boolean" default="false"/>
+
+<i:pragma name="description" value="Renders a checkbox within a Tycho template"/>
+
+<div class="@class">
+    <div class="form-group checkbox @UserContext.get().signalFieldError(name)">
+        <label>
+            <i:if test="!readonly">
+                <input type="hidden" name="@apply('%s_marker',name)"/>
+            </i:if>
+            <input type="checkbox" name="@name" value="@valueAttribute" @id="@id"
+                   @if (value) { checked="checked" } @if (readonly) { disabled="disabled" }/>
+            <i:if test="isFilled(label)">
+                <label><span>@label</span></label>
+            </i:if>
+            <i:if test="isFilled(help)">
+                <small class="form-text text-muted"><i:raw>@expandMessage(help)</i:raw></small>
+            </i:if>
+            <i:if test="UserContext.get().hasError(name)">
+                <small class="error-block form-text">@UserContext.get().getFieldErrorMessage(name)</small>
+            </i:if>
+        </label>
+    </div>
+</div>

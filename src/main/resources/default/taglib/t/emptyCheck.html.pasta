@@ -1,0 +1,49 @@
+<i:arg type="Object" name="data"/>
+
+<i:pragma name="description">
+    Checks the given data and if it is either a Collection, or a Page checks if it is empty.
+    If the given collection is filled, the body of this tag will be rendered. Otherwise, if the
+    given Page is filtered, either the block "filtered-empty" will be rendered, or an appropriate
+    message will be output (and additionally the block "filtered-empty-extensions" will be rendered).
+    If the Page or Collection is empty without being filtered, the block "empty" will be rendered, or
+    an appropriate message will be output (and the block "empty-extensions" will be rendered).
+
+    This can be used to render a table, or a list of cards while properly handling empty results because
+    either there is no data, or the filters didn't yield any result.
+</i:pragma>
+
+<i:if test="(data.is(Page.class) && data.as(Page.class).getItems().isEmpty()) || (data.is(java.util.Collection.class) && data.as(java.util.Collection.class).isEmpty())">
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="mt-4 row">
+                <div class="col-12 col-lg-10 col-xl-8 offset-lg-1 offset-xl-2">
+                    <div class="d-flex flex-column align-items-center">
+                        <i:if test="data.is(Page.class) && data.as(Page.class).isFiltered()">
+                            <i:local name="body" value="@renderToString('filtered-empty')"/>
+                            <i:if test="isFilled(body)">
+                                <i:raw>@body</i:raw>
+                                <i:else>
+                                    <span class="h5 mb-4">@i18n("emptyCheck.html.filteredEmpty")</span>
+                                    <i:render name="filtered-empty-extensions" />
+                                </i:else>
+                            </i:if>
+                            <i:else>
+                                <i:local name="body" value="@renderToString('empty')"/>
+                                <i:if test="isFilled(body)">
+                                    <i:raw>@body</i:raw>
+                                    <i:else>
+                                        <span class="h5 mb-4">@i18n("emptyCheck.html.empty")</span>
+                                        <i:render name="empty-extensions" />
+                                    </i:else>
+                                </i:if>
+                            </i:else>
+                        </i:if>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <i:else>
+        <i:render name="body"/>
+    </i:else>
+</i:if>
