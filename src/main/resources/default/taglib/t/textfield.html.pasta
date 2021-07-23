@@ -1,5 +1,6 @@
 <i:arg name="id" type="String" default="" />
 <i:arg name="class" type="String" default="Lists additional CSS classes to apply to the field."/>
+<i:arg name="fieldClass" type="String" default="" description="Lists additional CSS classes to apply to the field."/>
 <i:arg name="name" type="String" default=""/>
 <i:arg name="fieldName" type="String" default="@name"/>
 <i:arg name="value" type="String"/>
@@ -28,7 +29,7 @@
                    @if(isFilled(id)) { id="@id" }
                    type="@type"
                    value="@UserContext.get().getFieldValue(name, value)"
-                   class="form-control input-block-level"
+                   class="form-control input-block-level @fieldClass"
                    @if (isFilled(placeholder)) { placeholder="@placeholder" }
                    @if (readonly) { readonly }
                    @if (isFilled(tabIndex)) { tabindex="@tabIndex" } />
@@ -41,7 +42,7 @@
                    @if(isFilled(id)) { id="@id" }
                    type="@type"
                    value="@UserContext.get().getFieldValue(name, value)"
-                   class="form-control input-block-level"
+                   class="form-control input-block-level @fieldClass"
                    @if (isFilled(placeholder)) { placeholder="@placeholder" }
                    @if (readonly) { readonly }
                    @if (isFilled(tabIndex)) { tabindex="@tabIndex" } />
