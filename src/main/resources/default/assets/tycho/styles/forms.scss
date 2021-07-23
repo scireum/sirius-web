@@ -18,6 +18,9 @@
   border-radius: 0;
 }
 
+.token-autocomplete-container .token-autocomplete-suggestions {
+  z-index: 1000;
+}
 
 .form-control.token-autocomplete-container.token-autocomplete-singleselect.optional-singleselect-with-value {
   .token-autocomplete-input:after {
