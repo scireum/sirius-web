@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class QueryString {
 
-    private QueryStringDecoder decoder;
+    private final QueryStringDecoder decoder;
 
     /**
      * Parses the given URI using a {@link QueryStringDecoder}.

@@ -24,8 +24,8 @@ import java.util.Map;
  */
 public class DynamicInvokeTemplateEmitter extends Emitter {
 
-    private Map<String, Callable> args;
-    private Callable templateName;
+    private final Map<String, Callable> args;
+    private final Callable templateName;
     private Map<String, Emitter> blocks = null;
 
     /**

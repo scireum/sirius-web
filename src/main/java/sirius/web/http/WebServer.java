@@ -331,14 +331,11 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
          * Computes the key used for microtiming based on the current mode
          */
         protected String getMicrotimingKey(WebContext context) {
-            switch (this) {
-                case IP:
-                    return context.getRemoteIP().toString();
-                case BOTH:
-                    return context.getRemoteIP().toString() + " <-- " + context.microtimingKey;
-                default:
-                    return context.microtimingKey;
-            }
+            return switch (this) {
+                case IP -> context.getRemoteIP().toString();
+                case BOTH -> context.getRemoteIP().toString() + " <-- " + context.microtimingKey;
+                default -> context.microtimingKey;
+            };
         }
     }
 
@@ -510,10 +507,18 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
             } else {
                 channel = bootstrap.bind(new InetSocketAddress(port)).sync().channel();
             }
-        } catch (Exception t) {
+        } catch (InterruptedException exception) {
             Exceptions.handle()
                       .to(LOG)
-                      .error(t)
+                      .error(exception)
+                      .withSystemErrorMessage("Got interrupted while setting up HTTP (%d): %s (%s)", port)
+                      .handle();
+
+            Thread.currentThread().interrupt();
+        } catch (Exception exception) {
+            Exceptions.handle()
+                      .to(LOG)
+                      .error(exception)
                       .withSystemErrorMessage("Cannot setup HTTP (%d): %s (%s)", port)
                       .handle();
         }
@@ -528,8 +533,16 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
             } else {
                 sslChannel = bootstrap.bind(new InetSocketAddress(sslPort)).sync().channel();
             }
-        } catch (Exception t) {
-            Exceptions.handle().to(LOG).error(t).withSystemErrorMessage("Cannot setup HTTPS: %s (%s)").handle();
+        } catch (InterruptedException exception) {
+            Exceptions.handle()
+                      .to(LOG)
+                      .error(exception)
+                      .withSystemErrorMessage("Got interrupted while setting up HTTP (%d): %s (%s)", port)
+                      .handle();
+
+            Thread.currentThread().interrupt();
+        } catch (Exception exception) {
+            Exceptions.handle().to(LOG).error(exception).withSystemErrorMessage("Cannot setup HTTPS: %s (%s)").handle();
         }
     }
 
@@ -747,7 +760,11 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
                                      "KB/s");
         collector.differentialMetric("http_connects", "http-connects", "HTTP Connects", connections.get(), "/min");
         collector.differentialMetric("http_requests", "http-requests", "HTTP Requests", requests.get(), "/min");
-        collector.differentialMetric("http_slow_requests", "http-slow-requests", "HTTP Slow Requests", slowRequests.get(), "/min");
+        collector.differentialMetric("http_slow_requests",
+                                     "http-slow-requests",
+                                     "HTTP Slow Requests",
+                                     slowRequests.get(),
+                                     "/min");
         collector.differentialMetric("http-blocks", "http-blocks", "HTTP Blocked Requests", blocks.get(), "/min");
         collector.differentialMetric("http_timeouts",
                                      "http-timeouts",

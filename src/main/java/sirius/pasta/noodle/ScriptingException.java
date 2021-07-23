@@ -8,6 +8,8 @@
 
 package sirius.pasta.noodle;
 
+import java.io.Serial;
+
 /**
  * Represents an exception which happens during the execution of the runtime.
  * <p>
@@ -21,6 +23,7 @@ package sirius.pasta.noodle;
  */
 public class ScriptingException extends Exception {
 
+    @Serial
     private static final long serialVersionUID = -1743664824689650688L;
 
     /**

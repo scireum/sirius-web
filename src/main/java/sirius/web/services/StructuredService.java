@@ -28,7 +28,7 @@ import sirius.web.controller.Routed;
  *
  * @deprecated the whole StructuredService framework has been deprecated.
  */
-@Deprecated
+@Deprecated(since = "2021/07/01")
 public interface StructuredService {
 
     /**

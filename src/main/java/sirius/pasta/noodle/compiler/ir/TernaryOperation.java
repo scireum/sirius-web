@@ -12,7 +12,6 @@ import sirius.pasta.noodle.OpCode;
 import sirius.pasta.noodle.compiler.Assembler;
 import sirius.pasta.noodle.compiler.CompilationContext;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.Type;
 
 /**

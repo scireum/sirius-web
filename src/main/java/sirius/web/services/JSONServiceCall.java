@@ -16,7 +16,7 @@ import sirius.web.http.WebContext;
  *
  * @deprecated the whole StructuredService framework has been deprecated.
  */
-@Deprecated
+@Deprecated(since = "2021/07/01")
 class JSONServiceCall extends ServiceCall {
 
     JSONServiceCall(WebContext ctx) {

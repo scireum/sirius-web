@@ -44,30 +44,23 @@ public class DefaultDispatcher implements WebDispatcher {
 
     @Override
     public DispatchDecision dispatch(WebContext ctx) throws Exception {
-        if ("/crossdomain.xml".equals(ctx.getRequestedURI()) && serveCrossdomain) {
-            ctx.respondWith()
-               .infinitelyCached()
-               .setHeader(HttpHeaderNames.CONTENT_TYPE, MimeHelper.TEXT_XML)
-               .direct(HttpResponseStatus.OK,
-                       "<?xml version=\"1.0\"?>\n"
-                       + "<!DOCTYPE cross-domain-policy SYSTEM "
-                       + "\"http://www.adobe.com/xml/dtds/cross-domain-policy.dtd\">\n"
-                       + "<cross-domain-policy>\n"
-                       + "    <site-control permitted-cross-domain-policies=\"all\" />\n"
-                       + "    <allow-access-from domain=\"*\" secure=\"false\" />\n"
-                       + "    <allow-http-request-headers-from domain=\"*\" headers=\"*\"/>\n"
-                       + "</cross-domain-policy>");
-        } else if ("/robots.txt".equals(ctx.getRequestedURI()) && serveRobots) {
+        if ("/robots.txt".equals(ctx.getRequestedURI()) && serveRobots) {
             if (robotsDisallowAll) {
                 ctx.respondWith()
                    .infinitelyCached()
                    .setHeader(HttpHeaderNames.CONTENT_TYPE, MimeHelper.TEXT_PLAIN)
-                   .direct(HttpResponseStatus.OK, "User-agent: *\n" + "Disallow: /\n");
+                   .direct(HttpResponseStatus.OK, """
+                           User-agent: *
+                           Disallow: /
+                           """);
             } else {
                 ctx.respondWith()
                    .infinitelyCached()
                    .setHeader(HttpHeaderNames.CONTENT_TYPE, MimeHelper.TEXT_PLAIN)
-                   .direct(HttpResponseStatus.OK, "User-agent: *\n" + "Disallow:\n");
+                   .direct(HttpResponseStatus.OK, """
+                           User-agent: *
+                           Disallow:
+                           """);
             }
         } else if ("/reset".equals(ctx.getRequestedURI())) {
             ctx.clearSession();

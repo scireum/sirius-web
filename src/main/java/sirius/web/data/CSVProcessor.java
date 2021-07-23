@@ -24,7 +24,7 @@ import java.util.function.Predicate;
  */
 public class CSVProcessor extends LineBasedProcessor {
 
-    private InputStream input;
+    private final InputStream input;
 
     CSVProcessor(InputStream input) {
         super();

@@ -24,7 +24,7 @@ public class NodeInfo {
     private String endpoint;
     private String uptime;
     private MetricState nodeState;
-    private List<Metric> metrics = new ArrayList<>();
+    private final List<Metric> metrics = new ArrayList<>();
 
     /**
      * Returns the name of the node.

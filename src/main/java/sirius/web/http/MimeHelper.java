@@ -41,6 +41,11 @@ public class MimeHelper {
     public static final String IMAGE_JPEG = "image/jpeg";
 
     /**
+     * Mime type of BMP images
+     */
+    public static final String IMAGE_BMP = "image/bmp";
+
+    /**
      * Mime type of SVG images
      */
     public static final String IMAGE_SVG = "image/svg+xml";

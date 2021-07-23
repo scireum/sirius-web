@@ -13,6 +13,7 @@ import sirius.pasta.tagliatelle.compiler.TemplateCompiler;
 import sirius.web.services.JSONStructuredOutput;
 
 import javax.annotation.Nullable;
+import java.io.Serial;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
  */
 public class CompileException extends Exception {
 
+    @Serial
     private static final long serialVersionUID = -8697032594602395681L;
 
     private final transient List<CompileError> errors;

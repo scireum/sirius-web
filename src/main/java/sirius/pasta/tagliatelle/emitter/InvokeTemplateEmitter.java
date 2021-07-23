@@ -27,7 +27,7 @@ import java.util.Map;
 public class InvokeTemplateEmitter extends Emitter {
 
     private static final Callable[] NO_ARGS = {};
-    private String templateName;
+    private final String templateName;
     private Callable[] arguments = NO_ARGS;
     private Map<String, Emitter> blocks = null;
 

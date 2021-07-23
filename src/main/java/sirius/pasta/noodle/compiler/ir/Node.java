@@ -15,7 +15,6 @@ import sirius.pasta.noodle.compiler.TypeTools;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 /**
@@ -41,6 +40,7 @@ public abstract class Node {
 
     /**
      * Returns the type created by this expression.
+     *
      * @return the return type or <tt>null</tt> if none is available
      */
     @Nullable

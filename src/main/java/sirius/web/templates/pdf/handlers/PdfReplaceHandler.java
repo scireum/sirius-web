@@ -17,7 +17,6 @@ import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.AutoRegister;
 import sirius.kernel.di.std.Priorized;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URL;

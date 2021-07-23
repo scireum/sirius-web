@@ -23,7 +23,7 @@ import java.util.function.Function;
  *
  * @deprecated Replaced by ImportDictionary in sirius-biz
  */
-@Deprecated
+@Deprecated(since = "2021/07/01")
 public interface SmartRow {
 
     /**

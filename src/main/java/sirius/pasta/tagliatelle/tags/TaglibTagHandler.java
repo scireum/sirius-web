@@ -21,7 +21,7 @@ import sirius.pasta.tagliatelle.emitter.CompositeEmitter;
  */
 public class TaglibTagHandler extends TagHandler {
 
-    private Template template;
+    private final Template template;
 
     /**
      * Creates a new handler for the given template.

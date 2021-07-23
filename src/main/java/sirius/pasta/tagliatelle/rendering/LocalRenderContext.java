@@ -31,10 +31,10 @@ import java.util.Optional;
  */
 public class LocalRenderContext implements Environment {
 
-    private Template template;
-    private StackAllocator.View locals;
+    private final Template template;
+    private final StackAllocator.View locals;
     private Position position = Position.UNKNOWN;
-    private GlobalRenderContext globalContext;
+    private final GlobalRenderContext globalContext;
     private LocalRenderContext parent;
     private Map<String, Emitter> blocks;
     private LocalRenderContext enclosedContext;

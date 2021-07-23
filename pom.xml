@@ -14,7 +14,7 @@
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
     <properties>
-        <sirius.kernel>dev-24.0.0</sirius.kernel>
+        <sirius.kernel>dev-23.4.0</sirius.kernel>
     </properties>
 
     <repositories>
@@ -38,7 +38,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Netty is the foundation of the built in web server -->
+        <!-- Netty is the foundation of the built-in web server -->
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>

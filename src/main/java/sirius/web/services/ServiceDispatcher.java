@@ -38,7 +38,7 @@ import java.util.Optional;
  *
  * @deprecated the whole StructuredService framework has been deprecated.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 @Register
 public class ServiceDispatcher implements WebDispatcher {
 

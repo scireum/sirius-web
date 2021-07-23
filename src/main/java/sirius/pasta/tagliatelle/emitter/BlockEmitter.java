@@ -20,7 +20,7 @@ import sirius.pasta.tagliatelle.rendering.LocalRenderContext;
  */
 public class BlockEmitter extends Emitter {
 
-    private String name;
+    private final String name;
     private Emitter alternative;
 
     /**

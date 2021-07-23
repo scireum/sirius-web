@@ -3,7 +3,7 @@
 <i:arg type="boolean" name="ignoreDisasterMode" default="false"/>
 <i:arg type="boolean" name="noindex" default="false"
        description="if set to true, search engine bots are advised to not index this page"/>
-<i:arg type="String" name="historyUri" default="" description="Permits to specify a custom history URI for this page." />
+<i:arg type="String" name="historyUri" default="" description="Permits to specify a custom history URI for this page."/>
 
 
 <i:pragma name="description" value="Provides the base layout for a Tycho page"/>
@@ -40,6 +40,10 @@
     <i:extensions target="tycho-page" point="head"/>
 
     <i:render name="head"/>
+    <script type="text/javascript">
+        // This cannot be moved into tycho.js as it has to be re-evaluated for each call and must not be cached...
+        const tycho_current_locale = '@NLS.getCurrentLang()'
+    </script>
 </head>
 <body>
 <div id="wrapper">
@@ -57,19 +61,25 @@
                 <i:render name="header"/>
 
                 <div id="page-header">
-
                     <div class="container-fluid">
                         <div id="page-nav">
-                            <i:render name="breadcrumbBar">
-                                <i:invoke template="/templates/tycho/page-breadcrumbs.html.pasta">
-                                    <i:render name="breadcrumbs"/>
-                                </i:invoke>
-                            </i:render>
+                            <div class="d-flex flex-column flex-lg-row">
+                                <i:render name="breadcrumbBar">
+                                    <div class="overflow-hidden mr-auto mb-2 mb-lg-0">
+                                        <i:invoke template="/templates/tycho/page-breadcrumbs.html.pasta">
+                                            <i:render name="breadcrumbs"/>
+                                        </i:invoke>
+                                    </div>
+                                    <div>
+                                        <i:extensions target="tycho-page" point="nav-right"/>
+                                    </div>
+                                </i:render>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div id="main-container" class="container-fluid mb-2">
-                    <i:render name="page-header" />
+                    <i:render name="page-header"/>
 
                     <i:render name="messages">
                         <i:invoke template="/templates/tycho/page-messages.html.pasta"/>

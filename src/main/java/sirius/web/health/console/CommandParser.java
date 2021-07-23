@@ -28,7 +28,7 @@ public class CommandParser {
 
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
-    private String input;
+    private final String input;
     private String command;
     private List<String> args;
 
