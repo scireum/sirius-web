@@ -11,25 +11,59 @@
 // --------------------------
 
 .form-control.token-autocomplete-container {
-  align-content: center;
-}
+  padding: 0;
+  border: 1px solid #ced4da;
+  border-radius: .25rem;
 
-.token-autocomplete-container .token-autocomplete-token {
-  border-radius: 0;
-}
+  .token-autocomplete-token {
+    border-radius: 0;
+    line-height: 24px;
+    font-size: 1rem;
 
+    &:first-child {
+      margin-left: .75rem;
+    }
 
-.form-control.token-autocomplete-container.token-autocomplete-singleselect.optional-singleselect-with-value {
-  .token-autocomplete-input:after {
-    right: -10px;
+    .token-autocomplete-token-delete {
+      line-height: 24px;
+
+      &:hover {
+        background-color: inherit;
+      }
+    }
   }
 
-  .token-singleselect-token-delete {
+  .token-autocomplete-suggestions {
+    z-index: 1000;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+  }
+
+  .token-autocomplete-input {
+    margin-top: 6px;
+    font-size: 1rem;
+    line-height: 24px;
+
+    &:first-child {
+      margin-left: .75rem;
+      padding-left: 0;
+    }
+  }
+}
+
+
+.form-control.token-autocomplete-container.token-autocomplete-singleselect {
+  .token-autocomplete-input:after {
+    top: 10px;
+    right: 10px;
+  }
+
+  &.optional-singleselect-with-value .token-singleselect-token-delete {
     padding-bottom: 0px;
     border: none;
     background-color: transparent;
     top: 6px;
     font-weight: 700;
-    right: 30px;
+    right: 32px;
   }
 }
