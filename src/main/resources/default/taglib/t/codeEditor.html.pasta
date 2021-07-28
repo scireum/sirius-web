@@ -13,11 +13,13 @@
 
 <script type="text/javascript">
     sirius.ready(function() {
-        let editor = ace.edit('@id');
+        let node = document.getElementById('@id');
+        let editor = ace.edit(node);
         editor.setTheme('ace/theme/idle_fingers');
         ___if (readonly) {
             editor.setReadOnly(true);
         }
         editor.session.setMode("ace/mode/@mode");
+        node.aceEditor = editor;
     });
 </script>
