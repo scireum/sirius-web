@@ -28,6 +28,11 @@ import sirius.web.security.UserContext;
 @Register
 public class DefaultDispatcher implements WebDispatcher {
 
+    /**
+     * Contains the original URI, in case this dispatcher decided to restart the pipeline...
+     */
+    public static final String ATTRIBUTE_ORIGINAL_URI = "ORIGINAL_URI";
+
     @ConfigValue("http.crossdomain.xml.enabled")
     private boolean serveCrossdomain;
 
@@ -62,6 +67,18 @@ public class DefaultDispatcher implements WebDispatcher {
                            Disallow:
                            """);
             }
+        } else if ("/".equals(ctx.getRequestedURI())) {
+            // If there is no controller and no other dispatcher which is willing to handle a "/" request, we
+            // re-start the pipeline with "/admin". This will at least be picked up by the DashboardController
+            // of sirius-biz, which is probably what we want. If this isn't available, we end up with a 404
+            // either way...
+            //
+            // We previously registered the DashboardController directly for "/" with a very high priority number
+            // (to put it at the end of the pipeline). However, this prohibits that another dispatcher which runs
+            // after the ControllerDispatcher handles "/". Using this approach, either a controller or a dispatch
+            // can handle "/" if the DashboardController wanted for this.
+            ctx.withCustomURI("/admin");
+            return DispatchDecision.RESTART;
         } else if ("/reset".equals(ctx.getRequestedURI())) {
             ctx.clearSession();
             ctx.respondWith().redirectTemporarily(ctx.get("path").asString("/"));
