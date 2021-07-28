@@ -1202,7 +1202,7 @@ public class WebContext implements SubContext {
             decodeQueryString();
         }
         requestedURI = path;
-        rawRequestedURI = stripQueryFromURI(path);
+        rawRequestedURI = path;
 
         return this;
     }
