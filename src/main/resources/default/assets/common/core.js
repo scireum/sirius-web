@@ -49,14 +49,15 @@ sirius.addEnterListener = function(_node, listener) {
 }
 
 sirius.getJSON = function(url, params) {
-    let formData = new FormData();
-    params.forEach(function(key, value) {
-        formData.append(key, value);
+    if (!url.endsWith('?')) {
+        url = url + '?';
+    }
+    Object.keys(params).forEach(function(key) {
+        url += key + '=' + encodeURIComponent(params[key]);
     });
 
     return fetch(url, {
-        method: "get",
-        body: formData
+        method: "get"
     }).then(function (response) {
         return response.json();
     });
