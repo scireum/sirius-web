@@ -1156,7 +1156,7 @@ public class WebContext implements SubContext {
     }
 
     /**
-     * Strips the query part of a uri.
+     * Strips the query part of an uri.
      *
      * @param uri the uri to remove the query string of
      * @return the uri without the query string
@@ -1171,10 +1171,10 @@ public class WebContext implements SubContext {
      * <p>
      * This can be used to control dispatching or to even re-dispatch a request for another destination.
      * <p>
-     * Note however, that only the the <tt>requestedURI</tt>, <tt>queryString</tt> and the <tt>rawRequestedURI</tt> are
+     * Note however, that only the <tt>requestedURI</tt>, <tt>queryString</tt> and the <tt>rawRequestedURI</tt> are
      * overwritten, not the one of the underlying request.
      *
-     * @param uri the new uri to use. The uri and its query string will be parsed and the internal fields are updated
+     * @param uri the new uri to use. The uri and its query string will be parsed, and the internal fields are updated
      *            accordingly.
      * @return the web context itself for fluent method calls
      */

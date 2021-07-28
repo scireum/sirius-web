@@ -23,7 +23,7 @@ import sirius.web.security.UserContext;
  * <p>
  * Also handles some special static URIs if enabled, like /crossdomain.xml or /robots.txt.
  * <p>
- * If no other dispatcher jumps in, this will take care of handing the request by sending a HTTP/404.
+ * If no other dispatcher jumps in, this will take care of handing the request by sending an HTTP/404.
  */
 @Register
 public class DefaultDispatcher implements WebDispatcher {
