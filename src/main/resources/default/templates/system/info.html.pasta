@@ -22,7 +22,6 @@
         </t:pageHeader>
     </i:block>
 
-    <i:local name="webContext" value="CallContext.getCurrent().get(WebContext.class)"/>
     <div class="row">
         <t:datacard title="Headers">
             <table class="table">
