@@ -1,5 +1,6 @@
+<i:arg type="sirius.web.http.WebContext" name="webContext" />
+
 <t:page title="Client Info">
-    <i:local name="webContext" value="CallContext.getCurrent().get(WebContext.class)"/>
     <i:block name="breadcrumbs">
         <li><a href="/system/info">Client Info</a></li>
     </i:block>

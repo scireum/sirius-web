@@ -29,11 +29,11 @@ import sirius.kernel.nls.NLS;
 import sirius.web.controller.BasicController;
 import sirius.web.controller.Page;
 import sirius.web.controller.Routed;
-import sirius.web.services.Format;
-import sirius.web.services.PublicService;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebServer;
 import sirius.web.security.Permission;
+import sirius.web.services.Format;
+import sirius.web.services.PublicService;
 
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -254,11 +254,11 @@ public class SystemController extends BasicController {
      * <p>
      * This will output all headers and session information available for the current request
      *
-     * @param ctx the current request
+     * @param webContext the current request
      */
     @Routed("/system/info")
-    public void info(WebContext ctx) {
-        ctx.respondWith().template("/templates/system/info.html.pasta");
+    public void info(WebContext webContext) {
+        webContext.respondWith().template("/templates/system/info.html.pasta", webContext);
     }
 
     /**

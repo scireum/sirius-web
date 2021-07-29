@@ -71,6 +71,8 @@ class CompilerSpec extends BaseSpecification {
     def "parsing let/if/for works"() {
         expect:
         compile("let x = 5; if (3 < 4) { x = 3; } else { x = 4; }; return x;").call(new SimpleEnvironment()) == 3
+        and: "Semicolon after closing brace can be skipped"
+        compile("let x = 5; if (3 < 4) { x = 3; } else { x = 4; } return x;").call(new SimpleEnvironment()) == 3
         and:
         compile("let x = 3; x = 4; return x;").call(new SimpleEnvironment()) == 4
         and:

@@ -150,19 +150,38 @@ public class Parser extends InputProcessor {
         VariableScoper.Scope scope = context.getVariableScoper().pushScope();
         BlockStatement block = new BlockStatement(reader.current());
         while (!reader.current().isEndOfInput() && !reader.current().is('}')) {
-            block.addStatement(statement(), context);
+            Node statement = statement();
+            block.addStatement(statement, context);
             skipWhitespaces();
-            // Only enforce a ";" if we're not a single line script...
-            if ((!(reader.current().getLine() == 1 && reader.current().isEndOfInput()))
-                && consumeExpectedCharacter(';')) {
-                context.reEnableErrors();
-            }
+
+            tryConsumeSemicolon(statement);
+            context.reEnableErrors();
+
             skipWhitespaces();
         }
         scope.pop();
         context.reEnableErrors();
 
         return block;
+    }
+
+    private void tryConsumeSemicolon(Node statement) {
+        // We commonly expect a ";" at the end of a statement...
+        if (reader.current().is(';')) {
+            reader.consume();
+        } else {
+            // However, as an IF or FOR statement have the end with a "}" we permit to skip the ";"
+            // Also, we permit to skip the ; for the last line...
+            if (!(statement instanceof IfStatement) && !(statement instanceof ForStatement) && !reader.current()
+                                                                                                      .isEndOfInput()) {
+                // ...for all other places, we report the missing ; and consume all tokens until the next ; to
+                // provide a clean recovery (otherwise we would probably report a lot of follow-up errors...)
+                consumeExpectedCharacter(';');
+                while (!reader.current().is(';') && !reader.current().isEndOfInput()) {
+                    reader.consume();
+                }
+            }
+        }
     }
 
     protected Node statement() {
