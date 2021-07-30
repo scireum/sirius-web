@@ -172,7 +172,8 @@ public class AssetsDispatcher implements WebDispatcher {
         String cacheKey = scopeId + "-" + Files.toSaneFileName(uri.substring(1)).orElse("");
         File file = new File(getCacheDirFile(), cacheKey);
 
-        if (Sirius.isStartedAsTest() || !file.exists() || file.lastModified() < resource.get().getLastModified()) {
+        if (Sirius.isStartedAsTest() || Sirius.isDev() || !file.exists() || file.lastModified() < resource.get()
+                                                                                                          .getLastModified()) {
             try {
                 compileSASS(scssUri, file);
             } catch (Exception t) {
