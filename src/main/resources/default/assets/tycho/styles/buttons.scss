@@ -9,6 +9,7 @@
 .btn-outline-link {
   border: 1px solid $grayLight;
   border-radius: 4px;
+  color: $grayDark;
 }
 
 .btn-link {
@@ -17,6 +18,8 @@
 
 .btn-link.active,
 .btn-link:hover,
+.btn-outline-link.active,
+.btn-outline-link:hover,
 .dropdown.show > .btn-link {
   color: #fff !important;
   background-color: $primary-color;
