@@ -9,7 +9,7 @@
 </i:pragma>
 
 <i:if test="isFilled(effectiveValue)">
-    <div class="d-flex flex-row justify-content-between mb-2">
+    <div class="d-flex flex-row justify-content-between mb-2 @class">
         <div>@label</div>
         <div class="text-right">
             <i:if test="isFilled(value)">
