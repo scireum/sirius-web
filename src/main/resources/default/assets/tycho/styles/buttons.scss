@@ -27,11 +27,6 @@
   text-decoration: none;
 }
 
-.btn-primary {
-  color: #fff !important;
-}
-
-
 .btn-info {
   background-color: $sirius-blue;
   color: #fff !important;
@@ -47,6 +42,27 @@
 
   &:hover {
     background-color: $sirius-blue;
+    color: #fff !important;
+  }
+}
+
+.btn-primary {
+  background-color: $primary-color;
+  color: #fff !important;
+  border-color: $primary-color;
+
+  &:hover {
+    background-color: darken($primary-color, 3%);
+    border-color: darken($primary-color, 3%);
+  }
+}
+
+.btn-outline-primary {
+  border-color: $primary-color;
+  color: $primary-color;
+
+  &:hover {
+    background-color: $primary-color;
     color: #fff !important;
   }
 }
