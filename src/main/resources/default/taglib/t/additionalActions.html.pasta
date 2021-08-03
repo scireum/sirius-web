@@ -2,6 +2,9 @@
 <i:arg type="String" name="label" default="@i18n(labelKey)" description="Contains an additional label to show."/>
 <i:arg type="String" name="labelClass" default=""
        description="Defines addition classes to add to the label."/>
+<i:arg type="String" name="class" default=""
+       description="Defines addition classes to add to the dropdown div."/>
+
 
 <i:pragma name="description">
     Renders a dropdown menu which lists additional actions. (These are passed in via the body).
@@ -10,7 +13,7 @@
 
 <i:local name="actions" value="@renderToString('body')"/>
 <i:if test="isFilled(actions)">
-    <div class="dropdown">
+    <div class="dropdown @class">
         <a class="btn btn-link" style="z-index: 3; position: relative" data-toggle="dropdown" aria-haspopup="true"
            aria-expanded="false">
             <span class="d-flex flex-row">
