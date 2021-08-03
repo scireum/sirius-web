@@ -30,3 +30,23 @@
 .btn-primary {
   color: #fff !important;
 }
+
+
+.btn-info {
+  background-color: $sirius-blue;
+  color: #fff !important;
+
+  &:hover {
+    background-color: $sirius-blue-dark;
+  }
+}
+
+.btn-outline-info {
+  border-color: $sirius-blue;
+  color: $sirius-blue;
+
+  &:hover {
+    background-color: $sirius-blue;
+    color: #fff !important;
+  }
+}
