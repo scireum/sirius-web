@@ -49,22 +49,22 @@
 }
 
 .btn-info {
-  background-color: $sirius-blue;
+  background-color: $sirius-deep-blue;
   color: #fff !important;
-  border-color: $sirius-blue;
+  border-color: $sirius-deep-blue;
 
   &:hover {
-    background-color: $sirius-blue-dark;
-    border-color: $sirius-blue-dark;
+    background-color: $sirius-deep-blue-dark;
+    border-color: $sirius-deep-blue-dark;
   }
 }
 
 .btn-outline-info {
-  border-color: $sirius-blue;
-  color: $sirius-blue;
+  border-color: $sirius-deep-blue;
+  color: $sirius-deep-blue;
 
   &:hover {
-    background-color: $sirius-blue;
+    background-color: $sirius-deep-blue;
     color: #fff !important;
   }
 }
