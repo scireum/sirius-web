@@ -30,9 +30,11 @@
 .btn-info {
   background-color: $sirius-blue;
   color: #fff !important;
+  border-color: $sirius-blue;
 
   &:hover {
     background-color: $sirius-blue-dark;
+    border-color: $sirius-blue-dark;
   }
 }
 
