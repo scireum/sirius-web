@@ -7,7 +7,7 @@
  */
 
 
-.form-group.admin-only label span::after{
+.form-group.admin-only label span::after {
   font-family: "Font Awesome 5 Free";
   font-weight: 900;
   font-size: .6em;
@@ -15,6 +15,17 @@
   vertical-align: top;
   margin-left: .4em;
   content: "\f023";
+}
+
+.form-group.required label span::after {
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  font-size: .6em;
+  line-height: .7em;
+  vertical-align: top;
+  margin-left: .4em;
+  content: "\f069";
+  color: $primary-color;
 }
 
 // --------------------------
