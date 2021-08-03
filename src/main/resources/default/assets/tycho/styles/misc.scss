@@ -14,6 +14,10 @@ a {
   color: $primary-color;
 }
 
+.muted {
+  color: $grayLight;
+}
+
 // Hide the first divider in each menu...
 .dropdown-menu div:first-of-type.dropdown-divider {
   display: none;
