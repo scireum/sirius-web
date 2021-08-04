@@ -28,7 +28,7 @@
                 </i:else>
             </i:if>
             <i:render name="actions" />
-            <t:additionalActions labelKey="template.html.additionalActions" labelClass="d-none d-xl-inline-block">
+            <t:additionalActions labelKey="template.html.additionalActions" class="ml-1" labelClass="d-none d-xl-inline-block">
                 <i:render name="additionalActions" />
             </t:additionalActions>
         </div>
