@@ -2,7 +2,7 @@
 <i:arg type="boolean" name="readonly" default="false" />
 <i:arg type="String" name="mode" default="html" description="Determines what kind of content is being highlighted." />
 <i:arg type="String" name="class" default="" description="May contain additional CSS classes to be added to the generated div." />
-
+<i:arg type="boolean" name="useWorker" default="false" description="Determines if local error/syntax checking is enabled"/>
 <i:pragma name="description">
     Provides a ACE based code editor. Note that "/assets/tycho/libs/ace/ace.js" needs to be present when using this.
 </i:pragma>
@@ -20,6 +20,7 @@
             editor.setReadOnly(true);
         }
         editor.session.setMode("ace/mode/@mode");
+        editor.session.setOption("useWorker", ___useWorker);
         _editorNode.aceEditor = editor;
     });
 </script>

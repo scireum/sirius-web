@@ -219,7 +219,7 @@ public class Resource {
      * Computes the last modified date.
      * <p>
      * This value will be cached if the resource is considered constant. However, in development systems
-     * the resource will sill be checked in a regular interval.
+     * the resource will still be checked in a regular interval.
      * <p>
      * Also note that the last modified timestamp is
      * at least the timestamp when the resource was resolved. This is required to manage dynamic resources which
