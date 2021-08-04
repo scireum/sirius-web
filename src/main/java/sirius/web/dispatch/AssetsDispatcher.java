@@ -244,7 +244,7 @@ public class AssetsDispatcher implements WebDispatcher {
                   .filter(f -> f.getName().endsWith(".css"))
                   .forEach(File::delete);
         } catch (NullPointerException e) {
-            // Happens if the directy does not exist....
+            // Happens if the directly does not exist....
             Exceptions.ignore(e);
         } catch (Exception e) {
             Exceptions.handle(e);
