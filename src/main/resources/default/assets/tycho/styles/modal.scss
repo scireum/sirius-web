@@ -1,0 +1,26 @@
+/*!
+ * Made with all the love in the world
+ * by scireum in Remshalden, Germany
+ *
+ * Copyright by scireum GmbH
+ * http://www.scireum.de - info@scireum.de
+ */
+
+.modal-header {
+  background: #f5f6f5;
+}
+
+.modal-footer {
+  background: #f5f6f5;
+}
+
+.modal-body {
+  max-height: calc(100vh - 200px);
+  overflow: auto;
+}
+
+.modal-full-height {
+  .modal-body {
+    height: calc(100vh - 200px);
+  }
+}

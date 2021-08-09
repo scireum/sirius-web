@@ -5,11 +5,11 @@
 <i:arg name="label" type="String" default="@i18n(labelKey)"/>
 <i:arg name="helpKey" type="String" default=""/>
 <i:arg name="help" type="String" default="@i18n(helpKey)"/>
-<i:arg name="placeholderKey" type="String" default="template.html.selects.selection" />
-<i:arg name="placeholder" type="String" default="@i18n(placeholderKey)" />
+<i:arg name="placeholderKey" type="String" default="template.html.selects.selection"/>
+<i:arg name="placeholder" type="String" default="@i18n(placeholderKey)"/>
 <i:arg name="readonly" type="boolean" default="false"/>
 <i:arg name="optional" type="boolean" default="false"/>
-<i:arg name="allowCustomEntries" type="boolean" default="false" />
+<i:arg name="allowCustomEntries" type="boolean" default="false"/>
 <i:arg name="suggestionUri" type="String" default=""/>
 
 <i:pragma name="description">
@@ -21,9 +21,23 @@
     <i:if test="isFilled(label)">
         <label><span>@label</span></label>
     </i:if>
-    <div @id="@id" name="@name" class="form-control input-block-level">
-        <i:render name="body"/>
-    </div>
+
+    <i:local name="addon" value="@renderToString('addon')"/>
+    <i:if test="isFilled(addon)">
+        <div class="input-group">
+            <div @id="@id" name="@name" class="form-control input-block-level">
+                <i:render name="body"/>
+            </div>
+            <div class="input-group-append">
+                <i:raw>@addon</i:raw>
+            </div>
+        </div>
+        <i:else>
+            <div @id="@id" name="@name" class="form-control input-block-level">
+                <i:render name="body"/>
+            </div>
+        </i:else>
+    </i:if>
 
     <i:if test="isFilled(help)">
         <small class="form-text text-muted">
@@ -36,7 +50,7 @@
 </div>
 <script>
     sirius.ready(function () {
-        new TokenAutocomplete({
+        const autocomplete = new TokenAutocomplete({
             selector: '#@id',
             name: '@name',
             selectMode: SelectModes.SINGLE,
@@ -48,5 +62,7 @@
             placeholderText: '@placeholder',
             suggestionsUri: '@suggestionUri'
         });
+
+        <i:render name="script" />
     });
 </script>
