@@ -22,9 +22,23 @@
     <i:if test="isFilled(label)">
         <label><span>@label</span></label>
     </i:if>
-    <div @id="@id" name="@name" class="form-control input-block-level">
-        <i:render name="body"/>
-    </div>
+
+    <i:local name="addon" value="@renderToString('addon')"/>
+    <i:if test="isFilled(addon)">
+        <div class="input-group">
+            <div @id="@id" name="@name" class="form-control input-block-level">
+                <i:render name="body"/>
+            </div>
+            <div class="input-group-append">
+                <i:raw>@addon</i:raw>
+            </div>
+        </div>
+        <i:else>
+            <div @id="@id" name="@name" class="form-control input-block-level">
+                <i:render name="body"/>
+            </div>
+        </i:else>
+    </i:if>
 
     <i:if test="isFilled(help)">
         <small class="form-text text-muted">
@@ -37,7 +51,7 @@
 </div>
 <script>
     sirius.ready(function () {
-        new TokenAutocomplete({
+        const autocomplete = new TokenAutocomplete({
             selector: '#@id',
             name: '@name',
             selectMode: SelectModes.MULTI,
@@ -50,5 +64,7 @@
             placeholderText: '@placeholder',
             suggestionsUri: '@suggestionUri'
         });
+
+        <i:render name="script" />
     });
 </script>
