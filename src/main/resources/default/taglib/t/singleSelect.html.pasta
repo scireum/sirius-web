@@ -5,11 +5,11 @@
 <i:arg name="label" type="String" default="@i18n(labelKey)"/>
 <i:arg name="helpKey" type="String" default=""/>
 <i:arg name="help" type="String" default="@i18n(helpKey)"/>
-<i:arg name="placeholderKey" type="String" default="template.html.selects.selection" />
-<i:arg name="placeholder" type="String" default="@i18n(placeholderKey)" />
+<i:arg name="placeholderKey" type="String" default="template.html.selects.selection"/>
+<i:arg name="placeholder" type="String" default="@i18n(placeholderKey)"/>
 <i:arg name="readonly" type="boolean" default="false"/>
 <i:arg name="optional" type="boolean" default="false"/>
-<i:arg name="allowCustomEntries" type="boolean" default="false" />
+<i:arg name="allowCustomEntries" type="boolean" default="false"/>
 <i:arg name="suggestionUri" type="String" default=""/>
 
 <i:pragma name="description">
