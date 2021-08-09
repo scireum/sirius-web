@@ -40,7 +40,7 @@ sirius.findParentOfType = function(_node, type) {
 
 // Invokes the given listener if enter is pressed in the given input field.
 sirius.addEnterListener = function(_node, listener) {
-    _node.addEventListener('keyup', function(event) {
+    _node.addEventListener('keydown', function(event) {
         if (event.code === 'Enter') {
             event.preventDefault();
             listener();
@@ -53,6 +53,9 @@ sirius.getJSON = function(url, params) {
         url = url + '?';
     }
     Object.keys(params).forEach(function(key) {
+        if (!url.endsWith('?')) {
+            url += '&';
+        }
         url += key + '=' + encodeURIComponent(params[key]);
     });
 
