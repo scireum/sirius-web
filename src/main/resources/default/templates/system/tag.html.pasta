@@ -4,7 +4,7 @@
 <i:arg type="String" name="description"/>
 <i:arg type="String" name="source"/>
 
-<w:page title="@apply('%s:%s', tagLib, tag)">
+<t:page title="@apply('%s:%s', tagLib, tag)">
     <i:block name="head">
         <script src="/assets/wondergem/ace/ace.js" type="text/javascript"></script>
     </i:block>
@@ -14,51 +14,55 @@
         <li><a href="/system/tag/@tagLib/@tag">@apply('%s:%s', tagLib, tag)</a></li>
     </i:block>
 
-    <w:pageHeader>@apply('%s:%s', tagLib, tag)</w:pageHeader>
+    <i:block name="page-header">
+        <t:pageHeader title="@apply('%s:%s', tagLib, tag)"/>
+    </i:block>
+
     <i:if test="isFilled(description)">
-        <div class="well">
-            <pre style="font-size: small">
-                <i:raw>@description</i:raw>
-            </pre>
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Description</h5>
+                <div class="text-monospace"><i:raw>@description</i:raw></div>
+            </div>
         </div>
     </i:if>
     <i:if test="!arguments.isEmpty()">
-        <w:heading label="Arguments" />
-        <table class="table table-striped">
-            <tr>
-                <td>
-                    Name
-                </td>
-                <td>
-                    Description
-                </td>
-            </tr>
-            <i:for type="sirius.pasta.tagliatelle.TemplateArgument" var="arg" items="arguments">
-                <tr>
-                    <td  style="@if (arg.getDefaultValue() == null) {font-weight: bold; } @if (arg.getDeprecationWarning() != null) { text-decoration: line-through }">
-                        @arg.getName() <small>(@arg.getType().getName())</small>
-                    </td>
-                    <td>
-                        <p>
-                            <i:raw>@arg.getDescription()</i:raw>
-                        </p>
-                        <i:if test="arg.getDeprecationWarning() != null">
-                            <p><b>@arg.getDeprecationWarning()</b></p>
-                        </i:if>
-                    </td>
-                </tr>
-            </i:for>
-        </table>
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Arguments</h5>
+                <table class="table table-striped">
+                    <tr>
+                        <td>
+                            Name
+                        </td>
+                        <td>
+                            Description
+                        </td>
+                    </tr>
+                    <i:for type="sirius.pasta.tagliatelle.TemplateArgument" var="arg" items="arguments">
+                        <tr>
+                            <td style="@if (arg.getDefaultValue() == null) {font-weight: bold; } @if (arg.getDeprecationWarning() != null) { text-decoration: line-through }">
+                                @arg.getName() <small>(@arg.getType().getName())</small>
+                            </td>
+                            <td>
+                                <p>
+                                    <i:raw>@arg.getDescription()</i:raw>
+                                </p>
+                                <i:if test="arg.getDeprecationWarning() != null">
+                                    <p><b>@arg.getDeprecationWarning()</b></p>
+                                </i:if>
+                            </td>
+                        </tr>
+                    </i:for>
+                </table>
+            </div>
+        </div>
     </i:if>
 
     <i:if test="isFilled(source)">
-        <w:heading label="Source Code" />
-
-        <w:codeEditor readonly="true" height="250">@source</w:codeEditor>
+        <t:heading title="Source Code"/>
+        <t:codeEditor readonly="true">@source</t:codeEditor>
     </i:if>
 
-    <div class="form-actions">
-        <a href="/system/tags" class="btn">@i18n("NLS.back")</a>
-    </div>
-
-</w:page>
+    <t:formBar btnLabel="" />
+</t:page>
