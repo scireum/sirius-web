@@ -1,0 +1,33 @@
+<i:arg type="String" name="titleKey" default=""/>
+<i:arg type="String" name="title" default="@i18n(titleKey)"/>
+<i:arg type="String" name="icon" default=""/>
+<i:arg type="String" name="labelClass" default=""
+       description="Defines addition classes to add to the label."/>
+<i:arg type="String" name="class" default=""
+       description="Defines addition classes to add to the dropdown div."/>
+
+<i:pragma name="description" value="Renders an inline dropdown within a Tycho template"/>
+<i:local name="contents" value="@renderToString('body')"/>
+
+<i:if test="isFilled(contents)">
+    <div class="dropdown @class">
+        <a class="btn btn-link"
+           style="z-index: 3;
+           position: relative"
+           data-toggle="dropdown"
+           aria-haspopup="true"
+           aria-expanded="false">
+            <span class="d-flex flex-row">
+                <i:if test="isFilled(icon)">
+                    <span class="pr-2"><i class="fa @icon"></i></span>
+                </i:if>
+                <i:if test="isFilled(title)">
+                    <span class="@labelClass">@title</span>
+                </i:if>
+            </span>
+        </a>
+        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+            <i:raw>@contents</i:raw>
+        </div>
+    </div>
+</i:if>

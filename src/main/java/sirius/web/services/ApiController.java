@@ -56,7 +56,12 @@ public class ApiController extends BasicController {
     @Permission(PERMISSION_SYSTEM_API)
     @DefaultRoute
     public void systemApis(WebContext webContext) {
-        webContext.respondWith().template("/templates/system/apis.html.pasta", publicServices.getApis());
+        webContext.respondWith()
+                  .template("/templates/system/apis.html.pasta",
+                            publicServices.getApis()
+                                          .stream()
+                                          .filter(api -> hasPermission(api.getRequiredRoles()))
+                                          .toList());
     }
 
     /**

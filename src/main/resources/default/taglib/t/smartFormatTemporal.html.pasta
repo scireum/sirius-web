@@ -1,0 +1,6 @@
+<i:arg type="java.time.LocalDateTime" name="date" />
+<i:arg type="String" name="class" default="" />
+
+<i:if test="date != null">
+    <span class="cycle cursor-pointer @class" data-cycle="@toUserString(date)">@NLS.toSpokenDate(date)</span>
+</i:if>

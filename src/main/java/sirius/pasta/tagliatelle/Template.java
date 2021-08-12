@@ -313,7 +313,7 @@ public class Template {
     /**
      * Returns how many times the template was rendered since its compilation.
      *
-     * @return the number of invokations of this template
+     * @return the number of invocations of this template
      */
     public int getNumInvocations() {
         return (int) renderTime.getCount();

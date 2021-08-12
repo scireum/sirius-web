@@ -3,24 +3,34 @@
 <i:arg type="java.util.Collection" name="tagLibs"/>
 <i:arg type="sirius.kernel.commons.MultiMap" name="tagLibTags"/>
 
-<w:page title="Tagliatelle">
+<t:page title="Tagliatelle">
 
     <i:block name="breadcrumbs">
         <li><a href="/system/tags">Tagliatelle</a></li>
     </i:block>
 
-    <w:pageHeader>Tagliatelle</w:pageHeader>
-    <div class="row">
-        <div class="col-md-12">
-            <w:heading label="Macros"/>
-            <table class="table table-striped">
+    <i:block name="page-header">
+        <t:pageHeader title="Tagliatelle">
+            <i:block name="actions">
+                <a href="/system/tags/state" class="btn btn-link">
+                    <i class="fa fa-chart-bar"></i> <span class="d-none d-lg-inline-block">Tags State</span>
+                </a>
+            </i:block>
+        </t:pageHeader>
+    </i:block>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Macros</h5>
+
+            <table class="table">
                 <tr>
-                    <td>
+                    <th>
                         Name
-                    </td>
-                    <td>
+                    </th>
+                    <th>
                         Description
-                    </td>
+                    </th>
                 </tr>
                 <i:for type="sirius.pasta.noodle.macros.Macro" var="macro" items="macros">
                     <tr>
@@ -36,29 +46,27 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-md-12">
-            <div class="row">
-                <div class="col-md-4">
-                    <w:navbox label="Built-Ins">
-                        <i:for type="String" var="tag" items="builtIns">
-                            <w:navboxLink label="@apply('i:%s', tag)"
-                                          url="@apply('/system/tag/i/%s', tag)"/>
-                        </i:for>
-                    </w:navbox>
-                </div>
-                <i:for type="Tuple" var="tagLib" items="tagLibs">
-                    <div class="col-md-4">
-                        <w:navbox label="@tagLib.getSecond().as(String.class)">
-                            <i:for type="String" var="tag" items="tagLibTags.get(tagLib.getFirst())">
-                                <w:navboxLink label="@apply('%s:%s', tagLib.getFirst(), tag)"
-                                              url="@apply('/system/tag/%s/%s', tagLib.getFirst(), tag)"/>
-                            </i:for>
-                        </w:navbox>
-                    </div>
-                </i:for>
-            </div>
-        </div>
-    </div>
+    <t:heading title="Tag Libraries"/>
 
-</w:page>
+    <t:datacards>
+        <t:datacard title="Build-Ins">
+            <t:navbox>
+                <i:for type="String" var="tag" items="builtIns">
+                    <t:navboxLink label="@apply('i:%s', tag)"
+                                  url="@apply('/system/tag/i/%s', tag)"/>
+                </i:for>
+            </t:navbox>
+        </t:datacard>
+        <i:for type="Tuple" var="tagLib" items="tagLibs">
+            <t:datacard title="@tagLib.getSecond().as(String.class)">
+                <t:navbox>
+                    <i:for type="String" var="tag" items="tagLibTags.get(tagLib.getFirst())">
+                        <t:navboxLink label="@apply('%s:%s', tagLib.getFirst(), tag)"
+                                      url="@apply('/system/tag/%s/%s', tagLib.getFirst(), tag)"/>
+                    </i:for>
+                </t:navbox>
+            </t:datacard>
+        </i:for>
+    </t:datacards>
+
+</t:page>
