@@ -30,24 +30,26 @@
         </t:pageHeader>
     </i:block>
 
-    <t:datacards>
-        <i:for type="sirius.web.health.LoadInfoProvider" var="provider" items="providers">
-            <i:local name="infos"
-                     value="provider.collectLoadInfos().stream().filter(|info| all || info.isNonZero()).collect(java.util.stream.Collectors.toList()).as(List.class)"/>
-            <i:if test="!infos.isEmpty()">
-                <t:datacard title="@provider.getLabel()">
-                    <i:for type="sirius.web.health.LoadInfo" var="info" items="infos">
-                        <t:infoLine label="@info.getLabel()">
-                            <i:if test="info.isNonZero()">
-                                <span class="text-sirius-green-dark">@info.getValueAsString()</span>
-                                <i:else>
-                                    <span class="text-sirius-gray">@info.getValueAsString()</span>
-                                </i:else>
-                            </i:if>
-                        </t:infoLine>
-                    </i:for>
-                </t:datacard>
-            </i:if>
-        </i:for>
-    </t:datacards>
+    <t:emptyCheck data="providers">
+        <t:datacards>
+            <i:for type="sirius.web.health.LoadInfoProvider" var="provider" items="providers">
+                <i:local name="infos"
+                         value="provider.collectLoadInfos().stream().filter(|info| all || info.isNonZero()).collect(java.util.stream.Collectors.toList()).as(List.class)"/>
+                <i:if test="!infos.isEmpty()">
+                    <t:datacard title="@provider.getLabel()">
+                        <i:for type="sirius.web.health.LoadInfo" var="info" items="infos">
+                            <t:infoLine label="@info.getLabel()">
+                                <i:if test="info.isNonZero()">
+                                    <span class="text-sirius-green-dark">@info.getValueAsString()</span>
+                                    <i:else>
+                                        <span class="text-sirius-gray">@info.getValueAsString()</span>
+                                    </i:else>
+                                </i:if>
+                            </t:infoLine>
+                        </i:for>
+                    </t:datacard>
+                </i:if>
+            </i:for>
+        </t:datacards>
+    </t:emptyCheck>
 </t:page>
