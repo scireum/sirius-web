@@ -47,7 +47,7 @@
 </head>
 <body>
 <div id="wrapper">
-    <div id="wrapper-menu">
+    <div id="wrapper-menu" class="fixed-top-lg">
         <i:render name="menu">
             <i:invoke template="/templates/tycho/page-menu.html.pasta"/>
         </i:render>
@@ -78,7 +78,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="main-container" class="container-fluid mb-2">
+                <div id="main-container" class="container-fluid mb-2 pt-lg-5 pb-lg-5">
                     <i:render name="page-header"/>
 
                     <i:render name="messages">
@@ -90,7 +90,7 @@
             </i:else>
         </i:if>
     </div>
-    <div id="wrapper-footer">
+    <div id="wrapper-footer" class="fixed-bottom-lg">
         <i:render name="footer">
             <i:invoke template="/templates/tycho/page-footer.html.pasta"/>
         </i:render>
