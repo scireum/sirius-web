@@ -334,7 +334,12 @@ public class Page<E> {
         if (getItems().isEmpty()) {
             return NLS.get("Page.noResults");
         }
-        return start + " - " + getEnd();
+
+        return NLS.fmtr("Page.range")
+                  .set("first", NLS.toUserString(start))
+                  .set("last", NLS.toUserString(getEnd()))
+                  .set("total", getTotal() > 0 ? NLS.toUserString(getTotal()) : null)
+                  .smartFormat();
     }
 
     /**
