@@ -447,8 +447,8 @@ public class Page<E> {
      * @return <tt>true</tt> if a filter is set, <tt>false</tt> otherwise
      */
     public boolean isFiltered() {
-        return Strings.isFilled(getQuery()) || getFacets().stream()
-                                                          .anyMatch(facet -> Strings.isFilled(facet.getValue()));
+        return Strings.isFilled(getQuery()) || start > 1 || getFacets().stream()
+                                                                       .anyMatch(facet -> Strings.isFilled(facet.getValue()));
     }
 
     /**
