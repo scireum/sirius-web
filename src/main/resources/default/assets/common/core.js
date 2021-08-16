@@ -43,7 +43,7 @@ sirius.addEnterListener = function(_node, listener) {
     _node.addEventListener('keydown', function(event) {
         if (event.code === 'Enter') {
             event.preventDefault();
-            listener();
+            listener(event);
         }
     });
 }
