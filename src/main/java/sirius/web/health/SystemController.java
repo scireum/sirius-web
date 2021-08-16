@@ -300,7 +300,10 @@ public class SystemController extends BasicController {
     public void load(WebContext ctx) {
         ctx.respondWith()
            .template("/templates/system/load.html.pasta",
-                     loadInfoProviders.getParts(),
+                     loadInfoProviders.getParts()
+                                      .stream()
+                                      .sorted(Comparator.comparing(LoadInfoProvider::getLabel))
+                                      .toList(),
                      ctx.get("all").asBoolean(false));
     }
 

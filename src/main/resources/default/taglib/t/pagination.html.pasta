@@ -1,0 +1,59 @@
+<i:arg type="Page" name="page" />
+<i:arg type="String" name="baseUrl" />
+
+<i:pragma name="description" value="Renders a pagination box below a table within a Tycho template" />
+
+
+<i:if test="!page.getItems().isEmpty() || page.getStart() != 1">
+    <i:local name="id" value="generateId()" />
+    <div class="input-group justify-content-center mb-4">
+        <div class="input-group-prepend">
+            <i:if test="page.hasLess()">
+                <a href="page.linkToPreviousPage(baseUrl)" class="btn btn-outline-secondary">&#8592;</a>
+                <i:else>
+                    <a class="btn btn-outline-secondary disabled">&#8592;</a>
+                </i:else>
+            </i:if>
+        </div>
+        <input type="text" id="@id" placeholder="@page.getRange()" class="text-center">
+        <div class="input-group-append">
+            <i:if test="page.hasMore()">
+                <a href="page.linkToNextPage(baseUrl)" class="btn btn-outline-secondary">&#8594;</a>
+                <i:else>
+                    <a class="btn btn-outline-secondary disabled">&#8594;</a>
+                </i:else>
+            </i:if>
+        </div>
+    </div>
+    <script type="text/javascript">
+        sirius.ready(function() {
+            const _rangeInput = document.getElementById('@id');
+            _rangeInput.addEventListener('keyup', function (event) {
+                if (event.keyCode === 13 && /^\d+$/.test(this.value)) {
+                    const location = '@raw {@page.linkToPageWithConfigurableStart(baseUrl)}' + this.value;
+                    window.location.replace(location);
+                    event.preventDefault();
+                }
+            });
+
+            ___if (page.hasLess() || page.hasMore()) {
+                document.addEventListener('keyUp', function(event) {
+                    ___if (page.hasLess()) {
+                        if (event.shiftKey && event.keyCode === 37) {
+                            const location = '@raw {@page.linkToPreviousPage(baseUrl)}';
+                            window.location.replace(location);
+                            event.preventDefault();
+                        }
+                    }
+                    ___if (page.hasMore()) {
+                        if (event.shiftKey && event.keyCode === 39) {
+                            const location = '@raw {@page.linkToNextPage(baseUrl)}';
+                            window.location.replace(location);
+                            event.preventDefault();
+                        }
+                    }
+                })
+            }
+        });
+    </script>
+</i:if>

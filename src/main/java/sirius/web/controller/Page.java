@@ -334,7 +334,12 @@ public class Page<E> {
         if (getItems().isEmpty()) {
             return NLS.get("Page.noResults");
         }
-        return start + " - " + getEnd();
+
+        return NLS.fmtr("Page.range")
+                  .set("first", NLS.toUserString(start))
+                  .set("last", NLS.toUserString(getEnd()))
+                  .set("total", getTotal() > 0 ? NLS.toUserString(getTotal()) : null)
+                  .smartFormat();
     }
 
     /**
@@ -447,8 +452,8 @@ public class Page<E> {
      * @return <tt>true</tt> if a filter is set, <tt>false</tt> otherwise
      */
     public boolean isFiltered() {
-        return Strings.isFilled(getQuery()) || getFacets().stream()
-                                                          .anyMatch(facet -> Strings.isFilled(facet.getValue()));
+        return Strings.isFilled(getQuery()) || start > 1 || getFacets().stream()
+                                                                       .anyMatch(facet -> Strings.isFilled(facet.getValue()));
     }
 
     /**
