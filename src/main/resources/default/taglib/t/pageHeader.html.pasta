@@ -1,5 +1,6 @@
 <i:arg type="String" name="titleKey" default=""/>
 <i:arg type="String" name="title" default="@i18n(titleKey)"/>
+<i:arg type="String" name="additionalActionsClass" default="" />
 
 <i:pragma name="description">
     Provides a header for a Tycho page. This element should most probably be placed in
@@ -28,7 +29,7 @@
                 </i:else>
             </i:if>
             <i:render name="actions" />
-            <t:additionalActions labelKey="template.html.additionalActions" class="ml-1" labelClass="d-none d-xl-inline-block">
+            <t:additionalActions labelKey="template.html.additionalActions" class="@('ml-1 ' + additionalActionsClass)" labelClass="d-none d-xl-inline-block">
                 <i:render name="additionalActions" />
             </t:additionalActions>
         </div>

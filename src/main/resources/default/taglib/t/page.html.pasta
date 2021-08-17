@@ -47,7 +47,7 @@
 </head>
 <body>
 <div id="wrapper">
-    <div id="wrapper-menu" class="fixed-top-lg">
+    <div id="wrapper-menu" class="sticky-top-lg">
         <i:render name="menu">
             <i:invoke template="/templates/tycho/page-menu.html.pasta"/>
         </i:render>
@@ -78,7 +78,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="main-container" class="container-fluid mb-2 pt-lg-5 pb-lg-5">
+                <div id="main-container" class="container-fluid mb-2 pb-lg-5">
                     <i:render name="page-header"/>
 
                     <i:render name="messages">
