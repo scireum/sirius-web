@@ -8,6 +8,8 @@
 
 package sirius.web.services;
 
+import sirius.web.security.MaintenanceInfo;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -65,6 +67,14 @@ public @interface PublicService {
      * @return the response format of this service
      */
     Format format() default Format.JSON;
+
+    /**
+     * Prevents calls to this service if set to <tt>true</tt> and the enclosing {@link sirius.web.security.ScopeInfo}
+     * is {@link MaintenanceInfo#isLocked() locked} for maintenance.
+     *
+     * @return <tt>true</tt> if this service must not be called during maintenance, <tt>false</tt> otherwise
+     */
+    boolean enforceMaintenanceMode() default false;
 
     /**
      * Specifies the visible name of this service.

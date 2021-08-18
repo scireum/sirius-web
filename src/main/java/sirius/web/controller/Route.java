@@ -70,6 +70,7 @@ public class Route {
     private Controller controller;
     private boolean preDispatchable;
     private Format format;
+    private boolean enforceMaintenanceMode;
     private Set<String> permissions = null;
     private String subScope;
 
@@ -157,7 +158,9 @@ public class Route {
     @SuppressWarnings("deprecation")
     private static void determineAPIFormat(Method method, Routed routed, Route result) {
         if (method.isAnnotationPresent(PublicService.class)) {
-            result.format = method.getAnnotation(PublicService.class).format();
+            PublicService publicServiceAnnotation = method.getAnnotation(PublicService.class);
+            result.enforceMaintenanceMode = publicServiceAnnotation.enforceMaintenanceMode();
+            result.format = publicServiceAnnotation.format();
             publicServices.recordPublicService(method);
         } else if (method.isAnnotationPresent(InternalService.class)) {
             result.format = method.getAnnotation(InternalService.class).format();
@@ -410,6 +413,10 @@ public class Route {
 
     public Format getApiResponseFormat() {
         return format;
+    }
+
+    public boolean isEnforceMaintenanceMode() {
+        return enforceMaintenanceMode;
     }
 
     /**
