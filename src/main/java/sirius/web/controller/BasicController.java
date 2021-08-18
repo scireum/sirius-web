@@ -138,7 +138,7 @@ public class BasicController implements Controller {
     }
 
     /**
-     * Displays a genric "Object was deleted" message.
+     * Displays a generic "Object was deleted" message.
      */
     public void showDeletedMessage() {
         UserContext.message(Message.info().withTextMessage(NLS.get("BasicController.objectDeleted")));
