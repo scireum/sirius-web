@@ -8,6 +8,7 @@
 
 package sirius.web.controller;
 
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
@@ -18,6 +19,7 @@ import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.di.Injector;
+import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.di.std.Register;
@@ -30,6 +32,7 @@ import sirius.web.http.Limited;
 import sirius.web.http.Unlimited;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
+import sirius.web.security.MaintenanceInfo;
 import sirius.web.security.UserContext;
 import sirius.web.services.Format;
 
@@ -37,6 +40,7 @@ import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.channels.ClosedChannelException;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -47,6 +51,9 @@ import java.util.Optional;
  */
 @Register(classes = {WebDispatcher.class, ControllerDispatcher.class})
 public class ControllerDispatcher implements WebDispatcher {
+
+    @ConfigValue("http.maintenanceRetryAfter")
+    private static Duration maintenanceRetryAfter;
 
     protected static final Log LOG = Log.get("controller");
     private static final String SYSTEM_MVC = "MVC";
@@ -139,6 +146,18 @@ public class ControllerDispatcher implements WebDispatcher {
                 return;
             }
 
+            // If the route is locked during maintenance, abort in an SEO/user-friendly way of sending an
+            // 503 + Retry-After header. We use a generous default timeout here, as this is mostly sufficient..
+            if (route.isEnforceMaintenanceMode() && UserContext.getCurrentScope()
+                                                               .tryAs(MaintenanceInfo.class)
+                                                               .map(MaintenanceInfo::isLocked)
+                                                               .orElse(false)) {
+                webContext.respondWith()
+                          .addHeader(HttpHeaderNames.RETRY_AFTER.toString(), maintenanceRetryAfter.getSeconds())
+                          .error(HttpResponseStatus.SERVICE_UNAVAILABLE);
+                return;
+            }
+
             // Inject WebContext as first parameter...
             params.add(0, webContext);
 
@@ -204,6 +223,7 @@ public class ControllerDispatcher implements WebDispatcher {
 
     private void executeRoute(WebContext webContext, Route route, List<Object> params) throws Exception {
         webContext.setAttribute(ATTRIBUTE_MATCHED_ROUTE, route.getPattern());
+
         if (route.getApiResponseFormat() != null) {
             executeApiCall(webContext, route, params);
         } else {
