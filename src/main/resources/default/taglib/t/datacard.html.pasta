@@ -52,9 +52,9 @@
         <i:local name="footerNavbox" value="@renderToString('footer-navbox')"/>
         <i:if test="isFilled(footer) || isFilled(footerNavbox)">
             <div class="card-footer">
-                <span class="d-flex flex-row flex-wrap">
+                <div>
                     <i:raw>@footer</i:raw>
-                </span>
+                </div>
                 <i:if test="isFilled(footerNavbox)">
                     <t:navbox class="mt-2">
                         <i:raw>@footerNavbox</i:raw>
