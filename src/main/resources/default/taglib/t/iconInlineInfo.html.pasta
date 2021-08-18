@@ -1,21 +1,18 @@
-<i:arg type="String" name="labelKey" default=""/>
-<i:arg type="String" name="label" default="@i18n(labelKey)"/>
+<i:arg type="String" name="icon" />
 <i:arg type="String" name="value" default=""/>
 <i:arg type="Object" name="effectiveValue" default="isFilled(value) ? value : renderToString('body')"/>
 <i:arg type="String" name="class" default=""/>
 
 <i:pragma name="description">
-    Renders a name, value pair which is rendered as a single block.
+    Renders an icon + value pair which is rendered as a single block.
 </i:pragma>
 
 <i:if test="isFilled(effectiveValue)">
-    <span class="d-flex flew-row text-small text-sirius-gray-dark mb-2 mr-3 overflow-hidden @class">
-        <i:if test="isFilled(label)">
-            <span class="font-weight-bold pr-1">
-                @(label):
-            </span>
-        </i:if>
-        <span class="overflow-hidden">
+    <span class="d-flex flew-row text-small mb-2 mr-3 @class">
+        <span class="text-sirius-gray-dark ">
+            <i class="fa @icon"></i>
+        </span>
+        <span class="pl-1 overflow-hidden">
             <i:if test="isFilled(value)">
                 @value
                 <i:else>
