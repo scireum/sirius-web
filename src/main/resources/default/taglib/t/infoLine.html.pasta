@@ -10,12 +10,12 @@
 
 <i:if test="isFilled(effectiveValue)">
     <div class="d-flex flex-row justify-content-between mb-2 @class">
-        <div>@label</div>
-        <div class="text-right">
+        <div class="overflow-hidden">@label</div>
+        <div class="text-right overflow-hidden">
             <i:if test="isFilled(value)">
                 @value
                 <i:else>
-                    <i:render name="body"/>
+                    <i:raw>@effectiveValue</i:raw>
                 </i:else>
             </i:if>
         </div>

@@ -1,0 +1,6 @@
+<i:pragma name="description">
+    Renders a list of t:tag elements properly as its body.
+</i:pragma>
+<span class="tycho-tags">
+    <i:render name="body"/>
+</span>

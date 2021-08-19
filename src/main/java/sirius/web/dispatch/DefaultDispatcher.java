@@ -33,9 +33,6 @@ public class DefaultDispatcher implements WebDispatcher {
      */
     public static final String ATTRIBUTE_ORIGINAL_URI = "ORIGINAL_URI";
 
-    @ConfigValue("http.crossdomain.xml.enabled")
-    private boolean serveCrossdomain;
-
     @ConfigValue("http.robots.txt.enabled")
     private boolean serveRobots;
 

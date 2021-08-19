@@ -57,6 +57,20 @@ a {
 
 }
 
+.nav-link .badge {
+  line-height: 1.5;
+  background-color: $sirius-gray;
+  color: white;
+  min-width: 1.5rem;
+}
+
+.nav-link:hover, .nav-link.active {
+  .badge {
+    background-color: white;
+    color: #333;
+  }
+}
+
 .back-button {
   display: none;
 }
