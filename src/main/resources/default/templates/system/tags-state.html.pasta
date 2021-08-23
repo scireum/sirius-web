@@ -37,7 +37,7 @@
                 </t:dropdown>
             </i:block>
             <i:block name="additionalActions">
-                <t:dropdownItem label="Reset Statistics" icon="fa fa-trash" url="/system/tags/state?reset" />
+                <t:dropdownItem label="Reset Statistics" icon="fa fa-fw fa-trash" url="/system/tags/state?reset" />
             </i:block>
         </t:pageHeader>
     </i:block>

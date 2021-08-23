@@ -13,7 +13,7 @@
     <t:permission permission="@permission">
         <a href="@url" class="dropdown-item @class">
             <i:if test="isFilled(icon)">
-                <i class="@icon fa-fw"></i>
+                <i class="@icon"></i>
             </i:if>
             @label
             <i:if test="adminOnly">

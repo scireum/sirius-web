@@ -14,7 +14,7 @@
         <li class="nav-item">
             <a href="@url" class="nav-link @class">
                 <i:if test="isFilled(icon)">
-                    <i class="fa-fw @icon"></i>
+                    <i class="@icon"></i>
                 </i:if>
                 @label
                 <i:if test="adminOnly">
