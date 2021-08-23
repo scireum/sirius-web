@@ -60,7 +60,7 @@
     </i:if>
 
     <i:if test="isFilled(source)">
-        <t:heading title="Source Code"/>
+        <t:heading label="Source Code"/>
         <t:codeEditor readonly="true">@source</t:codeEditor>
     </i:if>
 

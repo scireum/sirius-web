@@ -1,5 +1,5 @@
-<i:arg type="String" name="titleKey" default=""/>
-<i:arg type="String" name="title" default="@i18n(titleKey)"/>
+<i:arg type="String" name="labelKey" default=""/>
+<i:arg type="String" name="label" default="@i18n(labelKey)"/>
 <i:arg type="String" name="icon" default=""/>
 <i:arg type="String" name="labelClass" default=""
        description="Defines addition classes to add to the label."/>
@@ -19,10 +19,10 @@
            aria-expanded="false">
             <span class="d-flex flex-row">
                 <i:if test="isFilled(icon)">
-                    <span class="pr-2"><i class="fa @icon"></i></span>
+                    <span class="pr-2"><i class="@icon"></i></span>
                 </i:if>
-                <i:if test="isFilled(title)">
-                    <span class="@labelClass">@title</span>
+                <i:if test="isFilled(label)">
+                    <span class="@labelClass">@label</span>
                 </i:if>
             </span>
         </a>

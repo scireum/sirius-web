@@ -30,14 +30,14 @@
                 <a href="/system/tags/state" class="btn btn-link">
                     <i class="fa fa-sync"></i> <span class="d-none d-lg-inline-block">@i18n("NLS.refresh")</span>
                 </a>
-                <t:dropdown title="Debug" icon="fa-bug" labelClass="debug-text d-none d-lg-inline-block">
-                    <t:dropdownItem title="OFF" url="javascript:setDebugLevel('OFF')" />
-                    <t:dropdownItem title="DEBUG" url="javascript:setDebugLevel('DEBUG')" />
-                    <t:dropdownItem title="TRACE" url="javascript:setDebugLevel('TRACE')" />
+                <t:dropdown label="Debug" icon="fa fa-bug" labelClass="debug-text d-none d-lg-inline-block">
+                    <t:dropdownItem label="OFF" url="javascript:setDebugLevel('OFF')" />
+                    <t:dropdownItem label="DEBUG" url="javascript:setDebugLevel('DEBUG')" />
+                    <t:dropdownItem label="TRACE" url="javascript:setDebugLevel('TRACE')" />
                 </t:dropdown>
             </i:block>
             <i:block name="additionalActions">
-                <t:dropdownItem title="Reset Statistics" icon="fa-trash" url="/system/tags/state?reset" />
+                <t:dropdownItem label="Reset Statistics" icon="fa fa-fw fa-trash" url="/system/tags/state?reset" />
             </i:block>
         </t:pageHeader>
     </i:block>

@@ -46,7 +46,7 @@
         </div>
     </div>
 
-    <t:heading title="Tag Libraries"/>
+    <t:heading label="Tag Libraries"/>
 
     <t:datacards>
         <t:datacard title="Build-Ins">

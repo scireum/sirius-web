@@ -9,7 +9,7 @@
 
 <i:if test="user().hasPermission(permission)">
     <li>
-        <a href="@url" class="card-link nav-link @if (active) { active } d-flex flex-row">
+        <a href="@url" class="card-link nav-link @if (active) { active } d-flex flex-row mb-1">
             <i:if test="isFilled(icon)">
                 <span class="nav-link-icon pr-2"><i class="@icon"></i></span>
             </i:if>

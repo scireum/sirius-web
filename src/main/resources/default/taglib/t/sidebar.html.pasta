@@ -1,28 +1,24 @@
-<i:arg type="String" name="class" default="" description="Permits to add additional classes to the sidebar."/>
+<i:arg type="String" name="class" default="" description="Permits adding additional classes to the sidebar."/>
 
-<i:local name="sidebarContents" value="@renderToString('sidebar')"/>
-
-<i:if test="isFilled(sidebarContents)">
-    <div class="row flex-grow-0 flex-lg-grow-1">
-        <div class="col-12 col-lg-4 col-xl-3 mb-4 sidebar d-none d-lg-block @class">
-            <div class="card h-100 shadow">
-                <img src="/assets/tycho/svg/sidebar-bg.svg" class="d-none d-lg-block"/>
-
-                <div class="card-body">
-                    <div class="d-flex flex-column">
-                        <i:raw>@sidebarContents</i:raw>
-                    </div>
+<div class="row flex-grow-0 flex-lg-grow-1">
+    <div class="col-12 col-lg-4 col-xl-3 sidebar d-none d-lg-block @class">
+        <div class="card h-100 shadow">
+            <div class="card-body">
+                <div class="d-flex flex-column">
+                    <i:render name="sidebar"/>
                 </div>
             </div>
-        </div>
-        <div class="col-12 col-lg-8 col-xl-9 d-flex mb-4">
-            <div class="flex-grow-1">
-                <i:render name="body"/>
+            <div class="card-footer">
+                <i:render name="sidebar-footer">
+                    <t:backButton class="mt-4 d-block" />
+                </i:render>
             </div>
         </div>
     </div>
+    <div class="col-12 col-lg-8 col-xl-9 d-flex mb-4">
+        <div class="flex-grow-1">
+            <i:render name="body"/>
+        </div>
+    </div>
+</div>
 
-    <i:else>
-        <i:render name="body"/>
-    </i:else>
-</i:if>

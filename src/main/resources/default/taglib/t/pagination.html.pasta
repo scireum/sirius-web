@@ -9,7 +9,7 @@
     <div class="input-group justify-content-center mb-4">
         <div class="input-group-prepend">
             <i:if test="page.hasLess()">
-                <a href="page.linkToPreviousPage(baseUrl)" class="btn btn-outline-secondary">&#8592;</a>
+                <a href="@page.linkToPreviousPage(baseUrl)" class="btn btn-outline-secondary">&#8592;</a>
                 <i:else>
                     <a class="btn btn-outline-secondary disabled">&#8592;</a>
                 </i:else>
@@ -18,7 +18,7 @@
         <input type="text" id="@id" placeholder="@page.getRange()" class="text-center">
         <div class="input-group-append">
             <i:if test="page.hasMore()">
-                <a href="page.linkToNextPage(baseUrl)" class="btn btn-outline-secondary">&#8594;</a>
+                <a href="@page.linkToNextPage(baseUrl)" class="btn btn-outline-secondary">&#8594;</a>
                 <i:else>
                     <a class="btn btn-outline-secondary disabled">&#8594;</a>
                 </i:else>

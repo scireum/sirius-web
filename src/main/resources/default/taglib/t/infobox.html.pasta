@@ -2,11 +2,11 @@
 <i:arg type="String" name="label" default="@i18n(labelKey)" />
 <i:arg type="String" name="class" default="" />
 
-<i:pragma name="description" value="Renders a navigation section within the sidebar or another card." />
+<i:pragma name="description" value="Renders an information section within the sidebar or another card." />
 
-<ul class="nav flex-column nav-pills flex-grow-1 @class">
+<div class="d-flex flex-column @class">
     <i:if test="isFilled(label)">
-        <li class="nav-header">@label</li>
+        <div class="nav-header">@label</div>
     </i:if>
     <i:render name="body" />
-</ul>
+</div>

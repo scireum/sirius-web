@@ -74,3 +74,13 @@ a {
 .back-button {
   display: none;
 }
+
+.link {
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
