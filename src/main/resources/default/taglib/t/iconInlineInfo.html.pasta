@@ -10,7 +10,7 @@
 <i:if test="isFilled(effectiveValue)">
     <span class="d-flex flew-row text-small mb-2 mr-3 @class">
         <span class="text-sirius-gray-dark ">
-            <i class="fa @icon"></i>
+            <i class="@icon"></i>
         </span>
         <span class="pl-1 overflow-hidden">
             <i:if test="isFilled(value)">

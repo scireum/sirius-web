@@ -2,7 +2,7 @@
 <i:arg name="singleClick" type="boolean" default="true" />
 <i:arg name="btnLabelKey" type="String" default="NLS.save" />
 <i:arg name="btnLabel" type="String" default="@i18n(btnLabelKey)" />
-<i:arg name="icon" type="String" default="fa-check" />
+<i:arg name="icon" type="String" default="fa fa-check" />
 <i:arg name="class" type="String" default="" />
 
 <i:pragma name="description" value="Renders a footer bar for forms within a Tycho template" />
@@ -10,7 +10,7 @@
 <div class="bt-gray mt-4 pt-3 mb-4 @class">
     <i:if test="isFilled(btnLabel)">
     <a class="btn btn-primary submit-link @if (singleClick) { single-click-link }">
-        <i class="fa @icon"></i> @btnLabel
+        <i class="@icon"></i> @btnLabel
     </a>
     </i:if>
     <i:if test="backButton">
