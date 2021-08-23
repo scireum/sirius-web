@@ -2,8 +2,7 @@
 <i:arg type="String" name="class" default="" />
 
 <i:if test="date != null">
-    <span class="cycle cursor-pointer position-relative @class"
-          style="z-index: 2"
+    <span class="cycle link @class"
           data-cycle="@toUserString(date)">
         @NLS.toSpokenDate(date)
     </span>
