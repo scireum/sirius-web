@@ -23,17 +23,17 @@ sirius.ready(function () {
         _node.addEventListener('click', function () {
             if (_node.matches('.guarded-link')) {
                 try {
-                    let modalElement = document.getElementById('danger-link-confirm');
-                    let submitBtn = modalElement.querySelector("button[type='submit']");
+                    let _modalElement = document.getElementById('danger-link-confirm');
+                    let _submitBtn = _modalElement.querySelector("button[type='submit']");
 
-                    submitBtn.addEventListener('click', function() {
+                    _submitBtn.addEventListener('click', function () {
                         document.getElementById(_node.getAttribute('data-deleteid')).submit();
                     });
 
                     $('#danger-link-confirm').modal({
                         keyboard: true
                     }).on('shown', function () {
-                        modalElement.querySelector('.btn-close').focus();
+                        _modalElement.querySelector('.btn-close').focus();
                     }).attr('tabindex', -1);
                 } catch (e) {
                     console.log(e);
@@ -42,19 +42,19 @@ sirius.ready(function () {
                 return false;
             } else {
                 try {
-                    let modalElement = document.getElementById('danger-link-confirm');
+                    let _modalElement = document.getElementById('danger-link-confirm');
 
-                    let okayLink = _node.getAttribute('href');
-                    let submitBtn = modalElement.querySelector("button[type='submit']");
+                    let _okayLink = _node.getAttribute('href');
+                    let _submitBtn = _modalElement.querySelector("button[type='submit']");
 
-                    submitBtn.addEventListener('click', function() {
-                        window.location.href = okayLink;
+                    _submitBtn.addEventListener('click', function () {
+                        window.location.href = _okayLink;
                     });
 
                     $('#danger-link-confirm').modal({
                         keyboard: true
                     }).on('shown', function () {
-                        modalElement.querySelector('.btn-close').focus();
+                        _modalElement.querySelector('.btn-close').focus();
                     }).setAttribute('tabindex', -1);
                 } catch (e) {
                     console.log(e);
