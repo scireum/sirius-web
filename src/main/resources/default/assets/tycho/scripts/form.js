@@ -27,7 +27,7 @@ sirius.ready(function () {
                     let _submitBtn = _modalElement.querySelector("button[type='submit']");
 
                     _submitBtn.addEventListener('click', function () {
-                        document.getElementById(_node.getAttribute('data-deleteid')).submit();
+                        document.getElementById(_node.getAttribute('data-delete-id')).submit();
                     });
 
                     $('#danger-link-confirm').modal({

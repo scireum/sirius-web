@@ -6,7 +6,7 @@
 <i:local name="deleteFormId" value="@generateId('deleteForm-%s')"/>
 
 <form id="@deleteFormId" method="post" action="@if(page != null) {@page.linkToCurrentPage(url)} else {@url}">
-    <a role="button" class="danger-link guarded-link @class" data-deleteid="@deleteFormId">
+    <a role="button" class="danger-link guarded-link @class" data-delete-id="@deleteFormId">
         <i class="fa fa-trash"></i> @i18n("NLS.delete")
     </a>
     <input name="CSRFToken" value="@part(sirius.web.http.CSRFHelper.class).getCSRFToken()" type="hidden"/>
