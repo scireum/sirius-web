@@ -3,10 +3,12 @@
 <i:arg type="String" name="class" default="" />
 
 <i:pragma name="description" value="Renders an information section within the sidebar or another card." />
-
+<i:local name="bodyContents" value="@renderToString('body')"/>
+<i:if test="isFilled(bodyContents)">
 <div class="d-flex flex-column @class">
     <i:if test="isFilled(label)">
         <div class="nav-header">@label</div>
     </i:if>
-    <i:render name="body" />
+    <i:raw>@bodyContents</i:raw>
 </div>
+</i:if>
