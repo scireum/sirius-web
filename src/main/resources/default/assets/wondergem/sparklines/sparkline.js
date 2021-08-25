@@ -8,25 +8,25 @@
  * Inspired by https://github.com/eanbowman/sparkline.js
  */
 function sparkline(element) {
-    var ctx = element.getContext("2d");
-    var data = element.getAttribute("data-sparkline");
-    var spark = data.split(',');
-    for (var i in spark) {
+    const ctx = element.getContext("2d");
+    const data = element.getAttribute("data-sparkline");
+    const spark = data.split(',');
+    for (const i in spark) {
         spark[i] = parseFloat(spark[i]);
     }
 
-    var minValue = Math.min.apply(Math, spark);
-    for (var j in spark) {
+    const minValue = Math.min.apply(Math, spark);
+    for (const j in spark) {
         spark[j] = spark[j] - minValue;
     }
 
-    var margin = 2;
-    var ratioW = ((element.width - margin * 2) * 1) / spark.length;
-    var ratioH = ((element.height - margin * 2) * .8) / Math.max.apply(Math, spark);
+    const margin = 2;
+    const ratioW = ((element.width - margin * 2) * 1) / spark.length;
+    const ratioH = ((element.height - margin * 2) * .8) / Math.max.apply(Math, spark);
 
-    var x = 0;
-    var y = 0;
-    var grad = ctx.createLinearGradient(0, 0, element.width, element.height);
+    let x = 0;
+    let y = 0;
+    const grad = ctx.createLinearGradient(0, 0, element.width, element.height);
     grad.addColorStop(0, "#007AC9");
     grad.addColorStop(1, "#00c972");
 
@@ -38,7 +38,7 @@ function sparkline(element) {
     ctx.arc(margin, element.height - (spark[0] * ratioH + margin), 2, 0, 2 * Math.PI);
     ctx.fill();
     ctx.stroke();
-    for (var index in spark) {
+    for (const index in spark) {
         if (index === 0) {
             ctx.beginPath();
             ctx.lineWidth = "1";
