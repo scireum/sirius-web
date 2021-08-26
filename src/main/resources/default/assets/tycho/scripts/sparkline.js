@@ -8,15 +8,15 @@
  * Inspired by https://github.com/eanbowman/sparkline.js
  */
 function sparkline(_element) {
-    const ctx = _element.getContext("2d");
-    const data = _element.getAttribute("data-sparkline");
+    const ctx = _element.getContext('2d');
+    const data = _element.dataset.sparkline;
     const spark = data.split(',');
-    for (const i in spark) {
+    for (var i in spark) {
         spark[i] = parseFloat(spark[i]);
     }
 
     const minValue = Math.min.apply(Math, spark);
-    for (const j in spark) {
+    for (var j in spark) {
         spark[j] = spark[j] - minValue;
     }
 
@@ -38,7 +38,7 @@ function sparkline(_element) {
     ctx.arc(margin, _element.height - (spark[0] * ratioH + margin), 2, 0, 2 * Math.PI);
     ctx.fill();
     ctx.stroke();
-    for (const index in spark) {
+    for (var index in spark) {
         if (index === 0) {
             ctx.beginPath();
             ctx.lineWidth = "1";
@@ -59,5 +59,5 @@ function sparkline(_element) {
 }
 
 sirius.ready(function() {
-    document.querySelectorAll('.sparkline').forEach(sparkline);
+    document.querySelectorAll('.sparkline-js').forEach(sparkline);
 });
