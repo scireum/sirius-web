@@ -7,28 +7,26 @@
  *
  * Inspired by https://github.com/eanbowman/sparkline.js
  */
-function sparkline(element) {
-    var ctx = element.getContext("2d");
-    var data = element.getAttribute("data-sparkline");
-    var spark = data.split(',');
+function sparkline(_element) {
+    const ctx = _element.getContext('2d');
+    const data = _element.dataset.sparkline;
+    const spark = data.split(',');
     for (var i in spark) {
-        spark[i] = Math.round(parseFloat(spark[i]) * 100);
         spark[i] = parseFloat(spark[i]);
     }
 
-    var minValue = Math.min.apply(Math, spark);
+    const minValue = Math.min.apply(Math, spark);
     for (var j in spark) {
         spark[j] = spark[j] - minValue;
     }
 
+    const margin = 2;
+    const ratioW = ((_element.width - margin * 2) * 1) / spark.length;
+    const ratioH = ((_element.height - margin * 2) * .8) / Math.max.apply(Math, spark);
 
-    var margin = 2;
-    var ratioW = ((element.width - margin * 2) * 1) / spark.length;
-    var ratioH = ((element.height - margin * 2) * .8) / Math.max.apply(Math, spark);
-
-    var x = 0;
-    var y = 0;
-    var grad = ctx.createLinearGradient(0, 0, element.width, element.height);
+    let x = 0;
+    let y = 0;
+    const grad = ctx.createLinearGradient(0, 0, _element.width, _element.height);
     grad.addColorStop(0, "#007AC9");
     grad.addColorStop(1, "#00c972");
 
@@ -37,17 +35,17 @@ function sparkline(element) {
 
     ctx.beginPath();
     ctx.lineWidth = "1";
-    ctx.arc(margin, element.height - (spark[0] * ratioH + margin), 2, 0, 2 * Math.PI);
+    ctx.arc(margin, _element.height - (spark[0] * ratioH + margin), 2, 0, 2 * Math.PI);
     ctx.fill();
     ctx.stroke();
     for (var index in spark) {
         if (index === 0) {
             ctx.beginPath();
             ctx.lineWidth = "1";
-            ctx.moveTo(margin, element.height - (spark[index] * ratioH + margin));
+            ctx.moveTo(margin, _element.height - (spark[index] * ratioH + margin));
         } else {
             x = index * ratioW + margin;
-            y = element.height - (spark[index] * ratioH + margin);
+            y = _element.height - (spark[index] * ratioH + margin);
             ctx.lineTo(x, y);
         }
     }
@@ -60,3 +58,6 @@ function sparkline(element) {
     ctx.stroke();
 }
 
+sirius.ready(function() {
+    document.querySelectorAll('.sparkline-js').forEach(sparkline);
+});
