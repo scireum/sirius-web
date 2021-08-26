@@ -182,7 +182,7 @@ public class Permissions {
     /**
      * Determines if the permission expression is contained for an object.
      * <p>
-     * Next to plain permission names, permissions can also negated using <tt>!permission</tt> and on top of that,
+     * Next to plain permission names, permissions can also be negated using <tt>!permission</tt> and on top of that,
      * whole logical expressions in DNF (disjunctive normal form) can be passed in.
      * <p>
      * Such a formula is a set of expressions where a <b>,</b> represents an <tt>or</tt> and a <b>+</b> represents an

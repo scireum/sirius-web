@@ -60,7 +60,7 @@ class Profile {
 
     /**
      * Validates this profile and throws exception if problems exist.
-     * <p>
+     *
      * @throws IllegalStateException if the profile refers to another profile applied earlier than itself.
      */
     public void validate() {
