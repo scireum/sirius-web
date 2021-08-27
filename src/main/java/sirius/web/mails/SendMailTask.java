@@ -41,6 +41,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -50,8 +51,8 @@ import java.util.TreeSet;
  */
 class SendMailTask implements Runnable {
 
-    private MailSender mail;
-    private SMTPConfiguration config;
+    private final MailSender mail;
+    private final SMTPConfiguration config;
     private boolean success = false;
     private String messageId = null;
     private String technicalSender;
@@ -239,11 +240,7 @@ class SendMailTask implements Runnable {
             msg.setContent(content);
             msg.setHeader(CONTENT_TYPE, content.getContentType());
         } else {
-            if (mail.text != null) {
-                msg.setText(mail.text);
-            } else {
-                msg.setText("");
-            }
+            msg.setText(Objects.requireNonNullElse(mail.text, ""));
         }
         msg.setHeader(MIME_VERSION, MIME_VERSION_1_0);
         if (Strings.isFilled(mail.bounceToken)) {
@@ -468,7 +465,7 @@ class SendMailTask implements Runnable {
 
     private static class MailAuthenticator extends Authenticator {
 
-        private SMTPConfiguration config;
+        private final SMTPConfiguration config;
 
         private MailAuthenticator(SMTPConfiguration config) {
             this.config = config;

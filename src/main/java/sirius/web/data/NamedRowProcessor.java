@@ -13,7 +13,7 @@ package sirius.web.data;
  *
  * @deprecated Replaced by ImportDictionary in sirius-biz
  */
-@Deprecated
+@Deprecated(since = "2021/07/01")
 public interface NamedRowProcessor {
     /**
      * Called the handle a row of an input file.

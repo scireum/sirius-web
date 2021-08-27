@@ -13,6 +13,7 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.nls.NLS;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
+import sirius.pasta.noodle.compiler.ir.Node;
 import sirius.pasta.noodle.sandbox.PublicAPI;
 
 import javax.annotation.Nonnull;
@@ -51,4 +52,10 @@ public class ToMachineStringMacro extends BasicMacro {
     public String getDescription() {
         return "Formats the given parameter as a machine processable string.";
     }
+
+    @Override
+    public boolean isConstant(CompilationContext context, List<Node> args) {
+        return true;
+    }
+
 }

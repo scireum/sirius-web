@@ -36,9 +36,6 @@ import sirius.kernel.nls.NLS;
 import javax.net.ssl.SSLSession;
 import java.net.InetSocketAddress;
 import java.nio.channels.ClosedChannelException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -51,12 +48,11 @@ import java.util.stream.Collectors;
  */
 class TunnelHandler implements AsyncHandler<String> {
 
-    private static final Set<String> NON_TUNNELLED_HEADERS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-            HttpHeaderNames.TRANSFER_ENCODING.toString(),
-            HttpHeaderNames.SERVER.toString(),
-            HttpHeaderNames.CONTENT_ENCODING.toString(),
-            HttpHeaderNames.EXPIRES.toString(),
-            HttpHeaderNames.CACHE_CONTROL.toString())));
+    private static final Set<String> NON_TUNNELLED_HEADERS = Set.of(HttpHeaderNames.TRANSFER_ENCODING.toString(),
+                                                                    HttpHeaderNames.SERVER.toString(),
+                                                                    HttpHeaderNames.CONTENT_ENCODING.toString(),
+                                                                    HttpHeaderNames.EXPIRES.toString(),
+                                                                    HttpHeaderNames.CACHE_CONTROL.toString());
 
     private final Response response;
     private final WebContext webContext;

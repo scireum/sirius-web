@@ -14,6 +14,7 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.info.Product;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
+import sirius.pasta.noodle.compiler.ir.Node;
 import sirius.pasta.noodle.macros.BasicMacro;
 
 import javax.annotation.Nonnull;
@@ -63,4 +64,10 @@ public class StaticAssetUriMacro extends BasicMacro {
     public String getName() {
         return "staticAssetUri";
     }
+
+    @Override
+    public boolean isConstant(CompilationContext context, List<Node> args) {
+        return true;
+    }
+
 }

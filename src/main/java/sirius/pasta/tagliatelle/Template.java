@@ -46,9 +46,9 @@ public class Template {
     protected Emitter emitter;
     protected List<TemplateArgument> arguments = new ArrayList<>();
     protected Map<String, String> pragmas;
-    private long compilationTimestamp = System.currentTimeMillis();
+    private final long compilationTimestamp = System.currentTimeMillis();
     private int stackDepth;
-    private Average renderTime = new Average();
+    private final Average renderTime = new Average();
 
     private static final Pattern TAGLIB_NAME = Pattern.compile("/taglib/([^/]+)/([^/]+)\\.html\\.pasta");
 
@@ -313,7 +313,7 @@ public class Template {
     /**
      * Returns how many times the template was rendered since its compilation.
      *
-     * @return the number of invokations of this template
+     * @return the number of invocations of this template
      */
     public int getNumInvocations() {
         return (int) renderTime.getCount();

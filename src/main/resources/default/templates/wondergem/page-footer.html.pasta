@@ -4,7 +4,11 @@
             <i:invoke template="/templates/wondergem/page-footer-menu.html.pasta"/>
         </div>
         <div class="pull-right" style="text-align: right">
-            <small title="@CallContext.getCurrent().getWatch().elapsedMillis() ms (@const(sirius.kernel.info.Product.getProduct().getDetails()))">@CallContext.getNodeName()</small>
+            <i:extensions target="wondergem-page-menu" point="footer-right-start"/>
+            <small title="@CallContext.getCurrent().getWatch().elapsedMillis() ms (@const(sirius.kernel.info.Product.getProduct().getDetails()))">
+                @CallContext.getNodeName()
+            </small>
+            <i:extensions target="wondergem-page-menu" point="footer-right-end"/>
         </div>
     </div>
 </div>

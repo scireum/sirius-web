@@ -10,6 +10,7 @@ package sirius.pasta.noodle.macros;
 
 import parsii.tokenizer.Position;
 import sirius.pasta.noodle.compiler.CompilationContext;
+import sirius.pasta.noodle.compiler.ir.Node;
 
 import java.util.List;
 
@@ -29,4 +30,10 @@ public abstract class EnvironmentModeMacro extends BasicMacro {
             throw new IllegalArgumentException("No arguments expected!");
         }
     }
+
+    @Override
+    public boolean isConstant(CompilationContext context, List<Node> args) {
+        return true;
+    }
+
 }

@@ -23,13 +23,15 @@ import sirius.web.security.UserContext;
  * <p>
  * Also handles some special static URIs if enabled, like /crossdomain.xml or /robots.txt.
  * <p>
- * If no other dispatcher jumps in, this will take care of handing the request by sending a HTTP/404.
+ * If no other dispatcher jumps in, this will take care of handing the request by sending an HTTP/404.
  */
 @Register
 public class DefaultDispatcher implements WebDispatcher {
 
-    @ConfigValue("http.crossdomain.xml.enabled")
-    private boolean serveCrossdomain;
+    /**
+     * Contains the original URI, in case this dispatcher decided to restart the pipeline...
+     */
+    public static final String ATTRIBUTE_ORIGINAL_URI = "ORIGINAL_URI";
 
     @ConfigValue("http.robots.txt.enabled")
     private boolean serveRobots;
@@ -44,31 +46,36 @@ public class DefaultDispatcher implements WebDispatcher {
 
     @Override
     public DispatchDecision dispatch(WebContext ctx) throws Exception {
-        if ("/crossdomain.xml".equals(ctx.getRequestedURI()) && serveCrossdomain) {
-            ctx.respondWith()
-               .infinitelyCached()
-               .setHeader(HttpHeaderNames.CONTENT_TYPE, MimeHelper.TEXT_XML)
-               .direct(HttpResponseStatus.OK,
-                       "<?xml version=\"1.0\"?>\n"
-                       + "<!DOCTYPE cross-domain-policy SYSTEM "
-                       + "\"http://www.adobe.com/xml/dtds/cross-domain-policy.dtd\">\n"
-                       + "<cross-domain-policy>\n"
-                       + "    <site-control permitted-cross-domain-policies=\"all\" />\n"
-                       + "    <allow-access-from domain=\"*\" secure=\"false\" />\n"
-                       + "    <allow-http-request-headers-from domain=\"*\" headers=\"*\"/>\n"
-                       + "</cross-domain-policy>");
-        } else if ("/robots.txt".equals(ctx.getRequestedURI()) && serveRobots) {
+        if ("/robots.txt".equals(ctx.getRequestedURI()) && serveRobots) {
             if (robotsDisallowAll) {
                 ctx.respondWith()
                    .infinitelyCached()
                    .setHeader(HttpHeaderNames.CONTENT_TYPE, MimeHelper.TEXT_PLAIN)
-                   .direct(HttpResponseStatus.OK, "User-agent: *\n" + "Disallow: /\n");
+                   .direct(HttpResponseStatus.OK, """
+                           User-agent: *
+                           Disallow: /
+                           """);
             } else {
                 ctx.respondWith()
                    .infinitelyCached()
                    .setHeader(HttpHeaderNames.CONTENT_TYPE, MimeHelper.TEXT_PLAIN)
-                   .direct(HttpResponseStatus.OK, "User-agent: *\n" + "Disallow:\n");
+                   .direct(HttpResponseStatus.OK, """
+                           User-agent: *
+                           Disallow:
+                           """);
             }
+        } else if ("/".equals(ctx.getRequestedURI())) {
+            // If there is no controller and no other dispatcher which is willing to handle a "/" request, we
+            // re-start the pipeline with "/admin". This will at least be picked up by the DashboardController
+            // of sirius-biz, which is probably what we want. If this isn't available, we end up with a 404
+            // either way...
+            //
+            // We previously registered the DashboardController directly for "/" with a very high priority number
+            // (to put it at the end of the pipeline). However, this prohibits that another dispatcher which runs
+            // after the ControllerDispatcher handles "/". Using this approach, either a controller or a dispatch
+            // can handle "/" if the DashboardController wanted for this.
+            ctx.withCustomURI("/admin");
+            return DispatchDecision.RESTART;
         } else if ("/reset".equals(ctx.getRequestedURI())) {
             ctx.clearSession();
             ctx.respondWith().redirectTemporarily(ctx.get("path").asString("/"));

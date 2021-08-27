@@ -34,7 +34,7 @@ import java.util.Map;
 @AutoRegister
 public abstract class LegacyGlobalsHandler {
 
-    private Map<String, Tuple<String, Node>> cache = new HashMap<>();
+    private final Map<String, Tuple<String, Node>> cache = new HashMap<>();
 
     /**
      * Tries to resolve a legacy global to replace it with a proper expression.

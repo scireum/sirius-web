@@ -2,12 +2,10 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -117,6 +115,9 @@ var TokenAutocomplete = /** @class */ (function () {
             this.val(this.options.initialTokens);
         }
         this.container.tokenAutocomplete = this;
+        if (this.options.selectMode == SelectModes.SINGLE && !this.options.optional && this.val().length == 0) {
+            this.autocomplete.loadSuggestions();
+        }
     }
     /**
      * Searches the element given as a container for option elements and creates active tokens (when the option is marked selected)
@@ -180,7 +181,7 @@ var TokenAutocomplete = /** @class */ (function () {
         }
         var tokens = [];
         this.hiddenSelect.querySelectorAll('option').forEach(function (option) {
-            if (option.dataset.value != null) {
+            if (option.dataset.value != null && option.dataset.value !== "") {
                 tokens.push(option.dataset.value);
             }
         });
@@ -757,6 +758,15 @@ var TokenAutocomplete = /** @class */ (function () {
                         answer = JSON.parse(answer);
                     }
                     if (Array.isArray(answer.completions)) {
+                        if (me.parent.val().length == 0 && answer.completions.length > 0 && me.options.selectMode == SelectModes.SINGLE && !me.options.optional && !me.areSuggestionsDisplayed()) {
+                            answer.completions.forEach(function (suggestion) {
+                                me.addSuggestion(suggestion, false);
+                            });
+                            var firstSuggestion = answer.completions[0];
+                            var value = firstSuggestion.id || firstSuggestion.value;
+                            me.parent.select.addToken(value, firstSuggestion.fieldLabel, firstSuggestion.type, true);
+                            return;
+                        }
                         answer.completions.forEach(function (suggestion) {
                             me.addSuggestion(suggestion);
                         });
@@ -782,8 +792,10 @@ var TokenAutocomplete = /** @class */ (function () {
              * Adds a suggestion with the given text matching the users input to the dropdown.
              *
              * @param {string} suggestion - the metadata of the suggestion that should be added
+             * @param showSuggestions - if the suggestions box should be shown, default true
              */
-            class_4.prototype.addSuggestion = function (suggestion) {
+            class_4.prototype.addSuggestion = function (suggestion, showSuggestions) {
+                if (showSuggestions === void 0) { showSuggestions = true; }
                 var element = this.renderer(suggestion);
                 var value = suggestion.id || suggestion.value;
                 var text = suggestion.completionLabel || suggestion.fieldLabel;
@@ -823,7 +835,9 @@ var TokenAutocomplete = /** @class */ (function () {
                     element.classList.add('token-autocomplete-suggestion-active');
                 }
                 this.suggestions.appendChild(element);
-                this.showSuggestions();
+                if (showSuggestions) {
+                    this.showSuggestions();
+                }
                 me.parent.log('added suggestion', suggestion);
             };
             return class_4;

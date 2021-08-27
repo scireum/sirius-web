@@ -96,6 +96,6 @@ public @interface Routed {
      * @return <tt>true</tt> if the method is used to create a JSON response for an AJAX call, <tt>false</tt> otherwise
      * @deprecated Use {@link InternalService} or {@link PublicService}
      */
-    @Deprecated
+    @Deprecated(since = "2021/07/01")
     boolean jsonCall() default false;
 }

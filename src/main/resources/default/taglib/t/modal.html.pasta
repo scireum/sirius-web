@@ -1,0 +1,44 @@
+<i:arg name="name" type="String"/>
+<i:arg name="titleKey" type="String" default=""/>
+<i:arg name="title" type="String" default="@i18n(titleKey)"/>
+<i:arg type="String" name="submitKey" default=""/>
+<i:arg type="String" name="submit" default="@i18n(submitKey)"/>
+<i:arg type="String" name="dangerKey" default=""/>
+<i:arg type="String" name="danger" default="@i18n(dangerKey)"/>
+<i:arg type="String" name="cancelKey" default=""/>
+<i:arg type="String" name="cancel" default="@i18n(cancelKey)"/>
+<i:arg type="String" name="class" default="" description="Permits to add additional classes to the modal.
+                                                        Use 'modal-dialog-centered' to vertically center the dialog,
+                                                        and 'modal-lg' or 'modal-sm' to vary its size."/>
+
+<i:pragma name="description" value="Renders a body for a modal dialog within a Tycho template"/>
+
+<div id="@name" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="@(name + 'Title')">
+    <div class="modal-dialog @class" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <i:if test="isFilled(title)">
+                    <h4 class="modal-title" id="@(name + 'Title')">@title</h4>
+                </i:if>
+                <button type="button" class="close" data-dismiss="modal" aria-label="@i18n('NLS.close')">
+                    <i class="fa fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <i:render name="body"/>
+            </div>
+            <div class="modal-footer">
+                <i:render name="footer"/>
+                <i:if test="isFilled(submit)">
+                    <button type="submit" class="btn btn-primary">@i18n(submitKey)</button>
+                </i:if>
+                <i:if test="isFilled(danger)">
+                    <button type="submit" class="btn btn-danger">@i18n(dangerKey)</button>
+                </i:if>
+                <i:if test="isFilled(cancel)">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">@i18n(cancelKey)</button>
+                </i:if>
+            </div>
+        </div>
+    </div>
+</div>

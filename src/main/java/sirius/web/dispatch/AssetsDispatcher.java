@@ -172,7 +172,8 @@ public class AssetsDispatcher implements WebDispatcher {
         String cacheKey = scopeId + "-" + Files.toSaneFileName(uri.substring(1)).orElse("");
         File file = new File(getCacheDirFile(), cacheKey);
 
-        if (Sirius.isStartedAsTest() || !file.exists() || file.lastModified() < resource.get().getLastModified()) {
+        if (Sirius.isStartedAsTest() || Sirius.isDev() || !file.exists() || file.lastModified() < resource.get()
+                                                                                                          .getLastModified()) {
             try {
                 compileSASS(scssUri, file);
             } catch (Exception t) {
@@ -243,7 +244,7 @@ public class AssetsDispatcher implements WebDispatcher {
                   .filter(f -> f.getName().endsWith(".css"))
                   .forEach(File::delete);
         } catch (NullPointerException e) {
-            // Happens if the directy does not exist....
+            // Happens if the directly does not exist....
             Exceptions.ignore(e);
         } catch (Exception e) {
             Exceptions.handle(e);

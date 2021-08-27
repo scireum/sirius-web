@@ -22,43 +22,25 @@ public class LegacyDefaultGlobalsHandler extends LegacyGlobalsHandler {
     @SuppressWarnings({"java:S1541", "java:S131"})
     @Explain("We rather keep all cases in one place even if the switch is a bit to complex")
     protected String determineReplacement(String name) {
-        switch (name) {
-            case "user":
-                return "UserContext.get()";
-            case "product":
-                return "Product.getProduct().getName()";
-            case "now":
-                return "now()";
-            case "today":
-                return "today()";
-            case "detailedVersion":
-                return "Product.getProduct().getDetails()";
-            case "nodeName":
-                return "CallContext.getNodeName()";
-            case "isDev":
-                return "Sirius.isDev()";
-            case "call":
-                return "CallContext.getCurrent().get(WebContext.class)";
-            case "watch":
-                return "CallContext.getCurrent().getWatch()";
-            case "lang":
-                return "NLS.getCurrentLang()";
-            case "contentHelper":
-                return "ContentHelper.INSTANCE";
-            case "wondergemRoot":
-                return "config('product.wondergemRoot')";
-            case "tychoRoot":
-                return "config('product.tychoRoot')";
-            case "tagLine":
-                return "config('product.tagLine')";
-            case "contentSecurityPolicy":
-                return "config('http.contentSecurityPolicy')";
-            case "saml":
-                return "part(sirius.web.security.SAMLHelper.class)";
-            case "csrf":
-                return "part(sirius.web.http.CSRFHelper.class)";
-        }
-
-        return null;
+        return switch (name) {
+            case "user" -> "UserContext.get()";
+            case "product" -> "Product.getProduct().getName()";
+            case "now" -> "now()";
+            case "today" -> "today()";
+            case "detailedVersion" -> "Product.getProduct().getDetails()";
+            case "nodeName" -> "CallContext.getNodeName()";
+            case "isDev" -> "Sirius.isDev()";
+            case "call" -> "CallContext.getCurrent().get(WebContext.class)";
+            case "watch" -> "CallContext.getCurrent().getWatch()";
+            case "lang" -> "NLS.getCurrentLang()";
+            case "contentHelper" -> "ContentHelper.INSTANCE";
+            case "wondergemRoot" -> "config('product.wondergemRoot')";
+            case "tychoRoot" -> "config('product.tychoRoot')";
+            case "tagLine" -> "config('product.tagLine')";
+            case "contentSecurityPolicy" -> "config('http.contentSecurityPolicy')";
+            case "saml" -> "part(sirius.web.security.SAMLHelper.class)";
+            case "csrf" -> "part(sirius.web.http.CSRFHelper.class)";
+            default -> null;
+        };
     }
 }

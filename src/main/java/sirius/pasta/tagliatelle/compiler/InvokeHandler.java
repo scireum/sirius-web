@@ -38,7 +38,7 @@ import java.util.Collections;
  * @see sirius.pasta.tagliatelle.emitter.InvokeTemplateEmitter
  * @see IncludeHandler
  * @see sirius.pasta.noodle.macros.InlineResourceMacro
- * @see sirius.pasta.noodle.macros.EscapeJSMacro
+ * @see sirius.pasta.noodle.macros.EscapeJsMacro
  */
 @Register(classes = ExpressionHandler.class)
 public class InvokeHandler extends ExpressionHandler {

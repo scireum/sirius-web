@@ -598,12 +598,11 @@ public class WebContext implements SubContext {
 
     private String transformHttpData(InterfaceHttpData data) {
         try {
-            if (data instanceof Attribute) {
-                Attribute attr = (Attribute) data;
+            if (data instanceof Attribute attr) {
                 ByteBuf byteBuf = attr.getByteBuf();
 
                 // If the request gets aborted prematurely, the underlying buffers might
-                // already be released. Therefore we have to check this here manually as
+                // already be released. Therefore, we have to check this here manually as
                 // the server might still try to process the request...
                 if (byteBuf != null) {
                     return byteBuf.toString(attr.getCharset());
@@ -1136,8 +1135,7 @@ public class WebContext implements SubContext {
 
         List<String> result = new ArrayList<>();
         for (InterfaceHttpData dataItem : data) {
-            if (dataItem instanceof Attribute) {
-                Attribute attr = (Attribute) dataItem;
+            if (dataItem instanceof Attribute attr) {
                 ByteBuf buffer = attr.getByteBuf();
                 if (buffer != null) {
                     result.add(buffer.toString(attr.getCharset()));
@@ -1158,7 +1156,7 @@ public class WebContext implements SubContext {
     }
 
     /**
-     * Strips the query part of a uri.
+     * Strips the query part of an uri.
      *
      * @param uri the uri to remove the query string of
      * @return the uri without the query string
@@ -1173,10 +1171,10 @@ public class WebContext implements SubContext {
      * <p>
      * This can be used to control dispatching or to even re-dispatch a request for another destination.
      * <p>
-     * Note however, that only the the <tt>requestedURI</tt>, <tt>queryString</tt> and the <tt>rawRequestedURI</tt> are
+     * Note however, that only the <tt>requestedURI</tt>, <tt>queryString</tt> and the <tt>rawRequestedURI</tt> are
      * overwritten, not the one of the underlying request.
      *
-     * @param uri the new uri to use. The uri and its query string will be parsed and the internal fields are updated
+     * @param uri the new uri to use. The uri and its query string will be parsed, and the internal fields are updated
      *            accordingly.
      * @return the web context itself for fluent method calls
      */
@@ -1204,7 +1202,7 @@ public class WebContext implements SubContext {
             decodeQueryString();
         }
         requestedURI = path;
-        rawRequestedURI = stripQueryFromURI(path);
+        rawRequestedURI = path;
 
         return this;
     }
@@ -2092,7 +2090,7 @@ public class WebContext implements SubContext {
      * @return a random token which is guaranteed to be free of special chars (like / and the like)
      * @deprecated Use {@link sirius.pasta.tagliatelle.macros.StaticAssetUriMacro} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public String getDynamicAssetToken() {
         return dynamicAssetToken();
     }
@@ -2104,7 +2102,7 @@ public class WebContext implements SubContext {
      * @return a random token which is guaranteed to be free of special chars (like / and the like)
      * @deprecated Use {@link sirius.pasta.tagliatelle.macros.StaticAssetUriMacro} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public static String dynamicAssetToken() {
         return Product.getProduct().getUniqueVersionString();
     }
@@ -2130,7 +2128,7 @@ public class WebContext implements SubContext {
             return result;
         }
 
-        return result + request.toString();
+        return result + request;
     }
 
     @Override

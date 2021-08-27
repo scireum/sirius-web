@@ -13,6 +13,7 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
+import sirius.pasta.noodle.compiler.ir.Node;
 import sirius.web.controller.MessageExpanders;
 
 import javax.annotation.Nonnull;
@@ -56,4 +57,10 @@ public class ExpandMessagesMacro extends BasicMacro {
     public String getName() {
         return "expandMessage";
     }
+
+    @Override
+    public boolean isConstant(CompilationContext context, List<Node> args) {
+        return true;
+    }
+
 }

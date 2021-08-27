@@ -135,9 +135,7 @@ public class InvokeTag extends TagHandler {
             // Try to resolve
             template = resolveTemplate(getConstantAttribute(ATTR_TEMPLATE).asString());
             // No template, no parameter checking, just give up, an error has been reported...
-            if (template == null) {
-                return false;
-            }
+            return template != null;
         }
 
         return true;

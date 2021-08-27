@@ -1,0 +1,24 @@
+<i:arg type="String" name="icon" />
+<i:arg type="String" name="value" default=""/>
+<i:arg type="Object" name="effectiveValue" default="isFilled(value) ? value : renderToString('body')"/>
+<i:arg type="String" name="class" default=""/>
+
+<i:pragma name="description">
+    Renders an icon + value pair which is rendered as a single block.
+</i:pragma>
+
+<i:if test="isFilled(effectiveValue)">
+    <span class="d-flex flew-row text-small mb-2 mr-3 @class">
+        <span class="text-sirius-gray-dark ">
+            <i class="@icon"></i>
+        </span>
+        <span class="pl-2 overflow-hidden">
+            <i:if test="isFilled(value)">
+                @value
+                <i:else>
+                    <i:raw>@effectiveValue</i:raw>
+                </i:else>
+            </i:if>
+        </span>
+    </span>
+</i:if>

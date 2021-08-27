@@ -36,14 +36,3 @@
   align-items: center;
   flex-wrap: wrap;
 }
-
-.inline-info {
-  display: flex;
-  flex-flow: row;
-  color: $grayDark;
-  font-size: 0.85rem;
-
-  .name {
-    font-weight: bold;
-  }
-}

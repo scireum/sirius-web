@@ -31,7 +31,7 @@ import java.io.IOException;
 public class WebsocketHandler extends ChannelDuplexHandler {
 
     private WebsocketSession websocketSession;
-    private WebsocketDispatcher websocketDispatcher;
+    private final WebsocketDispatcher websocketDispatcher;
     private CallContext currentCall;
 
     @Part

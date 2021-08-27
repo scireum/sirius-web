@@ -14,14 +14,6 @@ a {
   color: $primary-color;
 }
 
-.btn-primary {
-  background-color: $primary-color;
-}
-
-.btn-outline-primary {
-  border-color: $primary-color;
-}
-
 // Hide the first divider in each menu...
 .dropdown-menu div:first-of-type.dropdown-divider {
   display: none;
@@ -46,6 +38,49 @@ a {
 
 }
 
+@media (min-width: 960px) {
+
+  .sticky-top-lg {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+  }
+
+  .fixed-bottom-lg {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    z-index: 1030;
+  }
+
+}
+
+.nav-link .badge {
+  line-height: 1.5;
+  background-color: $sirius-gray;
+  color: white;
+  min-width: 1.5rem;
+}
+
+.nav-link:hover, .nav-link.active {
+  .badge {
+    background-color: white;
+    color: #333;
+  }
+}
+
 .back-button {
   display: none;
+}
+
+.link {
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+}
+
+.link:hover {
+  text-decoration: underline;
 }

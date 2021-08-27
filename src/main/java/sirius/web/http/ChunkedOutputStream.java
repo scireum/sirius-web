@@ -28,7 +28,7 @@ import java.io.OutputStream;
  * Provides an adapter from {@link OutputStream} to an underlying channel using a buffer.
  */
 class ChunkedOutputStream extends OutputStream {
-    private Response response;
+    private final Response response;
     private final String contentType;
     private final HttpResponseStatus status;
     private volatile boolean open;

@@ -9,6 +9,7 @@
 .btn-outline-link {
   border: 1px solid $grayLight;
   border-radius: 4px;
+  color: $grayDark;
 }
 
 .btn-link {
@@ -17,6 +18,8 @@
 
 .btn-link.active,
 .btn-link:hover,
+.btn-outline-link.active,
+.btn-outline-link:hover,
 .dropdown.show > .btn-link {
   color: #fff !important;
   background-color: $primary-color;
@@ -25,5 +28,106 @@
 }
 
 .btn-primary {
+  background-color: $primary-color;
   color: #fff !important;
+  border-color: $primary-color;
+
+  &:hover {
+    background-color: darken($primary-color, 3%);
+    border-color: darken($primary-color, 3%);
+  }
+}
+
+.btn-outline-primary {
+  border-color: $primary-color;
+  color: $primary-color;
+
+  &:hover {
+    background-color: $primary-color;
+    color: #fff !important;
+  }
+}
+
+.btn-info {
+  background-color: $sirius-deep-blue;
+  color: #fff !important;
+  border-color: $sirius-deep-blue;
+
+  &:hover {
+    background-color: $sirius-deep-blue-dark;
+    border-color: $sirius-deep-blue-dark;
+  }
+}
+
+.btn-outline-info {
+  border-color: $sirius-deep-blue;
+  color: $sirius-deep-blue;
+
+  &:hover {
+    background-color: $sirius-deep-blue;
+    color: #fff !important;
+  }
+}
+
+.btn-warning {
+  background-color: $sirius-orange-light;
+  color: #fff !important;
+  border-color: $sirius-orange-light;
+
+  &:hover {
+    background-color: $sirius-orange;
+    border-color: $sirius-orange;
+  }
+}
+
+.btn-outline-warning {
+  border-color: $sirius-orange-light;
+  color: $sirius-orange-light;
+
+  &:hover {
+    background-color: $sirius-orange-light;
+    color: #fff !important;
+  }
+}
+
+.btn-warning {
+  background-color: $sirius-orange-light;
+  color: #fff !important;
+  border-color: $sirius-orange-light;
+
+  &:hover {
+    background-color: $sirius-orange;
+    border-color: $sirius-orange;
+  }
+}
+
+.btn-outline-warning {
+  border-color: $sirius-orange-light;
+  color: $sirius-orange-light;
+
+  &:hover {
+    background-color: $sirius-orange-light;
+    color: #fff !important;
+  }
+}
+
+.btn-danger {
+  background-color: $sirius-red-light;
+  color: #fff !important;
+  border-color: $sirius-red-light;
+
+  &:hover {
+    background-color: $sirius-red;
+    border-color: $sirius-red;
+  }
+}
+
+.btn-outline-danger {
+  border-color: $sirius-red-light;
+  color: $sirius-red-light;
+
+  &:hover {
+    background-color: $sirius-red-light;
+    color: #fff !important;
+  }
 }

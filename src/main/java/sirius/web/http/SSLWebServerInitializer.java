@@ -38,6 +38,7 @@ import java.util.List;
  */
 class SSLWebServerInitializer extends WebServerInitializer {
 
+    private static final String[] EMPTY_STRING_ARRAY = new String[0];
     private final SSLContext context;
 
     @ConfigValue("http.ssl.alias")
@@ -197,10 +198,10 @@ class SSLWebServerInitializer extends WebServerInitializer {
         SSLEngine engine = context.createSSLEngine();
         engine.setUseClientMode(false);
         if (!ciphers.isEmpty()) {
-            engine.setEnabledCipherSuites(ciphers.toArray(new String[ciphers.size()]));
+            engine.setEnabledCipherSuites(ciphers.toArray(EMPTY_STRING_ARRAY));
         }
         if (!protocols.isEmpty()) {
-            engine.setEnabledProtocols(protocols.toArray(new String[protocols.size()]));
+            engine.setEnabledProtocols(protocols.toArray(EMPTY_STRING_ARRAY));
         }
         ch.pipeline().addFirst(new SslHandler(engine));
         super.initChannel(ch);

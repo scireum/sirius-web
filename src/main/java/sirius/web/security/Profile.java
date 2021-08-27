@@ -13,13 +13,15 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.settings.Extension;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Represents a profile defined in <tt>security.profiles</tt>.
  */
-class Profile {
+public class Profile {
 
     /**
      * The key of the profiles-configuration in the '.conf'-files.
@@ -60,7 +62,7 @@ class Profile {
 
     /**
      * Validates this profile and throws exception if problems exist.
-     * <p>
+     *
      * @throws IllegalStateException if the profile refers to another profile applied earlier than itself.
      */
     public void validate() {
@@ -98,5 +100,31 @@ class Profile {
         }
 
         return new Profile(extension.getId(), permissionsToAdd, permissionsToRemove);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Permits to access the permissions to add.
+     * <p>
+     * Note that this API should only be used for introspection and is not to be used to actually modify any permissions.
+     *
+     * @return the list of permissions to add when this profile is applied
+     */
+    public List<String> getPermissionsToAdd() {
+        return permissionsToAdd.stream().sorted().collect(Collectors.toList());
+    }
+
+    /**
+     * Permits to access the permissions to remove.
+     * <p>
+     * Note that this API should only be used for introspection and is not to be used to actually modify any permissions.
+     *
+     * @return the list of permissions to remove when this profile is applied
+     */
+    public List<String> getPermissionsToRemove() {
+        return permissionsToRemove.stream().sorted().collect(Collectors.toList());
     }
 }

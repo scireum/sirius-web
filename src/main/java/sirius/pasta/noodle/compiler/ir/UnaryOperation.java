@@ -20,7 +20,7 @@ import java.lang.reflect.Type;
  */
 public class UnaryOperation extends Node {
 
-    private OpCode opCode;
+    private final OpCode opCode;
     private Node operand;
 
     /**

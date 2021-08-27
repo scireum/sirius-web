@@ -14,6 +14,7 @@ import sirius.pasta.noodle.ScriptingException;
 import sirius.pasta.noodle.compiler.CompileException;
 
 import java.io.FileNotFoundException;
+import java.io.Serial;
 
 /**
  * Thrown for any error or exception when rendering a template.
@@ -22,6 +23,7 @@ import java.io.FileNotFoundException;
  */
 public class RenderException extends Exception {
 
+    @Serial
     private static final long serialVersionUID = -3342628287682148L;
 
     private RenderException(String message, Exception ex) {

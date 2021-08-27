@@ -6,30 +6,108 @@
  * http://www.scireum.de - info@scireum.de
  */
 
+
+.form-group.admin-only label span::after {
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  font-size: .6em;
+  line-height: .7em;
+  vertical-align: top;
+  margin-left: .4em;
+  content: "\f023";
+}
+
+.form-group.required label span::after {
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  font-size: .6em;
+  line-height: .7em;
+  vertical-align: top;
+  margin-left: .4em;
+  content: "\f069";
+  color: $primary-color;
+}
+
+.has-error .error-block,
+.has-error .control-label,
+.has-error .radio,
+.has-error .checkbox,
+.has-error .radio-inline,
+.has-error .checkbox-inline,
+.has-error.radio label,
+.has-error.checkbox label,
+.has-error.radio-inline label,
+.has-error.checkbox-inline label {
+  color: $sirius-red;
+}
+
+.has-error .form-control {
+  border-color: $sirius-red;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+}
+.has-error .form-control:focus {
+  border-color: $sirius-red-dark;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px $sirius-red-light;
+}
+
 // --------------------------
 // Token Autocomplete
 // --------------------------
 
 .form-control.token-autocomplete-container {
-  align-content: center;
-}
+  padding: 0;
+  border: 1px solid #ced4da;
+  border-radius: .25rem;
 
-.token-autocomplete-container .token-autocomplete-token {
-  border-radius: 0;
-}
+  .token-autocomplete-token {
+    border-radius: 0;
+    line-height: 24px;
+    font-size: 1rem;
 
+    &:first-child {
+      margin-left: .75rem;
+    }
 
-.form-control.token-autocomplete-container.token-autocomplete-singleselect.optional-singleselect-with-value {
-  .token-autocomplete-input:after {
-    right: -10px;
+    .token-autocomplete-token-delete {
+      line-height: 24px;
+
+      &:hover {
+        background-color: inherit;
+      }
+    }
   }
 
-  .token-singleselect-token-delete {
+  .token-autocomplete-suggestions {
+    z-index: 1000;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+  }
+
+  .token-autocomplete-input {
+    margin-top: 6px;
+    font-size: 1rem;
+    line-height: 24px;
+
+    &:first-child {
+      margin-left: .75rem;
+      padding-left: 0;
+    }
+  }
+}
+
+
+.form-control.token-autocomplete-container.token-autocomplete-singleselect {
+  .token-autocomplete-input:after {
+    top: 10px;
+    right: 10px;
+  }
+
+  &.optional-singleselect-with-value .token-singleselect-token-delete {
     padding-bottom: 0px;
     border: none;
     background-color: transparent;
     top: 6px;
     font-weight: 700;
-    right: 30px;
+    right: 32px;
   }
 }

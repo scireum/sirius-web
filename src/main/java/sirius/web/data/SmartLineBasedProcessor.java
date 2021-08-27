@@ -28,10 +28,10 @@ import java.util.Map;
  *
  * @deprecated Use a LineBasedProcessor and ImportDictionaries provided in sirius-biz
  */
-@Deprecated
+@Deprecated(since = "2021/07/01")
 public class SmartLineBasedProcessor implements RowProcessor {
 
-    private Map<String, String> columnAliases = new HashMap<>();
+    private final Map<String, String> columnAliases = new HashMap<>();
     private List<String> columnMapping;
     private List<String> originalColumns;
     private NamedRowProcessor processor;

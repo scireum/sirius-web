@@ -29,7 +29,7 @@ import java.util.stream.Stream;
  * @deprecated Use {@link sirius.kernel.health.Exceptions.ErrorHandler#hint(ExceptionHint, Object)} and
  * {@link sirius.web.controller.Controller#HTTP_STATUS} or {@link sirius.web.controller.Controller#ERROR_CODE}.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public class ErrorCodeException extends HandledException {
 
     @Serial

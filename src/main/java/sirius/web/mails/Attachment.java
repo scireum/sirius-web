@@ -21,9 +21,9 @@ import java.util.TreeMap;
 public abstract class Attachment implements DataSource {
 
     private String contentType;
-    private boolean asAlternative;
-    private String name;
-    private Map<String, String> headers = new TreeMap<>();
+    private final boolean asAlternative;
+    private final String name;
+    private final Map<String, String> headers = new TreeMap<>();
 
     /**
      * Generates a new attachment with the given name, mime type and contents.

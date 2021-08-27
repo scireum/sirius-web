@@ -9,19 +9,19 @@
 </i:pragma>
 
 <i:if test="isFilled(effectiveValue)">
-    <span class="inline-info mb-2 mr-3 @class">
+    <span class="d-flex flew-row text-small text-sirius-gray-dark mb-2 mr-3 overflow-hidden @class">
         <i:if test="isFilled(label)">
-            <span class="name pr-1">
+            <span class="font-weight-bold pr-1">
                 @(label):
             </span>
         </i:if>
-        <span>
-        <i:if test="isFilled(value)">
-            @value
-            <i:else>
-                <i:render name="body"/>
-            </i:else>
-        </i:if>
+        <span class="overflow-hidden">
+            <i:if test="isFilled(value)">
+                @value
+                <i:else>
+                    <i:raw>@effectiveValue</i:raw>
+                </i:else>
+            </i:if>
         </span>
     </span>
 </i:if>

@@ -360,9 +360,7 @@ public class Invocation {
         StringBuilder result = new StringBuilder(" Line:\n");
         result.append(offendingLine);
         result.append("\n");
-        for (int i = 1; i < position.getPos() - 1; i++) {
-            result.append(" ");
-        }
+        result.append(" ".repeat(Math.max(0, position.getPos() - 2)));
         result.append("^\n");
         return result.toString();
     }

@@ -63,4 +63,10 @@ public class EnumValuesMacro extends BasicMacro {
     public String getDescription() {
         return "Returns a list of all enum constants of the given enum class.";
     }
+
+    @Override
+    public boolean isConstant(CompilationContext context, List<Node> args) {
+        return true;
+    }
+
 }

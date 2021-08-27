@@ -220,7 +220,7 @@ public abstract class TagHandler {
     }
 
     /**
-     * Invoked when the tag is completely parsedand can be applied to the target block.
+     * Invoked when the tag is completely parsed and can be applied to the target block.
      *
      * @param targetBlock the outer block to which the output can be appended
      */

@@ -37,7 +37,7 @@ public class LocalPathResolver implements Resolver {
 
     private File baseDir;
     private Boolean baseDirFound;
-    private RateLimit checkLimit = RateLimit.timeInterval(1, TimeUnit.MINUTES);
+    private final RateLimit checkLimit = RateLimit.timeInterval(1, TimeUnit.MINUTES);
 
     private File getBaseDir() {
         if (baseDir == null) {

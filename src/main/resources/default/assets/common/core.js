@@ -40,23 +40,27 @@ sirius.findParentOfType = function(_node, type) {
 
 // Invokes the given listener if enter is pressed in the given input field.
 sirius.addEnterListener = function(_node, listener) {
-    _node.addEventListener('keyup', function(event) {
-        if (event.code === 'Enter') {
+    _node.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
             event.preventDefault();
-            listener();
+            listener(event);
         }
     });
 }
 
 sirius.getJSON = function(url, params) {
-    let formData = new FormData();
-    params.forEach(function(key, value) {
-        formData.append(key, value);
+    if (!url.endsWith('?')) {
+        url = url + '?';
+    }
+    Object.keys(params).forEach(function(key) {
+        if (!url.endsWith('?')) {
+            url += '&';
+        }
+        url += key + '=' + encodeURIComponent(params[key]);
     });
 
     return fetch(url, {
-        method: "get",
-        body: formData
+        method: "get"
     }).then(function (response) {
         return response.json();
     });

@@ -1,0 +1,63 @@
+<i:arg name="id" type="String" default="" />
+<i:arg name="class" type="String" default="" description="Lists additional CSS classes to apply to the field."/>
+<i:arg name="name" type="String" default=""/>
+<i:arg name="fieldName" type="String" default="@name"/>
+<i:arg name="value" type="String"/>
+<i:arg name="labelKey" type="String" default=""/>
+<i:arg name="label" type="String" default="@i18n(labelKey)"/>
+<i:arg name="forceLabel" type="boolean" default="false"/>
+<i:arg name="helpKey" type="String" default=""/>
+<i:arg name="help" type="String" default="@i18n(helpKey)"/>
+<i:arg name="addonText" type="String" default=""/>
+<i:arg name="readonly" type="boolean" default="false"/>
+<i:arg name="id" type="String" default=""/>
+<i:arg name="placeholder" type="String" default=""/>
+<i:arg name="tabIndex" type="String" default=""/>
+<i:arg name="noPastDates" type="boolean" default="false" />
+<i:arg name="format" type="String" default="L" description="Defines the date format for the field. Valid formats can be found at http://momentjs.com/docs/#/displaying/format/" />
+
+
+<i:pragma name="description" value="Renders a date input field within a Tycho template"/>
+
+<div class="datefield form-group @UserContext.get().signalFieldError(name) @class">
+    <i:if test="isFilled(label) || forceLabel">
+        <label><span>@label</span></label>
+    </i:if>
+    <i:if test="isFilled(addonText)">
+        <div class="input-group">
+            <input @if(isFilled(fieldName)) { name="@fieldName" }
+                   @if(isFilled(id)) { id="@id" }
+                   type="text"
+                   value="@UserContext.get().getFieldValue(name, value)"
+                   @if (noPastDates) { data-date-mindate="@today()" }
+                   data-date-format="@format"
+                   autocomplete="off"
+                   class="form-control input-block-level date-picker"
+                   @if (isFilled(placeholder)) { placeholder="@placeholder" }
+                   @if (readonly) { readonly }
+                   @if (isFilled(tabIndex)) { tabindex="@tabIndex" } />
+
+            <span class="input-group-addon"><i:raw>@addonText</i:raw></span>
+        </div>
+
+        <i:else>
+            <input @if(isFilled(fieldName)) { name="@fieldName" }
+                   @if(isFilled(id)) { id="@id" }
+                   value="@UserContext.get().getFieldValue(name, value)"
+                   @if (noPastDates) { data-date-mindate="@today()" }
+                   data-date-format="@format"
+                   autocomplete="off"
+                   class="form-control input-block-level date-picker"
+                   @if (isFilled(placeholder)) { placeholder="@placeholder" }
+                   @if (readonly) { readonly }
+                   @if (isFilled(tabIndex)) { tabindex="@tabIndex" } />
+        </i:else>
+    </i:if>
+
+    <i:if test="isFilled(help)">
+        <small class="form-text text-muted"><i:raw>@expandMessage(help)</i:raw></small>
+    </i:if>
+    <i:if test="UserContext.get().hasError(name)">
+        <small class="error-block form-text">@UserContext.get().getFieldErrorMessage(name)</small>
+    </i:if>
+</div>
