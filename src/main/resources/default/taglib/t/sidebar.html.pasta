@@ -2,7 +2,7 @@
 
 <div class="row flex-grow-0 flex-lg-grow-1">
     <div class="col-12 col-lg-4 col-xl-3 sidebar d-none d-lg-block @class">
-        <div class="card h-100 shadow">
+        <div class="card h-100 shadow-sm">
             <div class="card-body">
                 <div class="d-flex flex-column">
                     <i:render name="sidebar"/>

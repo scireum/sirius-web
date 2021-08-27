@@ -14,7 +14,7 @@
 </i:pragma>
 
 <div class="col mb-4">
-    <div class="card card-border h-100 @class">
+    <div class="card card-border card-hover-shadow h-100 @class">
         <i:render name="header"></i:render>
         <div class="card-body">
             <div class="d-flex justify-content-between">

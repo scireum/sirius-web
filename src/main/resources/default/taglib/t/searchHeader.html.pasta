@@ -7,15 +7,15 @@
     Renders a search bar to be used above a table or a list of data cards.
 </i:pragma>
 
-<div class="card mb-4">
+<div class="card shadow-sm mb-4">
     <div class="card-body">
         <div class="row">
             <div class="col-8 col-lg-9 @class">
-                <i:local name="linkAndQueryString" value="@Strings.split(baseUrl,'?')" />
+                <i:local name="linkAndQueryString" value="@Strings.split(baseUrl,'?')"/>
                 <form action="@linkAndQueryString.getFirst()" method="get" id="search">
                     <i:if test="linkAndQueryString.getSecond() != null">
                         <i:for type="String" var="pair" items="toList(linkAndQueryString.getSecond().split('&'))">
-                            <i:local name="nameAndValue" value="@Strings.split(pair,'=')" />
+                            <i:local name="nameAndValue" value="@Strings.split(pair,'=')"/>
                             <input type="hidden" name="@nameAndValue.getFirst()" value="@nameAndValue.getSecond()"/>
                         </i:for>
                     </i:if>
@@ -25,8 +25,8 @@
                         </i:if>
                     </i:for>
                     <div class="input-group">
-                        <input type="text" name="query" class="form-control primary-autofocus submit-on-enter" value="@page.getQuery()"
-                               placeholder="@i18n('NLS.searchkey')" autofocus/>
+                        <input type="text" name="query" class="form-control primary-autofocus submit-on-enter"
+                               value="@page.getQuery()" placeholder="@i18n('NLS.searchkey')" autofocus/>
                         <div class="input-group-append">
                             <a class="btn btn-outline-secondary" onclick="$('#search').submit()">
                                 <i class="fa fa-search"></i>
