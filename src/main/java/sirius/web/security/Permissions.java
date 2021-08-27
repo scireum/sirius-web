@@ -11,6 +11,7 @@ package sirius.web.security;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Tuple;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.settings.Extension;
@@ -20,11 +21,13 @@ import java.lang.reflect.AnnotatedElement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Helper class to parse permission based annotations and the expand permission profiles.
@@ -54,6 +57,27 @@ public class Permissions {
     protected static List<Profile> profilesCache;
 
     private Permissions() {
+    }
+
+    /**
+     * Fetches all {@link Profile profiles} known to the system.
+     *
+     * @return the list of all known profiles
+     */
+    public static List<Profile> getAvailableProfiles() {
+        return Collections.unmodifiableList(getProfiles());
+    }
+
+    /**
+     * Returns a list of all permissions along with their description.
+     *
+     * @return a list of permission/description pairs
+     */
+    public static List<Tuple<String, String>> getAllPermissions() {
+        return Tuple.fromMap(Sirius.getSettings().getMap("security.permissions"))
+                    .stream()
+                    .sorted(Comparator.comparing(Tuple::getFirst))
+                    .collect(Collectors.toList());
     }
 
     private static List<Profile> getProfiles() {
@@ -158,7 +182,7 @@ public class Permissions {
     /**
      * Determines if the permission expression is contained for an object.
      * <p>
-     * Next to plain permission names, permissions can also negated using <tt>!permission</tt> and on top of that,
+     * Next to plain permission names, permissions can also be negated using <tt>!permission</tt> and on top of that,
      * whole logical expressions in DNF (disjunctive normal form) can be passed in.
      * <p>
      * Such a formula is a set of expressions where a <b>,</b> represents an <tt>or</tt> and a <b>+</b> represents an
