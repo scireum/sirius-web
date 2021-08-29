@@ -1,6 +1,7 @@
 <i:arg name="page" type="Page"/>
 <i:arg name="baseUrl" type="String"/>
 <i:arg name="class" type="String" default=""/>
+<i:arg name="suppressSearch" type="boolean" default="false"/>
 
 
 <i:pragma name="description">
@@ -11,29 +12,31 @@
     <div class="card-body">
         <div class="row">
             <div class="col-8 col-lg-9 @class">
-                <i:local name="linkAndQueryString" value="@Strings.split(baseUrl,'?')"/>
-                <form action="@linkAndQueryString.getFirst()" method="get" id="search">
-                    <i:if test="linkAndQueryString.getSecond() != null">
-                        <i:for type="String" var="pair" items="toList(linkAndQueryString.getSecond().split('&'))">
-                            <i:local name="nameAndValue" value="@Strings.split(pair,'=')"/>
-                            <input type="hidden" name="@nameAndValue.getFirst()" value="@nameAndValue.getSecond()"/>
-                        </i:for>
-                    </i:if>
-                    <i:for type="sirius.web.controller.Facet" var="facet" items="page.getFacets()">
-                        <i:if test="facet.getValue() != null">
-                            <input type="hidden" name="@facet.getName()" value="@facet.getValue()"/>
+                <i:if test="!suppressSearch">
+                    <i:local name="linkAndQueryString" value="@Strings.split(baseUrl,'?')"/>
+                    <form action="@linkAndQueryString.getFirst()" method="get" id="search">
+                        <i:if test="linkAndQueryString.getSecond() != null">
+                            <i:for type="String" var="pair" items="toList(linkAndQueryString.getSecond().split('&'))">
+                                <i:local name="nameAndValue" value="@Strings.split(pair,'=')"/>
+                                <input type="hidden" name="@nameAndValue.getFirst()" value="@nameAndValue.getSecond()"/>
+                            </i:for>
                         </i:if>
-                    </i:for>
-                    <div class="input-group">
-                        <input type="text" name="query" class="form-control primary-autofocus submit-on-enter"
-                               value="@page.getQuery()" placeholder="@i18n('NLS.searchkey')" autofocus/>
-                        <div class="input-group-append">
-                            <a class="btn btn-outline-secondary" onclick="$('#search').submit()">
-                                <i class="fa fa-search"></i>
-                            </a>
+                        <i:for type="sirius.web.controller.Facet" var="facet" items="page.getFacets()">
+                            <i:if test="facet.getValue() != null">
+                                <input type="hidden" name="@facet.getName()" value="@facet.getValue()"/>
+                            </i:if>
+                        </i:for>
+                        <div class="input-group">
+                            <input type="text" name="query" class="form-control primary-autofocus-js submit-on-enter-js"
+                                   value="@page.getQuery()" placeholder="@i18n('NLS.searchkey')" autofocus/>
+                            <div class="input-group-append">
+                                <a class="btn btn-outline-secondary" onclick="$('#search').submit()">
+                                    <i class="fa fa-search"></i>
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                </form>
+                    </form>
+                </i:if>
             </div>
             <div class="col-4 col-lg-3 d-flex flex-row justify-content-end">
                 <i:render name="body"/>
