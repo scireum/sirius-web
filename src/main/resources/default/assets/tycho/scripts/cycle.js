@@ -4,7 +4,7 @@
  * to display user-friendly timestamps.
  */
 sirius.ready(function () {
-   document.querySelectorAll('.cycle').forEach(function(_node) {
+   document.querySelectorAll('.cycle-js').forEach(function(_node) {
        if (sirius.isFilled(_node.dataset.cycle)) {
            _node.setAttribute('title', _node.dataset.cycle);
            _node.addEventListener('click', function() {

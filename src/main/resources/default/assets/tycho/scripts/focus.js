@@ -21,17 +21,17 @@ sirius.ready(function() {
         }
     }
 
-    let _primaryField = document.querySelector('.primary-autofocus');
+    let _primaryField = document.querySelector('.primary-autofocus-js');
     if (_primaryField !== null) {
         focus(_primaryField);
     } else {
-        let _autofocusField = document.querySelector('.autofocus');
+        let _autofocusField = document.querySelector('.autofocus-js');
         if (_autofocusField !== null) {
             focus(_autofocusField);
         }
     }
 
-    document.querySelectorAll('.submit-on-enter').forEach(function(_field) {
+    document.querySelectorAll('.submit-on-enter-js').forEach(function(_field) {
        sirius.addEnterListener(_field, function() {
            let _form = sirius.findParentOfType(_field,'FORM');
            if (_form !== null) {
