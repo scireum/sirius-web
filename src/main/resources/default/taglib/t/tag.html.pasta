@@ -1,9 +1,12 @@
 <i:arg type="String" name="color" default="gray" description="Specifies the color to use." />
+<i:arg type="boolean" name="marginRight" default="true" description="Determines if the dot has an auto margin at the right"/>
+<i:arg type="String" name="class" default=""
+       description="Defines addition classes to add."/>
 
 <i:pragma name="description">
     Renders a colored tag using the given text.
 </i:pragma>
 
-<span class="border-sirius-@color tycho-tag mr-3 mb-2 d-inline-block">
+<span class="border-sirius-@color tycho-tag @if(marginRight){ mr-3 } mb-2 d-inline-block">
     <i:render name="body" />
 </span>
