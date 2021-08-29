@@ -17,6 +17,7 @@
 
   .card-img, .card-img-top {
     border-radius: 0;
+    object-fit: scale-down;
   }
 
   &.card-border {
