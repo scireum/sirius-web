@@ -1,5 +1,5 @@
 // Initializes all Bootstrap tooltips...
 sirius.ready(function() {
     // This needs to use jQuery for Bootstrap compatibility reasons...
-    $('[data-toggle="tooltip"]').tooltip()
+    $('[data-toggle="tooltip"]').tooltip();
 })
