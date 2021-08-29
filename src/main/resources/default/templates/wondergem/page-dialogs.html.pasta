@@ -1,6 +1,6 @@
-<w:modal name="danger-link-confirm" titleKey="template.html.deleteHeader">
+<w:modal name="danger-link-confirm" titleKey="template.html.confirmHeader">
     <w:modalBody>
-        <p>@i18n("template.html.deleteText")</p>
+        <p>@i18n("template.html.confirmText")</p>
     </w:modalBody>
     <w:modalFooter submitKey="NLS.yes" cancelKey="NLS.cancel" />
 </w:modal>
