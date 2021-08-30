@@ -54,19 +54,19 @@ public class BarcodeController extends BasicController {
         barcode(webContext, determineFormat(webContext.get("type").asString()));
     }
 
-    private void barcode(WebContext ctx, BarcodeFormat format) throws WriterException, IOException {
-        int width = ctx.getFirstFilled("w", "width").asInt(200);
-        int height = ctx.getFirstFilled("h", "height").asInt(200);
-        String content = ctx.getFirstFilled("c", "content").asString();
+    private void barcode(WebContext webContext, BarcodeFormat format) throws WriterException, IOException {
+        int width = webContext.getFirstFilled("w", "width").asInt(200);
+        int height = webContext.getFirstFilled("h", "height").asInt(200);
+        String content = webContext.getFirstFilled("c", "content").asString();
         if (Strings.isEmpty(content)) {
-            ctx.respondWith().direct(HttpResponseStatus.BAD_REQUEST, "Usage: /barcode?type=qr&content=...&w=200&h=200");
+            webContext.respondWith().direct(HttpResponseStatus.BAD_REQUEST, "Usage: /barcode?type=qr&content=...&w=200&h=200");
             return;
         }
 
-        String fileType = ctx.getFirstFilled("fileType").asString("jpg");
+        String fileType = webContext.getFirstFilled("fileType").asString("jpg");
         Writer writer = determineWriter(format);
         BitMatrix matrix = writer.encode(content, format, width, height);
-        try (OutputStream out = ctx.respondWith()
+        try (OutputStream out = webContext.respondWith()
                                    .infinitelyCached()
                                    .outputStream(HttpResponseStatus.OK,
                                                  MimeHelper.guessMimeType("barcode." + fileType))) {
