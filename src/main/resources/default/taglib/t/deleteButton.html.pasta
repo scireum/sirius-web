@@ -1,0 +1,11 @@
+<i:arg type="String" name="url"/>
+<i:arg type="Page" name="page" default=""/>
+<i:arg name="class" type="String" default="" description="Lists additional CSS classes to apply to the field."/>
+
+<i:pragma name="description" value="Renders a delete button to be used in tables or lists."/>
+
+<a class="btn btn-link btn-danger confirm-link-js @class"
+   title="@i18n('NLS.delete')"
+   href="@if(page != null) {@page.linkToCurrentPage(url)} else {@url}">
+    <i class="fa fa-trash"></i>
+</a>

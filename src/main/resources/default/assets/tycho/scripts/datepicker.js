@@ -1,5 +1,5 @@
 sirius.ready(function() {
-    $('.date-picker').datetimepicker({
+    $('.date-picker-js').datetimepicker({
         locale: tycho_current_locale,
         ignoreReadonly: true,
         keepInvalid: true,

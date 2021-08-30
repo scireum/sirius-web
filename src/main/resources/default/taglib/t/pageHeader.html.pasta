@@ -16,7 +16,7 @@
 <div class="card shadow-sm mb-4 page-header">
     <div class="card-body pl-3 pr-3 pt-3 @if (isFilled(details)) { pb-1 } else { pb-3 }">
         <div class="d-flex flex-row">
-            <a class="btn btn-link btn-outline-link sidebar-button d-none d-lg-none mr-2">
+            <a class="btn btn-link btn-outline-link sidebar-button-js d-none d-lg-none mr-2">
                 <i class="fa fa-bars"></i>
             </a>
             <i:if test="isFilled(title)">

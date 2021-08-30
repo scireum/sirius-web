@@ -2,7 +2,7 @@
 <i:arg type="String" name="class" default="" />
 
 <i:if test="date != null">
-    <span class="cycle link @class"
+    <span class="cycle-js link @class"
           data-cycle="@toUserString(date)">
         @NLS.toSpokenDate(date)
     </span>

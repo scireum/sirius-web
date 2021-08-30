@@ -17,28 +17,30 @@
 
   .card-img, .card-img-top {
     border-radius: 0;
+    object-fit: scale-down;
   }
+
+  &.card-border {
+    border-width: 1px;
+    border-style: solid;
+  }
+
+  &.full-border {
+    border-left-width: 4px;
+    border-left-style: solid;
+    border-top-width: 1px;
+    border-top-style: solid;
+    border-right-width: 1px;
+    border-right-style: solid;
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+  }
+
 }
 
 .card.card-hover-shadow:hover, .card.card-hover-shadow:focus-within {
   border-color: opacify($primary-color, -0.75);
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
-}
-
-.card.card-border {
-  border-width: 1px;
-  border-style: solid;
-}
-
-.card.full-border {
-  border-left-width: 4px;
-  border-left-style: solid;
-  border-top-width: 1px;
-  border-top-style: solid;
-  border-right-width: 1px;
-  border-right-style: solid;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
 }
 
 .card-footer {

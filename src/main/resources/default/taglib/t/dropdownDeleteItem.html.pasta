@@ -1,0 +1,14 @@
+<i:arg type="String" name="url"/>
+<i:arg type="Page" name="page" default=""/>
+<i:arg type="String" name="permission" default=""/>
+<i:arg type="String" name="framework" default=""/>
+<i:arg name="class" type="String" default="" description="Lists additional CSS classes to apply to the item."/>
+
+<i:pragma name="description" value="Renders a delete link to be used in a dropdown menu (e.g. card actions)."/>
+
+<t:dropdownItem class="danger confirm-link-js @class"
+                permission="@permission"
+                framework="@framework"
+                icon="fa fa-trash"
+                labelKey="NLS.delete"
+                url="@(page != null) ? page.linkToCurrentPage(url) : url"/>

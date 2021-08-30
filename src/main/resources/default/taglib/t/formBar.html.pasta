@@ -9,7 +9,7 @@
 
 <div class="bt-gray mt-4 pt-3 mb-4 @class">
     <i:if test="isFilled(btnLabel)">
-    <a class="btn btn-primary submit-link @if (singleClick) { single-click-link }">
+    <a class="btn btn-primary submit-link-js @if (singleClick) { single-click-link-js }">
         <i class="@icon"></i> @btnLabel
     </a>
     </i:if>

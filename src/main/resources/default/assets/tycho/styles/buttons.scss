@@ -13,7 +13,9 @@
 }
 
 .btn-link {
-  color: $grayDark;
+  color: $grayDark !important;
+  border: none;
+  background: none;
 }
 
 .btn-link.active,
@@ -116,10 +118,18 @@
   color: #fff !important;
   border-color: $sirius-red-light;
 
+  &.btn-link {
+    color: $grayDark !important;
+    border: none;
+    background: none;
+  }
+
   &:hover {
     background-color: $sirius-red;
+    color: #fff !important;
     border-color: $sirius-red;
   }
+
 }
 
 .btn-outline-danger {
@@ -130,4 +140,12 @@
     background-color: $sirius-red-light;
     color: #fff !important;
   }
+}
+
+.dropdown-item.danger {
+  color: $sirius-red-light;
+}
+
+.dropdown-item.active, .dropdown-item:active {
+  color: #fff !important;
 }
