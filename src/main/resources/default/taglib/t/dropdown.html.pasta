@@ -5,13 +5,15 @@
        description="Defines addition classes to add to the label."/>
 <i:arg type="String" name="class" default=""
        description="Defines addition classes to add to the dropdown div."/>
+<i:arg type="String" name="btnClass" default="btn btn-link"
+       description="Defines the classes that define the label button."/>
 
 <i:pragma name="description" value="Renders an inline dropdown within a Tycho template"/>
 <i:local name="contents" value="@renderToString('body')"/>
 
 <i:if test="isFilled(contents)">
     <div class="dropdown @class">
-        <a class="btn btn-link"
+        <a class="@btnClass"
            style="z-index: 3;
            position: relative"
            data-toggle="dropdown"
