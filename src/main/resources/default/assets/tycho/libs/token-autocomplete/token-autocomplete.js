@@ -683,7 +683,13 @@ var TokenAutocomplete = /** @class */ (function () {
                             return;
                         }
                         var text = suggestion.fieldLabel;
-                        if (value.localeCompare(text.slice(0, value.length), undefined, { sensitivity: 'base' }) === 0) {
+                        if (value.length == 0 && me.options.selectMode == SelectModes.SINGLE && !me.options.optional && !me.areSuggestionsDisplayed()) {
+                            me.addSuggestion(suggestion, false);
+                            if (me.parent.val().length == 0) {
+                                me.parent.select.addToken(suggestion.value, text, suggestion.type, true);
+                            }
+                        }
+                        else if (value.localeCompare(text.slice(0, value.length), undefined, { sensitivity: 'base' }) === 0) {
                             // The suggestion starts with the query text the user entered and will be displayed.
                             me.addSuggestion(suggestion);
                         }
