@@ -76,9 +76,9 @@ public class ScopeInfo extends Composable {
     private final Map<Class<?>, Object> helpersByType = new ConcurrentHashMap<>();
     private UserSettings settings;
     private UserManager userManager;
-    private Set<String> displayLanguages;
-    private Set<String> knownLanguages;
 
+    private static final Map<String, Set<String>> displayLanguages = new ConcurrentHashMap<>();
+    private static Set<String> knownLanguages;
     private static Config scopeDefaultConfig;
     private static Map<String, String> scopeDefaultConfigFiles;
 
@@ -455,7 +455,7 @@ public class ScopeInfo extends Composable {
      * Applications should consider using {@link UserInfo#getSettings()} or {@link UserContext#getSettings()} as this
      * also includes user specific settings.
      *
-     * @return the config the this scope
+     * @return the config of this scope
      */
     public UserSettings getSettings() {
         if (settings == null) {
@@ -476,7 +476,7 @@ public class ScopeInfo extends Composable {
      */
     public UserManager getUserManager() {
         if (userManager == null) {
-            Extension extension = getScopeTypeExtension();
+            Extension extension = getScopeTypeExtension(scopeType);
             userManager = globalContext.getPart(extension.get("manager").asString("public"), UserManagerFactory.class)
                                        .createManager(this, extension);
         }
@@ -486,6 +486,7 @@ public class ScopeInfo extends Composable {
 
     /**
      * Returns a set of two-letter codes enumerating all languages that site content can be displayed in.
+     * <p>
      * Provided via the config in {@code scope.[type].display-languages}.
      * <p>
      * This can be a subset of {@link #getKnownLanguages()}.
@@ -493,14 +494,31 @@ public class ScopeInfo extends Composable {
      * @return a set of language codes supported for display
      */
     public Set<String> getDisplayLanguages() {
-        if (displayLanguages == null) {
-            List<String> languages = getScopeTypeExtension().getStringList("display-languages").isEmpty() ?
-                                     Collections.singletonList(getDefaultLanguageOrFallback()) :
-                                     getScopeTypeExtension().getStringList("display-languages");
-            displayLanguages =
-                    languages.stream().map(String::toLowerCase).collect(Collectors.toCollection(LinkedHashSet::new));
+        return Collections.unmodifiableSet(getDisplayLanguagesForScopeType(scopeType));
+    }
+
+    /**
+     * Returns a set of two-letter codes enumerating all languages supported by scopes of the given type.
+     * <p>
+     * Provided via the config in {@code scope.[type].display-languages}.
+     * <p>
+     * This can be a subset of {@link #getKnownLanguages()}.
+     *
+     * @param type the scope to fetch the display languages for
+     * @return a set of language codes supported for display
+     */
+    public static Set<String> getDisplayLanguagesForScopeType(String type) {
+        return displayLanguages.computeIfAbsent(type, ScopeInfo::computeDisplayLanguagesForScopeType);
+    }
+
+    private static Set<String> computeDisplayLanguagesForScopeType(String scopeType) {
+        Extension scopeConfig = getScopeTypeExtension(scopeType);
+        List<String> displayLanguages = scopeConfig.getStringList("display-languages");
+        if (displayLanguages.isEmpty()) {
+            displayLanguages = Collections.singletonList(getDefaultLanguageOrFallback(scopeType));
         }
-        return Collections.unmodifiableSet(displayLanguages);
+
+        return displayLanguages.stream().map(String::toLowerCase).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     /**
@@ -509,15 +527,16 @@ public class ScopeInfo extends Composable {
      *
      * @return the set of known language codes
      */
-    public Set<String> getKnownLanguages() {
+    public static Set<String> getKnownLanguages() {
         if (knownLanguages == null) {
-            List<String> languages =
-                    getScopeTypeExtension(DEFAULT_SCOPE_ID).getStringList("known-languages").isEmpty() ?
-                    Collections.singletonList(getDefaultLanguageOrFallback()) :
-                    getScopeTypeExtension(DEFAULT_SCOPE_ID).getStringList("known-languages");
+            List<String> languages = getScopeTypeExtension(DEFAULT_SCOPE_ID).getStringList("known-languages");
+            if (languages.isEmpty()) {
+                languages = Collections.singletonList(getDefaultLanguageOrFallback(DEFAULT_SCOPE_ID));
+            }
             knownLanguages =
                     languages.stream().map(String::toLowerCase).collect(Collectors.toCollection(LinkedHashSet::new));
         }
+
         return Collections.unmodifiableSet(knownLanguages);
     }
 
@@ -537,7 +556,7 @@ public class ScopeInfo extends Composable {
      * @param language a lower-case two-letter language code
      * @return <tt>true</tt> if the language is supported, <tt>false</tt> otherwise.
      */
-    public boolean isKnownLanguage(String language) {
+    public static boolean isKnownLanguage(String language) {
         return getKnownLanguages().contains(language);
     }
 
@@ -566,8 +585,9 @@ public class ScopeInfo extends Composable {
     }
 
     /**
-     * Returns the default language according to the configuration for this scope. If none is configured,
-     * this returns the fallback language for the scope. Falls back to the default determined by
+     * Returns the default language according to the configuration for this scope.
+     * <p>
+     * If none is configured, this returns the fallback language for the scope. Falls back to the default determined by
      * {@link NLS#getDefaultLanguage()} if no scope configurations are present.
      *
      * @return the configured default language, or fallback language for this scope, or the default language for NLS,
@@ -575,18 +595,29 @@ public class ScopeInfo extends Composable {
      */
     @Nonnull
     public String getDefaultLanguageOrFallback() {
-        return getScopeTypeExtension().get("default-language")
-                                      .asOptionalString()
-                                      .orElse(getScopeTypeExtension().get("fallback-language")
-                                                                     .asOptionalString()
-                                                                     .orElse(NLS.getDefaultLanguage()));
+        return getDefaultLanguageOrFallback(scopeType);
     }
 
-    private Extension getScopeTypeExtension() {
-        return Sirius.getSettings().getExtension("security.scopes", getScopeType());
+    /**
+     * Returns the default language according to the configuration for the given scope.
+     * <p>
+     * If none is configured, this returns the fallback language for the scope. Falls back to the default determined by
+     * {@link NLS#getDefaultLanguage()} if no scope configurations are present.
+     *
+     * @param scopeType the type of scopes to fetch the default language for
+     * @return the configured default language, or fallback language for this scope, or the default language for NLS,
+     * or "en" if none of the others were configured
+     */
+    @Nonnull
+    public static String getDefaultLanguageOrFallback(String scopeType) {
+        Extension scopeTypeExtension = getScopeTypeExtension(scopeType);
+        return scopeTypeExtension.get("default-language")
+                                 .asOptionalString()
+                                 .or(() -> scopeTypeExtension.get("fallback-language").asOptionalString())
+                                 .orElseGet(NLS::getDefaultLanguage);
     }
 
-    private Extension getScopeTypeExtension(String scopeType) {
+    private static Extension getScopeTypeExtension(String scopeType) {
         return Sirius.getSettings().getExtension("security.scopes", scopeType);
     }
 }
