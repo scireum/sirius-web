@@ -48,7 +48,7 @@ function appendHistoryUrl(url) {
         // this site was restored from a state
         if (url === window.sessionStorage.getItem('tycho-history-skip-url')) {
             // we want to skip this state
-           window.history.back();
+            window.history.back();
         } else {
             window.sessionStorage.removeItem('tycho-history-skip-url')
         }
@@ -74,6 +74,8 @@ function appendHistoryUrl(url) {
         window.sessionStorage.setItem('tycho-history-skip-url', url);
         // We also want to skip it, if this state is called..
         url = '-';
+    } else {
+        window.sessionStorage.removeItem('tycho-history-skip-url')
     }
 
     if (url !== '-') {
