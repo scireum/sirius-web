@@ -21,3 +21,5 @@
 <i:include name="/assets/wondergem/bootstrap-tokenfield/bootstrap-tokenfield.js"/>
 
 <i:include name="/assets/wondergem/autocomplete/multiselect.js"/>
+
+<i:include name="/assets/wondergem/tycho-history.js"/>

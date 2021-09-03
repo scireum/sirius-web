@@ -101,7 +101,7 @@
 
 <i:invoke template="/templates/tycho/page-dialogs.html.pasta"/>
 <i:extensions target="tycho-page" point="footer"/>
-<i:if test="historyUri != '-'">
+<i:if test="config('product.tychoHistory').asBoolean()">
     <script type="text/javascript">
         appendHistoryUrl('@historyUri');
     </script>

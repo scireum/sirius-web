@@ -88,5 +88,10 @@
 
 <i:invoke template="/templates/wondergem/page-dialogs.html.pasta"/>
 <i:extensions target="wondergem-page" point="footer"/>
+<i:if test="config('product.tychoHistory').asBoolean()">
+    <script type="text/javascript">
+        appendHistoryUrl();
+    </script>
+</i:if>
 </body>
 </html>
