@@ -56,7 +56,8 @@ var TokenAutocomplete = /** @class */ (function () {
             allowCustomEntries: true,
             readonly: false,
             optional: false,
-            enableTabulator: true
+            enableTabulator: true,
+            requestDelay: 200
         };
         this.options = __assign(__assign({}, this.defaults), options);
         var passedContainer = document.querySelector(this.options.selector);
@@ -167,17 +168,7 @@ var TokenAutocomplete = /** @class */ (function () {
         if (silent === void 0) { silent = false; }
         if (typeof value !== 'undefined' && value !== null) {
             this.select.clear(silent);
-            if (Array.isArray(value)) {
-                var me_1 = this;
-                value.forEach(function (token) {
-                    if (typeof token === 'object') {
-                        me_1.select.addToken(token.value, token.text, token.type, silent);
-                    }
-                });
-            }
-            else {
-                this.select.addToken(value.value, value.text, value.type, silent);
-            }
+            this.addToken(value, silent);
         }
         var tokens = [];
         this.hiddenSelect.querySelectorAll('option').forEach(function (option) {
@@ -186,6 +177,28 @@ var TokenAutocomplete = /** @class */ (function () {
             }
         });
         return tokens;
+    };
+    /**
+     * Adds the given tokens to the field.
+     *
+     * The current tokens are only added when a value parameter is given.
+     *
+     * @param {(Array<Token>|string)} value - either the name of a single token or a list of tokens to create
+     * @param {boolean} silent - whether appropriate events should be triggered when changing tokens or not
+     */
+    TokenAutocomplete.prototype.addToken = function (value, silent) {
+        if (silent === void 0) { silent = false; }
+        if (Array.isArray(value)) {
+            var me_1 = this;
+            value.forEach(function (token) {
+                if (typeof token === 'object') {
+                    me_1.select.addToken(token.value, token.text, token.type, silent);
+                }
+            });
+        }
+        else {
+            this.select.addToken(value.value, value.text, value.type, silent);
+        }
     };
     /**
      * Returns the current text the user has input which is not converted into a token.
@@ -446,21 +459,34 @@ var TokenAutocomplete = /** @class */ (function () {
                 this.container.appendChild(deleteToken);
             }
         }
-        class_2.prototype.clear = function (silent) {
+        /**
+         * Clears the current user input so new text can be entered.
+         *
+         * @param {boolean} silent - whether an appropriate event should be triggered
+         * @param {boolean} keepPreviousValue - if true, the previous value will be stored and shown as a placeholder
+         */
+        class_2.prototype.clear = function (silent, keepPreviousValue) {
             var _a;
+            if (keepPreviousValue === void 0) { keepPreviousValue = true; }
             if (this.options.readonly) {
                 return;
             }
             var me = this;
             var tokenText = me.parent.textInput.textContent;
             var hiddenOption = me.parent.hiddenSelect.querySelector('option[data-text="' + tokenText + '"]');
-            if (!me.options.optional) {
+            if (me.options.optional) {
+                this.container.classList.remove('optional-singleselect-with-value');
+            }
+            if (keepPreviousValue) {
                 me.previousValue = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.dataset.value;
                 me.previousText = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.dataset.text;
                 me.previousType = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.dataset.type;
+                if (this.previousText && this.previousText !== '') {
+                    me.parent.textInput.dataset.placeholder = this.previousText;
+                }
             }
-            else {
-                this.container.classList.remove('optional-singleselect-with-value');
+            else if (me.parent.options.placeholderText != null) {
+                me.parent.textInput.dataset.placeholder = me.parent.options.placeholderText;
             }
             (_a = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.parentElement) === null || _a === void 0 ? void 0 : _a.removeChild(hiddenOption);
             me.parent.addHiddenEmptyOption();
@@ -473,12 +499,18 @@ var TokenAutocomplete = /** @class */ (function () {
          * @param {string} input - the actual input the user entered
          */
         class_2.prototype.handleInputAsValue = function (input) {
+            if (this.parent.options.allowCustomEntries) {
+                this.clearCurrentInput();
+                this.addToken(input, input, null, false);
+                this.parent.autocomplete.hideSuggestions();
+                this.parent.autocomplete.clearSuggestions();
+                return;
+            }
             if (this.parent.autocomplete.suggestions.childNodes.length === 1) {
                 this.parent.autocomplete.suggestions.firstChild.click();
+                return;
             }
-            else {
-                this.clearCurrentInput();
-            }
+            this.clearCurrentInput();
         };
         class_2.prototype.clearCurrentInput = function () {
             this.clear(true);
@@ -521,12 +553,7 @@ var TokenAutocomplete = /** @class */ (function () {
                     event.preventDefault();
                 }
             });
-            parent.textInput.addEventListener('click', function () {
-                if (!parent.autocomplete.areSuggestionsDisplayed()) {
-                    parent.textInput.focus();
-                }
-            });
-            me.parent.textInput.addEventListener('focusin', function () {
+            function focusInput() {
                 if (!parent.autocomplete.areSuggestionsDisplayed()) {
                     parent.autocomplete.showSuggestions();
                     parent.autocomplete.loadSuggestions();
@@ -539,17 +566,26 @@ var TokenAutocomplete = /** @class */ (function () {
                 range.collapse(false);
                 selection === null || selection === void 0 ? void 0 : selection.addRange(range);
                 parent.textInput.focus();
+            }
+            parent.textInput.addEventListener('click', function () {
+                focusInput();
+            });
+            me.parent.textInput.addEventListener('focusin', function () {
+                focusInput();
             });
             parent.textInput.addEventListener('focusout', function () {
                 // We use setTimeout here, so we won't interfere with a user clicking on a suggestion.
                 setTimeout(function () {
-                    if (!me.options.optional && (me.parent.val().length === 0 || me.parent.val()[0] === '')) {
+                    if (me.previousValue && (me.parent.val().length === 0 || me.parent.val()[0] === '')) {
                         me.addToken(me.previousValue, me.previousText, me.previousType, true);
                     }
                 }, 200);
             });
             (_a = parent.container.querySelector('.token-singleselect-token-delete')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', function () {
-                me.clear(false);
+                delete me.previousValue;
+                delete me.previousType;
+                delete me.previousText;
+                me.clear(false, false);
             });
         };
         return class_2;
@@ -664,6 +700,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 if (me.parent.options.selectMode == SelectModes.SINGLE) {
                     if (!me.parent.textInput.isContentEditable) {
                         me.parent.select.clear(true);
+                        value = "";
                     }
                 }
                 else if (value.length < me.parent.options.minCharactersForSuggestion) {
@@ -750,6 +787,22 @@ var TokenAutocomplete = /** @class */ (function () {
              * @param query the query to search suggestions for
              */
             class_4.prototype.requestSuggestions = function (query) {
+                var me = this;
+                clearTimeout(me.timeout);
+                if (!me.timeout) {
+                    me.debouncedRequestSuggestions.call(me, query);
+                    me.timeout = setTimeout(function () {
+                        delete me.timeout;
+                    }, me.parent.options.requestDelay);
+                }
+                else {
+                    me.timeout = setTimeout(function () {
+                        delete me.timeout;
+                        me.debouncedRequestSuggestions.call(me, query);
+                    }, me.parent.options.requestDelay);
+                }
+            };
+            class_4.prototype.debouncedRequestSuggestions = function (query) {
                 var me = this;
                 if (me.request != null && me.request.readyState) {
                     me.request.abort();

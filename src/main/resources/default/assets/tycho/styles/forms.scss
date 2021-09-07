@@ -52,15 +52,15 @@
 
 // limit box shadow if input field has something appended or prepended
 
-.input-group>.custom-select:not(:last-child), .input-group>.form-control:not(:last-child) {
+.input-group>.custom-select:not(:last-child), .input-group>.form-control:not(.token-autocomplete-container):not(:last-child) {
   clip-path: inset(-5px 0px -5px -5px);
 }
 
-.input-group>.custom-select:not(:first-child), .input-group>.form-control:not(:first-child) {
+.input-group>.custom-select:not(:first-child), .input-group>.form-control:not(.token-autocomplete-container):not(:first-child) {
   clip-path: inset(-5px -5px -5px 0px);
 }
 
-.input-group>.custom-select:not(:first-child):not(:last-child), .input-group>.form-control:not(:first-child):not(:last-child) {
+.input-group>.custom-select:not(:first-child):not(:last-child), .input-group>.form-control:not(.token-autocomplete-container):not(:first-child):not(:last-child) {
   clip-path: inset(-5px 0px -5px 0px);
 }
 

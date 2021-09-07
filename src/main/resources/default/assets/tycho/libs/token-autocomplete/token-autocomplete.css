@@ -130,7 +130,7 @@
     background-color: #fdfdfd;
 }
 
-.token-autocomplete-container .token-autocomplete-suggestions li.token-autocomplete-suggestion-highlighted {
+.token-autocomplete-container .token-autocomplete-suggestions li.token-autocomplete-suggestion-highlighted, .token-autocomplete-container .token-autocomplete-suggestions li:hover {
     background-color: #95caec;
 }
 
