@@ -7,6 +7,6 @@
     Renders a colored tag using the given text.
 </i:pragma>
 
-<span class="border-sirius-@color tycho-tag @if(marginRight){ mr-3 } mb-2 d-inline-block">
+<span class="border-sirius-@color tycho-tag @if(marginRight){ mr-2 } mb-2 d-inline-block">
     <i:render name="body" />
 </span>
