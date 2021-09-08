@@ -11,7 +11,7 @@
 <div class="card shadow-sm mb-4">
     <div class="card-body">
         <div class="row">
-            <div class="col-8 col-lg-9 @class">
+            <div class="col-8 col-xl-9 @class">
                 <i:if test="!suppressSearch">
                     <i:local name="linkAndQueryString" value="@Strings.split(baseUrl,'?')"/>
                     <form action="@linkAndQueryString.getFirst()" method="get" id="search">
@@ -38,7 +38,7 @@
                     </form>
                 </i:if>
             </div>
-            <div class="col-4 col-lg-3 d-flex flex-row justify-content-end">
+            <div class="col-4 col-xl-3 d-flex flex-row justify-content-end">
                 <i:render name="body"/>
                 <a class="ml-2 btn btn-outline-secondary" href="@page.linkToCurrentPage(baseUrl)">
                     <i class="fa fa-sync"></i>

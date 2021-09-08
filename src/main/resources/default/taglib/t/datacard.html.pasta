@@ -1,6 +1,8 @@
 <i:arg type="String" name="class" default="" description="Permits adding additional classes to the card."/>
 <i:arg type="String" name="title" default="" description="Specifies the card title."/>
 <i:arg type="String" name="subTitle" default="" description="Specifies the card sub-title."/>
+<i:arg type="boolean" name="headerLeft" default="false"
+       description="Determines if the header should be placed at the left side of the card instead of its top"/>
 <i:arg type="String"
        name="link"
        default=""
@@ -15,52 +17,60 @@
 
 <div class="col mb-4">
     <div class="card card-border card-hover-shadow h-100 @class">
-        <i:render name="header"></i:render>
-        <div class="card-body">
-            <div class="d-flex justify-content-between">
-                <i:if test="isFilled(title)">
-                    <h5 class="card-title">@title</h5>
-                    <i:else>
-                        <i:local name="markupTitle" value="@renderToString('title')"/>
-                        <i:if test="isFilled(markupTitle)">
-                            <h5 class="card-title"><i:raw>@markupTitle</i:raw></h5>
+        <div class="d-flex flex-grow-1 @(headerLeft ? 'flex-row align-items-center' : 'flex-column')">
+            <i:render name="header"></i:render>
+            <div class="d-flex flex-column flex-grow-1">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <i:if test="isFilled(title)">
+                            <h5 class="card-title">@title</h5>
+                            <i:else>
+                                <i:local name="markupTitle" value="@renderToString('title')"/>
+                                <i:if test="isFilled(markupTitle)">
+                                    <h5 class="card-title">
+                                        <i:raw>@markupTitle</i:raw>
+                                    </h5>
+                                </i:if>
+                            </i:else>
                         </i:if>
-                    </i:else>
-                </i:if>
-                <t:additionalActions>
-                    <i:render name="actions"/>
-                </t:additionalActions>
-            </div>
-            <i:if test="isFilled(subTitle)">
-                <h6 class="card-subtitle mb-4 text-muted">@subTitle</h6>
-                <i:else>
-                    <i:local name="markupSubTitle" value="@renderToString('subtitle')"/>
-                    <i:if test="isFilled(markupSubTitle)">
-                        <h6 class="card-subtitle mb-4 text-muted"><i:raw>@markupSubTitle</i:raw></h6>
+                        <t:additionalActions>
+                            <i:render name="actions"/>
+                        </t:additionalActions>
+                    </div>
+                    <i:if test="isFilled(subTitle)">
+                        <h6 class="card-subtitle mb-4 text-muted">@subTitle</h6>
+                        <i:else>
+                            <i:local name="markupSubTitle" value="@renderToString('subtitle')"/>
+                            <i:if test="isFilled(markupSubTitle)">
+                                <h6 class="card-subtitle mb-4 text-muted">
+                                    <i:raw>@markupSubTitle</i:raw>
+                                </h6>
+                            </i:if>
+                        </i:else>
                     </i:if>
-                </i:else>
-            </i:if>
 
-            <i:render name="body"/>
+                    <i:render name="body"/>
 
-            <i:if test="isFilled(link)">
-                <a href="@link" class="stretched-link"></a>
-            </i:if>
-        </div>
-
-        <i:local name="footer" value="@renderToString('footer')"/>
-        <i:local name="footerNavbox" value="@renderToString('footer-navbox')"/>
-        <i:if test="isFilled(footer) || isFilled(footerNavbox)">
-            <div class="card-footer">
-                <div>
-                    <i:raw>@footer</i:raw>
+                    <i:if test="isFilled(link)">
+                        <a href="@link" class="stretched-link"></a>
+                    </i:if>
                 </div>
-                <i:if test="isFilled(footerNavbox)">
-                    <t:navbox class="mt-2">
-                        <i:raw>@footerNavbox</i:raw>
-                    </t:navbox>
+
+                <i:local name="footer" value="@renderToString('footer')"/>
+                <i:local name="footerNavbox" value="@renderToString('footer-navbox')"/>
+                <i:if test="isFilled(footer) || isFilled(footerNavbox)">
+                    <div class="card-footer">
+                        <div>
+                            <i:raw>@footer</i:raw>
+                        </div>
+                        <i:if test="isFilled(footerNavbox)">
+                            <t:navbox class="mt-2">
+                                <i:raw>@footerNavbox</i:raw>
+                            </t:navbox>
+                        </i:if>
+                    </div>
                 </i:if>
             </div>
-        </i:if>
+        </div>
     </div>
 </div>
