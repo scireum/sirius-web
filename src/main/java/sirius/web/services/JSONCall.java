@@ -86,16 +86,17 @@ public class JSONCall {
      * @throws IOException in case of an IO error while receiving the result
      */
     public JSONObject getInput() throws IOException {
-        return JSON.parseObject(new String(Streams.toByteArray(outcall.getInput()), outcall.getContentEncoding()));
+        return JSON.parseObject(outcall.callForString().body());
     }
 
     /**
      * Returns the response of the call as plain text.
      *
+     * @return the response of the call as String
      * @throws IOException in case of an IO error while receiving the result
      */
-    public void getPlainInput() throws IOException {
-        outcall.getData();
+    public String getPlainInput() throws IOException {
+        return outcall.callForString().body();
     }
 
     /**
