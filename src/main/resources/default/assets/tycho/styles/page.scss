@@ -26,6 +26,12 @@ nav.navbar {
   border-bottom: 3px solid $accent-color;
   background-color: #fff;
   padding: 0.5rem 2%;
+
+  /* Prevents the nav dropdowns from exceeding the displayed area and entries being cut off. */
+  .navbar-nav .nav-item.dropdown .dropdown-menu {
+    max-height: 85vh;
+    overflow-y: auto;
+  }
 }
 
 #page-header {
