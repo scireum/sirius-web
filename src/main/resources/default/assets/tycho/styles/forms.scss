@@ -69,18 +69,16 @@
 // --------------------------
 
 .form-control.token-autocomplete-container {
-  padding: 0;
+  position: relative;
   border: 1px solid #ced4da;
   border-radius: .25rem;
+  height: auto;
+  padding: 0 0 0 .75rem;
 
   .token-autocomplete-token {
     border-radius: 0;
     line-height: 24px;
     font-size: 1rem;
-
-    &:first-child {
-      margin-left: .75rem;
-    }
 
     .token-autocomplete-token-delete {
       line-height: 24px;
@@ -95,6 +93,11 @@
     z-index: 1000;
     border: 1px solid #ced4da;
     border-radius: .25rem;
+    position: absolute;
+    top: 100%;
+    max-height: 220px;
+    overflow-y: scroll;
+    margin-left: -.75rem;
   }
 
   .token-autocomplete-input {
@@ -103,7 +106,6 @@
     line-height: 24px;
 
     &:first-child {
-      margin-left: .75rem;
       padding-left: 0;
     }
   }
