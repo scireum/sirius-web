@@ -76,6 +76,11 @@ public class DefaultDispatcher implements WebDispatcher {
             // can handle "/" if the DashboardController wanted for this.
             ctx.withCustomURI("/admin");
             return DispatchDecision.RESTART;
+        } else if ("/dashboard".equals(ctx.getRequestedURI())) {
+            // For the same reasons as noted above, we lazily redirect /dashboard to the actual controller URI
+            // /system/dashboard if not handled otherwise...
+            ctx.withCustomURI("/system/dashboard");
+            return DispatchDecision.RESTART;
         } else if ("/reset".equals(ctx.getRequestedURI())) {
             ctx.clearSession();
             ctx.respondWith().redirectTemporarily(ctx.get("path").asString("/"));
