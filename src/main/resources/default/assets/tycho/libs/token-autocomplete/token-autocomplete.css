@@ -145,7 +145,10 @@
 
 .token-autocomplete-container.optional-singleselect-with-value {
     position: relative;
-    padding-right: 20px;
+}
+
+.token-autocomplete-container.optional-singleselect-with-value .token-autocomplete-input {
+    padding-right: 50px;
 }
 
 .token-autocomplete-container.token-autocomplete-singleselect.optional-singleselect-with-value .token-autocomplete-input:after {
