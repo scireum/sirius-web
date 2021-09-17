@@ -291,7 +291,7 @@ label .help-inline {
 
   &.optional-singleselect-with-value {
     .token-autocomplete-input:after {
-      right: -10px;
+      right: 0;
     }
 
     .token-singleselect-token-delete {
