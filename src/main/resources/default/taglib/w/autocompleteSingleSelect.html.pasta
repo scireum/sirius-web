@@ -32,7 +32,7 @@
                  required="@required"/>
 </div>
 
-<select id="@id-suggestions-select" name="@name" style="display: none">
+<select id="@id-suggestions-select" name="@name" autocomplete="off" style="display: none">
     <i:if test="optional">
         <option value=""></option>
     </i:if>
