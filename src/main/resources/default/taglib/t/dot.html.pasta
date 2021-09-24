@@ -2,6 +2,7 @@
 <i:arg type="boolean" name="marginRight" default="true" description="Determines if the dot has an auto margin at the right"/>
 <i:arg type="String" name="class" default=""
        description="Defines addition classes to add."/>
+<i:arg type="String" name="mouseoverText" default="" description="Adds a mouseover to the dot in the form of a title attribute"/>
 
 <i:pragma name="description">
     Renders a colored dot along with an info text.
@@ -9,7 +10,7 @@
 
 <span>
 <span class="mb-2 @if(marginRight) { mr-2 } dot-block @class">
-    <span class="d-inline-block dot mr-1 bg-sirius-@color">&nbsp;</span>
+    <span @title="@mouseoverText" class="d-inline-block dot mr-1 bg-sirius-@color">&nbsp;</span>
     <div><i:render name="body"/></div>
 </span>
 </span>
