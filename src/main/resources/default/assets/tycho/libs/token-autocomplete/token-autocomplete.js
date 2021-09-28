@@ -73,6 +73,7 @@ var TokenAutocomplete = /** @class */ (function () {
         this.hiddenSelect.id = this.container.id + '-select';
         this.hiddenSelect.name = this.options.name;
         this.hiddenSelect.setAttribute('multiple', 'true');
+        this.hiddenSelect.setAttribute('autocomplete', 'off');
         this.hiddenSelect.style.display = 'none';
         if (this.options.readonly && this.options.tokenRenderer === TokenAutocomplete.MultiSelect.defaultRenderer) {
             this.options.tokenRenderer = TokenAutocomplete.MultiSelect.defaultReadonlyRenderer;
@@ -234,12 +235,17 @@ var TokenAutocomplete = /** @class */ (function () {
         this.hiddenSelect.add(option);
     };
     TokenAutocomplete.prototype.addHiddenEmptyOption = function () {
-        var option = document.createElement('option');
-        option.text = '';
-        option.value = '';
-        option.setAttribute('selected', 'true');
-        option.classList.add('empty-token');
-        this.hiddenSelect.add(option);
+        var _emptyToken = this.hiddenSelect.querySelector('.empty-token');
+        if (_emptyToken) {
+            _emptyToken.setAttribute('selected', 'true');
+        }
+        else {
+            var _newOption = document.createElement('option');
+            _newOption.text = '';
+            _newOption.value = '';
+            _newOption.classList.add('empty-token');
+            this.hiddenSelect.add(_newOption);
+        }
     };
     TokenAutocomplete.prototype.setPlaceholderText = function (placeholderText) {
         this.textInput.dataset.placeholder = placeholderText;
@@ -481,8 +487,12 @@ var TokenAutocomplete = /** @class */ (function () {
                 me.previousValue = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.dataset.value;
                 me.previousText = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.dataset.text;
                 me.previousType = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.dataset.type;
-                if (this.previousText && this.previousText !== '') {
-                    me.parent.textInput.dataset.placeholder = this.previousText;
+                if (hiddenOption == null && me.options.allowCustomEntries) {
+                    me.previousValue = tokenText;
+                    me.previousText = tokenText;
+                }
+                if (me.previousText && me.previousText !== '') {
+                    me.parent.textInput.dataset.placeholder = me.previousText;
                 }
             }
             else if (me.parent.options.placeholderText != null) {
@@ -499,7 +509,7 @@ var TokenAutocomplete = /** @class */ (function () {
          * @param {string} input - the actual input the user entered
          */
         class_2.prototype.handleInputAsValue = function (input) {
-            if (this.parent.options.allowCustomEntries) {
+            if (input != '' && this.parent.options.allowCustomEntries) {
                 this.clearCurrentInput();
                 this.addToken(input, input, null, false);
                 this.parent.autocomplete.hideSuggestions();
@@ -576,8 +586,17 @@ var TokenAutocomplete = /** @class */ (function () {
             parent.textInput.addEventListener('focusout', function () {
                 // We use setTimeout here, so we won't interfere with a user clicking on a suggestion.
                 setTimeout(function () {
-                    if (me.previousValue && (me.parent.val().length === 0 || me.parent.val()[0] === '')) {
+                    var input = me.parent.getCurrentInput();
+                    if (me.parent.val().length !== 0 && me.parent.val()[0] !== '') {
+                        return;
+                    }
+                    if (input != '' && me.parent.options.allowCustomEntries) {
+                        me.handleInputAsValue(input);
+                        return;
+                    }
+                    if (me.previousValue) {
                         me.addToken(me.previousValue, me.previousText, me.previousType, true);
+                        return;
                     }
                 }, 200);
             });

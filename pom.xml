@@ -14,7 +14,7 @@
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
     <properties>
-        <sirius.kernel>dev-23.11.0</sirius.kernel>
+        <sirius.kernel>ga-3.2.0</sirius.kernel>
     </properties>
 
     <repositories>
@@ -86,9 +86,9 @@
 
         <!-- Used to send and receive mails -->
         <dependency>
-            <groupId>javax.mail</groupId>
-            <artifactId>mail</artifactId>
-            <version>1.4.7</version>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>javax.mail</artifactId>
+            <version>1.5.5</version>
         </dependency>
         <dependency>
             <groupId>net.markenwerk</groupId>

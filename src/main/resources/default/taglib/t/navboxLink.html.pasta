@@ -9,11 +9,11 @@
 
 <i:if test="user().hasPermission(permission)">
     <li>
-        <a href="@url" class="card-link nav-link @if (active) { active } d-flex flex-row mb-1">
+        <a href="@url" class="card-link nav-link @if (active) { active } d-flex flex-row mb-1 align-items-center">
             <i:if test="isFilled(icon)">
                 <span class="nav-link-icon pr-2"><i class="@icon"></i></span>
             </i:if>
-            <span class="flex-grow-1 text-nowrap overflow-hidden">
+            <span class="flex-grow-1 overflow-hidden text-break">
                 @label
                 <i:render name="body"/>
             </span>

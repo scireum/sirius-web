@@ -10,10 +10,10 @@
                     <t:navboxLink url="@facet.linkToPageWithToggledItem(baseUrl, item)"
                                   active="item.isActive()"
                                   icon="@item.isActive() ? 'far fa-check-square' : 'far fa-square'">
-                        <div class="d-flex flex-row justify-content-between">
-                        <span>
-                            @item.getTitle()
-                        </span>
+                        <div class="d-flex flex-row justify-content-between align-items-center">
+                            <span>
+                                @item.getTitle()
+                            </span>
                             <i:if test="item.getCount() >= 0">
                                 <span class="badge badge-light">@item.getCount()</span>
                             </i:if>

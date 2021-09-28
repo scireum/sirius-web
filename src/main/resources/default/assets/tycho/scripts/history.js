@@ -31,6 +31,7 @@ function storeTychoHistory(urls) {
         }
 
         window.sessionStorage.setItem("tycho-history", JSON.stringify(urls));
+        window.sessionStorage.setItem('tycho-history-browser-length', window.history.length);
     } catch (e) {
         console.log(e);
     }
@@ -43,6 +44,7 @@ function appendHistoryUrl(url) {
     }
 
     let urls = fetchTychoHistory();
+    let lastKnownBrowserHistoryLength = window.sessionStorage.getItem('tycho-history-browser-length');
 
     if (window.history.state && window.history.state.url === url) {
         // this site was restored from a state
@@ -69,7 +71,7 @@ function appendHistoryUrl(url) {
         return;
     }
 
-    if (urls.length !== 0 && urls[urls.length - 1] === url) {
+    if (urls.length !== 0 && urls[urls.length - 1] === url && lastKnownBrowserHistoryLength < window.history.length) {
         // If the user navigates back from this state, we need to skip the entries with the same url
         window.sessionStorage.setItem('tycho-history-skip-url', url);
         // We also want to skip it, if this state is called..

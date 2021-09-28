@@ -8,7 +8,7 @@
 </i:pragma>
 
 <i:if test="isFilled(effectiveValue)">
-    <span class="d-flex flew-row text-small mb-2 mr-3 @class">
+    <span class="d-flex flew-row text-small mb-2 mr-2 @class">
         <span class="text-sirius-gray-dark ">
             <i class="@icon"></i>
         </span>
