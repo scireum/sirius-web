@@ -8,6 +8,8 @@
 
 package sirius.web.templates;
 
+import com.lowagie.text.ExceptionConverter;
+import org.asynchttpclient.exception.ChannelClosedException;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Explain;
@@ -176,8 +178,20 @@ public class Generator {
                 } else {
                     findAndInvokeContentHandler(out);
                 }
-            } catch (HandledException e) {
-                throw e;
+            } catch (ExceptionConverter exceptionConverter) {
+                // We need to unwrap exceptions created by iText here...
+                if (exceptionConverter.getException() instanceof ChannelClosedException) {
+                    // A ChannelClosedException, we know, that the underlying socket was closed "aka browser was closed"
+                    // There is no need to jam the logs up with such messages, as there is no way of avoiding this...
+                    Exceptions.ignore(exceptionConverter.getException());
+                } else {
+                    throw Exceptions.handle()
+                                    .error(exceptionConverter.getException())
+                                    .to(Templates.LOG)
+                                    .withSystemErrorMessage("Error applying template '%s': %s (%s)",
+                                                            Strings.isEmpty(templateName) ? templateCode : templateName)
+                                    .handle();
+                }
             } catch (Exception e) {
                 throw Exceptions.handle()
                                 .error(e)
