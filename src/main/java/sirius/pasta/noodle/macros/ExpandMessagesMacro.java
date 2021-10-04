@@ -60,7 +60,7 @@ public class ExpandMessagesMacro extends BasicMacro {
 
     @Override
     public boolean isConstant(CompilationContext context, List<Node> args) {
-        return true;
+        return false;
     }
 
 }
