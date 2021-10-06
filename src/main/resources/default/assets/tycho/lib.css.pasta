@@ -1,3 +1,4 @@
 ___include("/assets/tycho/libs/bootstrap/css/bootstrap.min.css")
 ___include("/assets/tycho/libs/token-autocomplete/token-autocomplete.css")
 ___include("/assets/tycho/libs/datetimepicker/css/bootstrap-datetimepicker.min.css")
+___include("/assets/tycho/libs/dropzonejs/dropzone.css")

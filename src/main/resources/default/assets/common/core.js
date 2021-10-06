@@ -18,16 +18,16 @@ sirius.ready = function (callback) {
     // Add as listener in case DOM is loading...
     document.addEventListener("DOMContentLoaded", callback);
     // Call manually is we're late...
-    if (document.readyState === "interactive" || document.readyState === "complete" ) {
+    if (document.readyState === "interactive" || document.readyState === "complete") {
         callback();
     }
 }
 
 // Tries to find the parent node of the given type.
 // Note that the type is UPPERCASE like 'FORM'.
-sirius.findParentOfType = function(_node, type) {
+sirius.findParentOfType = function (_node, type) {
     let _parent = _node.parentNode;
-    while(_parent != null) {
+    while (_parent != null) {
         if (_parent.nodeName === type) {
             return _parent;
         } else {
@@ -39,8 +39,8 @@ sirius.findParentOfType = function(_node, type) {
 }
 
 // Invokes the given listener if enter is pressed in the given input field.
-sirius.addEnterListener = function(_node, listener) {
-    _node.addEventListener('keydown', function(event) {
+sirius.addEnterListener = function (_node, listener) {
+    _node.addEventListener('keydown', function (event) {
         if (event.key === 'Enter') {
             event.preventDefault();
             listener(event);
@@ -48,11 +48,11 @@ sirius.addEnterListener = function(_node, listener) {
     });
 }
 
-sirius.getJSON = function(url, params) {
+sirius.getJSON = function (url, params) {
     if (!url.endsWith('?')) {
         url = url + '?';
     }
-    Object.keys(params).forEach(function(key) {
+    Object.keys(params).forEach(function (key) {
         if (!url.endsWith('?')) {
             url += '&';
         }
@@ -66,9 +66,9 @@ sirius.getJSON = function(url, params) {
     });
 }
 
-sirius.postJSON = function(url, params) {
+sirius.postJSON = function (url, params) {
     let formData = new FormData();
-    Object.keys(params).forEach(function(key) {
+    Object.keys(params).forEach(function (key) {
         formData.append(key, params[key]);
     });
 
@@ -168,3 +168,9 @@ sirius.addElementVisibleListener = function (selector, listener, distanceFactor)
         characterData: true
     });
 }
+
+sirius.camelize = function (str) {
+    return str.replace(/[\-_](\w)/g, function (match) {
+        return match.charAt(1).toUpperCase();
+    });
+};

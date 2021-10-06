@@ -1,0 +1,57 @@
+<i:arg type="String" name="id" default="@generateId('file-upload-%s')"/>
+<i:arg type="String" name="labelKey" default="template.html.uploadBtn"/>
+<i:arg type="String" name="label" default="@i18n(labelKey)"/>
+<i:arg type="String" name="uploadUrl"/>
+<i:arg type="String" name="acceptedFiles"
+       default="This is a comma separated list of allowed mime types or file extensions. Eg.: image/*,application/pdf,.psd"/>
+<i:arg type="int" name="maxParallelConnections" default="3"/>
+
+<i:pragma name="description" value="Renders a file upload within a Wondergem template"/>
+
+<div class="dropzone sirius-fileupload mb-lg-0 mb-2" id="@id">
+    <a class="dropzone-select btn btn-primary">@label</a>
+
+    <div class="dropzone-items mt-2">
+    </div>
+</div>
+
+<script type="text/javascript">
+    Dropzone.options[sirius.camelize('@id')] = {
+        url: '@raw {@uploadUrl}',
+        parallelUploads: ___maxParallelConnections,
+        maxFilesize: 4096,
+        acceptedFiles: '@raw {@acceptedFiles}',
+        previewTemplate: '' +
+            '<div class="dropzone-item" style="display:none">\n' +
+            '   <div class="dropzone-file">\n' +
+            '       <div class="dropzone-filename">\n' +
+            '           <span data-dz-name></span>\n' +
+            '           <strong>(<span data-dz-size></span>)</strong>\n' +
+            '           <span class="dz-success-mark">✔</span>\n' +
+            '           <span class="dz-error-mark">✘</span>\n' +
+            '       </div>\n' +
+            '       <div class="dropzone-error" data-dz-errormessage></div>\n' +
+            '   </div>\n' +
+            '\n' +
+            '   <div class="dropzone-progress d-flex">\n' +
+            '       <div class="progress flex-grow-1">\n' +
+            '           <div class="progress-bar bg-primary" role="progressbar" aria-valuemin="0" aria-valuemax="100" ' +
+            '                         aria-valuenow="0" data-dz-uploadprogress>' +
+            '           </div>\n' +
+            '       </div>\n' +
+            '       <span class="dropzone-delete ml-4" data-dz-remove><i class="fa fa-times"></i></span>\n' +
+            '   </div>\n' +
+            '</div>',
+        previewsContainer: '#' + '@id' + ' .dropzone-items',
+        clickable: '#' + '@id' + ' .dropzone-select',
+        init: function () {
+            this.on("addedfile", function (file) {
+                // Display upload container on first upload
+                const dropzoneItems = document.querySelector('#' + '@id').querySelectorAll('.dropzone-item');
+                dropzoneItems.forEach(dropzoneItem => {
+                    dropzoneItem.style.display = '';
+                });
+            });
+        }
+    }
+</script>

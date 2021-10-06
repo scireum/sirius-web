@@ -45,6 +45,7 @@
   border-color: $sirius-red;
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
 }
+
 .has-error .form-control:focus {
   border-color: $sirius-red-dark;
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px $sirius-red-light;
@@ -52,15 +53,15 @@
 
 // limit box shadow if input field has something appended or prepended
 
-.input-group>.custom-select:not(:last-child), .input-group>.form-control:not(.token-autocomplete-container):not(:last-child) {
+.input-group > .custom-select:not(:last-child), .input-group > .form-control:not(.token-autocomplete-container):not(:last-child) {
   clip-path: inset(-5px 0px -5px -5px);
 }
 
-.input-group>.custom-select:not(:first-child), .input-group>.form-control:not(.token-autocomplete-container):not(:first-child) {
+.input-group > .custom-select:not(:first-child), .input-group > .form-control:not(.token-autocomplete-container):not(:first-child) {
   clip-path: inset(-5px -5px -5px 0px);
 }
 
-.input-group>.custom-select:not(:first-child):not(:last-child), .input-group>.form-control:not(.token-autocomplete-container):not(:first-child):not(:last-child) {
+.input-group > .custom-select:not(:first-child):not(:last-child), .input-group > .form-control:not(.token-autocomplete-container):not(:first-child):not(:last-child) {
   clip-path: inset(-5px 0px -5px 0px);
 }
 
@@ -125,5 +126,55 @@
     top: 6px;
     font-weight: 700;
     right: 32px;
+  }
+}
+
+.dropzone.sirius-fileupload {
+  border: none;
+  background: transparent;
+  padding: 0;
+
+  .dropzone-image {
+    height: 200px;
+  }
+
+  .dz-success-mark {
+    display: none;
+  }
+
+  .dz-error-mark {
+    display: none;
+  }
+
+  .dropzone-delete {
+    line-height: normal;
+  }
+
+  .dz-default.dz-message {
+    display: none;
+  }
+
+  .dz-success {
+    .dz-success-mark {
+      display: initial;
+    }
+
+    .progress-bar {
+      background-color: $sirius-green !important;
+    }
+  }
+
+  .dz-error {
+    dropzone-filename {
+      color: $sirius-red;
+    }
+
+    .dz-error-mark {
+      display: initial;
+    }
+
+    .progress-bar {
+      background-color: $sirius-red !important;
+    }
   }
 }
