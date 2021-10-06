@@ -10,11 +10,10 @@ package sirius.web.services;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import sirius.kernel.commons.Streams;
 import sirius.kernel.xml.Outcall;
 
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -37,7 +36,7 @@ public class JSONCall {
      * @return an <tt>JSONCall</tt> which can be used to send and receive JSON
      * @throws java.io.IOException in case of an IO error
      */
-    public static JSONCall to(URL url) throws IOException {
+    public static JSONCall to(URI url) throws IOException {
         return to(url, "application/json; charset=" + StandardCharsets.UTF_8.name());
     }
 
@@ -49,7 +48,7 @@ public class JSONCall {
      * @return a new instance to perform the JSON call
      * @throws IOException in case of an IO error
      */
-    public static JSONCall to(URL url, String contentType) throws IOException {
+    public static JSONCall to(URI url, String contentType) throws IOException {
         JSONCall result = new JSONCall();
         result.outcall = new Outcall(url);
         result.outcall.setRequestProperty("Content-Type", contentType);
@@ -75,8 +74,7 @@ public class JSONCall {
      * @throws IOException in case of an IO error while sending the JSON document
      */
     public JSONStructuredOutput getOutput() throws IOException {
-        outcall.markAsPostRequest();
-        return new JSONStructuredOutput(outcall.getOutput(), null, StandardCharsets.UTF_8.name());
+        return new JSONStructuredOutput(outcall.postFromOutput(), null, StandardCharsets.UTF_8.name());
     }
 
     /**
@@ -86,7 +84,7 @@ public class JSONCall {
      * @throws IOException in case of an IO error while receiving the result
      */
     public JSONObject getInput() throws IOException {
-        return JSON.parseObject(outcall.callForString().body());
+        return JSON.parseObject(getPlainInput());
     }
 
     /**
@@ -96,7 +94,7 @@ public class JSONCall {
      * @throws IOException in case of an IO error while receiving the result
      */
     public String getPlainInput() throws IOException {
-        return outcall.callForString().body();
+        return outcall.getData();
     }
 
     /**
