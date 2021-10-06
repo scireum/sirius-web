@@ -54,6 +54,11 @@ class TunnelHandler implements AsyncHandler<String> {
                                                                     HttpHeaderNames.EXPIRES.toString(),
                                                                     HttpHeaderNames.CACHE_CONTROL.toString());
 
+    private static final Set<Integer> PASS_THROUGH_STATUS = Set.of(HttpResponseStatus.FOUND.code(),
+                                                                   HttpResponseStatus.NOT_MODIFIED.code(),
+                                                                   HttpResponseStatus.MOVED_PERMANENTLY.code(),
+                                                                   HttpResponseStatus.TEMPORARY_REDIRECT.code());
+
     private final Response response;
     private final WebContext webContext;
     private final String url;
@@ -119,28 +124,31 @@ class TunnelHandler implements AsyncHandler<String> {
         if (WebServer.LOG.isFINE()) {
             WebServer.LOG.FINE("Tunnel - STATUS %s for %s", status.getStatusCode(), response.wc.getRequestedURI());
         }
-        if (status.getStatusCode() >= 200 && status.getStatusCode() < 300) {
+        if ((status.getStatusCode() >= 200 && status.getStatusCode() < 300)
+            || PASS_THROUGH_STATUS.contains(status.getStatusCode())) {
+            // We either had a successful response or a state which we want to forward (NOT_MODIFIED, redirects ...)
             responseCode = status.getStatusCode();
             return State.CONTINUE;
         }
-        if (status.getStatusCode() == HttpResponseStatus.NOT_MODIFIED.code()) {
-            response.status(HttpResponseStatus.NOT_MODIFIED);
-            return State.ABORT;
-        }
+
+        // From this point on, the request will be handled here and we don't want the onComplete handler to
+        // do any housekeeping...
+        failed = true;
+
         // Everything above 400 is an error and should be forwarded to the failure handler (if present)
         if (status.getStatusCode() >= 400 && failureHandler != null) {
             try {
                 failureHandler.accept(status.getStatusCode());
-                failed = true;
             } catch (Exception t) {
                 response.error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
             }
         } else {
             // Even not technically an error, status codes 300..399 are handled here,
-            // as the behaviour is the same as for a real error - which is also handled here, if no
-            // failureHandler is present...
+            // as the behaviour is the same as for a real error - we only emit the error code without revealing any
+            // internals..
             response.error(HttpResponseStatus.valueOf(status.getStatusCode()));
         }
+
         return State.ABORT;
     }
 
@@ -337,7 +345,7 @@ class TunnelHandler implements AsyncHandler<String> {
 
     @Override
     public String onCompleted() throws Exception {
-        // If the request to tunnel failed and we successfully
+        // If the request to tunnel failed, and we successfully
         // invoked a failureHandler, we must not do any housekeeping
         // here but rely on the failure handler to take care of the request.
         if (failed) {
