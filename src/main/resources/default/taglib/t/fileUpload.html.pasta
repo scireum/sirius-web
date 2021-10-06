@@ -22,7 +22,7 @@
         maxFilesize: 4096,
         acceptedFiles: '@raw {@acceptedFiles}',
         previewTemplate: '' +
-            '<div class="dropzone-item" style="display:none">\n' +
+            '<div class="dropzone-item">\n' +
             '   <div class="dropzone-file">\n' +
             '       <div class="dropzone-filename">\n' +
             '           <span data-dz-name></span>\n' +
@@ -43,15 +43,6 @@
             '   </div>\n' +
             '</div>',
         previewsContainer: '#' + '@id' + ' .dropzone-items',
-        clickable: '#' + '@id' + ' .dropzone-select',
-        init: function () {
-            this.on("addedfile", function (file) {
-                // Display upload container on first upload
-                const dropzoneItems = document.querySelector('#' + '@id').querySelectorAll('.dropzone-item');
-                dropzoneItems.forEach(dropzoneItem => {
-                    dropzoneItem.style.display = '';
-                });
-            });
-        }
+        clickable: '#' + '@id' + ' .dropzone-select'
     }
 </script>
