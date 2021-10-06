@@ -133,6 +133,18 @@
   border: none;
   background: transparent;
   padding: 0;
+  min-height: 0;
+}
+
+.dropzone.sirius-imageupload {
+  .img-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+.dropzone.sirius-fileupload, .dropzone.sirius-imageupload {
 
   .dropzone-image {
     height: 200px;
