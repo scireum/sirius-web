@@ -8,7 +8,7 @@
 <i:arg type="String" name="acceptedFiles"
        default="This is a comma separated list of allowed mime types or file extensions. Eg.: image/*,application/pdf,.psd"/>
 
-<i:pragma name="description" value="Renders a file upload within a Wondergem template"/>
+<i:pragma name="description" value="Renders an image upload within a Wondergem template"/>
 
 <i:local name="previewId" value="@generateId('image-upload-preview-%s')"/>
 
