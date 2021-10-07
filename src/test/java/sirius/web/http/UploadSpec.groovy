@@ -11,7 +11,7 @@ package sirius.web.http
 import com.alibaba.fastjson.JSON
 import org.apache.commons.io.Charsets
 import sirius.kernel.BaseSpecification
-import sirius.kernel.Scope
+import org.junit.jupiter.api.Tag
 import sirius.kernel.commons.Streams
 
 import java.nio.charset.StandardCharsets
@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets
 /**
  * Simulates "real" uploads through netty and sirius.
  */
-@Scope(Scope.SCOPE_NIGHTLY)
+@Tag("nightly")
 class UploadSpec extends BaseSpecification {
 
     String lineFeed = "\r\n"

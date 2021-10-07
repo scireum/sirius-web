@@ -9,7 +9,7 @@
 package sirius.web.data
 
 import sirius.kernel.BaseSpecification
-import sirius.kernel.Scope
+import org.junit.jupiter.api.Tag
 import sirius.kernel.commons.Files
 import sirius.kernel.health.Counter
 
@@ -113,7 +113,7 @@ class ExcelExportSpec extends BaseSpecification {
         Files.delete(testFile)
     }
 
-    @Scope(Scope.SCOPE_NIGHTLY)
+    @Tag("nightly")
     def "only allow 1 million rows in an xlsx excel sheet"() {
         given:
         File testFile = File.createTempFile("excel-output", ".xlsx")
@@ -149,7 +149,7 @@ class ExcelExportSpec extends BaseSpecification {
         Files.delete(testFile)
     }
 
-    @Scope(Scope.SCOPE_NIGHTLY)
+    @Tag("nightly")
     def "only allow 65k rows in an xls excel sheet"() {
         given:
         File testFile = File.createTempFile("excel-output", ".xls")
@@ -185,7 +185,7 @@ class ExcelExportSpec extends BaseSpecification {
         Files.delete(testFile)
     }
 
-    @Scope(Scope.SCOPE_NIGHTLY)
+    @Tag("nightly")
     def "use last line before row limit for data if no 'maxRowsReachedMessage' is given"() {
         given:
         File testFile = File.createTempFile("excel-output", ".xls")
@@ -211,7 +211,7 @@ class ExcelExportSpec extends BaseSpecification {
         Files.delete(testFile)
     }
 
-    @Scope(Scope.SCOPE_NIGHTLY)
+    @Tag("nightly")
     def "creation of new work sheet works correctly when max number of rows is reached in the current sheet"() {
         given:
         File testFile = File.createTempFile("excel-output", ".xls")
