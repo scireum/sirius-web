@@ -19,6 +19,7 @@
     <a class="dropzone-select btn btn-primary @btnClass">@label</a>
     <div class="dropzone-items mt-2">
     </div>
+    <i:render name="body" />
 </div>
 
 <script type="text/javascript">
