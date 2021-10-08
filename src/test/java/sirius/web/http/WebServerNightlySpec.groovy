@@ -17,6 +17,8 @@ import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.http.*
 import org.junit.jupiter.api.Tag
 import sirius.kernel.BaseSpecification
+import sirius.kernel.Tags
+
 
 /**
  * Simulates a bunch of "real" (outside) requests through netty and sirius.
@@ -26,7 +28,7 @@ import sirius.kernel.BaseSpecification
  *
  * This contains long running tests to be exucuted nightly.
  */
-@Tag("nightly")
+@Tag(Tags.NIGHTLY)
 class WebServerNightlySpec extends BaseSpecification {
 
     /**

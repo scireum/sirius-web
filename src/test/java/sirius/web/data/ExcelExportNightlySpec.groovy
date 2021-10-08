@@ -10,10 +10,11 @@ package sirius.web.data
 
 import org.junit.jupiter.api.Tag
 import sirius.kernel.BaseSpecification
+import sirius.kernel.Tags
 import sirius.kernel.commons.Files
 import sirius.kernel.health.Counter
 
-@Tag("nightly")
+@Tag(Tags.NIGHTLY)
 class ExcelExportNightlySpec extends BaseSpecification {
 
     private static final int XLS_MAX_ROWS = 0x10000
