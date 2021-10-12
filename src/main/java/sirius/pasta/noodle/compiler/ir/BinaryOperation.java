@@ -71,17 +71,25 @@ public class BinaryOperation extends Node {
     private Node foldConstants() {
         Object a = left.getConstantValue();
         Object b = right.getConstantValue();
-        if (opCode == OpCode.OP_ADD) {
-            return reduceConstantAdd(a, b);
-        }
-        if (opCode == OpCode.OP_SUB) {
-            return reduceConstantSub(a, b);
+        if (a instanceof Integer numberA && b instanceof Integer numberB) {
+            return reduceConstantInt(numberA, numberB);
         }
         if (opCode == OpCode.OP_CONCAT) {
             return reduceConstantConcat(a, b);
         }
 
         return this;
+    }
+
+    private Node reduceConstantInt(int a, int b) {
+        return switch (opCode) {
+            case OP_ADD -> new Constant(left.position, a + b);
+            case OP_SUB -> new Constant(left.position, a - b);
+            case OP_MUL -> new Constant(left.position, a * b);
+            case OP_DIV -> b == 0 ? this : new Constant(left.position, a / b);
+            case OP_MOD -> b == 0 ? this : new Constant(left.position, a % b);
+            default -> this;
+        };
     }
 
     private Constant reduceConstantConcat(Object a, Object b) {
@@ -95,32 +103,6 @@ public class BinaryOperation extends Node {
             return new Constant(left.position, a.toString());
         }
         return new Constant(left.position, a.toString() + b);
-    }
-
-    private Node reduceConstantSub(Object a, Object b) {
-        if (a instanceof Integer) {
-            return new Constant(left.position, ((int) a) - (int) b);
-        }
-        if (a instanceof Long) {
-            return new Constant(left.position, ((long) a) - (long) b);
-        }
-        if (a instanceof Double) {
-            return new Constant(left.position, ((double) a) - (double) b);
-        }
-        return this;
-    }
-
-    private Node reduceConstantAdd(Object a, Object b) {
-        if (a instanceof Integer) {
-            return new Constant(left.position, ((int) a) + (int) b);
-        }
-        if (a instanceof Long) {
-            return new Constant(left.position, ((long) a) + (long) b);
-        }
-        if (a instanceof Double) {
-            return new Constant(left.position, ((double) a) + (double) b);
-        }
-        return this;
     }
 
     @Override
