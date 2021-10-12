@@ -61,7 +61,66 @@ public class BinaryOperation extends Node {
         left = left.reduce(compilationContext);
         right = right.reduce(compilationContext);
 
-        return super.reduce(compilationContext);
+        if (left.isConstant() && right.isConstant()) {
+            return foldConstants();
+        }
+
+        return this;
+    }
+
+    private Node foldConstants() {
+        Object a = left.getConstantValue();
+        Object b = right.getConstantValue();
+        if (opCode == OpCode.OP_ADD) {
+            return reduceConstantAdd(a, b);
+        }
+        if (opCode == OpCode.OP_SUB) {
+            return reduceConstantSub(a, b);
+        }
+        if (opCode == OpCode.OP_CONCAT) {
+            return reduceConstantConcat(a, b);
+        }
+
+        return this;
+    }
+
+    private Constant reduceConstantConcat(Object a, Object b) {
+        if (a == null && b == null) {
+            return new Constant(left.position, "");
+        }
+        if (a == null) {
+            return new Constant(left.position, b.toString());
+        }
+        if (b == null) {
+            return new Constant(left.position, a.toString());
+        }
+        return new Constant(left.position, a.toString() + b);
+    }
+
+    private Node reduceConstantSub(Object a, Object b) {
+        if (a instanceof Integer) {
+            return new Constant(left.position, ((int) a) - (int) b);
+        }
+        if (a instanceof Long) {
+            return new Constant(left.position, ((long) a) - (long) b);
+        }
+        if (a instanceof Double) {
+            return new Constant(left.position, ((double) a) - (double) b);
+        }
+        return this;
+    }
+
+    private Node reduceConstantAdd(Object a, Object b) {
+        if (a instanceof Integer) {
+            return new Constant(left.position, ((int) a) + (int) b);
+        }
+        if (a instanceof Long) {
+            return new Constant(left.position, ((long) a) + (long) b);
+        }
+        if (a instanceof Double) {
+            return new Constant(left.position, ((double) a) + (double) b);
+        }
+        return this;
     }
 
     @Override
