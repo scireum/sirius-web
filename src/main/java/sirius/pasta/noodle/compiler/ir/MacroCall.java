@@ -115,8 +115,8 @@ public class MacroCall extends Call {
      * If the macro represents a constant function and all parameters are constant, the invocation might be replaced by
      * the invocation result.
      *
-     * @return if the invocation result is a string or boolean, we pre compute the value and create a respective
-     * expression for the result. Otherwise the call itself is returned.
+     * @return if the invocation result is a string or boolean, we pre-compute the value and create a respective
+     * expression for the result. Otherwise, the call itself is returned.
      */
     private Node reduceConstantMacro() {
         Object[] args = new Object[parameterNodes.length];
