@@ -125,7 +125,7 @@ public class Parser extends InputProcessor {
     /**
      * Determines if whitespace characters can be skipped.
      * <p>
-     * As expessions which are inlined in the template code commonly stop at a whitespace, we must not always
+     * As expressions which are inlined in the template code commonly stop at a whitespace, we must not always
      * skip them but rather abort parsing. On the other hand there are many locations, like method calls, where
      * we can safely skip whitespaces as the one of the expression is determined by a ')' in this case.
      * <p>
@@ -1387,6 +1387,35 @@ public class Parser extends InputProcessor {
             return 0;
         }
 
-        return super.skipWhitespaces();
+        int initialWhitespace = super.skipWhitespaces();
+        if (skipLineComments() || skipBlockComments()) {
+            return initialWhitespace + skipWhitespaces();
+        } else {
+            return initialWhitespace;
+        }
+    }
+
+    private boolean skipBlockComments() {
+        if (reader.current().is('/') && reader.next().is('*')) {
+            while (!(reader.current().is('*') && reader.next().is('/')) && !reader.current().isEndOfInput()) {
+                reader.consume();
+            }
+            reader.consume(2);
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean skipLineComments() {
+        if (reader.current().is('/') && reader.next().is('/')) {
+            while (!reader.current().isNewLine() && !reader.current().isEndOfInput()) {
+                reader.consume();
+            }
+
+            return true;
+        }
+
+        return false;
     }
 }

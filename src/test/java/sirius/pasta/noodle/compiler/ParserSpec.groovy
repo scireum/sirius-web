@@ -22,6 +22,13 @@ class ParserSpec extends BaseSpecification {
                 true).reduce(compilationContext)
     }
 
+    def "comments work"() {
+        expect:
+        parse("1 + 3 // - 5").getConstantValue() == 4
+        and:
+        parse("7 /*+ 3 */ - 3").getConstantValue() == 4
+    }
+
     def "constant folding works"() {
         expect:
         parse("1 + 3").getConstantValue() == 4
