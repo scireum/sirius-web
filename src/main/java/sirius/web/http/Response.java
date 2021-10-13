@@ -1256,10 +1256,7 @@ public class Response {
      */
     protected static AsyncHttpClient getAsyncClient() {
         if (asyncClient == null) {
-            asyncClient = Dsl.asyncHttpClient(Dsl.config()
-                                                 .setCookieStore(null)
-                                                 .setFollowRedirect(true)
-                                                 .setRequestTimeout(-1));
+            asyncClient = Dsl.asyncHttpClient(Dsl.config().setCookieStore(null).setRequestTimeout(-1));
         }
         return asyncClient;
     }
