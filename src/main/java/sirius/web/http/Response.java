@@ -849,7 +849,7 @@ public class Response {
                 Exceptions.handle()
                           .to(WebServer.LOG)
                           .withSystemErrorMessage(
-                                  "An excption occurred while responding to: %s - %s (%s) [Debug-Message: %s]",
+                                  "An exception occurred while responding to: %s - %s (%s) [Debug-Message: %s]",
                                   requestUri,
                                   debugMessage)
                           .handle();
@@ -1256,10 +1256,7 @@ public class Response {
      */
     protected static AsyncHttpClient getAsyncClient() {
         if (asyncClient == null) {
-            asyncClient = Dsl.asyncHttpClient(Dsl.config()
-                                                 .setCookieStore(null)
-                                                 .setFollowRedirect(true)
-                                                 .setRequestTimeout(-1));
+            asyncClient = Dsl.asyncHttpClient(Dsl.config().setCookieStore(null).setRequestTimeout(-1));
         }
         return asyncClient;
     }
