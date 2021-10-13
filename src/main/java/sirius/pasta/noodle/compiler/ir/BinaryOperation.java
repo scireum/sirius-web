@@ -61,7 +61,48 @@ public class BinaryOperation extends Node {
         left = left.reduce(compilationContext);
         right = right.reduce(compilationContext);
 
-        return super.reduce(compilationContext);
+        if (left.isConstant() && right.isConstant()) {
+            return foldConstants();
+        }
+
+        return this;
+    }
+
+    private Node foldConstants() {
+        Object a = left.getConstantValue();
+        Object b = right.getConstantValue();
+        if (a instanceof Integer numberA && b instanceof Integer numberB) {
+            return reduceConstantInt(numberA, numberB);
+        }
+        if (opCode == OpCode.OP_CONCAT) {
+            return reduceConstantConcat(a, b);
+        }
+
+        return this;
+    }
+
+    private Node reduceConstantInt(int a, int b) {
+        return switch (opCode) {
+            case OP_ADD -> new Constant(left.position, a + b);
+            case OP_SUB -> new Constant(left.position, a - b);
+            case OP_MUL -> new Constant(left.position, a * b);
+            case OP_DIV -> b == 0 ? this : new Constant(left.position, a / b);
+            case OP_MOD -> b == 0 ? this : new Constant(left.position, a % b);
+            default -> this;
+        };
+    }
+
+    private Constant reduceConstantConcat(Object a, Object b) {
+        if (a == null && b == null) {
+            return new Constant(left.position, "");
+        }
+        if (a == null) {
+            return new Constant(left.position, b.toString());
+        }
+        if (b == null) {
+            return new Constant(left.position, a.toString());
+        }
+        return new Constant(left.position, a.toString() + b);
     }
 
     @Override

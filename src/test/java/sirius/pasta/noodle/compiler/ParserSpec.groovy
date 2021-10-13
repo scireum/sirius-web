@@ -19,7 +19,27 @@ class ParserSpec extends BaseSpecification {
     Node parse(String input) {
         def compilationContext = new CompilationContext(SourceCodeInfo.forInlineCode(input))
         return new Parser(compilationContext, compilationContext.getSourceCodeInfo().createReader()).parseExpression(
-                true)
+                true).reduce(compilationContext)
+    }
+
+    def "comments work"() {
+        expect:
+        parse("1 + 3 // - 5").getConstantValue() == 4
+        and:
+        parse("7 /*+ 3 */ - 3").getConstantValue() == 4
+    }
+
+    def "constant folding works"() {
+        expect:
+        parse("1 + 3").getConstantValue() == 4
+        and:
+        parse("1 + 3 * 4").getConstantValue() == 13
+        and:
+        parse("(1 + 3) % 2").getConstantValue() == 0
+        and:
+        parse("'1' + '3'").getConstantValue() == "13"
+        and:
+        parse("7 - 4").getConstantValue() == 3
     }
 
     def "parsing a class literal works"() {
