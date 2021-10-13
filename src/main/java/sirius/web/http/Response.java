@@ -849,7 +849,7 @@ public class Response {
                 Exceptions.handle()
                           .to(WebServer.LOG)
                           .withSystemErrorMessage(
-                                  "An excption occurred while responding to: %s - %s (%s) [Debug-Message: %s]",
+                                  "An exception occurred while responding to: %s - %s (%s) [Debug-Message: %s]",
                                   requestUri,
                                   debugMessage)
                           .handle();

@@ -48,11 +48,12 @@ import java.util.stream.Collectors;
  */
 class TunnelHandler implements AsyncHandler<String> {
 
-    private static final Set<String> NON_TUNNELLED_HEADERS = Set.of(HttpHeaderNames.TRANSFER_ENCODING.toString(),
-                                                                    HttpHeaderNames.SERVER.toString(),
-                                                                    HttpHeaderNames.CONTENT_ENCODING.toString(),
-                                                                    HttpHeaderNames.EXPIRES.toString(),
-                                                                    HttpHeaderNames.CACHE_CONTROL.toString());
+    private static final Set<String> NON_TUNNELLED_HEADERS =
+            Set.of(HttpHeaderNames.TRANSFER_ENCODING.toString().toLowerCase(),
+                   HttpHeaderNames.SERVER.toString().toLowerCase(),
+                   HttpHeaderNames.CONTENT_ENCODING.toString().toLowerCase(),
+                   HttpHeaderNames.EXPIRES.toString().toLowerCase(),
+                   HttpHeaderNames.CACHE_CONTROL.toString().toLowerCase());
 
     private static final Set<Integer> PASS_THROUGH_STATUS = Set.of(HttpResponseStatus.FOUND.code(),
                                                                    HttpResponseStatus.NOT_MODIFIED.code(),
@@ -226,7 +227,7 @@ class TunnelHandler implements AsyncHandler<String> {
             return Sirius.isDev();
         }
 
-        return !NON_TUNNELLED_HEADERS.contains(entry.getKey());
+        return !NON_TUNNELLED_HEADERS.contains(entry.getKey().toLowerCase());
     }
 
     private void forwardHeaderValues(Map.Entry<String, String> entry) {
