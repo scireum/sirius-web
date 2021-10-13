@@ -59,6 +59,9 @@ class TunnelHandler implements AsyncHandler<String> {
                                                                    HttpResponseStatus.MOVED_PERMANENTLY.code(),
                                                                    HttpResponseStatus.TEMPORARY_REDIRECT.code());
 
+    private static final Set<String> ALLOW_MULTIPLE_HEADERS =
+            Set.of(HttpHeaderNames.SET_COOKIE.toString().toLowerCase());
+
     private final Response response;
     private final WebContext webContext;
     private final String url;
@@ -227,7 +230,11 @@ class TunnelHandler implements AsyncHandler<String> {
     }
 
     private void forwardHeaderValues(Map.Entry<String, String> entry) {
-        response.addHeaderIfNotExists(entry.getKey(), entry.getValue());
+        if (ALLOW_MULTIPLE_HEADERS.contains(entry.getKey().toLowerCase())) {
+            response.addHeader(entry.getKey(), entry.getValue());
+        } else {
+            response.addHeaderIfNotExists(entry.getKey(), entry.getValue());
+        }
     }
 
     private long parseLastModified(Map.Entry<String, String> entry) {
