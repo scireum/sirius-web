@@ -41,7 +41,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.channels.ClosedChannelException;
 import java.time.Duration;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -68,7 +67,7 @@ public class ControllerDispatcher implements WebDispatcher {
     private List<Route> routes;
 
     @PriorityParts(Interceptor.class)
-    private Collection<Interceptor> interceptors;
+    private List<Interceptor> interceptors;
 
     @Part
     private Tasks tasks;
@@ -166,7 +165,13 @@ public class ControllerDispatcher implements WebDispatcher {
             if (inputStreamHandler != null) {
                 params.add(inputStreamHandler);
             }
-            performRoute(webContext, route, params);
+
+            TaskContext.get()
+                       .setSystem(SYSTEM_MVC)
+                       .setSubSystem(route.getController().getClass().getSimpleName())
+                       .setJob(webContext.getRequestedURI());
+
+            performRoute(webContext, route, params, 0);
         } catch (final Exception e) {
             handleFailure(webContext, route, e);
         }
@@ -188,14 +193,18 @@ public class ControllerDispatcher implements WebDispatcher {
         return DispatchDecision.CONTINUE;
     }
 
-    private void performRoute(WebContext webContext, Route route, List<Object> params) {
+    private void performRoute(WebContext webContext, Route route, List<Object> params, int interceptorIndex) {
         try {
-            TaskContext.get()
-                       .setSystem(SYSTEM_MVC)
-                       .setSubSystem(route.getController().getClass().getSimpleName())
-                       .setJob(webContext.getRequestedURI());
+            for (int index = interceptorIndex; index < interceptors.size(); index++) {
+                final int lastExecutedInterceptor = index;
+                if (interceptors.get(index)
+                                .fork(webContext,
+                                      route,
+                                      () -> performRoute(webContext, route, params, lastExecutedInterceptor + 1))) {
+                    return;
+                }
+            }
 
-            // Intercept call...
             for (Interceptor interceptor : interceptors) {
                 if (interceptor.before(webContext, route)) {
                     return;
