@@ -15,6 +15,31 @@ import sirius.web.http.WebContext;
  * Can be used to intercept calls to controllers ({@link Controller})
  */
 public interface Interceptor extends Priorized {
+
+    /**
+     * Determines if processing the given request should be handled normally or if a separate thread pool is required.
+     * <p>
+     * Some requests are overly complex to process and might slow down or even block the whole webserver. Therefore,
+     * throwing these requests into a separate thread pool with proper limits and a drop handler can greatly
+     * improve system stability and resilience.
+     * <p>
+     * Therefore, this method is invoked to inspect each given request. If the request should be handled normally,
+     * <tt>false</tt> has to be returned. Otherwise, handling can be forked into a new thread pool or the like
+     * and once processing is complete, the <tt>continuation</tt> has to be invoked. In this case the method
+     * must return <tt>true</tt> to signal, that processing has been shifted elsewhere using the continuation.
+     *
+     * @param webContext   the current request to process
+     * @param route        the route being matched
+     * @param continuation the continuation to call if the request is handled in a separate thread
+     * @return <tt>false</tt> if the request should be handled in the default thread pool. In this case the given
+     * <tt>continuation</tt> <b>must not</b> be called. Or, <tt>true</tt> to signal that another thread is in charge of
+     * handling the request, in which case the <tt>continuation</tt> <b>must</b> be called.
+     * @throws Exception in case of any error when processing the request
+     */
+    default boolean fork(WebContext webContext, Route route, Runnable continuation) throws Exception {
+        return false;
+    }
+
     /**
      * Invoked before the call to the given method would be performed.
      *
