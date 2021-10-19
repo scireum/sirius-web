@@ -146,8 +146,19 @@
 
 .dropzone.sirius-fileupload, .dropzone.sirius-imageupload {
 
+  .dz-default.dz-message {
+    display: none;
+  }
+
   .dropzone-image {
     height: 200px;
+  }
+
+}
+
+.dropzone-items {
+  .progress {
+    height: auto;
   }
 
   .dz-success-mark {
@@ -160,10 +171,6 @@
 
   .dropzone-delete {
     line-height: normal;
-  }
-
-  .dz-default.dz-message {
-    display: none;
   }
 
   .dz-success {
