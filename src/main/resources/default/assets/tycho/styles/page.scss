@@ -34,39 +34,36 @@ nav.navbar {
   }
 }
 
-#page-header {
+#page-header h1 {
+  font-size: 1.5rem;
+}
 
-  .breadcrumb {
-    background-color: $backgroundGray;
-    font-size: 0.85rem;
-    padding: 0;
-    margin: 0;
 
-    li:first-of-type {
-      padding-left: 0px;
+.breadcrumb {
+  background-color: transparent;
+  font-size: 0.85rem;
+  padding: 0;
+  margin: 0;
 
-      a {
-        padding-left: 0px;
-      }
-    }
-
-    li {
-      padding-left: 8px;
-    }
+  li:first-of-type {
+    padding-left: 0px;
 
     a {
-      padding-left: 8px;
-      color: $grayLight;
+      padding-left: 0px;
     }
-
-    & > li + li:before {
-      content: "\203a";
-    }
-
   }
 
-  h1 {
-    font-size: 1.5rem;
+  li {
+    padding-left: 8px;
+  }
+
+  a {
+    padding-left: 8px;
+    color: $grayLight;
+  }
+
+  & > li + li:before {
+    content: "\203a";
   }
 
 }
