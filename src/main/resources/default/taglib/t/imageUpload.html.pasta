@@ -1,5 +1,5 @@
 <i:arg type="String" name="id" default="@generateId('image-upload-%s')"/>
-<i:arg type="String" name="labelKey" default="template.html.uploadBtn"/>
+<i:arg type="String" name="labelKey" default="FileUpload.uploadBtn"/>
 <i:arg type="String" name="label" default="@i18n(labelKey)"/>
 <i:arg type="String" name="uploadUrl"/>
 <i:arg type="String" name="currentImage"/>
