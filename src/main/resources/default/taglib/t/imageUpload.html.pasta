@@ -4,7 +4,8 @@
 <i:arg type="String" name="uploadUrl"/>
 <i:arg type="String" name="currentImage"/>
 <i:arg name="class" type="String" default="" description="Lists additional CSS classes to apply to the dropzone."/>
-<i:arg name="btnClass" type="String" default="" description="Lists additional CSS classes to apply to the upload button."/>
+<i:arg name="btnClass" type="String" default=""
+       description="Lists additional CSS classes to apply to the upload button."/>
 <i:arg type="String" name="acceptedFiles"
        default="This is a comma separated list of allowed mime types or file extensions. Eg.: image/*,application/pdf,.psd"/>
 
@@ -19,12 +20,20 @@
     <a class="dropzone-select btn btn-primary @btnClass">@label</a>
     <div class="dropzone-items mt-2">
     </div>
-    <i:render name="body" />
+    <i:render name="body"/>
 </div>
 
 <script type="text/javascript">
     Dropzone.options[sirius.camelize('@id')] = {
-        url: '@raw {@uploadUrl}',
+        url: function (files) {
+            const uploadUrl = '@raw {@uploadUrl}';
+            let parameterIndicator = '?';
+            if (uploadUrl.indexOf('?') >= 0) {
+                parameterIndicator = '&';
+            }
+            return uploadUrl + parameterIndicator + 'filename=' + files[0].name;
+        },
+        sendFileAsBody: true,
         parallelUploads: 1,
         maxFiles: 1,
         maxFilesize: 4096,

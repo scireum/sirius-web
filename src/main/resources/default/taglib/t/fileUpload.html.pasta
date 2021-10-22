@@ -10,7 +10,6 @@
 <i:arg type="int" name="maxParallelConnections" default="3"/>
 <i:arg type="String" name="previewsContainer" default=""
        description="A dom selector to render the upload progress into. If not set, will render below the button."/>
-<i:arg type="String" name="path" default="" />
 
 <i:pragma name="description" value="Renders a file upload within a Wondergem template"/>
 
@@ -25,7 +24,15 @@
 
 <script type="text/javascript">
     Dropzone.options[sirius.camelize('@id')] = {
-        url: '@raw {@uploadUrl}',
+        url: function (files) {
+            const uploadUrl = '@raw {@uploadUrl}';
+            let parameterIndicator = '?';
+            if (uploadUrl.indexOf('?') >= 0) {
+                parameterIndicator = '&';
+            }
+            return uploadUrl + parameterIndicator + 'filename=' + files[0].name;
+        },
+        sendFileAsBody: true,
         parallelUploads: ___maxParallelConnections,
         maxFilesize: 4096,
         acceptedFiles: '@raw {@acceptedFiles}' || null,
@@ -53,10 +60,6 @@
         previewsContainer: '@previewsContainer' || '#' + '@id' + ' .dropzone-items',
         clickable: '#' + '@id' + ' .dropzone-select',
         init: function () {
-            this.on('sending', function (file, xhr, formData) {
-                formData.append('filename', file.name);
-                formData.append('path', '@path');
-            });
             this.on('success', function (file, response) {
                 if (response.refresh) {
                     setTimeout(function () {
