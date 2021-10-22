@@ -14,7 +14,11 @@ sirius.ready(function () {
         _node.addEventListener('click', function () {
             let _form = sirius.findParentOfType(_node, 'FORM');
             if (_form != null) {
-                _form.submit();
+                if (_form.requestSubmit) {
+                    _form.requestSubmit();
+                } else {
+                    _form.submit();
+                }
             }
         });
     });
@@ -23,7 +27,11 @@ sirius.ready(function () {
     const _confirmForm = _modalElement.querySelector(".confirm-form-js");
     const _submitBtn = _modalElement.querySelector("button[type='submit']");
     _submitBtn.addEventListener('click', function () {
-        _confirmForm.submit();
+        if (_confirmForm.requestSubmit) {
+            _confirmForm.requestSubmit();
+        } else {
+            _confirmForm.submit();
+        }
     });
 
     document.querySelectorAll('.confirm-link-js').forEach(function (_node) {
