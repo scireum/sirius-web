@@ -1,11 +1,3 @@
-/*
- * Made with all the love in the world
- * by scireum in Remshalden, Germany
- *
- * Copyright by scireum GmbH
- * http://www.scireum.de - info@scireum.de
- */
-
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -7092,6 +7084,12 @@ var defaultOptions = {
   retryChunksLimit: 3,
 
   /**
+   * If `true`, the file will be uploaded as the body of the request instead of a form parameter. If this is used,
+   * uploadMultiple and chunking is disabled and any other form parameters will not be send.
+   */
+  sendFileAsBody: false,
+
+  /**
    * The maximum filesize (in bytes) that is allowed to be uploaded.
    */
   maxFilesize: 256,
@@ -7952,6 +7950,14 @@ var Dropzone = /*#__PURE__*/function (_Emitter) {
 
     if (_this.options.uploadMultiple && _this.options.chunking) {
       throw new Error("You cannot set both: uploadMultiple and chunking.");
+    }
+
+    if (_this.options.sendFileAsBody && _this.options.chunking) {
+      throw new Error("You cannot set both: sendFileAsBody and chunking.");
+    }
+
+    if (_this.options.sendFileAsBody && _this.options.uploadMultiple) {
+      throw new Error("You cannot set both: sendFileAsBody and uploadMultiple.");
     } // Backwards compatibility
 
 
@@ -9346,6 +9352,10 @@ var Dropzone = /*#__PURE__*/function (_Emitter) {
         "X-Requested-With": "XMLHttpRequest"
       };
 
+      if (this.options.sendFileAsBody) {
+        headers["Content-Type"] = files[0].type;
+      }
+
       if (this.options.headers) {
         Dropzone.extend(headers, this.options.headers);
       }
@@ -9627,7 +9637,11 @@ var Dropzone = /*#__PURE__*/function (_Emitter) {
         return;
       }
 
-      xhr.send(formData);
+      if (this.options.sendFileAsBody) {
+        xhr.send(files[0]);
+      } else {
+        xhr.send(formData);
+      }
     } // Called internally when processing is finished.
     // Individual callbacks have to be called in the appropriate sections.
 
@@ -9739,7 +9753,7 @@ var Dropzone = /*#__PURE__*/function (_Emitter) {
 
 
 Dropzone.initClass();
-Dropzone.version = "5.9.3"; // This is a map of options for your different dropzones. Add configurations
+Dropzone.version = "dev"; // This is a map of options for your different dropzones. Add configurations
 // to this object for your different dropzone elemens.
 //
 // Example:
