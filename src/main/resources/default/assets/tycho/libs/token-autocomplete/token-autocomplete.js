@@ -2,10 +2,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -226,7 +228,7 @@ var TokenAutocomplete = /** @class */ (function () {
         var option = document.createElement('option');
         option.text = tokenText;
         option.value = tokenValue;
-        option.setAttribute('selected', 'true');
+        option.selected = true;
         option.dataset.text = tokenText;
         option.dataset.value = tokenValue;
         if (tokenType != null) {
@@ -243,6 +245,7 @@ var TokenAutocomplete = /** @class */ (function () {
             var _newOption = document.createElement('option');
             _newOption.text = '';
             _newOption.value = '';
+            _newOption.selected = true;
             _newOption.classList.add('empty-token');
             this.hiddenSelect.add(_newOption);
         }
@@ -292,11 +295,11 @@ var TokenAutocomplete = /** @class */ (function () {
                             else {
                                 me.addToken(highlightedSuggestion.dataset.value, highlightedSuggestion.dataset.tokenText, highlightedSuggestion.dataset.type, false);
                             }
-                            parent.autocomplete.hideSuggestions();
                         }
                         else {
                             me.handleInputAsValue(parent.getCurrentInput());
                         }
+                        parent.autocomplete.hideSuggestions();
                     }
                     else if (parent.getCurrentInput() === '' && event.key == parent.KEY_BACKSPACE) {
                         event.preventDefault();
@@ -398,7 +401,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 var addedToken = {
                     value: token.dataset.value,
                     text: tokenText,
-                    type: token.dataset.type
+                    type: token.dataset.type || null
                 };
                 if (!silent) {
                     this.container.dispatchEvent(new CustomEvent('tokens-changed', {
