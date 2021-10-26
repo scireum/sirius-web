@@ -1041,7 +1041,7 @@ qq.extend(qq.UploadHandlerForm.prototype, {
             }, 1);
         });
 
-        form.submit();
+        sirius.requestSubmitForm(form);
         qq.remove(form);
 
         return id;
