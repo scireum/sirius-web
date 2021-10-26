@@ -34,7 +34,6 @@
         },
         sendFileAsBody: true,
         parallelUploads: ___maxParallelConnections,
-        maxFilesize: 4096,
         acceptedFiles: '@raw {@acceptedFiles}' || null,
         previewTemplate: '' +
             '<div class="dropzone-item">\n' +
