@@ -174,3 +174,21 @@ sirius.camelize = function (str) {
         return match.charAt(1).toUpperCase();
     });
 };
+
+/**
+ * Submits the given form using
+ * {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement/requestSubmit HTMLFormElement.requestSubmit}
+ * to trigger its submit event as well as constraint validation.
+ * Falls back to silently submitting the form via {@link HTMLFormElement.submit} in unsupported browsers.
+ *
+ * @param form the form to submit
+ */
+sirius.requestSubmitForm = function (form) {
+    if (form != null) {
+        if (form.requestSubmit) {
+            form.requestSubmit();
+        } else {
+            form.submit();
+        }
+    }
+}
