@@ -44,6 +44,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Dispatches all URLs below {@code /assets}.
@@ -51,12 +53,19 @@ import java.util.Optional;
  * All assets are fetched from the classpath and should be located in the <tt>resources</tt> source root (below the
  * <tt>assets</tt> directory).
  * <p>
- * This dispatcher tries to support caching as well as zero-copy delivery of static files if possible.
+ * This dispatcher tries to support caching as well as zero-copy delivery of static files if possible. Note, that if
+ * a static file is not present, we first check if the requested file as a <tt>CSS</tt> file. In this case, we look for
+ * an appropriate <tt>SASS</tt> file and compile it down into proper CSS. Otherwise, we check if an appropriate pasta
+ * template is present and compile this into the expected outputs. This can be used to combine multiple JavaScript
+ * sources into a single output file. Also note, that we support cachable i18n content, but also resolving a file
+ * named <tt>my-script_de.js</tt> into <tt>my-script.js.pasta</tt>.
  */
 @Register(classes = {AssetsDispatcher.class, WebDispatcher.class})
 public class AssetsDispatcher implements WebDispatcher {
 
     private static final String ASSETS_PREFIX = "/assets/";
+    private static final Pattern INTERNATIONALIZED_TEMPLATE_URI = Pattern.compile("(.*)_[a-z]{2}(\\..*)");
+    private static final String PASTA_SUFFIX = ".pasta";
 
     @ConfigValue("http.generated-directory")
     private String cacheDir;
@@ -99,7 +108,7 @@ public class AssetsDispatcher implements WebDispatcher {
 
     private DispatchDecision tryStaticResource(WebContext ctx, String uri, Response response)
             throws URISyntaxException, IOException {
-        Optional<Resource> res = resources.resolve(uri);
+        Optional<Resource> res = resources.resolve(uri).filter(resource -> !resource.getPath().endsWith(PASTA_SUFFIX));
         if (res.isPresent()) {
             ctx.enableTiming(ASSETS_PREFIX);
             URL url = res.get().getUrl();
@@ -131,7 +140,7 @@ public class AssetsDispatcher implements WebDispatcher {
 
     private DispatchDecision tryTagliatelle(WebContext ctx, String uri, Response response) {
         try {
-            Optional<Template> template = tagliatelle.resolve(uri + ".pasta");
+            Optional<Template> template = tagliatelle.resolve(uri + PASTA_SUFFIX);
             if (template.isPresent()) {
                 if (!handleUnmodified(template.get(), response)) {
                     response.template(HttpResponseStatus.OK, template.get());
@@ -139,9 +148,26 @@ public class AssetsDispatcher implements WebDispatcher {
 
                 return DispatchDecision.DONE;
             }
+
+            return tryI18nTagliatelle(uri, response);
         } catch (CompileException e) {
             ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(Templates.LOG, e));
             return DispatchDecision.DONE;
+        }
+    }
+
+    private DispatchDecision tryI18nTagliatelle(String uri, Response response) throws CompileException {
+        Matcher i18nMatcher = INTERNATIONALIZED_TEMPLATE_URI.matcher(uri);
+        if (i18nMatcher.matches()) {
+            Optional<Template> template =
+                    tagliatelle.resolve(i18nMatcher.group(1) + i18nMatcher.group(2) + PASTA_SUFFIX);
+            if (template.isPresent()) {
+                if (!handleUnmodified(template.get(), response)) {
+                    response.template(HttpResponseStatus.OK, template.get());
+                }
+
+                return DispatchDecision.DONE;
+            }
         }
 
         return DispatchDecision.CONTINUE;
