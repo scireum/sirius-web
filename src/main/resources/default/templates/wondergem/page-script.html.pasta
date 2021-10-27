@@ -8,7 +8,7 @@
                     var that = $(this);
 
                     submitBtn.click(function () {
-                        sirius.requestSubmitForm($("#" + that.data("deleteid")));
+                        $("#" + that.data("deleteid")).submit();
                     });
 
                     modalElement.modal({
@@ -236,7 +236,7 @@
                         var editForm = $('#editForm');
                         if (editForm.length) {
                             $('#uploadedFile').val(responseJSON.fileId);
-                            sirius.requestSubmitForm(editForm);
+                            editForm.submit();
                         } else {
                             window.location.reload();
                         }
@@ -293,7 +293,7 @@
     $(function () {
         $('.submit-link').click(function () {
             if (!$(this).hasClass("single-click-pending")) {
-                sirius.requestSubmitForm($('#editForm'));
+                $('#editForm').submit();
             }
         });
         $('.single-click-link').click(function (e) {
