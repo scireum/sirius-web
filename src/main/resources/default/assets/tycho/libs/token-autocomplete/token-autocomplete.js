@@ -220,10 +220,19 @@ var TokenAutocomplete = /** @class */ (function () {
             }
         }));
     };
-    TokenAutocomplete.prototype.addHiddenOption = function (tokenValue, tokenText, tokenType) {
+    TokenAutocomplete.prototype.addHiddenOption = function (tokenValue, tokenText, tokenType, isLiveEntry) {
+        if (isLiveEntry === void 0) { isLiveEntry = false; }
         var _emptyToken = this.hiddenSelect.querySelector('.empty-token');
         if (_emptyToken) {
             this.hiddenSelect.removeChild(_emptyToken);
+        }
+        var _existingLiveEntry = this.hiddenSelect.querySelector('.live-entry');
+        if (_existingLiveEntry) {
+            this.hiddenSelect.removeChild(_existingLiveEntry);
+        }
+        var _existingOption = this.findOptionWithValue(tokenValue);
+        if (_existingOption) {
+            this.hiddenSelect.removeChild(_existingOption);
         }
         var option = document.createElement('option');
         option.text = tokenText;
@@ -234,7 +243,19 @@ var TokenAutocomplete = /** @class */ (function () {
         if (tokenType != null) {
             option.dataset.type = tokenType;
         }
+        if (isLiveEntry) {
+            option.classList.add('live-entry');
+        }
         this.hiddenSelect.add(option);
+    };
+    TokenAutocomplete.prototype.findOptionWithValue = function (optionValue) {
+        for (var i = 0; i < this.hiddenSelect.options.length; i++) {
+            var option = this.hiddenSelect.options[i];
+            if (option.value === optionValue) {
+                return option;
+            }
+        }
+        return null;
     };
     TokenAutocomplete.prototype.addHiddenEmptyOption = function () {
         var _emptyToken = this.hiddenSelect.querySelector('.empty-token');
@@ -566,6 +587,14 @@ var TokenAutocomplete = /** @class */ (function () {
                     event.preventDefault();
                 }
             });
+            if (parent.options.allowCustomEntries) {
+                parent.textInput.addEventListener('keyup', function (event) {
+                    if (event.key != parent.KEY_ENTER && event.key != parent.KEY_TAB && event.key != parent.KEY_DOWN && event.key != parent.KEY_UP) {
+                        event.preventDefault();
+                        parent.addHiddenOption(parent.getCurrentInput(), parent.getCurrentInput(), null, true);
+                    }
+                });
+            }
             function focusInput() {
                 if (!parent.autocomplete.areSuggestionsDisplayed()) {
                     parent.autocomplete.showSuggestions();
