@@ -8,10 +8,10 @@
 
 package sirius.web.mails;
 
+import jakarta.activation.DataSource;
 import sirius.kernel.di.Replace;
 import sirius.kernel.di.std.Register;
 
-import javax.activation.DataSource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -21,7 +21,7 @@ import java.util.Map;
 @Register(classes = Mails.class)
 public class MailsMock extends Mails {
 
-    private List<MailSenderMock> sentMails = Collections.synchronizedList(new ArrayList<>());
+    private final List<MailSenderMock> sentMails = Collections.synchronizedList(new ArrayList<>());
 
     @Override
     public MailSender createEmail() {

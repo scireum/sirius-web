@@ -8,6 +8,7 @@
 
 package sirius.web.mails;
 
+import jakarta.mail.internet.InternetAddress;
 import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
@@ -22,7 +23,6 @@ import sirius.web.resources.Resources;
 import sirius.web.templates.Templates;
 
 import javax.annotation.Nullable;
-import javax.mail.internet.InternetAddress;
 import java.util.Collection;
 
 /**
