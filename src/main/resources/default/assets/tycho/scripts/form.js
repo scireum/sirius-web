@@ -13,9 +13,7 @@ sirius.ready(function () {
     document.querySelectorAll('.submit-link-js').forEach(function (_node) {
         _node.addEventListener('click', function () {
             let _form = sirius.findParentOfType(_node, 'FORM');
-            if (_form != null) {
-                _form.submit();
-            }
+            sirius.requestSubmitForm(_form);
         });
     });
 
@@ -23,7 +21,7 @@ sirius.ready(function () {
     const _confirmForm = _modalElement.querySelector(".confirm-form-js");
     const _submitBtn = _modalElement.querySelector("button[type='submit']");
     _submitBtn.addEventListener('click', function () {
-        _confirmForm.submit();
+        sirius.requestSubmitForm(_confirmForm);
     });
 
     document.querySelectorAll('.confirm-link-js').forEach(function (_node) {

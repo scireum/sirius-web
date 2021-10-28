@@ -34,9 +34,7 @@ sirius.ready(function() {
     document.querySelectorAll('.submit-on-enter-js').forEach(function(_field) {
        sirius.addEnterListener(_field, function() {
            let _form = sirius.findParentOfType(_field,'FORM');
-           if (_form !== null) {
-               _form.submit();
-           }
+           sirius.requestSubmitForm(_form);
        });
     });
 });
