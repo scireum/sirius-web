@@ -8,7 +8,8 @@
 
 package sirius.web.mails;
 
-import javax.activation.DataSource;
+import jakarta.activation.DataSource;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;

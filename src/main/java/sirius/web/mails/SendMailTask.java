@@ -8,6 +8,18 @@
 
 package sirius.web.mails;
 
+import jakarta.activation.DataHandler;
+import jakarta.activation.DataSource;
+import jakarta.mail.Authenticator;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
 import net.markenwerk.utils.mail.dkim.Canonicalization;
 import net.markenwerk.utils.mail.dkim.DkimMessage;
 import net.markenwerk.utils.mail.dkim.DkimSigner;
@@ -20,18 +32,6 @@ import sirius.kernel.di.std.Parts;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.mail.Authenticator;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -184,11 +184,8 @@ class SendMailTask implements Runnable {
         try {
             Mails.LOG.FINE("Sending eMail: " + mail.subject + " to: " + mail.receiverEmail);
             Session session = getMailSession(config);
-            Transport transport = getSMTPTransport(session, config);
-            try {
+            try (Transport transport = getSMTPTransport(session, config)) {
                 sendMailViaTransport(session, transport);
-            } finally {
-                transport.close();
             }
         } catch (HandledException e) {
             throw e;
@@ -296,7 +293,7 @@ class SendMailTask implements Runnable {
             dkimSigner.setBodyCanonicalization(Canonicalization.RELAXED);
             dkimSigner.setSigningAlgorithm(SigningAlgorithm.SHA256_WITH_RSA);
             dkimSigner.setLengthParam(true);
-            dkimSigner.setZParam(false);
+            dkimSigner.setCopyHeaderFields(false);
             return new DkimMessage(message, dkimSigner);
         } catch (Exception e) {
             Exceptions.handle().to(Mails.LOG).error(e).withNLSKey("Skipping DKIM signing due to: %s (%s)").handle();
