@@ -21,7 +21,10 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
- * Escapes all line breakes and ' within the given string.
+ * Escapes all line breaks and ' within the given string.
+ * <p>
+ * This can be used to ensure that the generated content can be placed in a string literal
+ * in JavaScript.
  */
 @Register
 @PublicAPI
@@ -72,5 +75,4 @@ public class EscapeJsMacro extends BasicMacro {
     public boolean isConstant(CompilationContext context, List<Node> args) {
         return true;
     }
-
 }
