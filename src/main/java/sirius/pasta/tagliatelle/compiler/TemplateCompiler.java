@@ -523,7 +523,7 @@ public class TemplateCompiler extends InputProcessor {
      * Consumes all static template text until either the end of the current block is reached or an expression or tag is
      * started.
      *
-     * @param expectedNumberOfOpenCurlyBrackets the number of open brakets around this block, to known when we hit the
+     * @param expectedNumberOfOpenCurlyBrackets the number of open brackets around this block, to known when we hit the
      *                                          end of the block when looking for a }
      * @return the parsed content
      */
