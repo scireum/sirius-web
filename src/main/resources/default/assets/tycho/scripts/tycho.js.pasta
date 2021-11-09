@@ -1,3 +1,4 @@
+___invoke("/assets/common/common.js.pasta")
 ___invoke("/assets/tycho/scripts/form.js.pasta")
 ___invoke("/assets/tycho/scripts/sidebar.js.pasta")
 ___invoke("/assets/tycho/scripts/cycle.js.pasta")
