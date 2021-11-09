@@ -1,10 +1,9 @@
 (function (sirius, undefined) {
 
-    ___include("/assets/common/core.js")
+    ___invoke("/assets/common/core.js.pasta")
 
 }(window.sirius = window.sirius || {}, window.console = window.console || {
     log: function () {
     }
-
 }));
 

@@ -1,4 +1,9 @@
-// Checks if the given value is empty or null.
+/**@
+ * Checks if the given value is empty or null.
+ *
+ * @param value the value to check
+ * @returns {boolean} true if the given value is null, undefined, an empty string or an empty array.
+ */
 sirius.isEmpty = function (value) {
     if (Array.isArray(value) && value.length === 0) {
         return true;
@@ -7,13 +12,20 @@ sirius.isEmpty = function (value) {
     return typeof value === 'undefined' || value === null || value === undefined || value === '';
 }
 
-// Checks if the given value is non-empty.
+/**@
+ * Checks if the given value is non-empty.
+ * @param value the value to check
+ * @returns {boolean} the inverse of "isEmpty"
+ */
 sirius.isFilled = function (value) {
     return !sirius.isEmpty(value);
 }
 
-// Executes the given callback once the DOM is completely loaded.
-// This is equivalent to $(document).ready().
+/**@
+ * Executes the given callback once the DOM is completely loaded.
+ *
+ * @param callback the callback to execute once the DOM is completely ready
+ */
 sirius.ready = function (callback) {
     // Add as listener in case DOM is loading...
     document.addEventListener("DOMContentLoaded", callback);
@@ -23,7 +35,14 @@ sirius.ready = function (callback) {
     }
 }
 
-// Tries to find the parent node of the given type.
+/**@
+ * Tries to find the parent node of the given type.
+ *
+ * @param _node the node to search in
+ * @param type the element type to search for (Note that the type is UPPERCASE like 'FORM').
+ * @returns {null|*} the first matching element (nearest parent) or null if none is found
+ */
+//
 // Note that the type is UPPERCASE like 'FORM'.
 sirius.findParentOfType = function (_node, type) {
     let _parent = _node.parentNode;
@@ -38,7 +57,12 @@ sirius.findParentOfType = function (_node, type) {
     return null;
 }
 
-// Invokes the given listener if enter is pressed in the given input field.
+/**@
+ * Invokes the given listener if enter is pressed in the given input field.
+ *
+ * @param _node the node to attach the listener on
+ * @param listener the listener to attach
+ */
 sirius.addEnterListener = function (_node, listener) {
     _node.addEventListener('keydown', function (event) {
         if (event.key === 'Enter') {
@@ -48,6 +72,13 @@ sirius.addEnterListener = function (_node, listener) {
     });
 }
 
+/**@
+ * Calls the given URL, sends the given params and retrieves the resulting JSON.
+ *
+ * @param url the URL to invoke
+ * @param params the parameters to send as query string (as a GET request is generated)
+ * @returns {Promise<any>} the received JSON data
+ */
 sirius.getJSON = function (url, params) {
     if (!url.endsWith('?')) {
         url = url + '?';
@@ -66,6 +97,13 @@ sirius.getJSON = function (url, params) {
     });
 }
 
+/**@
+ * Calls the given URL, posts the given params and retrieves the resulting JSON.
+ *
+ * @param url the URL to invoke
+ * @param params the parameters to send POST data
+ * @returns {Promise<any>} the received JSON data
+ */
 sirius.postJSON = function (url, params) {
     let formData = new FormData();
     Object.keys(params).forEach(function (key) {
@@ -80,7 +118,7 @@ sirius.postJSON = function (url, params) {
     });
 }
 
-/**
+/**@
  * Throttles a javascript function by calling it only every x milliseconds.
  * <p>
  * The throttled function is called once immediately, and then every x milliseconds.
@@ -112,7 +150,7 @@ sirius.throttle = function (fn, threshold) {
     };
 }
 
-/**
+/**@
  * Adds an event listener that triggers exactly once per element when it becomes visible or is about to become visible.
  * <p>
  * The event will trigger once an element comes within a certain distance to the viewport. By default the vertical and
@@ -169,13 +207,19 @@ sirius.addElementVisibleListener = function (selector, listener, distanceFactor)
     });
 }
 
+/**@
+ * Transforms a string from snake-case to camel-case.
+ *
+ * @param str the string to transform
+ * @returns {*} the string in camel-case
+ */
 sirius.camelize = function (str) {
     return str.replace(/[\-_](\w)/g, function (match) {
         return match.charAt(1).toUpperCase();
     });
 };
 
-/**
+/**@
  * Submits the given form using
  * {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement/requestSubmit HTMLFormElement.requestSubmit}
  * to trigger its submit event as well as constraint validation.
