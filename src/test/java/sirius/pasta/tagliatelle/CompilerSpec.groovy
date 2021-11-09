@@ -233,6 +233,30 @@ class CompilerSpec extends BaseSpecification {
         result == "b"
     }
 
+    def "html style comments are ignored"() {
+        when:
+        def script = "<!--@ @unknownVariable -->Hello World"
+        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(script), null)
+        List<CompileError> errors = new TemplateCompiler(ctx).compile()
+        then:
+        errors.size() == 0
+        and:
+        ctx.getTemplate().renderToString() == "Hello World"
+
+    }
+
+    def "JS style comments are ignored"() {
+        when:
+        def script = "/**@ @unknownVariable */Hello World"
+        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(script), null)
+        List<CompileError> errors = new TemplateCompiler(ctx).compile()
+        then:
+        errors.size() == 0
+        and:
+        ctx.getTemplate().renderToString() == "Hello World"
+
+    }
+
     def "dynamicInvoke works"() {
         given:
         String expectedResult = resources.resolve("templates/dynamic-invoke.html").get().getContentAsString()

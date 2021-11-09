@@ -1,12 +1,3 @@
-/*
- * Made with all the love in the world
- * by scireum in Remshalden, Germany
- *
- * Copyright by scireum GmbH
- * http://www.scireum.de - info@scireum.de
- *
- * Inspired by https://github.com/eanbowman/sparkline.js
- */
 function sparkline(_element) {
     const ctx = _element.getContext('2d');
     const data = _element.dataset.sparkline;

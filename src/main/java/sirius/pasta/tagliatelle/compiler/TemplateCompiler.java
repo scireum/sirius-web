@@ -523,7 +523,7 @@ public class TemplateCompiler extends InputProcessor {
      * Consumes all static template text until either the end of the current block is reached or an expression or tag is
      * started.
      *
-     * @param expectedNumberOfOpenCurlyBrackets the number of open brakets around this block, to known when we hit the
+     * @param expectedNumberOfOpenCurlyBrackets the number of open brackets around this block, to known when we hit the
      *                                          end of the block when looking for a }
      * @return the parsed content
      */
@@ -539,6 +539,10 @@ public class TemplateCompiler extends InputProcessor {
                 sb.append(reader.consume().getValue());
                 sb.append(reader.consume().getValue());
                 sb.append(reader.consume().getValue());
+            } else if (isAtHtmlStyleComment()) {
+                consumeHtmlStyleComment();
+            } else if (isAtJsStyleComment()) {
+                consumeJsStyleComment();
             } else {
                 if (reader.current().is('{')) {
                     numberOfOpenCurlyBrackets++;
@@ -555,6 +559,40 @@ public class TemplateCompiler extends InputProcessor {
         }
 
         return sb.toString();
+    }
+
+    private boolean isAtHtmlStyleComment() {
+        return reader.current().is('<')
+               && reader.next().is('!')
+               && reader.next(2).is('-')
+               && reader.next(3).is('-')
+               && reader.next(4).is('@');
+    }
+
+    private void consumeHtmlStyleComment() {
+        while (!reader.current().isEndOfInput()) {
+            if (reader.current().is('-') && reader.next().is('-') && reader.next(2).is('>')) {
+                reader.consume(3);
+                return;
+            }
+
+            reader.consume();
+        }
+    }
+
+    private boolean isAtJsStyleComment() {
+        return reader.current().is('/') && reader.next().is('*') && reader.next(2).is('*') && reader.next(3).is('@');
+    }
+
+    private void consumeJsStyleComment() {
+        while (!reader.current().isEndOfInput()) {
+            if (reader.current().is('*') && reader.next().is('/')) {
+                reader.consume(2);
+                return;
+            }
+
+            reader.consume();
+        }
     }
 
     /**

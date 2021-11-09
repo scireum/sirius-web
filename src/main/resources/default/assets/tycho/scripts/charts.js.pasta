@@ -13,7 +13,7 @@ const SIRIUS_INLINE_CHART_TYPES = [
 let siriusChartNextColorWheelIndex = 0;
 let siriusChartNextTypeIndex = 0;
 
-/**
+/**@
  * Uses the given string to randomize the color wheel and inline chart types.
  *
  * This way, we prevent, that all charts look exactly the same on each page.
@@ -25,14 +25,14 @@ function randomizeCharts(randomizer) {
     }
 }
 
-/**
+/**@
  * Picks a random color from the list of chart colors.
  */
 function pickFromColorWheel() {
     return SIRIUS_CHART_COLOR_WHEEL[siriusChartNextColorWheelIndex++ % SIRIUS_CHART_COLOR_WHEEL.length];
 }
 
-/**
+/**@
  * Turns the given type into an inline chart type.
  *
  * Most notably, this will convert 'auto' into a randomly selected chart type.
@@ -45,7 +45,7 @@ function makeInlineChartType(type) {
     }
 }
 
-/**
+/**@
  * Renders an inline chart.
  *
  * @param selector selects the target canvas
