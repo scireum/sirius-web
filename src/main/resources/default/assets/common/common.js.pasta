@@ -1,4 +1,4 @@
-(function (sirius, undefined) {
+(function (sirius, console, undefined) {
 
     ___invoke("/assets/common/core.js.pasta")
 
@@ -6,4 +6,3 @@
     log: function () {
     }
 }));
-
