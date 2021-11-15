@@ -284,6 +284,12 @@ var TokenAutocomplete = /** @class */ (function () {
             };
         }
     };
+    TokenAutocomplete.escapeQuotes = function (text) {
+        if (text === null || text === undefined) {
+            return '';
+        }
+        return text.replace(/\x22/g, '\\\x22');
+    };
     var _a, _b;
     TokenAutocomplete.MultiSelect = (_a = /** @class */ (function () {
             function class_1(parent) {
@@ -417,7 +423,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 if (silent === void 0) { silent = false; }
                 this.container.removeChild(token);
                 var tokenText = token.dataset.text;
-                var hiddenOption = this.parent.hiddenSelect.querySelector('option[data-text="' + tokenText + '"]');
+                var hiddenOption = this.parent.hiddenSelect.querySelector('option[data-text="' + TokenAutocomplete.escapeQuotes(tokenText) + '"]');
                 (_a = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.parentElement) === null || _a === void 0 ? void 0 : _a.removeChild(hiddenOption);
                 var addedToken = {
                     value: token.dataset.value,
@@ -441,7 +447,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 if (tokenText === null) {
                     return;
                 }
-                var token = this.container.querySelector('.token-autocomplete-token[data-text="' + tokenText + '"]');
+                var token = this.container.querySelector('.token-autocomplete-token[data-text="' + TokenAutocomplete.escapeQuotes(tokenText) + '"]');
                 if (token !== null) {
                     this.removeToken(token);
                 }
@@ -503,7 +509,7 @@ var TokenAutocomplete = /** @class */ (function () {
             }
             var me = this;
             var tokenText = me.parent.textInput.textContent;
-            var hiddenOption = me.parent.hiddenSelect.querySelector('option[data-text="' + tokenText + '"]');
+            var hiddenOption = me.parent.hiddenSelect.querySelector('option[data-text="' + TokenAutocomplete.escapeQuotes(tokenText) + '"]');
             if (me.options.optional) {
                 this.container.classList.remove('optional-singleselect-with-value');
             }
