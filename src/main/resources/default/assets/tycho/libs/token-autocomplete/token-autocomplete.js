@@ -285,10 +285,8 @@ var TokenAutocomplete = /** @class */ (function () {
         }
     };
     TokenAutocomplete.escapeQuotes = function (text) {
-        if (text === null || text === undefined) {
-            return '';
-        }
-        return text.replace(/\x22/g, '\\\x22');
+        var _a;
+        return (_a = text === null || text === void 0 ? void 0 : text.replace(/\x22/g, '\\\x22')) !== null && _a !== void 0 ? _a : '';
     };
     var _a, _b;
     TokenAutocomplete.MultiSelect = (_a = /** @class */ (function () {
