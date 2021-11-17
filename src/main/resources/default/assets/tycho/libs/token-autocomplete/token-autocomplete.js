@@ -161,7 +161,7 @@ var TokenAutocomplete = /** @class */ (function () {
      * The current tokens are only overwritten (cleared and added) when a value parameter is given.
      * In addition to the possibility of setting the value of the input this method also returns the values of all present tokens.
      *
-     * @param {(Array<Token>|string)} value - either the name of a single token or a list of tokens to create
+     * @param {(Array<Token>|Token)} value - either the name of a single token or a list of tokens to create
      * @param {boolean} silent - whether appropriate events should be triggered when changing tokens or not
      *
      * @returns an array of the values of all current (after update) tokens of the input field
@@ -186,7 +186,7 @@ var TokenAutocomplete = /** @class */ (function () {
      *
      * The current tokens are only added when a value parameter is given.
      *
-     * @param {(Array<Token>|string)} value - either the name of a single token or a list of tokens to create
+     * @param {(Array<Token>|Token)} value - either the name of a single token or a list of tokens to create
      * @param {boolean} silent - whether appropriate events should be triggered when changing tokens or not
      */
     TokenAutocomplete.prototype.addToken = function (value, silent) {
@@ -581,11 +581,11 @@ var TokenAutocomplete = /** @class */ (function () {
                     }
                     if (highlightedSuggestion !== null) {
                         me.addToken(highlightedSuggestion.dataset.value, highlightedSuggestion.dataset.tokenText, highlightedSuggestion.dataset.type, false);
-                        parent.autocomplete.hideSuggestions();
                     }
                     else {
                         me.handleInputAsValue(parent.getCurrentInput());
                     }
+                    parent.autocomplete.hideSuggestions();
                 }
                 if ((event.key == parent.KEY_DOWN || event.key == parent.KEY_UP) && parent.autocomplete.suggestions.childNodes.length > 0) {
                     event.preventDefault();
