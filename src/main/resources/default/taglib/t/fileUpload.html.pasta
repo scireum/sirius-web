@@ -82,6 +82,11 @@
                     file.previewElement.querySelector('[data-dz-errormessage]').innerHTML = message;
                     addErrorMessage(message);
                 } else if (response.refresh) {
+                    this.reloadAfterQueueComplete = true;
+                }
+            });
+            this.on('queuecomplete', function () {
+                if (this.reloadAfterQueueComplete) {
                     setTimeout(function () {
                         document.location.reload(true);
                     }, 2500);
