@@ -39,17 +39,17 @@ public class InputStreamHandler extends InputStream implements ContentHandler {
     /**
      * Defines the default depth (size) of the internal buffer.
      */
-    private static final int DEFAULT_BUFFER_DEPTH = 32;
+    private static final int DEFAULT_BUFFER_DEPTH = 64;
 
     /**
      * Defines the default read timeout in seconds.
      */
-    private static final int DEFAULT_READ_TIMEOUT = 30;
+    private static final int DEFAULT_READ_TIMEOUT = 60;
 
     /**
      * Defines the default write timeout in seconds.
      */
-    private static final int DEFAULT_WRITE_TIMEOUT = 30;
+    private static final int DEFAULT_WRITE_TIMEOUT = 60;
 
     /**
      * Defines the standard time unit used be the default timeout constants.
