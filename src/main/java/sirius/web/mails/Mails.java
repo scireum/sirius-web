@@ -20,9 +20,11 @@ import sirius.kernel.health.Log;
 import sirius.kernel.health.metrics.MetricProvider;
 import sirius.kernel.health.metrics.MetricsCollector;
 import sirius.web.resources.Resources;
+import sirius.web.security.UserContext;
 import sirius.web.templates.Templates;
 
 import javax.annotation.Nullable;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 
 /**
@@ -84,6 +86,10 @@ public class Mails implements MetricProvider {
      */
     public boolean isValidMailAddress(@Nullable String address, @Nullable String name) {
         if (Strings.isEmpty(address)) {
+            return false;
+        }
+        boolean isUtf8Allowed = UserContext.getSettings().get("mail.allow-utf-8").asBoolean();
+        if (!isUtf8Allowed && !StandardCharsets.US_ASCII.newEncoder().canEncode(address)) {
             return false;
         }
         try {
