@@ -60,6 +60,10 @@
         previewsContainer: '@previewsContainer' || '#' + '@id' + ' .dropzone-items',
         clickable: '#' + '@id' + ' .dropzone-select',
         error: function (file, message) {
+            if (file.status === Dropzone.CANCELED) {
+                // no need to show error to the user
+                return;
+            }
             if (file.previewElement) {
                 file.previewElement.classList.add('dz-error');
 
@@ -82,6 +86,11 @@
                     file.previewElement.querySelector('[data-dz-errormessage]').innerHTML = message;
                     addErrorMessage(message);
                 } else if (response.refresh) {
+                    this.reloadAfterQueueComplete = true;
+                }
+            });
+            this.on('queuecomplete', function () {
+                if (this.reloadAfterQueueComplete) {
                     setTimeout(function () {
                         document.location.reload(true);
                     }, 2500);
