@@ -6,6 +6,13 @@
  * http://www.scireum.de - info@scireum.de
  */
 
+.card, .flex-column, .flex-column-reverse {
+  & > .btn {
+    // buttons should never shrink in flex-column layouts
+    flex-shrink: 0;
+  }
+}
+
 .btn-outline-link {
   border: 1px solid $grayLight;
   border-radius: 4px;
