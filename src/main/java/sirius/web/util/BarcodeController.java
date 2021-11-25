@@ -41,12 +41,12 @@ public class BarcodeController extends BasicController {
      * The parameter <tt>content</tt> determines the contents of the qr code. The parameters <tt>width</tt> and
      * <tt>height</tt> determine its dimensions.
      *
-     * @param ctx the current request
+     * @param webContext the current request
      * @throws Exception in case an error occurred when generating the qr code
      */
     @Routed(value = "/qr", priority = 999)
-    public void qr(WebContext ctx) throws Exception {
-        barcode(ctx, BarcodeFormat.QR_CODE);
+    public void qr(WebContext webContext) throws Exception {
+        barcode(webContext, BarcodeFormat.QR_CODE);
     }
 
     /**
@@ -68,12 +68,13 @@ public class BarcodeController extends BasicController {
         int height = webContext.getFirstFilled("h", "height").asInt(200);
         String content = webContext.getFirstFilled("c", "content").asString();
         if (Strings.isEmpty(content)) {
-            webContext.respondWith().direct(HttpResponseStatus.BAD_REQUEST, "Usage: /barcode?type=qr&content=...&w=200&h=200");
+            webContext.respondWith()
+                      .direct(HttpResponseStatus.BAD_REQUEST, "Usage: /barcode?type=qr&content=...&w=200&h=200");
             return;
         }
 
         // Adjust the barcode format, if "type=ean" was submitted with the request and a GTIN-14 was given
-        if(BarcodeFormat.EAN_13 == format && content.length() == 14) {
+        if (BarcodeFormat.EAN_13 == format && content.length() == 14) {
             format = BarcodeFormat.ITF;
         }
 
@@ -81,9 +82,9 @@ public class BarcodeController extends BasicController {
         Writer writer = determineWriter(format);
         BitMatrix matrix = writer.encode(content, format, width, height);
         try (OutputStream out = webContext.respondWith()
-                                   .infinitelyCached()
-                                   .outputStream(HttpResponseStatus.OK,
-                                                 MimeHelper.guessMimeType("barcode." + fileType))) {
+                                          .infinitelyCached()
+                                          .outputStream(HttpResponseStatus.OK,
+                                                        MimeHelper.guessMimeType("barcode." + fileType))) {
             MatrixToImageWriter.writeToStream(matrix, fileType, out);
         }
     }
