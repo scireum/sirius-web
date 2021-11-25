@@ -16,6 +16,7 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.datamatrix.DataMatrixWriter;
 import com.google.zxing.oned.Code128Writer;
 import com.google.zxing.oned.EAN13Writer;
+import com.google.zxing.oned.ITFWriter;
 import com.google.zxing.qrcode.QRCodeWriter;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.commons.Strings;
@@ -79,9 +80,10 @@ public class BarcodeController extends BasicController {
             case "qr" -> BarcodeFormat.QR_CODE;
             case "code128" -> BarcodeFormat.CODE_128;
             case "ean" -> BarcodeFormat.EAN_13;
+            case "itf" -> BarcodeFormat.ITF;
             case "datamatrix" -> BarcodeFormat.DATA_MATRIX;
             default -> throw new IllegalArgumentException(
-                    "Unsupported barcode type. Supported types are: qr, code128, ean, datamatrix");
+                    "Unsupported barcode type. Supported types are: qr, code128, ean, itf, datamatrix");
         };
     }
 
@@ -90,6 +92,7 @@ public class BarcodeController extends BasicController {
             case QR_CODE -> new QRCodeWriter();
             case CODE_128 -> new Code128Writer();
             case EAN_13 -> new EAN13Writer();
+            case ITF -> new ITFWriter();
             case DATA_MATRIX -> new DataMatrixWriter();
             default -> throw new IllegalArgumentException("Unsupported barcode type!");
         };
