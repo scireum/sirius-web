@@ -50,6 +50,16 @@ public class BarcodeController extends BasicController {
         barcode(ctx, BarcodeFormat.QR_CODE);
     }
 
+    /**
+     * Creates a barcode for the given content.
+     * <p>
+     * The parameter <tt>content</tt> determines the contents of the barcode. The parameters <tt>width</tt> and
+     * <tt>height</tt> determine its dimensions.
+     * </p>
+     *
+     * @param webContext the current request
+     * @throws Exception in case an error occurred when generating the barcode
+     */
     @Routed(value = "/barcode", priority = 999)
     public void barcode(WebContext webContext) throws Exception {
         barcode(webContext, determineFormat(webContext.get("type").asString()));
