@@ -36,10 +36,10 @@ import java.io.OutputStream;
 public class BarcodeController extends BasicController {
 
     /**
-     * Creates an QR code for the given content.
+     * Creates a QR code for the given content.
      * <p>
-     * The parameter <tt>content</tt> determines the contents of the qr code. The parameters <tt>with</tt> and
-     * <tt>height</tt> its dimensions.
+     * The parameter <tt>content</tt> determines the contents of the qr code. The parameters <tt>width</tt> and
+     * <tt>height</tt> determine its dimensions.
      * </p>
      *
      * @param ctx the current request
