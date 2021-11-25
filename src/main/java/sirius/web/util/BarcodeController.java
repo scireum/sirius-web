@@ -40,7 +40,6 @@ public class BarcodeController extends BasicController {
      * <p>
      * The parameter <tt>content</tt> determines the contents of the qr code. The parameters <tt>width</tt> and
      * <tt>height</tt> determine its dimensions.
-     * </p>
      *
      * @param ctx the current request
      * @throws Exception in case an error occurred when generating the qr code
@@ -55,7 +54,6 @@ public class BarcodeController extends BasicController {
      * <p>
      * The parameter <tt>content</tt> determines the contents of the barcode. The parameters <tt>width</tt> and
      * <tt>height</tt> determine its dimensions.
-     * </p>
      *
      * @param webContext the current request
      * @throws Exception in case an error occurred when generating the barcode
