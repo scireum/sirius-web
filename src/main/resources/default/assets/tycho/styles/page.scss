@@ -13,7 +13,7 @@ body {
 /* Makes flex items behavior more smooth by supplying them with a default min-width / min-height.
    This prevents them from overflowing the flex container by giving them a baseline to shrink.
  */
-.d-flex, .d-inline-flex {
+.d-flex, .d-inline-flex, .card {
   & > * {
     min-width: 0;
     min-height: 0;

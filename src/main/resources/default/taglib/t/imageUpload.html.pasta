@@ -13,13 +13,13 @@
 
 <i:local name="previewId" value="@generateId('image-upload-preview-%s')"/>
 
-<div class="dropzone sirius-imageupload card shadow-sm mb-lg-0 mb-2 @class" id="@id">
-    <div class="img-preview mb-4">
-        <img class="mw-100" id="@previewId" src="@currentImage"/>
+<div class="dropzone sirius-imageupload card shadow-sm mb-4 @class" id="@id">
+    <div class="img-preview d-flex justify-content-center align-items-center flex-grow-1 mb-4">
+        <img class="mh-100 mw-100" id="@previewId" src="@currentImage"/>
+    </div>
+    <div class="dropzone-items mt-2 mb-2">
     </div>
     <a class="dropzone-select btn btn-primary @btnClass">@label</a>
-    <div class="dropzone-items mt-2">
-    </div>
     <i:render name="body"/>
 </div>
 
