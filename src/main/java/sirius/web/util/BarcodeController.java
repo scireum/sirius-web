@@ -64,6 +64,11 @@ public class BarcodeController extends BasicController {
             return;
         }
 
+        // Adjust the barcode format, if "type=ean" was submitted with the request and a GTIN-14 was given
+        if(BarcodeFormat.EAN_13 == format && content.length() == 14) {
+            format = BarcodeFormat.ITF;
+        }
+
         String fileType = webContext.getFirstFilled("fileType").asString("jpg");
         Writer writer = determineWriter(format);
         BitMatrix matrix = writer.encode(content, format, width, height);
