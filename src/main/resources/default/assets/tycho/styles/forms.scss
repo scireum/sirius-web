@@ -136,17 +136,6 @@
   min-height: 0;
 }
 
-.dropzone.sirius-imageupload {
-  height: 350px;
-
-  .img-preview {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-grow: 1;
-  }
-}
-
 .dropzone.sirius-fileupload, .dropzone.sirius-imageupload {
   .dz-default.dz-message {
     display: none;
