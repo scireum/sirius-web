@@ -523,8 +523,15 @@ var TokenAutocomplete = /** @class */ (function () {
                     me.parent.textInput.dataset.placeholder = me.previousText;
                 }
             }
-            else if (me.parent.options.placeholderText != null) {
-                me.parent.textInput.dataset.placeholder = me.parent.options.placeholderText;
+            else {
+                // We should reset these fields, so they are not used to restore the previously selected value
+                // when the focusout event is handled after the click event on the suggestion.
+                delete me.previousValue;
+                delete me.previousText;
+                delete me.previousType;
+                if (me.parent.options.placeholderText != null) {
+                    me.parent.textInput.dataset.placeholder = me.parent.options.placeholderText;
+                }
             }
             (_a = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.parentElement) === null || _a === void 0 ? void 0 : _a.removeChild(hiddenOption);
             me.parent.addHiddenEmptyOption();
@@ -557,7 +564,7 @@ var TokenAutocomplete = /** @class */ (function () {
             if (tokenValue === null || tokenText === null || tokenType === '_no_match_') {
                 return;
             }
-            this.clear(true);
+            this.clear(true, false);
             this.parent.textInput.textContent = tokenText;
             this.parent.textInput.contentEditable = 'false';
             if (this.options.optional && tokenText !== '') {
@@ -637,9 +644,6 @@ var TokenAutocomplete = /** @class */ (function () {
                 }, 200);
             });
             (_a = parent.container.querySelector('.token-singleselect-token-delete')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', function () {
-                delete me.previousValue;
-                delete me.previousType;
-                delete me.previousText;
                 me.clear(false, false);
             });
         };
@@ -846,12 +850,12 @@ var TokenAutocomplete = /** @class */ (function () {
                 clearTimeout(me.timeout);
                 if (!me.timeout) {
                     me.debouncedRequestSuggestions.call(me, query);
-                    me.timeout = setTimeout(function () {
+                    me.timeout = window.setTimeout(function () {
                         delete me.timeout;
                     }, me.parent.options.requestDelay);
                 }
                 else {
-                    me.timeout = setTimeout(function () {
+                    me.timeout = window.setTimeout(function () {
                         delete me.timeout;
                         me.debouncedRequestSuggestions.call(me, query);
                     }, me.parent.options.requestDelay);
