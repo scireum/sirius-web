@@ -18,6 +18,7 @@ import com.google.zxing.oned.Code128Writer;
 import com.google.zxing.oned.EAN13Writer;
 import com.google.zxing.oned.ITFWriter;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.lowagie.text.pdf.BarcodeInter25;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
@@ -36,6 +37,14 @@ import java.io.OutputStream;
  */
 @Register
 public class BarcodeController extends BasicController {
+
+    private static final String TYPE_QR = "qr";
+    private static final String TYPE_DATAMATRIX = "datamatrix";
+    private static final String TYPE_CODE128 = "code128";
+    private static final String TYPE_EAN = "ean";
+    private static final String TYPE_ITF = "itf";
+    private static final String TYPE_INTERLEAVED_2_OF_5 = "interleaved2of5";
+    private static final String TYPE_INTERLEAVED_2_OF_5_CHECKSUMMED = "interleaved2of5checksummed";
 
     /**
      * Creates a QR code for the given content.
@@ -75,6 +84,8 @@ public class BarcodeController extends BasicController {
             return;
         }
 
+        content = alignContentForItfFormat(content, format.name());
+
         format = useItfFormatForGtin14(content, format);
 
         String fileType = webContext.getFirstFilled("fileType").asString("jpg");
@@ -96,9 +107,10 @@ public class BarcodeController extends BasicController {
      * @return a barcode of the given data as a 200x200 px image
      * @throws WriterException if generating the image fails
      */
-    public static Image generateBarcodeImage(String type, String content)
-            throws WriterException {
+    public static Image generateBarcodeImage(String type, String content) throws WriterException {
         BarcodeFormat format = determineFormat(type);
+
+        content = alignContentForItfFormat(content, type);
 
         format = useItfFormatForGtin14(content, format);
 
@@ -109,13 +121,13 @@ public class BarcodeController extends BasicController {
 
     private static BarcodeFormat determineFormat(String format) {
         return switch (Value.of(format).toLowerCase()) {
-            case "qr" -> BarcodeFormat.QR_CODE;
-            case "code128" -> BarcodeFormat.CODE_128;
-            case "ean" -> BarcodeFormat.EAN_13;
-            case "itf", "interleaved2of5" -> BarcodeFormat.ITF;
-            case "datamatrix" -> BarcodeFormat.DATA_MATRIX;
+            case TYPE_QR -> BarcodeFormat.QR_CODE;
+            case TYPE_CODE128 -> BarcodeFormat.CODE_128;
+            case TYPE_EAN -> BarcodeFormat.EAN_13;
+            case TYPE_ITF, TYPE_INTERLEAVED_2_OF_5, TYPE_INTERLEAVED_2_OF_5_CHECKSUMMED -> BarcodeFormat.ITF;
+            case TYPE_DATAMATRIX -> BarcodeFormat.DATA_MATRIX;
             default -> throw new IllegalArgumentException(
-                    "Unsupported barcode type. Supported types are: qr, code128, ean, itf, datamatrix");
+                    "Unsupported barcode type. Supported types are: qr, code128, ean, interleaved2of5, interleaved2of5checksummed, datamatrix");
         };
     }
 
@@ -137,5 +149,19 @@ public class BarcodeController extends BasicController {
         }
 
         return format;
+    }
+
+    private static String alignContentForItfFormat(String content, String format) {
+        if (TYPE_INTERLEAVED_2_OF_5_CHECKSUMMED.equalsIgnoreCase(format)) {
+            content += BarcodeInter25.getChecksum(content);
+        }
+
+        if ((TYPE_INTERLEAVED_2_OF_5.equalsIgnoreCase(format) || TYPE_INTERLEAVED_2_OF_5_CHECKSUMMED.equalsIgnoreCase(
+                format)) && BarcodeInter25.keepNumbers(content).length() % 2 != 0) {
+            // Pads the code if the length is uneven
+            content = "0" + content;
+        }
+
+        return content;
     }
 }
