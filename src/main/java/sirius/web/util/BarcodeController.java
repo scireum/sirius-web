@@ -69,8 +69,13 @@ public class BarcodeController extends BasicController {
         int width = webContext.getFirstFilled("w", "width").asInt(200);
         int height = webContext.getFirstFilled("h", "height").asInt(200);
         String content = webContext.getFirstFilled("c", "content").asString();
+        if (Strings.isEmpty(content)) {
+            webContext.respondWith()
+                      .direct(HttpResponseStatus.BAD_REQUEST, "Usage: /barcode?type=qr&content=...&w=200&h=200");
+            return;
+        }
 
-        format = validateContentAndFormat(content, format, webContext);
+        format = useItfFormatForGtin14(content, format);
 
         String fileType = webContext.getFirstFilled("fileType").asString("jpg");
         Writer writer = determineWriter(format);
@@ -96,7 +101,7 @@ public class BarcodeController extends BasicController {
     public static Image getBarcodeImage(String type, String content, int width, int height) throws WriterException {
         BarcodeFormat format = determineFormat(type);
 
-        format = validateContentAndFormat(content, format, null);
+        format = useItfFormatForGtin14(content, format);
 
         Writer writer = determineWriter(format);
         BitMatrix matrix = writer.encode(content, format, width != -1 ? width : 200, height != -1 ? height : 200);
@@ -126,12 +131,7 @@ public class BarcodeController extends BasicController {
         };
     }
 
-    private static BarcodeFormat validateContentAndFormat(String content, BarcodeFormat format, WebContext webContext) {
-        if (Strings.isEmpty(content) && webContext != null) {
-            webContext.respondWith()
-                      .direct(HttpResponseStatus.BAD_REQUEST, "Usage: /barcode?type=qr&content=...&w=200&h=200");
-        }
-
+    private static BarcodeFormat useItfFormatForGtin14(String content, BarcodeFormat format) {
         // Adjust the barcode format, if "type=ean" was submitted with the request and a GTIN-14 was given
         if (BarcodeFormat.EAN_13 == format && content.length() == 14) {
             return BarcodeFormat.ITF;
