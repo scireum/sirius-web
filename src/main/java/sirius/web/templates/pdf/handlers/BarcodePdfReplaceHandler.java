@@ -9,7 +9,6 @@
 package sirius.web.templates.pdf.handlers;
 
 import com.google.zxing.WriterException;
-import com.lowagie.text.pdf.Barcode;
 import com.lowagie.text.pdf.BarcodeInter25;
 import org.xhtmlrenderer.extend.FSImage;
 import org.xhtmlrenderer.extend.UserAgentCallback;
@@ -69,21 +68,17 @@ public class BarcodePdfReplaceHandler extends PdfReplaceHandler {
         return fsImage;
     }
 
-    private Image generateBarcodeImage(String barcodeType, String content)
-            throws WriterException {
+    private Image generateBarcodeImage(String barcodeType, String content) throws WriterException {
         assertSupportedBarcodeType(barcodeType);
 
         if (BARCODE_TYPE_INTERLEAVED_2_OF_5_CHECKSUMMED.equalsIgnoreCase(barcodeType)) {
-            Barcode code = new BarcodeInter25();
-            code.setGenerateChecksum(true);
-            // Pads the code if necessary: Length is even but a checksum will be added
-            code.setCode(BarcodeInter25.keepNumbers(content).length() % 2 == 0 ? "0" + content : content);
-            return code.createAwtImage(Color.BLACK, Color.WHITE);
+            content += BarcodeInter25.getChecksum(content);
         }
 
-        if (BARCODE_TYPE_INTERLEAVED_2_OF_5.equalsIgnoreCase(barcodeType)
+        if ((BARCODE_TYPE_INTERLEAVED_2_OF_5.equalsIgnoreCase(barcodeType)
+             || BARCODE_TYPE_INTERLEAVED_2_OF_5_CHECKSUMMED.equalsIgnoreCase(barcodeType))
             && BarcodeInter25.keepNumbers(content).length() % 2 != 0) {
-            // Pads the code if necessary: Length is uneven and no checksum will be added
+            // Pads the code if the length is uneven
             content = "0" + content;
         }
 
