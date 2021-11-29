@@ -88,7 +88,7 @@ public class BarcodeController extends BasicController {
             return;
         }
 
-        content = alignContentForItfFormat(content, format.name());
+        content = alignContentForItfFormat(content, webContext.get("type").asString());
 
         format = useItfFormatForGtin14(content, format);
 
