@@ -29,8 +29,10 @@ import sirius.web.http.MimeHelper;
 import sirius.web.http.WebContext;
 
 import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.regex.Pattern;
 
 /**
  * Used to generate barcodes by responding to "/qr" or "/barcode".
@@ -45,6 +47,8 @@ public class BarcodeController extends BasicController {
     private static final String TYPE_ITF = "itf";
     private static final String TYPE_INTERLEAVED_2_OF_5 = "interleaved2of5";
     private static final String TYPE_INTERLEAVED_2_OF_5_CHECKSUMMED = "interleaved2of5checksummed";
+
+    private static final Pattern NUMERIC = Pattern.compile("[0-9]+");
 
     /**
      * Creates a QR code for the given content.
@@ -108,6 +112,11 @@ public class BarcodeController extends BasicController {
      * @throws WriterException if generating the image fails
      */
     public static Image generateBarcodeImage(String type, String content) throws WriterException {
+        if (!NUMERIC.matcher(content).matches()) {
+            // contains characters other than digits 0-9 -> directly return a blank image to prevent running into exception
+            return new BufferedImage(200, 200, BufferedImage.TYPE_BYTE_GRAY);
+        }
+
         BarcodeFormat format = determineFormat(type);
 
         content = alignContentForItfFormat(content, type);
