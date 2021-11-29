@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Used by the XHTMLRenderer (creating PDFs) to replace img elements by their references image.
+ * Used by the XHTMLRenderer (creating PDFs) to replace img elements by their referenced image.
  * <p>
  * Alongside http different URI protocols are supported. These are handled by classes extending
  * {@link PdfReplaceHandler}.
