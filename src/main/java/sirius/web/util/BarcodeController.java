@@ -108,7 +108,7 @@ public class BarcodeController extends BasicController {
         }
 
         Writer writer = determineWriter(format);
-        BitMatrix matrix = writer.encode(content, format, width, height);
+        BitMatrix matrix = writer.encode(content, format, width != -1 ? width : 200, height != -1 ? height : 200);
         return MatrixToImageWriter.toBufferedImage(matrix);
     }
 
