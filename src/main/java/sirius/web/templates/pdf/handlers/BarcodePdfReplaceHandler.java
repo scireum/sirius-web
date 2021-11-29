@@ -53,12 +53,6 @@ public class BarcodePdfReplaceHandler extends PdfReplaceHandler {
 
         Image awtImage = generateBarcodeImage(barcodeInfo[0], barcodeInfo[1]);
 
-        int scaleFactor = calculateBarcodeScaleFactor(cssWidth, cssHeight, awtImage);
-
-        awtImage = awtImage.getScaledInstance(awtImage.getWidth(null) * scaleFactor,
-                                              awtImage.getHeight(null) * scaleFactor,
-                                              Image.SCALE_REPLICATE);
-
         FSImage fsImage = new ITextFSImage(com.lowagie.text.Image.getInstance(awtImage, Color.WHITE, true));
 
         if (cssWidth != -1 || cssHeight != -1) {
@@ -83,11 +77,6 @@ public class BarcodePdfReplaceHandler extends PdfReplaceHandler {
         }
 
         return BarcodeController.generateBarcodeImage(barcodeType, content);
-    }
-
-    private int calculateBarcodeScaleFactor(int cssWidth, int cssHeight, Image awtImage) {
-        return (int) Math.max(Math.ceil(cssWidth / (float) awtImage.getWidth(null)),
-                              Math.ceil(cssHeight / (float) awtImage.getHeight(null)));
     }
 
     private void assertSupportedBarcodeType(String type) {
