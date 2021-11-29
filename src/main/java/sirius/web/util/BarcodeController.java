@@ -26,6 +26,7 @@ import sirius.web.controller.Routed;
 import sirius.web.http.MimeHelper;
 import sirius.web.http.WebContext;
 
+import java.awt.Image;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -89,19 +90,41 @@ public class BarcodeController extends BasicController {
         }
     }
 
-    private BarcodeFormat determineFormat(String format) {
+    /**
+     * Gets an image of a barcode
+     *
+     * @param type    the desired barcode type
+     * @param content the content of the barcode
+     * @param width   the desired image width
+     * @param height  the desired image height
+     * @return a barcode of the given data as an image
+     * @throws WriterException if generating the image fails
+     */
+    public static Image getBarcodeImage(String type, String content, int width, int height) throws WriterException {
+        BarcodeFormat format = determineFormat(type);
+        // Adjust the barcode format, if "type=ean" was submitted with the request and a GTIN-14 was given
+        if (BarcodeFormat.EAN_13 == format && content.length() == 14) {
+            format = BarcodeFormat.ITF;
+        }
+
+        Writer writer = determineWriter(format);
+        BitMatrix matrix = writer.encode(content, format, width, height);
+        return MatrixToImageWriter.toBufferedImage(matrix);
+    }
+
+    private static BarcodeFormat determineFormat(String format) {
         return switch (format) {
             case "qr" -> BarcodeFormat.QR_CODE;
             case "code128" -> BarcodeFormat.CODE_128;
             case "ean" -> BarcodeFormat.EAN_13;
-            case "itf" -> BarcodeFormat.ITF;
+            case "itf", "interleaved2of5" -> BarcodeFormat.ITF;
             case "datamatrix" -> BarcodeFormat.DATA_MATRIX;
             default -> throw new IllegalArgumentException(
                     "Unsupported barcode type. Supported types are: qr, code128, ean, itf, datamatrix");
         };
     }
 
-    private Writer determineWriter(BarcodeFormat format) {
+    private static Writer determineWriter(BarcodeFormat format) {
         return switch (format) {
             case QR_CODE -> new QRCodeWriter();
             case CODE_128 -> new Code128Writer();

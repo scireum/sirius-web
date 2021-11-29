@@ -8,17 +8,16 @@
 
 package sirius.web.templates.pdf.handlers;
 
+import com.google.zxing.WriterException;
 import com.lowagie.text.pdf.Barcode;
-import com.lowagie.text.pdf.Barcode128;
-import com.lowagie.text.pdf.BarcodeEAN;
 import com.lowagie.text.pdf.BarcodeInter25;
 import org.xhtmlrenderer.extend.FSImage;
 import org.xhtmlrenderer.extend.UserAgentCallback;
 import org.xhtmlrenderer.pdf.ITextFSImage;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
+import sirius.web.util.BarcodeController;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.awt.Color;
 import java.awt.Image;
@@ -53,10 +52,7 @@ public class BarcodePdfReplaceHandler extends PdfReplaceHandler {
             throw new IllegalArgumentException("The URI is required to match the format 'barcode://type/content'");
         }
 
-        Barcode code = createBarcode(barcodeInfo[0]);
-        code.setCode(padCodeIfNecessary(code, barcodeInfo[1]));
-
-        Image awtImage = code.createAwtImage(Color.BLACK, Color.WHITE);
+        Image awtImage = getBarcodeImage(barcodeInfo[0], barcodeInfo[1], cssWidth, cssHeight);
 
         int scaleFactor = calculateBarcodeScaleFactor(cssWidth, cssHeight, awtImage);
 
@@ -73,38 +69,33 @@ public class BarcodePdfReplaceHandler extends PdfReplaceHandler {
         return fsImage;
     }
 
+    private Image getBarcodeImage(String barcodeType, String content, int width, int height) throws WriterException {
+        assertSupportedBarcodeType(barcodeType);
+
+        if (BARCODE_TYPE_INTERLEAVED_2_OF_5_CHECKSUMMED.equalsIgnoreCase(barcodeType)) {
+            Barcode code = new BarcodeInter25();
+            code.setGenerateChecksum(true);
+            code.setCode(padCodeIfNecessary(code, content));
+            return code.createAwtImage(Color.BLACK, Color.WHITE);
+        }
+
+        return BarcodeController.getBarcodeImage(barcodeType, content, width, height);
+    }
+
     private int calculateBarcodeScaleFactor(int cssWidth, int cssHeight, Image awtImage) {
         return (int) Math.max(Math.ceil(cssWidth / (float) awtImage.getWidth(null)),
                               Math.ceil(cssHeight / (float) awtImage.getHeight(null)));
     }
 
-    /**
-     * Creates an instance of {@link Barcode} that matches the given type descriptor.
-     *
-     * @param type the requested type
-     * @return the barcode
-     */
-    @Nonnull
-    private Barcode createBarcode(String type) {
-        if (BARCODE_TYPE_CODE128.equalsIgnoreCase(type)) {
-            return new Barcode128();
+    private void assertSupportedBarcodeType(String type) {
+        if (!BARCODE_TYPE_CODE128.equalsIgnoreCase(type)
+            && !BARCODE_TYPE_EAN.equalsIgnoreCase(type)
+            && !BARCODE_TYPE_INTERLEAVED_2_OF_5.equalsIgnoreCase(type)
+            && !BARCODE_TYPE_INTERLEAVED_2_OF_5_CHECKSUMMED.equalsIgnoreCase(type)) {
+            throw new UnsupportedOperationException(Strings.apply(
+                    "Type '%s' is not supported. Supported types are: code128, ean, interleaved2of5, interleaved2of5checksummed.",
+                    type));
         }
-
-        if (BARCODE_TYPE_EAN.equalsIgnoreCase(type)) {
-            return new BarcodeEAN();
-        }
-
-        if (BARCODE_TYPE_INTERLEAVED_2_OF_5.equalsIgnoreCase(type)) {
-            return new BarcodeInter25();
-        }
-
-        if (BARCODE_TYPE_INTERLEAVED_2_OF_5_CHECKSUMMED.equalsIgnoreCase(type)) {
-            Barcode code = new BarcodeInter25();
-            code.setGenerateChecksum(true);
-            return code;
-        }
-
-        throw new UnsupportedOperationException(Strings.apply("Type '%s' is not supported", type));
     }
 
     /**
