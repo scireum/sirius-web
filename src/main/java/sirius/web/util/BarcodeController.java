@@ -89,7 +89,7 @@ public class BarcodeController extends BasicController {
     }
 
     /**
-     * Gets an image of a barcode
+     * Generates an image of a barcode
      *
      * @param type    the desired barcode type
      * @param content the content of the barcode
@@ -98,7 +98,8 @@ public class BarcodeController extends BasicController {
      * @return a barcode of the given data as an image
      * @throws WriterException if generating the image fails
      */
-    public static Image getBarcodeImage(String type, String content, int width, int height) throws WriterException {
+    public static Image generateBarcodeImage(String type, String content, int width, int height)
+            throws WriterException {
         BarcodeFormat format = determineFormat(type);
 
         format = useItfFormatForGtin14(content, format);

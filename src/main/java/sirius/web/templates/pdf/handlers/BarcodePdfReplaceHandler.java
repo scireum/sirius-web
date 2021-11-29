@@ -52,7 +52,7 @@ public class BarcodePdfReplaceHandler extends PdfReplaceHandler {
             throw new IllegalArgumentException("The URI is required to match the format 'barcode://type/content'");
         }
 
-        Image awtImage = getBarcodeImage(barcodeInfo[0], barcodeInfo[1], cssWidth, cssHeight);
+        Image awtImage = generateBarcodeImage(barcodeInfo[0], barcodeInfo[1], cssWidth, cssHeight);
 
         int scaleFactor = calculateBarcodeScaleFactor(cssWidth, cssHeight, awtImage);
 
@@ -69,7 +69,8 @@ public class BarcodePdfReplaceHandler extends PdfReplaceHandler {
         return fsImage;
     }
 
-    private Image getBarcodeImage(String barcodeType, String content, int width, int height) throws WriterException {
+    private Image generateBarcodeImage(String barcodeType, String content, int width, int height)
+            throws WriterException {
         assertSupportedBarcodeType(barcodeType);
 
         if (BARCODE_TYPE_INTERLEAVED_2_OF_5_CHECKSUMMED.equalsIgnoreCase(barcodeType)) {
@@ -86,7 +87,7 @@ public class BarcodePdfReplaceHandler extends PdfReplaceHandler {
             content = "0" + content;
         }
 
-        return BarcodeController.getBarcodeImage(barcodeType, content, width, height);
+        return BarcodeController.generateBarcodeImage(barcodeType, content, width, height);
     }
 
     private int calculateBarcodeScaleFactor(int cssWidth, int cssHeight, Image awtImage) {
