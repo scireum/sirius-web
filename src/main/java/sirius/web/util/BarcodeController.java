@@ -93,19 +93,17 @@ public class BarcodeController extends BasicController {
      *
      * @param type    the desired barcode type
      * @param content the content of the barcode
-     * @param width   the desired image width
-     * @param height  the desired image height
-     * @return a barcode of the given data as an image
+     * @return a barcode of the given data as a 200x200 px image
      * @throws WriterException if generating the image fails
      */
-    public static Image generateBarcodeImage(String type, String content, int width, int height)
+    public static Image generateBarcodeImage(String type, String content)
             throws WriterException {
         BarcodeFormat format = determineFormat(type);
 
         format = useItfFormatForGtin14(content, format);
 
         Writer writer = determineWriter(format);
-        BitMatrix matrix = writer.encode(content, format, width != -1 ? width : 200, height != -1 ? height : 200);
+        BitMatrix matrix = writer.encode(content, format, 200, 200);
         return MatrixToImageWriter.toBufferedImage(matrix);
     }
 
