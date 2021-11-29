@@ -80,6 +80,12 @@ public class BarcodePdfReplaceHandler extends PdfReplaceHandler {
             return code.createAwtImage(Color.BLACK, Color.WHITE);
         }
 
+        if (BARCODE_TYPE_INTERLEAVED_2_OF_5.equalsIgnoreCase(barcodeType)
+            && BarcodeInter25.keepNumbers(content).length() % 2 != 0) {
+            // Pads the code if necessary: Length is uneven and no checksum will be added
+            content = "0" + content;
+        }
+
         return BarcodeController.getBarcodeImage(barcodeType, content, width, height);
     }
 
