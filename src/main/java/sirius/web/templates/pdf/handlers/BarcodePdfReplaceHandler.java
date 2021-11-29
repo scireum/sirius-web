@@ -44,7 +44,7 @@ public class BarcodePdfReplaceHandler extends PdfReplaceHandler {
             throw new IllegalArgumentException("The URI is required to match the format 'barcode://type/content'");
         }
 
-        Image awtImage = BarcodeController.generateBarcodeImage(barcodeInfo[0], barcodeInfo[1]);
+        Image awtImage = BarcodeController.generateBarcodeImage(barcodeInfo[0], barcodeInfo[1], cssWidth, cssHeight);
 
         FSImage fsImage = new ITextFSImage(com.lowagie.text.Image.getInstance(awtImage, Color.WHITE, true));
 
