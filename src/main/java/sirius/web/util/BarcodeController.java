@@ -112,12 +112,12 @@ public class BarcodeController extends BasicController {
      * @throws WriterException if generating the image fails
      */
     public static Image generateBarcodeImage(String type, String content) throws WriterException {
-        if (!NUMERIC.matcher(content).matches()) {
+        BarcodeFormat format = determineFormat(type);
+
+        if (!NUMERIC.matcher(content).matches() && format != BarcodeFormat.QR_CODE) {
             // contains characters other than digits 0-9 -> directly return a blank image to prevent running into exception
             return new BufferedImage(200, 200, BufferedImage.TYPE_BYTE_GRAY);
         }
-
-        BarcodeFormat format = determineFormat(type);
 
         content = alignContentForItfFormat(content, type);
 
