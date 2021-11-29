@@ -20,6 +20,7 @@ import com.google.zxing.oned.ITFWriter;
 import com.google.zxing.qrcode.QRCodeWriter;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Register;
 import sirius.web.controller.BasicController;
 import sirius.web.controller.Routed;
@@ -113,7 +114,7 @@ public class BarcodeController extends BasicController {
     }
 
     private static BarcodeFormat determineFormat(String format) {
-        return switch (format) {
+        return switch (Value.of(format).toLowerCase()) {
             case "qr" -> BarcodeFormat.QR_CODE;
             case "code128" -> BarcodeFormat.CODE_128;
             case "ean" -> BarcodeFormat.EAN_13;
