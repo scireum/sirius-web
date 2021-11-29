@@ -75,7 +75,8 @@ public class BarcodePdfReplaceHandler extends PdfReplaceHandler {
         if (BARCODE_TYPE_INTERLEAVED_2_OF_5_CHECKSUMMED.equalsIgnoreCase(barcodeType)) {
             Barcode code = new BarcodeInter25();
             code.setGenerateChecksum(true);
-            code.setCode(padCodeIfNecessary(code, content));
+            // Pads the code if necessary: Length is even but a checksum will be added
+            code.setCode(BarcodeInter25.keepNumbers(content).length() % 2 == 0 ? "0" + content : content);
             return code.createAwtImage(Color.BLACK, Color.WHITE);
         }
 
@@ -96,33 +97,5 @@ public class BarcodePdfReplaceHandler extends PdfReplaceHandler {
                     "Type '%s' is not supported. Supported types are: code128, ean, interleaved2of5, interleaved2of5checksummed.",
                     type));
         }
-    }
-
-    /**
-     * Pads the code if necessary.
-     * <p>
-     * Unfortunately padding will not be added automatically when using <b>interleaved2of5</b> or
-     * <b>interleaved2of5checksummed</b>. Thus we manually prepend a zero if the code length is uneven.
-     *
-     * @param code the instance of the barcode
-     * @param src  the code from the src attribute
-     * @return the padded code, or the original code if padding was not needed
-     */
-    private String padCodeIfNecessary(Barcode code, String src) {
-        if (code instanceof BarcodeInter25) {
-            int length = BarcodeInter25.keepNumbers(src).length();
-
-            // Length is uneven and no checksum will be added
-            if (length % 2 != 0 && !code.isGenerateChecksum()) {
-                return "0" + src;
-            }
-
-            // Length is even but a checksum will be added
-            if (length % 2 == 0 && code.isGenerateChecksum()) {
-                return "0" + src;
-            }
-        }
-
-        return src;
     }
 }
