@@ -627,6 +627,13 @@ public class Parser extends InputProcessor {
             }
         }
 
+        if (root instanceof RawClassLiteral) {
+            context.error(root.getPosition(),
+                          "Found an incomplete class literal '%s'. Add '.class' if you want to refer to the class object.",
+                          root.getConstantValue());
+            return new Constant(root.getPosition(), root.getConstantValue());
+        }
+
         return root;
     }
 

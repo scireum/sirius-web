@@ -120,4 +120,14 @@ class CompilerSpec extends BaseSpecification {
         and:
         compile("Strings.join(' ', NoodleExample.INSTANCE.getRef().getTest(), 'World')").call(new SimpleEnvironment()) == "Hello World"
     }
+
+    def "incomplete class literals are detected and reported"() {
+        when:
+        def compilationContext = new CompilationContext(SourceCodeInfo.forInlineCode("part(sirius.pasta.tagliatelle.Tagliatelle).getExtensions(null)"))
+        new NoodleCompiler(compilationContext).compileScript()
+        then:
+        compilationContext.getErrors().size() == 1
+        and:
+        compilationContext.getErrors().get(0).getMessage() == "  1: 6: Found an incomplete class literal 'class sirius.pasta.tagliatelle.Tagliatelle'. Add '.class' if you want to refer to the class object."
+    }
 }
