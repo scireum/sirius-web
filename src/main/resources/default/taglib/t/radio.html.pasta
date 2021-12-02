@@ -1,0 +1,26 @@
+<i:arg name="class" type="String" default="" description="Lists additional CSS classes to apply to the field."/>
+<i:arg name="name" type="String" />
+<i:arg name="key" type="String" />
+<i:arg name="value" type="String" />
+<i:arg name="labelKey" type="String" default="" />
+<i:arg name="label" type="String" default="@i18n(labelKey)" />
+<i:arg name="helpKey" type="String" default="" />
+<i:arg name="help" type="String" default="@i18n(helpKey)" />
+<i:arg name="required" type="boolean" default="false" />
+<i:arg name="readonly" type="boolean" default="false" />
+
+<i:pragma name="description" value="Renders a radio button within a Tycho template" />
+
+<div class="form-group radio @UserContext.get().signalFieldError(name) @class">
+    <label>
+        <input type="radio" name="@name" value="@key" @if (key == value) { checked="checked" } @if (readonly) { disabled="disabled" } />
+        <i:if test="isFilled(label)">
+            <span class="@if (required) { input-required }">
+                <i:raw>@label</i:raw>
+            </span>
+        </i:if>
+        <i:if test="isFilled(help)">
+            <div class="from-text text-muted text-small"><i:raw>@help</i:raw></div>
+        </i:if>
+    </label>
+</div>
