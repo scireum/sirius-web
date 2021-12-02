@@ -20,7 +20,7 @@
             </span>
         </i:if>
         <i:if test="isFilled(help)">
-            <div class="from-text text-muted"><i:raw>@help</i:raw></div>
+            <div class="from-text text-muted text-small"><i:raw>@help</i:raw></div>
         </i:if>
     </label>
 </div>
