@@ -9,7 +9,7 @@
 <i:arg name="required" type="boolean" default="false" />
 <i:arg name="readonly" type="boolean" default="false" />
 
-<i:pragma name="description" value="Renders a radio button within a Wondergem template" />
+<i:pragma name="description" value="Renders a radio button within a Tycho template" />
 
 <div class="form-group radio @UserContext.get().signalFieldError(name) @class">
     <label>
