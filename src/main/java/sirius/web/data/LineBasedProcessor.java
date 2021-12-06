@@ -42,7 +42,7 @@ public abstract class LineBasedProcessor {
         }
         throw Exceptions.createHandled()
                         .withNLSKey("LineBasedProcessor.error.invalidFileType")
-                        .set("type", name)
+                        .set("type", name.substring(name.lastIndexOf(".")))
                         .handle();
     }
 
