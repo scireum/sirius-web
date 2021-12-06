@@ -19,7 +19,7 @@ import java.io.InputStream;
  */
 public class XLSXProcessor extends XLSProcessor {
 
-    XLSXProcessor(InputStream input, boolean importAllSheets) {
+    public XLSXProcessor(InputStream input, boolean importAllSheets) {
         super(input, importAllSheets);
     }
 

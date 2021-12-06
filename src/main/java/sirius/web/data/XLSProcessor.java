@@ -8,6 +8,7 @@
 
 package sirius.web.data;
 
+import com.github.pjfanning.xlsx.exceptions.MissingSheetException;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -19,6 +20,7 @@ import sirius.kernel.async.TaskContext;
 import sirius.kernel.commons.Doubles;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Values;
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 
 import java.io.IOException;
@@ -26,6 +28,7 @@ import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -38,8 +41,10 @@ public class XLSProcessor extends LineBasedProcessor {
 
     protected final InputStream input;
     protected final boolean importAllSheets;
+    protected List<String> sheetNames = Collections.emptyList();
+    protected String currentSheet;
 
-    XLSProcessor(InputStream input, boolean importAllSheets) {
+    public XLSProcessor(InputStream input, boolean importAllSheets) {
         super();
         this.input = input;
         this.importAllSheets = importAllSheets;
@@ -48,12 +53,23 @@ public class XLSProcessor extends LineBasedProcessor {
     @Override
     public void run(RowProcessor rowProcessor, Predicate<Exception> errorHandler) throws Exception {
         try (Workbook wb = openWorkbook()) {
-            if (importAllSheets) {
-                for (int i = 0; i < wb.getNumberOfSheets(); i++) {
-                    importSheet(rowProcessor, errorHandler, wb.getSheetAt(i));
+            if (!sheetNames.isEmpty()) {
+                for (String name : sheetNames) {
+                    try {
+                        Sheet sheet = wb.getSheet(name);
+                        importSheet(rowProcessor, errorHandler, sheet);
+                    } catch (MissingSheetException missingSheetException) {
+                        throw Exceptions.createHandled().error(missingSheetException).handle();
+                    }
                 }
             } else {
-                importSheet(rowProcessor, errorHandler, wb.getSheetAt(0));
+                if (importAllSheets) {
+                    for (int i = 0; i < wb.getNumberOfSheets(); i++) {
+                        importSheet(rowProcessor, errorHandler, wb.getSheetAt(i));
+                    }
+                } else {
+                    importSheet(rowProcessor, errorHandler, wb.getSheetAt(0));
+                }
             }
         }
     }
@@ -63,6 +79,7 @@ public class XLSProcessor extends LineBasedProcessor {
     }
 
     protected void importSheet(RowProcessor rowProcessor, Predicate<Exception> errorHandler, Sheet sheet) {
+        currentSheet = sheet.getSheetName();
         Iterator<Row> iter = sheet.rowIterator();
         int current = 0;
         TaskContext tc = TaskContext.get();
@@ -152,5 +169,20 @@ public class XLSProcessor extends LineBasedProcessor {
         } else {
             return val;
         }
+    }
+
+    /**
+     * Specifies a list of names for sheets that are to be processed.
+     *
+     * @param sheetNames a list of sheet names to process
+     * @return the processor itself for fluent method calls
+     */
+    public XLSProcessor withSheetNames(List<String> sheetNames) {
+        this.sheetNames = sheetNames;
+        return this;
+    }
+
+    public String getCurrentSheet() {
+        return currentSheet;
     }
 }
