@@ -139,11 +139,11 @@ public class XLSProcessor extends LineBasedProcessor {
         if (cellType == CellType.BLANK) {
             return null;
         }
-        throw new IllegalArgumentException(Strings.apply(
-                "Cannot read a value of type %s from cell at row %d, column  %d",
-                cellType,
-                cell.getRowIndex(),
-                cell.getColumnIndex()));
+        throw new IllegalArgumentException(NLS.fmtr("XLSProcessor.invalidValueInCell")
+                                              .set("cellType", cellType)
+                                              .set("row", cell.getRowIndex())
+                                              .set("column", cell.getColumnIndex())
+                                              .format());
     }
 
     private Object extractStringValue(Cell cell) {
