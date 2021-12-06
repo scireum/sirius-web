@@ -184,7 +184,7 @@ public class XLSProcessor extends LineBasedProcessor {
      * @return the processor itself for fluent method calls
      */
     public XLSProcessor withSheetNames(List<String> sheetNames) {
-        this.sheetNames = sheetNames;
+        this.sheetNames = Collections.unmodifiableList(sheetNames);
         return this;
     }
 
