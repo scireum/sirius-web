@@ -627,21 +627,20 @@ var TokenAutocomplete = /** @class */ (function () {
                 focusInput();
             });
             parent.textInput.addEventListener('focusout', function () {
-                // We use setTimeout here, so we won't interfere with a user clicking on a suggestion.
-                setTimeout(function () {
-                    var input = me.parent.getCurrentInput();
-                    if (me.parent.val().length !== 0 && me.parent.val()[0] !== '') {
-                        return;
-                    }
-                    if (input != '' && me.parent.options.allowCustomEntries) {
-                        me.handleInputAsValue(input);
-                        return;
-                    }
-                    if (me.previousValue) {
-                        me.addToken(me.previousValue, me.previousText, me.previousType, true);
-                        return;
-                    }
-                }, 200);
+                if (parent.autocomplete.areSuggestionsHighlighted()) {
+                    return;
+                }
+                var input = me.parent.getCurrentInput();
+                if (me.parent.val().length !== 0 && me.parent.val()[0] !== '') {
+                    return;
+                }
+                if (input != '' && me.parent.options.allowCustomEntries) {
+                    me.handleInputAsValue(input);
+                    return;
+                }
+                if (me.previousValue) {
+                    me.addToken(me.previousValue, me.previousText, me.previousType, true);
+                }
             });
             (_a = parent.container.querySelector('.token-singleselect-token-delete')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', function () {
                 me.clear(false, false);
@@ -744,10 +743,10 @@ var TokenAutocomplete = /** @class */ (function () {
                     me.loadSuggestions();
                 });
                 me.parent.textInput.addEventListener('focusout', function () {
-                    // We use setTimeout here, so we won't interfere with a user clicking on a suggestion.
-                    setTimeout(function () {
-                        me.hideSuggestions();
-                    }, 200);
+                    if (me.areSuggestionsHighlighted()) {
+                        return;
+                    }
+                    me.hideSuggestions();
                 });
                 me.parent.textInput.addEventListener('focusin', function () {
                     me.loadSuggestions();
@@ -807,9 +806,9 @@ var TokenAutocomplete = /** @class */ (function () {
              */
             class_4.prototype.hideSuggestions = function () {
                 this.suggestions.style.display = '';
-                var suggestions = this.suggestions.querySelectorAll('li');
-                suggestions.forEach(function (suggestion) {
-                    suggestion.classList.remove('token-autocomplete-suggestion-highlighted');
+                var _highlightedSuggestions = this.suggestions.querySelectorAll('li.token-autocomplete-suggestion-highlighted');
+                _highlightedSuggestions.forEach(function (_suggestion) {
+                    _suggestion.classList.remove('token-autocomplete-suggestion-highlighted');
                 });
             };
             /**
@@ -822,17 +821,23 @@ var TokenAutocomplete = /** @class */ (function () {
                 return this.suggestions.style.display === 'block';
             };
             class_4.prototype.highlightSuggestionAtPosition = function (index) {
-                var suggestions = this.suggestions.querySelectorAll('li');
-                suggestions.forEach(function (suggestion) {
-                    suggestion.classList.remove('token-autocomplete-suggestion-highlighted');
+                var _suggestions = this.suggestions.querySelectorAll('li');
+                _suggestions.forEach(function (_suggestion) {
+                    _suggestion.classList.remove('token-autocomplete-suggestion-highlighted');
                 });
-                suggestions[index].classList.add('token-autocomplete-suggestion-highlighted');
+                _suggestions[index].classList.add('token-autocomplete-suggestion-highlighted');
             };
-            class_4.prototype.highlightSuggestion = function (suggestion) {
-                this.suggestions.querySelectorAll('li').forEach(function (suggestionElement) {
-                    suggestionElement.classList.remove('token-autocomplete-suggestion-highlighted');
+            class_4.prototype.highlightSuggestion = function (_suggestion) {
+                this.suggestions.querySelectorAll('li.token-autocomplete-suggestion-highlighted').forEach(function (_highlightedSuggestion) {
+                    _highlightedSuggestion.classList.remove('token-autocomplete-suggestion-highlighted');
                 });
-                suggestion.classList.add('token-autocomplete-suggestion-highlighted');
+                _suggestion.classList.add('token-autocomplete-suggestion-highlighted');
+            };
+            /**
+             * Checks for the presence of highlighted suggestions via mouse (hover) or keyboard (marker class).
+             */
+            class_4.prototype.areSuggestionsHighlighted = function () {
+                return !!this.suggestions.querySelector('li:hover,li.token-autocomplete-suggestion-highlighted');
             };
             /**
              * Removes all previous suggestions from the dropdown.
