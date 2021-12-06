@@ -139,7 +139,7 @@ public class XLSProcessor extends LineBasedProcessor {
         if (cellType == CellType.BLANK) {
             return null;
         }
-        throw new IllegalArgumentException(NLS.fmtr("XLSProcessor.invalidValueInCell")
+        throw new IllegalArgumentException(NLS.fmtr("XLSProcessor.error.invalidValueInCell")
                                               .set("cellType", cellType)
                                               .set("row", cell.getRowIndex())
                                               .set("column", cell.getColumnIndex())
