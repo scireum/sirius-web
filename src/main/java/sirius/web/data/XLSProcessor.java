@@ -60,23 +60,31 @@ public class XLSProcessor extends LineBasedProcessor {
     public void run(RowProcessor rowProcessor, Predicate<Exception> errorHandler) throws Exception {
         try (Workbook wb = openWorkbook()) {
             if (!sheetNames.isEmpty()) {
-                for (String name : sheetNames) {
-                    try {
-                        Sheet sheet = wb.getSheet(name);
-                        importSheet(rowProcessor, errorHandler, sheet);
-                    } catch (MissingSheetException missingSheetException) {
-                        throw Exceptions.createHandled().error(missingSheetException).handle();
-                    }
-                }
+                importNamedSheets(wb, rowProcessor, errorHandler);
             } else {
-                if (importAllSheets) {
-                    for (int i = 0; i < wb.getNumberOfSheets(); i++) {
-                        importSheet(rowProcessor, errorHandler, wb.getSheetAt(i));
-                    }
-                } else {
-                    importSheet(rowProcessor, errorHandler, wb.getSheetAt(0));
-                }
+                importSheets(wb, rowProcessor, errorHandler);
             }
+        }
+    }
+
+    private void importNamedSheets(Workbook wb, RowProcessor rowProcessor, Predicate<Exception> errorHandler) {
+        for (String name : sheetNames) {
+            try {
+                Sheet sheet = wb.getSheet(name);
+                importSheet(rowProcessor, errorHandler, sheet);
+            } catch (MissingSheetException missingSheetException) {
+                throw Exceptions.createHandled().error(missingSheetException).handle();
+            }
+        }
+    }
+
+    private void importSheets(Workbook wb, RowProcessor rowProcessor, Predicate<Exception> errorHandler) {
+        if (importAllSheets) {
+            for (int i = 0; i < wb.getNumberOfSheets(); i++) {
+                importSheet(rowProcessor, errorHandler, wb.getSheetAt(i));
+            }
+        } else {
+            importSheet(rowProcessor, errorHandler, wb.getSheetAt(0));
         }
     }
 
