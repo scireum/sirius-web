@@ -44,6 +44,12 @@ public class XLSProcessor extends LineBasedProcessor {
     protected List<String> sheetNames = Collections.emptyList();
     protected String currentSheet;
 
+    /**
+     * Creates a new processor for XLS (MS Excel) files.
+     *
+     * @param input           the stream of rows to be processed
+     * @param importAllSheets true, if all sheets should be processed, false otherwise
+     */
     public XLSProcessor(InputStream input, boolean importAllSheets) {
         super();
         this.input = input;

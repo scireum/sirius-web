@@ -19,6 +19,12 @@ import java.io.InputStream;
  */
 public class XLSXProcessor extends XLSProcessor {
 
+    /**
+     * Creates a new processor for XLSX (MS Excel) files.
+     *
+     * @param input           the stream of rows to be processed
+     * @param importAllSheets true, if all sheets should be processed, false otherwise
+     */
     public XLSXProcessor(InputStream input, boolean importAllSheets) {
         super(input, importAllSheets);
     }
