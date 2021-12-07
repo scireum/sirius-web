@@ -155,6 +155,7 @@ public class XLSProcessor extends LineBasedProcessor {
         }
         throw new IllegalArgumentException(NLS.fmtr("XLSProcessor.error.invalidValueInCell")
                                               .set("cellType", cellType)
+                                              .set("sheet", cell.getSheet().getSheetName())
                                               .set("row", cell.getRowIndex())
                                               .set("column", cell.getColumnIndex())
                                               .format());
