@@ -9,6 +9,7 @@
 package sirius.web.data;
 
 import sirius.kernel.commons.Explain;
+import sirius.kernel.commons.Files;
 import sirius.kernel.health.Exceptions;
 
 import java.io.InputStream;
@@ -42,7 +43,7 @@ public abstract class LineBasedProcessor {
         }
         throw Exceptions.createHandled()
                         .withNLSKey("LineBasedProcessor.error.invalidFileType")
-                        .set("type", name.substring(name.lastIndexOf(".")))
+                        .set("type", Files.getFileExtension(name))
                         .handle();
     }
 
