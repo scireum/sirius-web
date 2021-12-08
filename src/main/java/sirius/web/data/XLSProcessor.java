@@ -67,32 +67,33 @@ public class XLSProcessor extends LineBasedProcessor {
     }
 
     /**
-     * Starts processing the given sheet and sends each line to the given rowProcessor.
+     * Starts processing the given sheet and sends each line to the given sheetProcessor.
      *
-     * @param rowProcessor the processor which handles each row of the sheet
-     * @param errorHandler errorHandler which gets called on exceptions. returns <tt>true</tt> if the exception was
-     *                     handled and <tt>false</tt> if the exception should be rethrown.
-     * @param sheetNames   the sheet names to process
+     * @param sheetProcessor the processor which handles each row of a sheet
+     * @param errorHandler   errorHandler which gets called on exceptions. returns <tt>true</tt> if the exception was
+     *                       handled and <tt>false</tt> if the exception should be rethrown.
+     * @param sheetNames     the sheet names to process
      * @throws Exception                             in case an error occurred while processing.
      * @throws IOException                           if the stream providing the given workbook cannot be read.
      * @throws sirius.kernel.health.HandledException if workbook does not contain a sheet with the given name.
      */
-    public void runForSheets(RowProcessor rowProcessor, Predicate<Exception> errorHandler, String... sheetNames)
-            throws Exception {
+    public void runForSheets(SheetBasedRowProcessor sheetProcessor,
+                             Predicate<Exception> errorHandler,
+                             String... sheetNames) throws Exception {
         try (Workbook wb = openWorkbook()) {
             for (String sheet : sheetNames) {
-                runForSheet(wb, sheet, rowProcessor, errorHandler);
+                runForSheet(wb, sheet, sheetProcessor, errorHandler);
             }
         }
     }
 
     private void runForSheet(Workbook workbook,
                              String sheetName,
-                             RowProcessor rowProcessor,
+                             SheetBasedRowProcessor sheetProcessor,
                              Predicate<Exception> errorHandler) throws Exception {
         try {
             Sheet sheet = workbook.getSheet(sheetName);
-            importSheet(rowProcessor, errorHandler, sheet);
+            importSheet(sheetProcessor, errorHandler, sheet);
         } catch (MissingSheetException missingSheetException) {
             throw Exceptions.createHandled()
                             .withNLSKey("XLSProcessor.error.missingSheet")
@@ -122,7 +123,11 @@ public class XLSProcessor extends LineBasedProcessor {
                     Object value = extractCellValue(cell);
                     values.add(value);
                 }
-                rowProcessor.handleRow(current, Values.of(values));
+                if (rowProcessor instanceof SheetBasedRowProcessor sheetProcessor) {
+                    sheetProcessor.handleRow(sheet.getSheetName(), current, Values.of(values));
+                } else {
+                    rowProcessor.handleRow(current, Values.of(values));
+                }
                 tc.tryUpdateState(NLS.get("LineBasedProcessor.linesProcessed"), current);
             } catch (Exception e) {
                 if (!errorHandler.test(e)) {
