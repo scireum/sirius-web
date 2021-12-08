@@ -8,23 +8,40 @@
 
 package sirius.web.data;
 
-import sirius.kernel.commons.Values;
+import java.util.function.Predicate;
 
 /**
- * Invoked by an {@link XLSProcessor} to handle one row in an Excel sheet.
+ * Provides the necessary information for {@link XLSProcessor} to handle an XLS (MS Excel) sheet.
  */
-public interface SheetBasedRowProcessor extends RowProcessor {
+public class SheetBasedRowProcessor {
+
+    private final RowProcessor rowProcessor;
+    private final Predicate<Exception> errorHandler;
+    private final String sheetName;
 
     /**
-     * Called to handle a row in a sheet of an input file.
-     * <p>
-     * Note that an exception thrown here will completely abort the whole process. Therefore proper exception
-     * handling is required.
-     * </p>
+     * Creates a processor for an XLS (MS Excel) sheet with the given configuration.
      *
-     * @param sheetName  the name of the sheet which is currently being processed
-     * @param lineNumber the line number which is currently being processed.
-     * @param row        the data of the row / line to process
+     * @param rowProcessor the processor which handles each row of the file
+     * @param errorHandler errorHandler which gets called on exceptions. returns <tt>true</tt> if the exception was
+     *                     handled and <tt>false</tt> if the exception should be rethrown.
+     * @param sheetName    the name of the sheet to process
      */
-    void handleRow(String sheetName, int lineNumber, Values row);
+    public SheetBasedRowProcessor(RowProcessor rowProcessor, Predicate<Exception> errorHandler, String sheetName) {
+        this.rowProcessor = rowProcessor;
+        this.errorHandler = errorHandler;
+        this.sheetName = sheetName;
+    }
+
+    public RowProcessor getRowProcessor() {
+        return rowProcessor;
+    }
+
+    public Predicate<Exception> getErrorHandler() {
+        return errorHandler;
+    }
+
+    public String getSheetName() {
+        return sheetName;
+    }
 }
