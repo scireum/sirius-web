@@ -150,7 +150,7 @@ public class XLSProcessor extends LineBasedProcessor {
         if (cellType == CellType.STRING) {
             return extractStringValue(cell);
         }
-        if (cellType == CellType.BLANK) {
+        if (cellType == CellType.BLANK || cellType == CellType.ERROR) {
             return null;
         }
         throw new IllegalArgumentException(NLS.fmtr("XLSProcessor.error.invalidValueInCell")
