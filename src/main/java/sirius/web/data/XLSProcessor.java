@@ -28,7 +28,6 @@ import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -41,8 +40,6 @@ public class XLSProcessor extends LineBasedProcessor {
 
     protected final InputStream input;
     protected final boolean importAllSheets;
-    protected List<String> sheetNames = Collections.emptyList();
-    protected String currentSheet;
 
     /**
      * Creates a new processor for XLS (MS Excel) files.
@@ -59,32 +56,34 @@ public class XLSProcessor extends LineBasedProcessor {
     @Override
     public void run(RowProcessor rowProcessor, Predicate<Exception> errorHandler) throws Exception {
         try (Workbook wb = openWorkbook()) {
-            if (!sheetNames.isEmpty()) {
-                importNamedSheets(wb, rowProcessor, errorHandler);
+            if (importAllSheets) {
+                for (int i = 0; i < wb.getNumberOfSheets(); i++) {
+                    importSheet(rowProcessor, errorHandler, wb.getSheetAt(i));
+                }
             } else {
-                importSheets(wb, rowProcessor, errorHandler);
+                importSheet(rowProcessor, errorHandler, wb.getSheetAt(0));
             }
         }
     }
 
-    private void importNamedSheets(Workbook wb, RowProcessor rowProcessor, Predicate<Exception> errorHandler) {
-        for (String name : sheetNames) {
+    /**
+     * Starts processing the given sheet and sends each line to the given rowProcessor.
+     *
+     * @param sheetName    the name of the sheet to process
+     * @param rowProcessor the processor which handles each row of the sheet
+     * @param errorHandler errorHandler which gets called on exceptions. returns <tt>true</tt> if the exception was
+     *                     handled and <tt>false</tt> if the exception should be rethrown.
+     * @throws Exception in case an error occurred while processing.
+     */
+    public void runForSheet(String sheetName, RowProcessor rowProcessor, Predicate<Exception> errorHandler)
+            throws Exception {
+        try (Workbook wb = openWorkbook()) {
             try {
-                Sheet sheet = wb.getSheet(name);
+                Sheet sheet = wb.getSheet(sheetName);
                 importSheet(rowProcessor, errorHandler, sheet);
             } catch (MissingSheetException missingSheetException) {
                 throw Exceptions.createHandled().error(missingSheetException).handle();
             }
-        }
-    }
-
-    private void importSheets(Workbook wb, RowProcessor rowProcessor, Predicate<Exception> errorHandler) {
-        if (importAllSheets) {
-            for (int i = 0; i < wb.getNumberOfSheets(); i++) {
-                importSheet(rowProcessor, errorHandler, wb.getSheetAt(i));
-            }
-        } else {
-            importSheet(rowProcessor, errorHandler, wb.getSheetAt(0));
         }
     }
 
@@ -93,7 +92,6 @@ public class XLSProcessor extends LineBasedProcessor {
     }
 
     protected void importSheet(RowProcessor rowProcessor, Predicate<Exception> errorHandler, Sheet sheet) {
-        currentSheet = sheet.getSheetName();
         Iterator<Row> iter = sheet.rowIterator();
         int current = 0;
         TaskContext tc = TaskContext.get();
@@ -184,20 +182,5 @@ public class XLSProcessor extends LineBasedProcessor {
         } else {
             return val;
         }
-    }
-
-    /**
-     * Specifies a list of names for sheets that are to be processed.
-     *
-     * @param sheetNames a list of sheet names to process
-     * @return the processor itself for fluent method calls
-     */
-    public XLSProcessor withSheetNames(List<String> sheetNames) {
-        this.sheetNames = Collections.unmodifiableList(sheetNames);
-        return this;
-    }
-
-    public String getCurrentSheet() {
-        return currentSheet;
     }
 }
