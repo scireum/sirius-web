@@ -94,7 +94,10 @@ public class XLSProcessor extends LineBasedProcessor {
             Sheet sheet = workbook.getSheet(sheetName);
             importSheet(rowProcessor, errorHandler, sheet);
         } catch (MissingSheetException missingSheetException) {
-            throw Exceptions.createHandled().error(missingSheetException).handle();
+            throw Exceptions.createHandled()
+                            .withNLSKey("XLSProcessor.error.missingSheet")
+                            .set("sheet", sheetName)
+                            .handle();
         }
     }
 
