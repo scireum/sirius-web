@@ -9,6 +9,7 @@
 package sirius.web.data;
 
 import sirius.kernel.commons.Explain;
+import sirius.kernel.commons.Files;
 import sirius.kernel.health.Exceptions;
 
 import java.io.InputStream;
@@ -40,7 +41,10 @@ public abstract class LineBasedProcessor {
         if (name.toLowerCase().endsWith("csv")) {
             return new CSVProcessor(input);
         }
-        throw Exceptions.createHandled().withSystemErrorMessage("Cannot process files of type: %s", name).handle();
+        throw Exceptions.createHandled()
+                        .withNLSKey("LineBasedProcessor.error.invalidFileType")
+                        .set("type", Files.getFileExtension(name))
+                        .handle();
     }
 
     /**

@@ -8,6 +8,7 @@
 
 package sirius.web.data;
 
+import com.github.pjfanning.xlsx.exceptions.MissingSheetException;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -19,6 +20,7 @@ import sirius.kernel.async.TaskContext;
 import sirius.kernel.commons.Doubles;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Values;
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 
 import java.io.IOException;
@@ -39,7 +41,13 @@ public class XLSProcessor extends LineBasedProcessor {
     protected final InputStream input;
     protected final boolean importAllSheets;
 
-    XLSProcessor(InputStream input, boolean importAllSheets) {
+    /**
+     * Creates a new processor for XLS (MS Excel) files.
+     *
+     * @param input           the stream of rows to be processed
+     * @param importAllSheets true, if all sheets should be processed, false otherwise
+     */
+    public XLSProcessor(InputStream input, boolean importAllSheets) {
         super();
         this.input = input;
         this.importAllSheets = importAllSheets;
@@ -55,6 +63,34 @@ public class XLSProcessor extends LineBasedProcessor {
             } else {
                 importSheet(rowProcessor, errorHandler, wb.getSheetAt(0));
             }
+        }
+    }
+
+    /**
+     * Processes the XLS (MS Excel) file using the given {@link SheetBasedRowProcessor sheetProcessors}.
+     *
+     * @param sheetProcessors one or more sheet processors to use
+     * @throws Exception                             in case an error occurred while processing.
+     * @throws IOException                           if the stream providing the given workbook cannot be read.
+     * @throws sirius.kernel.health.HandledException if workbook does not contain a sheet with the given name.
+     */
+    public void runForSheets(SheetBasedRowProcessor... sheetProcessors) throws Exception {
+        try (Workbook wb = openWorkbook()) {
+            for (SheetBasedRowProcessor processor : sheetProcessors) {
+                runForSheet(wb, processor);
+            }
+        }
+    }
+
+    private void runForSheet(Workbook workbook, SheetBasedRowProcessor processor) throws Exception {
+        try {
+            Sheet sheet = workbook.getSheet(processor.sheetName());
+            importSheet(processor.rowProcessor(), processor.errorHandler(), sheet);
+        } catch (MissingSheetException missingSheetException) {
+            throw Exceptions.createHandled()
+                            .withNLSKey("XLSProcessor.error.missingSheet")
+                            .set("sheet", processor.sheetName())
+                            .handle();
         }
     }
 
@@ -119,14 +155,15 @@ public class XLSProcessor extends LineBasedProcessor {
         if (cellType == CellType.STRING) {
             return extractStringValue(cell);
         }
-        if (cellType == CellType.BLANK) {
+        if (cellType == CellType.BLANK || cellType == CellType.ERROR) {
             return null;
         }
-        throw new IllegalArgumentException(Strings.apply(
-                "Cannot read a value of type %s from cell at row %d, column  %d",
-                cellType,
-                cell.getRowIndex(),
-                cell.getColumnIndex()));
+        throw new IllegalArgumentException(NLS.fmtr("XLSProcessor.error.invalidValueInCell")
+                                              .set("cellType", cellType)
+                                              .set("sheet", cell.getSheet().getSheetName())
+                                              .set("row", cell.getRowIndex())
+                                              .set("column", cell.getColumnIndex())
+                                              .format());
     }
 
     private Object extractStringValue(Cell cell) {
