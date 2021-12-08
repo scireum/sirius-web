@@ -68,32 +68,28 @@ public class XLSProcessor extends LineBasedProcessor {
 
     /**
      * Starts processing the given sheet and sends each line to the given rowProcessor.
-     * <p>
-     * NOTE:
-     * <br>
-     * This method should be run inside a try-catch block, especially when processing multiple sheets:
-     * <pre>
-     *     try (Workbook wb = openWorkbook()) {
-     *          for (String sheet : sheets) {
-     *              runForSheet(wb, sheet, rowProcessor, errorHandler);
-     *          }
-     *     }
-     * </pre>
-     * This ensures that the input stream is kept open until all desired sheets are processed and that it is
-     * properly closed afterwards.
      *
-     * @param workbook     the {@link #openWorkbook() workbook} containing the given sheet
-     * @param sheetName    the name of the sheet to process
      * @param rowProcessor the processor which handles each row of the sheet
      * @param errorHandler errorHandler which gets called on exceptions. returns <tt>true</tt> if the exception was
      *                     handled and <tt>false</tt> if the exception should be rethrown.
-     * @throws Exception in case an error occurred while processing.
-     * @throws IOException if the stream providing the given workbook cannot be read.
+     * @param sheetNames   the sheet names to process
+     * @throws Exception                             in case an error occurred while processing.
+     * @throws IOException                           if the stream providing the given workbook cannot be read.
+     * @throws sirius.kernel.health.HandledException if workbook does not contain a sheet with the given name.
      */
-    public void runForSheet(Workbook workbook,
-                            String sheetName,
-                            RowProcessor rowProcessor,
-                            Predicate<Exception> errorHandler) throws Exception {
+    public void runForSheets(RowProcessor rowProcessor, Predicate<Exception> errorHandler, String... sheetNames)
+            throws Exception {
+        try (Workbook wb = openWorkbook()) {
+            for (String sheet : sheetNames) {
+                runForSheet(wb, sheet, rowProcessor, errorHandler);
+            }
+        }
+    }
+
+    private void runForSheet(Workbook workbook,
+                             String sheetName,
+                             RowProcessor rowProcessor,
+                             Predicate<Exception> errorHandler) throws Exception {
         try {
             Sheet sheet = workbook.getSheet(sheetName);
             importSheet(rowProcessor, errorHandler, sheet);
@@ -102,13 +98,7 @@ public class XLSProcessor extends LineBasedProcessor {
         }
     }
 
-    /**
-     * Instantiates a high level representation of an Excel workbook from the {@link #input input stream}.
-     *
-     * @return a workbook based on the input stream
-     * @throws IOException if the input stream cannot be read.
-     */
-    public Workbook openWorkbook() throws IOException {
+    protected Workbook openWorkbook() throws IOException {
         return new HSSFWorkbook(input);
     }
 

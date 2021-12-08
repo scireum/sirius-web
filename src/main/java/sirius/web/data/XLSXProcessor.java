@@ -30,7 +30,7 @@ public class XLSXProcessor extends XLSProcessor {
     }
 
     @Override
-    public Workbook openWorkbook() throws IOException {
+    protected Workbook openWorkbook() throws IOException {
         return StreamingReader.builder().bufferSize(8192).open(input);
     }
 }
