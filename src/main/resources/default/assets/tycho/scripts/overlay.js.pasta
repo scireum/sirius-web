@@ -35,9 +35,9 @@
      *              - content: html content that will be rendered inside the overlay
      */
     overlay.createAndShowOverlay = function (args) {
-        let html = Mustache.render(template, args);
+        let _html = Mustache.render(template, args);
         let _overlayContainer = document.createElement('div');
-        _overlayContainer.innerHTML = html;
+        _overlayContainer.innerHTML = _html;
 
         let _overlay = _overlayContainer.firstChild;
 
@@ -45,8 +45,8 @@
             overlay.destroyOverlay();
         });
 
-        _overlay.addEventListener('click', function (e) {
-            if (e.target === _overlay) {
+        _overlay.addEventListener('click', function (event) {
+            if (event.target === _overlay) {
                 overlay.destroyOverlay();
             }
         });
@@ -62,29 +62,29 @@
 
         document.body.appendChild(_overlay);
 
-        // we replace the code in the added node with a clone so it will get automatically executed
+        // We replace the code in the added node with a clone, so it will get automatically executed.
 
-        function nodeScriptReplace(node) {
-            if (node.tagName === 'SCRIPT') {
-                node.parentNode.replaceChild(nodeScriptClone(node), node);
+        function nodeScriptReplace(_node) {
+            if (_node.tagName === 'SCRIPT') {
+                _node.parentNode.replaceChild(nodeScriptClone(_node), _node);
             } else {
-                for (let i = 0; i < node.childNodes.length; i++) {
-                    nodeScriptReplace(node.childNodes[i]);
+                for (let i = 0; i < _node.childNodes.length; i++) {
+                    nodeScriptReplace(_node.childNodes[i]);
                 }
             }
 
-            return node;
+            return _node;
         }
 
-        function nodeScriptClone(node) {
-            const script = document.createElement("script");
-            script.text = node.innerHTML;
+        function nodeScriptClone(_node) {
+            const _script = document.createElement("script");
+            _script.text = _node.innerHTML;
 
-            for (let i = 0; i < node.attributes.length; i++) {
-                let attribute = node.attributes[i];
-                script.setAttribute(attribute.name, attribute.value);
+            for (let i = 0; i < _node.attributes.length; i++) {
+                let attribute = _node.attributes[i];
+                _script.setAttribute(attribute.name, attribute.value);
             }
-            return script;
+            return _script;
         }
 
         nodeScriptReplace(_overlay);
