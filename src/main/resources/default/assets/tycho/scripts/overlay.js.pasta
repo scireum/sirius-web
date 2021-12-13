@@ -42,12 +42,12 @@
         let _overlay = _overlayContainer.firstChild;
 
         _overlay.querySelector('.sci-overlay-button-close-js').addEventListener('click', function () {
-            destroyOverlay();
+            overlay.destroyOverlay();
         });
 
         _overlay.addEventListener('click', function (e) {
             if (e.target === _overlay) {
-                destroyOverlay();
+                overlay.destroyOverlay();
             }
         });
 
@@ -90,7 +90,7 @@
         nodeScriptReplace(_overlay);
     }
 
-    const destroyOverlay = function () {
+    overlay.destroyOverlay = function () {
         let _overlay = overlayStack.pop();
 
         if (_overlay) {
@@ -105,7 +105,7 @@
 
     const destroyOverlayEventHandler = function (event) {
         if (event.key === 'Escape') {
-            destroyOverlay();
+            overlay.destroyOverlay();
         }
     }
 }(window.sirius.overlay = window.sirius.overlay || {}));
