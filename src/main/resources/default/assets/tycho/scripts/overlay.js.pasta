@@ -23,7 +23,7 @@
         '   </div>' +
         '</div>';
 
-    let overlayStack = [];
+    const overlayStack = [];
 
     /**@
      * Creates and shows a new overlay.
@@ -35,11 +35,11 @@
      *              - content: html content that will be rendered inside the overlay
      */
     overlay.createAndShowOverlay = function (args) {
-        let _html = Mustache.render(template, args);
-        let _overlayContainer = document.createElement('div');
+        const _html = Mustache.render(template, args);
+        const _overlayContainer = document.createElement('div');
         _overlayContainer.innerHTML = _html;
 
-        let _overlay = _overlayContainer.firstChild;
+        const _overlay = _overlayContainer.firstChild;
 
         _overlay.querySelector('.sci-overlay-button-close-js').addEventListener('click', function () {
             overlay.destroyOverlay();
@@ -91,7 +91,7 @@
     }
 
     overlay.destroyOverlay = function () {
-        let _overlay = overlayStack.pop();
+        const _overlay = overlayStack.pop();
 
         if (_overlay) {
             _overlay.parentElement.removeChild(_overlay);
