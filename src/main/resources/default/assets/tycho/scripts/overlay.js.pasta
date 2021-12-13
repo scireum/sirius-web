@@ -1,0 +1,111 @@
+(function (overlay) {
+    const template = '<div class="sci-overlay-background">' +
+        '    <div class="sci-overlay">' +
+        '        <div class="sci-overlay-infobar">' +
+        '            <div class="sci-overlay-infobar-left">' +
+        '                <span class="sci-overlay-infobar-name">' +
+        '                    {{name}}' +
+        '                </span>' +
+        '            </div>' +
+        '            <div class="sci-overlay-infobar-right">' +
+        '                <div>' +
+        '                    <a role="button" class="sci-overlay-button sci-overlay-button-close sci-overlay-button-close-js"></a>' +
+        '                </div>' +
+        '            </div>' +
+        '        </div>' +
+        '        <div class="sci-overlay-content-outer-container">' +
+        '            <div class="sci-overlay-content-inner-container">' +
+        '               <div class="sci-overlay-content">' +
+        '                   {{{content}}}' +
+        '               </div>' +
+        '           </div>' +
+        '       </div>' +
+        '   </div>' +
+        '</div>';
+
+    let overlayStack = [];
+
+    /**@
+     * Creates and shows a new overlay.
+     * <p>
+     * If one or more overlays already exist, the new overlay will be shown on top of already existing overlays.
+     *
+     * @param args object containing at least all required fields:
+     *              - name:    name to be displayed in the infobar
+     *              - content: html content that will be rendered inside the overlay
+     */
+    overlay.createAndShowOverlay = function (args) {
+        let html = Mustache.render(template, args);
+        let _overlayContainer = document.createElement('div');
+        _overlayContainer.innerHTML = html;
+
+        let _overlay = _overlayContainer.firstChild;
+
+        _overlay.querySelector('.sci-overlay-button-close-js').addEventListener('click', function () {
+            destroyOverlay();
+        });
+
+        _overlay.addEventListener('click', function (e) {
+            if (e.target === _overlay) {
+                destroyOverlay();
+            }
+        });
+
+        overlayStack.push(_overlay);
+
+        if (overlayStack.length === 1) {
+            _overlay.classList.add('first');
+            document.documentElement.classList.add('sci-overlay-static-body');
+        }
+
+        window.addEventListener('keyup', destroyOverlayEventHandler);
+
+        document.body.appendChild(_overlay);
+
+        // we replace the code in the added node with a clone so it will get automatically executed
+
+        function nodeScriptReplace(node) {
+            if (node.tagName === 'SCRIPT') {
+                node.parentNode.replaceChild(nodeScriptClone(node), node);
+            } else {
+                for (let i = 0; i < node.childNodes.length; i++) {
+                    nodeScriptReplace(node.childNodes[i]);
+                }
+            }
+
+            return node;
+        }
+
+        function nodeScriptClone(node) {
+            const script = document.createElement("script");
+            script.text = node.innerHTML;
+
+            for (let i = 0; i < node.attributes.length; i++) {
+                let attribute = node.attributes[i];
+                script.setAttribute(attribute.name, attribute.value);
+            }
+            return script;
+        }
+
+        nodeScriptReplace(_overlay);
+    }
+
+    const destroyOverlay = function () {
+        let _overlay = overlayStack.pop();
+
+        if (_overlay) {
+            _overlay.parentElement.removeChild(_overlay);
+        }
+
+        if (overlayStack.length === 0) {
+            window.removeEventListener('keyup', destroyOverlayEventHandler);
+            document.documentElement.classList.remove('sci-overlay-static-body');
+        }
+    }
+
+    const destroyOverlayEventHandler = function (event) {
+        if (event.key === 'Escape') {
+            destroyOverlay();
+        }
+    }
+}(window.sirius.overlay = window.sirius.overlay || {}));
