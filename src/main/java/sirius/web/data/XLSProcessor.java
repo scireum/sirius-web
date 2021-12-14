@@ -82,15 +82,14 @@ public class XLSProcessor extends LineBasedProcessor {
         }
     }
 
-    private void runForSheet(Workbook workbook, SheetBasedRowProcessor processor) throws Exception {
+    private void runForSheet(Workbook workbook, SheetBasedRowProcessor processor) {
         try {
             Sheet sheet = workbook.getSheet(processor.sheetName());
             importSheet(processor.rowProcessor(), processor.errorHandler(), sheet);
         } catch (MissingSheetException missingSheetException) {
-            throw Exceptions.createHandled()
-                            .withNLSKey("XLSProcessor.error.missingSheet")
-                            .set("sheet", processor.sheetName())
-                            .handle();
+            TaskContext.get()
+                       .log(NLS.fmtr("XLSProcessor.info.missingSheet").set("sheet", processor.sheetName()).format());
+            Exceptions.ignore(missingSheetException);
         }
     }
 
