@@ -75,22 +75,19 @@ public class XLSProcessor extends LineBasedProcessor {
      * @throws sirius.kernel.health.HandledException if workbook does not contain a sheet with the given name.
      */
     public void runForSheets(SheetBasedRowProcessor... sheetProcessors) throws Exception {
-        try (Workbook wb = openWorkbook()) {
+        try (Workbook workbook = openWorkbook()) {
             for (SheetBasedRowProcessor processor : sheetProcessors) {
-                runForSheet(wb, processor);
+                try {
+                    Sheet sheet = workbook.getSheet(processor.sheetName());
+                    importSheet(processor.rowProcessor(), processor.errorHandler(), sheet);
+                } catch (MissingSheetException missingSheetException) {
+                    TaskContext.get()
+                               .log(NLS.fmtr("XLSProcessor.info.missingSheet")
+                                       .set("sheet", processor.sheetName())
+                                       .format());
+                    Exceptions.ignore(missingSheetException);
+                }
             }
-        }
-    }
-
-    private void runForSheet(Workbook workbook, SheetBasedRowProcessor processor) throws Exception {
-        try {
-            Sheet sheet = workbook.getSheet(processor.sheetName());
-            importSheet(processor.rowProcessor(), processor.errorHandler(), sheet);
-        } catch (MissingSheetException missingSheetException) {
-            throw Exceptions.createHandled()
-                            .withNLSKey("XLSProcessor.error.missingSheet")
-                            .set("sheet", processor.sheetName())
-                            .handle();
         }
     }
 
