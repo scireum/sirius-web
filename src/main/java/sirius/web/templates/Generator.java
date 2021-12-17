@@ -9,6 +9,7 @@
 package sirius.web.templates;
 
 import com.lowagie.text.ExceptionConverter;
+import jakarta.activation.DataSource;
 import org.asynchttpclient.exception.ChannelClosedException;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Context;
@@ -19,7 +20,6 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
-import sirius.kernel.health.HandledException;
 import sirius.web.http.MimeHelper;
 import sirius.web.mails.Attachment;
 import sirius.web.mails.BufferedAttachment;
@@ -28,7 +28,6 @@ import sirius.web.resources.Resolver;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 
-import javax.activation.DataSource;
 import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
