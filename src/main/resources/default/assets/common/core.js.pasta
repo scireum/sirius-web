@@ -42,8 +42,6 @@ sirius.ready = function (callback) {
  * @param type the element type to search for (Note that the type is UPPERCASE like 'FORM').
  * @returns {null|*} the first matching element (nearest parent) or null if none is found
  */
-//
-// Note that the type is UPPERCASE like 'FORM'.
 sirius.findParentOfType = function (_node, type) {
     let _parent = _node.parentNode;
     while (_parent != null) {
@@ -191,10 +189,16 @@ sirius.addElementVisibleListener = function (selector, listener, distanceFactor)
         }
     };
 
-    // Check after the page is loaded and when resizing or scrolling the page
+    // Check after the page is loaded and when resizing the page
     sirius.ready(handleVisibleElements);
     window.addEventListener('resize', sirius.throttle(handleVisibleElements, 20));
-    document.addEventListener('scroll', sirius.throttle(handleVisibleElements, 20));
+
+    // Check after scrolling any of the (scrollable) parents
+    sirius.getAllParents(selector).forEach(function (parent) {
+        if (sirius.isScrollable(parent)) {
+            parent.addEventListener('scroll', sirius.throttle(handleVisibleElements, 20));
+        }
+    });
 
     // Listen for DOM changes that might influence the position of other elements
     const observer = new MutationObserver(sirius.throttle(handleVisibleElements, 20));
@@ -205,6 +209,47 @@ sirius.addElementVisibleListener = function (selector, listener, distanceFactor)
         attributes: true,
         characterData: true
     });
+}
+
+/**@
+ * Returns all parents of given selector.
+ *
+ * @param selector the selector of the elements to return the parents for
+ * @returns {Set<any>} an set with all parent elements
+ */
+sirius.getAllParents = function (selector) {
+    const elements = document.querySelectorAll(selector);
+    let parents = new Set();
+
+    for (let i = 0; i < elements.length; i++) {
+        let _parent = elements[i].parentNode;
+
+        while (_parent != null) {
+            parents.add(_parent);
+            _parent = _parent.parentNode;
+        }
+    }
+
+    return parents
+}
+
+/**@
+ * Checks if the given element is scrollable.
+ * <p>
+ * Note that this only checks the capability, not if the element actually has scrollbars.
+ *
+ * @param _element the element to check
+ * @returns {boolean} if the element is scrollable
+ */
+sirius.isScrollable = function (_element) {
+    if (_element === document) {
+        return true;
+    }
+
+    const overflowX = window.getComputedStyle(_element).overflowX;
+    const overflowY = window.getComputedStyle(_element).overflowY;
+
+    return overflowX === 'auto' || overflowX === 'scroll' || overflowY === 'auto' || overflowY === 'scroll';
 }
 
 /**@
