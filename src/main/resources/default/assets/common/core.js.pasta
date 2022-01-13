@@ -42,8 +42,6 @@ sirius.ready = function (callback) {
  * @param type the element type to search for (Note that the type is UPPERCASE like 'FORM').
  * @returns {null|*} the first matching element (nearest parent) or null if none is found
  */
-//
-// Note that the type is UPPERCASE like 'FORM'.
 sirius.findParentOfType = function (_node, type) {
     let _parent = _node.parentNode;
     while (_parent != null) {
