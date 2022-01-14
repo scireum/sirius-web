@@ -236,3 +236,38 @@ sirius.requestSubmitForm = function (form) {
         }
     }
 }
+
+/**@
+ * Tries to embed SVG img-tags into the DOM.
+ *
+ * @param _container the container in which to look for img-tags
+ * @param selector   the selector the img-tags need to match
+ */
+sirius.embedSvgImages = function (_container, selector) {
+    const elements = _container.querySelectorAll(selector + ':not(.svg-embed-handled)');
+
+    for (let i = 0; i < elements.length; i++) {
+        const _img = elements[i];
+        const src = _img.getAttribute('src') || '';
+
+        _img.classList.add('svg-embed-handled');
+
+        if (src.includes('.svg?') || src.includes('.svg#') || src.endsWith('.svg')) {
+            fetch(src, {
+                method: "GET"
+            }).then(function (response) {
+                return response.text();
+            }).then(function (data) {
+                const parser = new DOMParser();
+                const svg = parser.parseFromString(data, "image/svg+xml").documentElement;
+
+                if (svg.nodeName === 'svg') {
+                    // Classes need to be set via setAttribute for SVGElement
+                    svg.setAttribute('class', _img.className);
+
+                    _img.parentNode.replaceChild(svg, _img);
+                }
+            });
+        }
+    }
+}
