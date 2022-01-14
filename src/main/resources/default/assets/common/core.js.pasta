@@ -42,8 +42,6 @@ sirius.ready = function (callback) {
  * @param type the element type to search for (Note that the type is UPPERCASE like 'FORM').
  * @returns {null|*} the first matching element (nearest parent) or null if none is found
  */
-//
-// Note that the type is UPPERCASE like 'FORM'.
 sirius.findParentOfType = function (_node, type) {
     let _parent = _node.parentNode;
     while (_parent != null) {
@@ -194,7 +192,9 @@ sirius.addElementVisibleListener = function (selector, listener, distanceFactor)
     // Check after the page is loaded and when resizing or scrolling the page
     sirius.ready(handleVisibleElements);
     window.addEventListener('resize', sirius.throttle(handleVisibleElements, 20));
-    document.addEventListener('scroll', sirius.throttle(handleVisibleElements, 20));
+    document.addEventListener('scroll', sirius.throttle(handleVisibleElements, 20), {
+        capture: true
+    });
 
     // Listen for DOM changes that might influence the position of other elements
     const observer = new MutationObserver(sirius.throttle(handleVisibleElements, 20));
