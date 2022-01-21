@@ -251,4 +251,16 @@ public class LocalRenderContext implements Environment {
     public Template getTemplate() {
         return this.template;
     }
+
+    /**
+     * Returns the root context for which a rendering process has been started.
+     * @return
+     */
+    public LocalRenderContext getRootContext() {
+        if (this.parent == null) {
+            return this;
+        } else {
+            return parent.getRootContext();
+        }
+    }
 }
