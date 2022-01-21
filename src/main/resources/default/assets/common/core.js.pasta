@@ -36,6 +36,42 @@ sirius.ready = function (callback) {
 }
 
 /**@
+ * Checks if the given element is a DOM element.
+ *
+ * @param obj the element to check
+ * @returns {boolean} true if the given element is a real DOM element, false otherwise
+ */
+sirius.isElement = function (obj) {
+    try {
+        //Using W3 DOM2 (works for FF, Opera and Chrome)
+        return obj instanceof HTMLElement;
+    } catch (e) {
+        //Browsers not supporting W3 DOM2 don't have HTMLElement and
+        //an exception is thrown and we end up here. Testing some
+        //properties that all elements have (works on IE7)
+        return (typeof obj === "object") &&
+            (obj.nodeType === 1) && (typeof obj.style === "object") &&
+            (typeof obj.ownerDocument === "object");
+    }
+}
+
+/**@
+ * Searches for the given element using document.querySelector.
+ *
+ * However, if query is already a DOM element, it is simply returned.
+ *
+ * @param query either a selector or a DOM element
+ * @returns {*} the matching DOM element (or the given one, if query was a DOM element in the first place).
+ */
+sirius.querySelector = function (query) {
+    if (sirius.isElement(query)) {
+        return query;
+    } else {
+        document.querySelector(query);
+    }
+}
+
+/**@
  * Tries to find the parent node of the given type.
  *
  * @param _node the node to search in
