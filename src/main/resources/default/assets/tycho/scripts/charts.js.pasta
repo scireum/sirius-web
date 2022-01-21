@@ -71,7 +71,7 @@ function inlineChart(selector, data, color, type) {
 }
 
 function _inlineBarChart(selector, data, color, roundedBars) {
-    let ctx = document.querySelector(selector);
+    let ctx = sirius.querySelector(selector);
     let myChart = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -106,7 +106,7 @@ function _inlineBarChart(selector, data, color, roundedBars) {
 }
 
 function _inlineLineChart(selector, data, color, fill) {
-    let ctx = document.querySelector(selector);
+    let ctx = sirius.querySelector(selector);
     let myChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -141,3 +141,169 @@ function _inlineLineChart(selector, data, color, fill) {
         }
     });
 }
+
+/**@
+ * Renders a line chart.
+ * @param selector the selector to determine the target canvas. Also, the canvas can be passed in as DOM element
+ * @param labels an array of labels to use for the chart
+ * @param datasets contains an array of datasets, where a dataset is an object containing a "label" and a "data" array
+ * which contains the actual numbers.
+ */
+function lineChart(selector, labels, datasets) {
+    let ctx = sirius.querySelector(selector);
+
+    let lineData = [];
+    let hasRightYAxis = false;
+    for (let i = 0; i < datasets.length; i++) {
+        const color = pickFromColorWheel();
+        const line = {
+            label: datasets[i].label,
+            data: datasets[i].data,
+            borderColor: color,
+            pointRadius: 0,
+            fill: false,
+            backgroundColor: color
+        };
+
+        if (datasets[i].axis === 'right') {
+            hasRightYAxis = true;
+            line.yAxisID = 'right';
+        }
+
+        lineData.push(line);
+
+    }
+
+    const customConfig = {
+        responsive: true,
+        maintainAspectRatio: false,
+        bezierCurve: true,
+        plugins: {
+            legend: {display: datasets.length > 1}
+        },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true,
+                }
+            }],
+            xAxes: [{
+                ticks: {
+                    autoSkip: false
+                }
+            }]
+        }
+    };
+
+    if (hasRightYAxis) {
+        customConfig.scales = {
+            yAxes: [
+                {
+                    type: 'linear',
+                    position: 'left',
+                    ticks: {
+                        beginAtZero: true,
+                    }
+                }, {
+                    id: 'right',
+                    type: 'linear',
+                    position: 'right',
+                    ticks: {
+                        beginAtZero: true,
+                    }
+                }
+            ]
+        };
+    }
+
+    let myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: lineData
+        },
+        options: customConfig
+    });
+}
+
+/**@
+ * Renders a bar chart.
+ * @param selector the selector to determine the target canvas. Also, the canvas can be passed in as DOM element
+ * @param labels an array of labels to use for the chart
+ * @param datasets contains an array of datasets, where a dataset is an object containing a "label" and a "data" array
+ * which contains the actual numbers.
+ */
+function barChart(selector, labels, datasets) {
+    let ctx = sirius.querySelector(selector);
+
+    let barData = [];
+    let hasRightYAxis = false;
+    for (let i = 0; i < datasets.length; i++) {
+        const color = pickFromColorWheel();
+        const bar = {
+            label: datasets[i].label,
+            data: datasets[i].data,
+            backgroundColor: color
+        };
+
+        if (datasets[i].axis === 'right') {
+            hasRightYAxis = true;
+            bar.yAxisID = 'right';
+        }
+
+        barData.push(bar);
+
+    }
+
+    const customConfig = {
+        responsive: true,
+        maintainAspectRatio: false,
+        bezierCurve: true,
+        plugins: {
+            legend: {display: datasets.length > 1}
+        },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true,
+                }
+            }],
+            xAxes: [{
+                ticks: {
+                    autoSkip: false
+                }
+            }]
+        }
+    };
+
+    if (hasRightYAxis) {
+        customConfig.scales = {
+            yAxes: [
+                {
+                    type: 'linear',
+                    position: 'left',
+                    ticks: {
+                        beginAtZero: true,
+                    }
+                }, {
+                    id: 'right',
+                    type: 'linear',
+                    position: 'right',
+                    ticks: {
+                        beginAtZero: true,
+                    }
+                }
+            ]
+        };
+    }
+
+    let myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: barData
+        },
+        options: customConfig
+    });
+}
+
