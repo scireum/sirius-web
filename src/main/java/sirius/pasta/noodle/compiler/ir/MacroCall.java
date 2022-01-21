@@ -74,7 +74,7 @@ public class MacroCall extends Call {
             }
         } catch (Exception e) {
             compilationContext.error(position,
-                                     "An error occured while evaluating a constant macro (%s): %s (%s)",
+                                     "An error occurred while evaluating a constant macro (%s): %s (%s)",
                                      macro,
                                      e.getMessage(),
                                      e.getClass().getName());

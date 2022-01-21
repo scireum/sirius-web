@@ -48,7 +48,7 @@ function makeInlineChartType(type) {
 /**@
  * Renders an inline chart.
  *
- * @param selector selects the target canvas
+ * @param selector selects the target canvas. Note that also a DOM element is accepted.
  * @param data provides the data to render
  * @param color specifies the color to use. Use null to pick a random color.
  * @param type specifies the chart type to use. Provide 'auto' to select a random type.
