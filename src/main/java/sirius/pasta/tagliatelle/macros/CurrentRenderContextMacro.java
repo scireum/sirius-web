@@ -19,6 +19,13 @@ import sirius.pasta.tagliatelle.rendering.LocalRenderContext;
 import javax.annotation.Nonnull;
 import java.util.List;
 
+/**
+ * Makes the current {@link LocalRenderContext} available.
+ * <p>
+ * Note that this context should be handled with care, as it can impact the rendering process pretty deeply. One
+ * possible use-case is to call {@link LocalRenderContext#getRootContext()} in order to obtain the name / path of the
+ * template being currently rendered.
+ */
 @Register
 public class CurrentRenderContextMacro extends BasicMacro {
 
@@ -29,7 +36,9 @@ public class CurrentRenderContextMacro extends BasicMacro {
 
     @Override
     protected void verifyArguments(CompilationContext compilationContext, Position position, List<Class<?>> args) {
-
+        if (!args.isEmpty()) {
+            throw new IllegalArgumentException("This macro expects no arguments");
+        }
     }
 
     @Override
@@ -44,7 +53,7 @@ public class CurrentRenderContextMacro extends BasicMacro {
 
     @Override
     public String getDescription() {
-        return null;
+        return "Provides the currently active LocalRenderContext.";
     }
 
     @Nonnull
