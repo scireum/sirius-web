@@ -2,25 +2,28 @@
 <i:arg type="String" name="baseUrl"/>
 
 <i:pragma name="description" value="Renders a filter box within a Tycho template"/>
-<div class="mb-4">
-    <i:for type="sirius.web.controller.Facet" var="facet" items="page.getFacets()">
-        <i:if test="facet.hasItems()">
-            <t:navbox label="@facet.getTitle()">
-                <i:for type="sirius.web.controller.FacetItem" var="item" items="facet.getItems()">
-                    <t:navboxLink url="@facet.linkToPageWithToggledItem(baseUrl, item)"
-                                  active="item.isActive()"
-                                  icon="@item.isActive() ? 'far fa-check-square' : 'far fa-square'">
-                        <div class="d-flex flex-row justify-content-between align-items-center">
+<i:local name="facets" value="page.getFacets()"/>
+<i:if test="!facets.isEmpty()">
+    <div class="mb-4">
+        <i:for type="sirius.web.controller.Facet" var="facet" items="facets">
+            <i:if test="facet.hasItems()">
+                <t:navbox label="@facet.getTitle()">
+                    <i:for type="sirius.web.controller.FacetItem" var="item" items="facet.getItems()">
+                        <t:navboxLink url="@facet.linkToPageWithToggledItem(baseUrl, item)"
+                                      active="item.isActive()"
+                                      icon="@item.isActive() ? 'far fa-check-square' : 'far fa-square'">
+                            <div class="d-flex flex-row justify-content-between align-items-center">
                             <span>
                                 @item.getTitle()
                             </span>
-                            <i:if test="item.getCount() >= 0">
-                                <span class="badge badge-light">@item.getCount()</span>
-                            </i:if>
-                        </div>
-                    </t:navboxLink>
-                </i:for>
-            </t:navbox>
-        </i:if>
-    </i:for>
-</div>
+                                <i:if test="item.getCount() >= 0">
+                                    <span class="badge badge-light">@item.getCount()</span>
+                                </i:if>
+                            </div>
+                        </t:navboxLink>
+                    </i:for>
+                </t:navbox>
+            </i:if>
+        </i:for>
+    </div>
+</i:if>

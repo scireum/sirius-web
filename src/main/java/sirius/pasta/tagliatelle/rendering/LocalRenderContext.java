@@ -100,7 +100,7 @@ public class LocalRenderContext implements Environment {
      * @see LocalRenderContext#outputRaw(String)
      */
     @SuppressWarnings("squid:RedundantThrowsDeclarationCheck")
-    @Explain("Sublclasses might throw an IOException here.")
+    @Explain("Subclasses might throw an IOException here.")
     public void outputRaw(String content) throws IOException {
         globalContext.outputRaw(content);
     }
@@ -115,7 +115,7 @@ public class LocalRenderContext implements Environment {
      * @see LocalRenderContext#outputEscaped(String) (String)
      */
     @SuppressWarnings("squid:RedundantThrowsDeclarationCheck")
-    @Explain("Sublclasses might throw an IOException here.")
+    @Explain("Subclasses might throw an IOException here.")
     public void outputEscaped(String content) throws IOException {
         globalContext.outputEscaped(content);
     }
@@ -233,7 +233,7 @@ public class LocalRenderContext implements Environment {
     /**
      * Checks if the given block exists.
      *
-     * @param name name of the block to check for existance
+     * @param name name of the block to check for existence
      * @return true if block found otherwise false
      */
     public boolean blockExists(String name) {
@@ -250,5 +250,17 @@ public class LocalRenderContext implements Environment {
      */
     public Template getTemplate() {
         return this.template;
+    }
+
+    /**
+     * Returns the root context for which a rendering process has been started.
+     * @return
+     */
+    public LocalRenderContext getRootContext() {
+        if (this.parent == null) {
+            return this;
+        } else {
+            return parent.getRootContext();
+        }
     }
 }

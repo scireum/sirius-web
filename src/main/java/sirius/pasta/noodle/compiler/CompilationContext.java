@@ -57,14 +57,14 @@ public class CompilationContext {
     private boolean enableSandbox;
 
     /**
-     * Used to conrol which errors are really reported.
+     * Used to control which errors are really reported.
      * <p>
      * The {@link Parser} controls this in order to skip over subsequent errors.
      */
     private boolean skipErrors;
 
     /**
-     * Contains a list of errors and warnings which occured during compilation.
+     * Contains a list of errors and warnings which occurred during compilation.
      */
     private final List<ParseError> errors = new ArrayList<>();
 
@@ -84,7 +84,7 @@ public class CompilationContext {
     /**
      * Creates a new compilation context for the given source code.
      *
-     * @param sourceCodeInfo the source code to copmpile
+     * @param sourceCodeInfo the source code to compile
      */
     public CompilationContext(SourceCodeInfo sourceCodeInfo) {
         this.sourceCodeInfo = sourceCodeInfo;
