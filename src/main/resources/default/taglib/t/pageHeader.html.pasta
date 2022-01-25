@@ -24,7 +24,7 @@
                 <i:else>
                     <i:local name="markupTitle" value="@renderToString('title')"/>
                     <i:if test="isFilled(markupTitle)">
-                        <h1 class="legend mr-auto overflow-hidden text-nowrap"><i:raw>@markupTitle</i:raw></h1>
+                        <h1 class="legend mr-auto overflow-hidden text-nowrap text-truncate"><i:raw>@markupTitle</i:raw></h1>
                     </i:if>
                 </i:else>
             </i:if>
