@@ -20,7 +20,7 @@
                 <i class="fa fa-bars"></i>
             </a>
             <i:if test="isFilled(title)">
-                <h1 class="legend mr-auto overflow-hidden text-nowrap">@title</h1>
+                <h1 class="legend mr-auto overflow-hidden text-nowrap text-truncate">@title</h1>
                 <i:else>
                     <i:local name="markupTitle" value="@renderToString('title')"/>
                     <i:if test="isFilled(markupTitle)">
