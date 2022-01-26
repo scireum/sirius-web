@@ -6,10 +6,12 @@
 <i:arg name="class" type="String" default="" description="Lists additional CSS classes to apply to the dropzone."/>
 <i:arg name="btnClass" type="String" default=""
        description="Lists additional CSS classes to apply to the upload button."/>
-<i:arg type="String" name="acceptedFiles"
-       default="This is a comma separated list of allowed mime types or file extensions. Eg.: image/*,application/pdf,.psd"/>
+<i:arg type="String"
+       name="acceptedFiles"
+       default="image/*,application/pdf,svg"
+       description="This is a comma separated list of allowed mime types or file extensions. Eg.: image/*,application/pdf,.psd"/>
 
-<i:pragma name="description" value="Renders an image upload within a Wondergem template"/>
+<i:pragma name="description" value="Renders an image upload within a Tacho template"/>
 
 <i:local name="previewId" value="@generateId('image-upload-preview-%s')"/>
 
