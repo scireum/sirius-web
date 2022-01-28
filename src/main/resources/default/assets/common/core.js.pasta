@@ -307,3 +307,39 @@ sirius.embedSvgImages = function (_container, selector) {
         }
     }
 }
+
+/**@
+ * Actually makes the browser re-execute script nodes within a given DOM tree.
+ *
+ * This is mostly relevant, if a DOM subtree has been generated e.g. via Mustache. If script nodes are
+ * injected into the DOM, these are ignored by the browser as per HTML 5 spec. Calling this function on
+ * the container with the updated HTML will clone the script nodes so that they are actually invoked properly.
+ *
+ * @param _container the container to re-invoke all inner script tags
+ */
+sirius.executeEmbeddedScripts = function (_container) {
+    function nodeScriptReplace(_node) {
+        if (_node.tagName === 'SCRIPT') {
+            _node.parentNode.replaceChild(nodeScriptClone(_node), _node);
+        } else {
+            for (let i = 0; i < _node.childNodes.length; i++) {
+                nodeScriptReplace(_node.childNodes[i]);
+            }
+        }
+
+        return _node;
+    }
+
+    function nodeScriptClone(_node) {
+        const _clonedScriptNode = document.createElement("script");
+        _clonedScriptNode.text = _node.innerHTML;
+
+        for (let i = 0; i < _node.attributes.length; i++) {
+            const attribute = _node.attributes[i];
+            _clonedScriptNode.setAttribute(attribute.name, attribute.value);
+        }
+        return _clonedScriptNode;
+    }
+
+    nodeScriptReplace(_container);
+}
