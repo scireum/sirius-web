@@ -8,7 +8,6 @@
 
 package sirius.pasta.tagliatelle;
 
-import com.google.common.collect.Streams;
 import parsii.tokenizer.ParseError;
 import parsii.tokenizer.Position;
 import sirius.kernel.Sirius;
@@ -44,6 +43,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Provides statically compiled and optimized templates to generate HTML, XML and text files.
@@ -136,18 +136,18 @@ public class Tagliatelle {
 
         // Also check for extensions provided as default - which are only loaded, if no overwrites (same path without
         // /default/ in front) exists...
-        return Streams.concat(extensionsForTarget.stream(),
-                              Sirius.getClasspath()
-                                    .find(Pattern.compile("default/extensions/" + Pattern.quote(target) + "/.*.pasta"))
-                                    .map(m -> m.group(0))
-                                    .filter(path -> extensionsForTarget.stream()
-                                                                       .noneMatch(extension -> Strings.areEqual(path.substring(
-                                                                                                                        "default".length()),
-                                                                                                                extension.getTemplate()
-                                                                                                                         .getResource()
-                                                                                                                         .getPath())))
-                                    .map(this::resolveToTemplateExtension)
-                                    .filter(Objects::nonNull)).sorted().toList();
+        return Stream.concat(extensionsForTarget.stream(),
+                             Sirius.getClasspath()
+                                   .find(Pattern.compile("default/extensions/" + Pattern.quote(target) + "/.*.pasta"))
+                                   .map(m -> m.group(0))
+                                   .filter(path -> extensionsForTarget.stream()
+                                                                      .noneMatch(extension -> Strings.areEqual(path.substring(
+                                                                                                                       "default".length()),
+                                                                                                               extension.getTemplate()
+                                                                                                                        .getResource()
+                                                                                                                        .getPath())))
+                                   .map(this::resolveToTemplateExtension)
+                                   .filter(Objects::nonNull)).sorted().toList();
     }
 
     private TemplateExtension resolveToTemplateExtension(String path) {
