@@ -24,19 +24,19 @@
 
     .sci-overlay-button-container {
       position: fixed;
-      width: 2rem;
-      height: 2rem;
-      right: -0.5rem;
-      top: -0.5rem;
+      width: 1rem;
+      height: 1rem;
+      right: 2px;
+      top: 2px;
 
       .sci-overlay-button {
         display: block;
-        height: 2.0rem;
-        width: 2.0rem;
+        height: 1rem;
+        width: 1rem;
         background-repeat: no-repeat;
         background-position: center;
         cursor: pointer;
-        background-size: 1.5rem;
+        background-size: 1rem;
       }
 
       .sci-overlay-button-close {
