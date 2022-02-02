@@ -1,21 +1,12 @@
 (function (overlay) {
     const template = '<div class="sci-overlay-background">' +
         '    <div class="sci-overlay">' +
-        '        <div class="sci-overlay-infobar">' +
-        '            <div class="sci-overlay-infobar-left">' +
-        '                <span class="sci-overlay-infobar-name">' +
-        '                    {{name}}' +
-        '                </span>' +
-        '            </div>' +
-        '            <div class="sci-overlay-infobar-right">' +
-        '                <div>' +
-        '                    <a role="button" class="sci-overlay-button sci-overlay-button-close sci-overlay-button-close-js"></a>' +
-        '                </div>' +
-        '            </div>' +
-        '        </div>' +
+        '        {{#closeButton}}<div class="sci-overlay-button-container">' +
+        '            <a role="button" class="sci-overlay-button sci-overlay-button-close sci-overlay-button-close-js"></a>' +
+        '        </div>{{/closeButton}}' +
         '        <div class="sci-overlay-content-outer-container">' +
         '            <div class="sci-overlay-content-inner-container">' +
-        '               <div class="sci-overlay-content">' +
+        '               <div class="sci-overlay-content sci-overlay-content-js">' +
         '                   {{{content}}}' +
         '               </div>' +
         '           </div>' +
@@ -30,20 +21,45 @@
      * <p>
      * If one or more overlays already exist, the new overlay will be shown on top of already existing overlays.
      *
-     * @param args object containing at least all required fields:
-     *              - name:    name to be displayed in the infobar
-     *              - content: html content that will be rendered inside the overlay
+     * @param args object containing:
+     *              - content:     html content that will be rendered inside the overlay, either a string or an HTMLElement node; required
+     *              - closeButton: boolean flag indicating whether to render a close button; defaults to **true**
      */
     overlay.createAndShowOverlay = function (args) {
-        const _html = Mustache.render(template, args);
+        const isStringContent = args.content instanceof String || typeof args.content === 'string';
+        const isNodeContent = args.content instanceof HTMLElement;
+
+        if (!isStringContent && !isNodeContent) {
+            throw new Error('Content must either be a string or an object of class HTMLElement.');
+        }
+
+        if (args.name) {
+            console.debug('Overlay names are no longer supported:', args.name);
+        }
+
+        const closeButton = typeof args.closeButton === 'undefined' ? true : !!args.closeButton;
+
+        const renderArgs = {
+            closeButton: closeButton,
+            content: isStringContent ? args.content : undefined
+        };
+
+        const _html = Mustache.render(template, renderArgs);
         const _overlayContainer = document.createElement('div');
         _overlayContainer.innerHTML = _html;
 
+        if (isNodeContent) {
+            const _contentContainer = _overlayContainer.querySelector('.sci-overlay-content-js');
+            _contentContainer.appendChild(args.content);
+        }
+
         const _overlay = _overlayContainer.firstChild;
 
-        _overlay.querySelector('.sci-overlay-button-close-js').addEventListener('click', function () {
-            overlay.destroyOverlay();
-        });
+        if (closeButton) {
+            _overlay.querySelector('.sci-overlay-button-close-js').addEventListener('click', function () {
+                overlay.destroyOverlay();
+            });
+        }
 
         _overlay.addEventListener('click', function (event) {
             if (event.target === _overlay) {
@@ -59,35 +75,11 @@
         }
 
         window.addEventListener('keyup', destroyOverlayEventHandler);
-
         document.body.appendChild(_overlay);
 
-        // We replace the code in the added node with a clone, so it will get automatically executed.
-
-        function nodeScriptReplace(_node) {
-            if (_node.tagName === 'SCRIPT') {
-                _node.parentNode.replaceChild(nodeScriptClone(_node), _node);
-            } else {
-                for (let i = 0; i < _node.childNodes.length; i++) {
-                    nodeScriptReplace(_node.childNodes[i]);
-                }
-            }
-
-            return _node;
+        if (isStringContent) {
+            sirius.executeEmbeddedScripts(_overlay);
         }
-
-        function nodeScriptClone(_node) {
-            const _script = document.createElement("script");
-            _script.text = _node.innerHTML;
-
-            for (let i = 0; i < _node.attributes.length; i++) {
-                let attribute = _node.attributes[i];
-                _script.setAttribute(attribute.name, attribute.value);
-            }
-            return _script;
-        }
-
-        nodeScriptReplace(_overlay);
     }
 
     overlay.destroyOverlay = function () {

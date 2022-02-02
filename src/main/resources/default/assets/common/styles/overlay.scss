@@ -6,10 +6,10 @@
 .sci-overlay-background {
   z-index: 10000;
   position: fixed;
-  top: 0px;
-  left: 0px;
-  right: 0px;
-  bottom: 0px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 
   &.first {
     background-color: rgba(0, 0, 0, 0.5);
@@ -17,47 +17,26 @@
 
   .sci-overlay {
     position: fixed;
-    top: 32px;
-    left: 32px;
-    right: 32px;
-    bottom: 32px;
+    top: 0.5rem;
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: 0.5rem;
 
-    .sci-overlay-infobar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 39px;
-      padding: 0 8px 0 15px;
-      font-size: 18px;
-      overflow: hidden;
-      color: #e7e7e7;
-      background-color: #333;
-      border: 1px solid #333;
-      border-radius: 4px 4px 0 0;
-
-      .sci-overlay-infobar-left {
-        flex: 0 1 auto;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .sci-overlay-infobar-right {
-        flex: 0 0 auto;
-
-        a {
-          display: block;
-        }
-      }
+    .sci-overlay-button-container {
+      position: fixed;
+      width: 2rem;
+      height: 2rem;
+      right: -0.5rem;
+      top: -0.5rem;
 
       .sci-overlay-button {
-        height: 28px;
-        width: 28px;
+        display: block;
+        height: 2.0rem;
+        width: 2.0rem;
         background-repeat: no-repeat;
         background-position: center;
         cursor: pointer;
-        background-size: 20px;
-        color: #e7e7e7;
+        background-size: 1.5rem;
       }
 
       .sci-overlay-button-close {
@@ -70,14 +49,12 @@
     }
 
     .sci-overlay-content-outer-container {
-      height: calc(100% - 39px);
+      height: 100%;
       overflow: scroll;
       padding: 0px 30px;
       background-color: white;
-      border-bottom: 1px solid #ddd;
-      border-left: 1px solid #ddd;
-      border-right: 1px solid #ddd;
-      border-radius: 0 0 4px 4px;
+      border: 1px solid #ddd;
+      border-radius: 0.25rem;
 
       .sci-overlay-content-inner-container {
         margin: 20px 0;
