@@ -117,8 +117,9 @@ public class BarcodeController extends BasicController {
             throws WriterException {
         BarcodeFormat format = determineFormat(type);
 
-        if (!NUMERIC.matcher(content).matches() && format != BarcodeFormat.QR_CODE) {
-            // contains characters other than digits 0-9 -> directly return a blank image to prevent running into exception
+        if (!isValidContentForFormat(content, format)) {
+            // Directly return a blank image in case it is foreseeable that the writer would be unable to generate
+            // an image in order to prevent running into exceptions.
             return new BufferedImage(width != -1 ? width : 200,
                                      height != -1 ? height : 200,
                                      BufferedImage.TYPE_BYTE_GRAY);
@@ -143,6 +144,15 @@ public class BarcodeController extends BasicController {
             default -> throw new IllegalArgumentException(
                     "Unsupported barcode type. Supported types are: qr, code128, ean, interleaved2of5, interleaved2of5checksummed, datamatrix");
         };
+    }
+
+    private static boolean isValidContentForFormat(String content, BarcodeFormat format) {
+        if (format == BarcodeFormat.QR_CODE
+            || format == BarcodeFormat.CODE_128
+            || format == BarcodeFormat.DATA_MATRIX) {
+            return true;
+        }
+        return NUMERIC.matcher(content).matches();
     }
 
     private static Writer determineWriter(BarcodeFormat format) {
