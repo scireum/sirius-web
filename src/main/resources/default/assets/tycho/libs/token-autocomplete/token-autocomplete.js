@@ -59,6 +59,7 @@ var TokenAutocomplete = /** @class */ (function () {
             readonly: false,
             optional: false,
             enableTabulator: true,
+            showSuggestionsOnFocus: true,
             requestDelay: 200
         };
         this.options = __assign(__assign({}, this.defaults), options);
@@ -607,7 +608,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 });
             }
             function focusInput() {
-                if (!parent.autocomplete.areSuggestionsDisplayed()) {
+                if (!parent.autocomplete.areSuggestionsDisplayed() && parent.options.showSuggestionsOnFocus) {
                     parent.autocomplete.showSuggestions();
                     parent.autocomplete.loadSuggestions();
                 }
@@ -749,7 +750,9 @@ var TokenAutocomplete = /** @class */ (function () {
                     me.hideSuggestions();
                 });
                 me.parent.textInput.addEventListener('focusin', function () {
-                    me.loadSuggestions();
+                    if (me.options.showSuggestionsOnFocus) {
+                        me.loadSuggestions();
+                    }
                 });
             };
             class_4.prototype.loadSuggestions = function () {
