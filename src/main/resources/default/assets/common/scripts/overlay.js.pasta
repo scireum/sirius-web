@@ -1,9 +1,9 @@
 (function (overlay) {
     const template = '<div class="sci-overlay-background">' +
         '    <div class="sci-overlay">' +
-        '        {{#closeButton}}<div class="sci-overlay-button-container">' +
+        '        {{#closable}}<div class="sci-overlay-button-container">' +
         '            <a role="button" class="sci-overlay-button sci-overlay-button-close sci-overlay-button-close-js"></a>' +
-        '        </div>{{/closeButton}}' +
+        '        </div>{{/closable}}' +
         '        <div class="sci-overlay-content-outer-container">' +
         '            <div class="sci-overlay-content-inner-container">' +
         '               <div class="sci-overlay-content sci-overlay-content-js">' +
@@ -22,8 +22,9 @@
      * If one or more overlays already exist, the new overlay will be shown on top of already existing overlays.
      *
      * @param args object containing:
-     *              - content:     html content that will be rendered inside the overlay, either a string or an HTMLElement node; required
-     *              - closeButton: boolean flag indicating whether to render a close button; defaults to **true**
+     *              - content:   html content that will be rendered inside the overlay, either a string or an HTMLElement node; required
+     *              - closable:  boolean flag indicating whether to render a close button; defaults to **true**
+     *              - yieldable: boolean flag indicating whether a background-click closes the overlay; defaults to the value of `closable`
      */
     overlay.createAndShowOverlay = function (args) {
         const isStringContent = args.content instanceof String || typeof args.content === 'string';
@@ -37,10 +38,11 @@
             console.debug('Overlay names are no longer supported:', args.name);
         }
 
-        const closeButton = typeof args.closeButton === 'undefined' ? true : !!args.closeButton;
+        const closable = typeof args.closable === 'undefined' ? true : !!args.closable;
+        const yieldable = typeof args.yieldable === 'undefined' ? closable : !!args.yieldable;
 
         const renderArgs = {
-            closeButton: closeButton,
+            closable: closable,
             content: isStringContent ? args.content : undefined
         };
 
@@ -55,17 +57,19 @@
 
         const _overlay = _overlayContainer.firstChild;
 
-        if (closeButton) {
+        if (closable) {
             _overlay.querySelector('.sci-overlay-button-close-js').addEventListener('click', function () {
                 overlay.destroyOverlay();
             });
         }
 
-        _overlay.addEventListener('click', function (event) {
-            if (event.target === _overlay) {
-                overlay.destroyOverlay();
-            }
-        });
+        if (yieldable) {
+            _overlay.addEventListener('click', function (event) {
+                if (event.target === _overlay) {
+                    overlay.destroyOverlay();
+                }
+            });
+        }
 
         overlayStack.push(_overlay);
 
