@@ -132,13 +132,6 @@ public class BarcodeController extends BasicController {
         return MatrixToImageWriter.toBufferedImage(matrix);
     }
 
-    private static boolean isValidContentForFormat(String content, BarcodeFormat format) {
-        if (format == BarcodeFormat.QR_CODE || format == BarcodeFormat.CODE_128) {
-            return true;
-        }
-        return NUMERIC.matcher(content).matches();
-    }
-
     private static BarcodeFormat determineFormat(String format) {
         return switch (Value.of(format).toLowerCase()) {
             case TYPE_QR -> BarcodeFormat.QR_CODE;
@@ -149,6 +142,15 @@ public class BarcodeController extends BasicController {
             default -> throw new IllegalArgumentException(
                     "Unsupported barcode type. Supported types are: qr, code128, ean, interleaved2of5, interleaved2of5checksummed, datamatrix");
         };
+    }
+
+    private static boolean isValidContentForFormat(String content, BarcodeFormat format) {
+        if (format == BarcodeFormat.QR_CODE
+            || format == BarcodeFormat.CODE_128
+            || format == BarcodeFormat.DATA_MATRIX) {
+            return true;
+        }
+        return NUMERIC.matcher(content).matches();
     }
 
     private static Writer determineWriter(BarcodeFormat format) {
