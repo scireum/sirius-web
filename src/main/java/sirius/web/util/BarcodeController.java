@@ -118,6 +118,8 @@ public class BarcodeController extends BasicController {
         BarcodeFormat format = determineFormat(type);
 
         if (!isValidContentForFormat(content, format)) {
+            // Directly return a blank image in case it is foreseeable that the writer would be unable to generate
+            // an image in order to prevent running into exceptions.
             return new BufferedImage(width != -1 ? width : 200,
                                      height != -1 ? height : 200,
                                      BufferedImage.TYPE_BYTE_GRAY);
