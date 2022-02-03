@@ -1,0 +1,60 @@
+.sci-overlay-static-body {
+  height: 100%;
+  overflow: hidden;
+}
+
+.sci-overlay-background {
+  z-index: 10000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  &.first {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  .sci-overlay {
+    position: fixed;
+    top: 0.5rem;
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: 0.5rem;
+
+    .sci-overlay-button-container {
+      position: fixed;
+      width: 1rem;
+      height: 1rem;
+      right: 2px;
+      top: 2px;
+
+      .sci-overlay-button {
+        display: block;
+        height: 1rem;
+        width: 1rem;
+        background-repeat: no-repeat;
+        background-position: center;
+        cursor: pointer;
+        background-size: 1rem;
+      }
+
+      .sci-overlay-button-close {
+        background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAKKADAAQAAAABAAAAKAAAAAB65masAAADDUlEQVRYCdVZu24aQRRlEY0l1y5CSUVNh8QXUAS55yf8Ays5BRL/YSGlyxfAD6RCAlmQDkX0NIAEk3OWvevLMPsi4EyOdD2zs/dxmOfdcVC5EsaYBky/QlqQL0pQrfxW8hP1H0EQ/OKLuwKkniCvkCmkLGhD26ebk4TTR0gI2UCcOBwOZr1eR8J6BugjhDzehCgcPUPWkDPM53MzGAxMp9Mx9Xrd1Go1g4CRsM42vqMOdR2gz+erScI4gISQIyTC8Xg0o9HINJvNhIyQyitpQ1v6UOBDCAlKEYXBA+Q7JMFkMjGtVqs0MZs4fdCXBcZ6KEQSiuy5M3LD4dBUq9W/Jidk6Ys+LTBmfk9CKRTD7XZr+v3+zYgJQSnpe7fbSTiWYWYvQoELIpkk9ySnSZJZDMZ2Lxy84FaSrFYOgTi5d2kNNzlcbkFoDCEROIldc67dbpvFYmFWq5XpdruFfwB1aUNb+rB/MGNZC+d8qMGKJ0S0CXMbcK1WOt5sPvbp/X5ver3eRTA7OHWoK6APF0nGVFsQA32cOHj4Jg64V9lB+LxcLkUlKfNI2uTEkD3pisHYCq/QOQGNU3mRtglziFxII5lGjj7oC5EvhLEVphE7NDSkcTabXRiJI84jPVRiw9ImmUWOulnz1zoWGxX4f5FgPDeFkKvMC8z3RXRcvqWNHBReSPBNGni4i2JamUegaC+n+ScHhTcSHEsDM5A0Q92eRVJ86dKeAtqXXScHhTEJvrOBOZxOmWxD+7koyTLkGIMcVD75ToLR5sZk0yaR95xHsiw5iUcuMTbVuBGFlzD/xRCPpT99XSTebzPeb9TJUcdjBkvFKf/sqOPaxRz0N1mICfKLP0JausUUyUbePpe2T16TbvmdsMa9GEoPZaX8TFw/PeWPCfr90RST9PezkwQJDHMy1Pyovue3cekP95ig31cfMUl/L49IkMBQ+3v9dqJ4+guiXDhJBol6BH4BFr3ApK4D9Om+h9EEitThyN8rYP0DQJQnDm8hkrMb9aKgTelL9PwLQ81Q1RHsU/4N8QccZqfO0Nv7PAAAAABJRU5ErkJggg==");
+      }
+    }
+
+    .sci-overlay-content-outer-container {
+      height: 100%;
+      overflow: scroll;
+      padding: 0px 30px;
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 0.25rem;
+
+      .sci-overlay-content-inner-container {
+        margin: 20px 0;
+      }
+    }
+  }
+}
