@@ -17,26 +17,26 @@
 
   .sci-overlay {
     position: fixed;
-    top: 1rem;
-    left: 1rem;
-    right: 1rem;
-    bottom: 1rem;
+    top: 16px;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
 
     .sci-overlay-button-container {
       position: fixed;
-      width: 2rem;
-      height: 2rem;
+      width: 32px;
+      height: 32px;
       right: 2px;
       top: 2px;
 
       .sci-overlay-button {
         display: block;
-        height: 2rem;
-        width: 2rem;
+        height: 32px;
+        width: 32px;
         background-repeat: no-repeat;
         background-position: center;
         cursor: pointer;
-        background-size: 2rem;
+        background-size: 32px;
       }
 
       .sci-overlay-button-close {
@@ -50,7 +50,7 @@
       padding: 0px 30px;
       background-color: white;
       border: 1px solid #ddd;
-      border-radius: 0.25rem;
+      border-radius: 4px;
 
       .sci-overlay-content-inner-container {
         margin: 20px 0;

@@ -221,24 +221,26 @@
             activateView((currentIndex - 1 + _slides.length) % _slides.length, -1);
         };
 
-        window.addEventListener('resize', function (event) {
+        const fixViewOffsets = function () {
             viewOffsets = _slides.map(function (viewElement, index) {
                 return (index * _slider.offsetWidth);
             });
             activateView(currentIndex, 1, true);
+        };
+        window.addEventListener('resize', function (event) {
+            fixViewOffsets();
         });
 
         let animationTimer = null;
         const startAnimationThread = function () {
             stopAnimationThread();
 
-            if (options.animation) {
-                animationTimer = setInterval(function () {
-                    if (!interrupted) {
-                        activateNextView();
-                    }
-                }, options.animation);
-            }
+            animationTimer = setInterval(function () {
+                fixViewOffsets();
+                if (options.animation && !interrupted) {
+                    activateNextView();
+                }
+            }, options.animation || 5000);
         };
         const stopAnimationThread = function () {
             if (animationTimer !== null) {
