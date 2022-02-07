@@ -24,7 +24,7 @@
                     </i:if>
                     @label
                 </a>
-                <div class="dropdown-menu @class" aria-labelledby="navbarDropdown">
+                <div class="dropdown-menu @class" aria-label="@label">
                     <i:raw>@contents</i:raw>
                 </div>
             </li>
