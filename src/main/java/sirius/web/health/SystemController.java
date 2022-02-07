@@ -103,7 +103,7 @@ public class SystemController extends BasicController {
     /**
      * Determines if there is currently an ALARM present or not for: <tt>/system/monitor</tt>
      * <p>
-     * Either reports OK or ERROR, if an cluster alarm is present.
+     * Reports OK or ERROR, if a cluster alarm is present.
      *
      * @param ctx the request being handled
      */
@@ -122,11 +122,12 @@ public class SystemController extends BasicController {
             writer.println("ERROR");
             writer.println();
             writer.println("Failing Metrics on this node:");
-            metrics.getMetrics().stream().filter(metric -> metric.getState() == MetricState.RED).forEach(metric -> {
-                writer.println(Strings.apply("%-30s %15s",
-                                             metric.getLabel().toLowerCase(),
-                                             metric.getValueAsString().toLowerCase()));
-            });
+            metrics.getMetrics()
+                   .stream()
+                   .filter(metric -> metric.getState() == MetricState.RED)
+                   .forEach(metric -> writer.println(Strings.apply("%-30s %15s",
+                                                                   metric.getLabel().toLowerCase(),
+                                                                   metric.getValueAsString().toLowerCase())));
             writer.println();
         }
     }
