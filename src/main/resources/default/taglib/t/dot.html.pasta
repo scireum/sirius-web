@@ -10,6 +10,6 @@
 <span>
 <span class="mb-2 @if(marginRight) { mr-2 } dot-block @class">
     <span class="d-inline-block dot mr-1 bg-sirius-@color">&nbsp;</span>
-    <div><i:render name="body"/></div>
+    <i:render name="body"/>
 </span>
 </span>
