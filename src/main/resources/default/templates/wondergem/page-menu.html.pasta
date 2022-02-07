@@ -8,7 +8,7 @@
         </button>
         <a class="navbar-brand" href="@config('product.wondergemRoot')">
             <img src="@staticAssetUri()/tycho/images/menu_logo.svg"
-                 height="33px"
+                 height="33"
                  alt="Start"/>
         </a>
     </div>
