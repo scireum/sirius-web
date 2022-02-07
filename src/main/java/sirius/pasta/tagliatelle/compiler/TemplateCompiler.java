@@ -66,7 +66,7 @@ public class TemplateCompiler extends InputProcessor {
      * Note that this can only be invoked once per instance.
      *
      * @return a list of warnings collected while compiling the source
-     * @throws CompileException in case one or more {@link CompileError errors} occured.
+     * @throws CompileException in case one or more {@link CompileError errors} occurred.
      */
     public List<CompileError> compile() throws CompileException {
         if (reader == null) {
@@ -203,9 +203,9 @@ public class TemplateCompiler extends InputProcessor {
     }
 
     /**
-     * Consumes the closing charcter (&gt;) of an open tag.
+     * Consumes the closing character (&gt;) of an open tag.
      * <p>
-     * If if is directly followed by a new line, this is also consumed.
+     * If it is directly followed by a new line, this is also consumed.
      */
     private void parseEndOfTag() {
         consumeExpectedCharacter('>');
@@ -265,7 +265,7 @@ public class TemplateCompiler extends InputProcessor {
         } catch (Exception e) {
             HandledException ex = Exceptions.handle(Pasta.LOG, e);
             context.error(startOfTag,
-                          Strings.apply("An error occured while processing %s: %s (%s)",
+                          Strings.apply("An error occurred while processing %s: %s (%s)",
                                         tagName,
                                         ex.getMessage(),
                                         e.getClass().getName()));
@@ -319,7 +319,7 @@ public class TemplateCompiler extends InputProcessor {
      * Parses a tag.
      *
      * @param handler the initialized handler which processes the parsed tag
-     * @param block   the outer block to append the pased emitters to
+     * @param block   the outer block to append the passed emitters to
      */
     private void handleTag(TagHandler handler, CompositeEmitter block) {
         parseAttributes(handler);

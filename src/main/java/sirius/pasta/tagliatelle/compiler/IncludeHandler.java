@@ -28,7 +28,7 @@ import java.util.Optional;
  * In contrast to {@link InvokeHandler} this will only include the given asset as literal content without any
  * processing.
  * <p>
- * If the contents being included need further processing (e.g. to include a HTML template for mustache:
+ * If the contents being included need further processing (e.g. to include an HTML template for mustache):
  * {@code @escapeJS(inlineResource(...)} the {@link sirius.pasta.noodle.macros.InlineResourceMacro} should be used.
  *
  * @see sirius.pasta.tagliatelle.emitter.InvokeTemplateEmitter

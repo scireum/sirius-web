@@ -174,7 +174,7 @@ public class TemplateCompilationContext extends CompilationContext {
      * Note that only the template name, not the template itself is stored, so that modifications of the referenced
      * template will be detected and applied.
      *
-     * @param position  the position where the invokation took place
+     * @param position  the position where the invocation took place
      * @param template  the template to call
      * @param arguments the arguments passed to the template
      * @param blocks    the emitter blocks passed to the template
