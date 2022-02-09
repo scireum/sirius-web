@@ -70,7 +70,7 @@ public class NoodleCompiler {
     protected Node parseBlock() {
         Node ir = parser.block().reduce(context);
         if (ir instanceof ReturnStatement returnStatement) {
-            ir = ((ReturnStatement) ir).getExpression();
+            ir = returnStatement.getExpression();
         }
 
         return ir;
@@ -94,7 +94,7 @@ public class NoodleCompiler {
     protected Node parseExpression(boolean canSkipWhitespaces) {
         Node ir = parser.parseExpression(canSkipWhitespaces).reduce(context);
         if (ir instanceof ReturnStatement returnStatement) {
-            ir = ((ReturnStatement) ir).getExpression();
+            ir = returnStatement.getExpression();
         }
         return ir;
     }
