@@ -30,7 +30,7 @@
             if (uploadUrl.indexOf('?') >= 0) {
                 parameterIndicator = '&';
             }
-            return uploadUrl + parameterIndicator + 'filename=' + files[0].name;
+            return uploadUrl + parameterIndicator + 'filename=' + encodeURIComponent(files[0].name);
         },
         sendFileAsBody: true,
         parallelUploads: ___maxParallelConnections,
