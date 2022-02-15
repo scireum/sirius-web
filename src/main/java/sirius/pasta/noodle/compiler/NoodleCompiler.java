@@ -55,10 +55,10 @@ public class NoodleCompiler {
      * Compiles a whole script (which can be a block of statements).
      * <p>
      * This will essentially instruct the parser to parse a block of statements and then run an optimization
-     * step in case the script can be replaced by a simpligied {@link Callable}.
+     * step in case the script can be replaced by a simplified {@link Callable}.
      *
      * @return the compiled script. Note however, the {@link CompilationContext} has to be checked for errors. We
-     * do not raise an exception here, as e.g. <tt>Tagilatelle</tt> might which to compile a complete template and
+     * do not raise an exception here, as e.g. <tt>Tagliatelle</tt> might which to compile a complete template and
      * then report all detected errors.
      */
     public Callable compileScript() {
@@ -69,8 +69,8 @@ public class NoodleCompiler {
 
     protected Node parseBlock() {
         Node ir = parser.block().reduce(context);
-        if (ir instanceof ReturnStatement) {
-            ir = ((ReturnStatement) ir).getExpression();
+        if (ir instanceof ReturnStatement returnStatement) {
+            ir = returnStatement.getExpression();
         }
 
         return ir;
@@ -93,8 +93,8 @@ public class NoodleCompiler {
 
     protected Node parseExpression(boolean canSkipWhitespaces) {
         Node ir = parser.parseExpression(canSkipWhitespaces).reduce(context);
-        if (ir instanceof ReturnStatement) {
-            ir = ((ReturnStatement) ir).getExpression();
+        if (ir instanceof ReturnStatement returnStatement) {
+            ir = returnStatement.getExpression();
         }
         return ir;
     }
@@ -110,10 +110,10 @@ public class NoodleCompiler {
             return Optional.of(new ConstantCall(syntaxTree.getConstantValue()));
         }
 
-        if (syntaxTree instanceof IntrinsicCall call) {
-            if (call.getOpCode() == OpCode.INTRINSIC_NLS_GET && call.getParameter(0).isConstant()) {
-                return Optional.of(new NLSCall((String) call.getParameter(0).getConstantValue()));
-            }
+        if (syntaxTree instanceof IntrinsicCall call
+            && call.getOpCode() == OpCode.INTRINSIC_NLS_GET
+            && call.getParameter(0).isConstant()) {
+            return Optional.of(new NLSCall((String) call.getParameter(0).getConstantValue()));
         }
 
         if (syntaxTree instanceof PushTemporary pushTemporary) {

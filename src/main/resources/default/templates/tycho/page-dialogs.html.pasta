@@ -1,6 +1,6 @@
 <t:modal name="link-confirm-modal" titleKey="template.html.confirmHeader" submitKey="NLS.yes" cancelKey="NLS.cancel">
     <p>@i18n("template.html.confirmText")</p>
-    <form action="" method="post" class="confirm-form-js">
+    <form action="placeholder" method="post" class="confirm-form-js">
         <input name="CSRFToken" value="@part(sirius.web.http.CSRFHelper.class).getCSRFToken()" type="hidden"/>
     </form>
 </t:modal>

@@ -12,8 +12,8 @@
             <i:block name="actions">
                 <i:if test="all">
                     <a href="/system/load" class="btn btn-link active mr-2">
-                        <i class="fa fa-plus"></i>
-                        <span class="d-none d-lg-inline">Show all</span>
+                        <i class="fa fa-minus"></i>
+                        <span class="d-none d-lg-inline">Show less</span>
                         <a class="btn btn-link mr-2 d-none d-md-inline-block" href="/system/load?all=true"><i
                                 class="fa fa-sync"></i></a>
                     </a>

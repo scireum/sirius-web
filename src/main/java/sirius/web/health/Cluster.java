@@ -27,7 +27,7 @@ import java.util.List;
  * Manages and monitors the state of a cluster of machines.
  * <p>
  * Permits to couple a number of machines to a cluster where each member monitors the others. In case or a failure
- * an alert will be triggered. Additionally the cluster state can be visualized using the web interface
+ * an alert will be triggered. Additionally, the cluster state can be visualized using the web interface
  * (/system/state).
  * <p>
  * Even in a single machine installation, this class will take care of monitoring all metrics and triggering an
@@ -62,7 +62,7 @@ public class Cluster implements EveryMinute {
     private boolean alarmPresent = false;
 
     /**
-     * Keeps a history of cluster states to determine if an errorneous state is present.
+     * Keeps a history of cluster states to determine if an erroneous state is present.
      * <p>
      * As some metrics tend to quickly jump to RED and back, we use some averaging to make the alerting system less
      * nervous.
@@ -70,7 +70,7 @@ public class Cluster implements EveryMinute {
     private MetricState[] clusterStateHistory;
 
     /**
-     * Contains the write index of the clusterStateHistory which is a circular buffer.
+     * Contains the write-index of the clusterStateHistory which is a circular buffer.
      */
     private int clusterStateHistoryWriteIndex = 0;
 
@@ -137,7 +137,7 @@ public class Cluster implements EveryMinute {
     /**
      * Returns the number of intervals which are kept in the state history.
      * <p>
-     * This is used to smooth out intermittend faults which cause a RED system state.
+     * This is used to smooth out intermittent faults which cause a RED system state.
      *
      * @return the number of cluster states kept in the history
      */

@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-white">
     <a class="navbar-brand" href="@config('product.tychoRoot')">
         <img src="@staticAssetUri()/tycho/images/menu_logo.svg"
-             height="33px"
+             height="33"
              alt="Start"/>
     </a>
     <button class="navbar-toggler"
