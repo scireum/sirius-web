@@ -18,6 +18,10 @@
                 }
 
                 $('#term').terminal(function (command, term) {
+                    if (!command || !command.trim()) {
+                        return;
+                    }
+
                     term.pause();
                     $.post('/system/console/api', {command: command}).then(function (response) {
                         if (response.error) {
