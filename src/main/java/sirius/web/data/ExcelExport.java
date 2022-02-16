@@ -455,6 +455,7 @@ public class ExcelExport {
      * @return the export itself for fluent method calls
      * @deprecated Use {@link #addListRow(Collection)} which does exactly the same but has a more consistent naming.
      */
+    @Deprecated
     public ExcelExport addRowAsList(Collection<?> row) {
         return addListRow(row);
     }
