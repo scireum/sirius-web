@@ -103,7 +103,7 @@ public class ExcelExport {
          * colWidthInPixel. Images are only scaled down but never up.
          * <p>
          * Only the first image cell inserted in a given column is able to set the width of the column
-         * as changing a column's width while images being present in the column would result in them beind distorted.
+         * as changing a column's width while images being present in the column would result in them behind distorted.
          * <p>
          * The filename is needed in order to determine the type of image. POI requires an image type for inserting
          * images. Only jpeg, png and bmp are supported.
@@ -403,7 +403,7 @@ public class ExcelExport {
      * @param row the objects to add to the table
      * @return the export itself for fluent method calls
      */
-    public ExcelExport addRow(Object... row) {
+    public ExcelExport addArrayRow(Object... row) {
         if (row == null) {
             return this;
         }
@@ -412,12 +412,24 @@ public class ExcelExport {
     }
 
     /**
+     * Adds the given array of objects as a row.
+     *
+     * @param row the objects to add to the table
+     * @return the export itself for fluent method calls
+     * @deprecated Use {@link #addArrayRow(Object...)} which does exactly the same but has a more consistent naming.
+     */
+    @Deprecated
+    public ExcelExport addRow(Object... row) {
+        return addArrayRow(row);
+    }
+
+    /**
      * Adds the given collection of objects as a row.
      *
      * @param row the objects to add to the table
      * @return the export itself for fluent method calls
      */
-    public ExcelExport addRowAsList(Collection<?> row) {
+    public ExcelExport addListRow(Collection<?> row) {
         if (row == null || isRowLimitExceeded()) {
             return this;
         }
@@ -434,6 +446,17 @@ public class ExcelExport {
         }
 
         return this;
+    }
+
+    /**
+     * Adds the given collection of objects as a row.
+     *
+     * @param row the objects to add to the table
+     * @return the export itself for fluent method calls
+     * @deprecated Use {@link #addListRow(Collection)} which does exactly the same but has a more consistent naming.
+     */
+    public ExcelExport addRowAsList(Collection<?> row) {
+        return addListRow(row);
     }
 
     /**
