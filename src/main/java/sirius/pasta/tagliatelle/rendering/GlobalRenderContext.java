@@ -8,18 +8,21 @@
 
 package sirius.pasta.tagliatelle.rendering;
 
+import sirius.kernel.commons.Strings;
 import sirius.pasta.noodle.compiler.CompileException;
 import sirius.pasta.tagliatelle.Tagliatelle;
 import sirius.pasta.tagliatelle.Template;
 import sirius.web.templates.ContentHelper;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Represents the global context which is created to render a template.
@@ -246,12 +249,83 @@ public class GlobalRenderContext {
 
         try {
             callback.render();
-            return buffer.toString().trim();
+            return blockTrim(buffer.toString());
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
         } finally {
             this.buffer = backupBuffer;
         }
+    }
+
+    /**
+     * Performs a block-wise trim.
+     * <p>
+     * As tags might be indented, we have to determine the number of blanks in the first line (which marks the
+     * initial offset). We then try to remove this amount of whitespaces from any line within the block. Finally,
+     * we trim the resulting string to also get rid of leading and trailing newlines.
+     * <p>
+     * This will turn:
+     * <pre>
+     * {@code
+     * &lt;x:foo&gt;
+     *    This is a
+     *       &lt;div&gt;sneaky&lt;/div&gt;
+     *    test.
+     * &lt;/x:foo&gt;
+     * }
+     * </pre>
+     * <p>
+     * into:
+     *
+     * <pre>
+     * {@code
+     * This is a
+     *    &lt;div&gt;sneaky&lt;/div&gt;
+     * test.
+     * }
+     * </pre>
+     *
+     * @param block the block to trim
+     * @return the trimmed string
+     */
+    private String blockTrim(String block) {
+        if (Strings.isEmpty(block) || !Character.isWhitespace(block.charAt(0))) {
+            return block;
+        }
+
+        int numberOfInitialBlanks = countInitialBlanks(block);
+        if (numberOfInitialBlanks == 0) {
+            return block;
+        } else {
+            return Arrays.stream(block.split("\n"))
+                         .map(line -> cutWhitespaces(line, numberOfInitialBlanks))
+                         .collect(Collectors.joining("\n"))
+                         .trim();
+        }
+    }
+
+    private String cutWhitespaces(String line, int numWhitespaces) {
+        int index = 0;
+        while (numWhitespaces > 0 && index < line.length() && line.charAt(index) == ' ') {
+            index++;
+            numWhitespaces--;
+        }
+
+        return line.substring(index);
+    }
+
+    private int countInitialBlanks(String block) {
+        int offset = 0;
+        int blanks = 0;
+        while (offset < block.length() && block.charAt(offset) == '\n') {
+            offset++;
+        }
+        while (offset < block.length() && block.charAt(offset) == ' ') {
+            offset++;
+            blanks++;
+        }
+
+        return blanks;
     }
 
     /**
