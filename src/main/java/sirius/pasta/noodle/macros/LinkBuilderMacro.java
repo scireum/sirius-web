@@ -13,7 +13,7 @@ import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
-import sirius.pasta.noodle.sandbox.PublicAPI;
+import sirius.pasta.noodle.sandbox.PublicApi;
 import sirius.web.util.LinkBuilder;
 
 import javax.annotation.Nonnull;
@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * Permits to create a {@link LinkBuilder} by using <tt>{@literal @}linkBuilder</tt> within a Tagliatelle template.
  */
-@PublicAPI
+@PublicApi
 @Register
 public class LinkBuilderMacro extends BasicMacro {
     @Override

@@ -13,7 +13,7 @@ import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
-import sirius.pasta.noodle.sandbox.PublicAPI;
+import sirius.pasta.noodle.sandbox.PublicApi;
 import sirius.web.security.UserContext;
 import sirius.web.security.UserInfo;
 
@@ -27,7 +27,7 @@ import java.util.List;
  * {@link sirius.pasta.noodle.OpCode#INTRINSIC_USER_CONTEXT_CURRENT_USER} and therefore be quite efficient anyway.
  */
 @Register
-@PublicAPI
+@PublicApi
 public class UserMacro extends BasicMacro {
 
     @Override

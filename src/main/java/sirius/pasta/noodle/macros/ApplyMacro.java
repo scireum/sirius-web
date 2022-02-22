@@ -14,7 +14,7 @@ import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
-import sirius.pasta.noodle.sandbox.PublicAPI;
+import sirius.pasta.noodle.sandbox.PublicApi;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -25,7 +25,7 @@ import java.util.List;
  * @see Strings#apply(String, Object...)
  */
 @Register
-@PublicAPI
+@PublicApi
 public class ApplyMacro extends BasicMacro {
     @Override
     public Class<?> getType() {

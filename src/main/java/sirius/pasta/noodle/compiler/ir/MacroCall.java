@@ -18,7 +18,7 @@ import sirius.pasta.noodle.macros.HelperMacro;
 import sirius.pasta.noodle.macros.I18nMacro;
 import sirius.pasta.noodle.macros.Macro;
 import sirius.pasta.noodle.macros.UserMacro;
-import sirius.pasta.noodle.sandbox.PublicAPI;
+import sirius.pasta.noodle.sandbox.PublicApi;
 import sirius.web.security.UserInfo;
 
 import java.lang.reflect.Type;
@@ -156,7 +156,7 @@ public class MacroCall extends Call {
                                        macro.getClass().getName());
         }
 
-        if (compilationContext.isSandboxEnabled() && !macro.getClass().isAnnotationPresent(PublicAPI.class)) {
+        if (compilationContext.isSandboxEnabled() && !macro.getClass().isAnnotationPresent(PublicApi.class)) {
             compilationContext.error(position,
                                      "The macro %s (%s) cannot be accessed due to sandbox restrictions.",
                                      macro.getName(),

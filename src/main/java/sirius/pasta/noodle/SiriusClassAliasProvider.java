@@ -11,12 +11,15 @@ package sirius.pasta.noodle;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Amount;
+import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Files;
 import sirius.kernel.commons.Hasher;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
 import sirius.kernel.commons.Values;
+import sirius.kernel.commons.Wait;
+import sirius.kernel.commons.Watch;
 import sirius.kernel.di.Injector;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.nls.Formatter;
@@ -73,5 +76,8 @@ public class SiriusClassAliasProvider implements ClassAliasProvider {
         consumer.accept("Files", Files.class);
         consumer.accept("Hasher", Hasher.class);
         consumer.accept("Amount", Amount.class);
+        consumer.accept("Context", Context.class);
+        consumer.accept("Wait", Wait.class);
+        consumer.accept("Watch", Watch.class);
     }
 }

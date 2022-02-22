@@ -17,9 +17,9 @@ import java.lang.annotation.Target;
  * Marks a field / method / class / macro as "safe" to be accessed by user code.
  * <p>
  * As scrips and templates can be created or changed by users, we need a way to determine
- * which methods, macros etc. are safe to call. Therefore this annotation can be used to mark such places.
+ * which methods, macros etc. are safe to call. Therefore, this annotation can be used to mark such places.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE, ElementType.FIELD})
-public @interface PublicAPI {
+public @interface PublicApi {
 }

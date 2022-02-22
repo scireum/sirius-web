@@ -16,7 +16,7 @@ import sirius.kernel.xml.StructuredNode;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
-import sirius.pasta.noodle.sandbox.PublicAPI;
+import sirius.pasta.noodle.sandbox.PublicApi;
 
 import javax.annotation.Nonnull;
 import javax.xml.parsers.DocumentBuilder;
@@ -28,7 +28,7 @@ import java.util.List;
  * Parses the given XML string into a {@link StructuredNode}.
  */
 @Register
-@PublicAPI
+@PublicApi
 public class XmlMacro extends BasicMacro {
 
     @Override

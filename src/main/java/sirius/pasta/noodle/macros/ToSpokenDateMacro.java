@@ -14,7 +14,7 @@ import sirius.kernel.nls.NLS;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
-import sirius.pasta.noodle.sandbox.PublicAPI;
+import sirius.pasta.noodle.sandbox.PublicApi;
 
 import javax.annotation.Nonnull;
 import java.time.temporal.Temporal;
@@ -24,7 +24,7 @@ import java.util.List;
  * Represents <tt>toSpokenDate(Temporal)</tt> which is a call to {@link NLS#toSpokenDate(Temporal)}.
  */
 @Register
-@PublicAPI
+@PublicApi
 public class ToSpokenDateMacro extends BasicMacro {
     @Override
     public Class<?> getType() {

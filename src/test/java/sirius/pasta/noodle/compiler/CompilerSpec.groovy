@@ -115,7 +115,7 @@ class CompilerSpec extends BaseSpecification {
     }
 
     def "types can be derived from generic super classes"() {
-        given:
+        expect:
         compile("NoodleExample.longToString(NoodleExample.INSTANCE.getRef().getId())").call(new SimpleEnvironment()) == "42"
         and:
         compile("Strings.join(' ', NoodleExample.INSTANCE.getRef().getTest(), 'World')").call(new SimpleEnvironment()) == "Hello World"
@@ -129,5 +129,14 @@ class CompilerSpec extends BaseSpecification {
         compilationContext.getErrors().size() == 1
         and:
         compilationContext.getErrors().get(0).getMessage() == "  1: 6: Found an incomplete class literal 'class sirius.pasta.tagliatelle.Tagliatelle'. Add '.class' if you want to refer to the class object."
+    }
+
+    def "calling constructors works"() {
+        expect: "calling a constructor works as expected..."
+        compile("Tuple.new('A','B').getFirst()").call(new SimpleEnvironment()) == "A"
+        and: "generic parameter propagation works as expected..."
+        compile("Tuple.new('A', 1).getFirst().getClass().getName()").call(new SimpleEnvironment()) == "java.lang.String"
+        compile("Tuple.new('A', 1).getSecond().getClass().getName()").call(new SimpleEnvironment()) == "java.lang.Integer"
+
     }
 }

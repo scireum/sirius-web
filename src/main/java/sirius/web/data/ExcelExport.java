@@ -407,7 +407,8 @@ public class ExcelExport {
         if (row == null) {
             return this;
         }
-        addRowAsList(Arrays.asList(row));
+
+        addListRow(Arrays.asList(row));
         return this;
     }
 

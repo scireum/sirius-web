@@ -12,7 +12,7 @@ import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.nls.NLS;
 import sirius.pasta.noodle.Environment;
-import sirius.pasta.noodle.sandbox.PublicAPI;
+import sirius.pasta.noodle.sandbox.PublicApi;
 
 import javax.annotation.Nonnull;
 import java.time.temporal.TemporalAccessor;
@@ -26,7 +26,7 @@ import java.util.Date;
  * via {@link Value#asLocalDateTime(java.time.LocalDateTime)} and using {@link NLS#getCurrentLang()}.
  */
 @Register
-@PublicAPI
+@PublicApi
 public class FormatDateTimeWithoutSecondsMacro extends FormatDateMacro {
 
     @Override

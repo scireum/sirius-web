@@ -12,7 +12,7 @@ import sirius.kernel.Sirius;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 
-import java.lang.reflect.Method;
+import java.lang.reflect.Executable;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -21,11 +21,11 @@ import java.util.Set;
  * Provides a security sandbox in case <tt>Noodle</tt> is compiling a script or template provided by a user.
  * <p>
  * User code may only access methods, macros or fields which have been whitelisted. This can either be
- * performed by placing a {@link PublicAPI} annotation or by adding an entry in the system config in
+ * performed by placing a {@link PublicApi} annotation or by adding an entry in the system config in
  * <tt>scripting.sandbox</tt>.
  * <p>
  * Note that the sandbox is applied at compile time and therefore has no runtime overhead at all. Also note that
- * common scripts and templates (provided by the application or an system administrator) run without a sandbox
+ * common scripts and templates (provided by the application or a system administrator) run without a sandbox
  * and therefore have full access to the whole JVM.
  */
 @Register(classes = Sandbox.class)
@@ -40,7 +40,7 @@ public class Sandbox {
      * @param method the method to check
      * @return <tt>true</tt> if it can be invoked, <tt>false</tt> otherwise
      */
-    public boolean canInvoke(Method method) {
+    public boolean canInvoke(Executable method) {
         if (isAllowedViaAnnotation(method)) {
             return true;
         }
@@ -72,26 +72,26 @@ public class Sandbox {
         this.allowlist = newAllowlist;
     }
 
-    private boolean isAllowedViaAnnotation(Method method) {
-        if (method.isAnnotationPresent(PublicAPI.class)) {
+    private boolean isAllowedViaAnnotation(Executable method) {
+        if (method.isAnnotationPresent(PublicApi.class)) {
             return true;
         }
-        if (method.getDeclaringClass().isAnnotationPresent(PublicAPI.class)) {
+        if (method.getDeclaringClass().isAnnotationPresent(PublicApi.class)) {
             return true;
         }
 
         return checkFieldForGetter(method);
     }
 
-    private boolean checkFieldForGetter(Method method) {
+    private boolean checkFieldForGetter(Executable method) {
         try {
             if (method.getName().startsWith("get") || method.getName().startsWith("set")) {
                 String fieldName = method.getName().substring(3, 3).toLowerCase() + method.getName().substring(4);
-                return method.getDeclaringClass().getDeclaredField(fieldName).isAnnotationPresent(PublicAPI.class);
+                return method.getDeclaringClass().getDeclaredField(fieldName).isAnnotationPresent(PublicApi.class);
             }
             if (method.getName().startsWith("is")) {
                 String fieldName = method.getName().substring(2, 2).toLowerCase() + method.getName().substring(3);
-                return method.getDeclaringClass().getDeclaredField(fieldName).isAnnotationPresent(PublicAPI.class);
+                return method.getDeclaringClass().getDeclaredField(fieldName).isAnnotationPresent(PublicApi.class);
             }
         } catch (NoSuchFieldException e) {
             Exceptions.ignore(e);
