@@ -22,6 +22,7 @@ import sirius.pasta.noodle.macros.Macro;
 import sirius.web.security.UserContext;
 
 import java.lang.invoke.MethodHandle;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
@@ -469,10 +470,12 @@ public class Invocation {
 
     private void handleInvoke(int numberOfArguments, boolean isStatic) throws Throwable {
         Object target = pop();
-        if (target instanceof MethodPointer) {
-            invokeMethod(numberOfArguments, isStatic, ((MethodPointer) target).getMethodHandle());
-        } else if (target instanceof Macro) {
-            invokeMacro(numberOfArguments, (Macro) target);
+        if (target instanceof MethodPointer methodPointer) {
+            invokeMethod(numberOfArguments, isStatic, methodPointer.getMethodHandle());
+        } else if (target instanceof Macro macro) {
+            invokeMacro(numberOfArguments, macro);
+        } else if (target instanceof Constructor<?> constructor) {
+            invokeConstructor(numberOfArguments,constructor);
         } else {
             throw createVmError(Strings.apply("Cannot invoke: %s", target));
         }
@@ -539,10 +542,10 @@ public class Invocation {
      * Pops (removes) the given number of argument off the stack.
      *
      * @param numberOfArguments the argument to remove
-     * @param isStatic          determines if a static method call is present. If not, an additional parameter for "this" is
-     *                          popped off the stack.
+     * @param isStatic          determines if a static method call is present. If not, an additional parameter for
+     *                          "this" is popped off the stack.
      * @return the parameters which have been popped off the stack. Note that the first element will be "this" (unless
-     * isStatic was <tt>true</tt>). Then the stack top will be the first argument and so on. Therefore the compiler has
+     * isStatic was <tt>true</tt>). Then the stack top will be the first argument and so on. Therefore, the compiler has
      * to actually reverse the execution order of arguments to match our expectation here.
      */
     private Object[] popArguments(int numberOfArguments, boolean isStatic) {
@@ -569,8 +572,16 @@ public class Invocation {
         push(target.invoke(environment, args));
     }
 
+    private void invokeConstructor(int numberOfArguments, Constructor<?> constructor) throws Exception {
+        Object[] args = new Object[numberOfArguments];
+        for (int i = 0; i < args.length; i++) {
+            args[i] = pop();
+        }
+        push(constructor.newInstance(args));
+    }
+
     @SuppressWarnings({"unchecked", "java:S1172"})
-    @Explain("The type check is implicitely enforced and the JVM will raise a ClassCastException all by itself")
+    @Explain("The type check is implicitly enforced and the JVM will raise a ClassCastException all by itself")
     private <T> T pop(Class<T> type) {
         return (T) pop();
     }
