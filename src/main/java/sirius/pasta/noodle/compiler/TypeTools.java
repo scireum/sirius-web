@@ -11,6 +11,7 @@ package sirius.pasta.noodle.compiler;
 import sirius.pasta.noodle.compiler.ir.Node;
 
 import javax.annotation.Nonnull;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.GenericDeclaration;
@@ -126,7 +127,7 @@ public class TypeTools {
      * @param parameters the parameters being passed in
      * @return the type tool itself for fluent method calls
      */
-    public TypeTools withMethod(Method method, Node[] parameters) {
+    public TypeTools withMethod(Executable method, Node[] parameters) {
         Class<?> scope = method.getDeclaringClass();
 
         for (TypeVariable<?> methodVariable : method.getTypeParameters()) {

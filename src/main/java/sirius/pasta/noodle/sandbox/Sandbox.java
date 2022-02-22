@@ -12,6 +12,7 @@ import sirius.kernel.Sirius;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 
+import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Map;
@@ -25,7 +26,7 @@ import java.util.Set;
  * <tt>scripting.sandbox</tt>.
  * <p>
  * Note that the sandbox is applied at compile time and therefore has no runtime overhead at all. Also note that
- * common scripts and templates (provided by the application or an system administrator) run without a sandbox
+ * common scripts and templates (provided by the application or a system administrator) run without a sandbox
  * and therefore have full access to the whole JVM.
  */
 @Register(classes = Sandbox.class)
@@ -40,7 +41,7 @@ public class Sandbox {
      * @param method the method to check
      * @return <tt>true</tt> if it can be invoked, <tt>false</tt> otherwise
      */
-    public boolean canInvoke(Method method) {
+    public boolean canInvoke(Executable method) {
         if (isAllowedViaAnnotation(method)) {
             return true;
         }
@@ -72,7 +73,7 @@ public class Sandbox {
         this.allowlist = newAllowlist;
     }
 
-    private boolean isAllowedViaAnnotation(Method method) {
+    private boolean isAllowedViaAnnotation(Executable method) {
         if (method.isAnnotationPresent(PublicAPI.class)) {
             return true;
         }
@@ -83,7 +84,7 @@ public class Sandbox {
         return checkFieldForGetter(method);
     }
 
-    private boolean checkFieldForGetter(Method method) {
+    private boolean checkFieldForGetter(Executable method) {
         try {
             if (method.getName().startsWith("get") || method.getName().startsWith("set")) {
                 String fieldName = method.getName().substring(3, 3).toLowerCase() + method.getName().substring(4);
