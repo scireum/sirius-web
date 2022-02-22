@@ -11,6 +11,7 @@ package sirius.pasta.tagliatelle.compiler;
 import parsii.tokenizer.Char;
 import parsii.tokenizer.ParseError;
 import parsii.tokenizer.Position;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.health.Exceptions;
@@ -527,6 +528,8 @@ public class TemplateCompiler extends InputProcessor {
      *                                          end of the block when looking for a }
      * @return the parsed content
      */
+    @SuppressWarnings("java:S3776")
+    @Explain("We accept the higher complexity here to keep the whole logic in one place.")
     private String consumeStaticBlock(int expectedNumberOfOpenCurlyBrackets) {
         StringBuilder sb = new StringBuilder();
 
@@ -561,6 +564,8 @@ public class TemplateCompiler extends InputProcessor {
         return sb.toString();
     }
 
+    @SuppressWarnings("java:S1067")
+    @Explain("We accept the higher complexity here to keep the whole logic in one place.")
     private boolean isAtHtmlStyleComment() {
         return reader.current().is('<')
                && reader.next().is('!')
