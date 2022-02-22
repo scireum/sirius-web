@@ -27,6 +27,7 @@ import sirius.pasta.noodle.compiler.ir.BinaryOperation;
 import sirius.pasta.noodle.compiler.ir.BlockStatement;
 import sirius.pasta.noodle.compiler.ir.Conjunction;
 import sirius.pasta.noodle.compiler.ir.Constant;
+import sirius.pasta.noodle.compiler.ir.ConstructorCall;
 import sirius.pasta.noodle.compiler.ir.Disjunction;
 import sirius.pasta.noodle.compiler.ir.ForStatement;
 import sirius.pasta.noodle.compiler.ir.IfStatement;
@@ -106,6 +107,11 @@ public class Parser extends InputProcessor {
      * if the self expression matches.
      */
     public static final String KEYWORD_METHOD_IS = "is";
+
+    /**
+     * Defines a constructor-call if invoked as a method on a raw class literal like {@code Tuple.new(a, b)}.
+     */
+    public static final String KEYWORD_METHOD_NEW = "new";
 
     /**
      * Represents <tt>true</tt>.
@@ -732,7 +738,7 @@ public class Parser extends InputProcessor {
         consumeExpectedCharacter('(');
         List<Node> parameters = parseParameterList(self.getGenericType(), methodName);
         consumeExpectedCharacter(')');
-        Node specialNode = handleSpecialMethods(self, methodName, parameters);
+        Node specialNode = handleSpecialMethods(position, self, methodName, parameters);
         if (specialNode != null) {
             return specialNode;
         }
@@ -1006,24 +1012,26 @@ public class Parser extends InputProcessor {
     }
 
     /**
-     * Handles special methods like <tt>.is</tt> and <tt>.as</tt>
+     * Handles special methods like <tt>.is</tt>, <tt>.as</tt> and <tt>.new</tt>.
      * <p>
      * To make the syntax a bit more pleasing we do casts as ".as" operation instead of double brackets. We also use
-     * <tt>.is</tt> instead of "instanceof" as it can be written without whitespaces...
+     * <tt>.is</tt> instead of "instanceof" as it can be written without whitespaces. Finally, we handle constructors
+     * as static methods named <tt>.new</tt>, as again, this seems more consistent and makes the language simpler.
      *
+     * @param position   the position of the method call
      * @param self       the expression to invoke a method on
      * @param methodName the name of the method to invoke
      * @param parameters the parameters for the method
      * @return either a {@link NativeCast} or an {@link InstanceOfCheck} or <tt>null</tt> if the call isn't a cast
      */
-    private Node handleSpecialMethods(Node self, String methodName, List<Node> parameters) {
+    private Node handleSpecialMethods(Char position, Node self, String methodName, List<Node> parameters) {
         if (KEYWORD_METHOD_AS.equals(methodName)
             && parameters.size() == 1
             && parameters.get(0).isConstant()
             && (Class.class.isAssignableFrom(parameters.get(0).getType()))) {
             Class<?> type = (Class<?>) parameters.get(0).getConstantValue();
             if (!Transformable.class.isAssignableFrom(self.getType())) {
-                return new NativeCast(self.getPosition(), self, type);
+                return new NativeCast(position, self, type);
             }
         }
 
@@ -1033,8 +1041,16 @@ public class Parser extends InputProcessor {
             && (Class.class.isAssignableFrom(parameters.get(0).getType()))) {
             Class<?> type = (Class<?>) parameters.get(0).getConstantValue();
             if (!Transformable.class.isAssignableFrom(self.getType())) {
-                return new InstanceOfCheck(self.getPosition(), self, type);
+                return new InstanceOfCheck(position, self, type);
             }
+        }
+
+        if (KEYWORD_METHOD_NEW.equals(methodName) && self instanceof RawClassLiteral classLiteral) {
+            ConstructorCall constructorCall = new ConstructorCall(position, classLiteral);
+            constructorCall.setParameters(parameters);
+            constructorCall.tryBindToConstructor(context);
+
+            return constructorCall;
         }
 
         return null;
