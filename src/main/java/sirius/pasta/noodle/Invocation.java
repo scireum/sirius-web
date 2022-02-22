@@ -475,7 +475,7 @@ public class Invocation {
         } else if (target instanceof Macro macro) {
             invokeMacro(numberOfArguments, macro);
         } else if (target instanceof Constructor<?> constructor) {
-            invokeConstructor(numberOfArguments,constructor);
+            invokeConstructor(numberOfArguments, constructor);
         } else {
             throw createVmError(Strings.apply("Cannot invoke: %s", target));
         }
