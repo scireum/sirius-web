@@ -13,7 +13,6 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 
 import java.lang.reflect.Executable;
-import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
