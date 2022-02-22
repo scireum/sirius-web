@@ -16,7 +16,7 @@ import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
 import sirius.pasta.noodle.macros.BasicMacro;
-import sirius.pasta.noodle.sandbox.PublicAPI;
+import sirius.pasta.noodle.sandbox.PublicApi;
 import sirius.pasta.tagliatelle.rendering.LocalRenderContext;
 import sirius.web.util.IdGeneratorContext;
 
@@ -27,7 +27,7 @@ import java.util.List;
  * Generates a new ID which is unique within this {@link LocalRenderContext}.
  */
 @Register
-@PublicAPI
+@PublicApi
 public class GenerateIdMacro extends BasicMacro {
     @Override
     protected Class<?> getType() {

@@ -14,7 +14,7 @@ import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
-import sirius.pasta.noodle.sandbox.PublicAPI;
+import sirius.pasta.noodle.sandbox.PublicApi;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -23,7 +23,7 @@ import java.util.List;
  * Represents <tt>join(Iterable, String)</tt> which is a call to {@link Strings#join(Iterable, String)}.
  */
 @Register
-@PublicAPI
+@PublicApi
 public class JoinMacro extends BasicMacro {
     @Override
     public Class<?> getType() {

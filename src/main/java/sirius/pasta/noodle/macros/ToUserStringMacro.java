@@ -14,7 +14,7 @@ import sirius.kernel.nls.NLS;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
-import sirius.pasta.noodle.sandbox.PublicAPI;
+import sirius.pasta.noodle.sandbox.PublicApi;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -23,7 +23,7 @@ import java.util.List;
  * Represents <tt>toUserString(Object)</tt> which is a call to {@link NLS#toUserString(Object)}.
  */
 @Register
-@PublicAPI
+@PublicApi
 public class ToUserStringMacro extends BasicMacro {
     @Override
     public Class<?> getType() {

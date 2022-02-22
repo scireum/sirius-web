@@ -22,7 +22,7 @@ import java.util.Set;
  * Provides a security sandbox in case <tt>Noodle</tt> is compiling a script or template provided by a user.
  * <p>
  * User code may only access methods, macros or fields which have been whitelisted. This can either be
- * performed by placing a {@link PublicAPI} annotation or by adding an entry in the system config in
+ * performed by placing a {@link PublicApi} annotation or by adding an entry in the system config in
  * <tt>scripting.sandbox</tt>.
  * <p>
  * Note that the sandbox is applied at compile time and therefore has no runtime overhead at all. Also note that
@@ -74,10 +74,10 @@ public class Sandbox {
     }
 
     private boolean isAllowedViaAnnotation(Executable method) {
-        if (method.isAnnotationPresent(PublicAPI.class)) {
+        if (method.isAnnotationPresent(PublicApi.class)) {
             return true;
         }
-        if (method.getDeclaringClass().isAnnotationPresent(PublicAPI.class)) {
+        if (method.getDeclaringClass().isAnnotationPresent(PublicApi.class)) {
             return true;
         }
 
@@ -88,11 +88,11 @@ public class Sandbox {
         try {
             if (method.getName().startsWith("get") || method.getName().startsWith("set")) {
                 String fieldName = method.getName().substring(3, 3).toLowerCase() + method.getName().substring(4);
-                return method.getDeclaringClass().getDeclaredField(fieldName).isAnnotationPresent(PublicAPI.class);
+                return method.getDeclaringClass().getDeclaredField(fieldName).isAnnotationPresent(PublicApi.class);
             }
             if (method.getName().startsWith("is")) {
                 String fieldName = method.getName().substring(2, 2).toLowerCase() + method.getName().substring(3);
-                return method.getDeclaringClass().getDeclaredField(fieldName).isAnnotationPresent(PublicAPI.class);
+                return method.getDeclaringClass().getDeclaredField(fieldName).isAnnotationPresent(PublicApi.class);
             }
         } catch (NoSuchFieldException e) {
             Exceptions.ignore(e);

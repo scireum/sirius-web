@@ -13,7 +13,7 @@ import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
-import sirius.pasta.noodle.sandbox.PublicAPI;
+import sirius.pasta.noodle.sandbox.PublicApi;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  * expanded into the list instead.
  */
 @Register
-@PublicAPI
+@PublicApi
 public class ToListMacro extends BasicMacro {
 
     @Override

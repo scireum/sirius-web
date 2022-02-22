@@ -15,7 +15,7 @@ import sirius.kernel.nls.NLS;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
-import sirius.pasta.noodle.sandbox.PublicAPI;
+import sirius.pasta.noodle.sandbox.PublicApi;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -24,7 +24,7 @@ import java.util.List;
  * Represents <tt>i18n(String)</tt> which is essentially a call to {@link NLS#get(String)}.
  */
 @Register
-@PublicAPI
+@PublicApi
 public class I18nMacro extends BasicMacro {
 
     @Override

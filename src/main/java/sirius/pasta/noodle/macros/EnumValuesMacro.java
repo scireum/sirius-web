@@ -13,7 +13,7 @@ import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
-import sirius.pasta.noodle.sandbox.PublicAPI;
+import sirius.pasta.noodle.sandbox.PublicApi;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -23,7 +23,7 @@ import java.util.List;
  * Returns all values of a given enum class.
  */
 @Register
-@PublicAPI
+@PublicApi
 public class EnumValuesMacro extends BasicMacro {
 
     @Override

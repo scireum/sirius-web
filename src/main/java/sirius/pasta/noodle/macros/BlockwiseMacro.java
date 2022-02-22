@@ -13,7 +13,7 @@ import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
-import sirius.pasta.noodle.sandbox.PublicAPI;
+import sirius.pasta.noodle.sandbox.PublicApi;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ import java.util.List;
  * be a solution as well but is not fully supported on all relevant platforms yet.
  */
 @Register
-@PublicAPI
+@PublicApi
 public class BlockwiseMacro extends BasicMacro {
 
     @Override
