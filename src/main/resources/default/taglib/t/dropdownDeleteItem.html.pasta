@@ -3,6 +3,7 @@
 <i:arg type="String" name="permission" default=""/>
 <i:arg type="String" name="framework" default=""/>
 <i:arg name="class" type="String" default="" description="Lists additional CSS classes to apply to the item."/>
+<i:arg type="boolean" name="adminOnly" default="false"/>
 
 <i:pragma name="description" value="Renders a delete link to be used in a dropdown menu (e.g. card actions)."/>
 
@@ -11,4 +12,5 @@
                 framework="@framework"
                 icon="fa fa-trash"
                 labelKey="NLS.delete"
+                adminOnly="@adminOnly"
                 url="@(page != null) ? page.linkToCurrentPage(url) : url"/>
