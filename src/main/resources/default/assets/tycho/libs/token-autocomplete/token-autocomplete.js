@@ -44,6 +44,7 @@ var TokenAutocomplete = /** @class */ (function () {
             name: '',
             selector: '',
             noMatchesText: null,
+            noMatchesCustomEntriesDescription: null,
             placeholderText: 'enter some text',
             initialTokens: null,
             initialSuggestions: null,
@@ -347,7 +348,7 @@ var TokenAutocomplete = /** @class */ (function () {
                     this.addToken(input, input, null);
                     return;
                 }
-                if (this.parent.autocomplete.suggestions.childNodes.length === 1) {
+                if (this.parent.autocomplete.suggestions.childNodes.length === 1 && this.parent.autocomplete.suggestions.childNodes[0].dataset.type != '_no_match_') {
                     this.parent.autocomplete.suggestions.firstChild.click();
                 }
                 else {
@@ -552,7 +553,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 this.parent.autocomplete.clearSuggestions();
                 return;
             }
-            if (this.parent.autocomplete.suggestions.childNodes.length === 1) {
+            if (this.parent.autocomplete.suggestions.childNodes.length === 1 && this.parent.autocomplete.suggestions.childNodes[0].dataset.type != '_no_match_') {
                 this.parent.autocomplete.suggestions.firstChild.click();
                 return;
             }
@@ -635,7 +636,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 if (me.parent.val().length !== 0 && me.parent.val()[0] !== '') {
                     return;
                 }
-                if (input != '' && me.parent.options.allowCustomEntries) {
+                if (input != '') {
                     me.handleInputAsValue(input);
                     return;
                 }
@@ -792,15 +793,27 @@ var TokenAutocomplete = /** @class */ (function () {
                             me.addSuggestion(suggestion);
                         }
                     });
-                    if (me.suggestions.childNodes.length == 0 && me.parent.options.noMatchesText) {
-                        me.addSuggestion({
-                            id: null,
-                            value: '_no_match_',
-                            fieldLabel: me.parent.options.noMatchesText,
-                            type: '_no_match_',
-                            completionDescription: null,
-                            completionLabel: null
-                        });
+                    if (me.suggestions.childNodes.length == 0) {
+                        if (me.parent.options.allowCustomEntries && me.parent.options.noMatchesCustomEntriesDescription) {
+                            me.addSuggestion({
+                                id: null,
+                                value: value,
+                                fieldLabel: value,
+                                type: '_no_match_',
+                                completionDescription: me.parent.options.noMatchesCustomEntriesDescription,
+                                completionLabel: null
+                            });
+                        }
+                        else if (me.parent.options.noMatchesText) {
+                            me.addSuggestion({
+                                id: null,
+                                value: '_no_match_',
+                                fieldLabel: me.parent.options.noMatchesText,
+                                type: '_no_match_',
+                                completionDescription: null,
+                                completionLabel: null
+                            });
+                        }
                     }
                 }
             };
@@ -808,6 +821,8 @@ var TokenAutocomplete = /** @class */ (function () {
              * Hides the suggestions dropdown from the user.
              */
             class_4.prototype.hideSuggestions = function () {
+                // as the suggestions will be re-shown if a pending request is executed, we abort them if we want to hide
+                this.abortPendingRequest();
                 this.suggestions.style.display = '';
                 var _highlightedSuggestions = this.suggestions.querySelectorAll('li.token-autocomplete-suggestion-highlighted');
                 _highlightedSuggestions.forEach(function (_suggestion) {
@@ -846,7 +861,16 @@ var TokenAutocomplete = /** @class */ (function () {
              * Removes all previous suggestions from the dropdown.
              */
             class_4.prototype.clearSuggestions = function () {
+                this.abortPendingRequest();
                 this.suggestions.innerHTML = '';
+            };
+            /**
+             * Aborts currently in progress or scheduled suggestions requests.
+             */
+            class_4.prototype.abortPendingRequest = function () {
+                var _a;
+                (_a = this.request) === null || _a === void 0 ? void 0 : _a.abort();
+                clearTimeout(this.timeout);
             };
             /**
              * Loads suggestions matching the given query from the rest service behind the URI given as an option while initializing the field.
@@ -896,15 +920,27 @@ var TokenAutocomplete = /** @class */ (function () {
                         answer.completions.forEach(function (suggestion) {
                             me.addSuggestion(suggestion);
                         });
-                        if (me.suggestions.childNodes.length == 0 && me.options.noMatchesText) {
-                            me.addSuggestion({
-                                id: null,
-                                value: '_no_match_',
-                                fieldLabel: me.options.noMatchesText,
-                                type: '_no_match_',
-                                completionDescription: null,
-                                completionLabel: null
-                            });
+                        if (me.suggestions.childNodes.length == 0) {
+                            if (me.parent.options.allowCustomEntries && me.parent.options.noMatchesCustomEntriesDescription) {
+                                me.addSuggestion({
+                                    id: null,
+                                    value: query,
+                                    fieldLabel: query,
+                                    type: '_no_match_',
+                                    completionDescription: me.parent.options.noMatchesCustomEntriesDescription,
+                                    completionLabel: null
+                                });
+                            }
+                            else if (me.parent.options.noMatchesText) {
+                                me.addSuggestion({
+                                    id: null,
+                                    value: '_no_match_',
+                                    fieldLabel: me.parent.options.noMatchesText,
+                                    type: '_no_match_',
+                                    completionDescription: null,
+                                    completionLabel: null
+                                });
+                            }
                         }
                     }
                 };
@@ -933,7 +969,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 }
                 var me = this;
                 element.addEventListener('click', function (_event) {
-                    if (text == me.options.noMatchesText) {
+                    if (value == '_no_match_') {
                         return;
                     }
                     if (me.parent.options.selectMode == SelectModes.SINGLE) {

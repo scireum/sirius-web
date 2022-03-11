@@ -61,6 +61,7 @@
             optional: @optional,
             enableTabulator: false,
             noMatchesText: '@i18n("template.html.selects.noMatches")',
+            noMatchesCustomEntriesDescription: '@i18n("template.html.selects.useCustomEntry")',
             placeholderText: '@placeholder',
             suggestionsUri: '@suggestionUri'
         });
