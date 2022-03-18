@@ -401,12 +401,9 @@ public class UserInfo extends Composable {
 
     @Override
     public <A> Optional<A> tryAs(@Nonnull Class<A> adapterType) {
-        Transformable userObject = getUserObject(Transformable.class);
-        if (userObject != null) {
-            return userObject.tryAs(adapterType);
-        }
-
-        return super.tryAs(adapterType);
+        return Optional.ofNullable(getUserObject(Transformable.class))
+                       .flatMap(userObject -> tryAs(adapterType))
+                       .or(() -> super.tryAs(adapterType));
     }
 
     /**
