@@ -16,10 +16,10 @@ import sirius.kernel.commons.Value;
 import java.util.Optional;
 
 /**
- * Provides a lightweigth helper to parse and evaluate simple queries against a JSON object.
+ * Provides a light-weight helper to parse and evaluate simple queries against a JSON object.
  * <p>
- * Provides a simple and failsave way of retrieving a value or inner object by evaluating
- * a simple path. The path are simple key names separated by a "." e.g. {@code inner.object.label}.
+ * Provides a simple and fail-safe way of retrieving a value or inner object by evaluating
+ * a simple path. The path consists of simple key names separated by a "." e.g. {@code inner.object.label}.
  */
 public class JSONPath {
 
