@@ -402,7 +402,7 @@ public class UserInfo extends Composable {
     @Override
     public <A> Optional<A> tryAs(@Nonnull Class<A> adapterType) {
         return Optional.ofNullable(getUserObject(Transformable.class))
-                       .flatMap(userObject -> tryAs(adapterType))
+                       .flatMap(userObject -> userObject.tryAs(adapterType))
                        .or(() -> super.tryAs(adapterType));
     }
 
