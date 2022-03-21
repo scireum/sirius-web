@@ -15,6 +15,7 @@ import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.datamatrix.DataMatrixWriter;
 import com.google.zxing.oned.Code128Writer;
+import com.google.zxing.oned.Code39Writer;
 import com.google.zxing.oned.EAN13Writer;
 import com.google.zxing.oned.ITFWriter;
 import com.google.zxing.qrcode.QRCodeWriter;
@@ -47,6 +48,7 @@ public class BarcodeController extends BasicController {
     private static final String TYPE_ITF = "itf";
     private static final String TYPE_INTERLEAVED_2_OF_5 = "interleaved2of5";
     private static final String TYPE_INTERLEAVED_2_OF_5_CHECKSUMMED = "interleaved2of5checksummed";
+    private static final String TYPE_CODE39 = "code39";
 
     private static final Pattern NUMERIC = Pattern.compile("[0-9]+");
 
@@ -141,8 +143,9 @@ public class BarcodeController extends BasicController {
             case TYPE_EAN -> BarcodeFormat.EAN_13;
             case TYPE_ITF, TYPE_INTERLEAVED_2_OF_5, TYPE_INTERLEAVED_2_OF_5_CHECKSUMMED -> BarcodeFormat.ITF;
             case TYPE_DATAMATRIX -> BarcodeFormat.DATA_MATRIX;
+            case TYPE_CODE39 -> BarcodeFormat.CODE_39;
             default -> throw new IllegalArgumentException(
-                    "Unsupported barcode type. Supported types are: qr, code128, ean, interleaved2of5, interleaved2of5checksummed, datamatrix");
+                    "Unsupported barcode type. Supported types are: qr, code128, ean, interleaved2of5, interleaved2of5checksummed, datamatrix, code39");
         };
     }
 
@@ -162,6 +165,7 @@ public class BarcodeController extends BasicController {
             case EAN_13 -> new EAN13Writer();
             case ITF -> new ITFWriter();
             case DATA_MATRIX -> new DataMatrixWriter();
+            case CODE_39 -> new Code39Writer();
             default -> throw new IllegalArgumentException("Unsupported barcode type!");
         };
     }
