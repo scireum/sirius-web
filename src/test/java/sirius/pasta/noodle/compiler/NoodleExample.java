@@ -52,6 +52,10 @@ public class NoodleExample {
         consumer.accept(3);
     }
 
+    public static void throwDeclaredException() throws Exception{
+      throw new Exception("An exception");
+    }
+
     public static void invokeUnitOfWork(UnitOfWork unit) throws Exception {
         unit.execute();
     }

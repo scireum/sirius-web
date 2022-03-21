@@ -12,6 +12,7 @@ package sirius.pasta.noodle.compiler
 import parsii.tokenizer.Position
 import sirius.kernel.BaseSpecification
 import sirius.pasta.noodle.Callable
+import sirius.pasta.noodle.ScriptingException
 import sirius.pasta.noodle.SimpleEnvironment
 
 /**
@@ -95,6 +96,18 @@ class CompilerSpec extends BaseSpecification {
                 call(new SimpleEnvironment()) == 7
         and: "zero-arg lambdas work"
         compile("let x = 0; NoodleExample.invokeUnitOfWork(|| x = 42); return x;").call(new SimpleEnvironment()) == 42
+    }
+
+    def "exceptions in lambdas work"() {
+        when: "An undeclared exception is thrown within a lambda..."
+        compile("NoodleExample.invokeConsumer(|x| { NoodleExample.throwDeclaredException(); })").call(new SimpleEnvironment())
+        then: "The exception is turned into a ScriptingException if it is not throwable (undeclared) within a lambda..."
+        thrown(ScriptingException)
+
+        when: "A RuntimeException is thrown..."
+        compile("NoodleExample.invokeConsumer(|x| { x / 0; })").call(new SimpleEnvironment())
+        then: "The exception is re-thrown as it doesn't need to be declared..."
+        thrown(ScriptingException)
     }
 
     def "conditions work as expected"() {
