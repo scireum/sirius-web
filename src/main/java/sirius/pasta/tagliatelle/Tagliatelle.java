@@ -237,6 +237,9 @@ public class Tagliatelle {
 
     /**
      * Resolves the given path using {@link Resources} and compiles it into a {@link Template}.
+     * <p>
+     * Note that in order to reference a template in a class to use it "like a string template", a
+     * {@link TemplateReference} can be used.
      *
      * @param path the path to resolve
      * @return the appropriate template or an empty template if no matching {@link Resource} was found.
