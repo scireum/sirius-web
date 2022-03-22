@@ -738,7 +738,7 @@ var TokenAutocomplete = /** @class */ (function () {
                         }
                         return;
                     }
-                    if (event.key == me.parent.KEY_LEFT || event.key == me.parent.KEY_RIGHT || event.key == me.parent.KEY_ENTER) {
+                    if (event.key == me.parent.KEY_LEFT || event.key == me.parent.KEY_RIGHT || event.key == me.parent.KEY_ENTER || event.key == me.parent.KEY_TAB) {
                         // We don't want to re-trigger the autocompletion when the user navigates the cursor inside the input.
                         return;
                     }
