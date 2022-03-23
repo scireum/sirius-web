@@ -272,6 +272,11 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
         finalizeOutput();
     }
 
+    /**
+     * Finalizes the output and closes the stream.
+     * <p>
+     * In constrast to {@link #endResult()} this does not require an open result object.
+     */
     public void finalizeOutput() {
         try {
             super.endResult();
