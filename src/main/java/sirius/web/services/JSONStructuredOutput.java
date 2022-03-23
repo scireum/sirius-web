@@ -268,8 +268,12 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
 
     @Override
     public void endResult() {
+        endObject();
+        finalizeOutput();
+    }
+
+    public void finalizeOutput() {
         try {
-            endObject();
             super.endResult();
             if (Strings.isFilled(callback)) {
                 writer.write(")");
