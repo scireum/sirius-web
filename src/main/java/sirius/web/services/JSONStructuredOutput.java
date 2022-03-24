@@ -218,13 +218,13 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
 
     @Override
     public void writeProperty(String name, Object data) {
-        if (data instanceof JSONObject) {
+        if (data instanceof JSONObject jsonObject) {
             beginObject(name);
-            ((JSONObject) data).forEach(this::property);
+            jsonObject.forEach(this::property);
             endObject();
-        } else if (data instanceof JSONArray) {
+        } else if (data instanceof JSONArray jsonArray) {
             beginArray(name);
-            ((JSONArray) data).forEach(element -> property("", element));
+            jsonArray.forEach(element -> property("", element));
             endArray();
         } else {
             writePlainProperty(name, data);
@@ -268,8 +268,17 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
 
     @Override
     public void endResult() {
+        endObject();
+        finalizeOutput();
+    }
+
+    /**
+     * Finalizes the output and closes the stream.
+     * <p>
+     * In constrast to {@link #endResult()} this does not require an open result object.
+     */
+    public void finalizeOutput() {
         try {
-            endObject();
             super.endResult();
             if (Strings.isFilled(callback)) {
                 writer.write(")");
