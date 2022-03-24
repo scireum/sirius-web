@@ -555,7 +555,7 @@ public class MailSender {
         if (Strings.isFilled(senderEmail)) {
             senderEmail = senderEmail.replaceAll("\\s", "");
             if (UserContext.getSettings().get("mail.usePunycode").asBoolean()) {
-                senderEmail = IDN.toUnicode(senderEmail);
+                senderEmail = IDN.toASCII(senderEmail, IDN.ALLOW_UNASSIGNED);
             }
         }
         if (Strings.isFilled(senderName)) {
@@ -564,7 +564,7 @@ public class MailSender {
         if (Strings.isFilled(receiverEmail)) {
             receiverEmail = receiverEmail.replaceAll("\\s", "");
             if (UserContext.getSettings().get("mail.usePunycode").asBoolean()) {
-                receiverEmail = IDN.toUnicode(receiverEmail);
+                receiverEmail = IDN.toASCII(receiverEmail, IDN.ALLOW_UNASSIGNED);
             }
         }
         if (Strings.isFilled(receiverName)) {
