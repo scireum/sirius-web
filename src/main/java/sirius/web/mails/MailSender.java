@@ -28,7 +28,13 @@ import sirius.web.templates.Templates;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
+import java.net.IDN;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Implements the builder pattern to specify the mail to send.
@@ -57,7 +63,7 @@ public class MailSender {
     protected List<DataSource> attachments = new ArrayList<>();
     protected String bounceToken;
     protected String lang;
-    protected Map<String, String> headers =new TreeMap<>();
+    protected Map<String, String> headers = new TreeMap<>();
 
     @Part
     private static Mails mails;
@@ -397,7 +403,7 @@ public class MailSender {
     /**
      * Sets the language used to perform {@link sirius.kernel.nls.NLS} lookups when rendering templates.
      *
-     * @param langs an array of languages. The first non empty value is used.
+     * @param langs an array of languages. The first non-empty value is used.
      * @return the builder itself
      */
     public MailSender setLang(String... langs) {
@@ -416,7 +422,7 @@ public class MailSender {
     /**
      * Sends the mail using the given settings.
      * <p>
-     * Once all settings are validated, the mail is send in a separate thread so this method will
+     * Once all settings are validated, the mail is sent in a separate thread so this method will
      * return rather quickly. Note that a {@link sirius.kernel.health.HandledException} is thrown in case
      * of invalid settings (bad mail address etc.).
      */
@@ -548,12 +554,18 @@ public class MailSender {
     private void sanitize() {
         if (Strings.isFilled(senderEmail)) {
             senderEmail = senderEmail.replaceAll("\\s", "");
+            if (UserContext.getSettings().get("mail.usePunycode").asBoolean()) {
+                senderEmail = IDN.toUnicode(senderEmail);
+            }
         }
         if (Strings.isFilled(senderName)) {
             senderName = senderName.trim();
         }
         if (Strings.isFilled(receiverEmail)) {
             receiverEmail = receiverEmail.replaceAll("\\s", "");
+            if (UserContext.getSettings().get("mail.usePunycode").asBoolean()) {
+                receiverEmail = IDN.toUnicode(receiverEmail);
+            }
         }
         if (Strings.isFilled(receiverName)) {
             receiverName = receiverName.trim();
