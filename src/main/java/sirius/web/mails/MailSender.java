@@ -553,29 +553,33 @@ public class MailSender {
 
     private void sanitize() {
         if (Strings.isFilled(senderEmail)) {
-            senderEmail = senderEmail.replaceAll("\\s", "");
-            if (UserContext.getSettings().get("mail.usePunycode").asBoolean()) {
-                senderEmail = IDN.toASCII(senderEmail, IDN.ALLOW_UNASSIGNED);
-            }
+            senderEmail = encodeIdnMailAddressToAsciiIfNecessary(senderEmail);
         }
         if (Strings.isFilled(senderName)) {
             senderName = senderName.trim();
         }
         if (Strings.isFilled(receiverEmail)) {
-            receiverEmail = receiverEmail.replaceAll("\\s", "");
-            if (UserContext.getSettings().get("mail.usePunycode").asBoolean()) {
-                receiverEmail = IDN.toASCII(receiverEmail, IDN.ALLOW_UNASSIGNED);
-            }
+            receiverEmail = encodeIdnMailAddressToAsciiIfNecessary(receiverEmail);
         }
         if (Strings.isFilled(receiverName)) {
             receiverName = receiverName.trim();
         }
         if (Strings.isFilled(replyToEmail)) {
-            replyToEmail = replyToEmail.replaceAll("\\s", "");
+            replyToEmail = encodeIdnMailAddressToAsciiIfNecessary(replyToEmail);
         }
         if (Strings.isFilled(replyToName)) {
             replyToName = replyToName.trim();
         }
+    }
+
+    private String encodeIdnMailAddressToAsciiIfNecessary(String mailAddress) {
+        mailAddress = mailAddress.replaceAll("\\s", "");
+        if (UserContext.getSettings().get("mail.usePunycode").asBoolean()) {
+            String user = mailAddress.substring(0, mailAddress.indexOf("@"));
+            String domain = mailAddress.substring(mailAddress.indexOf("@") + 1);
+            return user + "@" + IDN.toASCII(domain, IDN.ALLOW_UNASSIGNED);
+        }
+        return mailAddress;
     }
 
     /**
