@@ -553,31 +553,31 @@ public class MailSender {
 
     private void sanitize() {
         if (Strings.isFilled(senderEmail)) {
-            senderEmail = encodeIdnMailAddressToAsciiIfNecessary(senderEmail);
+            senderEmail = sanitizeMailAddress(senderEmail);
         }
         if (Strings.isFilled(senderName)) {
             senderName = senderName.trim();
         }
         if (Strings.isFilled(receiverEmail)) {
-            receiverEmail = encodeIdnMailAddressToAsciiIfNecessary(receiverEmail);
+            receiverEmail = sanitizeMailAddress(receiverEmail);
         }
         if (Strings.isFilled(receiverName)) {
             receiverName = receiverName.trim();
         }
         if (Strings.isFilled(replyToEmail)) {
-            replyToEmail = encodeIdnMailAddressToAsciiIfNecessary(replyToEmail);
+            replyToEmail = sanitizeMailAddress(replyToEmail);
         }
         if (Strings.isFilled(replyToName)) {
             replyToName = replyToName.trim();
         }
     }
 
-    private String encodeIdnMailAddressToAsciiIfNecessary(String mailAddress) {
+    private String sanitizeMailAddress(String mailAddress) {
         mailAddress = mailAddress.replaceAll("\\s", "");
         if (UserContext.getSettings().get("mail.usePunycode").asBoolean()) {
-            String user = mailAddress.substring(0, mailAddress.indexOf("@"));
+            String preDomainPart = mailAddress.substring(0, mailAddress.indexOf("@") + 1);
             String domain = mailAddress.substring(mailAddress.indexOf("@") + 1);
-            return user + "@" + IDN.toASCII(domain, IDN.ALLOW_UNASSIGNED);
+            return preDomainPart + IDN.toASCII(domain, IDN.ALLOW_UNASSIGNED);
         }
         return mailAddress;
     }
