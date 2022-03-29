@@ -16,7 +16,7 @@ import sirius.kernel.settings.Settings;
 import sirius.web.security.UserContext;
 
 /**
- * Represents a configuration for using a SMTP server.
+ * Represents a configuration for using an SMTP server.
  */
 public class SMTPConfiguration {
 
