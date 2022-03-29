@@ -10,6 +10,10 @@
   white-space: pre-line;
 }
 
+.text-ellipsis {
+  text-overflow: ellipsis;
+}
+
 .text-black-75 {
   color: rgba(33, 37, 41, 0.75) !important;
 }
