@@ -24,11 +24,11 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <i:if test="isFilled(title)">
-                            <h5 class="card-title @titleClass">@title</h5>
+                            <h5 class="card-title overflow-hidden text-ellipsis @titleClass">@title</h5>
                             <i:else>
                                 <i:local name="markupTitle" value="@renderToString('title')"/>
                                 <i:if test="isFilled(markupTitle)">
-                                    <h5 class="card-title">
+                                    <h5 class="card-title overflow-hidden text-ellipsis">
                                         <i:raw>@markupTitle</i:raw>
                                     </h5>
                                 </i:if>
