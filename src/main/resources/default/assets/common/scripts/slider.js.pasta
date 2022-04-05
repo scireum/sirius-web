@@ -22,7 +22,9 @@
         options.animation = options.animation || 0;
 
         const _slidesContainer = document.querySelector(target);
-        const _slides = Array.prototype.slice.call(_slidesContainer.querySelectorAll(':scope > div'));
+        const _slides = Array.prototype.slice.call(_slidesContainer.childNodes).filter(function (node) {
+            return node.tagName === 'DIV';
+        });
         if (_slides.length < 2) {
             return;
         }
