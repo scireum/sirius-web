@@ -22,7 +22,7 @@
         options.animation = options.animation || 0;
 
         const _slidesContainer = document.querySelector(target);
-        const _slides = Array.prototype.slice.call(_slidesContainer.querySelectorAll(':scope > div'));
+        const _slides = Array.prototype.slice.call(document.querySelectorAll(target +' > div'));
         if (_slides.length < 2) {
             return;
         }
