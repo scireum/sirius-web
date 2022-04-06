@@ -82,7 +82,7 @@ public class TunnelHandler implements AsyncHandler<String> {
     private volatile long timeToFirstReceivedByte = -1;
     private final AtomicLong bytesReceived = new AtomicLong(0);
 
-    private int responseCode = HttpResponseStatus.OK.code();
+    private volatile int responseCode = HttpResponseStatus.OK.code();
     private boolean contentLengthKnown;
 
     private volatile boolean failed;
@@ -450,17 +450,26 @@ public class TunnelHandler implements AsyncHandler<String> {
                            t.getMessage() + " (" + t.getClass().getName() + ")",
                            url,
                            webContext.getRequestedURI());
-        if (!(t instanceof ClosedChannelException)) {
+
+        if (t instanceof ClosedChannelException) {
+            return;
+        }
+
+        responseCode = HttpResponseStatus.INTERNAL_SERVER_ERROR.code();
+
+        try {
             if (failureHandler != null) {
-                try {
-                    failureHandler.accept(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
-                    failed = true;
-                    return;
-                } catch (Exception e) {
-                    Exceptions.handle(WebServer.LOG, e);
-                }
+                failureHandler.accept(responseCode);
+                failed = true;
             }
-            response.error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
+            if (completionHandler != null) {
+                completionHandler.accept(this);
+            }
+        } catch (Exception e) {
+            Exceptions.handle(WebServer.LOG, e);
+        }
+        if (!failed) {
+            response.error(HttpResponseStatus.valueOf(responseCode), Exceptions.handle(WebServer.LOG, t));
         }
     }
 
