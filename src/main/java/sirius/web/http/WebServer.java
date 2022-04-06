@@ -762,7 +762,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
                                      "KB/s");
         collector.differentialMetric("http_contention_blocks",
                                      "http-contention-blocks",
-                                     "HTTP ConentionBlocks",
+                                     "HTTP Connection Blocks",
                                      channelContentions.get(),
                                      "/min");
         collector.differentialMetric("http_connects", "http-connects", "HTTP Connects", connections.get(), "/min");
