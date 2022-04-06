@@ -58,22 +58,22 @@
 }
 
 .btn-info {
-  background-color: $sirius-deep-blue;
+  background-color: $sirius-cyan-dark;
   color: #fff !important;
-  border-color: $sirius-deep-blue;
+  border-color: $sirius-cyan-dark;
 
   &:hover {
-    background-color: $sirius-deep-blue-dark;
-    border-color: $sirius-deep-blue-dark;
+    background-color: $sirius-cyan-dark;
+    border-color: $sirius-cyan-dark;
   }
 }
 
 .btn-outline-info {
-  border-color: $sirius-deep-blue;
-  color: $sirius-deep-blue;
+  border-color: $sirius-cyan-dark;
+  color: $sirius-cyan-dark;
 
   &:hover {
-    background-color: $sirius-deep-blue;
+    background-color: $sirius-cyan-dark;
     color: #fff !important;
   }
 }
