@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
@@ -77,6 +78,9 @@ class TunnelHandler implements AsyncHandler<String> {
     private volatile long timeToConnect = -1;
     private volatile long timeToHandshake = -1;
     private volatile long timeToRequestSent = -1;
+    private volatile long timeToStatusReceived = -1;
+    private volatile long timeToFirstReceivedByte = -1;
+    private final AtomicLong bytesReceived = new AtomicLong(0);
 
     private int responseCode = HttpResponseStatus.OK.code();
     private boolean contentLengthKnown;
@@ -266,6 +270,11 @@ class TunnelHandler implements AsyncHandler<String> {
                 return State.ABORT;
             }
 
+            if (timeToFirstReceivedByte == -1) {
+                timeToFirstReceivedByte = watch.elapsedMillis();
+            }
+            bytesReceived.addAndGet(bodyPart.length());
+
             if (!webContext.responseCommitted) {
                 if (bodyPart.isLast() && transformer == null) {
                     ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
@@ -392,9 +401,9 @@ class TunnelHandler implements AsyncHandler<String> {
                 return;
             }
 
-            long ttfbMillis = watch.elapsedMillis();
-            if (ttfbMillis > WebServer.getMaxTimeToFirstByte() && WebServer.getMaxTimeToFirstByte() > 0) {
-                WebServer.LOG.WARN("Long running tunneling: %s (TTFB: %s)"
+            timeToStatusReceived = watch.elapsedMillis();
+            if (timeToStatusReceived > WebServer.getMaxTimeToFirstByte() && WebServer.getMaxTimeToFirstByte() > 0) {
+                WebServer.LOG.WARN("Long running tunneling: %s (Time to status received: %s)"
                                    + "%nDNS: %s, TCP-ATTEMPT: %s, TCP-CONNECT: %s, HANDSHAKE: %s, REQUEST-SENT: %s"
                                    + "%nURL:%s"
                                    + "%nTunnel URL:%s"
@@ -404,7 +413,7 @@ class TunnelHandler implements AsyncHandler<String> {
                                    + "%nMDC:"
                                    + "%n%s%n",
                                    webContext.getRequestedURI(),
-                                   NLS.convertDuration(ttfbMillis, true, true),
+                                   safeConvertDuration(timeToStatusReceived),
                                    safeConvertDuration(timeToDns),
                                    safeConvertDuration(timeToConnectAttempt),
                                    safeConvertDuration(timeToConnect),
