@@ -449,7 +449,7 @@ public class Response {
             WebServer.LOG.FINE("COMPLETING: " + wc.getRequestedURI());
         }
         // If we're still confident, that keepalive is supported, and we announced this in the response header,
-        // we'll keep the connection open. Otherwise it will be closed by the server
+        // we'll keep the connection open. Otherwise, it will be closed by the server
         final boolean keepalive = supportKeepalive && responseKeepalive;
         final CallContext cc = CallContext.getCurrent();
         future.addListener(ignored -> onCompleteCompleted(cc, keepalive, future));
@@ -1507,7 +1507,7 @@ public class Response {
     /**
      * Creates an OutputStream which is sent to the client.
      * <p>
-     * If the contents are small enough, everything will be sent in one response. Otherwise a chunked response
+     * If the contents are small enough, everything will be sent in one response. Otherwise, a chunked response
      * will be sent. The size of the underlying buffer will be determined by {@link #BUFFER_SIZE}.
      * <p>
      * By default, caching will be supported.
@@ -1524,42 +1524,6 @@ public class Response {
         }
 
         return new ChunkedOutputStream(this, contentType, status);
-    }
-
-    /**
-     * Writes the given message (probably a chunk of output data) into the channel.
-     * <p>
-     * If the channel buffer is full (not writeable anymore) we need to trigger a flush,
-     * so that the data is shovelled into the network. If this doesn't clear up the buffer immediatelly,
-     * we block the current thread to throttle the application until free space is available again.
-     * <p>
-     * Note that this method must not be invoked in the event loop as otherwise a deadlock might occur. Therefore
-     * all dispatchers now always fork a new thread to handle requests.
-     *
-     * @param message the data to sent
-     * @param flush   determines if the underlying buffer must be flushed in any case.
-     *                This should be set to <tt>false</tt> in all possible cases so that the underlying netty and
-     *                operating system can optimize the effective block size for data being sent over the network.
-     */
-    protected void contentionAwareWrite(Object message, boolean flush) {
-        if (!ctx.channel().isWritable()) {
-            ChannelFuture future = ctx.writeAndFlush(message);
-            while (!ctx.channel().isWritable() && ctx.channel().isOpen()) {
-                try {
-                    future.await(5, TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
-                    ctx.channel().close();
-                    Exceptions.ignore(e);
-                    Thread.currentThread().interrupt();
-                }
-            }
-        } else {
-            if (flush) {
-                ctx.writeAndFlush(message);
-            } else {
-                ctx.write(message);
-            }
-        }
     }
 
     @Override
