@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
 /**
  * Performs tunneling into a request by reading from another.
  */
-class TunnelHandler implements AsyncHandler<String> {
+public class TunnelHandler implements AsyncHandler<String> {
 
     private static final Set<String> NON_TUNNELLED_HEADERS =
             Set.of(HttpHeaderNames.TRANSFER_ENCODING.toString().toLowerCase(),
@@ -462,5 +462,45 @@ class TunnelHandler implements AsyncHandler<String> {
             }
             response.error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
         }
+    }
+
+    public long getTimeToDns() {
+        return timeToDns;
+    }
+
+    public long getTimeToConnectAttempt() {
+        return timeToConnectAttempt;
+    }
+
+    public long getTimeToConnect() {
+        return timeToConnect;
+    }
+
+    public long getTimeToHandshake() {
+        return timeToHandshake;
+    }
+
+    public long getTimeToRequestSent() {
+        return timeToRequestSent;
+    }
+
+    public long getTimeToStatusReceived() {
+        return timeToStatusReceived;
+    }
+
+    public long getTimeToFirstReceivedByte() {
+        return timeToFirstReceivedByte;
+    }
+
+    public long getBytesReceived() {
+        return bytesReceived.get();
+    }
+
+    public int getResponseCode() {
+        return responseCode;
+    }
+
+    public boolean getFailed() {
+        return failed;
     }
 }
