@@ -1587,6 +1587,10 @@ public class Response {
             ChannelFuture future = ctx.writeAndFlush(message);
             while (!ctx.channel().isWritable() && ctx.channel().isOpen()) {
                 try {
+                    if (WebServer.channelContentions.incrementAndGet() < 0) {
+                        WebServer.channelContentions.set(0);
+                    }
+
                     future.await(5, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
                     ctx.channel().close();
