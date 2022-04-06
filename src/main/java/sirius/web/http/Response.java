@@ -1411,6 +1411,47 @@ public class Response {
                        @Nullable Processor<ByteBuf, Optional<ByteBuf>> transformer,
                        @Nullable IntConsumer failureHandler,
                        boolean forceContentDownload) {
+        tunnel(url, requestTuner, transformer, failureHandler, null, forceContentDownload);
+    }
+
+    /**
+     * Tunnels the contents retrieved from the given URL as result of this response.
+     * <p>
+     * Caching and range headers will be forwarded and adhered.
+     * <p>
+     * Uses non-blocking APIs in order to maximize throughput. Therefore, this can be called in an un-forked
+     * dispatcher.
+     * <p>
+     * If the called URL returns an error (&gt;= 400) and the given failureHandler is non-null, it is supplied
+     * with the status code and can re-try or answer the request by itself.
+     *
+     * @param url                  the url to tunnel through
+     * @param requestTuner         a callback which can enhance the request being sent to the upstream server (e.g. make
+     *                             it a POST request or add additional headers).
+     * @param transformer          the transformer which map / transforms the byte blocks being tunnelled. Note that
+     *                             once all data has been processed an empty buffer is sent to signalize the end of the
+     *                             processing.
+     * @param failureHandler       supplies a handler which is invoked if the called URL fails. The handler is provided
+     *                             with the HTTP status code and can (and must) handle the request on its own. It is
+     *                             safe to call {@link WebContext#respondWith()} again for the request, as no response
+     *                             was created yet.
+     * @param completionHandler    supplies a handler which is invoked on tunneling completion. If the called URL fails,
+     *                             the failureHandler is invoked first, followed by the completionHandler. The handler
+     *                             is provided with the {@link TunnelHandler}, which allows accessing timings and
+     *                             status code.
+     * @param forceContentDownload forces the content-disposition header set in this object. If forceContentDownload is
+     *                             false, the header from the tunneled response may override this header
+     * @see #tunnel(String, Consumer, Processor, IntConsumer)
+     * @see #tunnel(String, Processor, IntConsumer)
+     * @see #tunnel(String, IntConsumer)
+     * @see #tunnel(String)
+     */
+    public void tunnel(String url,
+                       @Nullable Consumer<BoundRequestBuilder> requestTuner,
+                       @Nullable Processor<ByteBuf, Optional<ByteBuf>> transformer,
+                       @Nullable IntConsumer failureHandler,
+                       @Nullable Consumer<TunnelHandler> completionHandler,
+                       boolean forceContentDownload) {
         try {
             BoundRequestBuilder brb = getAsyncClient().prepareGet(url);
 

@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
 
@@ -68,6 +69,7 @@ class TunnelHandler implements AsyncHandler<String> {
     private final String url;
     private final Processor<ByteBuf, Optional<ByteBuf>> transformer;
     private final IntConsumer failureHandler;
+    private final Consumer<TunnelHandler> completionHandler;
     private final CallContext cc;
     private final Watch watch;
     private volatile long timeToDns = -1;
@@ -84,12 +86,14 @@ class TunnelHandler implements AsyncHandler<String> {
     TunnelHandler(Response response,
                   String url,
                   Processor<ByteBuf, Optional<ByteBuf>> transformer,
-                  IntConsumer failureHandler) {
+                  IntConsumer failureHandler,
+                  Consumer<TunnelHandler> completionHandler) {
         this.response = response;
         this.webContext = response.wc;
         this.url = url;
         this.transformer = transformer;
         this.failureHandler = failureHandler;
+        this.completionHandler = completionHandler;
         this.cc = CallContext.getCurrent();
         this.watch = Watch.start();
     }
@@ -353,6 +357,10 @@ class TunnelHandler implements AsyncHandler<String> {
 
     @Override
     public String onCompleted() throws Exception {
+        if (completionHandler != null) {
+            completionHandler.accept(this);
+        }
+
         // If the request to tunnel failed, and we successfully
         // invoked a failureHandler, we must not do any housekeeping
         // here but rely on the failure handler to take care of the request.
