@@ -388,7 +388,7 @@ class TunnelHandler implements AsyncHandler<String> {
     private void logTiming(org.asynchttpclient.HttpResponseStatus status) {
         try {
             if (webContext.isLongCall() || webContext.scheduled == 0) {
-                // No response time measurement for long running or aborted requests...
+                // No response time measurement for long-running or aborted requests...
                 return;
             }
 
