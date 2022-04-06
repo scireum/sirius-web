@@ -452,6 +452,10 @@ public class TunnelHandler implements AsyncHandler<String> {
                            webContext.getRequestedURI());
 
         if (t instanceof ClosedChannelException) {
+            failed = true;
+            if (completionHandler != null) {
+                completionHandler.accept(this);
+            }
             return;
         }
 
