@@ -167,10 +167,12 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
      * Indicates that netty itself will compute the optimal number of threads in the event loop
      */
     private static final int AUTOSELECT_EVENT_LOOP_SIZE = 0;
+
     private EventLoopGroup eventLoop;
 
     protected static AtomicLong bytesIn = new AtomicLong();
     protected static AtomicLong bytesOut = new AtomicLong();
+    protected static AtomicLong channelContentions = new AtomicLong();
     protected static AtomicLong messagesIn = new AtomicLong();
     protected static AtomicLong messagesOut = new AtomicLong();
     protected static AtomicLong connections = new AtomicLong();
@@ -758,6 +760,11 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
                                      "HTTP Bytes-Out",
                                      bytesOut.get() / 1024d / 60,
                                      "KB/s");
+        collector.differentialMetric("http_contention_blocks",
+                                     "http-contention-blocks",
+                                     "HTTP ConentionBlocks",
+                                     channelContentions.get(),
+                                     "/min");
         collector.differentialMetric("http_connects", "http-connects", "HTTP Connects", connections.get(), "/min");
         collector.differentialMetric("http_requests", "http-requests", "HTTP Requests", requests.get(), "/min");
         collector.differentialMetric("http_slow_requests",
@@ -788,7 +795,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
                          null);
         collector.metric("http_response_time",
                          "http-response-time",
-                         "HTTP Avg. Reponse Time",
+                         "HTTP Avg. Response Time",
                          responseTime.getAndClear(),
                          "ms");
         collector.metric("http_response_ttfb",
