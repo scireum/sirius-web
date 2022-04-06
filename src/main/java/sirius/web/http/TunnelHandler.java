@@ -509,7 +509,7 @@ public class TunnelHandler implements AsyncHandler<String> {
         return responseCode;
     }
 
-    public boolean getFailed() {
+    public boolean isFailed() {
         return failed;
     }
 }
