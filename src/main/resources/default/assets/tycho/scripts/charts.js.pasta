@@ -156,7 +156,7 @@ function lineChart(selector, labels, datasets) {
     let lineData = [];
     let hasRightYAxis = false;
     for (let i = 0; i < datasets.length; i++) {
-        const color = pickFromColorWheel();
+        const color = datasets[i].color ? datasets[i].color : pickFromColorWheel();
         const line = {
             label: datasets[i].label,
             data: datasets[i].data,
@@ -240,7 +240,7 @@ function barChart(selector, labels, datasets) {
     let barData = [];
     let hasRightYAxis = false;
     for (let i = 0; i < datasets.length; i++) {
-        const color = pickFromColorWheel();
+        const color = datasets[i].color ? datasets[i].color : pickFromColorWheel();
         const bar = {
             label: datasets[i].label,
             data: datasets[i].data,
