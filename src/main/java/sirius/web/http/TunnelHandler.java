@@ -200,7 +200,7 @@ public class TunnelHandler implements AsyncHandler<String> {
      * Overrides the {@link HttpHeaderNames#CONTENT_TYPE} header if the current value is not clearly specified.
      */
     private void overrideContentTypeIfNecessary() {
-        String currentType = response.headers().get(HttpHeaderNames.CONTENT_TYPE);
+        String currentType = response.getHeader(HttpHeaderNames.CONTENT_TYPE);
 
         if (Strings.isEmpty(currentType) || MimeHelper.APPLICATION_OCTET_STREAM.equals(currentType)) {
             response.setHeader(HttpHeaderNames.CONTENT_TYPE,

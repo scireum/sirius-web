@@ -664,6 +664,19 @@ public class Response {
     }
 
     /**
+     * Returns the value of a header with the specified name. If there are
+     * more than one values for the specified name, the first value is returned.
+     *
+     * @param name The name of the header to search
+     * @return The first header value or {@code null} if there is no such header
+     * @see io.netty.handler.codec.http.HttpHeaders#get(java.lang.CharSequence)
+     */
+    @Nullable
+    public String getHeader(CharSequence name) {
+        return headers().get(name);
+    }
+
+    /**
      * Sets the specified header.
      *
      * @param name  name of the header
