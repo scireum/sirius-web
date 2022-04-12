@@ -34,7 +34,7 @@
         });
 
         _slidesContainer.classList.add('sci-slider-views');
-        _slidesContainer.style = 'width: ' + (_slides.length * 100) + '%;';
+        _slidesContainer.style.width = (_slides.length * 100) + '%';
 
         const _wrapper = document.createElement('div');
         _wrapper.classList.add('sci-slider-wrapper');

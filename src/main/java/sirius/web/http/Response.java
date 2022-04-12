@@ -233,7 +233,7 @@ public class Response {
     }
 
     /*
-     * Creates and initializes a HttpResponse which result will follow as chunks. If the requestor does not
+     * Creates and initializes a HttpResponse which result will follow as chunks. If the requester does not
      * support HTTP 1.1 we fall back to a "normal" response and disable keepalive (as we need to close the
      * connection to signal the end of the response). Check the responseChunked flag to generate a proper
      * response.
@@ -394,7 +394,7 @@ public class Response {
 
         // If the request has not been fully read, now is the time to discard all
         // data, as most HTTP clients do not accept a response while uploading data.
-        // -> This mostly happend when handling an exception in a pre-dispatchable
+        // -> This mostly happened when handling an exception in a pre-dispatchable
         // controller...
         if (wc.contentHandler != null) {
             wc.contentHandler.exhaust();
@@ -473,7 +473,7 @@ public class Response {
             callContext.getWatch().submitMicroTiming("HTTP", WebServer.microtimingMode.getMicrotimingKey(wc));
         }
         if (wc.isLongCall() || wc.scheduled == 0) {
-            // No response time measurement for long running or aborted requests...
+            // No response time measurement for long-running or aborted requests...
             return;
         }
         long queuedMillis = wc.scheduled - wc.started;
@@ -607,7 +607,7 @@ public class Response {
     }
 
     /**
-     * Marks this response as not-cachable.
+     * Marks this response as not-cacheable.
      *
      * @return <tt>this</tt> to fluently create the response
      */
@@ -617,7 +617,7 @@ public class Response {
     }
 
     /**
-     * Marks this response as only privately cachable (only the browser may cache it, but not a proxy etc.)
+     * Marks this response as only privately cacheable (only the browser may cache it, but not a proxy etc.)
      *
      * @return <tt>this</tt> to fluently create the response
      */
@@ -628,7 +628,7 @@ public class Response {
     }
 
     /**
-     * Marks this response as cachable for the given amount of time.
+     * Marks this response as cacheable for the given amount of time.
      *
      * @param numberOfSeconds the number of seconds the response might be cached
      * @return <tt>this</tt> to fluently create the response
@@ -640,7 +640,7 @@ public class Response {
     }
 
     /**
-     * Marks this response as cachable.
+     * Marks this response as cacheable.
      *
      * @return <tt>this</tt> to fluently create the response
      */
@@ -651,7 +651,7 @@ public class Response {
     }
 
     /**
-     * Marks this response as infinitely cachable.
+     * Marks this response as infinitely cacheable.
      * <p>
      * This suggests that it will never change.
      *
@@ -661,6 +661,19 @@ public class Response {
         this.isPrivate = false;
         this.cacheSeconds = HTTP_CACHE_INFINITE;
         return this;
+    }
+
+    /**
+     * Returns the value of a header with the specified name. If there are
+     * more than one values for the specified name, the first value is returned.
+     *
+     * @param name The name of the header to search
+     * @return The first header value or {@code null} if there is no such header
+     * @see io.netty.handler.codec.http.HttpHeaders#get(java.lang.CharSequence)
+     */
+    @Nullable
+    public String getHeader(CharSequence name) {
+        return headers().get(name);
     }
 
     /**
@@ -1149,11 +1162,11 @@ public class Response {
     /**
      * Renders the given template and sends the output as response.
      * <p>
-     * By default caching will be disabled. If the file ends with .html, <tt>text/html; charset=UTF-8</tt> will be set
-     * as content type. Otherwise the content type will be guessed from the filename.
+     * By default, caching will be disabled. If the file ends with .html, <tt>text/html; charset=UTF-8</tt> will be set
+     * as content type. Otherwise, the content type will be guessed from the filename.
      *
      * @param name   the name of the template to render. It's recommended to use files in /templates/... and to place
-     *               them in the resources directory.
+     *               them in the 'resources' directory.
      * @param params contains the parameters sent to the template
      */
     public void template(String name, Object... params) {
@@ -1163,12 +1176,12 @@ public class Response {
     /**
      * Renders the given template and sends the output as response.
      * <p>
-     * By default caching will be disabled. If the file ends with .html, <tt>text/html; charset=UTF-8</tt> will be set
-     * as content type. Otherwise the content type will be guessed from the filename.
+     * By default, caching will be disabled. If the file ends with .html, <tt>text/html; charset=UTF-8</tt> will be set
+     * as content type. Otherwise, the content type will be guessed from the filename.
      *
      * @param status the HTTP status to send. {@link HttpResponseStatus#OK} would be appropriate in most cases.
      * @param name   the name of the template to render. It's recommended to use files in /templates/... and to place
-     *               them in the resources directory.
+     *               them in the 'resources' directory.
      * @param params contains the parameters sent to the template
      * @see #template(String, Object...)
      */
@@ -1195,8 +1208,8 @@ public class Response {
     /**
      * Renders the given Tagliatelle template and sends the output as response.
      * <p>
-     * By default caching will be disabled. If the file ends with .html, <tt>text/html; charset=UTF-8</tt> will be set
-     * as content type. Otherwise the content type will be guessed from the filename.
+     * By default, caching will be disabled. If the file ends with .html, <tt>text/html; charset=UTF-8</tt> will be set
+     * as content type. Otherwise, the content type will be guessed from the filename.
      *
      * @param status   the HTTP status to send. {@link HttpResponseStatus#OK} would be appropriate in most cases.
      * @param template the template to render
@@ -1279,7 +1292,7 @@ public class Response {
      * <p>
      * Caching and range headers will be forwarded and adhered.
      * <p>
-     * Uses non-blocking APIs in order to maximize throughput. Therefore this can be called in an unforked
+     * Uses non-blocking APIs in order to maximize throughput. Therefore, this can be called in an un-forked
      * dispatcher.
      *
      * @param url the url to tunnel through.
@@ -1297,15 +1310,15 @@ public class Response {
      * <p>
      * Caching and range headers will be forwarded and adhered.
      * <p>
-     * Uses non-blocking APIs in order to maximize throughput. Therefore this can be called in an unforked
+     * Uses non-blocking APIs in order to maximize throughput. Therefore, this can be called in an un-forked
      * dispatcher.
      * <p>
-     * If the called URL returns an error (&gt;= 400) and the given failureHandler is non null, it is supplied
+     * If the called URL returns an error (&gt;= 400) and the given failureHandler is non-null, it is supplied
      * with the status code and can re-try or answer the request by itself.
      *
      * @param url            the url to tunnel through.
      * @param failureHandler supplies a handler which is invoked if the called URL fails. The handler is provided with
-     *                       the HTTP status code and can (and must) handle the request on its own. It is save to
+     *                       the HTTP status code and can (and must) handle the request on its own. It is safe to
      *                       call {@link WebContext#respondWith()} again for the request, as no response was created
      *                       yet.
      * @see #tunnel(String, Consumer, Processor, IntConsumer, boolean)
@@ -1322,17 +1335,17 @@ public class Response {
      * <p>
      * Caching and range headers will be forwarded and adhered.
      * <p>
-     * Uses non-blocking APIs in order to maximize throughput. Therefore this can be called in an unforked
+     * Uses non-blocking APIs in order to maximize throughput. Therefore, this can be called in an un-forked
      * dispatcher.
      * <p>
-     * If the called URL returns an error (&gt;= 400) and the given failureHandler is non null, it is supplied
+     * If the called URL returns an error (&gt;= 400) and the given failureHandler is non-null, it is supplied
      * with the status code and can re-try or answer the request by itself.
      *
      * @param url            the url to tunnel through
      * @param transformer    the transformer which map / transforms the byte blocks being tunnelled. Note that once
      *                       all data has been processed an empty buffer is sent to signalize the end of the processing.
      * @param failureHandler supplies a handler which is invoked if the called URL fails. The handler is provided with
-     *                       the HTTP status code and can (and must) handle the request on its own. It is save to
+     *                       the HTTP status code and can (and must) handle the request on its own. It is safe to
      *                       call {@link WebContext#respondWith()} again for the request, as no response was created
      *                       yet.
      * @see #tunnel(String, Consumer, Processor, IntConsumer, boolean)
@@ -1351,19 +1364,19 @@ public class Response {
      * <p>
      * Caching and range headers will be forwarded and adhered.
      * <p>
-     * Uses non-blocking APIs in order to maximize throughput. Therefore this can be called in an unforked
+     * Uses non-blocking APIs in order to maximize throughput. Therefore, this can be called in an un-forked
      * dispatcher.
      * <p>
-     * If the called URL returns an error (&gt;= 400) and the given failureHandler is non null, it is supplied
+     * If the called URL returns an error (&gt;= 400) and the given failureHandler is non-null, it is supplied
      * with the status code and can re-try or answer the request by itself.
      *
      * @param url            the url to tunnel through
-     * @param requestTuner   a callback which can enhance the request being sent to the upstream server (e.g. make it
-     *                       a POST request or add additional headers.
+     * @param requestTuner   a callback which can enhance the request being sent to the upstream server (e.g. make
+     *                       it a POST request or add additional headers).
      * @param transformer    the transformer which map / transforms the byte blocks being tunnelled. Note that once
      *                       all data has been processed an empty buffer is sent to signalize the end of the processing.
      * @param failureHandler supplies a handler which is invoked if the called URL fails. The handler is provided with
-     *                       the HTTP status code and can (and must) handle the request on its own. It is save to
+     *                       the HTTP status code and can (and must) handle the request on its own. It is safe to
      *                       call {@link WebContext#respondWith()} again for the request, as no response was created
      *                       yet.
      * @see #tunnel(String, Consumer, Processor, IntConsumer, boolean)
@@ -1383,21 +1396,21 @@ public class Response {
      * <p>
      * Caching and range headers will be forwarded and adhered.
      * <p>
-     * Uses non-blocking APIs in order to maximize throughput. Therefore this can be called in an unforked
+     * Uses non-blocking APIs in order to maximize throughput. Therefore, this can be called in an un-forked
      * dispatcher.
      * <p>
-     * If the called URL returns an error (&gt;= 400) and the given failureHandler is non null, it is supplied
+     * If the called URL returns an error (&gt;= 400) and the given failureHandler is non-null, it is supplied
      * with the status code and can re-try or answer the request by itself.
      *
      * @param url                  the url to tunnel through
      * @param requestTuner         a callback which can enhance the request being sent to the upstream server (e.g. make
-     *                             it a POST request or add additional headers.
+     *                             it a POST request or add additional headers).
      * @param transformer          the transformer which map / transforms the byte blocks being tunnelled. Note that
      *                             once all data has been processed an empty buffer is sent to signalize the end of the
      *                             processing.
      * @param failureHandler       supplies a handler which is invoked if the called URL fails. The handler is provided
      *                             with the HTTP status code and can (and must) handle the request on its own. It is
-     *                             save to call {@link WebContext#respondWith()} again for the request, as no response
+     *                             safe to call {@link WebContext#respondWith()} again for the request, as no response
      *                             was created yet.
      * @param forceContentDownload forces the content-disposition header set in this object. If forceContentDownload is
      *                             false, the header from the tunneled response may override this header
@@ -1410,6 +1423,47 @@ public class Response {
                        @Nullable Consumer<BoundRequestBuilder> requestTuner,
                        @Nullable Processor<ByteBuf, Optional<ByteBuf>> transformer,
                        @Nullable IntConsumer failureHandler,
+                       boolean forceContentDownload) {
+        tunnel(url, requestTuner, transformer, failureHandler, null, forceContentDownload);
+    }
+
+    /**
+     * Tunnels the contents retrieved from the given URL as result of this response.
+     * <p>
+     * Caching and range headers will be forwarded and adhered.
+     * <p>
+     * Uses non-blocking APIs in order to maximize throughput. Therefore, this can be called in an un-forked
+     * dispatcher.
+     * <p>
+     * If the called URL returns an error (&gt;= 400) and the given failureHandler is non-null, it is supplied
+     * with the status code and can re-try or answer the request by itself.
+     *
+     * @param url                  the url to tunnel through
+     * @param requestTuner         a callback which can enhance the request being sent to the upstream server (e.g. make
+     *                             it a POST request or add additional headers).
+     * @param transformer          the transformer which map / transforms the byte blocks being tunnelled. Note that
+     *                             once all data has been processed an empty buffer is sent to signalize the end of the
+     *                             processing.
+     * @param failureHandler       supplies a handler which is invoked if the called URL fails. The handler is provided
+     *                             with the HTTP status code and can (and must) handle the request on its own. It is
+     *                             safe to call {@link WebContext#respondWith()} again for the request, as no response
+     *                             was created yet.
+     * @param completionHandler    supplies a handler which is invoked on tunneling completion. If the called URL fails,
+     *                             the failureHandler is invoked first, followed by the completionHandler. The handler
+     *                             is provided with the {@link TunnelHandler}, which allows accessing timings and
+     *                             status code.
+     * @param forceContentDownload forces the content-disposition header set in this object. If forceContentDownload is
+     *                             false, the header from the tunneled response may override this header
+     * @see #tunnel(String, Consumer, Processor, IntConsumer)
+     * @see #tunnel(String, Processor, IntConsumer)
+     * @see #tunnel(String, IntConsumer)
+     * @see #tunnel(String)
+     */
+    public void tunnel(String url,
+                       @Nullable Consumer<BoundRequestBuilder> requestTuner,
+                       @Nullable Processor<ByteBuf, Optional<ByteBuf>> transformer,
+                       @Nullable IntConsumer failureHandler,
+                       @Nullable Consumer<TunnelHandler> completionHandler,
                        boolean forceContentDownload) {
         try {
             BoundRequestBuilder brb = getAsyncClient().prepareGet(url);
@@ -1441,17 +1495,17 @@ public class Response {
             }
 
             // Tunnel it through...
-            brb.execute(new TunnelHandler(this, url, transformer, failureHandler));
+            brb.execute(new TunnelHandler(this, url, transformer, failureHandler, completionHandler));
         } catch (Exception t) {
             internalServerError("Target-URL: " + url, t);
         }
     }
 
     /**
-     * Creates a JSON output which can be used to generate well formed json.
+     * Creates a JSON output which can be used to generate well-formed json.
      * <p>
      * By default, caching will be disabled. If the generated JSON is small enough, it will be transmitted in
-     * one go. Otherwise a chunked response will be sent.
+     * one go. Otherwise, a chunked response will be sent.
      * <p>
      * If a callback parameter is given in the request, the output will automatically be boxed into that function as JSONP.
      *
@@ -1462,10 +1516,10 @@ public class Response {
     }
 
     /**
-     * Creates a JSON output which can be used to generate well formed json.
+     * Creates a JSON output which can be used to generate well-formed json.
      * <p>
      * By default, caching will be disabled. If the generated JSON is small enough, it will be transmitted in
-     * one go. Otherwise a chunked response will be sent. The reponse will have the given {@link HttpResponseStatus}.
+     * one go. Otherwise, a chunked response will be sent. The response will have the given {@link HttpResponseStatus}.
      * <p>
      * If a callback parameter is given in the request, the output will automatically be boxed into that function as JSONP.
      *
@@ -1480,7 +1534,7 @@ public class Response {
     }
 
     /**
-     * Creates a XML output which can be used to generate well formed XML.
+     * Creates a XML output which can be used to generate well-formed XML.
      * <p>
      * By default, caching will be disabled. If the generated XML is small enough, it will be transmitted in
      * one go. Otherwise, a chunked response will be sent.
@@ -1492,7 +1546,7 @@ public class Response {
     }
 
     /**
-     * Creates a XML output which can be used to generate well formed XML.
+     * Creates a XML output which can be used to generate well-formed XML.
      * <p>
      * By default, caching will be disabled. If the generated XML is small enough, it will be transmitted in
      * one go. Otherwise, a chunked response will be sent.
