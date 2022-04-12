@@ -59,6 +59,10 @@
                 overflow: hidden;
             }
 
+            #main-container {
+                max-height: 100%;
+            }
+
             #term {
                 overflow-x: hidden;
                 overflow-y: auto;
