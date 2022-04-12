@@ -40,13 +40,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
 
 /**
  * Performs tunneling into a request by reading from another.
  */
-class TunnelHandler implements AsyncHandler<String> {
+public class TunnelHandler implements AsyncHandler<String> {
 
     private static final Set<String> NON_TUNNELLED_HEADERS =
             Set.of(HttpHeaderNames.TRANSFER_ENCODING.toString().toLowerCase(),
@@ -68,6 +70,7 @@ class TunnelHandler implements AsyncHandler<String> {
     private final String url;
     private final Processor<ByteBuf, Optional<ByteBuf>> transformer;
     private final IntConsumer failureHandler;
+    private final Consumer<TunnelHandler> completionHandler;
     private final CallContext cc;
     private final Watch watch;
     private volatile long timeToDns = -1;
@@ -75,8 +78,11 @@ class TunnelHandler implements AsyncHandler<String> {
     private volatile long timeToConnect = -1;
     private volatile long timeToHandshake = -1;
     private volatile long timeToRequestSent = -1;
+    private volatile long timeToStatusReceived = -1;
+    private volatile long timeToFirstReceivedByte = -1;
+    private final AtomicLong bytesReceived = new AtomicLong(0);
 
-    private int responseCode = HttpResponseStatus.OK.code();
+    private volatile int responseCode = HttpResponseStatus.OK.code();
     private boolean contentLengthKnown;
 
     private volatile boolean failed;
@@ -84,12 +90,14 @@ class TunnelHandler implements AsyncHandler<String> {
     TunnelHandler(Response response,
                   String url,
                   Processor<ByteBuf, Optional<ByteBuf>> transformer,
-                  IntConsumer failureHandler) {
+                  IntConsumer failureHandler,
+                  Consumer<TunnelHandler> completionHandler) {
         this.response = response;
         this.webContext = response.wc;
         this.url = url;
         this.transformer = transformer;
         this.failureHandler = failureHandler;
+        this.completionHandler = completionHandler;
         this.cc = CallContext.getCurrent();
         this.watch = Watch.start();
     }
@@ -192,7 +200,7 @@ class TunnelHandler implements AsyncHandler<String> {
      * Overrides the {@link HttpHeaderNames#CONTENT_TYPE} header if the current value is not clearly specified.
      */
     private void overrideContentTypeIfNecessary() {
-        String currentType = response.headers().get(HttpHeaderNames.CONTENT_TYPE);
+        String currentType = response.getHeader(HttpHeaderNames.CONTENT_TYPE);
 
         if (Strings.isEmpty(currentType) || MimeHelper.APPLICATION_OCTET_STREAM.equals(currentType)) {
             response.setHeader(HttpHeaderNames.CONTENT_TYPE,
@@ -261,6 +269,11 @@ class TunnelHandler implements AsyncHandler<String> {
             if (!response.ctx.channel().isOpen()) {
                 return State.ABORT;
             }
+
+            if (timeToFirstReceivedByte == -1) {
+                timeToFirstReceivedByte = watch.elapsedMillis();
+            }
+            bytesReceived.addAndGet(bodyPart.length());
 
             if (!webContext.responseCommitted) {
                 if (bodyPart.isLast() && transformer == null) {
@@ -353,6 +366,10 @@ class TunnelHandler implements AsyncHandler<String> {
 
     @Override
     public String onCompleted() throws Exception {
+        if (completionHandler != null) {
+            completionHandler.accept(this);
+        }
+
         // If the request to tunnel failed, and we successfully
         // invoked a failureHandler, we must not do any housekeeping
         // here but rely on the failure handler to take care of the request.
@@ -384,9 +401,9 @@ class TunnelHandler implements AsyncHandler<String> {
                 return;
             }
 
-            long ttfbMillis = watch.elapsedMillis();
-            if (ttfbMillis > WebServer.getMaxTimeToFirstByte() && WebServer.getMaxTimeToFirstByte() > 0) {
-                WebServer.LOG.WARN("Long running tunneling: %s (TTFB: %s)"
+            timeToStatusReceived = watch.elapsedMillis();
+            if (timeToStatusReceived > WebServer.getMaxTimeToFirstByte() && WebServer.getMaxTimeToFirstByte() > 0) {
+                WebServer.LOG.WARN("Long running tunneling: %s (Time to status received: %s)"
                                    + "%nDNS: %s, TCP-ATTEMPT: %s, TCP-CONNECT: %s, HANDSHAKE: %s, REQUEST-SENT: %s"
                                    + "%nURL:%s"
                                    + "%nTunnel URL:%s"
@@ -396,7 +413,7 @@ class TunnelHandler implements AsyncHandler<String> {
                                    + "%nMDC:"
                                    + "%n%s%n",
                                    webContext.getRequestedURI(),
-                                   NLS.convertDuration(ttfbMillis, true, true),
+                                   safeConvertDuration(timeToStatusReceived),
                                    safeConvertDuration(timeToDns),
                                    safeConvertDuration(timeToConnectAttempt),
                                    safeConvertDuration(timeToConnect),
@@ -429,20 +446,74 @@ class TunnelHandler implements AsyncHandler<String> {
     public void onThrowable(Throwable t) {
         CallContext.setCurrent(cc);
 
-        WebServer.LOG.WARN("Tunnel - ERROR %s for %s",
+        WebServer.LOG.WARN("Tunnel - ERROR %s for tunneling to '%s' performed at '%s'",
                            t.getMessage() + " (" + t.getClass().getName() + ")",
+                           url,
                            webContext.getRequestedURI());
-        if (!(t instanceof ClosedChannelException)) {
-            if (failureHandler != null) {
-                try {
-                    failureHandler.accept(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
-                    failed = true;
-                    return;
-                } catch (Exception e) {
-                    Exceptions.handle(WebServer.LOG, e);
-                }
+
+        if (t instanceof ClosedChannelException) {
+            failed = true;
+            if (completionHandler != null) {
+                completionHandler.accept(this);
             }
-            response.error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
+            return;
         }
+
+        responseCode = HttpResponseStatus.INTERNAL_SERVER_ERROR.code();
+
+        try {
+            if (failureHandler != null) {
+                failureHandler.accept(responseCode);
+                failed = true;
+            }
+            if (completionHandler != null) {
+                completionHandler.accept(this);
+            }
+        } catch (Exception e) {
+            Exceptions.handle(WebServer.LOG, e);
+        }
+        if (!failed) {
+            response.error(HttpResponseStatus.valueOf(responseCode), Exceptions.handle(WebServer.LOG, t));
+        }
+    }
+
+    public long getTimeToDns() {
+        return timeToDns;
+    }
+
+    public long getTimeToConnectAttempt() {
+        return timeToConnectAttempt;
+    }
+
+    public long getTimeToConnect() {
+        return timeToConnect;
+    }
+
+    public long getTimeToHandshake() {
+        return timeToHandshake;
+    }
+
+    public long getTimeToRequestSent() {
+        return timeToRequestSent;
+    }
+
+    public long getTimeToStatusReceived() {
+        return timeToStatusReceived;
+    }
+
+    public long getTimeToFirstReceivedByte() {
+        return timeToFirstReceivedByte;
+    }
+
+    public long getBytesReceived() {
+        return bytesReceived.get();
+    }
+
+    public int getResponseCode() {
+        return responseCode;
+    }
+
+    public boolean isFailed() {
+        return failed;
     }
 }

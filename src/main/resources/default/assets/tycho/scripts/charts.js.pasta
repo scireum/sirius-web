@@ -2,9 +2,7 @@ const SIRIUS_CHART_COLOR_WHEEL = [
     "#5cbae6",
     "#fac364",
     "#b6d957",
-    "#8cd3ff",
-    "#d998cb",
-    "#98aafb"
+    "#d998cb"
 ];
 const SIRIUS_INLINE_CHART_TYPES = [
     'bar', 'line', 'soft-bar', 'area'
@@ -156,7 +154,7 @@ function lineChart(selector, labels, datasets) {
     let lineData = [];
     let hasRightYAxis = false;
     for (let i = 0; i < datasets.length; i++) {
-        const color = pickFromColorWheel();
+        const color = datasets[i].color ? datasets[i].color : pickFromColorWheel();
         const line = {
             label: datasets[i].label,
             data: datasets[i].data,
@@ -240,7 +238,7 @@ function barChart(selector, labels, datasets) {
     let barData = [];
     let hasRightYAxis = false;
     for (let i = 0; i < datasets.length; i++) {
-        const color = pickFromColorWheel();
+        const color = datasets[i].color ? datasets[i].color : pickFromColorWheel();
         const bar = {
             label: datasets[i].label,
             data: datasets[i].data,
