@@ -238,6 +238,10 @@
             stopAnimationThread();
 
             animationTimer = setInterval(function () {
+                if (!document.contains(_slidesContainer)) {
+                    stopAnimationThread();
+                    return;
+                }
                 fixViewOffsets();
                 if (options.animation && !interrupted) {
                     activateNextView();
