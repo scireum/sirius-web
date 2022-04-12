@@ -172,7 +172,6 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
 
     protected static AtomicLong bytesIn = new AtomicLong();
     protected static AtomicLong bytesOut = new AtomicLong();
-    protected static AtomicLong channelContentions = new AtomicLong();
     protected static AtomicLong messagesIn = new AtomicLong();
     protected static AtomicLong messagesOut = new AtomicLong();
     protected static AtomicLong connections = new AtomicLong();
@@ -760,11 +759,6 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
                                      "HTTP Bytes-Out",
                                      bytesOut.get() / 1024d / 60,
                                      "KB/s");
-        collector.differentialMetric("http_contention_blocks",
-                                     "http-contention-blocks",
-                                     "HTTP Connection Blocks",
-                                     channelContentions.get(),
-                                     "/min");
         collector.differentialMetric("http_connects", "http-connects", "HTTP Connects", connections.get(), "/min");
         collector.differentialMetric("http_requests", "http-requests", "HTTP Requests", requests.get(), "/min");
         collector.differentialMetric("http_slow_requests",
