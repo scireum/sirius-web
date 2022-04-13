@@ -63,6 +63,10 @@
                 max-height: 100%;
             }
 
+            #wrapper-body > #page-header, #wrapper-body > #main-container > .row {
+                display: none;
+            }
+
             #term {
                 overflow-x: hidden;
                 overflow-y: auto;
