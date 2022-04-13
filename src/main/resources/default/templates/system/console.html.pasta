@@ -63,7 +63,7 @@
                 max-height: 100%;
             }
 
-            #wrapper-body > #page-header, #wrapper-body > #main-container > .row, #wrapper-body > #main-container > .row > #message-box {
+            #wrapper-body > #page-header {
                 display: none;
             }
 
