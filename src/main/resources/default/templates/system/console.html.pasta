@@ -59,7 +59,7 @@
                 overflow: hidden;
             }
 
-            #main-container {
+            #wrapper-body > #main-container {
                 max-height: 100%;
             }
 
