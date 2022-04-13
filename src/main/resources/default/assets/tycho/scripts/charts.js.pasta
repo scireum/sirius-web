@@ -166,7 +166,7 @@ function lineChart(selector, labels, datasets) {
 
         if (datasets[i].axis === 'right') {
             hasRightYAxis = true;
-            line.yAxisID = 'right';
+            line.yAxisID = 'yRight';
         }
 
         lineData.push(line);
@@ -181,38 +181,34 @@ function lineChart(selector, labels, datasets) {
             legend: {display: datasets.length > 1}
         },
         scales: {
-            yAxes: [{
-                ticks: {
-                    beginAtZero: true,
-                }
-            }],
-            xAxes: [{
+            y: {
+                min: 0,
+            },
+            x: {
                 ticks: {
                     autoSkip: false
                 }
-            }]
+            }
         }
     };
 
     if (hasRightYAxis) {
         customConfig.scales = {
-            yAxes: [
-                {
-                    type: 'linear',
-                    position: 'left',
-                    ticks: {
-                        beginAtZero: true,
-                    }
-                }, {
-                    id: 'right',
-                    type: 'linear',
-                    position: 'right',
-                    ticks: {
-                        beginAtZero: true,
-                    }
-                }
-            ]
+            y: {
+                type: 'linear',
+                position: 'left',
+                min: 0,
+            },
+            yRight: {
+                type: 'linear',
+                position: 'right',
+                min: 0,
+            }
         };
+    }
+
+    if (!hasNonZeroValues) {
+        customConfig.scales.y.suggestedMax = 100;
     }
 
     new Chart(_canvas, {
@@ -247,7 +243,7 @@ function barChart(selector, labels, datasets) {
 
         if (datasets[i].axis === 'right') {
             hasRightYAxis = true;
-            bar.yAxisID = 'right';
+            bar.yAxisID = 'yRight';
         }
 
         barData.push(bar);
@@ -262,38 +258,34 @@ function barChart(selector, labels, datasets) {
             legend: {display: datasets.length > 1}
         },
         scales: {
-            yAxes: [{
-                ticks: {
-                    beginAtZero: true,
-                }
-            }],
-            xAxes: [{
+            y: {
+                min: 0,
+            },
+            x: {
                 ticks: {
                     autoSkip: false
                 }
-            }]
+            }
         }
     };
 
     if (hasRightYAxis) {
         customConfig.scales = {
-            yAxes: [
-                {
-                    type: 'linear',
-                    position: 'left',
-                    ticks: {
-                        beginAtZero: true,
-                    }
-                }, {
-                    id: 'right',
-                    type: 'linear',
-                    position: 'right',
-                    ticks: {
-                        beginAtZero: true,
-                    }
-                }
-            ]
+            y: {
+                type: 'linear',
+                position: 'left',
+                min: 0
+            },
+            yRight: {
+                type: 'linear',
+                position: 'right',
+                min: 0
+            }
         };
+    }
+
+    if (!hasNonZeroValues) {
+        customConfig.scales.y.suggestedMax = 100;
     }
 
     new Chart(_canvas, {
