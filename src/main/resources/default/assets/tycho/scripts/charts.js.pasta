@@ -149,28 +149,34 @@ function _inlineLineChart(selector, data, color, fill) {
  * which contains the actual numbers.
  */
 function lineChart(selector, labels, datasets) {
-    let _canvas = sirius.querySelector(selector);
-
-    let lineData = [];
+    const _canvas = sirius.querySelector(selector);
+    const lineData = [];
+    let hasNonZeroValues = false;
     let hasRightYAxis = false;
+
     for (let i = 0; i < datasets.length; i++) {
         const color = datasets[i].color ? datasets[i].color : pickFromColorWheel();
         const line = {
             label: datasets[i].label,
             data: datasets[i].data,
             borderColor: color,
-            pointRadius: 0,
+            pointRadius: 5,
             fill: false,
             backgroundColor: color
         };
 
         if (datasets[i].axis === 'right') {
             hasRightYAxis = true;
-            line.yAxisID = 'right';
+            line.yAxisID = 'yRight';
+        }
+
+        if (!hasNonZeroValues) {
+            hasNonZeroValues = (line.data.filter(function (value) {
+                return value !== 0;
+            }).length > 0);
         }
 
         lineData.push(line);
-
     }
 
     const customConfig = {
@@ -181,38 +187,34 @@ function lineChart(selector, labels, datasets) {
             legend: {display: datasets.length > 1}
         },
         scales: {
-            yAxes: [{
-                ticks: {
-                    beginAtZero: true,
-                }
-            }],
-            xAxes: [{
+            y: {
+                min: 0,
+            },
+            x: {
                 ticks: {
                     autoSkip: false
                 }
-            }]
+            }
         }
     };
 
     if (hasRightYAxis) {
         customConfig.scales = {
-            yAxes: [
-                {
-                    type: 'linear',
-                    position: 'left',
-                    ticks: {
-                        beginAtZero: true,
-                    }
-                }, {
-                    id: 'right',
-                    type: 'linear',
-                    position: 'right',
-                    ticks: {
-                        beginAtZero: true,
-                    }
-                }
-            ]
+            y: {
+                type: 'linear',
+                position: 'left',
+                min: 0,
+            },
+            yRight: {
+                type: 'linear',
+                position: 'right',
+                min: 0,
+            }
         };
+    }
+
+    if (!hasNonZeroValues) {
+        customConfig.scales.y.suggestedMax = 100;
     }
 
     new Chart(_canvas, {
@@ -233,10 +235,11 @@ function lineChart(selector, labels, datasets) {
  * which contains the actual numbers.
  */
 function barChart(selector, labels, datasets) {
-    let _canvas = sirius.querySelector(selector);
-
-    let barData = [];
+    const _canvas = sirius.querySelector(selector);
+    const barData = [];
+    let hasNonZeroValues = false;
     let hasRightYAxis = false;
+
     for (let i = 0; i < datasets.length; i++) {
         const color = datasets[i].color ? datasets[i].color : pickFromColorWheel();
         const bar = {
@@ -247,11 +250,16 @@ function barChart(selector, labels, datasets) {
 
         if (datasets[i].axis === 'right') {
             hasRightYAxis = true;
-            bar.yAxisID = 'right';
+            bar.yAxisID = 'yRight';
+        }
+
+        if (!hasNonZeroValues) {
+            hasNonZeroValues = (bar.data.filter(function (value) {
+                return value !== 0;
+            }).length > 0);
         }
 
         barData.push(bar);
-
     }
 
     const customConfig = {
@@ -262,38 +270,34 @@ function barChart(selector, labels, datasets) {
             legend: {display: datasets.length > 1}
         },
         scales: {
-            yAxes: [{
-                ticks: {
-                    beginAtZero: true,
-                }
-            }],
-            xAxes: [{
+            y: {
+                min: 0,
+            },
+            x: {
                 ticks: {
                     autoSkip: false
                 }
-            }]
+            }
         }
     };
 
     if (hasRightYAxis) {
         customConfig.scales = {
-            yAxes: [
-                {
-                    type: 'linear',
-                    position: 'left',
-                    ticks: {
-                        beginAtZero: true,
-                    }
-                }, {
-                    id: 'right',
-                    type: 'linear',
-                    position: 'right',
-                    ticks: {
-                        beginAtZero: true,
-                    }
-                }
-            ]
+            y: {
+                type: 'linear',
+                position: 'left',
+                min: 0
+            },
+            yRight: {
+                type: 'linear',
+                position: 'right',
+                min: 0
+            }
         };
+    }
+
+    if (!hasNonZeroValues) {
+        customConfig.scales.y.suggestedMax = 100;
     }
 
     new Chart(_canvas, {
