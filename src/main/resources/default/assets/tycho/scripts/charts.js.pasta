@@ -149,10 +149,11 @@ function _inlineLineChart(selector, data, color, fill) {
  * which contains the actual numbers.
  */
 function lineChart(selector, labels, datasets) {
-    let _canvas = sirius.querySelector(selector);
-
-    let lineData = [];
+    const _canvas = sirius.querySelector(selector);
+    const lineData = [];
+    let hasNonZeroValues = false;
     let hasRightYAxis = false;
+
     for (let i = 0; i < datasets.length; i++) {
         const color = datasets[i].color ? datasets[i].color : pickFromColorWheel();
         const line = {
@@ -169,8 +170,13 @@ function lineChart(selector, labels, datasets) {
             line.yAxisID = 'yRight';
         }
 
-        lineData.push(line);
+        if (!hasNonZeroValues) {
+            hasNonZeroValues = (line.data.filter(function (value) {
+                return value !== 0;
+            }).length > 0);
+        }
 
+        lineData.push(line);
     }
 
     const customConfig = {
@@ -229,10 +235,11 @@ function lineChart(selector, labels, datasets) {
  * which contains the actual numbers.
  */
 function barChart(selector, labels, datasets) {
-    let _canvas = sirius.querySelector(selector);
-
-    let barData = [];
+    const _canvas = sirius.querySelector(selector);
+    const barData = [];
+    let hasNonZeroValues = false;
     let hasRightYAxis = false;
+
     for (let i = 0; i < datasets.length; i++) {
         const color = datasets[i].color ? datasets[i].color : pickFromColorWheel();
         const bar = {
@@ -246,8 +253,13 @@ function barChart(selector, labels, datasets) {
             bar.yAxisID = 'yRight';
         }
 
-        barData.push(bar);
+        if (!hasNonZeroValues) {
+            hasNonZeroValues = (bar.data.filter(function (value) {
+                return value !== 0;
+            }).length > 0);
+        }
 
+        barData.push(bar);
     }
 
     const customConfig = {
