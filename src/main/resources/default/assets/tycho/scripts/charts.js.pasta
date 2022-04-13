@@ -159,7 +159,7 @@ function lineChart(selector, labels, datasets) {
             label: datasets[i].label,
             data: datasets[i].data,
             borderColor: color,
-            pointRadius: 0,
+            pointRadius: 5,
             fill: false,
             backgroundColor: color
         };
