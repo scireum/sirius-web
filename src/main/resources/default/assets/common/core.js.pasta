@@ -343,3 +343,22 @@ sirius.executeEmbeddedScripts = function (_container) {
 
     nodeScriptReplace(_container);
 }
+/**@
+ * Warns the user when leaving the current site.
+ *
+ * This should mainly be used to prevent data loss - for example if the user has unsaved changes in a form, or a file
+ * is uploading. You should provide a function which is called when the user unloads the site, and the user is only
+ * warned, if the function returns true. This function should check if the user actually has unsaved data, or a file is
+ * uploading, for example. This method can be called multiple times with different callbacks and if any one of them
+ * return true, the user is warned. If no method is provided, the user is always warned.
+ *
+ * @param shouldWarnCallback the function to call on unload to determine if to warn
+ */
+sirius.warnOnUnload = function (shouldWarnCallback) {
+    window.addEventListener("beforeunload", function (event) {
+        if (!(shouldWarnCallback instanceof Function) || shouldWarnCallback()) {
+            event.preventDefault();
+            return event.returnValue = '';
+        }
+    });
+}

@@ -78,7 +78,11 @@
             }
         },
         init: function () {
-            this.on('success', function (file, response) {
+            const dropzone = this;
+            sirius.warnOnUnload(function () {
+                return dropzone.getUploadingFiles().length + dropzone.getQueuedFiles().length;
+            });
+            dropzone.on('success', function (file, response) {
                 if (response.error) {
                     file.previewElement.classList.add('dz-error');
                     file.previewElement.classList.remove('dz-success');
@@ -86,11 +90,11 @@
                     file.previewElement.querySelector('[data-dz-errormessage]').innerHTML = message;
                     addErrorMessage(message);
                 } else if (response.refresh) {
-                    this.reloadAfterQueueComplete = true;
+                    dropzone.reloadAfterQueueComplete = true;
                 }
             });
-            this.on('queuecomplete', function () {
-                if (this.reloadAfterQueueComplete) {
+            dropzone.on('queuecomplete', function () {
+                if (dropzone.reloadAfterQueueComplete) {
                     setTimeout(function () {
                         document.location.reload(true);
                     }, 2500);
