@@ -238,7 +238,7 @@
             stopAnimationThread();
 
             animationTimer = setInterval(function () {
-                if (!document.contains(_slidesContainer)) {
+                if (!document.body.contains(_slidesContainer)) {
                     stopAnimationThread();
                     return;
                 }
