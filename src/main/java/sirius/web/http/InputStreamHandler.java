@@ -339,7 +339,7 @@ public class InputStreamHandler extends InputStream implements ContentHandler {
                 //While we were waiting for the net buffer, the input side was closed - signal to reader...
                 error = true;
                 release();
-                throw new IOException(
+                throw new InterruptedIOException(
                         "An error occurred while waiting for upcoming data. Terminating due to possibly inconsistent data!");
             }
             if (currentBuffer.readableBytes() == 0) {
