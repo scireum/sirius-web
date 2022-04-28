@@ -8,6 +8,7 @@
 
 package sirius.web.health.console;
 
+import sirius.kernel.commons.CommandParser;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.di.GlobalContext;
