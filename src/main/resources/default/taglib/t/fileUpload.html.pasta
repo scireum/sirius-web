@@ -79,6 +79,40 @@
         },
         init: function () {
             const dropzone = this;
+            let previewsContainer = '@previewsContainer';
+            if (previewsContainer) {
+                let dropzoneIndicator = document.querySelector(previewsContainer + ' .sirius-upload-hover');
+                document.addEventListener('dragenter', function (event) {
+                    dropzoneIndicator.classList.add('d-flex');
+                    dropzoneIndicator.classList.remove('d-none');
+                }, false);
+                document.addEventListener('dragover', function (event) {
+                    event.preventDefault();
+                });
+                document.addEventListener('drop', function (event) {
+                    dropzoneIndicator.classList.remove('d-flex');
+                    dropzoneIndicator.classList.add('d-none');
+                    dropzoneIndicator.classList.remove('sirius-upload-hover-active');
+                }, false);
+                dropzoneIndicator.addEventListener('dragenter', function (event) {
+                    dropzoneIndicator.classList.add('sirius-upload-hover-active');
+                });
+                dropzoneIndicator.addEventListener('dragleave', function (event) {
+                    dropzoneIndicator.classList.remove('sirius-upload-hover-active');
+                });
+                dropzoneIndicator.addEventListener('dragover', function (event) {
+                    event.preventDefault();
+                });
+                dropzoneIndicator.addEventListener('drop', function (event) {
+                    event.preventDefault();
+                    dropzone.drop(event);
+                });
+                dropzone.on('drop', function () {
+                    dropzoneIndicator.classList.remove('d-flex');
+                    dropzoneIndicator.classList.add('d-none');
+                    dropzoneIndicator.classList.remove('sirius-upload-hover-active');
+                });
+            }
             sirius.warnOnUnload(function () {
                 return dropzone.getUploadingFiles().length + dropzone.getQueuedFiles().length;
             });

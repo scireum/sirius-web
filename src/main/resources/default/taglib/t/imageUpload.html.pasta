@@ -16,13 +16,19 @@
 <i:local name="previewId" value="@generateId('image-upload-preview-%s')"/>
 
 <div class="dropzone sirius-imageupload card shadow-sm mb-4 @class" id="@id">
-    <div class="img-preview d-flex justify-content-center align-items-center flex-grow-1 mb-4">
-        <img class="mh-100 mw-100" id="@previewId" src="@currentImage"/>
+    <div class="sirius-upload-hover h-100 d-none flex-column align-items-center justify-content-center">
+        <i class="fa fa-8x fa-cloud-upload-alt"></i>
+        <span>@i18n("template.html.uploadArea")</span>
     </div>
-    <div class="dropzone-items mt-2 mb-2">
+    <div class="sirius-upload-content h-100 d-flex flex-column">
+        <div class="img-preview d-flex justify-content-center align-items-center flex-grow-1 mb-4">
+            <img class="mh-100 mw-100" id="@previewId" src="@currentImage"/>
+        </div>
+        <div class="dropzone-items mt-2 mb-2">
+        </div>
+        <a class="dropzone-select btn btn-primary @btnClass">@label</a>
+        <i:render name="body"/>
     </div>
-    <a class="dropzone-select btn btn-primary @btnClass">@label</a>
-    <i:render name="body"/>
 </div>
 
 <script type="text/javascript">
@@ -84,6 +90,37 @@
         },
         init: function () {
             const dropzone = this;
+            let dropzoneIndicator = document.querySelector('#' + '@id' + ' .sirius-upload-hover');
+            let dropzoneContent = document.querySelector('#' + '@id' + ' .sirius-upload-content');
+            document.addEventListener('dragenter', function (event) {
+                dropzoneIndicator.classList.add('d-flex');
+                dropzoneIndicator.classList.remove('d-none');
+                dropzoneContent.classList.add('d-none');
+                dropzoneContent.classList.remove('d-flex');
+            }, false);
+            document.addEventListener('dragover', function (event) {
+                event.preventDefault();
+            });
+            document.addEventListener('drop', function (event) {
+                dropzoneIndicator.classList.remove('d-flex');
+                dropzoneIndicator.classList.add('d-none');
+                dropzoneIndicator.classList.remove('sirius-upload-hover-active');
+                dropzoneContent.classList.remove('d-none');
+                dropzoneContent.classList.add('d-flex');
+            }, false);
+            dropzoneIndicator.addEventListener('dragenter', function (event) {
+                dropzoneIndicator.classList.add('sirius-upload-hover-active');
+            });
+            dropzoneIndicator.addEventListener('dragleave', function (event) {
+                dropzoneIndicator.classList.remove('sirius-upload-hover-active');
+            });
+            dropzone.on('drop', function () {
+                dropzoneIndicator.classList.remove('d-flex');
+                dropzoneIndicator.classList.add('d-none');
+                dropzoneIndicator.classList.remove('sirius-upload-hover-active');
+                dropzoneContent.classList.remove('d-none');
+                dropzoneContent.classList.add('d-flex');
+            });
             sirius.warnOnUnload(function () {
                 return dropzone.getUploadingFiles().length + dropzone.getQueuedFiles().length;
             });

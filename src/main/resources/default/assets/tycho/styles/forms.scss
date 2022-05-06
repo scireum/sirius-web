@@ -183,3 +183,17 @@
     }
   }
 }
+
+.sirius-upload-hover {
+  min-height: 200px;
+  background-color: $sirius-gray;
+  border: 5px dashed $sirius-gray-dark;
+  border-radius: 5px;
+  &.sirius-upload-hover-active {
+    background-color: $sirius-blue-light;
+  }
+  * {
+    //stop dragleave to fire when hovering over child elements
+    pointer-events: none;
+  }
+}
