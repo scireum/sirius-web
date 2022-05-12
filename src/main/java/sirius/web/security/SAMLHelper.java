@@ -81,6 +81,8 @@ public class SAMLHelper {
 
     private static final String SAML_NAMESPACE = "urn:oasis:names:tc:SAML:2.0:assertion";
 
+    private static final String SAMLP_NAMESPACE = "urn:oasis:names:tc:SAML:2.0:protocol";
+
     /**
      * Generates a base64 encoded XML request which can be POSTed to a SAML 2 identity provider.
      *
@@ -98,7 +100,7 @@ public class SAMLHelper {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         XMLStructuredOutput out = new XMLStructuredOutput(buffer);
         out.beginOutput("samlp:AuthnRequest",
-                        Attribute.set("xmlns:samlp", "urn:oasis:names:tc:SAML:2.0:protocol"),
+                        Attribute.set("xmlns:samlp", SAMLP_NAMESPACE),
                         Attribute.set("xmlns:saml", SAML_NAMESPACE),
                         Attribute.set("ID", "identifier_" + System.currentTimeMillis()),
                         Attribute.set("Version", "2.0"),
