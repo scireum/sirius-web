@@ -139,7 +139,7 @@ public class SAMLHelper {
         }
 
         try (InputStream input = new ByteArrayInputStream(response)) {
-            return parseSAMLResponse(input);
+            return parseSAMLResponse(input, true);
         } catch (HandledException e) {
             throw e;
         } catch (Exception e) {
@@ -151,12 +151,24 @@ public class SAMLHelper {
         }
     }
 
-    public SAMLResponse parseSAMLResponse(InputStream input) {
+    /**
+     * Parses a SAML 2 response from the given input string, optionally checking timestamps.
+     * <p>
+     * Note that the fingerprint <b>must</b> be verified in some way or another, as this method only checks if
+     * the signature is valid, not <b>who</b> created it.
+     *
+     * @param input a stream containing the SAML XML response to parse
+     * @param checkTime a flag indicating whether to check for expired timestamps
+     * @return the parsed response which has been verified
+     */
+    public SAMLResponse parseSAMLResponse(InputStream input, boolean checkTime) {
         try {
             Document doc = getResponseDocument(input);
 
             Element assertion = selectSingleElement(doc, null, "Assertion");
-            verifyTimestamp(assertion);
+            if (checkTime) {
+                verifyTimestamp(assertion);
+            }
             String fingerprint = validateXMLSignature(doc, assertion);
 
             return parseAssertion(assertion, fingerprint);
