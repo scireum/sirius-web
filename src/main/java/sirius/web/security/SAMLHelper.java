@@ -218,7 +218,7 @@ public class SAMLHelper {
     private void verifyTimestamp(Element assertion) {
         String issueInstant = assertion.getAttribute("IssueInstant");
         Instant parsedIssueInstant = Instant.from(DateTimeFormatter.ISO_INSTANT.parse(issueInstant));
-        if (Duration.between(Instant.now(), parsedIssueInstant).toHours() > MAX_TIMESTAMP_DELTA_IN_HOURS) {
+        if (Duration.between(parsedIssueInstant, Instant.now()).toHours() >= MAX_TIMESTAMP_DELTA_IN_HOURS) {
             throw Exceptions.createHandled()
                             .withSystemErrorMessage("Invalid SAML Response: Invalid IssueInstant: %s", issueInstant)
                             .handle();
