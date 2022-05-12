@@ -44,6 +44,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.cert.X509Certificate;
@@ -123,16 +124,36 @@ public class SAMLHelper {
      * Note that the fingerprint <b>must</b> be verified in some way or another, as this method only checks if
      * the signature is valid, not <b>who</b> created it.
      *
-     * @param ctx the http request to read the response from
+     * @param context the http request to read the response from
      * @return the parsed response which has been verified
      */
-    public SAMLResponse parseSAMLResponse(WebContext ctx) {
-        if (!ctx.isUnsafePOST()) {
+    public SAMLResponse parseSAMLResponse(WebContext context) {
+        if (!context.isUnsafePOST()) {
             throw Exceptions.createHandled().withSystemErrorMessage("Invalid SAML Response: POST expected!").handle();
         }
 
+        byte[] response = Base64.getDecoder().decode(context.get("SAMLResponse").asString());
+
+        if (LOG.isFINE()) {
+            LOG.FINE("Received SAML response: %s", new String(response, StandardCharsets.UTF_8));
+        }
+
+        try (InputStream input = new ByteArrayInputStream(response)) {
+            return parseSAMLResponse(input);
+        } catch (HandledException e) {
+            throw e;
+        } catch (Exception e) {
+            throw Exceptions.handle()
+                            .to(LOG)
+                            .error(e)
+                            .withSystemErrorMessage("An error occurred while parsing a SAML Response: %s (%s)")
+                            .handle();
+        }
+    }
+
+    public SAMLResponse parseSAMLResponse(InputStream input) {
         try {
-            Document doc = getResponseDocument(ctx);
+            Document doc = getResponseDocument(input);
 
             Element assertion = selectSingleElement(doc, null, "Assertion");
             verifyTimestamp(assertion);
@@ -216,17 +237,11 @@ public class SAMLHelper {
                                 attributes);
     }
 
-    private Document getResponseDocument(WebContext ctx)
+    private Document getResponseDocument(InputStream input)
             throws SAXException, IOException, ParserConfigurationException {
-        byte[] response = Base64.getDecoder().decode(ctx.get("SAMLResponse").asString());
-
-        if (LOG.isFINE()) {
-            LOG.FINE("Received SAML response: %s", new String(response, StandardCharsets.UTF_8));
-        }
-
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setNamespaceAware(true);
-        return dbf.newDocumentBuilder().parse(new ByteArrayInputStream(response));
+        return dbf.newDocumentBuilder().parse(input);
     }
 
     /**
