@@ -79,6 +79,8 @@ public class SAMLHelper {
      */
     public static final int MAX_TIMESTAMP_DELTA_IN_HOURS = 3;
 
+    private static final String SAML_NAMESPACE = "urn:oasis:names:tc:SAML:2.0:assertion";
+
     /**
      * Generates a base64 encoded XML request which can be POSTed to a SAML 2 identity provider.
      *
@@ -165,7 +167,7 @@ public class SAMLHelper {
         try {
             Document doc = getResponseDocument(input);
 
-            Element assertion = selectSingleElement(doc, null, "Assertion");
+            Element assertion = selectSingleElement(doc, SAML_NAMESPACE, "Assertion");
             if (checkTime) {
                 verifyTimestamp(assertion);
             }
