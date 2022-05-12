@@ -99,7 +99,7 @@ public class SAMLHelper {
         XMLStructuredOutput out = new XMLStructuredOutput(buffer);
         out.beginOutput("samlp:AuthnRequest",
                         Attribute.set("xmlns:samlp", "urn:oasis:names:tc:SAML:2.0:protocol"),
-                        Attribute.set("xmlns:saml", "urn:oasis:names:tc:SAML:2.0:assertion"),
+                        Attribute.set("xmlns:saml", SAML_NAMESPACE),
                         Attribute.set("ID", "identifier_" + System.currentTimeMillis()),
                         Attribute.set("Version", "2.0"),
                         Attribute.set("IssueInstant",
