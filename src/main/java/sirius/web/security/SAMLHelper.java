@@ -159,7 +159,7 @@ public class SAMLHelper {
      * Note that the fingerprint <b>must</b> be verified in some way or another, as this method only checks if
      * the signature is valid, not <b>who</b> created it.
      *
-     * @param input a stream containing the SAML XML response to parse
+     * @param input     a stream containing the SAML XML response to parse
      * @param checkTime a flag indicating whether to check for expired timestamps
      * @return the parsed response which has been verified
      */
@@ -195,7 +195,7 @@ public class SAMLHelper {
      * @param namespace the optional namespace URI
      * @param nodeName  the name of the node
      * @return the element with the given name
-     * @throws HandledException if there are zero or more thant one nodes found
+     * @throws HandledException if there are either no or multiple nodes of the given name
      */
     private Element selectSingleElement(Document doc, @Nullable String namespace, String nodeName) {
         NodeList nl = Strings.isFilled(namespace) ?
