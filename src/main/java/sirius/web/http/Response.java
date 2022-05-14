@@ -64,17 +64,15 @@ import java.io.OutputStream;
 import java.net.URLConnection;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
@@ -168,11 +166,6 @@ public class Response {
      * Contains the name of the downloadable file
      */
     protected String name;
-
-    /*
-     * Caches the date formatter used to output http date headers
-     */
-    private SimpleDateFormat dateFormatter;
 
     /*
      * Determines if the response supports keepalive
@@ -556,7 +549,11 @@ public class Response {
      * @return <tt>true</tt> if the request was answered via a 304, <tt>false</tt> otherwise
      */
     public boolean handleIfModifiedSince(long lastModifiedInMillis) {
-        long ifModifiedSinceDateSeconds = wc.getDateHeader(HttpHeaderNames.IF_MODIFIED_SINCE) / 1000;
+        long ifModifiedSinceDateSeconds = WebServer.parseDateHeader(getHeader(HttpHeaderNames.IF_MODIFIED_SINCE))
+                                                   .map(date -> date.atZone(ZoneId.systemDefault())
+                                                                    .toInstant()
+                                                                    .getEpochSecond())
+                                                   .orElse(0L) / 1000;
         if (ifModifiedSinceDateSeconds > 0
             && lastModifiedInMillis > 0
             && ifModifiedSinceDateSeconds >= lastModifiedInMillis / 1000) {
@@ -878,16 +875,20 @@ public class Response {
         if (headers().contains(HttpHeaderNames.EXPIRES) || headers().contains(HttpHeaderNames.CACHE_CONTROL)) {
             return;
         }
-        SimpleDateFormat formatter = getHTTPDateFormat();
 
         if (cacheSeconds > 0) {
             // Date header
-            Calendar time = new GregorianCalendar();
-            addHeaderIfNotExists(HttpHeaderNames.DATE, formatter.format(time.getTime()));
+            addHeaderIfNotExists(HttpHeaderNames.DATE,
+                                 LocalDateTime.now()
+                                              .atZone(ZoneId.systemDefault())
+                                              .format(DateTimeFormatter.RFC_1123_DATE_TIME));
 
             // Add cached headers
-            time.add(Calendar.SECOND, cacheSeconds);
-            addHeaderIfNotExists(HttpHeaderNames.EXPIRES, formatter.format(time.getTime()));
+            addHeaderIfNotExists(HttpHeaderNames.EXPIRES,
+                                 LocalDateTime.now()
+                                              .atZone(ZoneId.systemDefault())
+                                              .plusSeconds(cacheSeconds)
+                                              .format(DateTimeFormatter.RFC_1123_DATE_TIME));
             if (isPrivate) {
                 addHeaderIfNotExists(HttpHeaderNames.CACHE_CONTROL, "private, max-age=" + cacheSeconds);
             } else {
@@ -897,19 +898,11 @@ public class Response {
             addHeaderIfNotExists(HttpHeaderNames.CACHE_CONTROL, NO_CACHE);
         }
         if (lastModifiedMillis > 0 && !headers().contains(HttpHeaderNames.LAST_MODIFIED)) {
-            addHeaderIfNotExists(HttpHeaderNames.LAST_MODIFIED, formatter.format(new Date(lastModifiedMillis)));
+            addHeaderIfNotExists(HttpHeaderNames.LAST_MODIFIED,
+                                 Instant.ofEpochMilli(lastModifiedMillis)
+                                        .atZone(ZoneId.systemDefault())
+                                        .format(DateTimeFormatter.RFC_1123_DATE_TIME));
         }
-    }
-
-    /*
-     * Creates a DateFormat to parse HTTP dates.
-     */
-    protected SimpleDateFormat getHTTPDateFormat() {
-        if (dateFormatter == null) {
-            dateFormatter = new SimpleDateFormat(WebContext.HTTP_DATE_FORMAT, Locale.US);
-            dateFormatter.setTimeZone(TIME_ZONE_GMT);
-        }
-        return dateFormatter;
     }
 
     /*
@@ -1469,11 +1462,9 @@ public class Response {
             BoundRequestBuilder brb = getAsyncClient().prepareGet(url);
 
             // Adds support for detecting stale cache contents via if-modified-since...
-            long ifModifiedSince = wc.getDateHeader(HttpHeaderNames.IF_MODIFIED_SINCE);
-            if (ifModifiedSince > 0) {
-                brb.addHeader(HttpHeaderNames.IF_MODIFIED_SINCE.toString(),
-                              getHTTPDateFormat().format(ifModifiedSince));
-            }
+            WebServer.parseDateHeader(wc.getHeader(HttpHeaderNames.IF_MODIFIED_SINCE))
+                     .ifPresent(ifModifiedSince -> brb.addHeader(HttpHeaderNames.IF_MODIFIED_SINCE.toString(),
+                                                                 ifModifiedSince.format(DateTimeFormatter.RFC_1123_DATE_TIME)));
 
             // Support range requests...
             String range = wc.getHeader(HttpHeaderNames.RANGE);
