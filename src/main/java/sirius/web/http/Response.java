@@ -333,14 +333,21 @@ public class Response {
         // NEVER allow a Set-Cookie header within a cached request...
         if (response.headers().contains(HttpHeaderNames.SET_COOKIE)) {
             if (response.headers().contains(HttpHeaderNames.EXPIRES)) {
-                WebServer.LOG.WARN("A response with 'set-cookie' and 'expires' was created for URI: %s%n%s%n%s",
-                                   wc.getRequestedURI(),
-                                   wc,
-                                   ExecutionPoint.snapshot());
-                response.headers().remove(HttpHeaderNames.EXPIRES);
+                LocalDateTime expires =
+                        WebServer.parseDateHeader(response.headers().get(HttpHeaderNames.EXPIRES)).orElse(null);
+                if (expires != null && LocalDateTime.now().isBefore(expires)) {
+                    WebServer.LOG.WARN("A response with 'set-cookie' and 'expires' was created for URI: %s%n%s%n%s",
+                                       wc.getRequestedURI(),
+                                       wc,
+                                       ExecutionPoint.snapshot());
+                    response.headers().remove(HttpHeaderNames.EXPIRES);
+                }
             }
             String cacheControl = response.headers().get(HttpHeaderNames.CACHE_CONTROL);
-            if (cacheControl != null && !cacheControl.startsWith(HttpHeaderValues.NO_CACHE.toString())) {
+            if (cacheControl != null
+                && !cacheControl.startsWith(HttpHeaderValues.NO_CACHE.toString())
+                && !cacheControl.startsWith(HttpHeaderValues.MUST_REVALIDATE.toString())
+                && !cacheControl.startsWith(HttpHeaderValues.NO_STORE.toString())) {
                 WebServer.LOG.WARN("A response with 'set-cookie' and 'cache-control' was created for URI: %s%n%s%n%s",
                                    wc.getRequestedURI(),
                                    wc,
