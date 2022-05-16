@@ -36,6 +36,7 @@ import sirius.kernel.nls.NLS;
 import javax.net.ssl.SSLSession;
 import java.net.InetSocketAddress;
 import java.nio.channels.ClosedChannelException;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -248,7 +249,9 @@ public class TunnelHandler implements AsyncHandler<String> {
 
     private long parseLastModified(Map.Entry<String, String> entry) {
         try {
-            return response.getHTTPDateFormat().parse(entry.getValue()).getTime();
+            return WebServer.parseDateHeader(entry.getValue())
+                            .map(date -> date.atZone(ZoneId.systemDefault()).toInstant().getEpochSecond())
+                            .orElse(0L);
         } catch (Exception e) {
             Exceptions.ignore(e);
             return 0;
@@ -288,9 +291,7 @@ public class TunnelHandler implements AsyncHandler<String> {
                 completeResponse(bodyPart);
             } else if (transformer != null) {
                 ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
-                transformer.apply(data)
-                           .map(DefaultHttpContent::new)
-                           .ifPresent(message -> response.ctx.write(message));
+                transformer.apply(data).map(DefaultHttpContent::new).ifPresent(message -> response.ctx.write(message));
                 data.release();
             } else {
                 ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
