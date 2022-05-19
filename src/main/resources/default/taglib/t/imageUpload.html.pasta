@@ -115,7 +115,7 @@
                 hideIndicator();
             }, false);
             document.addEventListener('dragleave', function (event) {
-                if (event.fromElement === null) {
+                if (event.relatedTarget === null) {
                     // left window
                     hideIndicator();
                 }
