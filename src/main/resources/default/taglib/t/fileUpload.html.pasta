@@ -80,8 +80,16 @@
         init: function () {
             const dropzone = this;
             let previewsContainer = '@previewsContainer';
+
             if (previewsContainer) {
                 let _dropzoneIndicator = document.querySelector(previewsContainer + ' .sirius-upload-hover');
+
+                function hideIndicator() {
+                    _dropzoneIndicator.classList.remove('d-flex');
+                    _dropzoneIndicator.classList.add('d-none');
+                    _dropzoneIndicator.classList.remove('sirius-upload-hover-active');
+                }
+
                 document.addEventListener('dragenter', function (event) {
                     _dropzoneIndicator.classList.add('d-flex');
                     _dropzoneIndicator.classList.remove('d-none');
@@ -89,10 +97,17 @@
                 document.addEventListener('dragover', function (event) {
                     event.preventDefault();
                 });
+                document.addEventListener('dragend', function (event) {
+                    hideIndicator();
+                }, false);
                 document.addEventListener('drop', function (event) {
-                    _dropzoneIndicator.classList.remove('d-flex');
-                    _dropzoneIndicator.classList.add('d-none');
-                    _dropzoneIndicator.classList.remove('sirius-upload-hover-active');
+                    hideIndicator();
+                }, false);
+                document.addEventListener('dragleave', function (event) {
+                    if (event.fromElement === null) {
+                        // left window
+                        hideIndicator();
+                    }
                 }, false);
                 _dropzoneIndicator.addEventListener('dragenter', function (event) {
                     _dropzoneIndicator.classList.add('sirius-upload-hover-active');
@@ -108,9 +123,7 @@
                     dropzone.drop(event);
                 });
                 dropzone.on('drop', function () {
-                    _dropzoneIndicator.classList.remove('d-flex');
-                    _dropzoneIndicator.classList.add('d-none');
-                    _dropzoneIndicator.classList.remove('sirius-upload-hover-active');
+                    hideIndicator();
                 });
             }
             sirius.warnOnUnload(function () {

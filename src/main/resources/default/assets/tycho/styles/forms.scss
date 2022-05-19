@@ -186,12 +186,11 @@
 
 .sirius-upload-hover {
   min-height: 200px;
-  background-color: $sirius-gray;
-  border: 5px dashed $sirius-gray-dark;
+  background-color: #F4F4F4;
   border-radius: 5px;
 
   &.sirius-upload-hover-active {
-    background-color: $sirius-blue-light;
+    background-color: #C1D4F2;
   }
 
   * {
