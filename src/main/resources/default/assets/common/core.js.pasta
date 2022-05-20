@@ -135,7 +135,7 @@ sirius.getJSON = function (url, params) {
  * Calls the given URL, posts the given params and retrieves the resulting JSON.
  *
  * @param url the URL to invoke
- * @param params the parameters to send POST data
+ * @param params the parameters to send POST data (parameters with 'undefined' values are not send to the server)
  * @returns {Promise<any>} the received JSON data
  */
 sirius.postJSON = function (url, params) {
