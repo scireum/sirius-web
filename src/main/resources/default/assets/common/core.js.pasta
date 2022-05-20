@@ -142,7 +142,11 @@ sirius.postJSON = function (url, params) {
     let formData = new FormData();
     Object.keys(params).forEach(function (key) {
         const value = params[key];
-        if (typeof value !== 'undefined') {
+        if (Array.isArray(value)) {
+            value.forEach(function (entry) {
+                formData.append(key, entry);
+            });
+        } else if (typeof value !== 'undefined') {
             formData.append(key, value);
         }
     });
