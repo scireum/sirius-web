@@ -1,0 +1,18 @@
+.sci-accordion-toggle {
+  cursor: pointer;
+}
+
+.sci-accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  
+  &.sci-accordion-active {
+    opacity: 1;
+  }
+  
+  &.sci-accordion-animate {
+    will-change: max-height;
+    transition: all 0.25s ease-out;
+  }
+}
