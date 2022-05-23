@@ -1,0 +1,58 @@
+window.sirius.Accordion = (function () {
+    /**@
+     * Initializes a collapsible accordion.
+     * <p>
+     * Before calling this function, the accordion toggle and content already have to exist in the form of two html nodes.
+     *
+     * @param toggle  clickable DOM Element that should toggle the expanded/collapsed state of the content
+     * @param content DOM Element that contains the actual elements that should be shown/hidden when toggle is pressed
+     * @param options optional object specifying the behaviour of the slider (see constants for possible values):
+     *                 - animate:  Whether collapsing and expanding of the content should be animated
+     *                 - showInitially:  Whether the content should be visible after the initialization is completed
+     */
+    function Accordion(toggle, content, options) {
+        this._toggle = toggle;
+        this._toggle.classList.add('sci-accordion-toggle');
+
+        this._content = content;
+        this._content.classList.add('sci-accordion-content');
+
+        if (options && options.animate) {
+            this._toggle.classList.add('sci-accordion-animate');
+            this._content.classList.add('sci-accordion-animate');
+        }
+
+        if (options && options.showInitially) {
+            this.showContent();
+        } else {
+            this.hideContent();
+        }
+
+        const me = this;
+        this._toggle.addEventListener('click', function () {
+            me.toggleContent();
+        });
+    }
+
+    Accordion.prototype.toggleContent = function () {
+        if (this._content.classList.contains('sci-accordion-active')) {
+            this.hideContent();
+        } else {
+            this.showContent();
+        }
+    };
+
+    Accordion.prototype.hideContent = function () {
+        this._content.classList.remove('sci-accordion-active');
+        this._toggle.classList.remove('sci-accordion-active');
+        this._content.style.maxHeight = null;
+    };
+
+    Accordion.prototype.showContent = function () {
+        this._content.classList.add('sci-accordion-active');
+        this._toggle.classList.remove('sci-accordion-active');
+        this._content.style.maxHeight = this._content.scrollHeight + 'px';
+    };
+
+    return Accordion;
+}());
