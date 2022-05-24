@@ -50,7 +50,7 @@ window.sirius.Accordion = (function () {
 
     Accordion.prototype.showContent = function () {
         this._content.classList.add('sci-accordion-active');
-        this._toggle.classList.remove('sci-accordion-active');
+        this._toggle.classList.add('sci-accordion-active');
         this._content.style.maxHeight = this._content.scrollHeight + 'px';
     };
 
