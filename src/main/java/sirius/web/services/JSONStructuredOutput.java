@@ -258,6 +258,20 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
         }
     }
 
+    @Override
+    protected void writeAmountProperty(String name, String formattedAmount) {
+        try {
+            addRequiredComma();
+            if (getCurrentType() == ElementType.OBJECT) {
+                writeString(name);
+                writer.write(":");
+            }
+            writer.write(Strings.isFilled(formattedAmount) ? formattedAmount : "null");
+        } catch (IOException e) {
+            throw Exceptions.handle(e);
+        }
+    }
+
     private void addRequiredComma() {
         if (!isCurrentObjectEmpty()) {
             try {
