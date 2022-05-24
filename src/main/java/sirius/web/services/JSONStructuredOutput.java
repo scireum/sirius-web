@@ -234,10 +234,7 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
     private void writePlainProperty(String name, Object data) {
         try {
             addRequiredComma();
-            if (getCurrentType() == ElementType.OBJECT) {
-                writeString(name);
-                writer.write(":");
-            }
+            addObjectName(name);
             if (data == null) {
                 writer.write("null");
             } else if (data instanceof Boolean || data instanceof Number) {
@@ -262,13 +259,17 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
     protected void writeAmountProperty(String name, String formattedAmount) {
         try {
             addRequiredComma();
-            if (getCurrentType() == ElementType.OBJECT) {
-                writeString(name);
-                writer.write(":");
-            }
+            addObjectName(name);
             writer.write(Strings.isFilled(formattedAmount) ? formattedAmount : "null");
         } catch (IOException e) {
             throw Exceptions.handle(e);
+        }
+    }
+
+    private void addObjectName(String name) throws IOException {
+        if (getCurrentType() == ElementType.OBJECT) {
+            writeString(name);
+            writer.write(":");
         }
     }
 
