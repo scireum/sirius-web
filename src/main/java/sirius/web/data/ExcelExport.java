@@ -578,7 +578,7 @@ public class ExcelExport {
         }
     }
 
-    private void addAutoFilter(Sheet sheet) {
+    protected void addAutoFilter(Sheet sheet) {
         int sheetIndex = workbook.getSheetIndex(sheet);
         int rowCount = rows.get(sheetIndex).get();
         int colCount = maxCols.get(sheetIndex);
