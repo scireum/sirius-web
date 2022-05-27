@@ -462,6 +462,29 @@ public class ExcelExport {
     }
 
     /**
+     * Create a POI row.
+     * <p>
+     * This gives low-level access to all the apache POI features. When you don't need these, you should prefer
+     * {@link #addListRow(Collection)} or {@link #addArrayRow(Object...)}.
+     *
+     * @param numberOfColumns the number of columns you are about to add to the row. This is important because we keep
+     *                        track of the max column number for some global modifications.
+     * @return the created row.
+     * @throws IOException if no more rows can be added to this sheet.
+     */
+    public Row createRow(int numberOfColumns) throws IOException {
+        if (isRowLimitExceeded()) {
+            throw new IOException("Cannot add another row to this sheet.");
+        }
+        if (isLastRow() && handleLastRow()) {
+            throw new IOException("Cannot add another row to this sheet. Added the 'max rows reached'-message.");
+        }
+        int currentSheetIndex = workbook.getSheetIndex(currentSheet);
+        maxCols.put(currentSheetIndex, Math.max(maxCols.get(currentSheetIndex), numberOfColumns));
+        return currentSheet.createRow(rows.get(currentSheetIndex).getAndIncrement());
+    }
+
+    /**
      * Handles the last row of a sheet.
      * <p>
      * Returns <tt>true</tt> if the <tt>maxRowsReachedMessage</tt> was written in the last row, this means no more rows
