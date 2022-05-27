@@ -324,52 +324,52 @@ public class ExcelExport {
         }
         Cell cell = row.createCell(columnIndex);
         cell.setCellStyle(style);
-        if (obj instanceof String) {
-            cell.setCellValue(createRichTextString((String) obj));
+        if (obj instanceof String str) {
+            cell.setCellValue(createRichTextString(str));
             return;
         }
-        if (obj instanceof LocalDateTime) {
-            cell.setCellValue(Date.from(((LocalDateTime) obj).atZone(ZoneId.systemDefault()).toInstant()));
+        if (obj instanceof LocalDateTime localDateTime) {
+            cell.setCellValue(Date.from((localDateTime).atZone(ZoneId.systemDefault()).toInstant()));
             return;
         }
-        if (obj instanceof LocalDate) {
-            cell.setCellValue(Date.from(((LocalDate) obj).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+        if (obj instanceof LocalDate localDate) {
+            cell.setCellValue(Date.from((localDate).atStartOfDay(ZoneId.systemDefault()).toInstant()));
             return;
         }
         if (obj instanceof Boolean) {
             cell.setCellValue(createRichTextString(NLS.toUserString(obj)));
             return;
         }
-        if (obj instanceof Double) {
-            cell.setCellValue((Double) obj);
+        if (obj instanceof Double dbl) {
+            cell.setCellValue(dbl);
             return;
         }
-        if (obj instanceof Float) {
-            cell.setCellValue((Float) obj);
+        if (obj instanceof Float flt) {
+            cell.setCellValue(flt);
             return;
         }
-        if (obj instanceof Integer) {
-            cell.setCellValue((Integer) obj);
+        if (obj instanceof Integer integer) {
+            cell.setCellValue(integer);
             return;
         }
-        if (obj instanceof Long) {
-            cell.setCellValue((Long) obj);
+        if (obj instanceof Long lng) {
+            cell.setCellValue(lng);
             return;
         }
-        if (obj instanceof BigDecimal) {
-            cell.setCellValue(((BigDecimal) obj).doubleValue());
+        if (obj instanceof BigDecimal bigDecimal) {
+            cell.setCellValue(bigDecimal.doubleValue());
             return;
         }
-        if (obj instanceof BigInteger) {
-            cell.setCellValue(((BigInteger) obj).doubleValue());
+        if (obj instanceof BigInteger bigInteger) {
+            cell.setCellValue(bigInteger.doubleValue());
             return;
         }
-        if (obj instanceof Amount && ((Amount) obj).isFilled()) {
-            cell.setCellValue(((Amount) obj).getAmount().doubleValue());
+        if (obj instanceof Amount amount && amount.isFilled()) {
+            cell.setCellValue(amount.getAmount().doubleValue());
             return;
         }
-        if (obj instanceof ImageCell) {
-            addImageCell(row, (ImageCell) obj, columnIndex);
+        if (obj instanceof ImageCell imageCell) {
+            addImageCell(row, imageCell, columnIndex);
             return;
         }
         cell.setCellValue(createRichTextString(obj.toString()));
@@ -572,8 +572,8 @@ public class ExcelExport {
         } catch (IOException e) {
             throw Exceptions.handle(e);
         } finally {
-            if (workbook instanceof SXSSFWorkbook) {
-                ((SXSSFWorkbook) workbook).dispose();
+            if (workbook instanceof SXSSFWorkbook sxssfWorkbook) {
+                sxssfWorkbook.dispose();
             }
         }
     }
@@ -624,7 +624,7 @@ public class ExcelExport {
             return true;
         }
 
-        return (data instanceof Amount) && ((Amount) data).isFilled();
+        return (data instanceof Amount amount) && amount.isFilled();
     }
 
     private String determineMaxRowsReachedMessage() {
