@@ -198,6 +198,17 @@ public class ExcelExport {
     }
 
     /**
+     * Get the current {@link Sheet}.
+     * <p>
+     * Allows fine-grained access to the exported sheet for fancy formatting things etc.
+     *
+     * @return the current sheet
+     */
+    public Sheet getCurrentSheet() {
+        return currentSheet;
+    }
+
+    /**
      * Creates an excel sheet, adds it to the current workbook and
      *
      * @param name the name of the worksheet, if <tt>null</tt> a default name is choosen
