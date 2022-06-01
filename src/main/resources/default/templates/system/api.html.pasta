@@ -72,7 +72,7 @@
                                 <th>Required</th>
                                 <th>Example</th>
                             </tr>
-                            <i:for type="sirius.web.services.ServiceParameter" var="parameter"
+                            <i:for type="io.swagger.v3.oas.annotations.Parameter" var="parameter"
                                    items="service.getParameters()">
                                 <tr>
                                     <td class="@if (parameter.required()) { font-weight-bold }">

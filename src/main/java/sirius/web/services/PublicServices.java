@@ -8,6 +8,7 @@
 
 package sirius.web.services;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
@@ -64,7 +65,7 @@ public class PublicServices {
         PublicServiceInfo serviceInfo = new PublicServiceInfo(publicService,
                                                               routed.value(),
                                                               route.isAnnotationPresent(Deprecated.class),
-                                                              Arrays.stream(route.getAnnotationsByType(ServiceParameter.class))
+                                                              Arrays.stream(route.getAnnotationsByType(Parameter.class))
                                                                     .collect(Collectors.toList()));
         synchronized (apis) {
             PublicApiInfo apiInfo = apis.stream()

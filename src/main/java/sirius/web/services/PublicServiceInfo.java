@@ -8,8 +8,10 @@
 
 package sirius.web.services;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import sirius.kernel.nls.NLS;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -23,23 +25,20 @@ public class PublicServiceInfo {
     private final PublicService info;
     private final String uri;
     private final boolean deprecated;
-    private final List<ServiceParameter> serviceParameters;
+    private final List<Parameter> serviceParameters = new ArrayList<>();
 
-    protected PublicServiceInfo(PublicService info,
-                                String uri,
-                                boolean deprecated,
-                                List<ServiceParameter> serviceParameters) {
+    protected PublicServiceInfo(PublicService info, String uri, boolean deprecated, List<Parameter> serviceParameters) {
         this.info = info;
         this.uri = uri;
         this.deprecated = deprecated;
-        this.serviceParameters = serviceParameters;
+        this.serviceParameters.addAll(serviceParameters);
     }
 
     protected int getPriority() {
         return info.priority();
     }
 
-    public List<ServiceParameter> getParameters() {
+    public List<Parameter> getParameters() {
         return Collections.unmodifiableList(serviceParameters);
     }
 
