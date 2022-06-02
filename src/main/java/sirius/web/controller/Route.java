@@ -73,6 +73,7 @@ public class Route {
     private boolean enforceMaintenanceMode;
     private Set<String> permissions = null;
     private String subScope;
+    private boolean deprecated;
 
     /**
      * Compiles a method defined by a {@link Controller}
@@ -90,6 +91,7 @@ public class Route {
         result.label = result.uri + " -> " + method.getDeclaringClass().getName() + "#" + method.getName();
         result.preDispatchable = routed.preDispatchable();
         result.permissions = Permissions.computePermissionsFromAnnotations(method);
+        result.deprecated = method.isAnnotationPresent(Deprecated.class);
         determineAPIFormat(method, routed, result);
         determineSubScope(method, result);
         createMethodHandle(method, result);
@@ -427,6 +429,15 @@ public class Route {
      */
     public boolean isEnforceMaintenanceMode() {
         return enforceMaintenanceMode;
+    }
+
+    /**
+     * Determines if this route has been marked as deprecated.
+     *
+     * @return <tt>true</tt> if the route is deprecated, <tt>false</tt> otherwise
+     */
+    public boolean isDeprecated() {
+        return deprecated;
     }
 
     /**
