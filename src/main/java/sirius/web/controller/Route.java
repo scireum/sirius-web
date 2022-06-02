@@ -377,7 +377,7 @@ public class Route {
      * Returns the method which is to be invoked if an URI can be successfully routed using this route
      * (all parameters match).
      *
-     * @return the method to be invoke in order to route a request using this route
+     * @return the method to be invoked in order to route a request using this route
      */
     public Method getMethod() {
         return method;
@@ -411,10 +411,20 @@ public class Route {
         return format != null;
     }
 
+    /**
+     * Determines the response format to use if this route is an API call.
+     *
+     * @return the response format
+     */
     public Format getApiResponseFormat() {
         return format;
     }
 
+    /**
+     * Determines if the maintenance mode is to be enforced for this route.
+     *
+     * @return <tt>true</tt> if this route is unreachable during maintenance, <tt>false</tt> otherwise
+     */
     public boolean isEnforceMaintenanceMode() {
         return enforceMaintenanceMode;
     }
