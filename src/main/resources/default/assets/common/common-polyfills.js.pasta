@@ -185,15 +185,15 @@ if (typeof Object.assign != 'function') {
 * see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/entries#polyfill
 */
 if (!Object.entries) {
-    Object.entries = function(obj) {
-        var ownProps = Object.keys(obj),
-            i = ownProps.length,
-            resArray = new Array(i); // preallocate the Array
+    Object.entries = function (obj) {
+        const keys = Object.keys(obj);
+        const result = new Array(keys.length);
+        let index = keys.length;
 
-        while (i--) {
-            resArray[i] = [ownProps[i], obj[ownProps[i]]];
+        while (index-- > 0) {
+            result[index] = [keys[index], obj[keys[index]]];
         }
 
-        return resArray;
+        return result;
     };
 }
