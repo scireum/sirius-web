@@ -73,6 +73,7 @@ public class Route {
     private boolean enforceMaintenanceMode;
     private Set<String> permissions = null;
     private String subScope;
+    private boolean deprecated;
 
     /**
      * Compiles a method defined by a {@link Controller}
@@ -90,6 +91,7 @@ public class Route {
         result.label = result.uri + " -> " + method.getDeclaringClass().getName() + "#" + method.getName();
         result.preDispatchable = routed.preDispatchable();
         result.permissions = Permissions.computePermissionsFromAnnotations(method);
+        result.deprecated = method.isAnnotationPresent(Deprecated.class);
         determineAPIFormat(method, routed, result);
         determineSubScope(method, result);
         createMethodHandle(method, result);
@@ -377,7 +379,7 @@ public class Route {
      * Returns the method which is to be invoked if an URI can be successfully routed using this route
      * (all parameters match).
      *
-     * @return the method to be invoke in order to route a request using this route
+     * @return the method to be invoked in order to route a request using this route
      */
     public Method getMethod() {
         return method;
@@ -411,12 +413,31 @@ public class Route {
         return format != null;
     }
 
+    /**
+     * Determines the response format to use if this route is an API call.
+     *
+     * @return the response format
+     */
     public Format getApiResponseFormat() {
         return format;
     }
 
+    /**
+     * Determines if the maintenance mode is to be enforced for this route.
+     *
+     * @return <tt>true</tt> if this route is unreachable during maintenance, <tt>false</tt> otherwise
+     */
     public boolean isEnforceMaintenanceMode() {
         return enforceMaintenanceMode;
+    }
+
+    /**
+     * Determines if this route has been marked as deprecated.
+     *
+     * @return <tt>true</tt> if the route is deprecated, <tt>false</tt> otherwise
+     */
+    public boolean isDeprecated() {
+        return deprecated;
     }
 
     /**
