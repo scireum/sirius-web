@@ -65,7 +65,7 @@ public class InterpreterCall implements Callable {
     }
 
     @Override
-    public Object call(Environment environment) throws ScriptingException {
+    public Object call(Environment environment) {
         return new Invocation(this, environment).execute();
     }
 
