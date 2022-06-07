@@ -259,7 +259,7 @@ public class MethodCall extends Call {
             }
 
             MethodPointer methodPointer = new MethodPointer(method);
-            if (method.isVarArgs()) {
+            if (method.isVarArgs() && parameterNodes.length > 0) {
                 Class<?> lastParameterType = parameterNodes[parameterNodes.length - 1].getType();
                 Class<?> lastMethodParameter = method.getParameterTypes()[method.getParameterCount() - 1];
                 if (lastParameterType.isArray()
