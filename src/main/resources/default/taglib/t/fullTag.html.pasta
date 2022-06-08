@@ -1,0 +1,10 @@
+<i:arg type="String" name="color" default="gray" description="Specifies the color to use." />
+<i:arg type="String" name="class" default="" description="Defines addition classes to add."/>
+
+<i:pragma name="description">
+    Renders a highly-visible colored tag using the given text.
+</i:pragma>
+
+<span class="badge badge-primary bg-sirius-@color @class">
+    <i:render name="body" />
+</span>

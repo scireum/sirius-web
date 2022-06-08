@@ -55,13 +55,13 @@
                 <div>
                     <div class="p-2" style="border-radius: 4px; background-color: #EEEEEE">
                         <i:if test="service.getFormat() == sirius.web.services.Format.JSON">
-                            <span class="badge badge-primary bg-sirius-blue align-text-top">JSON</span>
+                            <t:fullTag color="blue" class="align-text-top">JSON</t:fullTag>
                         </i:if>
                         <i:if test="service.getFormat() == sirius.web.services.Format.XML">
-                            <span class="badge badge-primary bg-sirius-green align-text-top">XML</span>
+                            <t:fullTag color="green" class="align-text-top">XML</t:fullTag>
                         </i:if>
                         <i:if test="service.getFormat() == sirius.web.services.Format.RAW">
-                            <span class="badge badge-primary bg-sirius-violet align-text-top">RAW</span>
+                            <t:fullTag color="violet" class="align-text-top">RAW</t:fullTag>
                         </i:if>
                         <span class="text-monospace whitespace-pre-wrap">@service.getUri()</span>
                     </div>
@@ -151,7 +151,7 @@
                                                  value="responseContents.get(0).as(io.swagger.v3.oas.annotations.media.Content.class)"/>
                                         <td>
                                             <i:if test="@isFilled(response.responseCode())">
-                                                <span class="badge badge-primary bg-sirius-green align-text-top mr-1">@response.responseCode()</span>
+                                                <t:fullTag color="green" class="align-text-top mr-1">@response.responseCode()</t:fullTag>
                                             </i:if>
                                             <span>@response.description()</span>
                                             <i:if test="@isFilled(responseContent.mediaType())">
@@ -171,7 +171,7 @@
                                         <i:else>
                                             <td>
                                                 <i:if test="@isFilled(response.responseCode())">
-                                                    <span class="badge badge-primary bg-sirius-green align-text-top mr-1">@response.responseCode()</span>
+                                                    <t:fullTag color="green" class="align-text-top mr-1">@response.responseCode()</t:fullTag>
                                                 </i:if>
                                                 <span>@response.description()</span>
                                             </td>
