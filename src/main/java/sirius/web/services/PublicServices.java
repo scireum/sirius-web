@@ -9,6 +9,7 @@
 package sirius.web.services;
 
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Strings;
@@ -67,6 +68,8 @@ public class PublicServices {
                                                               routed.value(),
                                                               route.isAnnotationPresent(Deprecated.class),
                                                               Arrays.stream(route.getAnnotationsByType(Parameter.class))
+                                                                    .collect(Collectors.toList()),
+                                                              Arrays.stream(route.getAnnotationsByType(RequestBody.class))
                                                                     .collect(Collectors.toList()),
                                                               Arrays.stream(route.getAnnotationsByType(ApiResponse.class))
                                                                     .collect(Collectors.toList()));

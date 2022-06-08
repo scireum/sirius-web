@@ -9,6 +9,7 @@
 package sirius.web.services;
 
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import sirius.kernel.nls.NLS;
 
@@ -27,17 +28,20 @@ public class PublicServiceInfo {
     private final String uri;
     private final boolean deprecated;
     private final List<Parameter> serviceParameters = new ArrayList<>();
+    private final List<RequestBody> requestBodies = new ArrayList<>();
     private final List<ApiResponse> responses = new ArrayList<>();
 
     protected PublicServiceInfo(PublicService info,
                                 String uri,
                                 boolean deprecated,
                                 List<Parameter> serviceParameters,
+                                List<RequestBody> requestBodies,
                                 List<ApiResponse> responses) {
         this.info = info;
         this.uri = uri;
         this.deprecated = deprecated;
         this.serviceParameters.addAll(serviceParameters);
+        this.requestBodies.addAll(requestBodies);
         this.responses.addAll(responses);
     }
 
@@ -47,6 +51,10 @@ public class PublicServiceInfo {
 
     public List<Parameter> getParameters() {
         return Collections.unmodifiableList(serviceParameters);
+    }
+
+    public List<RequestBody> getRequestBodies() {
+        return Collections.unmodifiableList(requestBodies);
     }
 
     public List<ApiResponse> getResponses() {
