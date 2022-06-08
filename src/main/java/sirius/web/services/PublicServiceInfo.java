@@ -84,12 +84,12 @@ public class PublicServiceInfo {
     }
 
     /**
-     * Chooses an appropriate color most closely representing the given status code according to the status code ranges.
+     * Chooses an appropriate color for representing the given http method in the public services documentation.
      * <p>
      * Colors are chosen from the sirius Tycho color palette and can be used in tag-libs like <tt>t:tag</tt>, etc.
      *
-     * @param statusCode the status color to select a color for
-     * @return a color representing the provided status code for coloring template components
+     * @param httpMethod the http method to select a color for
+     * @return a color representing the provided http method for coloring template components
      */
     public String determineHttpMethodColor(@Nullable HttpMethod httpMethod) {
         if (httpMethod == HttpMethod.GET) {
