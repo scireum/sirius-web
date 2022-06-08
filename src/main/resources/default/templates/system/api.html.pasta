@@ -55,13 +55,13 @@
                 <div>
                     <div class="p-2" style="border-radius: 4px; background-color: #EEEEEE">
                         <i:if test="service.getFormat() == sirius.web.services.Format.JSON">
-                            <span class="badge badge-primary bg-sirius-blue">JSON</span>
+                            <span class="badge badge-primary bg-sirius-blue align-text-top">JSON</span>
                         </i:if>
                         <i:if test="service.getFormat() == sirius.web.services.Format.XML">
-                            <span class="badge badge-primary bg-sirius-green">XML</span>
+                            <span class="badge badge-primary bg-sirius-green align-text-top">XML</span>
                         </i:if>
                         <i:if test="service.getFormat() == sirius.web.services.Format.RAW">
-                            <span class="badge badge-primary bg-sirius-violet">RAW</span>
+                            <span class="badge badge-primary bg-sirius-violet align-text-top">RAW</span>
                         </i:if>
                         <span class="text-monospace whitespace-pre-wrap">@service.getUri()</span>
                     </div>
@@ -97,19 +97,24 @@
                         <table class="table table-hover">
                             <thead>
                             <th>Description</th>
-                            <th>Content-Type</th>
-                            <th class="col-md-6">Example</th>
+                            <th class="col-md-8">Example</th>
                             </thead>
                             <tbody>
                             <i:for type="io.swagger.v3.oas.annotations.parameters.RequestBody" var="request"
                                    items="service.getRequestBodies()">
                                 <tr>
-                                    <td>@request.description()</td>
                                     <i:local name="requestContents" value="@toList(request.content())"/>
                                     <i:if test="!requestContents.isEmpty()">
                                         <i:local name="requestContent"
                                                  value="requestContents.get(0).as(io.swagger.v3.oas.annotations.media.Content.class)"/>
-                                        <td>@requestContent.mediaType()</td>
+                                        <td>
+                                            <span>@request.description()</span>
+                                            <i:if test="@isFilled(requestContent.mediaType())">
+                                                <div class="mt-2"><strong>Content-Type:</strong>
+                                                    @requestContent.mediaType()
+                                                </div>
+                                            </i:if>
+                                        </td>
                                         <td>
                                             <i:for type="io.swagger.v3.oas.annotations.media.ExampleObject"
                                                    var="example"
@@ -117,6 +122,10 @@
                                                 <pre class="prettyprint p-2">@example.value()</pre>
                                             </i:for>
                                         </td>
+                                        
+                                        <i:else>
+                                            <td>@request.description()</td>
+                                        </i:else>
                                     </i:if>
                                 </tr>
                             </i:for>
@@ -130,21 +139,27 @@
                         <table class="table table-hover">
                             <thead>
                             <th>Description</th>
-                            <th>Code</th>
-                            <th>Content-Type</th>
-                            <th class="col-md-6">Example</th>
+                            <th class="col-md-8">Example</th>
                             </thead>
                             <tbody>
                             <i:for type="io.swagger.v3.oas.annotations.responses.ApiResponse" var="response"
                                    items="service.getResponses()">
                                 <tr>
-                                    <td>@response.description()</td>
-                                    <td>@response.responseCode()</td>
                                     <i:local name="responseContents" value="@toList(response.content())"/>
                                     <i:if test="!responseContents.isEmpty()">
                                         <i:local name="responseContent"
                                                  value="responseContents.get(0).as(io.swagger.v3.oas.annotations.media.Content.class)"/>
-                                        <td>@responseContent.mediaType()</td>
+                                        <td>
+                                            <i:if test="@isFilled(response.responseCode())">
+                                                <span class="badge badge-primary bg-sirius-green align-text-top mr-1">@response.responseCode()</span>
+                                            </i:if>
+                                            <span>@response.description()</span>
+                                            <i:if test="@isFilled(responseContent.mediaType())">
+                                                <div class="mt-2"><strong>Content-Type:</strong>
+                                                    @responseContent.mediaType()
+                                                </div>
+                                            </i:if>
+                                        </td>
                                         <td>
                                             <i:for type="io.swagger.v3.oas.annotations.media.ExampleObject"
                                                    var="example"
@@ -152,6 +167,16 @@
                                                 <pre class="prettyprint p-2">@example.value()</pre>
                                             </i:for>
                                         </td>
+
+                                        <i:else>
+                                            <td>
+                                                <i:if test="@isFilled(response.responseCode())">
+                                                    <span class="badge badge-primary bg-sirius-green align-text-top mr-1">@response.responseCode()</span>
+                                                </i:if>
+                                                <span>@response.description()</span>
+                                            </td>
+                                            <td></td>
+                                        </i:else>
                                     </i:if>
                                 </tr>
                             </i:for>
