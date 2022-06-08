@@ -54,15 +54,21 @@
 
                 <div>
                     <div class="p-2" style="border-radius: 4px; background-color: #EEEEEE">
+                        <t:fullTag color="@service.determineHttpMethodColor(service.getHttpMethod())"
+                                   class="align-text-top">
+                            @service.getHttpMethod().name()
+                        </t:fullTag>
+
                         <i:if test="service.getFormat() == sirius.web.services.Format.JSON">
-                            <t:fullTag color="blue" class="align-text-top">JSON</t:fullTag>
+                            <t:fullTag color="blue-light" class="align-text-top">JSON</t:fullTag>
                         </i:if>
                         <i:if test="service.getFormat() == sirius.web.services.Format.XML">
-                            <t:fullTag color="green" class="align-text-top">XML</t:fullTag>
+                            <t:fullTag color="green-light" class="align-text-top">XML</t:fullTag>
                         </i:if>
                         <i:if test="service.getFormat() == sirius.web.services.Format.RAW">
-                            <t:fullTag color="violet" class="align-text-top">RAW</t:fullTag>
+                            <t:fullTag color="violet-light" class="align-text-top">RAW</t:fullTag>
                         </i:if>
+
                         <span class="text-monospace whitespace-pre-wrap">@service.getUri()</span>
                     </div>
                 </div>
@@ -122,7 +128,7 @@
                                                 <pre class="prettyprint p-2">@example.value()</pre>
                                             </i:for>
                                         </td>
-                                        
+
                                         <i:else>
                                             <td>@request.description()</td>
                                         </i:else>
@@ -151,8 +157,11 @@
                                                  value="responseContents.get(0).as(io.swagger.v3.oas.annotations.media.Content.class)"/>
                                         <td>
                                             <i:if test="@isFilled(response.responseCode())">
-                                                <i:local name="responseCodeValue" value="@Value.of(response.responseCode())" />
-                                                <t:fullTag color="@service.determineStatusCodeColor(response.responseCode())" class="align-text-top mr-1">
+                                                <i:local name="responseCodeValue"
+                                                         value="@Value.of(response.responseCode())"/>
+                                                <t:fullTag
+                                                        color="@service.determineStatusCodeColor(response.responseCode())"
+                                                        class="align-text-top mr-1">
                                                     @response.responseCode()
                                                 </t:fullTag>
                                             </i:if>
@@ -174,7 +183,9 @@
                                         <i:else>
                                             <td>
                                                 <i:if test="@isFilled(response.responseCode())">
-                                                    <t:fullTag color="@service.determineStatusCodeColor(response.responseCode())" class="align-text-top mr-1">
+                                                    <t:fullTag
+                                                            color="@service.determineStatusCodeColor(response.responseCode())"
+                                                            class="align-text-top mr-1">
                                                         @response.responseCode()
                                                     </t:fullTag>
                                                 </i:if>

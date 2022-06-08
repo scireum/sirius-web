@@ -8,10 +8,13 @@
 
 package sirius.web.services;
 
+import io.netty.handler.codec.http.HttpMethod;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.models.PathItem;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.nls.NLS;
 
@@ -80,6 +83,27 @@ public class PublicServiceInfo {
         return "grey";
     }
 
+    /**
+     * Chooses an appropriate color most closely representing the given status code according to the status code ranges.
+     * <p>
+     * Colors are chosen from the sirius Tycho color palette and can be used in tag-libs like <tt>t:tag</tt>, etc.
+     *
+     * @param statusCode the status color to select a color for
+     * @return a color representing the provided status code for coloring template components
+     */
+    public String determineHttpMethodColor(@Nullable HttpMethod httpMethod) {
+        if (httpMethod == HttpMethod.GET) {
+            return "green";
+        }
+        if (httpMethod == HttpMethod.POST) {
+            return "blue";
+        }
+        if (httpMethod == HttpMethod.HEAD) {
+            return "violet";
+        }
+        return "grey";
+    }
+
     protected int getPriority() {
         return info.priority();
     }
@@ -114,6 +138,11 @@ public class PublicServiceInfo {
 
     public Format getFormat() {
         return info.format();
+    }
+
+    public HttpMethod getHttpMethod() {
+        return operation != null && Strings.isFilled(operation.method()) ?
+               HttpMethod.valueOf(operation.method()) : HttpMethod.GET;
     }
 
     public String getUri() {
