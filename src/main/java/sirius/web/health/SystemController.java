@@ -9,6 +9,7 @@
 package sirius.web.health;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -96,9 +97,10 @@ public class SystemController extends BasicController {
      * @param ctx the request being handled
      */
     @Routed("/system/ok")
-    @PublicService(apiName = "health", label = "Health check", description = """
+    @PublicService(apiName = "health", format = Format.RAW)
+    @Operation(summary = "Health check", description = """
             Provides a very simple API to "ping" the system. This will constantly return "OK".
-            """, format = Format.RAW)
+            """)
     @ApiResponse(responseCode = "200",
             description = "Successful response",
             content = @Content(mediaType = "text/plain", examples = @ExampleObject("OK")))
@@ -114,10 +116,11 @@ public class SystemController extends BasicController {
      * @param ctx the request being handled
      */
     @Routed("/system/monitor")
-    @PublicService(apiName = "health", label = "Monitoring API", description = """
+    @PublicService(apiName = "health", format = Format.RAW)
+    @Operation(summary = "Monitoring API", description = """
             Provides a simple monitoring service. As long as the system operates normally,
             it returns "OK", otherwise, "ERROR" and the reason are returned.
-            """, format = Format.RAW)
+            """)
     @ApiResponse(responseCode = "200",
             description = "Successful response",
             content = @Content(mediaType = "text/plain", examples = @ExampleObject("OK")))
@@ -169,9 +172,10 @@ public class SystemController extends BasicController {
      * @param ctx the request being handled
      */
     @Routed("/system/metrics")
-    @PublicService(apiName = "health", label = "Metrics API", description = """
+    @PublicService(apiName = "health", format = Format.RAW)
+    @Operation(summary = "Metrics API", description = """
             Provides all collected metrics in Prometheus compatible format.
-            """, format = Format.RAW)
+            """)
     @ApiResponse(responseCode = "200",
             description = "Successful response",
             content = @Content(mediaType = "text/plain", examples = @ExampleObject("""

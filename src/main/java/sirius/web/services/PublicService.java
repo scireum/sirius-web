@@ -77,22 +77,6 @@ public @interface PublicService {
     boolean enforceMaintenanceMode() default false;
 
     /**
-     * Specifies the visible name of this service.
-     *
-     * @return the name or label of this service. This will be auto translated using
-     * {@link sirius.kernel.nls.NLS#smartGet(String)}.
-     */
-    String label();
-
-    /**
-     * Specifies the short and concise description of this service.
-     *
-     * @return the description of this service. This will be auto translated using
-     * {@link sirius.kernel.nls.NLS#smartGet(String)}.
-     */
-    String description();
-
-    /**
      * May provide a link to a documentation page for this service.
      *
      * @return an URI which points to the documentation of this service (e.g. to a page within the Tycho knowledge base)
