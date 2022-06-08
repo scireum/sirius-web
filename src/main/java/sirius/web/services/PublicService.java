@@ -98,12 +98,4 @@ public @interface PublicService {
      * @return an URI which points to the documentation of this service (e.g. to a page within the Tycho knowledge base)
      */
     String documentationUri() default "";
-
-    /**
-     * Provides an annotated example response of this service.
-     *
-     * @return an example response which can be expected by this service. Most probably this should include some
-     * comments describing the result.
-     */
-    String exampleResponse() default "";
 }

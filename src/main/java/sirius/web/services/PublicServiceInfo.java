@@ -9,6 +9,7 @@
 package sirius.web.services;
 
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import sirius.kernel.nls.NLS;
 
 import java.util.ArrayList;
@@ -26,12 +27,18 @@ public class PublicServiceInfo {
     private final String uri;
     private final boolean deprecated;
     private final List<Parameter> serviceParameters = new ArrayList<>();
+    private final List<ApiResponse> responses = new ArrayList<>();
 
-    protected PublicServiceInfo(PublicService info, String uri, boolean deprecated, List<Parameter> serviceParameters) {
+    protected PublicServiceInfo(PublicService info,
+                                String uri,
+                                boolean deprecated,
+                                List<Parameter> serviceParameters,
+                                List<ApiResponse> responses) {
         this.info = info;
         this.uri = uri;
         this.deprecated = deprecated;
         this.serviceParameters.addAll(serviceParameters);
+        this.responses.addAll(responses);
     }
 
     protected int getPriority() {
@@ -40,6 +47,10 @@ public class PublicServiceInfo {
 
     public List<Parameter> getParameters() {
         return Collections.unmodifiableList(serviceParameters);
+    }
+
+    public List<ApiResponse> getResponses() {
+        return Collections.unmodifiableList(responses);
     }
 
     public String getLabel() {
@@ -52,10 +63,6 @@ public class PublicServiceInfo {
 
     public String getDocumentationUri() {
         return info.documentationUri();
-    }
-
-    public String getExampleResponse() {
-        return info.exampleResponse();
     }
 
     public boolean isDeprecated() {

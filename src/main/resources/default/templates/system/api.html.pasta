@@ -37,7 +37,7 @@
     <i:for type="sirius.web.services.PublicServiceInfo" var="service" items="api.getServices()">
         <div class="card card-border mb-4">
             <div class="card-body">
-                <h5 class="card-title">@service.getLabel()</h5>
+                <h4 class="card-title">@service.getLabel()</h4>
                 <p>
                     @service.getDescription()
                 </p>
@@ -64,7 +64,7 @@
 
                 <i:if test="!service.getParameters().isEmpty()">
                     <div class="mt-4">
-                        <h6>Parameters</h6>
+                        <h5>Parameters</h5>
                         <table class="table">
                             <tr>
                                 <th>Name</th>
@@ -86,10 +86,40 @@
                         </table>
                     </div>
                 </i:if>
-                <i:if test="isFilled(service.getExampleResponse())">
+                <i:if test="!service.getResponses().isEmpty()">
                     <div class="mt-4">
-                        <h6>Example Response</h6>
-                        <pre class="prettyprint p-2">@service.getExampleResponse()</pre>
+                        <h5>Responses</h5>
+                        <table class="table table-hover">
+                            <thead>
+                            <th>Description</th>
+                            <th>Code</th>
+                            <th>Content-Type</th>
+                            <th class="col-md-6">Example</th>
+                            </thead>
+                            <tbody>
+                            <i:for type="io.swagger.v3.oas.annotations.responses.ApiResponse" var="response"
+                                   items="service.getResponses()">
+                                <tr>
+                                    <td>@response.description()</td>
+                                    <td>@response.responseCode()</td>
+                                    <i:local name="responseContents" value="@toList(response.content())"/>
+                                    <i:if test="!responseContents.isEmpty()">
+                                        <i:local name="responseContent"
+                                                 value="responseContents.get(0).as(io.swagger.v3.oas.annotations.media.Content.class)"/>
+                                        <td>@responseContent.mediaType()</td>
+                                        <td>
+                                            <i:for type="io.swagger.v3.oas.annotations.media.ExampleObject"
+                                                   var="example"
+                                                   items="@toList(responseContent.examples())">
+                                                <pre class="prettyprint p-2">@example.value()</pre>
+                                            </i:for>
+                                        </td>
+                                    </i:if>
+                                </tr>
+                            </i:for>
+                            </tbody>
+                        </table>
+
                     </div>
                 </i:if>
             </div>
