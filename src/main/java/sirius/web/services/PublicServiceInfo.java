@@ -11,8 +11,10 @@ package sirius.web.services;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import sirius.kernel.commons.Value;
 import sirius.kernel.nls.NLS;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -43,6 +45,35 @@ public class PublicServiceInfo {
         this.serviceParameters.addAll(serviceParameters);
         this.requestBodies.addAll(requestBodies);
         this.responses.addAll(responses);
+    }
+
+    /**
+     * Chooses an appropriate color most closely representing the given status code according to the status code ranges.
+     * <p>
+     * Colors are chosen from the sirius Tycho color palette and can be used in tag-libs like <tt>t:tag</tt>, etc.
+     *
+     * @param statusCode the status color to select a color for
+     * @return a color representing the provided status code for coloring template components
+     */
+    public String determineStatusCodeColor(@Nullable String statusCode) {
+        Value statusValue = Value.of(statusCode);
+        if (!statusValue.isNumeric()) {
+            return "";
+        }
+        int numericStatus = statusValue.asInt(0);
+        if (numericStatus >= 500) {
+            return "red";
+        }
+        if (numericStatus >= 400) {
+            return "orange";
+        }
+        if (numericStatus >= 300) {
+            return "blue";
+        }
+        if (numericStatus >= 200) {
+            return "green";
+        }
+        return "grey";
     }
 
     protected int getPriority() {

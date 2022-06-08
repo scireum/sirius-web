@@ -151,7 +151,10 @@
                                                  value="responseContents.get(0).as(io.swagger.v3.oas.annotations.media.Content.class)"/>
                                         <td>
                                             <i:if test="@isFilled(response.responseCode())">
-                                                <t:fullTag color="green" class="align-text-top mr-1">@response.responseCode()</t:fullTag>
+                                                <i:local name="responseCodeValue" value="@Value.of(response.responseCode())" />
+                                                <t:fullTag color="@service.determineStatusCodeColor(response.responseCode())" class="align-text-top mr-1">
+                                                    @response.responseCode()
+                                                </t:fullTag>
                                             </i:if>
                                             <span>@response.description()</span>
                                             <i:if test="@isFilled(responseContent.mediaType())">
@@ -171,7 +174,9 @@
                                         <i:else>
                                             <td>
                                                 <i:if test="@isFilled(response.responseCode())">
-                                                    <t:fullTag color="green" class="align-text-top mr-1">@response.responseCode()</t:fullTag>
+                                                    <t:fullTag color="@service.determineStatusCodeColor(response.responseCode())" class="align-text-top mr-1">
+                                                        @response.responseCode()
+                                                    </t:fullTag>
                                                 </i:if>
                                                 <span>@response.description()</span>
                                             </td>
