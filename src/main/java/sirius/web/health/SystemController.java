@@ -9,6 +9,10 @@
 package sirius.web.health;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.MultiMap;
@@ -93,9 +97,13 @@ public class SystemController extends BasicController {
      * @param ctx the request being handled
      */
     @Routed("/system/ok")
-    @PublicService(apiName = "health", label = "Health check", description = """
+    @PublicService(apiName = "health", format = Format.RAW)
+    @Operation(summary = "Health check", description = """
             Provides a very simple API to "ping" the system. This will constantly return "OK".
-            """, format = Format.RAW, exampleResponse = "OK")
+            """)
+    @ApiResponse(responseCode = "200",
+            description = "Successful response",
+            content = @Content(mediaType = "text/plain", examples = @ExampleObject("OK")))
     public void ok(WebContext ctx) {
         ctx.respondWith().direct(HttpResponseStatus.OK, "OK");
     }
@@ -108,10 +116,14 @@ public class SystemController extends BasicController {
      * @param ctx the request being handled
      */
     @Routed("/system/monitor")
-    @PublicService(apiName = "health", label = "Monitoring API", description = """
+    @PublicService(apiName = "health", format = Format.RAW)
+    @Operation(summary = "Monitoring API", description = """
             Provides a simple monitoring service. As long as the system operates normally,
             it returns "OK", otherwise, "ERROR" and the reason are returned.
-            """, format = Format.RAW, exampleResponse = "OK")
+            """)
+    @ApiResponse(responseCode = "200",
+            description = "Successful response",
+            content = @Content(mediaType = "text/plain", examples = @ExampleObject("OK")))
     public void monitorNode(WebContext ctx) {
         if (!cluster.isAlarmPresent() || cluster.getNodeState() != MetricState.RED) {
             ctx.respondWith().direct(HttpResponseStatus.OK, "OK");
@@ -160,16 +172,20 @@ public class SystemController extends BasicController {
      * @param ctx the request being handled
      */
     @Routed("/system/metrics")
-    @PublicService(apiName = "health", label = "Metrics API", description = """
+    @PublicService(apiName = "health", format = Format.RAW)
+    @Operation(summary = "Metrics API", description = """
             Provides all collected metrics in Prometheus compatible format.
-            """, format = Format.RAW, exampleResponse = """
-            # HELP sirius_node_state Node State
-            # TYPE sirius_node_state gauge
-            sirius_node_state 0.0
-            # HELP sirius_http_open_connections HTTP Open Connections
-            # TYPE sirius_http_open_connections gauge
-            sirius_http_open_connections 7.0
             """)
+    @ApiResponse(responseCode = "200",
+            description = "Successful response",
+            content = @Content(mediaType = "text/plain", examples = @ExampleObject("""
+                    # HELP sirius_node_state Node State
+                    # TYPE sirius_node_state gauge
+                    sirius_node_state 0.0
+                    # HELP sirius_http_open_connections HTTP Open Connections
+                    # TYPE sirius_http_open_connections gauge
+                    sirius_http_open_connections 7.0
+                    """)))
     public void metrics(WebContext ctx) {
         if (blockPublicAccess && ctx.getHeaderValue(WebServer.HEADER_X_FORWARDED_FOR).isFilled()) {
             ctx.respondWith().error(HttpResponseStatus.FORBIDDEN);

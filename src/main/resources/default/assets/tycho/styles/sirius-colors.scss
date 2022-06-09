@@ -255,23 +255,23 @@ $sirius-gray-dark: #808080;
   border-color: $sirius-cyan-light;
 }
 
-.text-sirius-gray {
+.text-sirius-gray, .text-sirius-grey {
   color: $sirius-gray !important;
 }
-.bg-sirius-gray {
+.bg-sirius-gray, .bg-sirius-grey {
   background-color: $sirius-gray !important;
 }
-.border-sirius-gray {
+.border-sirius-gray, .border-sirius-grey {
   border-color: $sirius-gray;
 }
 
-.text-sirius-gray-dark {
+.text-sirius-gray-dark, .text-sirius-grey-dark {
   color: $sirius-gray-dark !important;
 }
-.bg-sirius-gray-dark {
+.bg-sirius-gray-dark, .bg-sirius-grey-dark {
   background-color: $sirius-gray-dark !important;
 }
-.border-sirius-gray-dark {
+.border-sirius-gray-dark, .border-sirius-grey-dark {
   border-color: $sirius-gray-dark;
 }
 
