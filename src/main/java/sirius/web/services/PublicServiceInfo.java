@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.models.PathItem;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.nls.NLS;
@@ -142,7 +141,8 @@ public class PublicServiceInfo {
 
     public HttpMethod getHttpMethod() {
         return operation != null && Strings.isFilled(operation.method()) ?
-               HttpMethod.valueOf(operation.method()) : HttpMethod.GET;
+               HttpMethod.valueOf(operation.method()) :
+               HttpMethod.GET;
     }
 
     public String getUri() {
