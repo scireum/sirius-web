@@ -94,7 +94,7 @@ public class Invocation {
      * @throws ScriptingException in case of an error within the script. See {@link ScriptingException} for a detailed
      *                            explanation of when this exception is used.
      */
-    public Object execute() throws ScriptingException {
+    public Object execute() {
         try {
             return executeBytecodes();
         } catch (HandledException ex) {

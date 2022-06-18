@@ -150,6 +150,14 @@ class CompilerSpec extends BaseSpecification {
         and: "generic parameter propagation works as expected..."
         compile("Tuple.new('A', 1).getFirst().getClass().getName()").call(new SimpleEnvironment()) == "java.lang.String"
         compile("Tuple.new('A', 1).getSecond().getClass().getName()").call(new SimpleEnvironment()) == "java.lang.Integer"
+    }
 
+    def "calling varags works"() {
+        expect: "Invoking a vararg with a pre-baked array works as expected (the array is used as varargs)"
+        compile("java.util.Arrays.asList(NoodleExample.AN_ARRAY).size()").call(new SimpleEnvironment()) == 3
+        and: "Collecting additional parameters into an array still works..."
+        compile("java.util.Arrays.asList('a', 'b', 'c').size()").call(new SimpleEnvironment()) == 3
+        and: "..even with only a single parameter..."
+        compile("java.util.Arrays.asList('a').size()").call(new SimpleEnvironment()) == 1
     }
 }

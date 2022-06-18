@@ -14,7 +14,7 @@ import sirius.kernel.di.std.Register;
 @Register(framework = "web.test-firewall")
 public class TestFirewall implements Firewall {
 
-    public static boolean blockAllIPs = false;
+    public static volatile boolean blockAllIPs = false;
 
     @Override
     public boolean isIPBlacklisted(WebContext ctx) {

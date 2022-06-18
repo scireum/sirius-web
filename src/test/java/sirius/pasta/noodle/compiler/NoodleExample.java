@@ -26,6 +26,7 @@ public class NoodleExample {
     public static final Integer AN_INTEGER_OBJECT = Integer.valueOf(12);
     public static final Long A_LONG_OBJECT = Long.valueOf(33);
     public static final Double A_DOUBLE = 1.2;
+    public static final String[] AN_ARRAY = {"A", "B", "C"};
     public static final NoodleExample INSTANCE = new NoodleExample();
 
     public static String intToString(int number) {
@@ -52,8 +53,8 @@ public class NoodleExample {
         consumer.accept(3);
     }
 
-    public static void throwDeclaredException() throws Exception{
-      throw new Exception("An exception");
+    public static void throwDeclaredException() throws Exception {
+        throw new Exception("An exception");
     }
 
     public static void invokeUnitOfWork(UnitOfWork unit) throws Exception {

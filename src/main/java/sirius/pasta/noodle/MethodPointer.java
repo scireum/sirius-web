@@ -22,7 +22,7 @@ import java.util.Objects;
 public class MethodPointer {
 
     private final Method method;
-    private final MethodHandle methodHandle;
+    private MethodHandle methodHandle;
 
     /**
      * Creates a new pointer for the given method.
@@ -34,6 +34,17 @@ public class MethodPointer {
         this.method = method;
         MethodHandles.Lookup lookup = MethodHandles.lookup();
         this.methodHandle = lookup.unreflect(method);
+    }
+
+    /**
+     * Prevents collecting varargs in invocation.
+     * <p>
+     * If we know, that a vararg collector method is already invoked with a proper array, we need to disable
+     * vararg collection as otherwise we'd end up with an array of arrays instead of a single array containing
+     * the varargs.
+     */
+    public void skipVarArgs() {
+        methodHandle = methodHandle.asFixedArity();
     }
 
     public Method getMethod() {
