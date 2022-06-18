@@ -49,7 +49,7 @@
 
 .btn-outline-primary {
   border-color: $primary-color;
-  color: $primary-color;
+  color: $primary-color !important;
 
   &:hover {
     background-color: $primary-color;
