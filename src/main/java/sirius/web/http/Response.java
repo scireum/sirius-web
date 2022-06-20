@@ -1471,7 +1471,8 @@ public class Response {
             // Adds support for detecting stale cache contents via if-modified-since...
             WebServer.parseDateHeader(wc.getHeader(HttpHeaderNames.IF_MODIFIED_SINCE))
                      .ifPresent(ifModifiedSince -> brb.addHeader(HttpHeaderNames.IF_MODIFIED_SINCE.toString(),
-                                                                 ifModifiedSince.format(DateTimeFormatter.RFC_1123_DATE_TIME)));
+                                                                 ifModifiedSince.atZone(ZoneId.systemDefault())
+                                                                                .format(DateTimeFormatter.RFC_1123_DATE_TIME)));
 
             // Support range requests...
             String range = wc.getHeader(HttpHeaderNames.RANGE);
