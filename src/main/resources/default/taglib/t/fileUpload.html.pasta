@@ -3,7 +3,7 @@
 <i:arg type="String" name="label" default="@i18n(labelKey)"/>
 <i:arg type="String" name="uploadUrl"/>
 <i:arg name="class" type="String" default="" description="Lists additional CSS classes to apply to the dropzone."/>
-<i:arg name="btnClass" type="String" default=""
+<i:arg name="btnClass" type="String" default="btn-primary"
        description="Lists additional CSS classes to apply to the upload button."/>
 <i:arg type="String" name="acceptedFiles" default=""
        description="This is a comma separated list of allowed mime types or file extensions. Eg.: image/*,application/pdf,.psd"/>
@@ -14,7 +14,12 @@
 <i:pragma name="description" value="Renders a file upload within a Wondergem template"/>
 
 <div class="dropzone sirius-fileupload mb-lg-0 mb-2 @class" id="@id">
-    <a class="dropzone-select btn btn-primary @btnClass">@label</a>
+    <a class="dropzone-select btn @btnClass">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <span class="pl-2 d-none d-xl-inline">
+            @label
+        </span>
+    </a>
 
     <i:if test="!isFilled(previewsContainer)">
         <div class="dropzone-items mt-2">
