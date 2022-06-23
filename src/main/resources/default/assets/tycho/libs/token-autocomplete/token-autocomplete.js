@@ -343,12 +343,12 @@ var TokenAutocomplete = /** @class */ (function () {
              * @param {string} input - the actual input the user entered
              */
             class_1.prototype.handleInputAsValue = function (input) {
-                if (this.parent.options.allowCustomEntries) {
+                if (input != '' && this.parent.options.allowCustomEntries) {
                     this.clearCurrentInput();
                     this.addToken(input, input, null);
                     return;
                 }
-                if (this.parent.autocomplete.suggestions.childNodes.length === 1 && this.parent.autocomplete.suggestions.childNodes[0].dataset.type != '_no_match_') {
+                if (this.parent.autocomplete.suggestions.childNodes.length === 1 && this.parent.autocomplete.suggestions.childNodes[0].dataset.value != '_no_match_') {
                     this.parent.autocomplete.suggestions.firstChild.click();
                 }
                 else {
@@ -366,7 +366,7 @@ var TokenAutocomplete = /** @class */ (function () {
             class_1.prototype.addToken = function (tokenValue, tokenText, tokenType, silent) {
                 var _a;
                 if (silent === void 0) { silent = false; }
-                if (tokenValue === null || tokenText === null || tokenType === '_no_match_') {
+                if (tokenValue === null || tokenText === null || tokenValue === '_no_match_') {
                     return;
                 }
                 this.parent.addHiddenOption(tokenValue, tokenText, tokenType);
@@ -553,7 +553,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 this.parent.autocomplete.clearSuggestions();
                 return;
             }
-            if (this.parent.autocomplete.suggestions.childNodes.length === 1 && this.parent.autocomplete.suggestions.childNodes[0].dataset.type != '_no_match_') {
+            if (this.parent.autocomplete.suggestions.childNodes.length === 1 && this.parent.autocomplete.suggestions.childNodes[0].dataset.value != '_no_match_') {
                 this.parent.autocomplete.suggestions.firstChild.click();
                 return;
             }
@@ -563,7 +563,7 @@ var TokenAutocomplete = /** @class */ (function () {
             this.clear(true);
         };
         class_2.prototype.addToken = function (tokenValue, tokenText, tokenType, silent) {
-            if (tokenValue === null || tokenText === null || tokenType === '_no_match_') {
+            if (tokenValue === null || tokenText === null || tokenValue === '_no_match_') {
                 return;
             }
             this.clear(true, false);
@@ -738,7 +738,7 @@ var TokenAutocomplete = /** @class */ (function () {
                         }
                         return;
                     }
-                    if (event.key == me.parent.KEY_LEFT || event.key == me.parent.KEY_RIGHT || event.key == me.parent.KEY_ENTER) {
+                    if (event.key == me.parent.KEY_LEFT || event.key == me.parent.KEY_RIGHT || event.key == me.parent.KEY_ENTER || event.key == me.parent.KEY_TAB) {
                         // We don't want to re-trigger the autocompletion when the user navigates the cursor inside the input.
                         return;
                     }
