@@ -67,6 +67,7 @@ public class TunnelHandler implements AsyncHandler<String> {
             Set.of(HttpHeaderNames.SET_COOKIE.toString().toLowerCase());
 
     private final Response response;
+    private final AtomicLong unflushedBytes = new AtomicLong(0L);
     private final WebContext webContext;
     private final String url;
     private final Processor<ByteBuf, Optional<ByteBuf>> transformer;
@@ -291,13 +292,26 @@ public class TunnelHandler implements AsyncHandler<String> {
                 completeResponse(bodyPart);
             } else if (transformer != null) {
                 ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
-                transformer.apply(data).map(DefaultHttpContent::new).ifPresent(message -> response.ctx.write(message));
+                transformer.apply(data).map(DefaultHttpContent::new).ifPresent(message -> {
+                    if (unflushedBytes.addAndGet(message.content().readableBytes()) >= Response.BUFFER_SIZE) {
+                        response.ctx.writeAndFlush(message);
+                        unflushedBytes.set(0);
+                    } else {
+                        response.ctx.write(message);
+                    }
+                });
                 data.release();
             } else {
                 ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
                 Object msg = response.responseChunked ? new DefaultHttpContent(data) : data;
-                response.ctx.write(msg);
+                if (unflushedBytes.addAndGet(data.readableBytes()) >= Response.BUFFER_SIZE) {
+                    response.ctx.writeAndFlush(msg);
+                    unflushedBytes.set(0);
+                } else {
+                    response.ctx.write(msg);
+                }
             }
+
             return State.CONTINUE;
         } catch (HandledException e) {
             Exceptions.ignore(e);
