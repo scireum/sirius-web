@@ -129,9 +129,7 @@ class SendFile {
         response.installChunkedWriteHandler();
         ChannelFuture writeFuture = executeChunkedWrite();
         writeFuture.addListener(ignored -> raf.close());
-        writeFuture.addListener(ignored -> {
-            response.ctx.pipeline().remove(ChunkedWriteHandler.class);
-        });
+        response.removedChunkedWriteHandler(writeFuture);
 
         response.complete(writeFuture);
         return false;

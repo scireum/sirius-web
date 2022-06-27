@@ -835,6 +835,15 @@ public class Response {
         }
     }
 
+    protected void removedChunkedWriteHandler(ChannelFuture writeFuture) {
+        writeFuture.addListener(ignored -> {
+            if (ctx.channel().pipeline().get(ChunkedWriteHandler.class) != null && ctx.channel().isOpen()) {
+                ctx.pipeline().remove(ChunkedWriteHandler.class);
+            }
+        });
+    }
+
+
     /**
      * Sends the given file as response.
      * <p>
@@ -986,16 +995,12 @@ public class Response {
             if (responseChunked) {
                 ctx.write(new HttpChunkedInput(new ChunkedStream(urlConnection.getInputStream(), BUFFER_SIZE)));
                 ChannelFuture writeFuture = ctx.writeAndFlush(Unpooled.EMPTY_BUFFER);
-                writeFuture.addListener(ignored -> {
-                   ctx.pipeline().remove(ChunkedWriteHandler.class);
-                });
+                removedChunkedWriteHandler(writeFuture);
                 complete(writeFuture);
             } else {
                 ctx.write(new ChunkedStream(urlConnection.getInputStream(), BUFFER_SIZE));
                 ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
-                writeFuture.addListener(ignored -> {
-                    ctx.pipeline().remove(ChunkedWriteHandler.class);
-                });
+                removedChunkedWriteHandler(writeFuture);
                 complete(writeFuture);
             }
         } catch (Exception t) {
