@@ -843,7 +843,6 @@ public class Response {
         });
     }
 
-
     /**
      * Sends the given file as response.
      * <p>
@@ -1580,11 +1579,15 @@ public class Response {
      * @param contentType the content type to use. If <tt>null</tt>, we rely on a previously set header.
      * @return an output stream which will be sent as response
      */
-    public OutputStream outputStream(final HttpResponseStatus status, @Nullable final String contentType) {
+    public OutputStream outputStream(HttpResponseStatus status, @Nullable String contentType) {
         if (wc.responseCommitted) {
             throw Exceptions.createHandled()
                             .withSystemErrorMessage("Response for %s was already committed!", wc.getRequestedURI())
                             .handle();
+        }
+
+        if (Strings.isEmpty(contentType) && Strings.isFilled(name)) {
+            contentType = MimeHelper.guessMimeType(name);
         }
 
         return new ChunkedOutputStream(this, contentType, status);
