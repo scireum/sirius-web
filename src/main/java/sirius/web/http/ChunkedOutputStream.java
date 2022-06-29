@@ -10,6 +10,7 @@ package sirius.web.http;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFuture;
 import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -23,18 +24,20 @@ import sirius.kernel.health.Exceptions;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Provides an adapter from {@link OutputStream} to an underlying channel using a buffer.
  */
-class ChunkedOutputStream extends OutputStream {
+public class ChunkedOutputStream extends OutputStream {
     private final Response response;
     private final String contentType;
     private final HttpResponseStatus status;
     private volatile boolean open;
+    private volatile boolean contentionControl;
     private ByteBuf buffer;
 
-    ChunkedOutputStream(Response response, String contentType, HttpResponseStatus status) {
+    protected ChunkedOutputStream(Response response, String contentType, HttpResponseStatus status) {
         this.response = response;
         this.contentType = contentType;
         this.status = status;
@@ -72,11 +75,37 @@ class ChunkedOutputStream extends OutputStream {
         if (last) {
             completeRequest();
         } else {
-            Object message = new DefaultHttpContent(buffer);
-            response.ctx.writeAndFlush(message);
+            try {
+                Object message = new DefaultHttpContent(buffer);
+                ChannelFuture writeFuture = response.ctx.writeAndFlush(message);
+                if (contentionControl) {
+                    writeFuture.await(60, TimeUnit.SECONDS);
+                }
+            } catch (InterruptedException e) {
+                Exceptions.handle()
+                          .to(WebServer.LOG)
+                          .error(e)
+                          .withSystemErrorMessage("Got interrupted while waiting for data to be flushed: % (%s)")
+                          .handle();
+
+                Thread.currentThread().interrupt();
+            }
         }
 
         buffer = null;
+    }
+
+    /**
+     * Enables automatic contention control.
+     * <p>
+     * This essentially blocks writes (once the internal buffer is full) until the data has been flushed out to the
+     * client.
+     *
+     * @return the stream itself for fluent method calls
+     */
+    public ChunkedOutputStream enableContentionControl() {
+        this.contentionControl = true;
+        return this;
     }
 
     private void completeRequest() {
