@@ -10,14 +10,39 @@ body {
   background-color: $backgroundGray;
 }
 
-#wrapper {
-  display: grid;
-  height: 100vh;
-  grid-template-rows: 80px 1fr 40px;
+#wrapper-menu {
+  margin-bottom: 1rem;
+}
 
-  #wrapper-body {
-    min-width: 0;
+
+#wrapper-body {
+  min-width: 0;
+}
+
+@media (min-width: 960px) {
+
+  #wrapper {
+    display: grid;
+    height: 100vh;
+    grid-template-rows: 80px 1fr 40px;
   }
+
+  #wrapper-menu {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+    margin-bottom: 0;
+  }
+
+  #wrapper-footer {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    z-index: 1030;
+  }
+
 }
 
 nav.navbar {
