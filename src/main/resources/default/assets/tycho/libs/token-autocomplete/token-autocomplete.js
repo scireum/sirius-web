@@ -326,6 +326,7 @@ var TokenAutocomplete = /** @class */ (function () {
                         else {
                             me.handleInputAsValue(parent.getCurrentInput());
                         }
+                        parent.autocomplete.clearSuggestions();
                         parent.autocomplete.hideSuggestions();
                     }
                     else if (parent.getCurrentInput() === '' && event.key == parent.KEY_BACKSPACE) {
@@ -549,8 +550,8 @@ var TokenAutocomplete = /** @class */ (function () {
             if (input != '' && this.parent.options.allowCustomEntries) {
                 this.clearCurrentInput();
                 this.addToken(input, input, null, false);
-                this.parent.autocomplete.hideSuggestions();
                 this.parent.autocomplete.clearSuggestions();
+                this.parent.autocomplete.hideSuggestions();
                 return;
             }
             if (this.parent.autocomplete.suggestions.childNodes.length === 1 && this.parent.autocomplete.suggestions.childNodes[0].dataset.value != '_no_match_') {
@@ -594,6 +595,7 @@ var TokenAutocomplete = /** @class */ (function () {
                     else {
                         me.handleInputAsValue(parent.getCurrentInput());
                     }
+                    parent.autocomplete.clearSuggestions();
                     parent.autocomplete.hideSuggestions();
                 }
                 if ((event.key == parent.KEY_DOWN || event.key == parent.KEY_UP) && parent.autocomplete.suggestions.childNodes.length > 0) {
@@ -629,7 +631,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 focusInput();
             });
             parent.textInput.addEventListener('focusout', function () {
-                if (parent.autocomplete.areSuggestionsHighlighted()) {
+                if (parent.autocomplete.areSuggestionsActive()) {
                     return;
                 }
                 var input = me.parent.getCurrentInput();
@@ -745,7 +747,7 @@ var TokenAutocomplete = /** @class */ (function () {
                     me.loadSuggestions();
                 });
                 me.parent.textInput.addEventListener('focusout', function () {
-                    if (me.areSuggestionsHighlighted()) {
+                    if (me.areSuggestionsActive()) {
                         return;
                     }
                     me.hideSuggestions();
@@ -766,8 +768,8 @@ var TokenAutocomplete = /** @class */ (function () {
                     }
                 }
                 else if (value.length < me.parent.options.minCharactersForSuggestion) {
-                    me.hideSuggestions();
                     me.clearSuggestions();
+                    me.hideSuggestions();
                     return;
                 }
                 if (me.parent.options.suggestionsUri.length > 0) {
@@ -852,10 +854,10 @@ var TokenAutocomplete = /** @class */ (function () {
                 _suggestion.classList.add('token-autocomplete-suggestion-highlighted');
             };
             /**
-             * Checks for the presence of highlighted suggestions via mouse (hover) or keyboard (marker class).
+             * Checks for the presence of a suggestion that is currently clicked via mouse (active).
              */
-            class_4.prototype.areSuggestionsHighlighted = function () {
-                return !!this.suggestions.querySelector('li:hover,li.token-autocomplete-suggestion-highlighted');
+            class_4.prototype.areSuggestionsActive = function () {
+                return !!this.suggestions.querySelector('li:active');
             };
             /**
              * Removes all previous suggestions from the dropdown.
