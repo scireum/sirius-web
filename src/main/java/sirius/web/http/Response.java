@@ -843,7 +843,6 @@ public class Response {
         });
     }
 
-
     /**
      * Sends the given file as response.
      * <p>
@@ -1585,6 +1584,10 @@ public class Response {
             throw Exceptions.createHandled()
                             .withSystemErrorMessage("Response for %s was already committed!", wc.getRequestedURI())
                             .handle();
+        }
+
+        if (Strings.isEmpty(contentType) && Strings.isFilled(name)) {
+            contentType = MimeHelper.guessMimeType(name);
         }
 
         return new ChunkedOutputStream(this, contentType, status);
