@@ -357,7 +357,7 @@ public class TestResponse extends Response {
     }
 
     @Override
-    public OutputStream outputStream(HttpResponseStatus status, @Nullable String contentType) {
+    public ChunkedOutputStream outputStream(HttpResponseStatus status, @Nullable String contentType) {
         type = ResponseType.STREAM;
         this.status = status;
         if (Strings.isFilled(contentType)) {
@@ -367,11 +367,33 @@ public class TestResponse extends Response {
             setContentDisposition(name, download);
         }
 
-        return new ByteArrayOutputStream() {
+        return new ChunkedOutputStream(this, contentType, status) {
+
+            private final ByteArrayOutputStream delegate = new ByteArrayOutputStream();
+
+            @Override
+            public void write(int b) throws IOException {
+                delegate.write(b);
+            }
+
+            @Override
+            public void write(byte[] b) throws IOException {
+                delegate.write(b);
+            }
+
+            @Override
+            public void write(byte[] b, int off, int len) throws IOException {
+                delegate.write(b, off, len);
+            }
+
+            @Override
+            public void flush() throws IOException {
+                delegate.flush();
+            }
+
             @Override
             public void close() throws IOException {
-                super.close();
-                content = toByteArray();
+                content = delegate.toByteArray();
                 completeResponse();
             }
         };

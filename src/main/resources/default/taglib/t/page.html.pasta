@@ -48,7 +48,7 @@
 </head>
 <body>
 <div id="wrapper">
-    <div id="wrapper-menu" class="sticky-top-lg">
+    <div id="wrapper-menu">
         <i:render name="menu">
             <i:invoke template="/templates/tycho/page-menu.html.pasta"/>
         </i:render>
@@ -91,7 +91,7 @@
             </i:else>
         </i:if>
     </div>
-    <div id="wrapper-footer" class="fixed-bottom-lg">
+    <div id="wrapper-footer">
         <i:render name="footer">
             <i:invoke template="/templates/tycho/page-footer.html.pasta"/>
         </i:render>

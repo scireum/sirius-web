@@ -72,6 +72,14 @@ sirius.querySelector = function (query) {
 }
 
 /**@
+ * Clears the "display" property of the given element to make it visible.
+ * It is expected to be 'display: none' before.
+ */
+sirius.show = function(_element) {
+    _element.style.display = '';
+}
+
+/**@
  * Tries to find the parent node of the given type.
  *
  * @param _node the node to search in
