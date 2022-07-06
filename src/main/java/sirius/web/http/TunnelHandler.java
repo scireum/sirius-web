@@ -85,7 +85,7 @@ public class TunnelHandler implements AsyncHandler<String> {
     private final AtomicLong bytesReceived = new AtomicLong(0);
 
     private volatile int responseCode = HttpResponseStatus.OK.code();
-    private boolean contentLengthKnown;
+    private volatile boolean contentLengthKnown;
 
     private volatile boolean failed;
 
