@@ -292,24 +292,11 @@ public class TunnelHandler implements AsyncHandler<String> {
                 completeResponse(bodyPart);
             } else if (transformer != null) {
                 ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
-                transformer.apply(data).map(DefaultHttpContent::new).ifPresent(message -> {
-                    if (unflushedBytes.addAndGet(message.content().readableBytes()) >= Response.BUFFER_SIZE) {
-                        response.ctx.writeAndFlush(message);
-                        unflushedBytes.set(0);
-                    } else {
-                        response.ctx.write(message);
-                    }
-                });
+                transformer.apply(data).ifPresent(this::writeBodyPart);
                 data.release();
             } else {
                 ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
-                Object msg = response.responseChunked ? new DefaultHttpContent(data) : data;
-                if (unflushedBytes.addAndGet(data.readableBytes()) >= Response.BUFFER_SIZE) {
-                    response.ctx.writeAndFlush(msg);
-                    unflushedBytes.set(0);
-                } else {
-                    response.ctx.write(msg);
-                }
+                writeBodyPart(data);
             }
 
             return State.CONTINUE;
@@ -319,6 +306,16 @@ public class TunnelHandler implements AsyncHandler<String> {
         } catch (Exception e) {
             Exceptions.handle(e);
             return State.ABORT;
+        }
+    }
+
+    private void writeBodyPart(ByteBuf data) {
+        Object msg = response.responseChunked ? new DefaultHttpContent(data) : data;
+        if (unflushedBytes.addAndGet(data.readableBytes()) >= Response.BUFFER_SIZE) {
+            response.ctx.writeAndFlush(msg);
+            unflushedBytes.set(0);
+        } else {
+            response.ctx.write(msg);
         }
     }
 
