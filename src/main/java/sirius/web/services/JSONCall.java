@@ -10,7 +10,9 @@ package sirius.web.services;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import sirius.kernel.xml.Outcall;
+import sirius.web.http.MimeHelper;
 
 import java.io.IOException;
 import java.net.URI;
@@ -30,14 +32,14 @@ public class JSONCall {
     }
 
     /**
-     * Creates a new JSONCall for the given url with Content-Type 'application/json'.
+     * Creates a new JSONCall for the given url with Content-Type {@link MimeHelper#APPLICATION_JSON application/json}.
      *
      * @param url the target URL to call
      * @return an <tt>JSONCall</tt> which can be used to send and receive JSON
      * @throws java.io.IOException in case of an IO error
      */
     public static JSONCall to(URI url) throws IOException {
-        return to(url, "application/json; charset=" + StandardCharsets.UTF_8.name());
+        return to(url, MimeHelper.APPLICATION_JSON + "; charset=" + StandardCharsets.UTF_8.name());
     }
 
     /**
@@ -51,7 +53,7 @@ public class JSONCall {
     public static JSONCall to(URI url, String contentType) throws IOException {
         JSONCall result = new JSONCall();
         result.outcall = new Outcall(url);
-        result.outcall.setRequestProperty("Content-Type", contentType);
+        result.outcall.setRequestProperty(HttpHeaderNames.CONTENT_TYPE.toString(), contentType);
         return result;
     }
 

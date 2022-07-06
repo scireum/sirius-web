@@ -81,6 +81,11 @@ public class MimeHelper {
     public static final String TEXT_XML = "text/xml";
 
     /**
+     * Mime type of JSON data.
+     */
+    public static final String APPLICATION_JSON = "application/json";
+
+    /**
      * Mime type of csv files
      */
     public static final String TEXT_CSV = "text/comma-separated-values";
