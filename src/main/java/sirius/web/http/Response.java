@@ -60,7 +60,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URLConnection;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
@@ -1538,7 +1537,7 @@ public class Response {
     public JSONStructuredOutput json(HttpResponseStatus status) {
         String callback = wc.get("callback").getString();
         String encoding = wc.get("encoding").first().asString(StandardCharsets.UTF_8.name());
-        String mimeType = Strings.isFilled(callback) ? "application/javascript" : "application/json";
+        String mimeType = Strings.isFilled(callback) ? "application/javascript" : MimeHelper.APPLICATION_JSON;
         return new JSONStructuredOutput(outputStream(status, mimeType + ";charset=" + encoding), callback, encoding);
     }
 
