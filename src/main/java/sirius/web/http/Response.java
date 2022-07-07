@@ -71,7 +71,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TimeZone;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
@@ -109,11 +108,6 @@ public class Response {
      */
     private static final Set<String> CENSORED_LOWERCASE_PARAMETER_NAMES =
             Set.of("password", "passphrase", "secret", "secretKey");
-
-    /*
-     * Caches the GMT TimeZone (lookup is synchronized)
-     */
-    private static final TimeZone TIME_ZONE_GMT = TimeZone.getTimeZone("GMT");
 
     /*
      * Contains the content type used for html

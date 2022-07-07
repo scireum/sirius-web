@@ -110,7 +110,7 @@ public class Invocation {
         }
     }
 
-    @SuppressWarnings({"unchecked", "java:S1541", "java:S134", "java:S1764", "OverlyLongMethod"})
+    @SuppressWarnings({"unchecked", "java:S1479", "java:S1541", "java:S134", "java:S1764", "OverlyLongMethod"})
     @Explain(
             "This method and also this switch statement is too large. However, we'd like to keep everything in one place if possible.")
     private Object executeBytecodes() throws Throwable {
