@@ -34,7 +34,8 @@ public abstract class SharedParametersAdapter implements SharedParameters {
     }
 
     /**
-     * An empty dummy method that is only used for annotating {@link Parameter} descriptions.
+     * A dummy method that is only used for annotating {@link Parameter} descriptions. Overwrite it with an empty body
+     * and add the shared {@link Parameter} annotations.
      */
     public abstract void dummyWithParameterAnnotations();
 
