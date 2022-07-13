@@ -14,7 +14,9 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.di.Injector;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.settings.Extension;
 import sirius.web.controller.Routed;
 import sirius.web.http.WebServer;
@@ -22,9 +24,11 @@ import sirius.web.http.WebServer;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Lists all known {@link PublicApiInfo public APIs}.
@@ -65,11 +69,29 @@ public class PublicServices {
             return;
         }
 
+        // collect shared parameters
+        List<Parameter> sharedParameters = new ArrayList<>();
+        Arrays.stream(route.getAnnotationsByType(ParametersFrom.class)).forEach(parametersFrom -> {
+            Collection<SharedParameters> possibleOrigins =
+                    Injector.context().getParts(SharedParameters.class, parametersFrom.value());
+            if (possibleOrigins.size() == 1) {
+                sharedParameters.addAll(possibleOrigins.iterator().next().getParameters());
+            } else {
+                throw Exceptions.createHandled()
+                                .withSystemErrorMessage(
+                                        "Failed identifying unique shared parameter instance for '%s'. (@Register missing?)",
+                                        parametersFrom.value().toString())
+                                .handle();
+            }
+        });
+
         PublicServiceInfo serviceInfo = new PublicServiceInfo(publicService,
                                                               routed.value(),
                                                               route.isAnnotationPresent(Deprecated.class),
                                                               route.getAnnotation(Operation.class),
-                                                              Arrays.stream(route.getAnnotationsByType(Parameter.class))
+                                                              Stream.concat(sharedParameters.stream(),
+                                                                            Arrays.stream(route.getAnnotationsByType(
+                                                                                    Parameter.class)))
                                                                     .collect(Collectors.toList()),
                                                               Arrays.stream(route.getAnnotationsByType(RequestBody.class))
                                                                     .collect(Collectors.toList()),
