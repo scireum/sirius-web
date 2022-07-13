@@ -14,7 +14,8 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.di.Injector;
+import sirius.kernel.di.GlobalContext;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.settings.Extension;
@@ -38,6 +39,9 @@ import java.util.stream.Stream;
  */
 @Register(classes = PublicServices.class)
 public class PublicServices {
+
+    @Part
+    private GlobalContext globalContext;
 
     private final List<PublicApiInfo> apis = new ArrayList<>();
 
@@ -73,7 +77,9 @@ public class PublicServices {
         List<Parameter> sharedParameters = new ArrayList<>();
         Arrays.stream(route.getAnnotationsByType(ParametersFrom.class)).forEach(parametersFrom -> {
             Collection<SharedParameters> possibleOrigins =
-                    Injector.context().getParts(SharedParameters.class, parametersFrom.value());
+                    globalContext.getParts(SharedParameters.class).stream().filter(sharedParameter -> {
+                        return parametersFrom.value().isAssignableFrom(sharedParameter.getClass());
+                    }).toList();
             if (possibleOrigins.size() == 1) {
                 sharedParameters.addAll(possibleOrigins.iterator().next().getParameters());
             } else {
