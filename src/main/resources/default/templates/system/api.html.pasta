@@ -89,7 +89,9 @@
                                     <td class="@if (parameter.required()) { font-weight-bold }">
                                         @parameter.name()
                                     </td>
-                                    <td>@smartTranslate(parameter.description())</td>
+                                    <td>
+                                        <i:raw>@expandMessage(smartTranslate(parameter.description()))</i:raw>
+                                    </td>
                                     <td>@toUserString(parameter.required())</td>
                                     <td class="text-monospace whitespace-pre-wrap">@parameter.example()</td>
                                 </tr>
