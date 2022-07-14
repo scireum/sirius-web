@@ -82,7 +82,6 @@ window.sirius.Accordion = (function () {
 
         const maxHeightReset = function () {
             me._content.style.maxHeight = 'unset';
-            console.warn("feddich!!")
         };
 
         this._content.addEventListener('transitioncancel', maxHeightReset, { once: true });
