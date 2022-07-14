@@ -72,23 +72,11 @@ public class PublicServices {
             return;
         }
 
-        // collect shared parameters
-        List<Parameter> sharedParameters = new ArrayList<>();
-        Arrays.stream(route.getAnnotationsByType(ParametersFrom.class)).forEach(parametersFrom -> {
-            try {
-                sharedParameters.addAll(Arrays.asList(parametersFrom.value()
-                                                                    .getMethod("dummyWithParameterAnnotations")
-                                                                    .getAnnotationsByType(Parameter.class)));
-            } catch (NoSuchMethodException e) {
-                Exceptions.handle(e);
-            }
-        });
-
         PublicServiceInfo serviceInfo = new PublicServiceInfo(publicService,
                                                               routed.value(),
                                                               route.isAnnotationPresent(Deprecated.class),
                                                               route.getAnnotation(Operation.class),
-                                                              Stream.concat(sharedParameters.stream(),
+                                                              Stream.concat(collectSharedApiParameters(route).stream(),
                                                                             Arrays.stream(route.getAnnotationsByType(
                                                                                     Parameter.class)))
                                                                     .collect(Collectors.toList()),
@@ -108,6 +96,20 @@ public class PublicServices {
             }
             apiInfo.addService(serviceInfo);
         }
+    }
+
+    private List<Parameter> collectSharedApiParameters(Method route) {
+        List<Parameter> sharedParameters = new ArrayList<>();
+        Arrays.stream(route.getAnnotationsByType(ParametersFrom.class)).forEach(parametersFrom -> {
+            try {
+                sharedParameters.addAll(Arrays.asList(parametersFrom.value()
+                                                                    .getMethod("dummyWithParameterAnnotations")
+                                                                    .getAnnotationsByType(Parameter.class)));
+            } catch (NoSuchMethodException e) {
+                Exceptions.handle(e);
+            }
+        });
+        return sharedParameters;
     }
 
     private PublicApiInfo buildApiInfo(String apiName, Method route) {
