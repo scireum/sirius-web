@@ -39,10 +39,10 @@ import java.util.stream.Stream;
 @Register(classes = PublicServices.class)
 public class PublicServices {
 
+    private final List<PublicApiInfo> apis = new ArrayList<>();
+
     @Part
     private GlobalContext globalContext;
-
-    private final List<PublicApiInfo> apis = new ArrayList<>();
 
     /**
      * Lists all known public APIs.
