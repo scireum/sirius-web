@@ -103,7 +103,7 @@ public class PublicServices {
         Arrays.stream(route.getAnnotationsByType(ParametersFrom.class)).forEach(parametersFrom -> {
             try {
                 sharedParameters.addAll(Arrays.asList(parametersFrom.value()
-                                                                    .getMethod("dummyWithParameterAnnotations")
+                                                                    .getMethod("parameterMethod")
                                                                     .getAnnotationsByType(Parameter.class)));
             } catch (NoSuchMethodException e) {
                 Exceptions.handle(e);

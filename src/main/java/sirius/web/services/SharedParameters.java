@@ -22,8 +22,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 public interface SharedParameters {
 
     /**
-     * A dummy method that is only used for annotating {@link Parameter} descriptions. Overwrite it with an empty body
+     * Dummy method that is only used for annotating {@link Parameter} descriptions. Overwrite it with an empty body
      * and add the shared {@link Parameter} annotations.
      */
-    void dummyWithParameterAnnotations();
+    void parameterMethod();
 }
