@@ -74,15 +74,15 @@ window.sirius.Accordion = (function () {
 
         if (!this.animate) {
             show();
-            me._content.style.maxHeight = 'unset';
+            me._content.style.maxHeight = 'initial';
             return;
         }
 
-        // if the accordion is set to animate, the max-height needs to be set temporarily, and unset after the
-        // transition is complete
+        // if the accordion is set to animate, the max-height needs to be set temporarily,
+        // and reset to initial max-height after the transition is complete
 
         const maxHeightReset = function () {
-            me._content.style.maxHeight = 'unset';
+            me._content.style.maxHeight = 'initial';
         };
 
         this._content.addEventListener('transitioncancel', maxHeightReset, { once: true });
