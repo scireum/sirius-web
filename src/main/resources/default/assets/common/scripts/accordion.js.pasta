@@ -17,9 +17,11 @@ window.sirius.Accordion = (function () {
         this._content = content;
         this._content.classList.add('sci-accordion-content');
 
+        this.animate = false;
         if (options && options.animate) {
             this._toggle.classList.add('sci-accordion-animate');
             this._content.classList.add('sci-accordion-animate');
+            this.animate = true;
         }
 
         if (options && options.showInitially) {
@@ -43,14 +45,50 @@ window.sirius.Accordion = (function () {
     };
 
     Accordion.prototype.hideContent = function () {
-        this._content.classList.remove('sci-accordion-active');
-        this._toggle.classList.remove('sci-accordion-active');
-        this._content.style.maxHeight = null;
+
+        const me = this;
+        const hide = function () {
+            me._content.classList.remove('sci-accordion-active');
+            me._toggle.classList.remove('sci-accordion-active');
+            me._content.style.maxHeight = null;
+        };
+
+        if (!this.animate) {
+            hide();
+            return;
+        }
+
+        // if the accordion is set to animate, we need to restore the max-height, in order to animate back to zero after
+        // the next DOM tree refresh
+        this._content.style.maxHeight = this._content.scrollHeight + 'px';
+        setTimeout(hide, 0);
     };
 
     Accordion.prototype.showContent = function () {
-        this._content.classList.add('sci-accordion-active');
-        this._toggle.classList.add('sci-accordion-active');
+
+        const me = this;
+        const show = function () {
+            me._content.classList.add('sci-accordion-active');
+            me._toggle.classList.add('sci-accordion-active');
+        };
+
+        if (!this.animate) {
+            show();
+            return;
+        }
+
+        // if the accordion is set to animate, the max-height needs to be set temporarily, and unset after the
+        // transition is complete
+
+        const maxHeightReset = function () {
+            me._content.style.maxHeight = 'unset';
+            console.warn("feddich!!")
+        };
+
+        this._content.addEventListener('transitioncancel', maxHeightReset, { once: true });
+        this._content.addEventListener('transitionend', maxHeightReset, { once: true });
+
+        show();
         this._content.style.maxHeight = this._content.scrollHeight + 'px';
     };
 
