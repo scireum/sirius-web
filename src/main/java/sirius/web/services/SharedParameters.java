@@ -9,24 +9,21 @@
 package sirius.web.services;
 
 import io.swagger.v3.oas.annotations.Parameter;
-import sirius.kernel.di.std.AutoRegister;
-
-import java.util.List;
 
 /**
  * Defines a set of shared parameters for public services.
  * <p>
- * Use {@link ParametersFrom} annotations to copy parameters from an instance of this interface to actual public service routes.
+ * Implementing classes should overwrite the {@linkplain #dummyWithParameterAnnotations() dummy method} with an empty
+ * body and add the shared {@link Parameter} annotations there.
  * <p>
- * For easier implementation, consider using the {@link SharedParametersAdapter}.
+ * Use {@link ParametersFrom} annotations to copy parameters from an instance of this interface to actual public service
+ * routes.
  */
-@AutoRegister
 public interface SharedParameters {
 
     /**
-     * Returns the list of shared {@link Parameter} descriptions.
-     *
-     * @return an unmodifiable list of parameter descriptions
+     * A dummy method that is only used for annotating {@link Parameter} descriptions. Overwrite it with an empty body
+     * and add the shared {@link Parameter} annotations.
      */
-    List<Parameter> getParameters();
+    void dummyWithParameterAnnotations();
 }

@@ -25,7 +25,6 @@ import sirius.web.http.WebServer;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -76,18 +75,12 @@ public class PublicServices {
         // collect shared parameters
         List<Parameter> sharedParameters = new ArrayList<>();
         Arrays.stream(route.getAnnotationsByType(ParametersFrom.class)).forEach(parametersFrom -> {
-            Collection<SharedParameters> possibleOrigins =
-                    globalContext.getParts(SharedParameters.class).stream().filter(sharedParameter -> {
-                        return parametersFrom.value().isAssignableFrom(sharedParameter.getClass());
-                    }).toList();
-            if (possibleOrigins.size() == 1) {
-                sharedParameters.addAll(possibleOrigins.iterator().next().getParameters());
-            } else {
-                throw Exceptions.createHandled()
-                                .withSystemErrorMessage(
-                                        "Failed identifying unique shared parameter instance for '%s'. (@Register missing?)",
-                                        parametersFrom.value().toString())
-                                .handle();
+            try {
+                sharedParameters.addAll(Arrays.asList(parametersFrom.value()
+                                                                    .getMethod("dummyWithParameterAnnotations")
+                                                                    .getAnnotationsByType(Parameter.class)));
+            } catch (NoSuchMethodException e) {
+                Exceptions.handle(e);
             }
         });
 
