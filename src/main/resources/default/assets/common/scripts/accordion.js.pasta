@@ -74,6 +74,7 @@ window.sirius.Accordion = (function () {
 
         if (!this.animate) {
             show();
+            me._content.style.maxHeight = 'unset';
             return;
         }
 
