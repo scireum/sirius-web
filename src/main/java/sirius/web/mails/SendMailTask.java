@@ -25,12 +25,13 @@ import net.markenwerk.utils.mail.dkim.DkimMessage;
 import net.markenwerk.utils.mail.dkim.DkimSigner;
 import net.markenwerk.utils.mail.dkim.SigningAlgorithm;
 import sirius.kernel.async.Operation;
+import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.health.Exceptions;
-import sirius.kernel.health.HandledException;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -50,7 +51,6 @@ import java.util.TreeSet;
  * Contains the effective logic to send a mail in its own task queue.
  */
 class SendMailTask implements Runnable {
-
     private final MailSender mail;
     private final SMTPConfiguration config;
     private boolean success = false;
@@ -90,6 +90,9 @@ class SendMailTask implements Runnable {
      */
     private static final String MAIL_SOCKET_TIMEOUT = "60000";
 
+    @Part
+    private static Tasks tasks;
+
     @ConfigValue("mail.smtp.dkim.keyFile")
     private static String dkimKeyFile;
 
@@ -116,16 +119,15 @@ class SendMailTask implements Runnable {
     public void run() {
         checkForSimulation();
         determineTechnicalSender();
+
         try (Operation op = new Operation(() -> "Sending eMail: " + mail.subject + " to: " + mail.receiverEmail,
                                           Duration.ofSeconds(30))) {
-            if (!mail.simulate) {
-                sendMail();
-            } else {
+            if (mail.simulate) {
                 messageId = "SIMULATED";
                 success = true;
+            } else {
+                sendMail();
             }
-        } finally {
-            logSentMail();
         }
     }
 
@@ -187,21 +189,38 @@ class SendMailTask implements Runnable {
             try (Transport transport = getSMTPTransport(session, config)) {
                 sendMailViaTransport(session, transport);
             }
-        } catch (HandledException e) {
-            throw e;
         } catch (Exception e) {
-            throw Exceptions.handle()
-                            .withSystemErrorMessage(
-                                    "Invalid mail configuration: %s (Host: %s, Port: %s, User: %s, Password used: %s)",
-                                    e.getMessage(),
-                                    config.getMailHost(),
-                                    config.getMailPort(),
-                                    config.getMailUser(),
-                                    Strings.isFilled(config.getMailPassword()))
-                            .to(Mails.LOG)
-                            .error(e)
-                            .handle();
+            if (mail.remainingAttempts.decrementAndGet() > 0) {
+                Mails.LOG.WARN(
+                        "RESCHEDULING sending mail from: '%s' to '%s' with subject: '%s' (Remaining attempts: %s)",
+                        Strings.isEmpty(mail.senderEmail) ? technicalSender : mail.senderEmail,
+                        mail.receiverEmail,
+                        mail.subject,
+                        mail.remainingAttempts.get());
+
+                // Re-schedule mail in async task...
+               mail.sendMailAsync();
+
+                return;
+            }
+
+            // We're out of retires -> log an error...
+            Exceptions.handle()
+                      .withSystemErrorMessage(
+                              "Invalid mail configuration: %s (Host: %s, Port: %s, User: %s, Password used: %s)",
+                              e.getMessage(),
+                              config.getMailHost(),
+                              config.getMailPort(),
+                              config.getMailUser(),
+                              Strings.isFilled(config.getMailPassword()))
+                      .to(Mails.LOG)
+                      .error(e)
+                      .handle();
         }
+
+        // We either successfully completed (or finally failed) sending the task - log mail and cleanup scheduler...
+        tasks.forgetSynchronizer(mail.internalMessageId);
+        logSentMail();
     }
 
     private void sendMailViaTransport(Session session, Transport transport) {
