@@ -422,16 +422,14 @@ class SendMailTask implements Runnable {
      */
     private List<DataSource> filterAndAppendAlternativeParts(List<DataSource> attachments, MimeMultipart content)
             throws MessagingException {
-        // by default an "attachment" would be added as mixed body part
-        // however, some attachments like an iCalendar invitation must be added
-        // as alternative body part for the given html and text part
-        // Therefore we split the attachments into these two categories and then generate
-        // the appropriate parts...
+        // by default an "attachment" would be added as mixed body part however, some attachments like an iCalendar
+        // invitation must be added as alternative body part for the given html and text part. Therefore, we split the
+        // attachments into these two categories and then generate the appropriate parts...
         List<DataSource> mixedAttachments = new ArrayList<>();
         for (DataSource attachment : attachments) {
             // Filter null values since var-args are tricky...
             if (attachment != null) {
-                if (attachment instanceof Attachment && ((Attachment) attachment).isAlternative()) {
+                if (attachment instanceof Attachment siriusAttachment && siriusAttachment.isAlternative()) {
                     MimeBodyPart part = createBodyPart(attachment);
                     content.addBodyPart(part);
                 } else {
@@ -439,6 +437,7 @@ class SendMailTask implements Runnable {
                 }
             }
         }
+
         return mixedAttachments;
     }
 
@@ -467,8 +466,8 @@ class SendMailTask implements Runnable {
         MimeBodyPart part = new MimeBodyPart();
         part.setFileName(attachment.getName());
         part.setDataHandler(new DataHandler(attachment));
-        if (attachment instanceof Attachment) {
-            for (Map.Entry<String, String> h : ((Attachment) attachment).getHeaders()) {
+        if (attachment instanceof Attachment siriusAttachment) {
+            for (Map.Entry<String, String> h : siriusAttachment.getHeaders()) {
                 if (Strings.isEmpty(h.getValue())) {
                     part.removeHeader(h.getKey());
                 } else {
