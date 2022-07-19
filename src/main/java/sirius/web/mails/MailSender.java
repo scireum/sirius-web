@@ -437,11 +437,7 @@ public class MailSender {
                 buildSubject();
                 sanitize();
                 check();
-                sendMailAsync(smtpConfiguration != null ?
-                              smtpConfiguration :
-                              UserContext.getCurrentScope()
-                                         .tryAs(SMTPConfiguration.class)
-                                         .orElse(SMTPConfiguration.fromConfig()));
+                sendMailAsync();
             } finally {
                 CallContext.getCurrent().setLang(tmpLang);
             }
@@ -569,6 +565,10 @@ public class MailSender {
         }
         if (Strings.isFilled(replyToName)) {
             replyToName = replyToName.trim();
+        }
+        if (smtpConfiguration == null) {
+            smtpConfiguration =
+                    UserContext.getCurrentScope().tryAs(SMTPConfiguration.class).orElse(SMTPConfiguration.fromConfig());
         }
     }
 

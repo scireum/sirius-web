@@ -33,8 +33,8 @@ public class MailsMock extends Mails {
         private SMTPConfiguration effectiveConfig;
 
         @Override
-        protected void sendMailAsync(SMTPConfiguration config) {
-            this.effectiveConfig = config;
+        protected void sendMailAsync() {
+            this.effectiveConfig = smtpConfiguration;
             sentMails.add(this);
             Mails.LOG.INFO("eMail to '%s' was not sent but captured, as MailsMock is active...", getReceiverEmail());
         }
