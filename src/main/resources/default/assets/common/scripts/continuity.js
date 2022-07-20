@@ -228,7 +228,7 @@ window.sirius.Continuity = (function () {
     /**
      * Allows to check whether the current history state has an entry for the given type.
      *
-     * @param entryType the history state entry type to check for.
+     * @param {string} entryType the history state entry type to check for.
      * @returns {boolean} `true` when the current history state contains an entry for the type.
      */
     Continuity.prototype.hasStateEntry = function (entryType) {
@@ -238,7 +238,7 @@ window.sirius.Continuity = (function () {
     /**
      * Allows to retrieve the entry of the given type from the current history state.
      *
-     * @param entryType the history state entry type to retrieve.
+     * @param {string} entryType the history state entry type to retrieve.
      * @returns {null|Object} the state entry for the given type.
      */
     Continuity.prototype.getStateEntry = function (entryType) {
