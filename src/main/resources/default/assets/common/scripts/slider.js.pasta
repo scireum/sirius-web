@@ -153,9 +153,8 @@
             _slides[currentIndex].style.opacity = '1';
         };
         const activateViewBySliding = function (direction) {
-            const previousFrom = 0;//.5 * (_slider.offsetWidth - _slides[previousIndex].scrollWidth);
-            const currentTo = 0;//.5 * (_slider.offsetWidth - _slides[currentIndex].scrollWidth);
-
+            // compute the initial and final positions of the current and previous slides
+            const previousFrom = 0, currentTo = 0;
             let previousTo = 0, currentFrom = 0;
             if (direction > 0) {
                 currentFrom = _slider.offsetWidth;
