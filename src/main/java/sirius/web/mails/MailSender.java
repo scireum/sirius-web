@@ -50,7 +50,7 @@ public class MailSender {
      * <p>
      * Note that this is multiplied by the number of retries, so we wait 0 (first try is immediate), 15s, 30s ...
      */
-    protected static final int RESEND_WAIT_INTERVAL = 15;
+    protected static final int RESEND_WAIT_INTERVAL_SECONDS = 15;
 
     /**
      * Determines the max attempts of sending a mail after a server error before finally giving up.
@@ -507,7 +507,7 @@ public class MailSender {
             SendMailTask task = new SendMailTask(this, smtpConfiguration);
             tasks.executor("email")
                  .minInterval(internalMessageId,
-                              Duration.ofSeconds((MAX_SEND_ATTEMPTS - remainingAttempts.get()) * RESEND_WAIT_INTERVAL))
+                              Duration.ofSeconds((MAX_SEND_ATTEMPTS - remainingAttempts.get()) * RESEND_WAIT_INTERVAL_SECONDS))
                  .fork(task);
         }
     }
