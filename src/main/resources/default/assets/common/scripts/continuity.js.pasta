@@ -27,7 +27,7 @@ window.sirius.Continuity = (function () {
         this.dispatchEvent('continuity-initialized');
     }
 
-    /**
+    /**@
      * Installs the `popstate` event listener during the initial setup which handles state changes during history navigation.
      */
     Continuity.prototype.installStateListener = function () {
@@ -80,7 +80,7 @@ window.sirius.Continuity = (function () {
         }
     };
 
-    /**
+    /**@
      * Allows to register a new state entry handler (or replace the currently registered one) for the given type.
      *
      * @param {string} entryType the type/key of the state entry the handler is responsible for (as defined in `options.entryTypes` during initialization).
@@ -102,7 +102,7 @@ window.sirius.Continuity = (function () {
         }
     };
 
-    /**
+    /**@
      * Handles the change to the given state by calling the responsible state entry handles and updating some internal fields.
      * For state entries contained in the new history state the `restore` callback is triggered, for omitted state entries the `destroy` callback is triggered.
      *
@@ -134,7 +134,7 @@ window.sirius.Continuity = (function () {
         });
     };
 
-    /**
+    /**@
      * Pushes a new history state. This is a brute-force option when all entries should be affected by an operation.
      * This is essentially the same as `replaceEntireState` but calls `history.pushState` at the end.
      *
@@ -151,7 +151,7 @@ window.sirius.Continuity = (function () {
         history.pushState(this.currentState, null, this.buildUrl());
     }
 
-    /**
+    /**@
      * Replaces current state with the given one. This is a brute-force option when all entries should be affected by an operation.
      * This is essentially the same as `pushEntireState` but calls `history.replaceState` at the end.
      *
@@ -167,7 +167,7 @@ window.sirius.Continuity = (function () {
         history.replaceState(this.currentState, null, this.buildUrl());
     }
 
-    /**
+    /**@
      * Pushes a new history state including given entry. This also works when no entry of the given type is present in the current history state.
      * This is essentially the same as `replaceStateEntry` but calls `history.pushState` after constructing the new state.
      *
@@ -185,7 +185,7 @@ window.sirius.Continuity = (function () {
         history.pushState(this.currentState, null, this.buildUrl());
     };
 
-    /**
+    /**@
      * Replaces the entry for the given type in the current history state. This also works when no entry of the given type is present in the current history state.
      * This is essentially the same as `pushStateEntry` but calls `history.replaceState` after constructing the new state.
      *
@@ -202,7 +202,7 @@ window.sirius.Continuity = (function () {
         history.replaceState(this.currentState, null, this.buildUrl());
     };
 
-    /**
+    /**@
      * Removes the entry for the given type from the current history state when present.
      *
      * This is done in two ways:
@@ -225,7 +225,7 @@ window.sirius.Continuity = (function () {
         }
     };
 
-    /**
+    /**@
      * Allows to check whether the current history state has an entry for the given type.
      *
      * @param {string} entryType the history state entry type to check for.
@@ -235,7 +235,7 @@ window.sirius.Continuity = (function () {
         return !!this.getStateEntry(entryType);
     };
 
-    /**
+    /**@
      * Allows to retrieve the entry of the given type from the current history state.
      *
      * @param {string} entryType the history state entry type to retrieve.
@@ -251,7 +251,7 @@ window.sirius.Continuity = (function () {
         return null;
     };
 
-    /**
+    /**@
      * Serializes the given state to be used as the value of our history state deep-link parameter in the URL.
      * This filters out all entry types that where defined as `excludeFromParameter` during initialization.
      *
@@ -269,7 +269,7 @@ window.sirius.Continuity = (function () {
         return JSON.stringify(paramState);
     };
 
-    /**
+    /**@
      * Parses the value of our history state deep-link parameter from the URL and transforms it into a JS Object.
      *
      * @param {string} param the value of the parameter to parse
@@ -279,7 +279,7 @@ window.sirius.Continuity = (function () {
         return JSON.parse(param);
     };
 
-    /**
+    /**@
      * Generates the new URL by combining the given search parameters and hash (if present).
      *
      * @param {URLSearchParams} [searchParams] the URL parameters to include (or the ones stored in the lib scope when omitted)
@@ -294,7 +294,7 @@ window.sirius.Continuity = (function () {
         return url;
     };
 
-    /**
+    /**@
      * Toggles the printing of debug messages by the library.
      *
      * @param {boolean} loggingEnabled whether logging should be enabled
@@ -309,7 +309,7 @@ window.sirius.Continuity = (function () {
         }
     };
 
-    /**
+    /**@
      * Allows to dispatch a custom event of the given type while handling different browser environments. For internal use only.
      *
      * @param {boolean} eventType the type of event to trigger
