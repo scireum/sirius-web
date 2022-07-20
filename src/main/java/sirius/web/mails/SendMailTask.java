@@ -58,6 +58,7 @@ class SendMailTask implements Runnable {
     private String technicalSender;
     private String technicalSenderName;
 
+    private static final String DEFAULT_SMTP_PORT = "25";
     private static final String X_MAILER = "X-Mailer";
     private static final String MIXED = "mixed";
     private static final String TEXT_HTML_CHARSET_UTF_8 = "text/html; charset=\"UTF-8\"";
@@ -85,7 +86,7 @@ class SendMailTask implements Runnable {
      */
     public static final String X_BOUNCETOKEN = "X-Bouncetoken";
 
-    /*
+    /**
      * Contains the default timeout used for all socket operations and is set to 60s (=60000ms)
      */
     private static final String MAIL_SOCKET_TIMEOUT = "60000";
@@ -204,7 +205,7 @@ class SendMailTask implements Runnable {
                 return;
             }
 
-            // We're out of retires -> log an error...
+            // We're out of retries -> log an error...
             Exceptions.handle()
                       .withSystemErrorMessage(
                               "Invalid mail configuration: %s (Host: %s, Port: %s, User: %s, Password used: %s)",
@@ -360,7 +361,7 @@ class SendMailTask implements Runnable {
 
     private Session getMailSession(SMTPConfiguration config) {
         Properties props = new Properties();
-        props.setProperty(MAIL_SMTP_PORT, Strings.isEmpty(config.getMailPort()) ? "25" : config.getMailPort());
+        props.setProperty(MAIL_SMTP_PORT, Strings.isEmpty(config.getMailPort()) ? DEFAULT_SMTP_PORT : config.getMailPort());
         props.setProperty(MAIL_SMTP_HOST, config.getMailHost());
         if (Strings.isFilled(config.getMailSender())) {
             props.setProperty(MAIL_FROM, config.getMailSender());
@@ -467,11 +468,11 @@ class SendMailTask implements Runnable {
         part.setFileName(attachment.getName());
         part.setDataHandler(new DataHandler(attachment));
         if (attachment instanceof Attachment siriusAttachment) {
-            for (Map.Entry<String, String> h : siriusAttachment.getHeaders()) {
-                if (Strings.isEmpty(h.getValue())) {
-                    part.removeHeader(h.getKey());
+            for (Map.Entry<String, String> header : siriusAttachment.getHeaders()) {
+                if (Strings.isEmpty(header.getValue())) {
+                    part.removeHeader(header.getKey());
                 } else {
-                    part.setHeader(h.getKey(), h.getValue());
+                    part.setHeader(header.getKey(), header.getValue());
                 }
             }
         }
