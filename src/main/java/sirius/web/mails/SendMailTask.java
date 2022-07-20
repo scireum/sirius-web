@@ -25,12 +25,13 @@ import net.markenwerk.utils.mail.dkim.DkimMessage;
 import net.markenwerk.utils.mail.dkim.DkimSigner;
 import net.markenwerk.utils.mail.dkim.SigningAlgorithm;
 import sirius.kernel.async.Operation;
+import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.health.Exceptions;
-import sirius.kernel.health.HandledException;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -50,7 +51,6 @@ import java.util.TreeSet;
  * Contains the effective logic to send a mail in its own task queue.
  */
 class SendMailTask implements Runnable {
-
     private final MailSender mail;
     private final SMTPConfiguration config;
     private boolean success = false;
@@ -58,6 +58,7 @@ class SendMailTask implements Runnable {
     private String technicalSender;
     private String technicalSenderName;
 
+    private static final String DEFAULT_SMTP_PORT = "25";
     private static final String X_MAILER = "X-Mailer";
     private static final String MIXED = "mixed";
     private static final String TEXT_HTML_CHARSET_UTF_8 = "text/html; charset=\"UTF-8\"";
@@ -85,10 +86,13 @@ class SendMailTask implements Runnable {
      */
     public static final String X_BOUNCETOKEN = "X-Bouncetoken";
 
-    /*
+    /**
      * Contains the default timeout used for all socket operations and is set to 60s (=60000ms)
      */
     private static final String MAIL_SOCKET_TIMEOUT = "60000";
+
+    @Part
+    private static Tasks tasks;
 
     @ConfigValue("mail.smtp.dkim.keyFile")
     private static String dkimKeyFile;
@@ -116,16 +120,15 @@ class SendMailTask implements Runnable {
     public void run() {
         checkForSimulation();
         determineTechnicalSender();
+
         try (Operation op = new Operation(() -> "Sending eMail: " + mail.subject + " to: " + mail.receiverEmail,
                                           Duration.ofSeconds(30))) {
-            if (!mail.simulate) {
-                sendMail();
-            } else {
+            if (mail.simulate) {
                 messageId = "SIMULATED";
                 success = true;
+            } else {
+                sendMail();
             }
-        } finally {
-            logSentMail();
         }
     }
 
@@ -187,21 +190,38 @@ class SendMailTask implements Runnable {
             try (Transport transport = getSMTPTransport(session, config)) {
                 sendMailViaTransport(session, transport);
             }
-        } catch (HandledException e) {
-            throw e;
         } catch (Exception e) {
-            throw Exceptions.handle()
-                            .withSystemErrorMessage(
-                                    "Invalid mail configuration: %s (Host: %s, Port: %s, User: %s, Password used: %s)",
-                                    e.getMessage(),
-                                    config.getMailHost(),
-                                    config.getMailPort(),
-                                    config.getMailUser(),
-                                    Strings.isFilled(config.getMailPassword()))
-                            .to(Mails.LOG)
-                            .error(e)
-                            .handle();
+            if (mail.remainingAttempts.decrementAndGet() > 0) {
+                Mails.LOG.WARN(
+                        "RESCHEDULING sending mail from: '%s' to '%s' with subject: '%s' (Remaining attempts: %s)",
+                        Strings.isEmpty(mail.senderEmail) ? technicalSender : mail.senderEmail,
+                        mail.receiverEmail,
+                        mail.subject,
+                        mail.remainingAttempts.get());
+
+                // Re-schedule mail in async task...
+               mail.sendMailAsync();
+
+                return;
+            }
+
+            // We're out of retries -> log an error...
+            Exceptions.handle()
+                      .withSystemErrorMessage(
+                              "Invalid mail configuration: %s (Host: %s, Port: %s, User: %s, Password used: %s)",
+                              e.getMessage(),
+                              config.getMailHost(),
+                              config.getMailPort(),
+                              config.getMailUser(),
+                              Strings.isFilled(config.getMailPassword()))
+                      .to(Mails.LOG)
+                      .error(e)
+                      .handle();
         }
+
+        // We either successfully completed (or finally failed) sending the task - log mail and cleanup scheduler...
+        tasks.forgetSynchronizer(mail.internalMessageId);
+        logSentMail();
     }
 
     private void sendMailViaTransport(Session session, Transport transport) {
@@ -341,7 +361,7 @@ class SendMailTask implements Runnable {
 
     private Session getMailSession(SMTPConfiguration config) {
         Properties props = new Properties();
-        props.setProperty(MAIL_SMTP_PORT, Strings.isEmpty(config.getMailPort()) ? "25" : config.getMailPort());
+        props.setProperty(MAIL_SMTP_PORT, Strings.isEmpty(config.getMailPort()) ? DEFAULT_SMTP_PORT : config.getMailPort());
         props.setProperty(MAIL_SMTP_HOST, config.getMailHost());
         if (Strings.isFilled(config.getMailSender())) {
             props.setProperty(MAIL_FROM, config.getMailSender());
@@ -403,16 +423,14 @@ class SendMailTask implements Runnable {
      */
     private List<DataSource> filterAndAppendAlternativeParts(List<DataSource> attachments, MimeMultipart content)
             throws MessagingException {
-        // by default an "attachment" would be added as mixed body part
-        // however, some attachments like an iCalendar invitation must be added
-        // as alternative body part for the given html and text part
-        // Therefore we split the attachments into these two categories and then generate
-        // the appropriate parts...
+        // by default an "attachment" would be added as mixed body part however, some attachments like an iCalendar
+        // invitation must be added as alternative body part for the given html and text part. Therefore, we split the
+        // attachments into these two categories and then generate the appropriate parts...
         List<DataSource> mixedAttachments = new ArrayList<>();
         for (DataSource attachment : attachments) {
             // Filter null values since var-args are tricky...
             if (attachment != null) {
-                if (attachment instanceof Attachment && ((Attachment) attachment).isAlternative()) {
+                if (attachment instanceof Attachment siriusAttachment && siriusAttachment.isAlternative()) {
                     MimeBodyPart part = createBodyPart(attachment);
                     content.addBodyPart(part);
                 } else {
@@ -420,6 +438,7 @@ class SendMailTask implements Runnable {
                 }
             }
         }
+
         return mixedAttachments;
     }
 
@@ -448,12 +467,12 @@ class SendMailTask implements Runnable {
         MimeBodyPart part = new MimeBodyPart();
         part.setFileName(attachment.getName());
         part.setDataHandler(new DataHandler(attachment));
-        if (attachment instanceof Attachment) {
-            for (Map.Entry<String, String> h : ((Attachment) attachment).getHeaders()) {
-                if (Strings.isEmpty(h.getValue())) {
-                    part.removeHeader(h.getKey());
+        if (attachment instanceof Attachment siriusAttachment) {
+            for (Map.Entry<String, String> header : siriusAttachment.getHeaders()) {
+                if (Strings.isEmpty(header.getValue())) {
+                    part.removeHeader(header.getKey());
                 } else {
-                    part.setHeader(h.getKey(), h.getValue());
+                    part.setHeader(header.getKey(), header.getValue());
                 }
             }
         }
