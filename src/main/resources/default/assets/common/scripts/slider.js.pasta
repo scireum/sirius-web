@@ -171,9 +171,11 @@
 
             _slides[previousIndex].style.visibility = 'visible';
             _slides[previousIndex].style.left = previousFrom + 'px';
+            _slides[previousIndex].style.zIndex = '0';
 
             _slides[currentIndex].style.visibility = 'visible';
             _slides[currentIndex].style.left = currentFrom + 'px';
+            _slides[currentIndex].style.zIndex = '100';
 
             // after some time, to allow layouting to settle, trigger the actual animation
             setTimeout(function () {
