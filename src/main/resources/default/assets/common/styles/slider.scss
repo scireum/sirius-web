@@ -9,23 +9,9 @@
     justify-content: space-between;
 
     .sci-slider {
+      position: relative;
       flex: 1;
       overflow: hidden;
-
-      .sci-slider-views {
-        position: relative;
-        display: flex;
-
-        .sci-slider-view {
-          position: relative;
-          width: 100%;
-          max-width: 100%;
-          margin-top: auto;
-          margin-bottom: auto;
-          padding-left: 4px;
-          padding-right: 4px;
-        }
-      }
     }
 
     > .sci-slider-button {
@@ -37,13 +23,13 @@
 
       flex: 0;
       overflow: hidden;
-      width: 32px;
-      min-width: 32px;
-      max-width: 32px;
+      width: 2.5rem;
+      min-width: 2.5rem;
+      max-width: 2.5rem;
 
       a {
-        width: 24px;
-        height: 24px;
+        width: 1.5rem;
+        height: 1.5rem;
 
         &.sci-slider-previous-icon {
           background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAGKADAAQAAAABAAAAGAAAAADiNXWtAAACG0lEQVRIDbVWQUsCQRjd3Q6e/AOaEHjpLCHaMQgEI+nuxR9Q0KlDSOShQ5dIOgpevHUoBSEIuioe/AdCh/APeAgPq723zW6zuzPrpvXBOLPfvO+9+Wa/ndE0Imw4HG5juoJWRssul8sU4aZpTtFN0Ppo3UKh8IFeaabKOx6PU/P5/BpzNbQtFUby2Ri3E4nEVS6Xo7DPQgKDweAYiA5a0odc/TADpFosFnsy1JIfQH6G9J/g+y05aZKMJYfM6WXAlQPwjH32fDIwML4Fdg/Yg4Cf72cB/4mbiZMB9xzATkzyGwRfpNPpI5C9BQXAQc6O4DQcAfFC42wLyS9JmslkPnUimE4KTsNkKUL1Hc5V1eKRA+sZ4huIr3uOn4GNDHeYAet8XfK6hpwy5KxQgB9RlOlWTvJGVCDmyhTIRoA2ISdt1sIqnM9fIbIpuUFuZhAyvJxXt1rkydFoVIqxLXKIYYEsdH6A5DD4RTIqn8+/oHvwMUQ8kJsZ8FRU2b1KBJmdAhxXZEIBHrk621SkT4EuGo9cna0rQs6uJS6Lto5d+LUi2OdHTWyb3E4V8bIAiOd5lIVEUFX7KIiSImgmOL8PO3ETVbGahQIsuzwRktu2zaryHZKCo+rebr6zn1UDwB1W5WQmM8tjYJrA1FTk8J+j0pou3idAJy8edP9zZVIA6j3s3y6GLbSo6iKcRkyLMYx1PNJPKANpzviLvy1fsLX3pKS/lL0AAAAASUVORK5CYII=');
@@ -60,16 +46,14 @@
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
-    align-content: center;
-    align-items: center;
     justify-content: center;
 
-    font-size: 12px;
+    font-size: 0.75rem;
 
     a {
       color: #C7C7C7;
       text-decoration: none;
-      padding: 4px 2px;
+      padding: 0.25rem 0.125rem;
       cursor: pointer;
 
       &.sci-slider-dot-active {
