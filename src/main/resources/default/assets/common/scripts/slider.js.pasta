@@ -47,7 +47,7 @@
         }
         _slider.classList.add('sci-slider');
 
-        // within the slicer is a stack of up to two divs, the slider with the navigation arrows on top, and the dots
+        // within the slider is a stack of up to two divs, the slider with the navigation arrows on top, and the dots
         // below
         const _top = document.createElement('div');
         _top.classList.add('sci-slider-top');
