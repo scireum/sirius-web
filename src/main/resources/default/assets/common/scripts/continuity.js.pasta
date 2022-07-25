@@ -15,6 +15,7 @@ window.sirius.Continuity = (function () {
         this.lastState = null;
         this.currentState = null;
 
+        this.path = window.location.pathname;
         this.searchParams = new URLSearchParams(window.location.search);
 
         this.debug(this.options.debug);
@@ -252,6 +253,15 @@ window.sirius.Continuity = (function () {
     };
 
     /**@
+     * Replaces the internally stored URL path used for updating the current deeplink URL.
+     *
+     * @param path the path component to set
+     */
+    Continuity.prototype.overwritePath = function (path) {
+        this.path = path;
+    }
+
+    /**@
      * Serializes the given state to be used as the value of our history state deep-link parameter in the URL.
      * This filters out all entry types that where defined as `excludeFromParameter` during initialization.
      *
@@ -286,7 +296,7 @@ window.sirius.Continuity = (function () {
      */
     Continuity.prototype.buildUrl = function (searchParams) {
         const effectiveSearchParams = searchParams || this.searchParams;
-        let url = '?' + effectiveSearchParams;
+        let url = this.path + '?' + effectiveSearchParams;
         if (window.location.hash) {
             // We want to keep the fragment component of the URL intact.
             url += window.location.hash;
