@@ -126,6 +126,7 @@ class SendMailTask implements Runnable {
             if (mail.simulate) {
                 messageId = "SIMULATED";
                 success = true;
+                logSentMail();
             } else {
                 sendMail();
             }
