@@ -396,3 +396,31 @@ sirius.dispatchEvent = function (eventType, _eventTarget) {
         _effectiveTarget.dispatchEvent(event);
     }
 }
+
+/**@
+ * Resets the viewport zoom of mobile browsers applied by pinch-to-zoom gestures as these are not accounted for in the
+ * window size methods resulting in only partially visible contents when zoomed in.
+ */
+sirius.resetMobileZoom = function () {
+    const scaleBlockingViewportContent = 'width=device-width, minimum-scale=1.0, maximum-scale=1.0, initial-scale=1.0';
+    let _viewportMeta = document.querySelector('meta[name="viewport"]');
+
+    if (_viewportMeta) {
+        // We alter the viewport content and reset it to the original settings
+        // after the browser had time to reset the viewport zoom
+        const origViewportContent = _viewportMeta.getAttribute('content');
+        _viewportMeta.setAttribute('content', scaleBlockingViewportContent);
+        setTimeout(function () {
+            _viewportMeta.setAttribute('content', origViewportContent);
+        }, 100);
+    } else {
+        // When no viewport meta tag exists we create one, set the content that resets the viewport zoom and remove it
+        _viewportMeta = document.createElement("meta");
+        _viewportMeta.setAttribute("name", "viewport");
+        document.head.appendChild(_viewportMeta);
+
+        _viewportMeta.setAttribute('content', scaleBlockingViewportContent);
+
+        document.head.removeChild(_viewportMeta);
+    }
+}

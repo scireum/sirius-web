@@ -46,6 +46,10 @@
             overlay.destroyOverlay();
         }
 
+        // Reset viewport zoom if user zoomed in via pinch to zoom gesture. If not done it could possibly lead to the user
+        // not being able to close the overlay when the close button is rendered outside the visible area.
+        sirius.resetMobileZoom();
+
         const closable = typeof args.closable === 'undefined' ? true : !!args.closable;
         const yieldable = typeof args.yieldable === 'undefined' ? closable : !!args.yieldable;
         const useFullScreen = typeof args.useFullScreen === 'undefined' ? true : !!args.useFullScreen;
