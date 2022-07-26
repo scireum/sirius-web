@@ -377,3 +377,22 @@ sirius.warnOnUnload = function (shouldWarnCallback) {
         }
     });
 }
+
+/**@
+ * Allows to dispatch a custom event of the given type while handling different browser environments.
+ *
+ * @param {boolean} eventType the type of event to trigger
+ * @param {HTMLElement} [_eventTarget] allows to specify the DOM element to dispatch the event from (default is `document`)
+ */
+sirius.dispatchEvent = function (eventType, _eventTarget) {
+    const _effectiveTarget = _eventTarget || document;
+
+    if (typeof (CustomEvent) === 'function') {
+        _effectiveTarget.dispatchEvent(new CustomEvent(eventType, {detail: this}));
+    } else {
+        const event = document.createEvent('Event');
+        event.initEvent(eventType, true, true);
+        event.detail = this;
+        _effectiveTarget.dispatchEvent(event);
+    }
+}
