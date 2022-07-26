@@ -21,13 +21,13 @@
 
     /**@
      * Creates and shows a new overlay.
-     * <p>
+     *
      * If one or more overlays already exist, the new overlay will be shown on top of already existing overlays.
      *
-     * @param args object containing:
-     *              - content:   html content that will be rendered inside the overlay, either a string or an HTMLElement node; required
-     *              - closable:  boolean flag indicating whether to render a close button; defaults to **true**
-     *              - yieldable: boolean flag indicating whether a background-click closes the overlay; defaults to the value of `closable`
+     * @param {Object} args map specifying the content and behaviour of the created overlay
+     * @param {string|HTMLElement} args.content HTML content that will be rendered inside the overlay
+     * @param {boolean} [args.closable]  allows to indicate whether to render a close button; defaults to **true**
+     * @param {boolean} [args.yieldable] allows to indicate whether a background-click closes the overlay; defaults to the value of `closable`
      */
     overlay.createAndShowOverlay = function (args) {
         const isStringContent = args.content instanceof String || typeof args.content === 'string';
@@ -90,6 +90,9 @@
         sirius.dispatchEvent('sci-overlay-shown');
     }
 
+    /**@
+     * Closes the currently open overlay (if one is open) and cleans up listeners.
+     */
     overlay.destroyOverlay = function () {
         if (_overlay) {
             _overlay.parentElement.removeChild(_overlay);
