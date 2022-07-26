@@ -50,6 +50,11 @@
         // not being able to close the overlay when the close button is rendered outside the visible area.
         sirius.resetMobileZoom();
 
+        // Blur the current focus target, since it will be in the background now.
+        if (document.activeElement) {
+            document.activeElement.blur();
+        }
+
         const closable = typeof args.closable === 'undefined' ? true : !!args.closable;
         const yieldable = typeof args.yieldable === 'undefined' ? closable : !!args.yieldable;
         const useFullScreen = typeof args.useFullScreen === 'undefined' ? true : !!args.useFullScreen;
