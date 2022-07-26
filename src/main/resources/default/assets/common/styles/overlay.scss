@@ -19,6 +19,13 @@
     right: 16px;
     bottom: 16px;
 
+    &.sci-overlay-use-full-screen {
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+
     .sci-overlay-button-container {
       position: fixed;
       width: 32px;

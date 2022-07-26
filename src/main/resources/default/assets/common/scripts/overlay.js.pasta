@@ -28,6 +28,7 @@
      * @param {string|HTMLElement} args.content HTML content that will be rendered inside the overlay
      * @param {boolean} [args.closable]  allows to indicate whether to render a close button; defaults to **true**
      * @param {boolean} [args.yieldable] allows to indicate whether a background-click closes the overlay; defaults to the value of `closable`
+     * @param {boolean} [args.useFullScreen] allows to indicate that the overlay should use all available screen size without margins; defaults to **false**
      */
     overlay.createAndShowOverlay = function (args) {
         const isStringContent = args.content instanceof String || typeof args.content === 'string';
@@ -47,6 +48,7 @@
 
         const closable = typeof args.closable === 'undefined' ? true : !!args.closable;
         const yieldable = typeof args.yieldable === 'undefined' ? closable : !!args.yieldable;
+        const useFullScreen = typeof args.useFullScreen === 'undefined' ? true : !!args.useFullScreen;
 
         const renderArgs = {
             closable: closable,
@@ -76,6 +78,10 @@
                     overlay.destroyOverlay();
                 }
             });
+        }
+
+        if (useFullScreen) {
+            _overlay.querySelector('.sci-overlay').classList.add('sci-overlay-use-full-screen');
         }
 
         document.documentElement.classList.add('sci-overlay-static-body');
