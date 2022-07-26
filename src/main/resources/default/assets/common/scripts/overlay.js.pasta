@@ -18,6 +18,7 @@
      * Stores a reference to the DOM element of the currently open overlay (or null if no overlay is currently open).
      */
     let _overlay = null;
+    let shouldEscClose = null;
 
     /**@
      * Creates and shows a new overlay.
@@ -29,6 +30,7 @@
      * @param {boolean} [args.closable]  allows to indicate whether to render a close button; defaults to **true**
      * @param {boolean} [args.yieldable] allows to indicate whether a background-click closes the overlay; defaults to the value of `closable`
      * @param {boolean} [args.useFullScreen] allows to indicate that the overlay should use all available screen size without margins; defaults to **false**
+     * @param {function} [args.escClosingPredicate] allows to determine whether the overlay should be closed if ESC key is pressed; Return **true** if the overlay should be closed, **false** otherwise.
      */
     overlay.createAndShowOverlay = function (args) {
         const isStringContent = args.content instanceof String || typeof args.content === 'string';
@@ -95,6 +97,12 @@
 
         document.documentElement.classList.add('sci-overlay-static-body');
 
+        if (typeof args.escClosingPredicate === 'function') {
+            shouldEscClose = args.escClosingPredicate;
+        } else {
+            shouldEscClose = false;
+        }
+
         window.addEventListener('keyup', destroyOverlayEventHandler);
         document.body.appendChild(_overlay);
 
@@ -121,7 +129,7 @@
     }
 
     const destroyOverlayEventHandler = function (event) {
-        if (event.key === 'Escape') {
+        if (event.key === 'Escape' && (shouldEscClose == null || shouldEscClose())) {
             overlay.destroyOverlay();
         }
     }
