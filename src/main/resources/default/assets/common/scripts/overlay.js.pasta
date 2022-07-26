@@ -84,6 +84,8 @@
         if (isStringContent) {
             sirius.executeEmbeddedScripts(_overlay);
         }
+
+        sirius.dispatchEvent('sci-overlay-shown');
     }
 
     overlay.destroyOverlay = function () {
@@ -97,6 +99,8 @@
             window.removeEventListener('keyup', destroyOverlayEventHandler);
             document.documentElement.classList.remove('sci-overlay-static-body');
         }
+
+        sirius.dispatchEvent('sci-overlay-destroyed');
     }
 
     const destroyOverlayEventHandler = function (event) {
