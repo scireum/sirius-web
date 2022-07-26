@@ -14,7 +14,10 @@
         '   </div>' +
         '</div>';
 
-    const overlayStack = [];
+    /**@
+     * Stores a reference to the DOM element of the currently open overlay (or null if no overlay is currently open).
+     */
+    let _overlay = null;
 
     /**@
      * Creates and shows a new overlay.
@@ -38,6 +41,10 @@
             console.debug('Overlay names are no longer supported:', args.name);
         }
 
+        if (_overlay) {
+            overlay.destroyOverlay();
+        }
+
         const closable = typeof args.closable === 'undefined' ? true : !!args.closable;
         const yieldable = typeof args.yieldable === 'undefined' ? closable : !!args.yieldable;
 
@@ -55,7 +62,7 @@
             _contentContainer.appendChild(args.content);
         }
 
-        const _overlay = _overlayContainer.firstChild;
+        _overlay = _overlayContainer.firstChild;
 
         if (closable) {
             _overlay.querySelector('.sci-overlay-button-close-js').addEventListener('click', function () {
@@ -71,12 +78,7 @@
             });
         }
 
-        overlayStack.push(_overlay);
-
-        if (overlayStack.length === 1) {
-            _overlay.classList.add('first');
-            document.documentElement.classList.add('sci-overlay-static-body');
-        }
+        document.documentElement.classList.add('sci-overlay-static-body');
 
         window.addEventListener('keyup', destroyOverlayEventHandler);
         document.body.appendChild(_overlay);
@@ -89,16 +91,13 @@
     }
 
     overlay.destroyOverlay = function () {
-        const _overlay = overlayStack.pop();
-
         if (_overlay) {
             _overlay.parentElement.removeChild(_overlay);
+            _overlay = null;
         }
 
-        if (overlayStack.length === 0) {
-            window.removeEventListener('keyup', destroyOverlayEventHandler);
-            document.documentElement.classList.remove('sci-overlay-static-body');
-        }
+        window.removeEventListener('keyup', destroyOverlayEventHandler);
+        document.documentElement.classList.remove('sci-overlay-static-body');
 
         sirius.dispatchEvent('sci-overlay-destroyed');
     }
