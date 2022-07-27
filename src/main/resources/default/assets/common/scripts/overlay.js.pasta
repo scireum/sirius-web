@@ -4,13 +4,9 @@
         '        {{#closable}}<div class="sci-overlay-button-container">' +
         '            <a role="button" class="sci-overlay-button sci-overlay-button-close sci-overlay-button-close-js"></a>' +
         '        </div>{{/closable}}' +
-        '        <div class="sci-overlay-content-outer-container">' +
-        '            <div class="sci-overlay-content-inner-container">' +
-        '               <div class="sci-overlay-content sci-overlay-content-js">' +
-        '                   {{{content}}}' +
-        '               </div>' +
-        '           </div>' +
-        '       </div>' +
+        '        <div class="sci-overlay-content sci-overlay-content-js">' +
+        '            {{{content}}}' +
+        '        </div>' +
         '   </div>' +
         '</div>';
 

@@ -48,17 +48,12 @@
       }
     }
 
-    .sci-overlay-content-outer-container {
+    .sci-overlay-content {
       height: 100%;
-      overflow: scroll;
-      padding: 0px 30px;
+      overflow: auto;
       background-color: white;
       border: 1px solid #ddd;
       border-radius: 4px;
-
-      .sci-overlay-content-inner-container {
-        margin: 20px 0;
-      }
     }
   }
 }
