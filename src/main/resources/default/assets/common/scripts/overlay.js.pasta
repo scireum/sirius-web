@@ -59,7 +59,7 @@
 
         const closable = typeof args.closable === 'undefined' ? true : !!args.closable;
         const yieldable = typeof args.yieldable === 'undefined' ? closable : !!args.yieldable;
-        const useFullScreen = typeof args.useFullScreen === 'undefined' ? true : !!args.useFullScreen;
+        const useFullScreen = typeof args.useFullScreen === 'undefined' ? false : !!args.useFullScreen;
 
         const renderArgs = {
             closable: closable,
