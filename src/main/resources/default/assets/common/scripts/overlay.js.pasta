@@ -17,7 +17,7 @@
     let shouldEscClose = null;
 
     /**@
-     * Creates a new (hidden) overlay.
+     * Creates a new (hidden) overlay. This can be made visible to the user afterwards by calling `overlay.showOverlay`.
      *
      * @param {Object} args map specifying the content and behaviour of the created overlay
      * @param {string|HTMLElement} args.content HTML content that will be rendered inside the overlay
@@ -108,9 +108,7 @@
     }
 
     /**@
-     * Creates and shows a new overlay.
-     *
-     * If one or more overlays already exist, the new overlay will be shown on top of already existing overlays.
+     * Shows the previously created (via `overlay.createOverlay`) overlay.
      */
     overlay.showOverlay = function () {
         if (_overlay) {
