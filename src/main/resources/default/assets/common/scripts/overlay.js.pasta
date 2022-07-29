@@ -1,5 +1,5 @@
 (function (overlay) {
-    const template = '<div class="sci-overlay-background">' +
+    const template = '<div class="sci-overlay-background sci-overlay-hidden">' +
         '    <div class="sci-overlay">' +
         '        {{#closable}}<div class="sci-overlay-button-container">' +
         '            <a role="button" class="sci-overlay-button sci-overlay-button-close sci-overlay-button-close-js"></a>' +
@@ -17,9 +17,7 @@
     let shouldEscClose = null;
 
     /**@
-     * Creates and shows a new overlay.
-     *
-     * If one or more overlays already exist, the new overlay will be shown on top of already existing overlays.
+     * Creates a new (hidden) overlay.
      *
      * @param {Object} args map specifying the content and behaviour of the created overlay
      * @param {string|HTMLElement} args.content HTML content that will be rendered inside the overlay
@@ -28,7 +26,7 @@
      * @param {boolean} [args.useFullScreen] allows to indicate that the overlay should use all available screen size without margins; defaults to **false**
      * @param {function} [args.escClosingPredicate] allows to determine whether the overlay should be closed if ESC key is pressed; Return **true** if the overlay should be closed, **false** otherwise.
      */
-    overlay.createAndShowOverlay = function (args) {
+    overlay.createOverlay = function (args) {
         const isStringContent = args.content instanceof String || typeof args.content === 'string';
         const isNodeContent = args.content instanceof HTMLElement;
 
@@ -106,7 +104,19 @@
             sirius.executeEmbeddedScripts(_overlay);
         }
 
-        sirius.dispatchEvent('sci-overlay-shown');
+        sirius.dispatchEvent('sci-overlay-created');
+    }
+
+    /**@
+     * Creates and shows a new overlay.
+     *
+     * If one or more overlays already exist, the new overlay will be shown on top of already existing overlays.
+     */
+    overlay.showOverlay = function () {
+        if (_overlay) {
+            _overlay.classList.remove('sci-overlay-hidden');
+            sirius.dispatchEvent('sci-overlay-shown');
+        }
     }
 
     /**@

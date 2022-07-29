@@ -12,6 +12,10 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
 
+  &.sci-overlay-hidden {
+    display: none;
+  }
+
   .sci-overlay {
     position: fixed;
     top: 16px;
