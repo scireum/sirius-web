@@ -1,32 +1,32 @@
 (function (overlay) {
-    const template = '<div class="sci-overlay-background">' +
+    const template = '<div class="sci-overlay-background sci-overlay-hidden">' +
         '    <div class="sci-overlay">' +
         '        {{#closable}}<div class="sci-overlay-button-container">' +
         '            <a role="button" class="sci-overlay-button sci-overlay-button-close sci-overlay-button-close-js"></a>' +
         '        </div>{{/closable}}' +
-        '        <div class="sci-overlay-content-outer-container">' +
-        '            <div class="sci-overlay-content-inner-container">' +
-        '               <div class="sci-overlay-content sci-overlay-content-js">' +
-        '                   {{{content}}}' +
-        '               </div>' +
-        '           </div>' +
-        '       </div>' +
+        '        <div class="sci-overlay-content sci-overlay-content-js">' +
+        '            {{{content}}}' +
+        '        </div>' +
         '   </div>' +
         '</div>';
 
-    const overlayStack = [];
+    /**@
+     * Stores a reference to the DOM element of the currently open overlay (or null if no overlay is currently open).
+     */
+    let _overlay = null;
+    let shouldEscClose = null;
 
     /**@
-     * Creates and shows a new overlay.
-     * <p>
-     * If one or more overlays already exist, the new overlay will be shown on top of already existing overlays.
+     * Creates a new (hidden) overlay. This can be made visible to the user afterwards by calling `overlay.showOverlay`.
      *
-     * @param args object containing:
-     *              - content:   html content that will be rendered inside the overlay, either a string or an HTMLElement node; required
-     *              - closable:  boolean flag indicating whether to render a close button; defaults to **true**
-     *              - yieldable: boolean flag indicating whether a background-click closes the overlay; defaults to the value of `closable`
+     * @param {Object} args map specifying the content and behaviour of the created overlay
+     * @param {string|HTMLElement} args.content HTML content that will be rendered inside the overlay
+     * @param {boolean} [args.closable]  allows to indicate whether to render a close button; defaults to **true**
+     * @param {boolean} [args.yieldable] allows to indicate whether a background-click closes the overlay; defaults to the value of `closable`
+     * @param {boolean} [args.useFullScreen] allows to indicate that the overlay should use all available screen size without margins; defaults to **false**
+     * @param {function} [args.escClosingPredicate] allows to determine whether the overlay should be closed if ESC key is pressed; Return **true** if the overlay should be closed, **false** otherwise.
      */
-    overlay.createAndShowOverlay = function (args) {
+    overlay.createOverlay = function (args) {
         const isStringContent = args.content instanceof String || typeof args.content === 'string';
         const isNodeContent = args.content instanceof HTMLElement;
 
@@ -38,8 +38,22 @@
             console.debug('Overlay names are no longer supported:', args.name);
         }
 
+        if (_overlay) {
+            overlay.destroyOverlay();
+        }
+
+        // Reset viewport zoom if user zoomed in via pinch to zoom gesture. If not done it could possibly lead to the user
+        // not being able to close the overlay when the close button is rendered outside the visible area.
+        sirius.resetMobileZoom();
+
+        // Blur the current focus target, since it will be in the background now.
+        if (document.activeElement) {
+            document.activeElement.blur();
+        }
+
         const closable = typeof args.closable === 'undefined' ? true : !!args.closable;
         const yieldable = typeof args.yieldable === 'undefined' ? closable : !!args.yieldable;
+        const useFullScreen = typeof args.useFullScreen === 'undefined' ? false : !!args.useFullScreen;
 
         const renderArgs = {
             closable: closable,
@@ -55,7 +69,7 @@
             _contentContainer.appendChild(args.content);
         }
 
-        const _overlay = _overlayContainer.firstChild;
+        _overlay = _overlayContainer.firstChild;
 
         if (closable) {
             _overlay.querySelector('.sci-overlay-button-close-js').addEventListener('click', function () {
@@ -71,11 +85,16 @@
             });
         }
 
-        overlayStack.push(_overlay);
+        if (useFullScreen) {
+            _overlay.querySelector('.sci-overlay').classList.add('sci-overlay-use-full-screen');
+        }
 
-        if (overlayStack.length === 1) {
-            _overlay.classList.add('first');
-            document.documentElement.classList.add('sci-overlay-static-body');
+        document.documentElement.classList.add('sci-overlay-static-body');
+
+        if (typeof args.escClosingPredicate === 'function') {
+            shouldEscClose = args.escClosingPredicate;
+        } else {
+            shouldEscClose = false;
         }
 
         window.addEventListener('keyup', destroyOverlayEventHandler);
@@ -84,23 +103,37 @@
         if (isStringContent) {
             sirius.executeEmbeddedScripts(_overlay);
         }
+
+        sirius.dispatchEvent('sci-overlay-created');
     }
 
-    overlay.destroyOverlay = function () {
-        const _overlay = overlayStack.pop();
+    /**@
+     * Shows the previously created (via `overlay.createOverlay`) overlay.
+     */
+    overlay.showOverlay = function () {
+        if (_overlay) {
+            _overlay.classList.remove('sci-overlay-hidden');
+            sirius.dispatchEvent('sci-overlay-shown');
+        }
+    }
 
+    /**@
+     * Closes the currently open overlay (if one is open) and cleans up listeners.
+     */
+    overlay.destroyOverlay = function () {
         if (_overlay) {
             _overlay.parentElement.removeChild(_overlay);
+            _overlay = null;
         }
 
-        if (overlayStack.length === 0) {
-            window.removeEventListener('keyup', destroyOverlayEventHandler);
-            document.documentElement.classList.remove('sci-overlay-static-body');
-        }
+        window.removeEventListener('keyup', destroyOverlayEventHandler);
+        document.documentElement.classList.remove('sci-overlay-static-body');
+
+        sirius.dispatchEvent('sci-overlay-destroyed');
     }
 
     const destroyOverlayEventHandler = function (event) {
-        if (event.key === 'Escape') {
+        if (event.key === 'Escape' && (shouldEscClose == null || shouldEscClose())) {
             overlay.destroyOverlay();
         }
     }
