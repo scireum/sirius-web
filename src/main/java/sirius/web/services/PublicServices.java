@@ -14,7 +14,10 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.di.GlobalContext;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.settings.Extension;
 import sirius.web.controller.Routed;
 import sirius.web.http.WebServer;
@@ -25,6 +28,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Lists all known {@link PublicApiInfo public APIs}.
@@ -36,6 +40,9 @@ import java.util.stream.Collectors;
 public class PublicServices {
 
     private final List<PublicApiInfo> apis = new ArrayList<>();
+
+    @Part
+    private GlobalContext globalContext;
 
     /**
      * Lists all known public APIs.
@@ -69,7 +76,9 @@ public class PublicServices {
                                                               routed.value(),
                                                               route.isAnnotationPresent(Deprecated.class),
                                                               route.getAnnotation(Operation.class),
-                                                              Arrays.stream(route.getAnnotationsByType(Parameter.class))
+                                                              Stream.concat(collectSharedApiParameters(route).stream(),
+                                                                            Arrays.stream(route.getAnnotationsByType(
+                                                                                    Parameter.class)))
                                                                     .collect(Collectors.toList()),
                                                               Arrays.stream(route.getAnnotationsByType(RequestBody.class))
                                                                     .collect(Collectors.toList()),
@@ -87,6 +96,20 @@ public class PublicServices {
             }
             apiInfo.addService(serviceInfo);
         }
+    }
+
+    private List<Parameter> collectSharedApiParameters(Method route) {
+        List<Parameter> sharedParameters = new ArrayList<>();
+        Arrays.stream(route.getAnnotationsByType(ParametersFrom.class)).forEach(parametersFrom -> {
+            try {
+                sharedParameters.addAll(Arrays.asList(parametersFrom.value()
+                                                                    .getMethod("parameterMethod")
+                                                                    .getAnnotationsByType(Parameter.class)));
+            } catch (NoSuchMethodException e) {
+                Exceptions.handle(e);
+            }
+        });
+        return sharedParameters;
     }
 
     private PublicApiInfo buildApiInfo(String apiName, Method route) {

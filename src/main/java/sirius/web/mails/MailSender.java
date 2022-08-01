@@ -29,12 +29,14 @@ import sirius.web.templates.Templates;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.net.IDN;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Implements the builder pattern to specify the mail to send.
@@ -42,6 +44,21 @@ import java.util.TreeMap;
 public class MailSender {
 
     protected static final String CONFIG_KEY_HEADERS = "headers";
+
+    /**
+     * Contains the duration to wait when re-sending a mail after a mail-server failure.
+     * <p>
+     * Note that this is multiplied by the number of retries, so we wait 0 (first try is immediate), 15s, 30s ...
+     */
+    protected static final int RESEND_WAIT_INTERVAL_SECONDS = 15;
+
+    /**
+     * Determines the max attempts of sending a mail after a server error before finally giving up.
+     */
+    protected static final int MAX_SEND_ATTEMPTS = 3;
+
+    protected final String internalMessageId = Strings.generateCode(16);
+    protected AtomicInteger remainingAttempts = new AtomicInteger(MAX_SEND_ATTEMPTS);
     protected boolean simulate;
     protected SMTPConfiguration smtpConfiguration;
     protected String senderEmail;
@@ -437,11 +454,7 @@ public class MailSender {
                 buildSubject();
                 sanitize();
                 check();
-                sendMailAsync(smtpConfiguration != null ?
-                              smtpConfiguration :
-                              UserContext.getCurrentScope()
-                                         .tryAs(SMTPConfiguration.class)
-                                         .orElse(SMTPConfiguration.fromConfig()));
+                sendMailAsync();
             } finally {
                 CallContext.getCurrent().setLang(tmpLang);
             }
@@ -485,14 +498,17 @@ public class MailSender {
         }
     }
 
-    protected void sendMailAsync(SMTPConfiguration config) {
-        if (Strings.isEmpty(config.getMailHost())) {
+    protected void sendMailAsync() {
+        if (Strings.isEmpty(smtpConfiguration.getMailHost())) {
             Mails.LOG.WARN("Not going to send an email to '%s' with subject '%s' as no mail server is configured...",
                            receiverEmail,
                            subject);
         } else {
-            SendMailTask task = new SendMailTask(this, config);
-            tasks.executor("email").fork(task);
+            SendMailTask task = new SendMailTask(this, smtpConfiguration);
+            tasks.executor("email")
+                 .minInterval(internalMessageId,
+                              Duration.ofSeconds((MAX_SEND_ATTEMPTS - remainingAttempts.get()) * RESEND_WAIT_INTERVAL_SECONDS))
+                 .fork(task);
         }
     }
 
@@ -569,6 +585,10 @@ public class MailSender {
         }
         if (Strings.isFilled(replyToName)) {
             replyToName = replyToName.trim();
+        }
+        if (smtpConfiguration == null) {
+            smtpConfiguration =
+                    UserContext.getCurrentScope().tryAs(SMTPConfiguration.class).orElse(SMTPConfiguration.fromConfig());
         }
     }
 

@@ -1,3 +1,4 @@
 ___invoke("/assets/common/common-polyfills.js.pasta")
 ___include("/assets/common/libs/es6-promise/es6-promise.min.js")
 ___include("/assets/common/libs/fetch/fetch.umd.js")
+___include("/assets/common/libs/url-search-params/url-search-params.js")
