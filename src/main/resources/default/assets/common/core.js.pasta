@@ -67,7 +67,7 @@ sirius.querySelector = function (query) {
     if (sirius.isElement(query)) {
         return query;
     } else {
-        document.querySelector(query);
+        return document.querySelector(query);
     }
 }
 
