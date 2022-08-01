@@ -150,11 +150,17 @@ var TokenAutocomplete = /** @class */ (function () {
             }
             me.container.removeChild(option);
         });
-        if (initialTokens.length > 0) {
-            this.options.initialTokens = initialTokens;
-        }
         if (initialSuggestions.length > 0) {
             this.options.initialSuggestions = initialSuggestions;
+            if (!this.options.optional && initialTokens.length == 0) {
+                var firstSuggestion = initialSuggestions[0];
+                initialTokens.push({
+                    value: firstSuggestion.value, text: firstSuggestion.fieldLabel, type: firstSuggestion.type
+                });
+            }
+        }
+        if (initialTokens.length > 0) {
+            this.options.initialTokens = initialTokens;
         }
     };
     /**
@@ -307,6 +313,14 @@ var TokenAutocomplete = /** @class */ (function () {
                 if (parent.options.readonly) {
                     return;
                 }
+                parent.textInput.addEventListener('compositionend', function (event) {
+                    // handles hitting ENTER on GBoard, which uses composition events instead of individual key triggers
+                    var inputString = event.data;
+                    if (inputString.charAt(inputString.length - 1) === "\n") {
+                        event.preventDefault();
+                        me.handleInput(parent.autocomplete.suggestions.querySelector('.token-autocomplete-suggestion-highlighted'));
+                    }
+                });
                 parent.textInput.addEventListener('keydown', function (event) {
                     if (event.key == parent.KEY_ENTER || (event.key == parent.KEY_TAB && parent.options.enableTabulator)) {
                         event.preventDefault();
@@ -314,20 +328,7 @@ var TokenAutocomplete = /** @class */ (function () {
                         if (parent.options.enableTabulator && highlightedSuggestion == null && event.key == parent.KEY_TAB && parent.autocomplete.areSuggestionsDisplayed()) {
                             highlightedSuggestion = parent.autocomplete.suggestions.firstChild;
                         }
-                        if (highlightedSuggestion !== null) {
-                            me.clearCurrentInput();
-                            if (highlightedSuggestion.classList.contains('token-autocomplete-suggestion-active')) {
-                                me.removeTokenWithText(highlightedSuggestion.dataset.tokenText);
-                            }
-                            else {
-                                me.addToken(highlightedSuggestion.dataset.value, highlightedSuggestion.dataset.tokenText, highlightedSuggestion.dataset.type, false);
-                            }
-                        }
-                        else {
-                            me.handleInputAsValue(parent.getCurrentInput());
-                        }
-                        parent.autocomplete.clearSuggestions();
-                        parent.autocomplete.hideSuggestions();
+                        me.handleInput(highlightedSuggestion);
                     }
                     else if (parent.getCurrentInput() === '' && event.key == parent.KEY_BACKSPACE) {
                         event.preventDefault();
@@ -337,6 +338,22 @@ var TokenAutocomplete = /** @class */ (function () {
                         event.preventDefault();
                     }
                 });
+            };
+            class_1.prototype.handleInput = function (highlightedSuggestion) {
+                if (highlightedSuggestion !== null) {
+                    this.clearCurrentInput();
+                    if (highlightedSuggestion.classList.contains('token-autocomplete-suggestion-active')) {
+                        this.removeTokenWithText(highlightedSuggestion.dataset.tokenText);
+                    }
+                    else {
+                        this.addToken(highlightedSuggestion.dataset.value, highlightedSuggestion.dataset.tokenText, highlightedSuggestion.dataset.type, false);
+                    }
+                }
+                else {
+                    this.handleInputAsValue(this.parent.getCurrentInput());
+                }
+                this.parent.autocomplete.clearSuggestions();
+                this.parent.autocomplete.hideSuggestions();
             };
             /**
              * Adds the current user input as a net token and resets the input area so new text can be entered.
@@ -540,6 +557,13 @@ var TokenAutocomplete = /** @class */ (function () {
             me.parent.addHiddenEmptyOption();
             me.parent.textInput.textContent = '';
             me.parent.textInput.contentEditable = 'true';
+            if (!silent) {
+                this.container.dispatchEvent(new CustomEvent('tokens-changed', {
+                    detail: {
+                        tokens: this.parent.val(),
+                    }
+                }));
+            }
         };
         /**
          * Adds the current user input as a net token and resets the input area so new text can be entered.
@@ -570,10 +594,23 @@ var TokenAutocomplete = /** @class */ (function () {
             this.clear(true, false);
             this.parent.textInput.textContent = tokenText;
             this.parent.textInput.contentEditable = 'false';
+            this.parent.textInput.blur();
             if (this.options.optional && tokenText !== '') {
                 this.container.classList.add('optional-singleselect-with-value');
             }
             this.parent.addHiddenOption(tokenValue, tokenText, tokenType);
+            if (!silent) {
+                this.container.dispatchEvent(new CustomEvent('tokens-changed', {
+                    detail: {
+                        tokens: this.parent.val(),
+                        added: {
+                            value: tokenValue,
+                            text: tokenText,
+                            type: tokenType
+                        }
+                    }
+                }));
+            }
         };
         class_2.prototype.initEventListeners = function () {
             var _a;
@@ -582,6 +619,14 @@ var TokenAutocomplete = /** @class */ (function () {
             if (parent.options.readonly) {
                 return;
             }
+            parent.textInput.addEventListener('compositionend', function (event) {
+                // handles hitting ENTER on GBoard, which uses composition events instead of individual key triggers
+                var inputString = event.data;
+                if (inputString.charAt(inputString.length - 1) === "\n") {
+                    event.preventDefault();
+                    me.handleInput(parent.autocomplete.suggestions.querySelector('.token-autocomplete-suggestion-highlighted'));
+                }
+            });
             parent.textInput.addEventListener('keydown', function (event) {
                 if (event.key == parent.KEY_ENTER || (event.key == parent.KEY_TAB && parent.options.enableTabulator)) {
                     event.preventDefault();
@@ -589,14 +634,7 @@ var TokenAutocomplete = /** @class */ (function () {
                     if (parent.options.enableTabulator && highlightedSuggestion == null && event.key == parent.KEY_TAB && parent.autocomplete.areSuggestionsDisplayed()) {
                         highlightedSuggestion = parent.autocomplete.suggestions.firstChild;
                     }
-                    if (highlightedSuggestion !== null) {
-                        me.addToken(highlightedSuggestion.dataset.value, highlightedSuggestion.dataset.tokenText, highlightedSuggestion.dataset.type, false);
-                    }
-                    else {
-                        me.handleInputAsValue(parent.getCurrentInput());
-                    }
-                    parent.autocomplete.clearSuggestions();
-                    parent.autocomplete.hideSuggestions();
+                    me.handleInput(highlightedSuggestion);
                 }
                 if ((event.key == parent.KEY_DOWN || event.key == parent.KEY_UP) && parent.autocomplete.suggestions.childNodes.length > 0) {
                     event.preventDefault();
@@ -627,9 +665,6 @@ var TokenAutocomplete = /** @class */ (function () {
             parent.textInput.addEventListener('click', function () {
                 focusInput();
             });
-            me.parent.textInput.addEventListener('focusin', function () {
-                focusInput();
-            });
             parent.textInput.addEventListener('focusout', function () {
                 // Using setTimeout here seems hacky on first sight but ensures proper order of events / handling.
                 // We first want to handle a click on a suggestion (when one is made) before hiding the suggestions on focusout of the input.
@@ -655,6 +690,16 @@ var TokenAutocomplete = /** @class */ (function () {
             (_a = parent.container.querySelector('.token-singleselect-token-delete')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', function () {
                 me.clear(false, false);
             });
+        };
+        class_2.prototype.handleInput = function (highlightedSuggestion) {
+            if (highlightedSuggestion !== null) {
+                this.addToken(highlightedSuggestion.dataset.value, highlightedSuggestion.dataset.tokenText, highlightedSuggestion.dataset.type, false);
+            }
+            else {
+                this.handleInputAsValue(this.parent.getCurrentInput());
+            }
+            this.parent.autocomplete.clearSuggestions();
+            this.parent.autocomplete.hideSuggestions();
         };
         return class_2;
     }());
@@ -798,9 +843,6 @@ var TokenAutocomplete = /** @class */ (function () {
                         var text = suggestion.fieldLabel;
                         if (value.length == 0 && me.options.selectMode == SelectModes.SINGLE && !me.options.optional && !me.areSuggestionsDisplayed()) {
                             me.addSuggestion(suggestion, false);
-                            if (me.parent.val().length == 0) {
-                                me.parent.select.addToken(suggestion.value, text, suggestion.type, true);
-                            }
                         }
                         else if (value.localeCompare(text.slice(0, value.length), undefined, { sensitivity: 'base' }) === 0) {
                             // The suggestion starts with the query text the user entered and will be displayed.
