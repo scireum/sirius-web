@@ -75,7 +75,7 @@ sirius.querySelector = function (query) {
  * Clears the "display" property of the given element to make it visible.
  * It is expected to be 'display: none' before.
  */
-sirius.show = function(_element) {
+sirius.show = function (_element) {
     _element.style.display = '';
 }
 
@@ -165,6 +165,23 @@ sirius.postJSON = function (url, params) {
     }).then(function (response) {
         return response.json();
     });
+}
+
+/**@
+ * Extracts the values of all form elements inside a form.
+ * <p>
+ * This attempts to replace jQuery's serialize() / serializeArray() method.
+ *
+ * @param _node the DOM-node of the <form> to get the values from
+ * @returns a map of name-value pairs, mapping the name of the input to its value
+ */
+sirius.getFormData = function (_node) {
+    const formData = new FormData(_node);
+    const object = {};
+    for (const key of formData.keys()) {
+        object[key] = formData.get(key);
+    }
+    return object;
 }
 
 /**@
