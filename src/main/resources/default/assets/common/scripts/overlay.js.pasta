@@ -73,6 +73,7 @@
 
         if (closable) {
             _overlay.querySelector('.sci-overlay-button-close-js').addEventListener('click', function () {
+                sirius.dispatchEvent('sci-overlay-dismissed');
                 overlay.destroyOverlay();
             });
         }
@@ -80,6 +81,7 @@
         if (yieldable) {
             _overlay.addEventListener('click', function (event) {
                 if (event.target === _overlay) {
+                    sirius.dispatchEvent('sci-overlay-dismissed');
                     overlay.destroyOverlay();
                 }
             });
@@ -134,6 +136,7 @@
 
     const destroyOverlayEventHandler = function (event) {
         if (event.key === 'Escape' && (shouldEscClose == null || shouldEscClose())) {
+            sirius.dispatchEvent('sci-overlay-dismissed');
             overlay.destroyOverlay();
         }
     }
