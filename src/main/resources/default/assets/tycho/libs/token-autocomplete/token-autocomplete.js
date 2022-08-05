@@ -557,6 +557,13 @@ var TokenAutocomplete = /** @class */ (function () {
             me.parent.addHiddenEmptyOption();
             me.parent.textInput.textContent = '';
             me.parent.textInput.contentEditable = 'true';
+            if (!silent) {
+                this.container.dispatchEvent(new CustomEvent('tokens-changed', {
+                    detail: {
+                        tokens: this.parent.val(),
+                    }
+                }));
+            }
         };
         /**
          * Adds the current user input as a net token and resets the input area so new text can be entered.
@@ -592,6 +599,18 @@ var TokenAutocomplete = /** @class */ (function () {
                 this.container.classList.add('optional-singleselect-with-value');
             }
             this.parent.addHiddenOption(tokenValue, tokenText, tokenType);
+            if (!silent) {
+                this.container.dispatchEvent(new CustomEvent('tokens-changed', {
+                    detail: {
+                        tokens: this.parent.val(),
+                        added: {
+                            value: tokenValue,
+                            text: tokenText,
+                            type: tokenType
+                        }
+                    }
+                }));
+            }
         };
         class_2.prototype.initEventListeners = function () {
             var _a;

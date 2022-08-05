@@ -67,7 +67,7 @@ sirius.querySelector = function (query) {
     if (sirius.isElement(query)) {
         return query;
     } else {
-        document.querySelector(query);
+        return document.querySelector(query);
     }
 }
 
@@ -75,7 +75,7 @@ sirius.querySelector = function (query) {
  * Clears the "display" property of the given element to make it visible.
  * It is expected to be 'display: none' before.
  */
-sirius.show = function(_element) {
+sirius.show = function (_element) {
     _element.style.display = '';
 }
 
@@ -165,6 +165,23 @@ sirius.postJSON = function (url, params) {
     }).then(function (response) {
         return response.json();
     });
+}
+
+/**@
+ * Extracts the values of all form elements inside a form.
+ * <p>
+ * This attempts to replace jQuery's serialize() / serializeArray() method.
+ *
+ * @param _node the DOM-node of the <form> to get the values from
+ * @returns a map of name-value pairs, mapping the name of the input to its value
+ */
+sirius.getFormData = function (_node) {
+    const formData = new FormData(_node);
+    const object = {};
+    for (var key of formData.keys()) {
+        object[key] = formData.get(key);
+    }
+    return object;
 }
 
 /**@
@@ -381,18 +398,20 @@ sirius.warnOnUnload = function (shouldWarnCallback) {
 /**@
  * Allows to dispatch a custom event of the given type while handling different browser environments.
  *
- * @param {boolean} eventType the type of event to trigger
+ * @param {string} eventType the type of event to trigger
  * @param {HTMLElement} [_eventTarget] allows to specify the DOM element to dispatch the event from (default is `document`)
+ * @param {Object} [eventDetail] allows to specify an object to be passed as event details to the receiver
  */
-sirius.dispatchEvent = function (eventType, _eventTarget) {
+sirius.dispatchEvent = function (eventType, _eventTarget, eventDetail) {
     const _effectiveTarget = _eventTarget || document;
+    const detail = eventDetail || this;
 
     if (typeof (CustomEvent) === 'function') {
-        _effectiveTarget.dispatchEvent(new CustomEvent(eventType, {detail: this}));
+        _effectiveTarget.dispatchEvent(new CustomEvent(eventType, {detail: detail}));
     } else {
         const event = document.createEvent('Event');
         event.initEvent(eventType, true, true);
-        event.detail = this;
+        event.detail = detail;
         _effectiveTarget.dispatchEvent(event);
     }
 }

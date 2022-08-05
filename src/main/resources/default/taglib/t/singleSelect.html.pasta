@@ -50,20 +50,21 @@
 </div>
 <script>
     sirius.ready(function () {
-        const autocomplete = new TokenAutocomplete({
-            selector: '#@id',
-            name: '@name',
-            selectMode: SelectModes.SINGLE,
-            allowCustomEntries: @allowCustomEntries,
-            readonly: @readonly,
-            optional: @optional,
-            enableTabulator: false,
-            noMatchesText: '@i18n("template.html.selects.noMatches")',
-            noMatchesCustomEntriesDescription: '@i18n("template.html.selects.useCustomEntry")',
-            placeholderText: '@placeholder',
-            suggestionsUri: '@suggestionUri'
-        });
+        const autocomplete = new TokenAutocomplete(
+            Object.assign({
+                selector: '#@id',
+                name: '@name',
+                selectMode: SelectModes.SINGLE,
+                allowCustomEntries: ___allowCustomEntries,
+                readonly: ___readonly,
+                optional: ___optional,
+                enableTabulator: false,
+                noMatchesText: '@i18n("template.html.selects.noMatches")',
+                noMatchesCustomEntriesDescription: '@i18n("template.html.selects.useCustomEntry")',
+                placeholderText: '@placeholder',
+                suggestionsUri: '@suggestionUri'
+            }, <i:render name="autocompleteOptions"/>));
 
-        <i:render name="script" />
+        <i:render name="script"/>
     });
 </script>
