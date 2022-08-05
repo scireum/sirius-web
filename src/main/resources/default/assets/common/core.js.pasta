@@ -398,7 +398,7 @@ sirius.warnOnUnload = function (shouldWarnCallback) {
 /**@
  * Allows to dispatch a custom event of the given type while handling different browser environments.
  *
- * @param {boolean} eventType the type of event to trigger
+ * @param {string} eventType the type of event to trigger
  * @param {HTMLElement} [_eventTarget] allows to specify the DOM element to dispatch the event from (default is `document`)
  * @param {Object} [eventDetail] allows to specify an object to be passed as event details to the receiver
  */
