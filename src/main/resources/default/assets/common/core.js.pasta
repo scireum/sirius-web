@@ -400,16 +400,18 @@ sirius.warnOnUnload = function (shouldWarnCallback) {
  *
  * @param {boolean} eventType the type of event to trigger
  * @param {HTMLElement} [_eventTarget] allows to specify the DOM element to dispatch the event from (default is `document`)
+ * @param {Object} [eventDetail] allows to specify an object to be passed as event details to the receiver
  */
-sirius.dispatchEvent = function (eventType, _eventTarget) {
+sirius.dispatchEvent = function (eventType, _eventTarget, eventDetail) {
     const _effectiveTarget = _eventTarget || document;
+    const detail = eventDetail || this;
 
     if (typeof (CustomEvent) === 'function') {
-        _effectiveTarget.dispatchEvent(new CustomEvent(eventType, {detail: this}));
+        _effectiveTarget.dispatchEvent(new CustomEvent(eventType, {detail: detail}));
     } else {
         const event = document.createEvent('Event');
         event.initEvent(eventType, true, true);
-        event.detail = this;
+        event.detail = detail;
         _effectiveTarget.dispatchEvent(event);
     }
 }
