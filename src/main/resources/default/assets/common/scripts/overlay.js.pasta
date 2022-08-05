@@ -135,7 +135,7 @@
     }
 
     const destroyOverlayEventHandler = function (event) {
-        if (event.key === 'Escape' && (shouldEscClose == null || shouldEscClose())) {
+        if (event.key === 'Escape' && (shouldEscClose === true || shouldEscClose())) {
             sirius.dispatchEvent('sci-overlay-dismissed');
             overlay.destroyOverlay();
         }
