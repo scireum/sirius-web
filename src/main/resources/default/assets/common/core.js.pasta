@@ -178,7 +178,7 @@ sirius.postJSON = function (url, params) {
 sirius.getFormData = function (_node) {
     const formData = new FormData(_node);
     const object = {};
-    for (var key of formData.keys()) {
+    for (let key of formData.keys()) {
         object[key] = formData.get(key);
     }
     return object;
