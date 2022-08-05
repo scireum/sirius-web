@@ -96,7 +96,7 @@
         if (typeof args.escClosingPredicate === 'function') {
             shouldEscClose = args.escClosingPredicate;
         } else {
-            shouldEscClose = false;
+            shouldEscClose = true;
         }
 
         window.addEventListener('keyup', destroyOverlayEventHandler);
