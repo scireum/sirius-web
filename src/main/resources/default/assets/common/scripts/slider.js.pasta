@@ -98,6 +98,7 @@
                     activateView(index);
                     startAnimationThread();
                 });
+                _dot.classList.add('sci-slider-dot');
                 _dots.appendChild(_dot);
             });
         }
