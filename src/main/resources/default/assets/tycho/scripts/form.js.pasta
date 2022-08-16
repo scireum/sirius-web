@@ -44,3 +44,22 @@ sirius.ready(function () {
     });
 });
 
+/**@
+ * Extracts the values of all form elements inside a form.
+ * <p>
+ * This attempts to replace jQuery's serialize() / serializeArray() method.
+ *
+ * @param _node the DOM-node of the <form> to get the values from
+ * @returns a map of name-value pairs, mapping the name of the input to its value
+ */
+function getFormData(_node) {
+    const object = {};
+    var entries = new FormData(_node).entries();
+    var entry = entries.next();
+    while (!entry.done) {
+        object[entry.value[0]] = entry.value[1];
+        entry = entries.next();
+    }
+    return object;
+}
+

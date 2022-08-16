@@ -168,26 +168,6 @@ sirius.postJSON = function (url, params) {
 }
 
 /**@
- * Extracts the values of all form elements inside a form.
- * <p>
- * This attempts to replace jQuery's serialize() / serializeArray() method.
- *
- * @param _node the DOM-node of the <form> to get the values from
- * @returns a map of name-value pairs, mapping the name of the input to its value
- */
-sirius.getFormData = function (_node) {
-    const formData = new FormData(_node);
-    const object = {};
-    const keys = formData.keys();
-    let key = keys.next();
-    while (!key.done) {
-        object[key.value] = formData.get(key.value);
-        key = keys.next();
-    }
-    return object;
-}
-
-/**@
  * Throttles a javascript function by calling it only every x milliseconds.
  * <p>
  * The throttled function is called once immediately, and then every x milliseconds.
