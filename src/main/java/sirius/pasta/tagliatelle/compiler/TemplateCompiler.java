@@ -79,7 +79,16 @@ public class TemplateCompiler extends InputProcessor {
         }
 
         try {
-            Emitter emitter = parseBlock(null, null).reduce();
+            // identify content type via file extension, as is done in Template.setupEscaper(GlobalRenderContext), in
+            // order to decide whether to trim whitespace after parsing
+            String effectiveFileName = getContext().getTemplate().getEffectiveFileName();
+            boolean trimWhitespace = effectiveFileName.endsWith(".html") || effectiveFileName.endsWith(".xml");
+
+            CompositeEmitter compositeEmitter = parseBlock(null, null);
+            if (trimWhitespace) {
+                compositeEmitter.stripWhitespace();
+            }
+            Emitter emitter = compositeEmitter.reduce();
             getContext().getTemplate().setEmitter(emitter);
         } catch (Exception e) {
             context.error(Position.UNKNOWN, Exceptions.handle(e).getMessage());
