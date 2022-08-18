@@ -62,6 +62,33 @@ public class ConstantEmitter extends Emitter {
         return this;
     }
 
+    public ConstantEmitter stripLeading() {
+        if (Strings.isEmpty(value)) {
+            return this;
+        }
+
+        value = value.stripLeading();
+        return this;
+    }
+
+    public ConstantEmitter stripTrailing() {
+        if (Strings.isEmpty(value)) {
+            return this;
+        }
+
+        value = value.stripTrailing();
+        return this;
+    }
+
+    public ConstantEmitter strip() {
+        if (Strings.isEmpty(value)) {
+            return this;
+        }
+
+        value = value.strip();
+        return this;
+    }
+
     @Override
     protected void emitToContext(LocalRenderContext context) throws Exception {
         context.outputRaw(getValue());
