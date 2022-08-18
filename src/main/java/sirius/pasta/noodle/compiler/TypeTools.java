@@ -11,11 +11,9 @@ package sirius.pasta.noodle.compiler;
 import sirius.pasta.noodle.compiler.ir.Node;
 
 import javax.annotation.Nonnull;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.GenericDeclaration;
-import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -70,8 +68,8 @@ public class TypeTools {
      * @param type the type to extract the type parameters from
      */
     private void propagateParameters(Type type) {
-        if (type instanceof ParameterizedType) {
-            propagateParameterizedTypeParameters((ParameterizedType) type);
+        if (type instanceof ParameterizedType parameterizedType) {
+            propagateParameterizedTypeParameters(parameterizedType);
         }
 
         if (type instanceof Class<?>) {
@@ -190,8 +188,8 @@ public class TypeTools {
 
     private void propagateConstantValueArrayTypeInfos(Class<?> scope, Type parameterType, Node parameter) {
         // Ensure that the parameter is of type "T" (or the like) - abort otherwise
-        if (!(parameterType instanceof GenericArrayType)
-            || !(((GenericArrayType) parameterType).getGenericComponentType() instanceof TypeVariable)) {
+        if (!(parameterType instanceof GenericArrayType genericArrayType)
+            || !(genericArrayType.getGenericComponentType() instanceof TypeVariable)) {
             return;
         }
 
@@ -276,8 +274,8 @@ public class TypeTools {
     private Class<?> getScopeOfType(TypeVariable<?> typeVariable) {
         GenericDeclaration genericDeclaration = typeVariable.getGenericDeclaration();
 
-        if (genericDeclaration instanceof Executable) {
-            return ((Executable) genericDeclaration).getDeclaringClass();
+        if (genericDeclaration instanceof Executable executable) {
+            return executable.getDeclaringClass();
         }
 
         if (genericDeclaration instanceof Class) {

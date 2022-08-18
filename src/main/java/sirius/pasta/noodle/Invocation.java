@@ -335,8 +335,8 @@ public class Invocation {
 
     private void handleTransformableIs() {
         Object self = pop();
-        if (self instanceof Transformable) {
-            push(((Transformable) self).is(pop(Class.class)));
+        if (self instanceof Transformable transformable) {
+            push(transformable.is(pop(Class.class)));
         } else {
             push(false);
         }
@@ -345,8 +345,8 @@ public class Invocation {
     @SuppressWarnings("unchecked")
     private void handleTransformableAs() {
         Object self = pop();
-        if (self instanceof Transformable) {
-            push(((Transformable) self).as(pop(Class.class)));
+        if (self instanceof Transformable transformable) {
+            push(transformable.as(pop(Class.class)));
         } else {
             push(null);
         }

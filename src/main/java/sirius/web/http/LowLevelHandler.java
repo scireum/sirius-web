@@ -48,8 +48,8 @@ class LowLevelHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (msg instanceof ByteBuf) {
-            int messageSize = ((ByteBuf) msg).readableBytes();
+        if (msg instanceof ByteBuf byteBuf) {
+            int messageSize = byteBuf.readableBytes();
             if (WebServer.bytesIn.addAndGet(messageSize) < 0) {
                 WebServer.bytesIn.set(0);
             }
@@ -63,8 +63,8 @@ class LowLevelHandler extends ChannelDuplexHandler {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        if (msg instanceof ByteBuf) {
-            int messageSize = ((ByteBuf) msg).readableBytes();
+        if (msg instanceof ByteBuf byteBuf) {
+            int messageSize = byteBuf.readableBytes();
             if (WebServer.bytesOut.addAndGet(messageSize) < 0) {
                 WebServer.bytesOut.set(0);
             }

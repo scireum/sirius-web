@@ -372,8 +372,8 @@ public class Response {
      */
     protected ChannelFuture commit(HttpResponse response, boolean flush) {
         if (wc.responseCommitted) {
-            if (response instanceof FullHttpResponse) {
-                ((FullHttpResponse) response).release();
+            if (response instanceof FullHttpResponse fullHttpResponse) {
+                fullHttpResponse.release();
             }
             throw Exceptions.handle()
                             .to(WebServer.LOG)
@@ -857,8 +857,8 @@ public class Response {
         noKeepalive();
         WebServer.LOG.FINE(t);
         if (!(t instanceof ClosedChannelException)) {
-            if (t instanceof HandledException) {
-                error(HttpResponseStatus.INTERNAL_SERVER_ERROR, (HandledException) t);
+            if (t instanceof HandledException handledException) {
+                error(HttpResponseStatus.INTERNAL_SERVER_ERROR, handledException);
             } else {
                 String requestUri = "?";
                 if (wc != null && wc.getRequest() != null) {
@@ -1261,8 +1261,8 @@ public class Response {
     }
 
     private Object[] fixParams(Object[] params) {
-        if (params.length == 1 && params[0] instanceof Object[]) {
-            return (Object[]) params[0];
+        if (params.length == 1 && (params[0] instanceof Object[] objects)) {
+            return objects;
         }
         return params;
     }

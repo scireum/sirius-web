@@ -713,8 +713,8 @@ public class WebContext implements SubContext {
         }
         try {
             InterfaceHttpData data = postDecoder.getBodyHttpData(key);
-            if (data instanceof HttpData) {
-                return (HttpData) data;
+            if (data instanceof HttpData httpData) {
+                return httpData;
             }
         } catch (Exception e) {
             Exceptions.handle(WebServer.LOG, e);
@@ -734,8 +734,8 @@ public class WebContext implements SubContext {
         }
         try {
             InterfaceHttpData data = postDecoder.getBodyHttpData(key);
-            if (data instanceof FileUpload) {
-                return (FileUpload) data;
+            if (data instanceof FileUpload fileUpload) {
+                return fileUpload;
             }
         } catch (Exception e) {
             Exceptions.handle(WebServer.LOG, e);

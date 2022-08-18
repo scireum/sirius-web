@@ -84,16 +84,16 @@ public class WebsocketHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (msg instanceof HttpRequest && isWebsocketRequest((HttpRequest) msg)) {
-            currentCall = WebServerHandler.initializeContext(ctx, (HttpRequest) msg, false);
+        if ((msg instanceof HttpRequest httpRequest) && isWebsocketRequest(httpRequest)) {
+            currentCall = WebServerHandler.initializeContext(ctx, httpRequest, false);
             websocketSession = websocketDispatcher.createSession(currentCall.get(WebContext.class));
             WebServer.websockets.incrementAndGet();
             setupWebsocketPipeline(ctx, msg);
             return;
         }
 
-        if (msg instanceof WebSocketFrame) {
-            handleFrame(ctx, (WebSocketFrame) msg);
+        if (msg instanceof WebSocketFrame webSocketFrame) {
+            handleFrame(ctx, webSocketFrame);
             return;
         }
 
