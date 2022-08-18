@@ -117,6 +117,24 @@ public class CompositeEmitter extends Emitter {
         }
     }
 
+    public CompositeEmitter stripWhitespace() {
+        if (children == null || children.isEmpty()) {
+            return this;
+        }
+
+        // trim the first child from the front
+        if (children.get(0) instanceof ConstantEmitter firstConstantEmitter) {
+            firstConstantEmitter.stripLeading();
+        }
+
+        // trim the last child from the back
+        if (children.get(children.size() - 1) instanceof ConstantEmitter lastConstantEmitter) {
+            lastConstantEmitter.stripTrailing();
+        }
+
+        return this;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
