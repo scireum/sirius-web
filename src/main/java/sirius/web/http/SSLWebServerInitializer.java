@@ -175,8 +175,8 @@ class SSLWebServerInitializer extends WebServerInitializer {
 
         X509ExtendedKeyManager x509KeyManager = null;
         for (KeyManager keyManager : factory.getKeyManagers()) {
-            if (keyManager instanceof X509ExtendedKeyManager) {
-                x509KeyManager = (X509ExtendedKeyManager) keyManager;
+            if (keyManager instanceof X509ExtendedKeyManager x509ExtendedKeyManager) {
+                x509KeyManager = x509ExtendedKeyManager;
             }
         }
         if (x509KeyManager == null) {

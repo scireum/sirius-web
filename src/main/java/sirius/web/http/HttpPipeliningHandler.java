@@ -35,12 +35,12 @@ public class HttpPipeliningHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (msg instanceof HttpRequest) {
+        if (msg instanceof HttpRequest httpRequest) {
             if (currentRequest == null) {
-                currentRequest = (HttpRequest) msg;
+                currentRequest = httpRequest;
                 ctx.fireChannelRead(msg);
             } else {
-                bufferedRequests.add((HttpRequest) msg);
+                bufferedRequests.add(httpRequest);
             }
             return;
         }
@@ -55,15 +55,15 @@ public class HttpPipeliningHandler extends ChannelDuplexHandler {
 
         // If a conflicting request was put aside in the bufferedRequests list, we can safely
         // ignore the empty  LastHttpContent for it - we will emulate this in <tt>write</tt>
-        if (msg instanceof LastHttpContent && ((LastHttpContent) msg).content().readableBytes() == 0) {
+        if ((msg instanceof LastHttpContent lastHttpContent) && lastHttpContent.content().readableBytes() == 0) {
             ((LastHttpContent) msg).release();
             return;
         }
 
         // If any other content is received (that would be another POST for example, we give up!) There
         // is no sane way to handle and support that correctly...
-        if (msg instanceof ReferenceCounted) {
-            ((ReferenceCounted) msg).release();
+        if (msg instanceof ReferenceCounted referenceCounted) {
+            referenceCounted.release();
         }
 
         throw new IllegalStateException("HTTP Pipelining for requests with a body ist unsupported.");
@@ -77,7 +77,7 @@ public class HttpPipeliningHandler extends ChannelDuplexHandler {
                 throw new IllegalStateException("Received a response without a request");
             }
 
-            if (msg instanceof FullHttpResponse && ((FullHttpResponse) msg).status() == HttpResponseStatus.CONTINUE) {
+            if ((msg instanceof FullHttpResponse fullHttpResponse) && fullHttpResponse.status() == HttpResponseStatus.CONTINUE) {
                 return;
             }
 

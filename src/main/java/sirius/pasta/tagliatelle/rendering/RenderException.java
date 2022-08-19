@@ -38,12 +38,12 @@ public class RenderException extends Exception {
      * @return a RenderException with an appropriate error messsage
      */
     public static RenderException create(LocalRenderContext context, Exception ex) {
-        if (ex instanceof RenderException) {
-            return (RenderException) ex;
+        if (ex instanceof RenderException renderException) {
+            return renderException;
         }
 
-        if (ex.getCause() instanceof RenderException) {
-            return (RenderException) ex.getCause();
+        if (ex.getCause() instanceof RenderException renderException) {
+            return renderException;
         }
 
         String renderStack = Strings.apply("%nRender Stack:%n------------%n%s%n", context.toString());

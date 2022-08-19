@@ -46,7 +46,7 @@ public class ConstantCall implements Callable {
      * <tt>null</tt>, <tt>false</tt> otherwise
      */
     public static boolean isConstantNull(Callable call) {
-        return (call instanceof ConstantCall) && ((ConstantCall) call).value == null;
+        return (call instanceof ConstantCall constantCall) && constantCall.value == null;
     }
 
     @Override

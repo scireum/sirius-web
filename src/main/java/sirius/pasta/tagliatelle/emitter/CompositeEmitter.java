@@ -68,8 +68,8 @@ public class CompositeEmitter extends Emitter {
         ConstantEmitter lastConstantChild = null;
         for (Emitter child : children) {
             child = child.reduce();
-            if (child instanceof CompositeEmitter) {
-                for (Emitter inner : ((CompositeEmitter) child).children) {
+            if (child instanceof CompositeEmitter childComposite) {
+                for (Emitter inner : childComposite.children) {
                     lastConstantChild = processChild(result, inner, lastConstantChild);
                 }
             } else {
@@ -99,8 +99,8 @@ public class CompositeEmitter extends Emitter {
     private ConstantEmitter processChild(@Nonnull CompositeEmitter result,
                                          @Nonnull Emitter child,
                                          @Nullable ConstantEmitter lastConstantChild) {
-        if (child instanceof ConstantEmitter) {
-            if (Strings.isEmpty(((ConstantEmitter) child).getValue())) {
+        if (child instanceof ConstantEmitter childConstant) {
+            if (Strings.isEmpty(childConstant.getValue())) {
                 return lastConstantChild;
             }
 
@@ -109,7 +109,7 @@ public class CompositeEmitter extends Emitter {
                 return lastConstantChild;
             } else {
                 result.children.add(child);
-                return (ConstantEmitter)child;
+                return childConstant;
             }
         } else {
             result.children.add(child);

@@ -63,14 +63,14 @@ public abstract class DateComparingBaseMacro extends BasicMacro {
     }
 
     protected LocalDateTime parseInput(Object object) {
-        if (object instanceof String) {
-            return NLS.parseUserString(LocalDateTime.class, (String) object);
+        if (object instanceof String string) {
+            return NLS.parseUserString(LocalDateTime.class, string);
         }
-        if (object instanceof LocalDate) {
-            return ((LocalDate) object).atStartOfDay();
+        if (object instanceof LocalDate localDate) {
+            return localDate.atStartOfDay();
         }
-        if (object instanceof LocalDateTime) {
-            return (LocalDateTime) object;
+        if (object instanceof LocalDateTime localDateTime) {
+            return localDateTime;
         }
 
         throw new IllegalArgumentException("Input cannot be parsed");

@@ -14,7 +14,7 @@ import sirius.pasta.tagliatelle.TemplateArgument;
 import sirius.pasta.tagliatelle.emitter.CompositeEmitter;
 
 /**
- * Handles the invocation of an user defined tag.
+ * Handles the invocation of a user-defined tag.
  * <p>
  * Templates named <tt>/taglib/PREFIX/tagName.html.pasta</tt> can be referenced via &lt;PREFIX:tagName&gt;. Their
  * invocation is handled by this handler.
