@@ -1,4 +1,14 @@
 /**@
+ * Checks if the given value is defined and has a value other than null.
+ *
+ * @param value the value to check
+ * @returns {boolean} true if the given value is defined and its value is not null.
+ */
+sirius.isDefined = function (value) {
+    return typeof value === 'undefined' || value === null || value === undefined;
+}
+
+/**@
  * Checks if the given value is empty or null.
  *
  * @param value the value to check
@@ -9,7 +19,7 @@ sirius.isEmpty = function (value) {
         return true;
     }
 
-    return typeof value === 'undefined' || value === null || value === undefined || value === '';
+    return sirius.isDefined(value) || value === '';
 }
 
 /**@
