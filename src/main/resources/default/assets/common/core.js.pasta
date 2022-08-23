@@ -5,7 +5,7 @@
  * @returns {boolean} true if the given value is defined and its value is not null.
  */
 sirius.isDefined = function (value) {
-    return typeof value === 'undefined' || value === null || value === undefined;
+    return typeof value !== 'undefined' && value !== null && value !== undefined;
 }
 
 /**@
