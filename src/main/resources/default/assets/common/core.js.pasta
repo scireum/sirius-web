@@ -19,7 +19,7 @@ sirius.isEmpty = function (value) {
         return true;
     }
 
-    return sirius.isDefined(value) || value === '';
+    return !sirius.isDefined(value) || value === '';
 }
 
 /**@
