@@ -478,4 +478,18 @@ class CompilerSpec extends BaseSpecification {
         and: "An i:extraBlock is expected to do the same - independently of its nesting and location"
         globalRenderContext.getExtraBlock("extra-test") == "Extra Test"
     }
+
+    def "Minimal leading and trailing whitespace is trimmed"() {
+        when:
+        def source = "<i:arg type=\"String\" name=\"test\" />\n" +
+                "\n" +
+                "<i>@test</i>\n" +
+                "\n"
+        def ctx = new TemplateCompilationContext(new Template("test.html.pasta", null), SourceCodeInfo.forInlineCode(source), null)
+        List<CompileError> errors = new TemplateCompiler(ctx).compile()
+        then:
+        errors.size() == 0
+        and:
+        ctx.getTemplate().renderToString("hello") == "<i>hello</i>\n"
+    }
 }
