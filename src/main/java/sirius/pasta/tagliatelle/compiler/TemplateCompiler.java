@@ -28,6 +28,7 @@ import sirius.pasta.noodle.compiler.NoodleCompiler;
 import sirius.pasta.tagliatelle.emitter.CompositeEmitter;
 import sirius.pasta.tagliatelle.emitter.ConstantEmitter;
 import sirius.pasta.tagliatelle.emitter.Emitter;
+import sirius.pasta.tagliatelle.tags.ArgTag;
 import sirius.pasta.tagliatelle.tags.TagHandler;
 import sirius.web.services.JSONStructuredOutput;
 
@@ -238,13 +239,16 @@ public class TemplateCompiler extends InputProcessor {
     /**
      * Processes a tag.
      * <p>
-     * If the tag is built-in (i:) or a one in a taglib, an appropriate {@link TagHandler} is created and invoked.
-     * Otherwise the tag is parsed as static text.
+     * If the tag is built-in (<tt>i:</tt>) or one in a taglib, an appropriate {@link TagHandler} is created and
+     * invoked. Otherwise, the tag is parsed as static text.
+     * <p>
+     * Note that the return value indicates whether an emitter was created, thus indicating the need to create a new
+     * {@link ConstantEmitter}.
      *
      * @param parentHandler the outer tag handler
      * @param block         the block to which the tag should be added
      * @param staticText    the emitter which is responsible for consuming static text
-     * @return <tt>true</tt> if the tag was handled, <tt>false</tt> otherwise
+     * @return <b>true</b> if an {@link Emitter} was generated, <b>false</b> otherwise
      */
     private boolean processTag(TagHandler parentHandler, CompositeEmitter block, ConstantEmitter staticText) {
         if (!reader.current().is('<')) {
@@ -261,7 +265,7 @@ public class TemplateCompiler extends InputProcessor {
                 handler.setCompilationContext(getContext());
                 handler.setTagName(tagName);
                 handleTag(handler, block);
-                return true;
+                return !(handler instanceof ArgTag);
             }
 
             staticText.append("<");
