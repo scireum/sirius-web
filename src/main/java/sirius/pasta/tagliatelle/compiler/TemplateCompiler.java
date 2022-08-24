@@ -79,13 +79,8 @@ public class TemplateCompiler extends InputProcessor {
         }
 
         try {
-            // identify content type via file extension, as is done in Template.setupEscaper(GlobalRenderContext), in
-            // order to decide whether to trim whitespace after parsing
-            String effectiveFileName = getContext().getTemplate().getEffectiveFileName();
-            boolean trimWhitespace = effectiveFileName.endsWith(".html") || effectiveFileName.endsWith(".xml");
-
             CompositeEmitter compositeEmitter = parseBlock(null, null);
-            if (trimWhitespace) {
+            if (getContext().getTemplate().isXmlContentExpected()) {
                 compositeEmitter.stripWhitespace();
             }
             Emitter emitter = compositeEmitter.reduce();

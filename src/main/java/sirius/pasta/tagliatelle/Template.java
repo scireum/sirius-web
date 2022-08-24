@@ -182,12 +182,23 @@ public class Template {
         renderWithContext(context);
     }
 
+    /**
+     * Checks whether the template is supposed to have an XML-like structure, based on the extension of the
+     * {@linkplain #getEffectiveFileName() effective file name}.
+     * <p>
+     * This is obviously the case for HTML and XML files. We also treat PDF templates as such, though, as we use
+     * <i>flying saucer</i> to generate PDFs — which internally renders HTML as well.
+     *
+     * @return <b>true</b> if the template's content is expected to have an XML-like structure, <b>false</b> else
+     */
+    public boolean isXmlContentExpected() {
+        String effectiveFileName = getEffectiveFileName();
+        return effectiveFileName.endsWith(".html") || effectiveFileName.endsWith(".xml") || effectiveFileName.endsWith(
+                ".pdf");
+    }
+
     private void setupEscaper(GlobalRenderContext ctx) {
-        // For XML and HTML we obviously use an XML escaper. As we use flying saucer to generate PDFs
-        // which internally renders HTML, we also enable the escaper there.
-        if (getEffectiveFileName().endsWith(".html")
-            || getEffectiveFileName().endsWith(".xml")
-            || getEffectiveFileName().endsWith(".pdf")) {
+        if (isXmlContentExpected()) {
             ctx.setEscaper(GlobalRenderContext::escapeXML);
         }
     }
