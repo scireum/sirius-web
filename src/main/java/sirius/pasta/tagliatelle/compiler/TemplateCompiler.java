@@ -253,14 +253,11 @@ public class TemplateCompiler extends InputProcessor {
      * <p>
      * If the tag is built-in (<tt>i:</tt>) or one in a taglib, an appropriate {@link TagHandler} is created and
      * invoked. Otherwise, the tag is parsed as static text.
-     * <p>
-     * Note that the return value indicates whether an emitter was created, thus indicating the need to create a new
-     * {@link ConstantEmitter}.
      *
      * @param parentHandler the outer tag handler
      * @param block         the block to which the tag should be added
      * @param staticText    the emitter which is responsible for consuming static text
-     * @return <b>true</b> if an {@link Emitter} was generated, <b>false</b> otherwise
+     * @return <b>true</b> if the tag was handled, <b>false</b> else
      */
     private boolean processTag(TagHandler parentHandler, CompositeEmitter block, ConstantEmitter staticText) {
         if (!reader.current().is('<')) {
