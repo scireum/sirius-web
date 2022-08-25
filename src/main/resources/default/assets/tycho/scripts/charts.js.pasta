@@ -17,6 +17,9 @@ let siriusChartNextTypeIndex = 0;
  * This way, we prevent, that all charts look exactly the same on each page.
  */
 function randomizeCharts(randomizer) {
+    siriusChartNextColorWheelIndex = 0;
+    siriusChartNextTypeIndex = 0;
+
     for (let i = 0; i < randomizer.length; i++) {
         siriusChartNextColorWheelIndex += 13 * randomizer.charCodeAt(i);
         siriusChartNextTypeIndex += 13 * randomizer.charCodeAt(i);
