@@ -64,6 +64,8 @@ public class CompositeEmitter extends Emitter {
      */
     @Override
     public Emitter reduce() {
+        List<Emitter> children = sortChildren(this.children);
+
         CompositeEmitter result = new CompositeEmitter(startOfBlock);
         ConstantEmitter lastConstantChild = null;
         for (Emitter child : children) {
@@ -82,6 +84,32 @@ public class CompositeEmitter extends Emitter {
         }
 
         return result;
+    }
+
+    private List<Emitter> sortChildren(List<Emitter> children) {
+        // bubble all local push emitters up, to follow constant emitters
+        List<Emitter> sortedChildren = new ArrayList<>(children);
+        int index = 0;
+        while (index < sortedChildren.size() - 1) {
+            Emitter currentChild = sortedChildren.get(index);
+            Emitter nextChild = sortedChildren.get(index + 1);
+
+            // we are done bubbling once we encounter anything else but a constant or local push emitter
+            if (!(currentChild instanceof ConstantEmitter || currentChild instanceof PushLocalEmitter)) {
+                return sortedChildren;
+            }
+
+            // swap a local push emitter preceding a constant emitter
+            if (currentChild instanceof PushLocalEmitter && nextChild instanceof ConstantEmitter) {
+                sortedChildren.set(index, nextChild);
+                sortedChildren.set(index + 1, currentChild);
+                index = 0;
+            }
+
+            ++index;
+        }
+
+        return sortedChildren;
     }
 
     /**
