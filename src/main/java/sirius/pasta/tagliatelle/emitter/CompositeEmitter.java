@@ -145,6 +145,12 @@ public class CompositeEmitter extends Emitter {
         }
     }
 
+    /**
+     * Checks if the first and last children are {@link ConstantEmitter} instances, and trims leading or trailing line
+     * breaks, respectively.
+     *
+     * @return a convenience reference to <b><tt>this</tt></b>
+     */
     public CompositeEmitter stripLeadingAndTrailingLineBreaks() {
         if (children == null || children.isEmpty()) {
             return this;

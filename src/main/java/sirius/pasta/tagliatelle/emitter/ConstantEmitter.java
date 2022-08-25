@@ -62,6 +62,12 @@ public class ConstantEmitter extends Emitter {
         return this;
     }
 
+    /**
+     * Removes a single leading UNIX-style line break <tt>&lt;LF&gt;</tt> from the beginning of the block if one is
+     * found.
+     *
+     * @return a convenience reference to <b><tt>this</tt></b>
+     */
     public ConstantEmitter stripLeadingLineBreak() {
         if (Strings.isEmpty(value)) {
             return this;
@@ -74,6 +80,11 @@ public class ConstantEmitter extends Emitter {
         return this;
     }
 
+    /**
+     * Removes a single trailing UNIX-style line break <tt>&lt;LF&gt;</tt> from the end of the block if one is found.
+     *
+     * @return a convenience reference to <b><tt>this</tt></b>
+     */
     public ConstantEmitter stripTrailingLineBreak() {
         if (Strings.isEmpty(value)) {
             return this;
