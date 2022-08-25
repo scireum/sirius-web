@@ -62,30 +62,28 @@ public class ConstantEmitter extends Emitter {
         return this;
     }
 
-    public ConstantEmitter stripLeading() {
+    public ConstantEmitter stripLeadingLineBreak() {
         if (Strings.isEmpty(value)) {
             return this;
         }
 
-        value = value.stripLeading();
+        if (value.charAt(0) == '\n') {
+            value = value.substring(1);
+        }
+
         return this;
     }
 
-    public ConstantEmitter stripTrailing() {
+    public ConstantEmitter stripTrailingLineBreak() {
         if (Strings.isEmpty(value)) {
             return this;
         }
 
-        value = value.stripTrailing();
-        return this;
-    }
-
-    public ConstantEmitter strip() {
-        if (Strings.isEmpty(value)) {
-            return this;
+        int last = value.length() - 1;
+        if (value.charAt(last) == '\n') {
+            value = value.substring(0, last);
         }
 
-        value = value.strip();
         return this;
     }
 
