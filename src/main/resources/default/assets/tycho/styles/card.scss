@@ -53,3 +53,16 @@
   z-index: 2;
   position: relative;
 }
+
+// Make cards-columns responsive by default...
+@media (max-width: 1024px) {
+  .card-columns {
+    column-count: 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .card-columns {
+    column-count: 1;
+  }
+}
