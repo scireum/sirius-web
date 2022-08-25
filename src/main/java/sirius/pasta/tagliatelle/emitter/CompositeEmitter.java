@@ -64,11 +64,11 @@ public class CompositeEmitter extends Emitter {
      */
     @Override
     public Emitter reduce() {
-        List<Emitter> children = sortChildren(this.children);
+        List<Emitter> sortedChildren = sortChildren(children);
 
         CompositeEmitter result = new CompositeEmitter(startOfBlock);
         ConstantEmitter lastConstantChild = null;
-        for (Emitter child : children) {
+        for (Emitter child : sortedChildren) {
             child = child.reduce();
             if (child instanceof CompositeEmitter childComposite) {
                 for (Emitter inner : childComposite.children) {
