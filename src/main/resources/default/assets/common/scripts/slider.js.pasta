@@ -203,7 +203,7 @@
             _slides[previousIndex].classList.remove("sci-slider-view-active");
             _slides[currentIndex].classList.add("sci-slider-view-active");
 
-            if (_dots !== null) {
+            if (_dots) {
                 _dots.childNodes.item(previousIndex).classList.remove("sci-slider-dot-active");
                 _dots.childNodes.item(currentIndex).classList.add("sci-slider-dot-active");
             }
@@ -281,7 +281,7 @@
             }, options.animation || 5000);
         };
         const stopAnimationThread = function () {
-            if (animationTimer !== null) {
+            if (animationTimer) {
                 clearInterval(animationTimer);
                 animationTimer = null;
             }
