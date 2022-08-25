@@ -79,11 +79,12 @@ public class TemplateCompiler extends InputProcessor {
         }
 
         try {
-            CompositeEmitter compositeEmitter = parseBlock(null, null);
+            Emitter emitter = parseBlock(null, null);
+            emitter = emitter.reduce();
             if (getContext().getTemplate().isXmlContentExpected()) {
-                compositeEmitter.stripWhitespace();
+                emitter = stripWhitespace(emitter);
+                emitter = emitter.reduce();
             }
-            Emitter emitter = compositeEmitter.reduce();
             getContext().getTemplate().setEmitter(emitter);
         } catch (Exception e) {
             context.error(Position.UNKNOWN, Exceptions.handle(e).getMessage());
@@ -93,6 +94,18 @@ public class TemplateCompiler extends InputProcessor {
         reader = null;
 
         return context.processCollectedErrors();
+    }
+
+    private Emitter stripWhitespace(Emitter emitter) {
+        if (emitter instanceof ConstantEmitter constantEmitter) {
+            return constantEmitter.stripLeadingLineBreak().stripTrailingLineBreak();
+        }
+
+        if (emitter instanceof CompositeEmitter compositeEmitter) {
+            return compositeEmitter.stripWhitespace();
+        }
+
+        return emitter;
     }
 
     /**
