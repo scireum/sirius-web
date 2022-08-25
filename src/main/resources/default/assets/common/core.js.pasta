@@ -95,7 +95,7 @@ sirius.show = function (selectorOrElement) {
 }
 
 /**@
- * Sets the "display" property of the given element to 'none' to make it visible.
+ * Sets the "display" property of the given element to 'none' to make it invisible.
  */
 sirius.hide = function (selectorOrElement) {
     const _element = this.querySelector(selectorOrElement);
