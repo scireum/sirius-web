@@ -28,7 +28,6 @@ import sirius.pasta.noodle.compiler.NoodleCompiler;
 import sirius.pasta.tagliatelle.emitter.CompositeEmitter;
 import sirius.pasta.tagliatelle.emitter.ConstantEmitter;
 import sirius.pasta.tagliatelle.emitter.Emitter;
-import sirius.pasta.tagliatelle.tags.ArgTag;
 import sirius.pasta.tagliatelle.tags.TagHandler;
 import sirius.web.services.JSONStructuredOutput;
 
@@ -265,7 +264,7 @@ public class TemplateCompiler extends InputProcessor {
                 handler.setCompilationContext(getContext());
                 handler.setTagName(tagName);
                 handleTag(handler, block);
-                return !(handler instanceof ArgTag);
+                return true;
             }
 
             staticText.append("<");
