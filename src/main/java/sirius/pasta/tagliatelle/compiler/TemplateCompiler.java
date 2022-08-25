@@ -82,7 +82,7 @@ public class TemplateCompiler extends InputProcessor {
             Emitter emitter = parseBlock(null, null);
             emitter = emitter.reduce();
             if (getContext().getTemplate().isXmlContentExpected()) {
-                emitter = stripWhitespace(emitter);
+                emitter = stripLeadingAndTrailingLineBreaks(emitter);
                 emitter = emitter.reduce();
             }
             getContext().getTemplate().setEmitter(emitter);
@@ -96,13 +96,13 @@ public class TemplateCompiler extends InputProcessor {
         return context.processCollectedErrors();
     }
 
-    private Emitter stripWhitespace(Emitter emitter) {
+    private Emitter stripLeadingAndTrailingLineBreaks(Emitter emitter) {
         if (emitter instanceof ConstantEmitter constantEmitter) {
             return constantEmitter.stripLeadingLineBreak().stripTrailingLineBreak();
         }
 
         if (emitter instanceof CompositeEmitter compositeEmitter) {
-            return compositeEmitter.stripWhitespace();
+            return compositeEmitter.stripLeadingAndTrailingLineBreaks();
         }
 
         return emitter;

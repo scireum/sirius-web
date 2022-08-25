@@ -145,7 +145,7 @@ public class CompositeEmitter extends Emitter {
         }
     }
 
-    public CompositeEmitter stripWhitespace() {
+    public CompositeEmitter stripLeadingAndTrailingLineBreaks() {
         if (children == null || children.isEmpty()) {
             return this;
         }
