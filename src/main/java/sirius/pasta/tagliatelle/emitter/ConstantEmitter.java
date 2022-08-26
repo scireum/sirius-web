@@ -62,6 +62,42 @@ public class ConstantEmitter extends Emitter {
         return this;
     }
 
+    /**
+     * Removes a single leading UNIX-style line break <tt>&lt;LF&gt;</tt> from the beginning of the block if one is
+     * found.
+     *
+     * @return a convenience reference to <b><tt>this</tt></b>
+     */
+    public ConstantEmitter stripLeadingLineBreak() {
+        if (Strings.isEmpty(value)) {
+            return this;
+        }
+
+        if (value.charAt(0) == '\n') {
+            value = value.substring(1);
+        }
+
+        return this;
+    }
+
+    /**
+     * Removes a single trailing UNIX-style line break <tt>&lt;LF&gt;</tt> from the end of the block if one is found.
+     *
+     * @return a convenience reference to <b><tt>this</tt></b>
+     */
+    public ConstantEmitter stripTrailingLineBreak() {
+        if (Strings.isEmpty(value)) {
+            return this;
+        }
+
+        int last = value.length() - 1;
+        if (value.charAt(last) == '\n') {
+            value = value.substring(0, last);
+        }
+
+        return this;
+    }
+
     @Override
     protected void emitToContext(LocalRenderContext context) throws Exception {
         context.outputRaw(getValue());

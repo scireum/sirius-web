@@ -478,4 +478,49 @@ class CompilerSpec extends BaseSpecification {
         and: "An i:extraBlock is expected to do the same - independently of its nesting and location"
         globalRenderContext.getExtraBlock("extra-test") == "Extra Test"
     }
+
+    def "Minimal leading and trailing whitespace is trimmed"() {
+        when:
+        def source = "<i:arg type=\"String\" name=\"test\" />\n" +
+                "\n" +
+                "<i>@test</i>\n"
+        def ctx = new TemplateCompilationContext(new Template("test.html.pasta", null), SourceCodeInfo.forInlineCode(source), null)
+        List<CompileError> errors = new TemplateCompiler(ctx).compile()
+        then:
+        errors.size() == 0
+        and:
+        ctx.getTemplate().renderToString("hello") == "<i>hello</i>"
+    }
+
+    def "Whitespace trimming maintains non-minimal whitespace that has likely been placed intentionally"() {
+        when:
+        def source = "<i:arg type=\"String\" name=\"test\" />\n" +
+                "\n" +
+                "<i>@test</i>\n" +
+                "\n"
+        def ctx = new TemplateCompilationContext(new Template("test.html.pasta", null), SourceCodeInfo.forInlineCode(source), null)
+        List<CompileError> errors = new TemplateCompiler(ctx).compile()
+        then:
+        errors.size() == 0
+        and:
+        // of the two trailing newlines, only one is considered to be there for a (git-related) reason
+        ctx.getTemplate().renderToString("hello") == "<i>hello</i>\n"
+    }
+
+    def "Different non-emitting tags do not disturb whitespace trimming"() {
+        when:
+        def source = "<i:arg type=\"String\" name=\"test\" />\n" +
+                "<i:local name=\"temp\" value=\"'This is a test.'\"/>\n" +
+                "<i:local name=\"ghost\" value=\"'I am a ghost!'\"/>\n" +
+                "\n" +
+                "<i:pragma name=\"description\" value=\"Provides a test case for whitespace trimming\"/>\n" +
+                "\n" +
+                "<i>@test – @temp</i>\n"
+        def ctx = new TemplateCompilationContext(new Template("test.html.pasta", null), SourceCodeInfo.forInlineCode(source), null)
+        List<CompileError> errors = new TemplateCompiler(ctx).compile()
+        then:
+        errors.size() == 0
+        and:
+        ctx.getTemplate().renderToString("hello") == "\n<i>hello – This is a test.</i>"
+    }
 }
