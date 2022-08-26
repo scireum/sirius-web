@@ -74,7 +74,9 @@ sirius.isElement = function (obj) {
  * @returns {*} the matching DOM element (or the given one, if query was a DOM element in the first place).
  */
 sirius.querySelector = function (query) {
-    if (sirius.isElement(query)) {
+    if (query == null) {
+        return null;
+    } else if (sirius.isElement(query)) {
         return query;
     } else {
         return document.querySelector(query);
@@ -85,8 +87,21 @@ sirius.querySelector = function (query) {
  * Clears the "display" property of the given element to make it visible.
  * It is expected to be 'display: none' before.
  */
-sirius.show = function (_element) {
-    _element.style.display = '';
+sirius.show = function (selectorOrElement) {
+    const _element = this.querySelector(selectorOrElement);
+    if (_element != null) {
+        _element.style.display = '';
+    }
+}
+
+/**@
+ * Sets the "display" property of the given element to 'none' to make it invisible.
+ */
+sirius.hide = function (selectorOrElement) {
+    const _element = this.querySelector(selectorOrElement);
+    if (_element != null) {
+        _element.style.display = 'none';
+    }
 }
 
 /**@
