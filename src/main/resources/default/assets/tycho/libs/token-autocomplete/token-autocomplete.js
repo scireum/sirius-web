@@ -230,6 +230,8 @@ var TokenAutocomplete = /** @class */ (function () {
     };
     TokenAutocomplete.prototype.addHiddenOption = function (tokenValue, tokenText, tokenType, isLiveEntry) {
         if (isLiveEntry === void 0) { isLiveEntry = false; }
+        tokenValue = tokenValue.trim();
+        tokenText = tokenText.trim();
         var _emptyToken = this.hiddenSelect.querySelector('.empty-token');
         if (_emptyToken) {
             this.hiddenSelect.removeChild(_emptyToken);
@@ -387,6 +389,8 @@ var TokenAutocomplete = /** @class */ (function () {
                 if (tokenValue === null || tokenText === null || tokenValue === '_no_match_') {
                     return;
                 }
+                tokenValue = tokenValue.trim();
+                tokenText = tokenText.trim();
                 this.parent.addHiddenOption(tokenValue, tokenText, tokenType);
                 var addedToken = {
                     value: tokenValue,
@@ -591,6 +595,8 @@ var TokenAutocomplete = /** @class */ (function () {
             if (tokenValue === null || tokenText === null || tokenValue === '_no_match_') {
                 return;
             }
+            tokenValue = tokenValue.trim();
+            tokenText = tokenText.trim();
             this.clear(true, false);
             this.parent.textInput.textContent = tokenText;
             this.parent.textInput.contentEditable = 'false';
