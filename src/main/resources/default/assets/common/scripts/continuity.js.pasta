@@ -181,7 +181,11 @@ window.sirius.Continuity = (function () {
         this.log('[CONTINUITY] [ACTION] Pushing new state for type "%s": %o', type, entry);
 
         this.lastState = this.currentState;
-        this.currentState[type] = entry;
+        if (entry) {
+            this.currentState[type] = entry;
+        } else {
+            delete this.currentState[type];
+        }
         this.searchParams.set(this.options.stateParameterName, this.buildStateUrlParam(this.currentState));
 
         // Creates a new history instance, and saves state on it
@@ -282,7 +286,7 @@ window.sirius.Continuity = (function () {
         return this.options.encodeStateParameter ? convertToBinary(paramStateText) : paramStateText;
     };
 
-    /**
+    /**@
      * Converts the given UTF-8 text to a binary base64 encoded representation.
      *
      * @param string the text to encode
@@ -307,7 +311,7 @@ window.sirius.Continuity = (function () {
         return JSON.parse(paramStateText);
     };
 
-    /**
+    /**@
      * Converts the given binary base64 encoded representation into its original UTF-8 text.
      *
      * @param string the binary base64 encoded representation of a text
