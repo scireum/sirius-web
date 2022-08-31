@@ -282,6 +282,12 @@ window.sirius.Continuity = (function () {
         return this.options.encodeStateParameter ? convertToBinary(paramStateText) : paramStateText;
     };
 
+    /**
+     * Converts the given UTF-8 text to a binary base64 encoded representation.
+     *
+     * @param string the text to encode
+     * @returns {string} the binary base64 encoded representation of the text
+     */
     function convertToBinary(string) {
         const codeUnits = new Uint16Array(string.length);
         for (let i = 0; i < codeUnits.length; i++) {
@@ -301,6 +307,12 @@ window.sirius.Continuity = (function () {
         return JSON.parse(paramStateText);
     };
 
+    /**
+     * Converts the given binary base64 encoded representation into its original UTF-8 text.
+     *
+     * @param string the binary base64 encoded representation of a text
+     * @returns {string} the original text
+     */
     function convertFromBinary(encoded) {
         const binary = atob(encoded);
         const bytes = new Uint8Array(binary.length);
