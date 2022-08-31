@@ -181,11 +181,7 @@ window.sirius.Continuity = (function () {
         this.log('[CONTINUITY] [ACTION] Pushing new state for type "%s": %o', type, entry);
 
         this.lastState = this.currentState;
-        if (entry) {
-            this.currentState[type] = entry;
-        } else {
-            delete this.currentState[type];
-        }
+        this.currentState[type] = entry;
         this.searchParams.set(this.options.stateParameterName, this.buildStateUrlParam(this.currentState));
 
         // Creates a new history instance, and saves state on it
