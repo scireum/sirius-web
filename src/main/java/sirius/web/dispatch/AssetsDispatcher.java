@@ -12,12 +12,16 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.serversass.Generator;
 import org.serversass.Output;
+import org.serversass.ast.Expression;
+import org.serversass.ast.FunctionCall;
+import org.serversass.ast.Value;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Files;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
+import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
@@ -76,6 +80,9 @@ public class AssetsDispatcher implements WebDispatcher {
 
     @Part
     private Tagliatelle tagliatelle;
+
+    @Part
+    private GlobalContext globalContext;
 
     private static final Log SASS_LOG = Log.get("sass");
 
@@ -235,6 +242,16 @@ public class AssetsDispatcher implements WebDispatcher {
                 return res.get().getUrl().openStream();
             }
             return null;
+        }
+
+        @Override
+        public Expression evaluateFunction(FunctionCall call) {
+            SassFunction sassFunction = globalContext.getPart(call.getName(), SassFunction.class);
+            if (sassFunction != null) {
+                return new Value(sassFunction.eval(call));
+            }
+
+            return super.evaluateFunction(call);
         }
     }
 
