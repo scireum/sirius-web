@@ -213,7 +213,7 @@ window.sirius.Continuity = (function () {
      * - otherwise we create a new state (as copy from the current state) and remove the entry there. The new state is then pushed to the history stack.
      *
      * @param {string} type the type of the state entry to remove
-     * @param {boolean} forceNewState allows to force the creation of a new state without the entry type
+     * @param {boolean} [forceNewState] allows to force the creation of a new state without the entry type
      */
     Continuity.prototype.popStateEntry = function (type, forceNewState) {
         this.log('[CONTINUITY] [ACTION] Popping state for type "%s"', type);
