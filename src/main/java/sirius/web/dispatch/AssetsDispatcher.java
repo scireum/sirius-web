@@ -68,7 +68,8 @@ import java.util.regex.Pattern;
 public class AssetsDispatcher implements WebDispatcher {
 
     private static final String ASSETS_PREFIX = "/assets/";
-    private static final Pattern INTERNATIONALIZED_TEMPLATE_URI = Pattern.compile("(?<path>.*)_[a-z]{2}\\.(?<extension>.*)");
+    private static final Pattern INTERNATIONALIZED_TEMPLATE_URI =
+            Pattern.compile("(?<path>.*)_[a-z]{2}\\.(?<extension>.*)");
     private static final String PASTA_SUFFIX = ".pasta";
 
     @ConfigValue("http.generated-directory")
@@ -166,8 +167,10 @@ public class AssetsDispatcher implements WebDispatcher {
     private DispatchDecision tryI18nTagliatelle(String uri, Response response) throws CompileException {
         Matcher i18nMatcher = INTERNATIONALIZED_TEMPLATE_URI.matcher(uri);
         if (i18nMatcher.matches()) {
-            Optional<Template> template =
-                    tagliatelle.resolve(i18nMatcher.group("path")+ "." + i18nMatcher.group("extension") + PASTA_SUFFIX);
+            Optional<Template> template = tagliatelle.resolve(i18nMatcher.group("path")
+                                                              + "."
+                                                              + i18nMatcher.group("extension")
+                                                              + PASTA_SUFFIX);
             if (template.isPresent()) {
                 if (!handleUnmodified(template.get(), response)) {
                     response.template(HttpResponseStatus.OK, template.get());
@@ -287,7 +290,7 @@ public class AssetsDispatcher implements WebDispatcher {
                   .filter(f -> f.getName().endsWith(".css"))
                   .forEach(File::delete);
         } catch (NullPointerException e) {
-            // Happens if the directly does not exist....
+            // Happens if the directory does not exist....
             Exceptions.ignore(e);
         } catch (Exception e) {
             Exceptions.handle(e);
