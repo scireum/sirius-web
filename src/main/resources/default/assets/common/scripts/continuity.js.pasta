@@ -114,7 +114,7 @@ window.sirius.Continuity = (function () {
      */
     Continuity.prototype.handleStateChange = function (state, dontSetLastState) {
         if (!dontSetLastState) {
-            this.lastState = this.currentState;
+            this.lastState = Object.assign({}, this.currentState);
         }
         this.currentState = state;
 
@@ -146,7 +146,7 @@ window.sirius.Continuity = (function () {
     Continuity.prototype.pushEntireState = function (newState) {
         this.log('[CONTINUITY] [ACTION] Pushing entire new state: %o', newState);
 
-        this.lastState = this.currentState;
+        this.lastState = Object.assign({}, this.currentState);
         this.currentState = newState;
         this.searchParams.set(this.options.stateParameterName, this.buildStateUrlParam(this.currentState));
 
@@ -180,7 +180,7 @@ window.sirius.Continuity = (function () {
     Continuity.prototype.pushStateEntry = function (type, entry) {
         this.log('[CONTINUITY] [ACTION] Pushing new state for type "%s": %o', type, entry);
 
-        this.lastState = this.currentState;
+        this.lastState = Object.assign({}, this.currentState);
         this.currentState[type] = entry;
         this.searchParams.set(this.options.stateParameterName, this.buildStateUrlParam(this.currentState));
 
@@ -220,12 +220,12 @@ window.sirius.Continuity = (function () {
         if (this.lastState && !forceNewState) {
             history.back();
         } else {
-            this.lastState = this.currentState;
+            this.lastState = Object.assign({}, this.currentState);
             delete this.currentState[type];
             this.searchParams.set(this.options.stateParameterName, this.buildStateUrlParam(this.currentState));
 
             history.pushState(this.currentState, null, this.buildUrl());
-            this.handleStateChange(this.currentState);
+            this.handleStateChange(this.currentState, true);
         }
     };
 
