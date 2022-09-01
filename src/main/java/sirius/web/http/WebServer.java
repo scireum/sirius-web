@@ -829,6 +829,16 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
                          queueTime.getAndClear(),
                          "ms");
         collector.metric("http_websockets", "http-websockets", "Open Websockets", websockets.get(), null);
+        collector.metric("pooled_byte_buffer_used_heap_mem",
+                         "pooled-byte-buffer-used-heap-mem",
+                         "Pooled byte buffer allocation used heap memory",
+                         PooledByteBufAllocator.DEFAULT.metric().usedHeapMemory() / 1024d / 1024d,
+                         "MB");
+        collector.metric("pooled_byte_buffer_used_direct_mem",
+                         "pooled-byte-buffer-used-direct-mem",
+                         "Pooled byte buffer allocation used direct memory",
+                         PooledByteBufAllocator.DEFAULT.metric().usedDirectMemory() / 1024d / 1024d,
+                         "MB");
     }
 
     /**
