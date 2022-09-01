@@ -345,3 +345,19 @@ function barChart(selector, labels, datasets) {
         options: customConfig
     });
 }
+
+function dougnutChart(selector, labels, data) {
+    new Chart($(selector).get(0).getContext("2d"), {
+        data: {
+            datasets: [{
+                data: data,
+                backgroundColor: SIRIUS_CHART_COLOR_WHEEL
+            }],
+            labels: labels
+        },
+        type: 'doughnut',
+        options: {
+            startAngle: -0.55 * Math.PI
+        }
+    });
+}
