@@ -10,11 +10,7 @@ package sirius.web.dispatch;
 
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import org.serversass.Generator;
 import org.serversass.Output;
-import org.serversass.ast.Expression;
-import org.serversass.ast.FunctionCall;
-import org.serversass.ast.Value;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Files;
@@ -43,7 +39,6 @@ import sirius.web.templates.Templates;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
@@ -81,11 +76,6 @@ public class AssetsDispatcher implements WebDispatcher {
 
     @Part
     private Tagliatelle tagliatelle;
-
-    @Part
-    private GlobalContext globalContext;
-
-    private static final Log SASS_LOG = Log.get("sass");
 
     @Override
     public int getPriority() {
@@ -223,44 +213,9 @@ public class AssetsDispatcher implements WebDispatcher {
         return DispatchDecision.DONE;
     }
 
-    /*
-     * Subclass of generator which takes care of proper logging
-     */
-    private class SIRIUSGenerator extends Generator {
-
-        @Override
-        public void debug(String message) {
-            SASS_LOG.FINE(message);
-        }
-
-        @Override
-        public void warn(String message) {
-            SASS_LOG.WARN(message);
-        }
-
-        @Override
-        protected InputStream resolveIntoStream(String sheet) throws IOException {
-            Optional<Resource> res = resources.resolve(sheet);
-            if (res.isPresent()) {
-                return res.get().getUrl().openStream();
-            }
-            return null;
-        }
-
-        @Override
-        public Expression evaluateFunction(FunctionCall call) {
-            SassFunction sassFunction = globalContext.getPart(call.getName(), SassFunction.class);
-            if (sassFunction != null) {
-                return new Value(sassFunction.eval(call));
-            }
-
-            return super.evaluateFunction(call);
-        }
-    }
-
     private void compileSASS(String scssUri, File file) throws IOException {
         Resources.LOG.FINE("Compiling: " + scssUri);
-        SIRIUSGenerator gen = new SIRIUSGenerator();
+        SiriusSassGenerator gen = new SiriusSassGenerator();
         gen.importStylesheet(scssUri);
 
         String configPath = "assets.scss." + Files.getFilenameWithoutExtension(scssUri);
