@@ -26,6 +26,7 @@ import io.netty.handler.codec.http.multipart.DiskAttribute;
 import io.netty.handler.codec.http.multipart.DiskFileUpload;
 import io.netty.handler.codec.http.multipart.HttpDataFactory;
 import io.netty.util.ResourceLeakDetector;
+import io.netty.util.internal.PlatformDependent;
 import sirius.kernel.Killable;
 import sirius.kernel.Sirius;
 import sirius.kernel.Startable;
@@ -838,6 +839,11 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
                          "pooled-byte-buffer-used-direct-mem",
                          "Pooled byte buffer allocation used direct memory",
                          PooledByteBufAllocator.DEFAULT.metric().usedDirectMemory() / 1024d / 1024d,
+                         "MB");
+        collector.metric("max_direct_mem",
+                         "max-direct-mem",
+                         "Maximum direct memory",
+                         PlatformDependent.maxDirectMemory() / 1024d / 1024d,
                          "MB");
     }
 
