@@ -12,12 +12,16 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.serversass.Generator;
 import org.serversass.Output;
+import org.serversass.ast.Expression;
+import org.serversass.ast.FunctionCall;
+import org.serversass.ast.Value;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Files;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
+import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
@@ -64,7 +68,8 @@ import java.util.regex.Pattern;
 public class AssetsDispatcher implements WebDispatcher {
 
     private static final String ASSETS_PREFIX = "/assets/";
-    private static final Pattern INTERNATIONALIZED_TEMPLATE_URI = Pattern.compile("(?<path>.*)_[a-z]{2}\\.(?<extension>.*)");
+    private static final Pattern INTERNATIONALIZED_TEMPLATE_URI =
+            Pattern.compile("(?<path>.*)_[a-z]{2}\\.(?<extension>.*)");
     private static final String PASTA_SUFFIX = ".pasta";
 
     @ConfigValue("http.generated-directory")
@@ -76,6 +81,9 @@ public class AssetsDispatcher implements WebDispatcher {
 
     @Part
     private Tagliatelle tagliatelle;
+
+    @Part
+    private GlobalContext globalContext;
 
     private static final Log SASS_LOG = Log.get("sass");
 
@@ -159,8 +167,10 @@ public class AssetsDispatcher implements WebDispatcher {
     private DispatchDecision tryI18nTagliatelle(String uri, Response response) throws CompileException {
         Matcher i18nMatcher = INTERNATIONALIZED_TEMPLATE_URI.matcher(uri);
         if (i18nMatcher.matches()) {
-            Optional<Template> template =
-                    tagliatelle.resolve(i18nMatcher.group("path")+ "." + i18nMatcher.group("extension") + PASTA_SUFFIX);
+            Optional<Template> template = tagliatelle.resolve(i18nMatcher.group("path")
+                                                              + "."
+                                                              + i18nMatcher.group("extension")
+                                                              + PASTA_SUFFIX);
             if (template.isPresent()) {
                 if (!handleUnmodified(template.get(), response)) {
                     response.template(HttpResponseStatus.OK, template.get());
@@ -236,6 +246,16 @@ public class AssetsDispatcher implements WebDispatcher {
             }
             return null;
         }
+
+        @Override
+        public Expression evaluateFunction(FunctionCall call) {
+            SassFunction sassFunction = globalContext.getPart(call.getName(), SassFunction.class);
+            if (sassFunction != null) {
+                return new Value(sassFunction.eval(call));
+            }
+
+            return super.evaluateFunction(call);
+        }
     }
 
     private void compileSASS(String scssUri, File file) throws IOException {
@@ -270,7 +290,7 @@ public class AssetsDispatcher implements WebDispatcher {
                   .filter(f -> f.getName().endsWith(".css"))
                   .forEach(File::delete);
         } catch (NullPointerException e) {
-            // Happens if the directly does not exist....
+            // Happens if the directory does not exist....
             Exceptions.ignore(e);
         } catch (Exception e) {
             Exceptions.handle(e);
