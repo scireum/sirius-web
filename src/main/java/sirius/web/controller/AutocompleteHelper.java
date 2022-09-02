@@ -28,6 +28,11 @@ public class AutocompleteHelper {
      */
     public static final String NEW_ENTRY_NLS_KEY = "AutocompleteHelper.newHit";
 
+    /**
+     * Specifies the default number of suggestions to supply.
+     */
+    public static final int DEFAULT_LIMIT = 10;
+
     private AutocompleteHelper() {
     }
 
