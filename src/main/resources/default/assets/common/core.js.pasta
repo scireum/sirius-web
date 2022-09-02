@@ -465,7 +465,7 @@ sirius.readLocalStore = function (name) {
             return window.localStorage.getItem('sirius.' + name);
         }
     } catch (e) {
-        log('Cannot read local store', {name: name, error: e});
+        console.log('Cannot read local store', {name: name, error: e});
     }
     return null;
 }
@@ -486,6 +486,6 @@ sirius.writeLocalStore = function (name, value) {
             window.localStorage.setItem('sirius.' + name, value);
         }
     } catch (e) {
-        log('Cannot write local store', {name: name, value: value, error: e});
+        console.log('Cannot write local store', {name: name, value: value, error: e});
     }
 }
