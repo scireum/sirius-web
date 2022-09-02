@@ -451,3 +451,41 @@ sirius.resetMobileZoom = function () {
         document.head.removeChild(_viewportMeta);
     }
 }
+
+/**@
+ * Reads the given value from the localStorage if supported by the browser. Fails gracefully by returning null
+ * if no localStorage is available.
+ *
+ * @param name the name of the local storage variable
+ * @returns the value in the local storage variable or null
+ */
+sirius.readLocalStore = function (name) {
+    try {
+        if (sirius.isDefined(window.localStorage)) {
+            return window.localStorage.getItem(name);
+        }
+    } catch (e) {
+        console.log('Cannot read local store', {name: name, error: e});
+    }
+    return null;
+}
+
+/**@
+ * Writes the given value to the localStorage if supported by the browser. Fails gracefully by doing nothing,
+ * if no localStorage is available.
+ *
+ * @param name the name of the local storage variable
+ * @param value the value which should be stored in the local storage variable
+ */
+sirius.writeLocalStore = function (name, value) {
+    if (!sirius.isDefined(value)) {
+        value = '';
+    }
+    try {
+        if (sirius.isDefined(window.localStorage)) {
+            window.localStorage.setItem(name, value);
+        }
+    } catch (e) {
+        console.log('Cannot write local store', {name: name, value: value, error: e});
+    }
+}
