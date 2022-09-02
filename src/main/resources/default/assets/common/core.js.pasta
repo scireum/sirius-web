@@ -482,7 +482,7 @@ sirius.writeLocalStore = function (name, value) {
         value = '';
     }
     try {
-        if (isDefined(window.localStorage)) {
+        if (sirius.isDefined(window.localStorage)) {
             window.localStorage.setItem('sirius.' + name, value);
         }
     } catch (e) {
