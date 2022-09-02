@@ -365,7 +365,8 @@ function dougnutChart(selector, labels, data) {
         },
         type: 'doughnut',
         options: {
-            startAngle: -0.55 * Math.PI
+            startAngle: -0.55 * Math.PI,
+            maintainAspectRatio: false
         }
     });
 }
