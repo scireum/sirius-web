@@ -346,8 +346,16 @@ function barChart(selector, labels, datasets) {
     });
 }
 
+/**@
+ * Renders a doughnut chart.
+ * @param selector the selector to determine the target canvas. Also, the canvas can be passed in as DOM element
+ * @param labels an array of labels to use for the chart
+ * @param data array of numeric values to use for the chart
+ */
 function dougnutChart(selector, labels, data) {
-    new Chart($(selector).get(0).getContext("2d"), {
+    const _canvas = sirius.querySelector(selector);
+
+    new Chart(_canvas, {
         data: {
             datasets: [{
                 data: data,
