@@ -84,10 +84,10 @@ public class MacroCall extends Call {
     }
 
     /**
-     * Detects commonly used macros and replaces them by intrinsices (single op codes).
+     * Detects commonly used macros and replaces them by intrinsics (single op codes).
      * <p>
      * Not only will this improve the performance. In case of the <tt>i18n</tt> intrinsic to also permits
-     * to transpile a single macro invokation like {@code i18n('Text')} into a {@link sirius.pasta.noodle.NLSCall}.
+     * to transpile a single macro invocation like {@code i18n('Text')} into a {@link sirius.pasta.noodle.NLSCall}.
      *
      * @return an intrinsic replacement for the macro call or <tt>null</tt> if there is no matching macro
      */

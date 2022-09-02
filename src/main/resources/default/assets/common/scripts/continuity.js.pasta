@@ -4,6 +4,7 @@ window.sirius.Continuity = (function () {
      *
      * @param {Object} [options] map specifying the behaviour of the library:
      * @param {string} options.stateParameterName Defines the parameter name the history state is written to in the deeplink URL.
+     * @param {boolean} [options.encodeStateParameter] Allows to enable base64 encoding of the history state parameter in the URL instead of plain text.
      * @param {boolean} [options.debug] Allows to enable the printing of debugging messages to the console right from the start.
      * @param {boolean} [options.disableAutoDeepLinks] Allows to disable the automatic generation and update of deep-links via the state parameter.
      * @param {function} [options.initialStateHook] Called during the parsing of the initial deep-linked state. Can be used to create intermediate states the user can navigate back to.
@@ -113,7 +114,7 @@ window.sirius.Continuity = (function () {
      */
     Continuity.prototype.handleStateChange = function (state, dontSetLastState) {
         if (!dontSetLastState) {
-            this.lastState = this.currentState;
+            this.lastState = Object.assign({}, this.currentState);
         }
         this.currentState = state;
 
@@ -145,7 +146,7 @@ window.sirius.Continuity = (function () {
     Continuity.prototype.pushEntireState = function (newState) {
         this.log('[CONTINUITY] [ACTION] Pushing entire new state: %o', newState);
 
-        this.lastState = this.currentState;
+        this.lastState = Object.assign({}, this.currentState);
         this.currentState = newState;
         this.searchParams.set(this.options.stateParameterName, this.buildStateUrlParam(this.currentState));
 
@@ -179,7 +180,7 @@ window.sirius.Continuity = (function () {
     Continuity.prototype.pushStateEntry = function (type, entry) {
         this.log('[CONTINUITY] [ACTION] Pushing new state for type "%s": %o', type, entry);
 
-        this.lastState = this.currentState;
+        this.lastState = Object.assign({}, this.currentState);
         this.currentState[type] = entry;
         this.searchParams.set(this.options.stateParameterName, this.buildStateUrlParam(this.currentState));
 
@@ -212,18 +213,19 @@ window.sirius.Continuity = (function () {
      * - otherwise we create a new state (as copy from the current state) and remove the entry there. The new state is then pushed to the history stack.
      *
      * @param {string} type the type of the state entry to remove
+     * @param {boolean} [forceNewState] allows to force the creation of a new state without the entry type
      */
-    Continuity.prototype.popStateEntry = function (type) {
+    Continuity.prototype.popStateEntry = function (type, forceNewState) {
         this.log('[CONTINUITY] [ACTION] Popping state for type "%s"', type);
-        if (this.lastState) {
+        if (this.lastState && !forceNewState) {
             history.back();
         } else {
-            this.lastState = this.currentState;
+            this.lastState = Object.assign({}, this.currentState);
             delete this.currentState[type];
             this.searchParams.set(this.options.stateParameterName, this.buildStateUrlParam(this.currentState));
 
             history.pushState(this.currentState, null, this.buildUrl());
-            this.handleStateChange(this.currentState);
+            this.handleStateChange(this.currentState, true);
         }
     };
 
@@ -277,8 +279,23 @@ window.sirius.Continuity = (function () {
             }
         }
 
-        return JSON.stringify(paramState);
+        const paramStateText = JSON.stringify(paramState);
+        return this.options.encodeStateParameter ? convertToBinary(paramStateText) : paramStateText;
     };
+
+    /**@
+     * Converts the given UTF-8 text to a binary base64 encoded representation.
+     *
+     * @param string the text to encode
+     * @returns {string} the binary base64 encoded representation of the text
+     */
+    function convertToBinary(string) {
+        const codeUnits = new Uint16Array(string.length);
+        for (let i = 0; i < codeUnits.length; i++) {
+            codeUnits[i] = string.charCodeAt(i);
+        }
+        return btoa(String.fromCharCode.apply(this, new Uint8Array(codeUnits.buffer)));
+    }
 
     /**@
      * Parses the value of our history state deep-link parameter from the URL and transforms it into a JS Object.
@@ -287,8 +304,24 @@ window.sirius.Continuity = (function () {
      * @returns {Object} the history state as an object
      */
     Continuity.prototype.parseStateUrlParam = function (param) {
-        return JSON.parse(param);
+        const paramStateText = this.options.encodeStateParameter ? convertFromBinary(param) : param;
+        return JSON.parse(paramStateText);
     };
+
+    /**@
+     * Converts the given binary base64 encoded representation into its original UTF-8 text.
+     *
+     * @param string the binary base64 encoded representation of a text
+     * @returns {string} the original text
+     */
+    function convertFromBinary(encoded) {
+        const binary = atob(encoded);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < bytes.length; i++) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+        return String.fromCharCode.apply(this, new Uint16Array(bytes.buffer));
+    }
 
     /**@
      * Generates the new URL by combining the given search parameters and hash (if present).

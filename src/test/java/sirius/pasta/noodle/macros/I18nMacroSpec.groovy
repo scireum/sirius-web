@@ -6,10 +6,11 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-package sirius.pasta.tagliatelle
+package sirius.pasta.noodle.macros
 
 import sirius.kernel.BaseSpecification
 import sirius.kernel.di.std.Part
+import sirius.pasta.tagliatelle.Tagliatelle
 import sirius.pasta.tagliatelle.compiler.TemplateCompilationContext
 import sirius.pasta.tagliatelle.compiler.TemplateCompiler
 import sirius.web.resources.Resources
