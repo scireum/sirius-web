@@ -461,7 +461,7 @@ sirius.resetMobileZoom = function () {
  */
 sirius.readLocalStore = function (name) {
     try {
-        if (isDefined(window.localStorage)) {
+        if (sirius.isDefined(window.localStorage)) {
             return window.localStorage.getItem('sirius.' + name);
         }
     } catch (e) {
@@ -478,7 +478,7 @@ sirius.readLocalStore = function (name) {
  * @param value the value which should be stored in the local storage variable
  */
 sirius.writeLocalStore = function (name, value) {
-    if (!isDefined(value)) {
+    if (!sirius.isDefined(value)) {
         value = '';
     }
     try {
