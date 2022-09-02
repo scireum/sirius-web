@@ -151,7 +151,7 @@ public class AutocompleteHelper {
                 // LEGACY SUPPORT....
                 out.property("id", value);
                 out.property("text", fieldLabel == null ? "" : fieldLabel);
-                out.property("description",  Strings.isFilled(completionLabel) ? completionLabel : fieldLabel);
+                out.property("description", Strings.isFilled(completionLabel) ? completionLabel : fieldLabel);
                 // END OF LEGACY SUPPORT
 
                 if (disabled) {
