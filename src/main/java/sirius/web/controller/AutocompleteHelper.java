@@ -31,7 +31,7 @@ public class AutocompleteHelper {
     /**
      * Specifies the default number of suggestions to supply.
      */
-    public static final int DEFAULT_LIMIT = 10;
+    public static final int DEFAULT_LIMIT = 25;
 
     private AutocompleteHelper() {
     }
