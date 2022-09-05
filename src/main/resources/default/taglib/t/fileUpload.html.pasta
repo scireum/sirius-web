@@ -11,9 +11,9 @@
 <i:arg type="String" name="previewsContainer" default=""
        description="A dom selector to render the upload progress into. If not set, will render below the button."/>
 
-<i:pragma name="description" value="Renders a file upload within a Wondergem template"/>
+<i:pragma name="description" value="Renders a file upload within a Tycho template"/>
 
-<div class="dropzone sirius-fileupload mb-lg-0 mb-2 @class" id="@id">
+<div class="dropzone sirius-fileupload @class" id="@id">
     <a class="dropzone-select btn @btnClass">
         <i class="fas fa-cloud-upload-alt"></i>
         <span class="pl-2 d-none d-xl-inline">
