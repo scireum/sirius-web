@@ -34,6 +34,20 @@ function pickFromColorWheel() {
 }
 
 /**@
+ * Picks random colors from the list of chart colors.
+ *
+ * @param amount the amount of colors to return
+ * @returns {*[]} an array containing randomly picked colors
+ */
+function multiPickFromColorWheel(amount) {
+    let colors = [];
+    for (let i = 0; i < amount; i++) {
+        colors[i] = pickFromColorWheel();
+    }
+    return colors;
+}
+
+/**@
  * Turns the given type into an inline chart type.
  *
  * Most notably, this will convert 'auto' into a randomly selected chart type.
@@ -359,7 +373,7 @@ function dougnutChart(selector, labels, data) {
         data: {
             datasets: [{
                 data: data,
-                backgroundColor: SIRIUS_CHART_COLOR_WHEEL
+                backgroundColor: multiPickFromColorWheel(data.length)
             }],
             labels: labels
         },
