@@ -8,6 +8,8 @@
        default=""
        description="Specifies the target this card points to. Use the CSS class card-link for links within the card to win over this link."/>
 <i:arg type="String" name="titleClass" default="" description="Permits adding additional classes to the card title."/>
+<i:arg type="boolean" name="fullHeight" default="true"
+       description="Determines if the card will fill the whole column, adding h-100 to the card classes"/>
 
 <i:pragma name="description">
     Renders a data centric card which has a title an optional subtitle and body contents.
@@ -17,7 +19,7 @@
 </i:pragma>
 
 <div class="col mb-4">
-    <div class="card card-border card-hover-shadow h-100 @class">
+    <div class="card card-border card-hover-shadow @if(fullHeight) {h-100} @class">
         <div class="d-flex flex-grow-1 @(headerLeft ? 'flex-row align-items-center' : 'flex-column')">
             <i:render name="header"></i:render>
             <div class="d-flex flex-column flex-grow-1">

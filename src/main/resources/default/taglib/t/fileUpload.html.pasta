@@ -3,7 +3,7 @@
 <i:arg type="String" name="label" default="@i18n(labelKey)"/>
 <i:arg type="String" name="uploadUrl"/>
 <i:arg name="class" type="String" default="" description="Lists additional CSS classes to apply to the dropzone."/>
-<i:arg name="btnClass" type="String" default=""
+<i:arg name="btnClass" type="String" default="btn-primary"
        description="Lists additional CSS classes to apply to the upload button."/>
 <i:arg type="String" name="acceptedFiles" default=""
        description="This is a comma separated list of allowed mime types or file extensions. Eg.: image/*,application/pdf,.psd"/>
@@ -11,10 +11,15 @@
 <i:arg type="String" name="previewsContainer" default=""
        description="A dom selector to render the upload progress into. If not set, will render below the button."/>
 
-<i:pragma name="description" value="Renders a file upload within a Wondergem template"/>
+<i:pragma name="description" value="Renders a file upload within a Tycho template"/>
 
-<div class="dropzone sirius-fileupload mb-lg-0 mb-2 @class" id="@id">
-    <a class="dropzone-select btn btn-primary @btnClass">@label</a>
+<div class="dropzone sirius-fileupload @class" id="@id">
+    <a class="dropzone-select btn @btnClass">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <span class="pl-2 d-none d-xl-inline">
+            @label
+        </span>
+    </a>
 
     <i:if test="!isFilled(previewsContainer)">
         <div class="dropzone-items mt-2">
@@ -78,7 +83,58 @@
             }
         },
         init: function () {
-            this.on('success', function (file, response) {
+            const dropzone = this;
+            let previewsContainer = '@previewsContainer';
+
+            if (previewsContainer) {
+                let _dropzoneIndicator = document.querySelector(previewsContainer + ' .sirius-upload-hover');
+
+                function hideIndicator() {
+                    _dropzoneIndicator.classList.remove('d-flex');
+                    _dropzoneIndicator.classList.add('d-none');
+                    _dropzoneIndicator.classList.remove('sirius-upload-hover-active');
+                }
+
+                document.addEventListener('dragenter', function (event) {
+                    _dropzoneIndicator.classList.add('d-flex');
+                    _dropzoneIndicator.classList.remove('d-none');
+                }, false);
+                document.addEventListener('dragover', function (event) {
+                    event.preventDefault();
+                });
+                document.addEventListener('dragend', function (event) {
+                    hideIndicator();
+                }, false);
+                document.addEventListener('drop', function (event) {
+                    hideIndicator();
+                }, false);
+                document.addEventListener('dragleave', function (event) {
+                    if (event.relatedTarget === null) {
+                        // left window
+                        hideIndicator();
+                    }
+                }, false);
+                _dropzoneIndicator.addEventListener('dragenter', function (event) {
+                    _dropzoneIndicator.classList.add('sirius-upload-hover-active');
+                });
+                _dropzoneIndicator.addEventListener('dragleave', function (event) {
+                    _dropzoneIndicator.classList.remove('sirius-upload-hover-active');
+                });
+                _dropzoneIndicator.addEventListener('dragover', function (event) {
+                    event.preventDefault();
+                });
+                _dropzoneIndicator.addEventListener('drop', function (event) {
+                    event.preventDefault();
+                    dropzone.drop(event);
+                });
+                dropzone.on('drop', function () {
+                    hideIndicator();
+                });
+            }
+            sirius.warnOnUnload(function () {
+                return dropzone.getUploadingFiles().length + dropzone.getQueuedFiles().length;
+            });
+            dropzone.on('success', function (file, response) {
                 if (response.error) {
                     file.previewElement.classList.add('dz-error');
                     file.previewElement.classList.remove('dz-success');
@@ -86,11 +142,11 @@
                     file.previewElement.querySelector('[data-dz-errormessage]').innerHTML = message;
                     addErrorMessage(message);
                 } else if (response.refresh) {
-                    this.reloadAfterQueueComplete = true;
+                    dropzone.reloadAfterQueueComplete = true;
                 }
             });
-            this.on('queuecomplete', function () {
-                if (this.reloadAfterQueueComplete) {
+            dropzone.on('queuecomplete', function () {
+                if (dropzone.reloadAfterQueueComplete) {
                     setTimeout(function () {
                         document.location.reload(true);
                     }, 2500);

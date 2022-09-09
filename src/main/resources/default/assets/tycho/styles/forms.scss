@@ -183,3 +183,24 @@
     }
   }
 }
+
+.sirius-upload-hover {
+  min-height: 200px;
+  background-color: #F4F4F4;
+  border-radius: 5px;
+
+  &.sirius-upload-hover-active {
+    background-color: #C1D4F2;
+  }
+
+  * {
+    //stop dragleave to fire when hovering over child elements
+    pointer-events: none;
+  }
+}
+
+.sirius-upload-content {
+  .img-preview {
+    min-height: 0px;
+  }
+}

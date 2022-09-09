@@ -94,7 +94,7 @@ public class Invocation {
      * @throws ScriptingException in case of an error within the script. See {@link ScriptingException} for a detailed
      *                            explanation of when this exception is used.
      */
-    public Object execute() throws ScriptingException {
+    public Object execute() {
         try {
             return executeBytecodes();
         } catch (HandledException ex) {
@@ -110,7 +110,7 @@ public class Invocation {
         }
     }
 
-    @SuppressWarnings({"unchecked", "java:S1541", "java:S134", "java:S1764", "OverlyLongMethod"})
+    @SuppressWarnings({"unchecked", "java:S1479", "java:S1541", "java:S134", "java:S1764", "OverlyLongMethod"})
     @Explain(
             "This method and also this switch statement is too large. However, we'd like to keep everything in one place if possible.")
     private Object executeBytecodes() throws Throwable {
@@ -335,8 +335,8 @@ public class Invocation {
 
     private void handleTransformableIs() {
         Object self = pop();
-        if (self instanceof Transformable) {
-            push(((Transformable) self).is(pop(Class.class)));
+        if (self instanceof Transformable transformable) {
+            push(transformable.is(pop(Class.class)));
         } else {
             push(false);
         }
@@ -345,8 +345,8 @@ public class Invocation {
     @SuppressWarnings("unchecked")
     private void handleTransformableAs() {
         Object self = pop();
-        if (self instanceof Transformable) {
-            push(((Transformable) self).as(pop(Class.class)));
+        if (self instanceof Transformable transformable) {
+            push(transformable.as(pop(Class.class)));
         } else {
             push(null);
         }

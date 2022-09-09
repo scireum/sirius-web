@@ -42,8 +42,21 @@ $sirius-cyan-light: #68D3E3;
 $sirius-deep-blue: #53599A;
 $sirius-deep-blue-dark: #352E87;
 
+$sirius-white: #FFFFFF;
+$sirius-white-dark: #F4F4F4;
+
+$sirius-gray-lighter: #E6E6E6;
+$sirius-grey-lighter: $sirius-gray-lighter;
+$sirius-gray-light: #C7C7C7;
+$sirius-grey-light: $sirius-gray-light;
 $sirius-gray: #ACACAC;
+$sirius-grey: $sirius-gray;
 $sirius-gray-dark: #808080;
+$sirius-grey-dark: $sirius-gray-dark;
+$sirius-gray-darker: #474747;
+$sirius-grey-darker: $sirius-gray-darker;
+
+$sirius-black: #000000;
 
 .text-sirius-red {
   color: $sirius-red !important;
@@ -255,24 +268,84 @@ $sirius-gray-dark: #808080;
   border-color: $sirius-cyan-light;
 }
 
-.text-sirius-gray {
+.text-sirius-white {
+  color: $sirius-white !important;
+}
+.bg-sirius-white {
+  background-color: $sirius-white !important;
+}
+.border-sirius-white {
+  border-color: $sirius-white;
+}
+
+.text-sirius-white-dark {
+  color: $sirius-white-dark !important;
+}
+.bg-sirius-white-dark {
+  background-color: $sirius-white-dark !important;
+}
+.border-sirius-white-dark {
+  border-color: $sirius-white-dark;
+}
+
+.text-sirius-gray-lighter, .text-sirius-grey-lighter {
+  color: $sirius-gray-lighter !important;
+}
+.bg-sirius-gray-lighter, .bg-sirius-grey-lighter {
+  background-color: $sirius-gray-lighter !important;
+}
+.border-sirius-gray-lighter, .border-sirius-grey-lighter {
+  border-color: $sirius-gray-lighter;
+}
+
+.text-sirius-gray-light, .text-sirius-grey-light {
+  color: $sirius-gray-light !important;
+}
+.bg-sirius-gray-light, .bg-sirius-grey-light {
+  background-color: $sirius-gray-light !important;
+}
+.border-sirius-gray-light, .border-sirius-grey-light {
+  border-color: $sirius-gray-light;
+}
+
+.text-sirius-gray, .text-sirius-grey {
   color: $sirius-gray !important;
 }
-.bg-sirius-gray {
+.bg-sirius-gray, .bg-sirius-grey {
   background-color: $sirius-gray !important;
 }
-.border-sirius-gray {
+.border-sirius-gray, .border-sirius-grey {
   border-color: $sirius-gray;
 }
 
-.text-sirius-gray-dark {
+.text-sirius-gray-dark, .text-sirius-grey-dark {
   color: $sirius-gray-dark !important;
 }
-.bg-sirius-gray-dark {
+.bg-sirius-gray-dark, .bg-sirius-grey-dark {
   background-color: $sirius-gray-dark !important;
 }
-.border-sirius-gray-dark {
+.border-sirius-gray-dark, .border-sirius-grey-dark {
   border-color: $sirius-gray-dark;
+}
+
+.text-sirius-gray-darker, .text-sirius-grey-darker {
+  color: $sirius-gray-darker !important;
+}
+.bg-sirius-gray-darker, .bg-sirius-grey-darker {
+  background-color: $sirius-gray-darker !important;
+}
+.border-sirius-gray-darker, .border-sirius-grey-darker {
+  border-color: $sirius-gray-darker;
+}
+
+.text-sirius-black {
+  color: $sirius-black !important;
+}
+.bg-sirius-black {
+  background-color: $sirius-black !important;
+}
+.border-sirius-black {
+  border-color: $sirius-black;
 }
 
 .text-sirius-deep-blue {

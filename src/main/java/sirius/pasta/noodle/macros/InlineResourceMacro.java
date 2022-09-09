@@ -59,6 +59,18 @@ public class InlineResourceMacro extends BasicMacro {
     }
 
     @Override
+    public void verify(CompilationContext context, Position position, List<Node> args) {
+        super.verify(context, position, args);
+
+        if (args.get(0).isConstant()) {
+            String resourceName = String.valueOf(args.get(0).getConstantValue());
+            if (resources.resolve(resourceName).isEmpty()) {
+                context.warning(position, "Unknown resource: %s", resourceName);
+            }
+        }
+    }
+
+    @Override
     public Object invoke(Environment environment, Object[] args) {
         String path = (String) args[0];
         if (!path.startsWith("/assets")) {

@@ -399,11 +399,6 @@ public class WebContext implements SubContext {
     private static CSRFHelper csrfHelper;
 
     /**
-     * Date format used by HTTP date headers
-     */
-    public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
-
-    /**
      * Provides access to the underlying ChannelHandlerContext
      *
      * @return the underlying channel handler context
@@ -718,8 +713,8 @@ public class WebContext implements SubContext {
         }
         try {
             InterfaceHttpData data = postDecoder.getBodyHttpData(key);
-            if (data instanceof HttpData) {
-                return (HttpData) data;
+            if (data instanceof HttpData httpData) {
+                return httpData;
             }
         } catch (Exception e) {
             Exceptions.handle(WebServer.LOG, e);
@@ -739,8 +734,8 @@ public class WebContext implements SubContext {
         }
         try {
             InterfaceHttpData data = postDecoder.getBodyHttpData(key);
-            if (data instanceof FileUpload) {
-                return (FileUpload) data;
+            if (data instanceof FileUpload fileUpload) {
+                return fileUpload;
             }
         } catch (Exception e) {
             Exceptions.handle(WebServer.LOG, e);
@@ -1475,7 +1470,7 @@ public class WebContext implements SubContext {
     /**
      * Determines if a response was already committed.
      * <p>
-     * If a response is committed a HTTP state and some headers have already been sent. Therefore a new / other
+     * If a response is committed a HTTP state and some headers have already been sent. Therefore, a new / other
      * response
      * cannot be created to this request.
      *
@@ -1518,14 +1513,16 @@ public class WebContext implements SubContext {
      *
      * @param header the name of the header to fetch
      * @return the value in milliseconds of the submitted date or 0 if the header was not present.
+     * @deprecated Use {@link WebServer#parseDateHeader(String)} instead.
      */
+    @Deprecated
     public long getDateHeader(CharSequence header) {
         String value = request.headers().get(header);
         if (Strings.isEmpty(value)) {
             return 0;
         }
         try {
-            SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT, Locale.US);
+            SimpleDateFormat dateFormatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
             return dateFormatter.parse(value).getTime();
         } catch (ParseException e) {
             Exceptions.ignore(e);

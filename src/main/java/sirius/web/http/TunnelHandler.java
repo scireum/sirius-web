@@ -36,6 +36,7 @@ import sirius.kernel.nls.NLS;
 import javax.net.ssl.SSLSession;
 import java.net.InetSocketAddress;
 import java.nio.channels.ClosedChannelException;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -66,6 +67,7 @@ public class TunnelHandler implements AsyncHandler<String> {
             Set.of(HttpHeaderNames.SET_COOKIE.toString().toLowerCase());
 
     private final Response response;
+    private final AtomicLong unflushedBytes = new AtomicLong(0L);
     private final WebContext webContext;
     private final String url;
     private final Processor<ByteBuf, Optional<ByteBuf>> transformer;
@@ -83,7 +85,7 @@ public class TunnelHandler implements AsyncHandler<String> {
     private final AtomicLong bytesReceived = new AtomicLong(0);
 
     private volatile int responseCode = HttpResponseStatus.OK.code();
-    private boolean contentLengthKnown;
+    private volatile boolean contentLengthKnown;
 
     private volatile boolean failed;
 
@@ -248,7 +250,9 @@ public class TunnelHandler implements AsyncHandler<String> {
 
     private long parseLastModified(Map.Entry<String, String> entry) {
         try {
-            return response.getHTTPDateFormat().parse(entry.getValue()).getTime();
+            return WebServer.parseDateHeader(entry.getValue())
+                            .map(date -> date.atZone(ZoneId.systemDefault()).toInstant().getEpochSecond())
+                            .orElse(0L);
         } catch (Exception e) {
             Exceptions.ignore(e);
             return 0;
@@ -288,15 +292,13 @@ public class TunnelHandler implements AsyncHandler<String> {
                 completeResponse(bodyPart);
             } else if (transformer != null) {
                 ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
-                transformer.apply(data)
-                           .map(DefaultHttpContent::new)
-                           .ifPresent(message -> response.contentionAwareWrite(message, false));
+                transformer.apply(data).ifPresent(this::writeBodyPart);
                 data.release();
             } else {
                 ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
-                Object msg = response.responseChunked ? new DefaultHttpContent(data) : data;
-                response.contentionAwareWrite(msg, false);
+                writeBodyPart(data);
             }
+
             return State.CONTINUE;
         } catch (HandledException e) {
             Exceptions.ignore(e);
@@ -304,6 +306,16 @@ public class TunnelHandler implements AsyncHandler<String> {
         } catch (Exception e) {
             Exceptions.handle(e);
             return State.ABORT;
+        }
+    }
+
+    private void writeBodyPart(ByteBuf data) {
+        Object msg = response.responseChunked ? new DefaultHttpContent(data) : data;
+        if (unflushedBytes.addAndGet(data.readableBytes()) >= Response.BUFFER_SIZE) {
+            response.ctx.writeAndFlush(msg);
+            unflushedBytes.set(0);
+        } else {
+            response.ctx.write(msg);
         }
     }
 
@@ -342,7 +354,7 @@ public class TunnelHandler implements AsyncHandler<String> {
         // Now we figure out which is simply sent and which is sent while obtaining the completion future
         // to finish the response...
         if (lastResult != null && completeResult != null) {
-            response.contentionAwareWrite(new DefaultHttpContent(lastResult), false);
+            response.ctx.write(new DefaultHttpContent(lastResult));
             ChannelFuture writeFuture = response.ctx.writeAndFlush(new DefaultLastHttpContent(completeResult));
             response.complete(writeFuture);
         } else if (completeResult != null) {

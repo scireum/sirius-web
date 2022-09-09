@@ -179,3 +179,21 @@ if (typeof Object.assign != 'function') {
         configurable: true
     });
 }
+
+/**@
+* Polyfill for the Object.entries function
+* see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/entries#polyfill
+*/
+if (!Object.entries) {
+    Object.entries = function (obj) {
+        const keys = Object.keys(obj);
+        const result = new Array(keys.length);
+        let index = keys.length;
+
+        while (index-- > 0) {
+            result[index] = [keys[index], obj[keys[index]]];
+        }
+
+        return result;
+    };
+}

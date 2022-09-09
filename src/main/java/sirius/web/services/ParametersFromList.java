@@ -8,21 +8,24 @@
 
 package sirius.web.services;
 
+import sirius.web.security.Permission;
+
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Provides a list wrapper for {@link ServiceParameter}.
+ * Container annotation for {@link ParametersFrom} annotations.
  */
-@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ServiceParameters {
+@Target(ElementType.METHOD)
+public @interface ParametersFromList {
     /**
-     * Contains the list of service parameters.
+     * Contains all shared parameter collections assigned to a method.
      *
-     * @return the list of expected parameters of this service
+     * @return all shared parameter collections assigned to a method
      */
-    ServiceParameter[] value();
+    ParametersFrom[] value();
 }

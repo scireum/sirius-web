@@ -86,6 +86,9 @@ class WebContextSpec extends BaseSpecification {
         HttpURLConnection c = new URL("http://localhost:9999/test/completion-promise").openConnection()
         c.setRequestMethod("GET")
         c.connect()
+        synchronized (CompletionPromiseTestController.SIGNAL) {
+            CompletionPromiseTestController.SIGNAL.wait(1000)
+        }
         then:
         c.getResponseCode() == 200
         and:

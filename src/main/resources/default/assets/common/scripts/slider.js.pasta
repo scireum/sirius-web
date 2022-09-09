@@ -21,25 +21,34 @@
         options = options || {};
         options.animation = options.animation || 0;
 
-        const _slidesContainer = document.querySelector(target);
-        const _slides = Array.prototype.slice.call(_slidesContainer.childNodes).filter(function (node) {
+        const _slider = document.querySelector(target);
+
+        // obtain all the child nodes of the slider and mark them as "slider views"
+        const _slides = Array.prototype.slice.call(_slider.childNodes).filter(function (node) {
             return node.tagName === 'DIV';
         });
         if (_slides.length < 2) {
             return;
         }
-
         _slides.forEach(function (_slide) {
             _slide.classList.add('sci-slider-view');
         });
 
-        _slidesContainer.classList.add('sci-slider-views');
-        _slidesContainer.style.width = (_slides.length * 100) + '%';
-
+        // create a wrapper node replacing (and later nesting) the original slider node
         const _wrapper = document.createElement('div');
         _wrapper.classList.add('sci-slider-wrapper');
-        _slidesContainer.parentNode.replaceChild(_wrapper, _slidesContainer);
+        _slider.parentNode.replaceChild(_wrapper, _slider);
 
+        // move classes from the original slider div to the wrapper, and add a marker to the slider itself
+        while (_slider.classList.length > 0) {
+            const clazz = _slider.classList.item(0);
+            _wrapper.classList.add(clazz);
+            _slider.classList.remove(clazz);
+        }
+        _slider.classList.add('sci-slider');
+
+        // within the slider is a stack of up to two divs, the slider with the navigation arrows on top, and the dots
+        // below
         const _top = document.createElement('div');
         _top.classList.add('sci-slider-top');
         _wrapper.appendChild(_top);
@@ -59,9 +68,6 @@
             });
         }
 
-        const _slider = document.createElement('div');
-        _slider.classList.add('sci-slider');
-        _slider.appendChild(_slidesContainer);
         _top.appendChild(_slider);
 
         if (options.arrows) {
@@ -92,42 +98,31 @@
                     activateView(index);
                     startAnimationThread();
                 });
+                _dot.classList.add('sci-slider-dot');
                 _dots.appendChild(_dot);
             });
         }
 
-        // obtain initial offsets of the individual views (for relative positioning)
-        let viewOffsets = _slides.map(function (viewElement) {
-            return viewElement.offsetLeft;
-        });
-
         const resetAllSlides = function (callback) {
-            _slides.forEach(function (_slide, index) {
-                _slide.style.left = -viewOffsets[index] + 'px';
+            _slides.forEach(function (_slide) {
+                // set up the slide to fill the entire view within the slider, and not more
+                _slide.style.position = 'absolute';
+                _slide.style.left = '0';
+                _slide.style.width = _slider.offsetWidth + 'px';
+                _slide.style.maxWidth = _slider.offsetWidth + 'px';
+                _slide.style.overflow = 'hidden';
+
+                // the slide is limited to the width provided by the slider, but we want to center the content; we do
+                // this by virtually scrolling the over-sized content such that it is centered
+                _slide.scrollLeft = 0.5 * (_slide.scrollWidth - _slider.offsetWidth);
+
                 _slide.style.visibility = 'hidden';
+
                 if (callback) {
                     callback(_slide.style);
                 }
             });
         };
-
-        // init animated properties
-        if (options.transition === TRANSITION_BLEND) {
-            // hide all views by setting them fully transparent and sorting them down on the stack
-            resetAllSlides(function (style) {
-                style.opacity = '0';
-                style.zIndex = '0';
-                style.transition = 'opacity 1s ease';
-            });
-
-            _slides[0].style.opacity = '1';
-            _slides[0].style.zIndex = '100';
-            _slides[0].style.visibility = 'visible';
-        } else if (options.transition !== TRANSITION_SLIDE) {
-            // falling back to no-transition, hide all views but the first
-            resetAllSlides();
-            _slides[0].style.visibility = 'visible';
-        }
 
         let interrupted = false;
         if (options.interrupt) {
@@ -159,32 +154,37 @@
             _slides[currentIndex].style.opacity = '1';
         };
         const activateViewBySliding = function (direction) {
-            let containerLeft = 0, containerLeftAfterAnimation = 0, previousLeft = 0, currentLeft = 0;
+            // compute the initial and final positions of the current and previous slides
+            const previousFrom = 0, currentTo = 0;
+            let previousTo = 0, currentFrom = 0;
             if (direction > 0) {
-                containerLeft = _slides[currentIndex].offsetWidth;
-                previousLeft = -viewOffsets[previousIndex] - containerLeft;
-                containerLeftAfterAnimation = 0;
-                currentLeft = -viewOffsets[currentIndex];
+                currentFrom = _slider.offsetWidth;
+                previousTo = -_slides[previousIndex].offsetWidth;
             } else {
-                containerLeft = 0;
-                previousLeft = -viewOffsets[previousIndex];
-                containerLeftAfterAnimation = _slides[previousIndex].offsetWidth;
-                currentLeft = -viewOffsets[currentIndex] - containerLeftAfterAnimation; //falscj
+                currentFrom = -_slides[currentIndex].offsetWidth;
+                previousTo = _slider.offsetWidth;
             }
 
             // without any animation, set the initial state
-            resetAllSlides();
-            _slidesContainer.style.transition = '';
-            _slidesContainer.style.left = containerLeft + 'px';
+            resetAllSlides(function (style) {
+                style.transition = '';
+            });
+
             _slides[previousIndex].style.visibility = 'visible';
-            _slides[previousIndex].style.left = previousLeft + 'px';
+            _slides[previousIndex].style.left = previousFrom + 'px';
+            _slides[previousIndex].style.zIndex = '0';
+
             _slides[currentIndex].style.visibility = 'visible';
-            _slides[currentIndex].style.left = currentLeft + 'px';
+            _slides[currentIndex].style.left = currentFrom + 'px';
+            _slides[currentIndex].style.zIndex = '100';
 
             // after some time, to allow layouting to settle, trigger the actual animation
             setTimeout(function () {
-                _slidesContainer.style.transition = 'left 1s ease';
-                _slidesContainer.style.left = containerLeftAfterAnimation + 'px';
+                _slides[previousIndex].style.transition = 'left 1s ease';
+                _slides[previousIndex].style.left = previousTo + 'px';
+
+                _slides[currentIndex].style.transition = 'left 1s ease';
+                _slides[currentIndex].style.left = currentTo + 'px';
             }, 50);
         };
 
@@ -203,7 +203,7 @@
             _slides[previousIndex].classList.remove("sci-slider-view-active");
             _slides[currentIndex].classList.add("sci-slider-view-active");
 
-            if (_dots !== null) {
+            if (_dots) {
                 _dots.childNodes.item(previousIndex).classList.remove("sci-slider-dot-active");
                 _dots.childNodes.item(currentIndex).classList.add("sci-slider-dot-active");
             }
@@ -215,6 +215,8 @@
             } else {
                 activateViewWithoutAnimation();
             }
+
+            fixSliderHeight();
         };
         const activateNextView = function () {
             activateView((currentIndex + 1) % _slides.length, 1);
@@ -223,34 +225,70 @@
             activateView((currentIndex - 1 + _slides.length) % _slides.length, -1);
         };
 
-        const fixViewOffsets = function () {
-            viewOffsets = _slides.map(function (viewElement, index) {
-                return (index * _slider.offsetWidth);
+        const fixSliderHeight = function () {
+            let containerHeight = 0;
+            _slides.forEach(function (_slide) {
+                containerHeight = Math.max(containerHeight, _slide.offsetHeight);
             });
+            _slider.style.height = containerHeight + 'px';
+        };
+
+        const fixView = function () {
+            fixSliderHeight();
             activateView(currentIndex, 1, true);
         };
+
+        // upon resize, trigger a debounced graphics refresh
+        let fixViewTimeout = null;
         window.addEventListener('resize', function (event) {
-            fixViewOffsets();
+            if (fixViewTimeout) {
+                clearTimeout(fixViewTimeout);
+            }
+            fixViewTimeout = setTimeout(fixView, 500);
         });
+
+        const initAnimation = function () {
+            if (options.transition === TRANSITION_BLEND) {
+                // hide all views by setting them fully transparent and sorting them down on the stack
+                resetAllSlides(function (style) {
+                    style.opacity = '0';
+                    style.zIndex = '0';
+                    style.transition = 'opacity 1s ease';
+                });
+
+                _slides[0].style.opacity = '1';
+                _slides[0].style.zIndex = '100';
+                _slides[0].style.visibility = 'visible';
+            } else {
+                resetAllSlides();
+                _slides[0].style.visibility = 'visible';
+            }
+        };
 
         let animationTimer = null;
         const startAnimationThread = function () {
             stopAnimationThread();
 
             animationTimer = setInterval(function () {
-                fixViewOffsets();
+                if (!document.body.contains(_slider)) {
+                    stopAnimationThread();
+                    return;
+                }
+                fixView();
                 if (options.animation && !interrupted) {
                     activateNextView();
                 }
             }, options.animation || 5000);
         };
         const stopAnimationThread = function () {
-            if (animationTimer !== null) {
+            if (animationTimer) {
                 clearInterval(animationTimer);
                 animationTimer = null;
             }
         };
 
+        initAnimation();
+        fixSliderHeight();
         activateView(0, 1, true);
         startAnimationThread();
     }

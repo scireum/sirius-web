@@ -271,8 +271,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             } else {
                 latencyWatch = Watch.start();
             }
-            if (msg instanceof HttpRequest) {
-                channelReadRequest(ctx, (HttpRequest) msg);
+            if (msg instanceof HttpRequest httpRequest) {
+                channelReadRequest(ctx, httpRequest);
             } else if (msg instanceof LastHttpContent) {
                 channelReadLastHttpContent(ctx, msg);
             } else if (msg instanceof HttpContent) {
@@ -458,8 +458,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                 WebServer.LOG.FINE("POST/PUT-DATA: " + req.uri());
             }
             Attribute body = WebServer.getHttpDataFactory().createAttribute(req, "body");
-            if (req instanceof FullHttpRequest) {
-                body.setContent(((FullHttpRequest) req).content().retain());
+            if (req instanceof FullHttpRequest fullHttpRequest) {
+                body.setContent(fullHttpRequest.content().retain());
             }
             currentContext.content = body;
         }

@@ -10,7 +10,6 @@ package sirius.web.dispatch;
 
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import org.serversass.Generator;
 import org.serversass.Output;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
@@ -18,6 +17,7 @@ import sirius.kernel.commons.Files;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
+import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
@@ -39,7 +39,6 @@ import sirius.web.templates.Templates;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
@@ -64,7 +63,8 @@ import java.util.regex.Pattern;
 public class AssetsDispatcher implements WebDispatcher {
 
     private static final String ASSETS_PREFIX = "/assets/";
-    private static final Pattern INTERNATIONALIZED_TEMPLATE_URI = Pattern.compile("(?<path>.*)_[a-z]{2}\\.(?<extension>.*)");
+    private static final Pattern INTERNATIONALIZED_TEMPLATE_URI =
+            Pattern.compile("(?<path>.*)_[a-z]{2}\\.(?<extension>.*)");
     private static final String PASTA_SUFFIX = ".pasta";
 
     @ConfigValue("http.generated-directory")
@@ -76,8 +76,6 @@ public class AssetsDispatcher implements WebDispatcher {
 
     @Part
     private Tagliatelle tagliatelle;
-
-    private static final Log SASS_LOG = Log.get("sass");
 
     @Override
     public int getPriority() {
@@ -159,8 +157,10 @@ public class AssetsDispatcher implements WebDispatcher {
     private DispatchDecision tryI18nTagliatelle(String uri, Response response) throws CompileException {
         Matcher i18nMatcher = INTERNATIONALIZED_TEMPLATE_URI.matcher(uri);
         if (i18nMatcher.matches()) {
-            Optional<Template> template =
-                    tagliatelle.resolve(i18nMatcher.group("path")+ "." + i18nMatcher.group("extension") + PASTA_SUFFIX);
+            Optional<Template> template = tagliatelle.resolve(i18nMatcher.group("path")
+                                                              + "."
+                                                              + i18nMatcher.group("extension")
+                                                              + PASTA_SUFFIX);
             if (template.isPresent()) {
                 if (!handleUnmodified(template.get(), response)) {
                     response.template(HttpResponseStatus.OK, template.get());
@@ -213,34 +213,9 @@ public class AssetsDispatcher implements WebDispatcher {
         return DispatchDecision.DONE;
     }
 
-    /*
-     * Subclass of generator which takes care of proper logging
-     */
-    private class SIRIUSGenerator extends Generator {
-
-        @Override
-        public void debug(String message) {
-            SASS_LOG.FINE(message);
-        }
-
-        @Override
-        public void warn(String message) {
-            SASS_LOG.WARN(message);
-        }
-
-        @Override
-        protected InputStream resolveIntoStream(String sheet) throws IOException {
-            Optional<Resource> res = resources.resolve(sheet);
-            if (res.isPresent()) {
-                return res.get().getUrl().openStream();
-            }
-            return null;
-        }
-    }
-
     private void compileSASS(String scssUri, File file) throws IOException {
         Resources.LOG.FINE("Compiling: " + scssUri);
-        SIRIUSGenerator gen = new SIRIUSGenerator();
+        SiriusSassGenerator gen = new SiriusSassGenerator();
         gen.importStylesheet(scssUri);
 
         String configPath = "assets.scss." + Files.getFilenameWithoutExtension(scssUri);
@@ -270,7 +245,7 @@ public class AssetsDispatcher implements WebDispatcher {
                   .filter(f -> f.getName().endsWith(".css"))
                   .forEach(File::delete);
         } catch (NullPointerException e) {
-            // Happens if the directly does not exist....
+            // Happens if the directory does not exist....
             Exceptions.ignore(e);
         } catch (Exception e) {
             Exceptions.handle(e);

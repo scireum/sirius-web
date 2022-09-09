@@ -33,7 +33,7 @@ import java.lang.annotation.Target;
  * (via {@link sirius.kernel.health.Exceptions.ErrorHandler#hint(sirius.kernel.health.ExceptionHint, Object)}).
  * <p>
  * Note that all parameters which are expected or accepted by this service should be described using a
- * {@link ServiceParameter} annotation for each one.
+ * {@link io.swagger.v3.oas.annotations.Parameter} annotation for each one.
  * <p>
  * If an API is considered deprecated and should not be used anymore, a {@link Deprecated} annotation can be placed
  * on the method. This will be picked up and shown in the API explorer.
@@ -77,33 +77,9 @@ public @interface PublicService {
     boolean enforceMaintenanceMode() default false;
 
     /**
-     * Specifies the visible name of this service.
-     *
-     * @return the name or label of this service. This will be auto translated using
-     * {@link sirius.kernel.nls.NLS#smartGet(String)}.
-     */
-    String label();
-
-    /**
-     * Specifies the short and concise description of this service.
-     *
-     * @return the description of this service. This will be auto translated using
-     * {@link sirius.kernel.nls.NLS#smartGet(String)}.
-     */
-    String description();
-
-    /**
      * May provide a link to a documentation page for this service.
      *
      * @return an URI which points to the documentation of this service (e.g. to a page within the Tycho knowledge base)
      */
     String documentationUri() default "";
-
-    /**
-     * Provides an annotated example response of this service.
-     *
-     * @return an example response which can be expected by this service. Most probably this should include some
-     * comments describing the result.
-     */
-    String exampleResponse() default "";
 }

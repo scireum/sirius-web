@@ -21,7 +21,7 @@ import sirius.web.security.UserContext;
 /**
  * Sends a 404 (not found) for all unhandled URIs.
  * <p>
- * Also handles some special static URIs if enabled, like /crossdomain.xml or /robots.txt.
+ * Also handles some special static URIs if enabled, like /robots.txt.
  * <p>
  * If no other dispatcher jumps in, this will take care of handing the request by sending an HTTP/404.
  */

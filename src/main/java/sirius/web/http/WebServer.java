@@ -26,6 +26,7 @@ import io.netty.handler.codec.http.multipart.DiskAttribute;
 import io.netty.handler.codec.http.multipart.DiskFileUpload;
 import io.netty.handler.codec.http.multipart.HttpDataFactory;
 import io.netty.util.ResourceLeakDetector;
+import io.netty.util.internal.PlatformDependent;
 import sirius.kernel.Killable;
 import sirius.kernel.Sirius;
 import sirius.kernel.Startable;
@@ -45,13 +46,18 @@ import sirius.kernel.health.metrics.MetricProvider;
 import sirius.kernel.health.metrics.MetricsCollector;
 import sirius.kernel.timer.EveryTenSeconds;
 
+import javax.annotation.Nullable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -172,7 +178,6 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
 
     protected static AtomicLong bytesIn = new AtomicLong();
     protected static AtomicLong bytesOut = new AtomicLong();
-    protected static AtomicLong channelContentions = new AtomicLong();
     protected static AtomicLong messagesIn = new AtomicLong();
     protected static AtomicLong messagesOut = new AtomicLong();
     protected static AtomicLong connections = new AtomicLong();
@@ -307,6 +312,27 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
                     e.getMessage(),
                     e.getClass().getName()));
             return ip;
+        }
+    }
+
+    /**
+     * Parses a HTTP header string into a LocalDateTime.
+     * <p>
+     * The timestamp is expected to match the RFC 1123 format, as defined by the HTTP standard.
+     *
+     * @param httpDateHeader the header value to parse
+     * @return the timestamp wrapped as optional or an empty optional if an empty or malformed string was given
+     */
+    public static Optional<LocalDateTime> parseDateHeader(@Nullable String httpDateHeader) {
+        if (Strings.isEmpty(httpDateHeader)) {
+            return Optional.empty();
+        }
+
+        try {
+            return Optional.of(LocalDateTime.parse(httpDateHeader, DateTimeFormatter.RFC_1123_DATE_TIME));
+        } catch (DateTimeParseException e) {
+            Exceptions.ignore(e);
+            return Optional.empty();
         }
     }
 
@@ -760,11 +786,6 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
                                      "HTTP Bytes-Out",
                                      bytesOut.get() / 1024d / 60,
                                      "KB/s");
-        collector.differentialMetric("http_contention_blocks",
-                                     "http-contention-blocks",
-                                     "HTTP Connection Blocks",
-                                     channelContentions.get(),
-                                     "/min");
         collector.differentialMetric("http_connects", "http-connects", "HTTP Connects", connections.get(), "/min");
         collector.differentialMetric("http_requests", "http-requests", "HTTP Requests", requests.get(), "/min");
         collector.differentialMetric("http_slow_requests",
@@ -809,6 +830,21 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
                          queueTime.getAndClear(),
                          "ms");
         collector.metric("http_websockets", "http-websockets", "Open Websockets", websockets.get(), null);
+        collector.metric("pooled_byte_buffer_used_heap_mem",
+                         "pooled-byte-buffer-used-heap-mem",
+                         "Pooled byte buffer allocation used heap memory",
+                         PooledByteBufAllocator.DEFAULT.metric().usedHeapMemory() / 1024d / 1024d,
+                         "MB");
+        collector.metric("pooled_byte_buffer_used_direct_mem",
+                         "pooled-byte-buffer-used-direct-mem",
+                         "Pooled byte buffer allocation used direct memory",
+                         PooledByteBufAllocator.DEFAULT.metric().usedDirectMemory() / 1024d / 1024d,
+                         "MB");
+        collector.metric("max_direct_mem",
+                         "max-direct-mem",
+                         "Maximum direct memory",
+                         PlatformDependent.maxDirectMemory() / 1024d / 1024d,
+                         "MB");
     }
 
     /**

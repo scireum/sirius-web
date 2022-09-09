@@ -28,6 +28,11 @@ public class AutocompleteHelper {
      */
     public static final String NEW_ENTRY_NLS_KEY = "AutocompleteHelper.newHit";
 
+    /**
+     * Specifies the default number of suggestions to supply.
+     */
+    public static final int DEFAULT_LIMIT = 25;
+
     private AutocompleteHelper() {
     }
 
@@ -146,7 +151,7 @@ public class AutocompleteHelper {
                 // LEGACY SUPPORT....
                 out.property("id", value);
                 out.property("text", fieldLabel == null ? "" : fieldLabel);
-                out.property("description",  Strings.isFilled(completionLabel) ? completionLabel : fieldLabel);
+                out.property("description", Strings.isFilled(completionLabel) ? completionLabel : fieldLabel);
                 // END OF LEGACY SUPPORT
 
                 if (disabled) {

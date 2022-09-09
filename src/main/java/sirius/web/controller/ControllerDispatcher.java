@@ -248,9 +248,8 @@ public class ControllerDispatcher implements WebDispatcher {
         out.property("error", false);
         Object result = route.invoke(params);
         if (result instanceof Promise) {
-            ((Promise<?>) result).onSuccess(ignored -> out.endResult()).onFailure(e -> {
-                handleFailure(webContext, route, e);
-            });
+            ((Promise<?>) result).onSuccess(ignored -> out.endResult())
+                                 .onFailure(e -> handleFailure(webContext, route, e));
         } else {
             out.endResult();
         }

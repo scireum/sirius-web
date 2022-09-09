@@ -252,7 +252,7 @@ public class UserContext implements SubContext {
             CallContext.getCurrent().removeFromMDC(MDC_USER_NAME);
         }
 
-        CallContext.getCurrent().addToMDC(MDC_SCOPE, () -> currentScope.getScopeId());
+        CallContext.getCurrent().addToMDC(MDC_SCOPE, currentScope::getScopeId);
     }
 
     /**
@@ -265,8 +265,8 @@ public class UserContext implements SubContext {
     public void setCurrentUser(@Nullable UserInfo user) {
         this.currentUser = user == null ? UserInfo.NOBODY : user;
         CallContext call = CallContext.getCurrent();
-        call.addToMDC(MDC_USER_ID, () -> currentUser.getUserId());
-        call.addToMDC(MDC_USER_NAME, () -> currentUser.getUserName());
+        call.addToMDC(MDC_USER_ID, currentUser::getUserId);
+        call.addToMDC(MDC_USER_NAME, currentUser::getUserName);
         call.setLangIfEmpty(currentUser.getLang());
     }
 

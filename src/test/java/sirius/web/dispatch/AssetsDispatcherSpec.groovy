@@ -9,6 +9,7 @@
 package sirius.web.dispatch
 
 import io.netty.handler.codec.http.HttpHeaderNames
+import org.serversass.Output
 import sirius.kernel.BaseSpecification
 
 class AssetsDispatcherSpec extends BaseSpecification {
@@ -28,6 +29,18 @@ class AssetsDispatcherSpec extends BaseSpecification {
         '/assets/dynamic/X/test/test.css' | 'public, max-age=615168000'
         '/assets/dynamic/X/test/test.txt' | 'public, max-age=615168000'
         '/assets/dynamic/X/test/test.js'  | 'public, max-age=615168000'
+    }
+
+    def "Custom base64ResourceFunction works"() {
+        when:
+        SiriusSassGenerator gen = new SiriusSassGenerator()
+        gen.importStylesheet("/assets/test_base64.scss")
+        gen.compile()
+
+        StringWriter writer = new StringWriter()
+        gen.generate(new Output(writer, true))
+        then:
+        writer.toString() == "test { background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4QsODw4S4KU/XgAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAAdElEQVRYw+3Q3Q1AMAAA4ar+qHhghq7SBQ3CPsQO5a1JS0wh+nA3wZdr5hBEfUlRZbBgwYIFCxYsWLBgwYIFCxYsWLBgwYIFCxYsWLBgfZSqDRRtWv1eC2vx2zFGV7S5pX2U+n3M2SWX1ZCNv6a+aHNL/bQvbxUXkThEKBQAAAAASUVORK5CYII=); }\n "
     }
 
 }

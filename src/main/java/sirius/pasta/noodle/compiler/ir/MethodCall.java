@@ -258,7 +258,17 @@ public class MethodCall extends Call {
                 selfNode.emit(assembler);
             }
 
-            assembler.emitPushConstant(new MethodPointer(method), position);
+            MethodPointer methodPointer = new MethodPointer(method);
+            if (method.isVarArgs() && parameterNodes.length > 0) {
+                Class<?> lastParameterType = parameterNodes[parameterNodes.length - 1].getType();
+                Class<?> lastMethodParameter = method.getParameterTypes()[method.getParameterCount() - 1];
+                if (lastParameterType.isArray()
+                    && CompilationContext.isAssignableTo(lastParameterType.getComponentType(),
+                                                         lastMethodParameter.getComponentType())) {
+                    methodPointer.skipVarArgs();
+                }
+            }
+            assembler.emitPushConstant(methodPointer, position);
             assembler.emitByteCode(isStatic ? OpCode.INVOCE_STATIC : OpCode.INVOKE, parameterNodes.length, position);
         } catch (Exception e) {
             throw Exceptions.handle()

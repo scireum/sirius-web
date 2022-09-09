@@ -44,6 +44,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.cert.X509Certificate;
@@ -78,6 +79,10 @@ public class SAMLHelper {
      */
     public static final int MAX_TIMESTAMP_DELTA_IN_HOURS = 3;
 
+    private static final String SAML_NAMESPACE = "urn:oasis:names:tc:SAML:2.0:assertion";
+
+    private static final String SAMLP_NAMESPACE = "urn:oasis:names:tc:SAML:2.0:protocol";
+
     /**
      * Generates a base64 encoded XML request which can be POSTed to a SAML 2 identity provider.
      *
@@ -95,8 +100,8 @@ public class SAMLHelper {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         XMLStructuredOutput out = new XMLStructuredOutput(buffer);
         out.beginOutput("samlp:AuthnRequest",
-                        Attribute.set("xmlns:samlp", "urn:oasis:names:tc:SAML:2.0:protocol"),
-                        Attribute.set("xmlns:saml", "urn:oasis:names:tc:SAML:2.0:assertion"),
+                        Attribute.set("xmlns:samlp", SAMLP_NAMESPACE),
+                        Attribute.set("xmlns:saml", SAML_NAMESPACE),
                         Attribute.set("ID", "identifier_" + System.currentTimeMillis()),
                         Attribute.set("Version", "2.0"),
                         Attribute.set("IssueInstant",
@@ -123,19 +128,51 @@ public class SAMLHelper {
      * Note that the fingerprint <b>must</b> be verified in some way or another, as this method only checks if
      * the signature is valid, not <b>who</b> created it.
      *
-     * @param ctx the http request to read the response from
+     * @param context the http request to read the response from
      * @return the parsed response which has been verified
      */
-    public SAMLResponse parseSAMLResponse(WebContext ctx) {
-        if (!ctx.isUnsafePOST()) {
+    public SAMLResponse parseSAMLResponse(WebContext context) {
+        if (!context.isUnsafePOST()) {
             throw Exceptions.createHandled().withSystemErrorMessage("Invalid SAML Response: POST expected!").handle();
         }
 
-        try {
-            Document doc = getResponseDocument(ctx);
+        byte[] response = Base64.getDecoder().decode(context.get("SAMLResponse").asString());
 
-            Element assertion = selectSingleElement(doc, null, "Assertion");
-            verifyTimestamp(assertion);
+        if (LOG.isFINE()) {
+            LOG.FINE("Received SAML response: %s", new String(response, StandardCharsets.UTF_8));
+        }
+
+        try (InputStream input = new ByteArrayInputStream(response)) {
+            return parseSAMLResponse(input, true);
+        } catch (HandledException e) {
+            throw e;
+        } catch (Exception e) {
+            throw Exceptions.handle()
+                            .to(LOG)
+                            .error(e)
+                            .withSystemErrorMessage("An error occurred while parsing a SAML Response: %s (%s)")
+                            .handle();
+        }
+    }
+
+    /**
+     * Parses a SAML 2 response from the given input string, optionally checking timestamps.
+     * <p>
+     * Note that the fingerprint <b>must</b> be verified in some way or another, as this method only checks if
+     * the signature is valid, not <b>who</b> created it.
+     *
+     * @param input     a stream containing the SAML XML response to parse
+     * @param checkTime a flag indicating whether to check for expired timestamps
+     * @return the parsed response which has been verified
+     */
+    public SAMLResponse parseSAMLResponse(InputStream input, boolean checkTime) {
+        try {
+            Document doc = getResponseDocument(input);
+
+            Element assertion = selectSingleElement(doc, SAML_NAMESPACE, "Assertion");
+            if (checkTime) {
+                verifyTimestamp(assertion);
+            }
             String fingerprint = validateXMLSignature(doc, assertion);
 
             return parseAssertion(assertion, fingerprint);
@@ -160,7 +197,7 @@ public class SAMLHelper {
      * @param namespace the optional namespace URI
      * @param nodeName  the name of the node
      * @return the element with the given name
-     * @throws HandledException if there are zero or more thant one nodes found
+     * @throws HandledException if there are either no or multiple nodes of the given name
      */
     private Element selectSingleElement(Document doc, @Nullable String namespace, String nodeName) {
         NodeList nl = Strings.isFilled(namespace) ?
@@ -185,7 +222,7 @@ public class SAMLHelper {
     private void verifyTimestamp(Element assertion) {
         String issueInstant = assertion.getAttribute("IssueInstant");
         Instant parsedIssueInstant = Instant.from(DateTimeFormatter.ISO_INSTANT.parse(issueInstant));
-        if (Duration.between(Instant.now(), parsedIssueInstant).toHours() > MAX_TIMESTAMP_DELTA_IN_HOURS) {
+        if (Duration.between(parsedIssueInstant, Instant.now()).toHours() >= MAX_TIMESTAMP_DELTA_IN_HOURS) {
             throw Exceptions.createHandled()
                             .withSystemErrorMessage("Invalid SAML Response: Invalid IssueInstant: %s", issueInstant)
                             .handle();
@@ -216,17 +253,11 @@ public class SAMLHelper {
                                 attributes);
     }
 
-    private Document getResponseDocument(WebContext ctx)
+    private Document getResponseDocument(InputStream input)
             throws SAXException, IOException, ParserConfigurationException {
-        byte[] response = Base64.getDecoder().decode(ctx.get("SAMLResponse").asString());
-
-        if (LOG.isFINE()) {
-            LOG.FINE("Received SAML response: %s", new String(response, StandardCharsets.UTF_8));
-        }
-
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setNamespaceAware(true);
-        return dbf.newDocumentBuilder().parse(new ByteArrayInputStream(response));
+        return dbf.newDocumentBuilder().parse(input);
     }
 
     /**
@@ -304,8 +335,8 @@ public class SAMLHelper {
             }
 
             for (XMLStructure xmlStructure : keyInfo.getContent()) {
-                if (xmlStructure instanceof X509Data) {
-                    X509Certificate x509Certificate = (X509Certificate) ((X509Data) xmlStructure).getContent().get(0);
+                if (xmlStructure instanceof X509Data x509Data) {
+                    X509Certificate x509Certificate = (X509Certificate) x509Data.getContent().get(0);
                     return new X509CertificateResult(x509Certificate);
                 }
             }

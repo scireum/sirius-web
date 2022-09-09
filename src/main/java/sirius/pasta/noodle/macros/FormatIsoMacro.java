@@ -69,17 +69,17 @@ public class FormatIsoMacro extends BasicMacro {
             return "";
         }
 
-        if (temporal instanceof Year) {
-            return ISO_LOCAL_YEAR.format((Year) temporal);
+        if (temporal instanceof Year year) {
+            return ISO_LOCAL_YEAR.format(year);
         }
-        if (temporal instanceof YearMonth) {
-            return ISO_LOCAL_YEAR_MONTH.format((YearMonth) temporal);
+        if (temporal instanceof YearMonth yearMonth) {
+            return ISO_LOCAL_YEAR_MONTH.format(yearMonth);
         }
-        if (temporal instanceof LocalDate) {
-            return DateTimeFormatter.ISO_LOCAL_DATE.format((LocalDate) temporal);
+        if (temporal instanceof LocalDate localDate) {
+            return DateTimeFormatter.ISO_LOCAL_DATE.format(localDate);
         }
-        if (temporal instanceof LocalTime) {
-            return DateTimeFormatter.ISO_LOCAL_TIME.format((LocalTime) temporal);
+        if (temporal instanceof LocalTime localTime) {
+            return DateTimeFormatter.ISO_LOCAL_TIME.format(localTime);
         }
 
         return DateTimeFormatter.ISO_LOCAL_DATE_TIME.format((Temporal) temporal);

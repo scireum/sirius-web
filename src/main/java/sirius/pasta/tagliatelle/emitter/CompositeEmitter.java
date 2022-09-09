@@ -64,12 +64,14 @@ public class CompositeEmitter extends Emitter {
      */
     @Override
     public Emitter reduce() {
+        List<Emitter> sortedChildren = sortChildren(children);
+
         CompositeEmitter result = new CompositeEmitter(startOfBlock);
         ConstantEmitter lastConstantChild = null;
-        for (Emitter child : children) {
+        for (Emitter child : sortedChildren) {
             child = child.reduce();
-            if (child instanceof CompositeEmitter) {
-                for (Emitter inner : ((CompositeEmitter) child).children) {
+            if (child instanceof CompositeEmitter childComposite) {
+                for (Emitter inner : childComposite.children) {
                     lastConstantChild = processChild(result, inner, lastConstantChild);
                 }
             } else {
@@ -82,6 +84,32 @@ public class CompositeEmitter extends Emitter {
         }
 
         return result;
+    }
+
+    private List<Emitter> sortChildren(List<Emitter> children) {
+        // bubble all local push emitters up, to follow constant emitters
+        List<Emitter> sortedChildren = new ArrayList<>(children);
+        int index = 0;
+        while (index < sortedChildren.size() - 1) {
+            Emitter currentChild = sortedChildren.get(index);
+            Emitter nextChild = sortedChildren.get(index + 1);
+
+            // we are done bubbling once we encounter anything else but a constant or local push emitter
+            if (!(currentChild instanceof ConstantEmitter || currentChild instanceof PushLocalEmitter)) {
+                return sortedChildren;
+            }
+
+            // swap a local push emitter preceding a constant emitter
+            if (currentChild instanceof PushLocalEmitter && nextChild instanceof ConstantEmitter) {
+                sortedChildren.set(index, nextChild);
+                sortedChildren.set(index + 1, currentChild);
+                index = 0;
+            }
+
+            ++index;
+        }
+
+        return sortedChildren;
     }
 
     /**
@@ -99,8 +127,8 @@ public class CompositeEmitter extends Emitter {
     private ConstantEmitter processChild(@Nonnull CompositeEmitter result,
                                          @Nonnull Emitter child,
                                          @Nullable ConstantEmitter lastConstantChild) {
-        if (child instanceof ConstantEmitter) {
-            if (Strings.isEmpty(((ConstantEmitter) child).getValue())) {
+        if (child instanceof ConstantEmitter childConstant) {
+            if (Strings.isEmpty(childConstant.getValue())) {
                 return lastConstantChild;
             }
 
@@ -109,12 +137,36 @@ public class CompositeEmitter extends Emitter {
                 return lastConstantChild;
             } else {
                 result.children.add(child);
-                return (ConstantEmitter)child;
+                return childConstant;
             }
         } else {
             result.children.add(child);
             return null;
         }
+    }
+
+    /**
+     * Checks if the first and last children are {@link ConstantEmitter} instances, and trims leading or trailing line
+     * breaks, respectively.
+     *
+     * @return a convenience reference to <b><tt>this</tt></b>
+     */
+    public CompositeEmitter stripLeadingAndTrailingLineBreaks() {
+        if (children == null || children.isEmpty()) {
+            return this;
+        }
+
+        // trim the first child from the front
+        if (children.get(0) instanceof ConstantEmitter firstConstantEmitter) {
+            firstConstantEmitter.stripLeadingLineBreak();
+        }
+
+        // trim the last child from the back
+        if (children.get(children.size() - 1) instanceof ConstantEmitter lastConstantEmitter) {
+            lastConstantEmitter.stripTrailingLineBreak();
+        }
+
+        return this;
     }
 
     @Override

@@ -18,6 +18,7 @@ import sirius.web.controller.Routed;
 public class CompletionPromiseTestController extends BasicController {
 
     public static int lastPromisedReturnCode = 0;
+    public static final Object SIGNAL = new Object();
 
     @Override
     public void onError(WebContext webContext, HandledException error) {
@@ -26,7 +27,12 @@ public class CompletionPromiseTestController extends BasicController {
 
     @Routed("/test/completion-promise")
     public void completePromise(WebContext context) {
-        context.getCompletionPromise().onSuccess(code -> lastPromisedReturnCode = code);
+        context.getCompletionPromise().onSuccess(code -> {
+            lastPromisedReturnCode = code;
+            synchronized (SIGNAL) {
+                SIGNAL.notify();
+            }
+        });
         context.respondWith().direct(HttpResponseStatus.OK, "OK");
     }
 }

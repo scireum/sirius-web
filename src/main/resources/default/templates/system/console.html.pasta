@@ -59,6 +59,14 @@
                 overflow: hidden;
             }
 
+            #wrapper-body > #main-container {
+                max-height: 100%;
+            }
+
+            #wrapper-body > #page-header {
+                display: none;
+            }
+
             #term {
                 overflow-x: hidden;
                 overflow-y: auto;
@@ -77,6 +85,7 @@
         </style>
     </i:block>
     <i:block name="breadcrumbBar"/>
+    <i:block name="messages"/>
 
     <div id="term"></div>
 

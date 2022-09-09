@@ -1,4 +1,14 @@
 /**@
+ * Checks if the given value is defined and has a value other than null.
+ *
+ * @param value the value to check
+ * @returns {boolean} true if the given value is defined and its value is not null.
+ */
+sirius.isDefined = function (value) {
+    return typeof value !== 'undefined' && value !== null && value !== undefined;
+}
+
+/**@
  * Checks if the given value is empty or null.
  *
  * @param value the value to check
@@ -9,7 +19,7 @@ sirius.isEmpty = function (value) {
         return true;
     }
 
-    return typeof value === 'undefined' || value === null || value === undefined || value === '';
+    return !sirius.isDefined(value) || value === '';
 }
 
 /**@
@@ -64,10 +74,33 @@ sirius.isElement = function (obj) {
  * @returns {*} the matching DOM element (or the given one, if query was a DOM element in the first place).
  */
 sirius.querySelector = function (query) {
-    if (sirius.isElement(query)) {
+    if (query == null) {
+        return null;
+    } else if (sirius.isElement(query)) {
         return query;
     } else {
-        document.querySelector(query);
+        return document.querySelector(query);
+    }
+}
+
+/**@
+ * Clears the "display" property of the given element to make it visible.
+ * It is expected to be 'display: none' before.
+ */
+sirius.show = function (selectorOrElement) {
+    const _element = this.querySelector(selectorOrElement);
+    if (_element != null) {
+        _element.style.display = '';
+    }
+}
+
+/**@
+ * Sets the "display" property of the given element to 'none' to make it invisible.
+ */
+sirius.hide = function (selectorOrElement) {
+    const _element = this.querySelector(selectorOrElement);
+    if (_element != null) {
+        _element.style.display = 'none';
     }
 }
 
@@ -135,13 +168,20 @@ sirius.getJSON = function (url, params) {
  * Calls the given URL, posts the given params and retrieves the resulting JSON.
  *
  * @param url the URL to invoke
- * @param params the parameters to send POST data
+ * @param params the parameters to send POST data (parameters with 'undefined' values are not sent to the server)
  * @returns {Promise<any>} the received JSON data
  */
 sirius.postJSON = function (url, params) {
     let formData = new FormData();
     Object.keys(params).forEach(function (key) {
-        formData.append(key, params[key]);
+        const value = params[key];
+        if (Array.isArray(value)) {
+            value.forEach(function (entry) {
+                formData.append(key, entry);
+            });
+        } else if (sirius.isDefined(value)) {
+            formData.append(key, value);
+        }
     });
 
     return fetch(url, {
@@ -342,4 +382,110 @@ sirius.executeEmbeddedScripts = function (_container) {
     }
 
     nodeScriptReplace(_container);
+}
+/**@
+ * Warns the user when leaving the current site.
+ *
+ * This should mainly be used to prevent data loss - for example if the user has unsaved changes in a form, or a file
+ * is uploading. You should provide a function which is called when the user unloads the site, and the user is only
+ * warned, if the function returns true. This function should check if the user actually has unsaved data, or a file is
+ * uploading, for example. This method can be called multiple times with different callbacks and if any one of them
+ * return true, the user is warned. If no method is provided, the user is always warned.
+ *
+ * @param shouldWarnCallback the function to call on unload to determine if to warn
+ */
+sirius.warnOnUnload = function (shouldWarnCallback) {
+    window.addEventListener("beforeunload", function (event) {
+        if (!(shouldWarnCallback instanceof Function) || shouldWarnCallback()) {
+            event.preventDefault();
+            return event.returnValue = '';
+        }
+    });
+}
+
+/**@
+ * Allows to dispatch a custom event of the given type while handling different browser environments.
+ *
+ * @param {string} eventType the type of event to trigger
+ * @param {HTMLElement} [_eventTarget] allows to specify the DOM element to dispatch the event from (default is `document`)
+ * @param {Object} [eventDetail] allows to specify an object to be passed as event details to the receiver
+ */
+sirius.dispatchEvent = function (eventType, _eventTarget, eventDetail) {
+    const _effectiveTarget = _eventTarget || document;
+    const detail = eventDetail || this;
+
+    if (typeof (CustomEvent) === 'function') {
+        _effectiveTarget.dispatchEvent(new CustomEvent(eventType, {detail: detail}));
+    } else {
+        const event = document.createEvent('Event');
+        event.initEvent(eventType, true, true);
+        event.detail = detail;
+        _effectiveTarget.dispatchEvent(event);
+    }
+}
+
+/**@
+ * Resets the viewport zoom of mobile browsers applied by pinch-to-zoom gestures as these are not accounted for in the
+ * window size methods resulting in only partially visible contents when zoomed in.
+ */
+sirius.resetMobileZoom = function () {
+    const scaleBlockingViewportContent = 'width=device-width, minimum-scale=1.0, maximum-scale=1.0, initial-scale=1.0';
+    let _viewportMeta = document.querySelector('meta[name="viewport"]');
+
+    if (_viewportMeta) {
+        // We alter the viewport content and reset it to the original settings
+        // after the browser had time to reset the viewport zoom
+        const origViewportContent = _viewportMeta.getAttribute('content');
+        _viewportMeta.setAttribute('content', scaleBlockingViewportContent);
+        setTimeout(function () {
+            _viewportMeta.setAttribute('content', origViewportContent);
+        }, 100);
+    } else {
+        // When no viewport meta tag exists we create one, set the content that resets the viewport zoom and remove it
+        _viewportMeta = document.createElement("meta");
+        _viewportMeta.setAttribute("name", "viewport");
+        document.head.appendChild(_viewportMeta);
+
+        _viewportMeta.setAttribute('content', scaleBlockingViewportContent);
+
+        document.head.removeChild(_viewportMeta);
+    }
+}
+
+/**@
+ * Reads the given value from the localStorage if supported by the browser. Fails gracefully by returning null
+ * if no localStorage is available.
+ *
+ * @param name the name of the local storage variable
+ * @returns the value in the local storage variable or null
+ */
+sirius.readLocalStore = function (name) {
+    try {
+        if (sirius.isDefined(window.localStorage)) {
+            return window.localStorage.getItem(name);
+        }
+    } catch (e) {
+        console.log('Cannot read local store', {name: name, error: e});
+    }
+    return null;
+}
+
+/**@
+ * Writes the given value to the localStorage if supported by the browser. Fails gracefully by doing nothing,
+ * if no localStorage is available.
+ *
+ * @param name the name of the local storage variable
+ * @param value the value which should be stored in the local storage variable
+ */
+sirius.writeLocalStore = function (name, value) {
+    if (!sirius.isDefined(value)) {
+        value = '';
+    }
+    try {
+        if (sirius.isDefined(window.localStorage)) {
+            window.localStorage.setItem(name, value);
+        }
+    } catch (e) {
+        console.log('Cannot write local store', {name: name, value: value, error: e});
+    }
 }

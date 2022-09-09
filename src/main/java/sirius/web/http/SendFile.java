@@ -19,6 +19,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedFile;
+import io.netty.handler.stream.ChunkedWriteHandler;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.health.Exceptions;
@@ -127,7 +128,9 @@ class SendFile {
         response.commit(res, false);
         response.installChunkedWriteHandler();
         ChannelFuture writeFuture = executeChunkedWrite();
-        writeFuture.addListener(channelFuture -> raf.close());
+        writeFuture.addListener(ignored -> raf.close());
+        response.removedChunkedWriteHandler(writeFuture);
+
         response.complete(writeFuture);
         return false;
     }

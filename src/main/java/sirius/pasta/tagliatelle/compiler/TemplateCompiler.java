@@ -79,7 +79,12 @@ public class TemplateCompiler extends InputProcessor {
         }
 
         try {
-            Emitter emitter = parseBlock(null, null).reduce();
+            Emitter emitter = parseBlock(null, null);
+            emitter = emitter.reduce();
+            if (getContext().getTemplate().isXmlContentExpected()) {
+                emitter = stripLeadingAndTrailingLineBreaks(emitter);
+                emitter = emitter.reduce();
+            }
             getContext().getTemplate().setEmitter(emitter);
         } catch (Exception e) {
             context.error(Position.UNKNOWN, Exceptions.handle(e).getMessage());
@@ -89,6 +94,18 @@ public class TemplateCompiler extends InputProcessor {
         reader = null;
 
         return context.processCollectedErrors();
+    }
+
+    private Emitter stripLeadingAndTrailingLineBreaks(Emitter emitter) {
+        if (emitter instanceof ConstantEmitter constantEmitter) {
+            return constantEmitter.stripLeadingLineBreak().stripTrailingLineBreak();
+        }
+
+        if (emitter instanceof CompositeEmitter compositeEmitter) {
+            return compositeEmitter.stripLeadingAndTrailingLineBreaks();
+        }
+
+        return emitter;
     }
 
     /**
@@ -234,13 +251,13 @@ public class TemplateCompiler extends InputProcessor {
     /**
      * Processes a tag.
      * <p>
-     * If the tag is built-in (i:) or a one in a taglib, an appropriate {@link TagHandler} is created and invoked.
-     * Otherwise the tag is parsed as static text.
+     * If the tag is built-in (<tt>i:</tt>) or one in a taglib, an appropriate {@link TagHandler} is created and
+     * invoked. Otherwise, the tag is parsed as static text.
      *
      * @param parentHandler the outer tag handler
      * @param block         the block to which the tag should be added
      * @param staticText    the emitter which is responsible for consuming static text
-     * @return <tt>true</tt> if the tag was handled, <tt>false</tt> otherwise
+     * @return <b>true</b> if the tag was handled, <b>false</b> else
      */
     private boolean processTag(TagHandler parentHandler, CompositeEmitter block, ConstantEmitter staticText) {
         if (!reader.current().is('<')) {
