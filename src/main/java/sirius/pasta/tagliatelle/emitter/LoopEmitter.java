@@ -14,8 +14,8 @@ import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.tagliatelle.rendering.LocalRenderContext;
 
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * Loops over a given {@link Iterable} or an Array and invokes the given block for each item within.
@@ -102,11 +102,7 @@ public class LoopEmitter extends Emitter {
             return iterable;
         }
         if (innerExpression.getClass().isArray()) {
-            List<Object> items = new ArrayList<>(Array.getLength(innerExpression));
-            for (int i = 0; i < Array.getLength(innerExpression); i++) {
-                items.add(Array.get(innerExpression, i));
-            }
-            return items;
+            return () -> new ArrayIterator(innerExpression);
         }
         throw new ClassCastException(innerExpression.getClass() + " is neither an Iterable<?> nor an array type");
     }
@@ -172,5 +168,29 @@ public class LoopEmitter extends Emitter {
      */
     public void setLocalIndex(int localIndex) {
         this.localIndex = localIndex;
+    }
+
+    private static class ArrayIterator implements Iterator<Object> {
+        private final Object array;
+        private int index;
+
+        private ArrayIterator(Object array) {
+            this.array = array;
+            index = 0;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return index < Array.getLength(array);
+        }
+
+        @Override
+        public Object next() {
+            try {
+                return Array.get(array, index++);
+            } catch (ArrayIndexOutOfBoundsException exception) {
+                throw new NoSuchElementException(exception);
+            }
+        }
     }
 }
