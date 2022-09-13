@@ -1,12 +1,17 @@
-<i:arg type="String" name="color" default="gray" description="Specifies the color to use." />
-<i:arg type="boolean" name="marginRight" default="true" description="Determines if the dot has an auto margin at the right"/>
-<i:arg type="String" name="class" default=""
-       description="Defines addition classes to add."/>
+<i:arg type="String" name="color" default="gray" description="Specifies the color to use."/>
+<i:arg type="boolean"
+       name="marginRight"
+       default="true"
+       description="Determines if the dot has an auto margin at the right"/>
+<i:arg type="String" name="class" default="" description="Defines addition classes to add."/>
+<i:arg type="String" name="value" default="@renderToString('body')"/>
 
 <i:pragma name="description">
     Renders a colored tag using the given text.
 </i:pragma>
 
-<span class="border-sirius-@color tycho-tag @if(marginRight){ mr-2 } mb-2 d-inline-block @class">
-    <i:render name="body" />
-</span>
+<i:if test="isFilled(value)">
+    <span class="border-sirius-@color tycho-tag @if(marginRight){ mr-2 } mb-2 d-inline-block @class">
+        <i:raw>@value</i:raw>
+    </span>
+</i:if>
