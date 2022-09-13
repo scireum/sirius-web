@@ -1,8 +1,10 @@
 <i:arg type="String" name="color" default="gray" description="Specifies the color to use."/>
-<i:arg type="boolean" name="marginRight" default="true"
+<i:arg type="boolean"
+       name="marginRight"
+       default="true"
        description="Determines if the dot has an auto margin at the right"/>
 <i:arg type="String" name="class" default="" description="Defines addition classes to add."/>
-<i:arg type="String" name="value" default="@renderToString('body')" />
+<i:arg type="String" name="value" default="@renderToString('body')"/>
 
 <i:pragma name="description">
     Renders a colored tag using the given text.
