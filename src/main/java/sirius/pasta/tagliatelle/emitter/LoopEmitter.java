@@ -13,8 +13,12 @@ import sirius.pasta.noodle.Callable;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.tagliatelle.rendering.LocalRenderContext;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Loops over a given {@link Iterable} and invokes the given block for each item within.
+ * Loops over a given {@link Iterable} or an Array and invokes the given block for each item within.
  */
 public class LoopEmitter extends Emitter {
 
@@ -63,8 +67,10 @@ public class LoopEmitter extends Emitter {
      * @param compilationContext the context used to report errors to
      */
     public void verify(CompilationContext compilationContext) {
-        if (!Iterable.class.isAssignableFrom(iterableExpression.getType())) {
-            compilationContext.error(startOfBlock, "A for loop must have an Iterable as expression");
+        if (!Iterable.class.isAssignableFrom(iterableExpression.getType()) && iterableExpression.getGenericType()
+                                                                                                .getClass()
+                                                                                                .isArray()) {
+            compilationContext.error(startOfBlock, "A for loop must have an Iterable or an Array as expression");
         }
     }
 
@@ -79,7 +85,7 @@ public class LoopEmitter extends Emitter {
             return;
         }
 
-        Iterable<?> items = (Iterable<?>) iterable;
+        Iterable<?> items = getItems(iterable);
         LoopState loopState = new LoopState(items);
         if (loopStateIndex > -1) {
             context.writeVariable(loopStateIndex, loopState);
@@ -89,6 +95,20 @@ public class LoopEmitter extends Emitter {
             context.writeVariable(localIndex, obj);
             loop.emit(context);
         }
+    }
+
+    private Iterable<?> getItems(Object innerExpression) {
+        if (innerExpression instanceof Iterable<?> iterable) {
+            return iterable;
+        }
+        if (innerExpression.getClass().isArray()) {
+            List<Object> items = new ArrayList<>(Array.getLength(innerExpression));
+            for (int i = 0; i < Array.getLength(innerExpression); i++) {
+                items.add(Array.get(innerExpression, i));
+            }
+            return items;
+        }
+        throw new ClassCastException(innerExpression.getClass() + " is neither an Iterable<?> nor an array type");
     }
 
     /**
