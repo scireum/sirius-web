@@ -67,9 +67,7 @@ public class LoopEmitter extends Emitter {
      * @param compilationContext the context used to report errors to
      */
     public void verify(CompilationContext compilationContext) {
-        if (!Iterable.class.isAssignableFrom(iterableExpression.getType()) && iterableExpression.getGenericType()
-                                                                                                .getClass()
-                                                                                                .isArray()) {
+        if (!Iterable.class.isAssignableFrom(iterableExpression.getType()) && !iterableExpression.getType().isArray()) {
             compilationContext.error(startOfBlock, "A for loop must have an Iterable or an Array as expression");
         }
     }
