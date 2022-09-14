@@ -13,8 +13,12 @@ import sirius.pasta.noodle.Callable;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.tagliatelle.rendering.LocalRenderContext;
 
+import java.lang.reflect.Array;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 /**
- * Loops over a given {@link Iterable} and invokes the given block for each item within.
+ * Loops over a given {@link Iterable} or an Array and invokes the given block for each item within.
  */
 public class LoopEmitter extends Emitter {
 
@@ -63,8 +67,8 @@ public class LoopEmitter extends Emitter {
      * @param compilationContext the context used to report errors to
      */
     public void verify(CompilationContext compilationContext) {
-        if (!Iterable.class.isAssignableFrom(iterableExpression.getType())) {
-            compilationContext.error(startOfBlock, "A for loop must have an Iterable as expression");
+        if (!Iterable.class.isAssignableFrom(iterableExpression.getType()) && !iterableExpression.getType().isArray()) {
+            compilationContext.error(startOfBlock, "A for loop must have an Iterable or an Array as expression");
         }
     }
 
@@ -79,7 +83,7 @@ public class LoopEmitter extends Emitter {
             return;
         }
 
-        Iterable<?> items = (Iterable<?>) iterable;
+        Iterable<?> items = getItems(iterable);
         LoopState loopState = new LoopState(items);
         if (loopStateIndex > -1) {
             context.writeVariable(loopStateIndex, loopState);
@@ -89,6 +93,16 @@ public class LoopEmitter extends Emitter {
             context.writeVariable(localIndex, obj);
             loop.emit(context);
         }
+    }
+
+    private Iterable<?> getItems(Object innerExpression) {
+        if (innerExpression instanceof Iterable<?> iterable) {
+            return iterable;
+        }
+        if (innerExpression.getClass().isArray()) {
+            return () -> new ArrayIterator(innerExpression);
+        }
+        throw new ClassCastException(innerExpression.getClass() + " is neither an Iterable<?> nor an array type");
     }
 
     /**
@@ -152,5 +166,29 @@ public class LoopEmitter extends Emitter {
      */
     public void setLocalIndex(int localIndex) {
         this.localIndex = localIndex;
+    }
+
+    private static class ArrayIterator implements Iterator<Object> {
+        private final Object array;
+        private int index;
+
+        private ArrayIterator(Object array) {
+            this.array = array;
+            index = 0;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return index < Array.getLength(array);
+        }
+
+        @Override
+        public Object next() {
+            try {
+                return Array.get(array, index++);
+            } catch (ArrayIndexOutOfBoundsException exception) {
+                throw new NoSuchElementException(exception);
+            }
+        }
     }
 }

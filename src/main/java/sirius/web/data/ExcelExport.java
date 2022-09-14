@@ -47,10 +47,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -329,11 +327,11 @@ public class ExcelExport {
             return;
         }
         if (obj instanceof LocalDateTime localDateTime) {
-            cell.setCellValue(Date.from((localDateTime).atZone(ZoneId.systemDefault()).toInstant()));
+            cell.setCellValue(localDateTime);
             return;
         }
         if (obj instanceof LocalDate localDate) {
-            cell.setCellValue(Date.from((localDate).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+            cell.setCellValue(localDate);
             return;
         }
         if (obj instanceof Boolean) {
