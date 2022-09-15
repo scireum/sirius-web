@@ -12,6 +12,10 @@
       position: relative;
       flex: 1;
       overflow: hidden;
+
+      > .sci-slider-view > * {
+        contain: content;
+      }
     }
 
     > .sci-slider-button {
