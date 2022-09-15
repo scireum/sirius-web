@@ -291,5 +291,7 @@
         fixSliderHeight();
         activateView(0, 1, true);
         startAnimationThread();
+
+        setTimeout(fixView, 500);
     }
 }(window.sirius.slider = window.sirius.slider || {}));
