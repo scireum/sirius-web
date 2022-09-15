@@ -11,9 +11,9 @@ package sirius.web.http;
 /**
  * Provides a way to support websockets for the built-in web server.
  * <p>
- * Websocket support is done by creating a class implementing this interface. By placing an {@link
- * sirius.kernel.di.std.Register} annotation is is found by the {@link WebServerHandler} which then initiates the
- * websocket protocol for requests on the given uri.
+ * Websocket support is done by creating a class implementing this interface. By placing a {@link
+ * sirius.kernel.di.std.Register} annotation, it is found by the {@link WebServerHandler} which then initiates the
+ * websocket protocol for requests on the given URI.
  */
 public interface WebsocketDispatcher {
 
