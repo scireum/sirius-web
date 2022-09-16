@@ -12,7 +12,6 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.xml.StructuredOutput;
 import sirius.web.http.WebContext;
 
-import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
 /**
@@ -57,34 +56,6 @@ public class AutocompleteHelper {
         }
 
         /**
-         * Generates a new suggestion
-         *
-         * @param value the effective value to fill into the field
-         * @param label the text to display to the user
-         * @deprecated Use the simple constructor and the withXXX methods.
-         */
-        @Deprecated(forRemoval = true)
-        public Completion(String value, String label) {
-            this.value = value;
-            this.fieldLabel = label;
-        }
-
-        /**
-         * Generates a new suggestion
-         *
-         * @param value       the effective value to fill into the field
-         * @param label       the text to display to the user
-         * @param description the text shown in the autocomplete-dropdown
-         * @deprecated Use the simple constructor and the withXXX methods.
-         */
-        @Deprecated(forRemoval = true)
-        public Completion(String value, String label, @Nullable String description) {
-            this.value = value;
-            this.fieldLabel = label;
-            this.completionLabel = description;
-        }
-
-        /**
          * Specifies the label to be shown in the field itself.
          *
          * @param fieldLabel the label shown to the user
@@ -114,19 +85,6 @@ public class AutocompleteHelper {
          */
         public Completion withCompletionDescription(String completionDescription) {
             this.completionDescription = completionDescription;
-            return this;
-        }
-
-        /**
-         * Sets if the suggestion should be disabled in the autocomplete in JavaScript.
-         *
-         * @param disabled <tt>true</tt> if the suggestion is disabled, <tt>false</tt> otherwise
-         * @return the completion itself for fluent method calls
-         * @deprecated Use {@link #markDisabled()}.
-         */
-        @Deprecated(forRemoval = true)
-        public Completion setDisabled(boolean disabled) {
-            this.disabled = disabled;
             return this;
         }
 
