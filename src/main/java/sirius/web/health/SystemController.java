@@ -46,7 +46,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Contains the default admin GUI.
@@ -371,7 +370,7 @@ public class SystemController extends BasicController {
                         .entrySet()
                         .stream()
                         .map(e -> Tuple.create(e.getKey(), e.getValue()))
-                        .collect(Collectors.toList());
+                        .toList();
     }
 
     private boolean matchesQuery(String query, Microtiming.Timing timing) {

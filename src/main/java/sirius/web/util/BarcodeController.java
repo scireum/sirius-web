@@ -50,7 +50,7 @@ public class BarcodeController extends BasicController {
     private static final String TYPE_INTERLEAVED_2_OF_5_CHECKSUMMED = "interleaved2of5checksummed";
     private static final String TYPE_CODE39 = "code39";
 
-    private static final Pattern NUMERIC = Pattern.compile("[0-9]+");
+    private static final Pattern NUMERIC = Pattern.compile("\\d+");
 
     /**
      * Creates a QR code for the given content.

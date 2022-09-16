@@ -16,10 +16,10 @@ import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class JSONStructuredOutputTest {
+class JSONStructuredOutputTest {
 
     @Test
-    public void writeEmptyArray() {
+    void writeEmptyArray() {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         JSONStructuredOutput out = new JSONStructuredOutput(byteArrayOutputStream, null, StandardCharsets.UTF_8.name());
 

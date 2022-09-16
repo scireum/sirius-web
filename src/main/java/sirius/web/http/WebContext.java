@@ -32,6 +32,7 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
 import sirius.kernel.async.SubContext;
 import sirius.kernel.commons.Callback;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Files;
 import sirius.kernel.commons.Hasher;
 import sirius.kernel.commons.Streams;
@@ -563,6 +564,8 @@ public class WebContext implements SubContext {
         return Value.EMPTY;
     }
 
+    @SuppressWarnings("java:S6204")
+    @Explain("We return a mutable list here, as we cannot predict what the caller does with the result.")
     private Value fetchPostAttributes(String key) {
         try {
             List<InterfaceHttpData> dataList = postDecoder.getBodyHttpDatas(key);
@@ -1531,7 +1534,7 @@ public class WebContext implements SubContext {
     }
 
     /**
-     * Tries to perform a HTTP Basic authentication by parsing the <tt>Authorization</tt> header.
+     * Tries to perform an HTTP Basic authentication by parsing the <tt>Authorization</tt> header.
      * <p>
      * If no such header is found or if the contents are malformed, an 401 UNAUTHORIZED response will be generated
      * ({@link Response#unauthorized(String)}) and <tt>null</tt> will be returned.

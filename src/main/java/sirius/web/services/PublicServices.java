@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -78,12 +77,11 @@ public class PublicServices {
                                                               route.getAnnotation(Operation.class),
                                                               Stream.concat(collectSharedApiParameters(route).stream(),
                                                                             Arrays.stream(route.getAnnotationsByType(
-                                                                                    Parameter.class)))
-                                                                    .collect(Collectors.toList()),
+                                                                                    Parameter.class))).toList(),
                                                               Arrays.stream(route.getAnnotationsByType(RequestBody.class))
-                                                                    .collect(Collectors.toList()),
+                                                                    .toList(),
                                                               Arrays.stream(route.getAnnotationsByType(ApiResponse.class))
-                                                                    .collect(Collectors.toList()));
+                                                                    .toList());
         synchronized (apis) {
             PublicApiInfo apiInfo = apis.stream()
                                         .filter(api -> Strings.areEqual(api.getApiName(), publicService.apiName()))

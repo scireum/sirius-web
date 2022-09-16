@@ -18,7 +18,6 @@ import sirius.pasta.noodle.sandbox.PublicApi;
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Represents a list containing all given parameters. If only one parameter of an array type is given, it will be
@@ -43,9 +42,9 @@ public class ToListMacro extends BasicMacro {
     @Override
     public Object invoke(Environment environment, Object[] args) {
         if (args.length == 1 && args[0].getClass().isArray()) {
-            return Arrays.stream((Object[]) args[0]).collect(Collectors.toList());
+            return Arrays.stream((Object[]) args[0]).toList();
         } else {
-            return Arrays.stream(args).collect(Collectors.toList());
+            return Arrays.stream(args).toList();
         }
     }
 
@@ -64,5 +63,4 @@ public class ToListMacro extends BasicMacro {
     public boolean isConstant(CompilationContext context, List<Node> args) {
         return true;
     }
-
 }

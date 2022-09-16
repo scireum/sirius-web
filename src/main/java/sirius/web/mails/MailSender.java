@@ -13,6 +13,7 @@ import jakarta.mail.internet.InternetAddress;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Context;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Files;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
@@ -50,7 +51,7 @@ public class MailSender {
      * <p>
      * Note that this is multiplied by the number of retries, so we wait 0 (first try is immediate), 15s, 30s ...
      */
-    protected static final int RESEND_WAIT_INTERVAL_SECONDS = 15;
+    protected static final long RESEND_WAIT_INTERVAL_SECONDS = 15;
 
     /**
      * Determines the max attempts of sending a mail after a server error before finally giving up.
@@ -268,6 +269,8 @@ public class MailSender {
      * @param context  the context passed to the renderer
      * @return the builder itself
      */
+    @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
+    @Explain("We don't expect the context to be modified, but would still gracefully handle this.")
     public MailSender textTemplate(String template, @Nonnull Context context) {
         this.textTemplate = template;
         this.textContext = context;
@@ -292,6 +295,8 @@ public class MailSender {
      * @param context  the context passed to the renderer
      * @return the builder itself
      */
+    @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
+    @Explain("We don't expect the context to be modified, but would still gracefully handle this.")
     public MailSender htmlTemplate(String template, @Nonnull Context context) {
         this.htmlTemplate = template;
         this.htmlContext = context;
@@ -507,7 +512,8 @@ public class MailSender {
             SendMailTask task = new SendMailTask(this, smtpConfiguration);
             tasks.executor("email")
                  .minInterval(internalMessageId,
-                              Duration.ofSeconds((MAX_SEND_ATTEMPTS - remainingAttempts.get()) * RESEND_WAIT_INTERVAL_SECONDS))
+                              Duration.ofSeconds((MAX_SEND_ATTEMPTS - remainingAttempts.get())
+                                                 * RESEND_WAIT_INTERVAL_SECONDS))
                  .fork(task);
         }
     }
