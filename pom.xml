@@ -14,7 +14,7 @@
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
     <properties>
-        <sirius.kernel>ga-5.0.0</sirius.kernel>
+        <sirius.kernel>dev-32.0.0</sirius.kernel>
     </properties>
 
     <repositories>
