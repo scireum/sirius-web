@@ -422,18 +422,6 @@ public class ExcelExport {
     }
 
     /**
-     * Adds the given array of objects as a row.
-     *
-     * @param row the objects to add to the table
-     * @return the export itself for fluent method calls
-     * @deprecated Use {@link #addArrayRow(Object...)} which does exactly the same but has a more consistent naming.
-     */
-    @Deprecated
-    public ExcelExport addRow(Object... row) {
-        return addArrayRow(row);
-    }
-
-    /**
      * Adds the given collection of objects as a row.
      *
      * @param row the objects to add to the table
@@ -456,18 +444,6 @@ public class ExcelExport {
         }
 
         return this;
-    }
-
-    /**
-     * Adds the given collection of objects as a row.
-     *
-     * @param row the objects to add to the table
-     * @return the export itself for fluent method calls
-     * @deprecated Use {@link #addListRow(Collection)} which does exactly the same but has a more consistent naming.
-     */
-    @Deprecated
-    public ExcelExport addRowAsList(Collection<?> row) {
-        return addListRow(row);
     }
 
     /**

@@ -42,7 +42,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -181,7 +180,7 @@ public class Tagliatelle {
                                                         Sirius.getSettings()
                                                               .get("tagliatelle.taglib." + name)
                                                               .asString(name)))
-                              .collect(Collectors.toList());
+                              .toList();
     }
 
     /**
@@ -409,12 +408,12 @@ public class Tagliatelle {
     /**
      * Provides a list of all currently compiled templates.
      * <p>
-     * Note that this directly accesses an inner cache. Therefore some templates which were rendered some time ago,
+     * Note that this directly accesses an inner cache. Therefore, some templates which were rendered some time ago,
      * might have been dropped out of the cache and will therefore not occur in this list.
      *
      * @return a list of all compiled templates
      */
     public List<Template> getCompiledTemplates() {
-        return compiledTemplates.getContents().stream().map(CacheEntry::getValue).collect(Collectors.toList());
+        return compiledTemplates.getContents().stream().map(CacheEntry::getValue).toList();
     }
 }

@@ -9,6 +9,7 @@
 package sirius.pasta.noodle.macros;
 
 import parsii.tokenizer.Position;
+import sirius.kernel.commons.Explain;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
 
@@ -28,6 +29,8 @@ public abstract class BasicMacro implements Macro {
     protected abstract Class<?> getType();
 
     @Override
+    @SuppressWarnings("java:S6204")
+    @Explain("We need the complex call to account for generic coercion.")
     public void verify(CompilationContext context, Position position, List<Node> args) {
         verifyArguments(context, position, args.stream().map(Node::getType).collect(Collectors.toList()));
     }

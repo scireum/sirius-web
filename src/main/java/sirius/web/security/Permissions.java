@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * Helper class to parse permission based annotations and the expand permission profiles.
@@ -77,7 +76,7 @@ public class Permissions {
         return Tuple.fromMap(Sirius.getSettings().getMap("security.permissions"))
                     .stream()
                     .sorted(Comparator.comparing(Tuple::getFirst))
-                    .collect(Collectors.toList());
+                    .toList();
     }
 
     private static List<Profile> getProfiles() {

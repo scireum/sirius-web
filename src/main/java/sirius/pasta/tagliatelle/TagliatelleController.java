@@ -23,7 +23,6 @@ import sirius.web.security.Permission;
 
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.stream.Collectors;
 
 /**
  * Provides a small helper to provide infos about available Tagliatelle tags.
@@ -60,16 +59,14 @@ public class TagliatelleController extends BasicController {
     @Routed("/system/tags")
     @Permission(PERMISSION_SYSTEM_TAGS)
     public void overview(WebContext webContext) {
-        Collection<Macro> macros = context.getParts(Macro.class)
-                                          .stream()
-                                          .sorted(Comparator.comparing(Macro::getName))
-                                          .collect(Collectors.toList());
+        Collection<Macro> macros =
+                context.getParts(Macro.class).stream().sorted(Comparator.comparing(Macro::getName)).toList();
         Collection<String> builtIns = context.getParts(TagHandlerFactory.class)
                                              .stream()
                                              .map(TagHandlerFactory::getName)
                                              .map(name -> name.substring(2))
                                              .sorted()
-                                             .collect(Collectors.toList());
+                                             .toList();
 
         webContext.respondWith()
                   .template("/templates/system/tags.html.pasta",

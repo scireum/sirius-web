@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Provides a context for compiling a <tt>Noodle</tt> script.
@@ -199,7 +198,7 @@ public class CompilationContext {
                           .map(parseError -> new CompileError(parseError,
                                                               sourceCodeInfo.fetchLine(parseError.getPosition()
                                                                                                  .getLine())))
-                          .collect(Collectors.toList());
+                          .toList();
     }
 
     /**

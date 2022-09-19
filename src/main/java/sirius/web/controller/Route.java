@@ -44,7 +44,6 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Represents a compiled routed as a result of parsing a {@link Controller} and its methods.
@@ -307,10 +306,8 @@ public class Route {
                 Object effectiveValue = Value.of(value).coerce(parameterTypes[idx - 1], null);
                 setAtPosition(result, idx, effectiveValue);
             } else if ("**".equals(expr.getFirst())) {
-                //we need to split the encoded values so we dont mistake data for the delimiter
-                result.add(Arrays.stream(m.group(i).split("/"))
-                                 .map(this::decodeParameter)
-                                 .collect(Collectors.toList()));
+                //we need to split the encoded values, so we don't mistake data for the delimiter
+                result.add(Arrays.stream(m.group(i).split("/")).map(this::decodeParameter).toList());
             }
         }
         if (parameterTypes.length - 1 > result.size() && parameterTypes[parameterTypes.length - 1] == List.class) {
