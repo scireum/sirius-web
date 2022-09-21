@@ -150,7 +150,7 @@
             // cross-blend the previous and current view, with the latter on top
             _slides[previousIndex].style.zIndex = '0';
             _slides[previousIndex].style.opacity = '0';
-            _slides[currentIndex].style.zIndex = '100';
+            _slides[currentIndex].style.zIndex = '1';
             _slides[currentIndex].style.opacity = '1';
         };
         const activateViewBySliding = function (direction) {
@@ -176,7 +176,7 @@
 
             _slides[currentIndex].style.visibility = 'visible';
             _slides[currentIndex].style.left = currentFrom + 'px';
-            _slides[currentIndex].style.zIndex = '100';
+            _slides[currentIndex].style.zIndex = '1';
 
             // after some time, to allow layouting to settle, trigger the actual animation
             setTimeout(function () {
@@ -257,7 +257,7 @@
                 });
 
                 _slides[0].style.opacity = '1';
-                _slides[0].style.zIndex = '100';
+                _slides[0].style.zIndex = '1';
                 _slides[0].style.visibility = 'visible';
             } else {
                 resetAllSlides();
