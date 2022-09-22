@@ -1,0 +1,56 @@
+nav {
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li { color: #FF00FF; }
+  }
+
+  li { display: inline-block; }
+
+  a {
+    display: block;
+    padding: 6px 12px;
+    text-decoration: none;
+  }
+
+  &.test {
+    color: #FF0000;
+  }
+  &:hover {
+    color: #FFFF00;
+  }
+}
+
+.table tbody tr {
+  &.warning td {
+    background-color: #faedbb;
+  }
+}
+
+a {
+  b & {
+    color: #AABBCC;
+  }
+
+  b:hover {
+    color: red;
+  }
+
+  c,d {
+    color: green;
+  }
+}
+
+e, f {
+  color: blue;
+
+  g>j, h {
+    color: aquamarine;
+
+    i, &:hover {
+      color: springgreen;
+    }
+  }
+}

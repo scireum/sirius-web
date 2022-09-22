@@ -1,0 +1,15 @@
+.control-group label .input-required:after {
+    content: "\e653";
+    color: #5eb526;
+    test: auto;
+    size: 50px;
+}
+
+.footer small:last-child:after {
+    content: " ";
+    padding: 0;
+}
+
+.font {
+    font-family: "Consolas","Courier New",monospace;
+}

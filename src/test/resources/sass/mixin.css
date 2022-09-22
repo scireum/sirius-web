@@ -1,0 +1,23 @@
+.box {
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    -ms-border-radius: 10px;
+    -o-border-radius: 10px;
+    border-radius: 10px;
+}
+
+body.white .element {
+    background-color: #fff;
+}
+
+body.black .element {
+    background-color: #000;
+}
+
+x.test .a, x.test .b, y.test .a, y.test .b {
+    background-color: #fff;
+}
+
+.dark .dark-test, .dark-test.dark, .dark-test .dark {
+    background-color: #000;
+}

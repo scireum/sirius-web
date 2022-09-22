@@ -45,13 +45,6 @@
             <!-- Set version below in <dependencyManagement>. -->
         </dependency>
 
-        <!-- Used to compile SCSS (SASS) files into CSS files -->
-        <dependency>
-            <groupId>com.scireum</groupId>
-            <artifactId>server-sass</artifactId>
-            <version>6.2.0</version>
-        </dependency>
-
         <!-- Used as chosen JSON implementation -->
         <dependency>
             <groupId>com.alibaba</groupId>

@@ -1,0 +1,21 @@
+.container {
+    grid-template-columns: 50px 50px 50px 50px;
+    grid-template-rows: auto;
+    grid-template-areas: "header header header header" "main main . sidebar" "footer footer footer footer";
+}
+
+.container .item-a {
+    grid-area: header;
+}
+
+.container .item-b {
+    grid-area: main;
+}
+
+.container .item-c {
+    grid-area: sidebar;
+}
+
+.container .item-d {
+    grid-area: footer;
+}

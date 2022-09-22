@@ -1,0 +1,19 @@
+$font-stack:      Helvetica, sans-serif,'OpenSansBold';
+$primary-color:   #333;
+$secondary-color: lighten($primary-color, 200);
+$width: 30px + 960px / 12;
+$gap: 15px;
+
+body {
+  font: 100% $font-stack;
+  color: $primary-color;
+  max-width: $width;
+  height: calc(100% - 47px);
+  margin: -$gap;
+}
+
+@media (min-width: 481px) and (max-width: 992px) {
+  body {
+    color: $secondary-color;
+  }
+}

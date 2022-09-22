@@ -1,0 +1,17 @@
+$primary-color: #FF0000;
+$secondary-color: rgba(0,0,255,0.5);
+$test-color: rgb(100,100,100);
+$transparent-color: rgba(100,200,100,0);
+
+div {
+  color1: $primary-color;
+  color2: $transparent-color;
+  color3: lighten($test-color, 10%);
+  color4: darken($test-color, 10%);
+  color5: adjust-hue($secondary-color, 120);
+  color6: rgba($test-color, 0.3);
+  color7: opacify($secondary-color, 0.3);
+  color8: transparentize($secondary-color, 0.3);
+  color9: mix($secondary-color, $test-color, 0.2);
+  opacity: alpha($secondary-color);
+}
