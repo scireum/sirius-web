@@ -8,7 +8,7 @@
 
 package sirius.pasta.noodle.compiler;
 
-import parsii.tokenizer.LookaheadReader;
+import sirius.kernel.tokenizer.LookaheadReader;
 import sirius.pasta.noodle.Callable;
 import sirius.pasta.noodle.ConstantCall;
 import sirius.pasta.noodle.NLSCall;

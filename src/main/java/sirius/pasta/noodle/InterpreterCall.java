@@ -8,7 +8,7 @@
 
 package sirius.pasta.noodle;
 
-import parsii.tokenizer.Position;
+import sirius.kernel.tokenizer.Position;
 import sirius.kernel.commons.Strings;
 import sirius.pasta.noodle.compiler.SourceCodeInfo;
 

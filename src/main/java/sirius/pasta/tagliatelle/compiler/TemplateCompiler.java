@@ -8,9 +8,9 @@
 
 package sirius.pasta.tagliatelle.compiler;
 
-import parsii.tokenizer.Char;
-import parsii.tokenizer.ParseError;
-import parsii.tokenizer.Position;
+import sirius.kernel.tokenizer.Char;
+import sirius.kernel.tokenizer.ParseError;
+import sirius.kernel.tokenizer.Position;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.PriorityParts;

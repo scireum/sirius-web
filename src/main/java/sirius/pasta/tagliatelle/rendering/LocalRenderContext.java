@@ -8,7 +8,7 @@
 
 package sirius.pasta.tagliatelle.rendering;
 
-import parsii.tokenizer.Position;
+import sirius.kernel.tokenizer.Position;
 import sirius.kernel.commons.Explain;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompileException;

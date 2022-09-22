@@ -8,9 +8,9 @@
 
 package sirius.pasta.noodle.compiler;
 
-import parsii.tokenizer.Char;
-import parsii.tokenizer.LookaheadReader;
-import parsii.tokenizer.Position;
+import sirius.kernel.tokenizer.Char;
+import sirius.kernel.tokenizer.LookaheadReader;
+import sirius.kernel.tokenizer.Position;
 import sirius.kernel.commons.Reflection;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
