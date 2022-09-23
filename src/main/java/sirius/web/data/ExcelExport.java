@@ -45,6 +45,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Array;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -55,6 +57,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Generates an Excel file which can be sent as a response for a {@link sirius.web.http.WebContext}
@@ -369,6 +372,19 @@ public class ExcelExport {
         if (obj instanceof ImageCell imageCell) {
             addImageCell(row, imageCell, columnIndex);
             return;
+        }
+        if (obj instanceof Array sqlArray) {
+            try {
+                Object sqlArrayValues = sqlArray.getArray();
+                if (sqlArrayValues instanceof String[] sqlArrayStrings) {
+                    cell.setCellValue(Arrays.stream(sqlArrayStrings)
+                                            .map(NLS::toUserString)
+                                            .collect(Collectors.joining(", ")));
+                    return;
+                }
+            } catch (SQLException e) {
+                Exceptions.ignore(e);
+            }
         }
         cell.setCellValue(createRichTextString(obj.toString()));
     }
