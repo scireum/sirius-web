@@ -8,7 +8,7 @@
 
 package sirius.pasta.noodle.macros;
 
-import parsii.tokenizer.Position;
+import sirius.kernel.tokenizer.Position;
 import sirius.kernel.commons.Explain;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;

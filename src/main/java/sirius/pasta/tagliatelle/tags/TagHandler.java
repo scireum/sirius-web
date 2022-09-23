@@ -8,7 +8,7 @@
 
 package sirius.pasta.tagliatelle.tags;
 
-import parsii.tokenizer.Position;
+import sirius.kernel.tokenizer.Position;
 import sirius.kernel.commons.Value;
 import sirius.pasta.noodle.Callable;
 import sirius.pasta.noodle.ConstantCall;

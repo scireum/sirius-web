@@ -8,8 +8,8 @@
 
 package sirius.pasta.noodle.compiler;
 
-import parsii.tokenizer.Char;
-import parsii.tokenizer.LookaheadReader;
+import sirius.kernel.tokenizer.Char;
+import sirius.kernel.tokenizer.LookaheadReader;
 
 /**
  * Provides a base class for all compilers used by the <tt>Pasta</tt> framework.

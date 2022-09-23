@@ -8,7 +8,7 @@
 
 package sirius.pasta.tagliatelle
 
-import parsii.tokenizer.ParseError
+import sirius.kernel.tokenizer.ParseError
 import sirius.kernel.BaseSpecification
 import sirius.kernel.di.std.Part
 import sirius.pasta.noodle.compiler.CompileError

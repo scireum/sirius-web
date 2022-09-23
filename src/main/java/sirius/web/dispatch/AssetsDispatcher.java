@@ -10,7 +10,7 @@ package sirius.web.dispatch;
 
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import org.serversass.Output;
+import sirius.web.sass.Output;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Files;

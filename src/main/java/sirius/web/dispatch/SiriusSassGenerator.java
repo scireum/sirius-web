@@ -8,10 +8,10 @@
 
 package sirius.web.dispatch;
 
-import org.serversass.Generator;
-import org.serversass.ast.Expression;
-import org.serversass.ast.FunctionCall;
-import org.serversass.ast.Value;
+import sirius.web.sass.Generator;
+import sirius.web.sass.ast.Expression;
+import sirius.web.sass.ast.FunctionCall;
+import sirius.web.sass.ast.Value;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Log;

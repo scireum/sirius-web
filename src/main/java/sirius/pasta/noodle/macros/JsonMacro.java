@@ -10,7 +10,7 @@ package sirius.pasta.noodle.macros;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import parsii.tokenizer.Position;
+import sirius.kernel.tokenizer.Position;
 import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;

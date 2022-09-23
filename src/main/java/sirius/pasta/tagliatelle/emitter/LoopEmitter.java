@@ -8,7 +8,7 @@
 
 package sirius.pasta.tagliatelle.emitter;
 
-import parsii.tokenizer.Position;
+import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.Callable;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.tagliatelle.rendering.LocalRenderContext;

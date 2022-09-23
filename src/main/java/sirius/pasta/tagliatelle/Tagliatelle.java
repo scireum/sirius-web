@@ -8,8 +8,8 @@
 
 package sirius.pasta.tagliatelle;
 
-import parsii.tokenizer.ParseError;
-import parsii.tokenizer.Position;
+import sirius.kernel.tokenizer.ParseError;
+import sirius.kernel.tokenizer.Position;
 import sirius.kernel.Sirius;
 import sirius.kernel.cache.Cache;
 import sirius.kernel.cache.CacheEntry;

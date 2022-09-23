@@ -9,7 +9,7 @@
 package sirius.web.dispatch
 
 import io.netty.handler.codec.http.HttpHeaderNames
-import org.serversass.Output
+import sirius.web.sass.Output
 import sirius.kernel.BaseSpecification
 
 class AssetsDispatcherSpec extends BaseSpecification {

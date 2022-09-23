@@ -8,7 +8,7 @@
 
 package sirius.web.dispatch;
 
-import org.serversass.ast.FunctionCall;
+import sirius.web.sass.ast.FunctionCall;
 import sirius.kernel.di.std.AutoRegister;
 import sirius.kernel.di.std.Named;
 

@@ -1,0 +1,55 @@
+nav ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+nav ul li {
+    color: #f0f;
+}
+
+nav li {
+    display: inline-block;
+}
+
+nav a {
+    display: block;
+    padding: 6px 12px;
+    text-decoration: none;
+}
+
+nav.test {
+    color: #f00;
+}
+
+nav:hover {
+    color: #ff0;
+}
+
+.table tbody tr.warning td {
+    background-color: #faedbb;
+}
+
+b a {
+    color: #abc;
+}
+
+a b:hover {
+    color: red;
+}
+
+a c, a d {
+    color: green;
+}
+
+e, f {
+    color: blue;
+}
+
+e g > j, f g > j, e h, f h {
+    color: aquamarine;
+}
+
+e g > j i, f g > j i, e h i, f h i, e g > j:hover, f g > j:hover, e h:hover, f h:hover {
+    color: springgreen;
+}

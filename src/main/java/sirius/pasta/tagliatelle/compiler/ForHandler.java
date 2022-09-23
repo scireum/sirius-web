@@ -8,7 +8,7 @@
 
 package sirius.pasta.tagliatelle.compiler;
 
-import parsii.tokenizer.LookaheadReader;
+import sirius.kernel.tokenizer.LookaheadReader;
 import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.compiler.VariableScoper;
 import sirius.pasta.tagliatelle.emitter.Emitter;

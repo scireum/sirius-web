@@ -8,7 +8,7 @@
 
 package sirius.pasta.noodle.compiler;
 
-import parsii.tokenizer.LookaheadReader;
+import sirius.kernel.tokenizer.LookaheadReader;
 import sirius.kernel.commons.Files;
 import sirius.kernel.commons.Streams;
 import sirius.kernel.health.Exceptions;

@@ -9,7 +9,7 @@
 package sirius.pasta.noodle.compiler
 
 
-import parsii.tokenizer.Position
+import sirius.kernel.tokenizer.Position
 import sirius.kernel.BaseSpecification
 import sirius.pasta.noodle.Callable
 import sirius.pasta.noodle.ScriptingException

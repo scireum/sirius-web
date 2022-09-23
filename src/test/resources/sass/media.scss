@@ -1,0 +1,39 @@
+/**
+ * This comment will be ignored
+ */
+@media screen {
+
+  // This will be ignored as well
+  .message {
+    color: #333;
+  }
+
+  @media (min-width: 100px) {
+    .message {
+      color: black;
+    }
+  }
+
+  .success {
+    color: red;
+
+    @media (min-width: 100px) {
+      color: white;
+    }
+
+  }
+
+}
+
+$width: 123px;
+@import "sass/sub-media";
+
+@media (min-width: 481px) and (max-width: 992px) {
+  .test-class {
+    width: 100%;
+  }
+}
+
+body {
+  background-image: url('test.png');
+}

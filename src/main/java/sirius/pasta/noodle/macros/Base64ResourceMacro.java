@@ -8,8 +8,8 @@
 
 package sirius.pasta.noodle.macros;
 
-import org.serversass.ast.FunctionCall;
-import parsii.tokenizer.Position;
+import sirius.web.sass.ast.FunctionCall;
+import sirius.kernel.tokenizer.Position;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.Environment;
