@@ -42,6 +42,7 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Average;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
+import sirius.kernel.health.metrics.Metric;
 import sirius.kernel.health.metrics.MetricProvider;
 import sirius.kernel.health.metrics.MetricsCollector;
 import sirius.kernel.timer.EveryTenSeconds;
@@ -780,35 +781,47 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
                                      "http-bytes-in",
                                      "HTTP Bytes-In",
                                      bytesIn.get() / 1024d / 60,
-                                     "KB/s");
+                                     "KiB/s");
         collector.differentialMetric("http_bytes_out",
                                      "http-bytes-out",
                                      "HTTP Bytes-Out",
                                      bytesOut.get() / 1024d / 60,
-                                     "KB/s");
-        collector.differentialMetric("http_connects", "http-connects", "HTTP Connects", connections.get(), "/min");
-        collector.differentialMetric("http_requests", "http-requests", "HTTP Requests", requests.get(), "/min");
+                                     "KiB/s");
+        collector.differentialMetric("http_connects",
+                                     "http-connects",
+                                     "HTTP Connects",
+                                     connections.get(),
+                                     Metric.UNIT_PER_MIN);
+        collector.differentialMetric("http_requests",
+                                     "http-requests",
+                                     "HTTP Requests",
+                                     requests.get(),
+                                     Metric.UNIT_PER_MIN);
         collector.differentialMetric("http_slow_requests",
                                      "http-slow-requests",
                                      "HTTP Slow Requests",
                                      slowRequests.get(),
-                                     "/min");
-        collector.differentialMetric("http-blocks", "http-blocks", "HTTP Blocked Requests", blocks.get(), "/min");
+                                     Metric.UNIT_PER_MIN);
+        collector.differentialMetric("http-blocks",
+                                     "http-blocks",
+                                     "HTTP Blocked Requests",
+                                     blocks.get(),
+                                     Metric.UNIT_PER_MIN);
         collector.differentialMetric("http_timeouts",
                                      "http-timeouts",
                                      "HTTP Idle Timeouts",
                                      idleTimeouts.get(),
-                                     "/min");
+                                     Metric.UNIT_PER_MIN);
         collector.differentialMetric("http_client_errors",
                                      "http-client-errors",
                                      "HTTP Client Errors (4xx)",
                                      clientErrors.get(),
-                                     "/min");
+                                     Metric.UNIT_PER_MIN);
         collector.differentialMetric("http_server_errors",
                                      "http-server-errors",
                                      "HTTP Server Errors (5xx)",
                                      serverErrors.get(),
-                                     "/min");
+                                     Metric.UNIT_PER_MIN);
         collector.metric("http_open_connections",
                          "http-open-connections",
                          "HTTP Open Connections",
@@ -818,28 +831,28 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
                          "http-response-time",
                          "HTTP Avg. Response Time",
                          responseTime.getAndClear(),
-                         "ms");
+                         Metric.UNIT_MS);
         collector.metric("http_response_ttfb",
                          "http-response-ttfb",
                          "HTTP Avg. Time To First Byte",
                          timeToFirstByte.getAndClear(),
-                         "ms");
+                         Metric.UNIT_MS);
         collector.metric("http_response_queue",
                          "http-response-queue",
                          "HTTP Avg. Queue Time",
                          queueTime.getAndClear(),
-                         "ms");
+                         Metric.UNIT_MS);
         collector.metric("http_websockets", "http-websockets", "Open Websockets", websockets.get(), null);
         collector.metric("pooled_byte_buffer_used_heap_mem",
                          "pooled-byte-buffer-used-heap-mem",
                          "Netty Heap Memory",
-                         PooledByteBufAllocator.DEFAULT.metric().usedHeapMemory() / 1024d / 1024d,
-                         "MB");
+                         Metric.bytesToMebibytes(PooledByteBufAllocator.DEFAULT.metric().usedHeapMemory()),
+                         Metric.UNIT_MIB);
         collector.metric("pooled_byte_buffer_used_direct_mem",
                          "pooled-byte-buffer-used-direct-mem",
                          "Netty Direct Memory",
-                         PooledByteBufAllocator.DEFAULT.metric().usedDirectMemory() / 1024d / 1024d,
-                         "MB");
+                         Metric.bytesToMebibytes(PooledByteBufAllocator.DEFAULT.metric().usedDirectMemory()),
+                         Metric.UNIT_MIB);
         collector.metric("max_direct_mem",
                          "max-direct-mem",
                          "Max Direct Memory",
