@@ -44,6 +44,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.health.metrics.Metric;
 import sirius.kernel.health.metrics.MetricProvider;
+import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.health.metrics.MetricsCollector;
 import sirius.kernel.timer.EveryTenSeconds;
 
@@ -854,10 +855,10 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
                          Metric.bytesToMebibytes(PooledByteBufAllocator.DEFAULT.metric().usedDirectMemory()),
                          Metric.UNIT_MIB);
         collector.metric("max_direct_mem",
-                         "max-direct-mem",
-                         "Max Direct Memory",
-                         PlatformDependent.maxDirectMemory() / 1024d / 1024d,
-                         "MB");
+                         "Max. Direct Memory",
+                         Metric.bytesToMebibytes(PlatformDependent.maxDirectMemory()),
+                         Metric.UNIT_MIB,
+                         MetricState.GRAY);
     }
 
     /**
