@@ -8,7 +8,6 @@
 
 package sirius.web.services;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
@@ -85,7 +84,7 @@ public class ApiController extends BasicController {
         if (hasPermission(publicApiInfo.getRequiredRoles())) {
             webContext.respondWith().template("/templates/system/api.html.pasta", publicApiInfo);
         } else {
-            webContext.respondWith().error(HttpResponseStatus.FORBIDDEN);
+            raiseMissingPermissionError(publicApiInfo.getRequiredRoles());
         }
     }
 }
