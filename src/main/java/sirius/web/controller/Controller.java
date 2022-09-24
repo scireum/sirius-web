@@ -75,8 +75,8 @@ public interface Controller {
      * This provides a convenient way to render a "fallback" page like a list view, if a specialized details view
      * or something thereof fails.
      *
-     * @param webContext   the context containing the request
-     * @param error the error which occurred
+     * @param webContext the context containing the request
+     * @param error      the error which occurred
      */
     void onError(WebContext webContext, HandledException error);
 
@@ -86,9 +86,8 @@ public interface Controller {
      * This provides a convenient way to generate a "fallback" JSON response.
      *
      * @param webContext the context containing the request
-     * @param error the error which occurred
-     * @param format the expected response format
+     * @param error      the error which occurred
+     * @param format     the expected response format
      */
     void onApiError(WebContext webContext, HandledException error, Format format);
-
 }
