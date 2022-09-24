@@ -45,7 +45,7 @@ public class PublicServiceInfo {
                                 List<RequestBody> requestBodies,
                                 List<ApiResponse> responses) {
         this.info = info;
-        this.uri = uri;
+        this.uri = Strings.isFilled(info.path()) ? info.path() : uri;
         this.deprecated = deprecated;
         this.operation = operation;
         this.serviceParameters.addAll(serviceParameters);
