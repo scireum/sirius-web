@@ -8,6 +8,7 @@ window.sirius.Continuity = (function () {
      * @param {boolean} [options.debug] Allows to enable the printing of debugging messages to the console right from the start.
      * @param {boolean} [options.disableAutoDeepLinks] Allows to disable the automatic generation and update of deep-links via the state parameter.
      * @param {function} [options.initialStateHook] Called during the parsing of the initial deep-linked state. Can be used to create intermediate states the user can navigate back to.
+     * @param {function} [options.initialStateParseErrorHandler] Called when the parsing of the initial deep-link state fails.
      * @param {Object} options.entryTypes Defines the list of known entry types that should be handled (state handlers can be registered later).
      * @param {boolean} [options.entryTypes.excludeFromParameter] Allows to exclude the information of a state entry type from the generated deep-link URL (to just keep it in the JS history).
      */
@@ -53,8 +54,16 @@ window.sirius.Continuity = (function () {
         // Handles first visit navigation
         const urlState = this.searchParams.get(this.options.stateParameterName);
         if (urlState) {
-            this.currentState = this.parseStateUrlParam(urlState);
-            this.handleStateChange(this.currentState, true);
+            try {
+                this.currentState = this.parseStateUrlParam(urlState);
+                this.handleStateChange(this.currentState, true);
+            } catch {
+                this.currentState = {};
+                this.log('[CONTINUITY] [ERROR] Parsing the initial state url parameter failed!');
+                if (this.options.initialStateParseErrorHandler) {
+                    this.options.initialStateParseErrorHandler();
+                }
+            }
         } else {
             this.currentState = {};
         }
