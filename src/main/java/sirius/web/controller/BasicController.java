@@ -9,16 +9,17 @@
 package sirius.web.controller;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.StructuredOutput;
-import sirius.web.services.Format;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebServer;
 import sirius.web.security.Permissions;
 import sirius.web.security.UserContext;
 import sirius.web.security.UserInfo;
+import sirius.web.services.Format;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.InvocationTargetException;
@@ -142,6 +143,22 @@ public class BasicController implements Controller {
      */
     public void showDeletedMessage() {
         UserContext.message(Message.info().withTextMessage(NLS.get("BasicController.objectDeleted")));
+    }
+
+    /**
+     * Throws an exception which will yield the same behavior as an unfulfilled {@link sirius.web.security.Permission}
+     * or {@link sirius.web.security.LoginRequired} constraint on a routed method.
+     * <p>
+     * Most notably, this will show the login page if no user is present or, for service calls, it will yield the
+     * proper HTTP status codes.
+     *
+     * @param missingPermission the permission which isn't fulfilled (granted to the current user).
+     */
+    protected void raiseMissingPermissionError(String missingPermission) {
+        throw Exceptions.createHandled()
+                        .withDirectMessage(Strings.apply("Missing permission: %s", missingPermission))
+                        .hint(Controller.MISSING_PERMISSION, missingPermission)
+                        .handle();
     }
 
     /**
