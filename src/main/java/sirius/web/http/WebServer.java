@@ -53,8 +53,9 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.Collection;
 import java.util.List;
@@ -318,7 +319,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     }
 
     /**
-     * Parses a HTTP header string into a LocalDateTime.
+     * Parses an HTTP header string into a LocalDateTime.
      * <p>
      * The timestamp is expected to match the RFC 1123 format, as defined by the HTTP standard.
      *
@@ -331,7 +332,9 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
         }
 
         try {
-            return Optional.of(LocalDateTime.parse(httpDateHeader, DateTimeFormatter.RFC_1123_DATE_TIME));
+            return Optional.of(Instant.from(Response.RFC822_INSTANT.parse(httpDateHeader))
+                                      .atZone(ZoneId.systemDefault())
+                                      .toLocalDateTime());
         } catch (DateTimeParseException e) {
             Exceptions.ignore(e);
             return Optional.empty();
