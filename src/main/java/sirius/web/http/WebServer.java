@@ -47,6 +47,7 @@ import sirius.kernel.health.metrics.MetricProvider;
 import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.health.metrics.MetricsCollector;
 import sirius.kernel.timer.EveryTenSeconds;
+import sirius.kernel.xml.Outcall;
 
 import javax.annotation.Nullable;
 import java.net.InetAddress;
@@ -332,7 +333,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
         }
 
         try {
-            return Optional.of(Instant.from(Response.RFC822_INSTANT.parse(httpDateHeader))
+            return Optional.of(Instant.from(Outcall.RFC9110_INSTANT.parse(httpDateHeader))
                                       .atZone(ZoneId.systemDefault())
                                       .toLocalDateTime());
         } catch (DateTimeParseException e) {
