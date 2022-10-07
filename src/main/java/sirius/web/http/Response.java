@@ -887,11 +887,11 @@ public class Response {
         if (cacheSeconds > 0) {
             // Date header
             addHeaderIfNotExists(HttpHeaderNames.DATE,
-                                 Outcall.RFC9110_INSTANT.format(LocalDateTime.now().atZone(ZoneId.systemDefault())));
+                                 Outcall.RFC2616_INSTANT.format(LocalDateTime.now().atZone(ZoneId.systemDefault())));
 
             // Add cached headers
             addHeaderIfNotExists(HttpHeaderNames.EXPIRES,
-                                 Outcall.RFC9110_INSTANT.format(LocalDateTime.now()
+                                 Outcall.RFC2616_INSTANT.format(LocalDateTime.now()
                                                                              .atZone(ZoneId.systemDefault())
                                                                              .plusSeconds(cacheSeconds)));
             if (isPrivate) {
@@ -904,7 +904,7 @@ public class Response {
         }
         if (lastModifiedMillis > 0 && !headers().contains(HttpHeaderNames.LAST_MODIFIED)) {
             addHeaderIfNotExists(HttpHeaderNames.LAST_MODIFIED,
-                                 Outcall.RFC9110_INSTANT.format(Instant.ofEpochMilli(lastModifiedMillis)
+                                 Outcall.RFC2616_INSTANT.format(Instant.ofEpochMilli(lastModifiedMillis)
                                                                        .atZone(ZoneId.systemDefault())));
         }
     }
@@ -1471,7 +1471,7 @@ public class Response {
             WebServer.parseDateHeader(wc.getHeader(HttpHeaderNames.IF_MODIFIED_SINCE))
                      .ifPresent(ifModifiedSince -> brb.addHeader(HttpHeaderNames.IF_MODIFIED_SINCE.toString(),
                                                                  ifModifiedSince.atZone(ZoneId.systemDefault())
-                                                                                .format(Outcall.RFC9110_INSTANT)));
+                                                                                .format(Outcall.RFC2616_INSTANT)));
 
             // Support range requests...
             String range = wc.getHeader(HttpHeaderNames.RANGE);

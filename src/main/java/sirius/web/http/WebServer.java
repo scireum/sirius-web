@@ -333,7 +333,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
         }
 
         try {
-            return Optional.of(Instant.from(Outcall.RFC9110_INSTANT.parse(httpDateHeader))
+            return Optional.of(Instant.from(Outcall.RFC2616_INSTANT.parse(httpDateHeader))
                                       .atZone(ZoneId.systemDefault())
                                       .toLocalDateTime());
         } catch (DateTimeParseException e) {
