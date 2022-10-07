@@ -57,7 +57,7 @@ window.sirius.Continuity = (function () {
             try {
                 this.currentState = this.parseStateUrlParam(urlState);
                 this.handleStateChange(this.currentState, true);
-            } catch {
+            } catch (e) {
                 this.currentState = {};
                 this.log('[CONTINUITY] [ERROR] Parsing the initial state url parameter failed!');
                 if (this.options.initialStateParseErrorHandler) {
