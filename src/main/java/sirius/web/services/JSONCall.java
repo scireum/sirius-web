@@ -8,8 +8,8 @@
 
 package sirius.web.services;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import sirius.kernel.xml.Outcall;
 import sirius.web.http.MimeHelper;
