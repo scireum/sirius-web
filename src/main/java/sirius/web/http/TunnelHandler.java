@@ -180,14 +180,14 @@ public class TunnelHandler implements AsyncHandler<String> {
             WebServer.LOG.FINE("Tunnel - HEADERS for %s", webContext.getRequestedURI());
         }
 
-        long lastModified = forwardHeadersAndDetermineLastModified(httpHeaders);
-        if (response.handleIfModifiedSince(lastModified)) {
+        long lastModifiedMillis = forwardHeadersAndDetermineLastModified(httpHeaders);
+        if (response.handleIfModifiedSince(lastModifiedMillis)) {
             return State.ABORT;
         }
 
         overrideContentTypeIfNecessary();
 
-        response.setDateAndCacheHeaders(lastModified,
+        response.setDateAndCacheHeaders(lastModifiedMillis,
                                         response.cacheSeconds == null ? Response.HTTP_CACHE : response.cacheSeconds,
                                         response.isPrivate);
 
@@ -251,7 +251,7 @@ public class TunnelHandler implements AsyncHandler<String> {
     private long parseLastModified(Map.Entry<String, String> entry) {
         try {
             return WebServer.parseDateHeader(entry.getValue())
-                            .map(date -> date.atZone(ZoneId.systemDefault()).toInstant().getEpochSecond())
+                            .map(date -> date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
                             .orElse(0L);
         } catch (Exception e) {
             Exceptions.ignore(e);

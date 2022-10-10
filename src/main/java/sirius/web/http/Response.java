@@ -567,7 +567,7 @@ public class Response {
                                                    .map(date -> date.atZone(ZoneId.systemDefault())
                                                                     .toInstant()
                                                                     .getEpochSecond())
-                                                   .orElse(0L) / 1000;
+                                                   .orElse(0L);
         if (ifModifiedSinceDateSeconds > 0
             && lastModifiedInMillis > 0
             && ifModifiedSinceDateSeconds >= lastModifiedInMillis / 1000) {
