@@ -224,9 +224,7 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
             endObject();
         } else if (data instanceof JSONArray jsonArray) {
             beginArray(name);
-            for (Object element : jsonArray) {
-                property("", element);
-            }
+            jsonArray.forEach(element -> property("", element));
             endArray();
         } else {
             writePlainProperty(name, data);
