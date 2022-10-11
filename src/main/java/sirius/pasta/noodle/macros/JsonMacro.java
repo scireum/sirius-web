@@ -10,8 +10,9 @@ package sirius.pasta.noodle.macros;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
-import sirius.kernel.tokenizer.Position;
+import com.alibaba.fastjson2.JSONReader;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
@@ -43,7 +44,7 @@ public class JsonMacro extends BasicMacro {
     public Object invoke(Environment environment, Object[] args) {
         try {
             String jsonString = (String) args[0];
-            return JSON.parseObject(jsonString);
+            return JSON.parseObject(jsonString, JSONReader.Feature.AllowUnQuotedFieldNames);
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid json: " + e.getMessage(), e);
         }
@@ -64,5 +65,4 @@ public class JsonMacro extends BasicMacro {
     public boolean isConstant(CompilationContext context, List<Node> args) {
         return true;
     }
-
 }
