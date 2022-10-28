@@ -140,20 +140,14 @@
         <dependency>
             <groupId>com.github.pjfanning</groupId>
             <artifactId>excel-streaming-reader</artifactId>
-            <version>4.0.2</version>
-        </dependency>
-        <!-- Required as the version shipped with excel-streaming-reader has security issues. -->
-        <dependency>
-            <groupId>com.github.pjfanning</groupId>
-            <artifactId>poi-shared-strings</artifactId>
-            <version>2.5.4</version>
+            <version>4.0.4</version>
         </dependency>
 
         <!-- Swagger Annotations are used for API/Service documentation -->
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-annotations</artifactId>
-            <version>2.2.2</version>
+            <version>2.2.4</version>
         </dependency>
     </dependencies>
 
