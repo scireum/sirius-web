@@ -45,6 +45,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Microtiming;
 import sirius.kernel.nls.NLS;
+import sirius.kernel.xml.Outcall;
 import sirius.kernel.xml.XMLStructuredOutput;
 import sirius.pasta.Pasta;
 import sirius.pasta.noodle.compiler.CompileException;
@@ -66,12 +67,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.chrono.IsoChronology;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.Collection;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -122,16 +118,6 @@ public class Response {
      * Represents a value to be used for CACHE_CONTROL which prevents any caching...
      */
     private static final String NO_CACHE = HttpHeaderValues.NO_CACHE + ", max-age=0";
-
-    /**
-     * RFC 822 date/time formatter.
-     */
-    public static final DateTimeFormatter RFC822_INSTANT =
-            new DateTimeFormatterBuilder().appendPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'")
-                                          .toFormatter()
-                                          .withLocale(Locale.ENGLISH)
-                                          .withChronology(IsoChronology.INSTANCE)
-                                          .withZone(ZoneOffset.UTC);
 
     /*
      * Stores the associated request
@@ -901,13 +887,13 @@ public class Response {
         if (cacheSeconds > 0) {
             // Date header
             addHeaderIfNotExists(HttpHeaderNames.DATE,
-                                 RFC822_INSTANT.format(LocalDateTime.now().atZone(ZoneId.systemDefault())));
+                                 Outcall.RFC2616_INSTANT.format(LocalDateTime.now().atZone(ZoneId.systemDefault())));
 
             // Add cached headers
             addHeaderIfNotExists(HttpHeaderNames.EXPIRES,
-                                 RFC822_INSTANT.format(LocalDateTime.now()
-                                                                    .atZone(ZoneId.systemDefault())
-                                                                    .plusSeconds(cacheSeconds)));
+                                 Outcall.RFC2616_INSTANT.format(LocalDateTime.now()
+                                                                             .atZone(ZoneId.systemDefault())
+                                                                             .plusSeconds(cacheSeconds)));
             if (isPrivate) {
                 addHeaderIfNotExists(HttpHeaderNames.CACHE_CONTROL, "private, max-age=" + cacheSeconds);
             } else {
@@ -918,8 +904,8 @@ public class Response {
         }
         if (lastModifiedMillis > 0 && !headers().contains(HttpHeaderNames.LAST_MODIFIED)) {
             addHeaderIfNotExists(HttpHeaderNames.LAST_MODIFIED,
-                                 RFC822_INSTANT.format(Instant.ofEpochMilli(lastModifiedMillis)
-                                                              .atZone(ZoneId.systemDefault())));
+                                 Outcall.RFC2616_INSTANT.format(Instant.ofEpochMilli(lastModifiedMillis)
+                                                                       .atZone(ZoneId.systemDefault())));
         }
     }
 
@@ -1485,7 +1471,7 @@ public class Response {
             WebServer.parseDateHeader(wc.getHeader(HttpHeaderNames.IF_MODIFIED_SINCE))
                      .ifPresent(ifModifiedSince -> brb.addHeader(HttpHeaderNames.IF_MODIFIED_SINCE.toString(),
                                                                  ifModifiedSince.atZone(ZoneId.systemDefault())
-                                                                                .format(RFC822_INSTANT)));
+                                                                                .format(Outcall.RFC2616_INSTANT)));
 
             // Support range requests...
             String range = wc.getHeader(HttpHeaderNames.RANGE);
