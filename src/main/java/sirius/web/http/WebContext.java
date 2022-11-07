@@ -27,6 +27,7 @@ import io.netty.handler.codec.http.multipart.HttpData;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.InterfaceHttpPostRequestDecoder;
+import io.netty.util.IllegalReferenceCountException;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
@@ -602,7 +603,7 @@ public class WebContext implements SubContext {
                     return byteBuf.toString(attr.getCharset());
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | IllegalReferenceCountException e) {
             Exceptions.ignore(e);
         }
         return null;
