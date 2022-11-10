@@ -157,6 +157,11 @@
   border-left-color: $sirius-gray-light;
 }
 
+.sci-left-border-gray, .sci-left-border-grey {
+  @extend .sci-left-border;
+  border-left-color: $sirius-gray;
+}
+
 .sci-left-border-gray-dark, .sci-left-border-grey-dark {
   @extend .sci-left-border;
   border-left-color: $sirius-gray-dark;
