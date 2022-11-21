@@ -19,7 +19,7 @@
 </i:pragma>
 
 <div class="col mb-4">
-    <div class="card card-border card-hover-shadow @if(fullHeight) {h-100} @class">
+    <div class="card card-border card-hover-shadow @if(fullHeight) { h-100 }  @class">
         <div class="d-flex flex-grow-1 @(headerLeft ? 'flex-row align-items-center' : 'flex-column')">
             <i:render name="header"></i:render>
             <div class="d-flex flex-column flex-grow-1">
