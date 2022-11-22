@@ -277,12 +277,12 @@ public class ControllerDispatcher implements WebDispatcher {
             if (UserInfo.PERMISSION_LOGGED_IN.equals(missingPermission)) {
                 throw Exceptions.createHandled()
                                 .withDirectMessage(HttpResponseStatus.UNAUTHORIZED.reasonPhrase())
-                                .hint(Controller.HTTP_STATUS, HttpResponseStatus.UNAUTHORIZED)
+                                .hint(Controller.HTTP_STATUS, HttpResponseStatus.UNAUTHORIZED.code())
                                 .handle();
             } else {
                 throw Exceptions.createHandled()
                                 .withDirectMessage(Strings.apply("Missing permission: %s", missingPermission))
-                                .hint(Controller.HTTP_STATUS, HttpResponseStatus.FORBIDDEN)
+                                .hint(Controller.HTTP_STATUS, HttpResponseStatus.FORBIDDEN.code())
                                 .handle();
             }
         }
