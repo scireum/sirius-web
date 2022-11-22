@@ -110,7 +110,7 @@ public class BasicController implements Controller {
     /**
      * Throws an error which yields an HTTP 405 (Method Not Allowed) status if the request method isn't a POST.
      * <p>
-     *     Note that this doesn't enforce CSRF tokens.
+     * Note that this doesn't enforce CSRF tokens.
      *
      * @see WebContext#isUnsafePOST()
      * @see WebContext#ensureSafePOST()
