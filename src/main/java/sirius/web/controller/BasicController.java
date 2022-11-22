@@ -108,6 +108,23 @@ public class BasicController implements Controller {
     }
 
     /**
+     * Throws an error which yields an HTTP 405 (Method Not Allowed) status if the request method isn't a POST.
+     * <p>
+     *     Note that this doesn't enforce CSRF tokens.
+     *
+     * @see WebContext#isUnsafePOST()
+     * @see WebContext#ensureSafePOST()
+     */
+    protected void enforceMethodPost(WebContext webContext) {
+        if (!webContext.isUnsafePOST()) {
+            throw Exceptions.createHandled()
+                            .withDirectMessage("A POST request is expected.")
+                            .hint(HTTP_STATUS, HttpResponseStatus.METHOD_NOT_ALLOWED.code())
+                            .handle();
+        }
+    }
+
+    /**
      * Asserts that the given object is non-null.
      * <p>
      * Throws an appropriate error if the object is <tt>null</tt>.
