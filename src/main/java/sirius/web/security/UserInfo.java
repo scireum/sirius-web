@@ -8,10 +8,12 @@
 
 package sirius.web.security;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.transformers.Composable;
 import sirius.kernel.di.transformers.Transformable;
 import sirius.kernel.health.Exceptions;
+import sirius.web.controller.Controller;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -339,6 +341,7 @@ public class UserInfo extends Composable {
             throw Exceptions.createHandled()
                             .withNLSKey("UserInfo.missingPermission")
                             .set("permission", Permissions.getTranslatedPermission(permission))
+                            .hint(Controller.HTTP_STATUS, HttpResponseStatus.FORBIDDEN.code())
                             .handle();
         }
     }
