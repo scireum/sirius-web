@@ -10,7 +10,6 @@ package sirius.web.dispatch;
 
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import sirius.web.sass.Output;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Files;
@@ -31,6 +30,7 @@ import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
+import sirius.web.sass.Output;
 import sirius.web.security.UserContext;
 import sirius.web.templates.Templates;
 
@@ -121,13 +121,13 @@ public class AssetsDispatcher implements WebDispatcher {
 
     private Tuple<String, Integer> getEffectiveURI(WebContext ctx) {
         String uri = ctx.getRequestedURI();
-        if (uri.startsWith("/assets/dynamic")) {
+        if (uri.startsWith("/assets/dynamic/")) {
             uri = uri.substring(16);
             Tuple<String, String> pair = Strings.split(uri, "/");
             return Tuple.create(ASSETS_PREFIX + pair.getSecond(), Response.HTTP_CACHE_INFINITE);
         }
 
-        if (uri.startsWith("/assets/no-cache")) {
+        if (uri.startsWith("/assets/no-cache/")) {
             return Tuple.create(ASSETS_PREFIX + uri.substring(17), 0);
         }
 
