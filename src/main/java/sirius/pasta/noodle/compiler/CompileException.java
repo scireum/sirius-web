@@ -16,13 +16,12 @@ import javax.annotation.Nullable;
 import java.io.Serial;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Thrown to indicate one or more {@link CompileError compilation errors}.
  * <p>
  * As the compiler is quite optimistic, it keeps compiling as long as possible instead of aborting for the first error.
- * Therefore a list of errors is given here which is also appropriately formatted in the exception message.
+ * Therefore, a list of errors is given here which is also appropriately formatted in the exception message.
  */
 public class CompileException extends Exception {
 
@@ -78,8 +77,6 @@ public class CompileException extends Exception {
      * @param out the JSON output to write to
      */
     public void reportAsJSON(JSONStructuredOutput out) {
-        TemplateCompiler.reportAsJson(getErrors().stream().map(CompileError::getError).collect(Collectors.toList()),
-                                      out);
+        TemplateCompiler.reportAsJson(getErrors().stream().map(CompileError::getError).toList(), out);
     }
 }
-

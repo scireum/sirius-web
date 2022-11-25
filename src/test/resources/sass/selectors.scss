@@ -1,0 +1,74 @@
+// We expect this to stay same
+.select-file input:checked + span {
+  font-family: 'OpenSansSemibold';
+}
+
+a[x='Hallo'] {
+  font-family: 'OpenSansSemibold';
+}
+
+b[x='Hallo'][y='45'] {
+  font-family: 'OpenSansSemibold';
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+input[type="radio"]:nth-child(2) + span {
+  font-family: 'OpenSansSemibold';
+}
+
+input[type="radio"]:checked + span {
+  font-family: 'OpenSansSemibold';
+}
+
+.nav-list [class^="icon-"],
+.nav-list [class*=" icon-"] {
+  margin-right: 5px;
+}
+
+[class^="icon-"],
+[class*=" icon-"] {
+  font-size: 42px;
+}
+
+// We expect the parser to accept values containing a ':'
+.test {
+  filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);
+}
+
+@keyframes test {
+  inner {
+    test: 1;
+  }
+}
+
+// We expect the parser to accept accessing pseudo elements using '::'
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+div::after {
+  content: "💩";
+}
+
+div {
+  &::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+// We expect * to work and stay the same
+#test * {
+  box-sizing: content-box;
+}
+
+#test {
+  + label {
+    display: none;
+
+  }
+}

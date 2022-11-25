@@ -355,7 +355,7 @@ public class ScopeInfo extends Composable {
         if (scopeDefaultConfigFiles == null) {
             determineScopeConfigFiles();
         }
-        return scopeDefaultConfigFiles.keySet().stream().sorted().collect(Collectors.toList());
+        return scopeDefaultConfigFiles.keySet().stream().sorted().toList();
     }
 
     /**

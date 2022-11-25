@@ -27,11 +27,13 @@ import io.netty.handler.codec.http.multipart.HttpData;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.InterfaceHttpPostRequestDecoder;
+import io.netty.util.IllegalReferenceCountException;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
 import sirius.kernel.async.SubContext;
 import sirius.kernel.commons.Callback;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Files;
 import sirius.kernel.commons.Hasher;
 import sirius.kernel.commons.Streams;
@@ -44,7 +46,6 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Log;
-import sirius.kernel.info.Product;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.BasicNamespaceContext;
 import sirius.kernel.xml.StructuredInput;
@@ -67,8 +68,6 @@ import java.net.InetAddress;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,7 +77,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -563,6 +561,8 @@ public class WebContext implements SubContext {
         return Value.EMPTY;
     }
 
+    @SuppressWarnings("java:S6204")
+    @Explain("We return a mutable list here, as we cannot predict what the caller does with the result.")
     private Value fetchPostAttributes(String key) {
         try {
             List<InterfaceHttpData> dataList = postDecoder.getBodyHttpDatas(key);
@@ -603,7 +603,7 @@ public class WebContext implements SubContext {
                     return byteBuf.toString(attr.getCharset());
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | IllegalReferenceCountException e) {
             Exceptions.ignore(e);
         }
         return null;
@@ -1509,29 +1509,7 @@ public class WebContext implements SubContext {
     }
 
     /**
-     * Returns the value of a date header as UNIX timestamp in milliseconds.
-     *
-     * @param header the name of the header to fetch
-     * @return the value in milliseconds of the submitted date or 0 if the header was not present.
-     * @deprecated Use {@link WebServer#parseDateHeader(String)} instead.
-     */
-    @Deprecated
-    public long getDateHeader(CharSequence header) {
-        String value = request.headers().get(header);
-        if (Strings.isEmpty(value)) {
-            return 0;
-        }
-        try {
-            SimpleDateFormat dateFormatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
-            return dateFormatter.parse(value).getTime();
-        } catch (ParseException e) {
-            Exceptions.ignore(e);
-            return 0;
-        }
-    }
-
-    /**
-     * Tries to perform a HTTP Basic authentication by parsing the <tt>Authorization</tt> header.
+     * Tries to perform an HTTP Basic authentication by parsing the <tt>Authorization</tt> header.
      * <p>
      * If no such header is found or if the contents are malformed, an 401 UNAUTHORIZED response will be generated
      * ({@link Response#unauthorized(String)}) and <tt>null</tt> will be returned.
@@ -2077,31 +2055,6 @@ public class WebContext implements SubContext {
         }
 
         filesToCleanup = null;
-    }
-
-    /**
-     * Returns a token which can be added to dynamic asset-URLS (/asset/dynamic/TOKEN/...).
-     * <p>
-     * As tagliatelle cannot call static methods, this is a copy of {@link #dynamicAssetToken()}.
-     *
-     * @return a random token which is guaranteed to be free of special chars (like / and the like)
-     * @deprecated Use {@link sirius.pasta.tagliatelle.macros.StaticAssetUriMacro} instead.
-     */
-    @Deprecated(forRemoval = true)
-    public String getDynamicAssetToken() {
-        return dynamicAssetToken();
-    }
-
-    /**
-     * Returns a token which can be added to dynamic asset-URLS (/asset/dynamic/TOKEN/...) to force a reload of the
-     * specified resource.
-     *
-     * @return a random token which is guaranteed to be free of special chars (like / and the like)
-     * @deprecated Use {@link sirius.pasta.tagliatelle.macros.StaticAssetUriMacro} instead.
-     */
-    @Deprecated(forRemoval = true)
-    public static String dynamicAssetToken() {
-        return Product.getProduct().getUniqueVersionString();
     }
 
     /**

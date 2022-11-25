@@ -8,8 +8,8 @@
 
 package sirius.web.controller
 
-import org.serversass.Generator
-import org.serversass.Output
+import sirius.web.sass.Generator
+import sirius.web.sass.Output
 import sirius.kernel.BaseSpecification
 import sirius.kernel.di.std.Part
 import sirius.web.resources.Resource

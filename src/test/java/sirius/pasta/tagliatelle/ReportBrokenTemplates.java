@@ -8,7 +8,7 @@
 
 package sirius.pasta.tagliatelle;
 
-import parsii.tokenizer.ParseError;
+import sirius.kernel.tokenizer.ParseError;
 import sirius.kernel.Sirius;
 import sirius.kernel.TestLifecycleParticipant;
 import sirius.kernel.commons.Strings;

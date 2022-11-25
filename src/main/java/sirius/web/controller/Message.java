@@ -160,36 +160,12 @@ public class Message {
     }
 
     /**
-     * Factory method to create a success message
-     *
-     * @param textMessage the message content
-     * @return a new message with the given content and SUCCESS as type
-     * @deprecated Use {@code success().withText(textMessage)}
-     */
-    @Deprecated(forRemoval = true)
-    public static Message success(String textMessage) {
-        return success().withTextMessage(textMessage);
-    }
-
-    /**
      * Factory method to create an info message
      *
      * @return a new message with INFO as type
      */
     public static Builder info() {
         return new Builder(MessageLevel.INFO);
-    }
-
-    /**
-     * Factory method to create an info message
-     *
-     * @param textMessage the message content
-     * @return a new message with the given content and INFO as type
-     * @deprecated Use {@code info().withText(textMessage)}
-     */
-    @Deprecated(forRemoval = true)
-    public static Message info(String textMessage) {
-        return info().withTextMessage(textMessage);
     }
 
     /**
@@ -202,36 +178,12 @@ public class Message {
     }
 
     /**
-     * Factory method to create a warning message
-     *
-     * @param textMessage the message content
-     * @return a new message with the given content and WARN as type
-     * @deprecated Use {@code warn().withText(textMessage)}
-     */
-    @Deprecated(forRemoval = true)
-    public static Message warn(String textMessage) {
-        return warn().withTextMessage(textMessage);
-    }
-
-    /**
      * Factory method to create an error message
      *
      * @return a new message with ERROR as type
      */
     public static Builder error() {
         return new Builder(MessageLevel.PROBLEM);
-    }
-
-    /**
-     * Factory method to create an error message
-     *
-     * @param textMessage the message content
-     * @return a new message with the given content and ERROR as type
-     * @deprecated Use {@code error().withText(textMessage)}
-     */
-    @Deprecated(forRemoval = true)
-    public static Message error(String textMessage) {
-        return error().withTextMessage(textMessage);
     }
 
     /**

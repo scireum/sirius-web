@@ -54,6 +54,12 @@
                 background: url('/assets/terminal/low_contrast_linen.png');
             }
 
+            #wrapper {
+                height: 100vh;
+                display: grid;
+                grid-template-rows: 80px 1fr 40px;
+            }
+
             #wrapper-body {
                 max-height: 100%;
                 overflow: hidden;

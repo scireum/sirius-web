@@ -45,18 +45,19 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Array;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Generates an Excel file which can be sent as a response for a {@link sirius.web.http.WebContext}
@@ -329,11 +330,11 @@ public class ExcelExport {
             return;
         }
         if (obj instanceof LocalDateTime localDateTime) {
-            cell.setCellValue(Date.from((localDateTime).atZone(ZoneId.systemDefault()).toInstant()));
+            cell.setCellValue(localDateTime);
             return;
         }
         if (obj instanceof LocalDate localDate) {
-            cell.setCellValue(Date.from((localDate).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+            cell.setCellValue(localDate);
             return;
         }
         if (obj instanceof Boolean) {
@@ -371,6 +372,19 @@ public class ExcelExport {
         if (obj instanceof ImageCell imageCell) {
             addImageCell(row, imageCell, columnIndex);
             return;
+        }
+        if (obj instanceof Array sqlArray) {
+            try {
+                Object sqlArrayValues = sqlArray.getArray();
+                if (sqlArrayValues instanceof String[] sqlArrayStrings) {
+                    cell.setCellValue(Arrays.stream(sqlArrayStrings)
+                                            .map(NLS::toUserString)
+                                            .collect(Collectors.joining(", ")));
+                    return;
+                }
+            } catch (SQLException e) {
+                Exceptions.ignore(e);
+            }
         }
         cell.setCellValue(createRichTextString(obj.toString()));
     }
@@ -424,18 +438,6 @@ public class ExcelExport {
     }
 
     /**
-     * Adds the given array of objects as a row.
-     *
-     * @param row the objects to add to the table
-     * @return the export itself for fluent method calls
-     * @deprecated Use {@link #addArrayRow(Object...)} which does exactly the same but has a more consistent naming.
-     */
-    @Deprecated
-    public ExcelExport addRow(Object... row) {
-        return addArrayRow(row);
-    }
-
-    /**
      * Adds the given collection of objects as a row.
      *
      * @param row the objects to add to the table
@@ -458,18 +460,6 @@ public class ExcelExport {
         }
 
         return this;
-    }
-
-    /**
-     * Adds the given collection of objects as a row.
-     *
-     * @param row the objects to add to the table
-     * @return the export itself for fluent method calls
-     * @deprecated Use {@link #addListRow(Collection)} which does exactly the same but has a more consistent naming.
-     */
-    @Deprecated
-    public ExcelExport addRowAsList(Collection<?> row) {
-        return addListRow(row);
     }
 
     /**

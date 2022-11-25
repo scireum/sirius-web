@@ -43,10 +43,10 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Contains the default admin GUI.
@@ -354,7 +354,7 @@ public class SystemController extends BasicController {
     private List<Tuple<String, Collection<Tuple<String, String>>>> computeTimingInfos(Page<String> page) {
         MultiMap<String, Tuple<String, String>> timingMap = MultiMap.createOrdered();
         String query = Strings.isFilled(page.getQuery()) ? page.getQuery().toLowerCase() : null;
-        List<Microtiming.Timing> timings = Microtiming.getTimings();
+        List<Microtiming.Timing> timings = new ArrayList<>(Microtiming.getTimings());
         timings.sort(Comparator.comparingDouble(t -> t.getAvg().getCount() * t.getAvg().getAvg() * -1d));
         for (Microtiming.Timing timing : timings) {
             if (matchesQuery(query, timing)) {
@@ -371,7 +371,7 @@ public class SystemController extends BasicController {
                         .entrySet()
                         .stream()
                         .map(e -> Tuple.create(e.getKey(), e.getValue()))
-                        .collect(Collectors.toList());
+                        .toList();
     }
 
     private boolean matchesQuery(String query, Microtiming.Timing timing) {

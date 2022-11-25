@@ -18,9 +18,9 @@ class ExcelExportSpec extends BaseSpecification {
         File testFile = File.createTempFile("excel-output", ".xlsx")
         when:
         ExcelExport export = ExcelExport.asStandardXLSX()
-        export.addRow(null)
-        export.addRowAsList(null)
-        export.addRow("A-1", "B-1", "C-1")
+        export.addArrayRow(null)
+        export.addListRow(null)
+        export.addArrayRow("A-1", "B-1", "C-1")
         export.writeToStream(new FileOutputStream(testFile))
         then:
         def expectLineNum = 1
@@ -41,8 +41,8 @@ class ExcelExportSpec extends BaseSpecification {
         File testFile = File.createTempFile("excel-output", ".xlsx")
         when:
         ExcelExport export = ExcelExport.asStandardXLSX()
-        export.addRow("A-1", "B-1", "C-1")
-        export.addRowAsList(["A-2", "B-2", "C-2"] as ArrayList)
+        export.addArrayRow("A-1", "B-1", "C-1")
+        export.addListRow(["A-2", "B-2", "C-2"] as ArrayList)
         export.writeToStream(new FileOutputStream(testFile))
         then:
         def expectLineNum = 1
@@ -63,8 +63,8 @@ class ExcelExportSpec extends BaseSpecification {
         File testFile = File.createTempFile("excel-output", ".xlsx")
         when:
         ExcelExport export = ExcelExport.asStreamingXLSX()
-        export.addRow("A-1", "B-1", "C-1")
-        export.addRowAsList(["A-2", "B-2", "C-2"] as ArrayList)
+        export.addArrayRow("A-1", "B-1", "C-1")
+        export.addListRow(["A-2", "B-2", "C-2"] as ArrayList)
         export.writeToStream(new FileOutputStream(testFile))
         then:
         def expectLineNum = 1
@@ -87,13 +87,13 @@ class ExcelExportSpec extends BaseSpecification {
         when:
         ExcelExport export = ExcelExport.asStreamingXLSX(false)
         export.createSheet()
-        export.addRowAsList(data[0] as ArrayList)
+        export.addListRow(data[0] as ArrayList)
         export.createSheet()
-        export.addRowAsList(data[2] as ArrayList)
+        export.addListRow(data[2] as ArrayList)
         export.setCurrentSheet(0)
-        export.addRowAsList(data[1] as ArrayList)
+        export.addListRow(data[1] as ArrayList)
         export.setCurrentSheet(1)
-        export.addRowAsList(data[3] as ArrayList)
+        export.addListRow(data[3] as ArrayList)
         export.writeToStream(new FileOutputStream(testFile))
         then:
         def currentData = 0

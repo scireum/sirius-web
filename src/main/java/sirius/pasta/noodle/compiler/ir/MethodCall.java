@@ -8,7 +8,7 @@
 
 package sirius.pasta.noodle.compiler.ir;
 
-import parsii.tokenizer.Position;
+import sirius.kernel.tokenizer.Position;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
@@ -26,6 +26,7 @@ import sirius.pasta.noodle.sandbox.Sandbox;
 import sirius.web.security.UserContext;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
@@ -144,7 +145,7 @@ public class MethodCall extends Call {
                                             selfNode.getType() :
                                             selfNode.getGenericType()).withMethod(method, parameterNodes);
         Type returnType = typeTools.simplify(method.getGenericReturnType());
-        if (returnType instanceof TypeVariable) {
+        if (returnType instanceof TypeVariable || returnType instanceof GenericArrayType) {
             return method.getReturnType();
         } else {
             return returnType;

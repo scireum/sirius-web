@@ -1,0 +1,33 @@
+body {
+    background-image: url('test.png');
+}
+
+@media (min-width: 123px) {
+    .test-class {
+        width: 80%;
+    }
+}
+
+@media screen {
+    .message {
+        color: #333;
+    }
+    .success {
+        color: red;
+    }
+}
+
+@media screen and (min-width: 100px) {
+    .message {
+        color: black;
+    }
+    .success {
+        color: white;
+    }
+}
+
+@media (min-width: 481px) and (max-width: 992px) {
+    .test-class {
+        width: 100%;
+    }
+}

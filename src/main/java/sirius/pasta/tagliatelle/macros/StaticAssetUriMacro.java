@@ -8,7 +8,7 @@
 
 package sirius.pasta.tagliatelle.macros;
 
-import parsii.tokenizer.Position;
+import sirius.kernel.tokenizer.Position;
 import sirius.kernel.Sirius;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.info.Product;

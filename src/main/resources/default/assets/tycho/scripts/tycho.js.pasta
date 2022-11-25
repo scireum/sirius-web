@@ -12,6 +12,5 @@ ___invoke("/assets/tycho/scripts/messages.js.pasta")
 ___invoke("/assets/tycho/scripts/colors.js.pasta")
 ___invoke("/assets/tycho/scripts/charts.js.pasta")
 ___invoke("/assets/tycho/scripts/datepicker.js.pasta")
-___invoke("/assets/tycho/scripts/sparkline.js.pasta")
 
 <i:extensions target="tycho-script" point="tycho-script" />

@@ -45,6 +45,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Microtiming;
 import sirius.kernel.nls.NLS;
+import sirius.kernel.xml.Outcall;
 import sirius.kernel.xml.XMLStructuredOutput;
 import sirius.pasta.Pasta;
 import sirius.pasta.noodle.compiler.CompileException;
@@ -66,7 +67,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
@@ -553,7 +553,7 @@ public class Response {
                                                    .map(date -> date.atZone(ZoneId.systemDefault())
                                                                     .toInstant()
                                                                     .getEpochSecond())
-                                                   .orElse(0L) / 1000;
+                                                   .orElse(0L);
         if (ifModifiedSinceDateSeconds > 0
             && lastModifiedInMillis > 0
             && ifModifiedSinceDateSeconds >= lastModifiedInMillis / 1000) {
@@ -887,16 +887,13 @@ public class Response {
         if (cacheSeconds > 0) {
             // Date header
             addHeaderIfNotExists(HttpHeaderNames.DATE,
-                                 LocalDateTime.now()
-                                              .atZone(ZoneId.systemDefault())
-                                              .format(DateTimeFormatter.RFC_1123_DATE_TIME));
+                                 Outcall.RFC2616_INSTANT.format(LocalDateTime.now().atZone(ZoneId.systemDefault())));
 
             // Add cached headers
             addHeaderIfNotExists(HttpHeaderNames.EXPIRES,
-                                 LocalDateTime.now()
-                                              .atZone(ZoneId.systemDefault())
-                                              .plusSeconds(cacheSeconds)
-                                              .format(DateTimeFormatter.RFC_1123_DATE_TIME));
+                                 Outcall.RFC2616_INSTANT.format(LocalDateTime.now()
+                                                                             .atZone(ZoneId.systemDefault())
+                                                                             .plusSeconds(cacheSeconds)));
             if (isPrivate) {
                 addHeaderIfNotExists(HttpHeaderNames.CACHE_CONTROL, "private, max-age=" + cacheSeconds);
             } else {
@@ -907,9 +904,8 @@ public class Response {
         }
         if (lastModifiedMillis > 0 && !headers().contains(HttpHeaderNames.LAST_MODIFIED)) {
             addHeaderIfNotExists(HttpHeaderNames.LAST_MODIFIED,
-                                 Instant.ofEpochMilli(lastModifiedMillis)
-                                        .atZone(ZoneId.systemDefault())
-                                        .format(DateTimeFormatter.RFC_1123_DATE_TIME));
+                                 Outcall.RFC2616_INSTANT.format(Instant.ofEpochMilli(lastModifiedMillis)
+                                                                       .atZone(ZoneId.systemDefault())));
         }
     }
 
@@ -1475,7 +1471,7 @@ public class Response {
             WebServer.parseDateHeader(wc.getHeader(HttpHeaderNames.IF_MODIFIED_SINCE))
                      .ifPresent(ifModifiedSince -> brb.addHeader(HttpHeaderNames.IF_MODIFIED_SINCE.toString(),
                                                                  ifModifiedSince.atZone(ZoneId.systemDefault())
-                                                                                .format(DateTimeFormatter.RFC_1123_DATE_TIME)));
+                                                                                .format(Outcall.RFC2616_INSTANT)));
 
             // Support range requests...
             String range = wc.getHeader(HttpHeaderNames.RANGE);

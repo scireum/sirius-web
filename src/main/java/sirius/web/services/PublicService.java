@@ -55,6 +55,17 @@ public @interface PublicService {
     String apiName();
 
     /**
+     * Specifies a custom path to use.
+     * <p>
+     * By default, we use the path as given in the adjacent {@link sirius.web.controller.Routed} annotation.
+     * However, if this contains path parameters, a custom path can be placed here to turn something like
+     * <tt>/ps/:1/api</tt> into <tt>/ps/{process}/api</tt>.
+     *
+     * @return the path name to use in the documentation
+     */
+    String path() default "";
+
+    /**
      * Returns the sort priority in the API explorer.
      *
      * @return the sort priority of this service
@@ -79,7 +90,7 @@ public @interface PublicService {
     /**
      * May provide a link to a documentation page for this service.
      *
-     * @return an URI which points to the documentation of this service (e.g. to a page within the Tycho knowledge base)
+     * @return a URI which points to the documentation of this service (e.g. to a page within the Tycho knowledge base)
      */
     String documentationUri() default "";
 }

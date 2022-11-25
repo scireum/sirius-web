@@ -101,7 +101,8 @@ public class ForTag extends TagHandler {
     @Override
     public Class<?> getExpectedAttributeType(String name) {
         if (PARAM_ITEMS.equals(name)) {
-            return Iterable.class;
+            // we support both generic array types and normal iterables; they are verified in the LoopEmitter.
+            return Object.class;
         }
         if (PARAM_TYPE.equals(name)) {
             return String.class;

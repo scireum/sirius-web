@@ -16,7 +16,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Represents a profile defined in <tt>security.profiles</tt>.
@@ -114,7 +113,7 @@ public class Profile {
      * @return the list of permissions to add when this profile is applied
      */
     public List<String> getPermissionsToAdd() {
-        return permissionsToAdd.stream().sorted().collect(Collectors.toList());
+        return permissionsToAdd.stream().sorted().toList();
     }
 
     /**
@@ -125,6 +124,6 @@ public class Profile {
      * @return the list of permissions to remove when this profile is applied
      */
     public List<String> getPermissionsToRemove() {
-        return permissionsToRemove.stream().sorted().collect(Collectors.toList());
+        return permissionsToRemove.stream().sorted().toList();
     }
 }

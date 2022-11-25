@@ -8,7 +8,7 @@
 
 package sirius.pasta.noodle.compiler;
 
-import parsii.tokenizer.ParseError;
+import sirius.kernel.tokenizer.ParseError;
 
 import javax.annotation.Nullable;
 

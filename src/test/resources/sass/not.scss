@@ -1,0 +1,11 @@
+div:not(.class) {
+  color: green;
+}
+
+div {
+  width: 12px;
+
+  &:not(.class) {
+    height: 12px;
+  }
+}

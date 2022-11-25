@@ -23,7 +23,6 @@ body {
 
   #wrapper {
     display: grid;
-    height: 100vh;
     grid-template-rows: 80px 1fr 40px;
   }
 
@@ -40,7 +39,8 @@ body {
     bottom: 0;
     right: 0;
     left: 0;
-    z-index: 1030;
+    /*z-index 999, to display the footer in front of cards/links (bootstrap), but behind autocompleteSingleSelect*/
+    z-index: 999;
   }
 
 }
@@ -106,7 +106,7 @@ nav.navbar {
   background-color: #fff;
 }
 
-@media (min-width: 700px) {
+@media (min-width: 768px) {
   .container-fluid {
     padding-left: 2%;
     padding-right: 2%;

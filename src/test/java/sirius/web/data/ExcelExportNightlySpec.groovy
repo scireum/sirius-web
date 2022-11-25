@@ -30,7 +30,7 @@ class ExcelExportNightlySpec extends BaseSpecification {
         export.withMaxRowsReachedMessage("Max rows reached.")
         // overshoot the max num of rows a little for testing purposes
         for (int i = 1; i <= XLSX_MAX_ROWS + 100; i++) {
-            export.addRow("A-" + i)
+            export.addArrayRow("A-" + i)
         }
         export.writeToStream(new FileOutputStream(testFile))
         then:
@@ -65,7 +65,7 @@ class ExcelExportNightlySpec extends BaseSpecification {
         export.withMaxRowsReachedMessage("Max rows reached.")
         // overshoot the max num of rows a little for testing purposes
         for (int i = 1; i <= XLS_MAX_ROWS + 100; i++) {
-            export.addRow("A-" + i)
+            export.addArrayRow("A-" + i)
         }
         export.writeToStream(new FileOutputStream(testFile))
         then:
@@ -97,7 +97,7 @@ class ExcelExportNightlySpec extends BaseSpecification {
         ExcelExport export = ExcelExport.asXLS()
         // overshoot the max num of rows a little for testing purposes
         for (int i = 1; i <= XLS_MAX_ROWS + 100; i++) {
-            export.addRow("A-" + i)
+            export.addArrayRow("A-" + i)
         }
         export.writeToStream(new FileOutputStream(testFile))
         then:
@@ -122,10 +122,10 @@ class ExcelExportNightlySpec extends BaseSpecification {
         ExcelExport export = ExcelExport.asStreamingXLSX()
         // overshoot the max num of rows a little for testing purposes
         for (int i = 1; i <= XLSX_MAX_ROWS + 100; i++) {
-            export.addRow("A-" + i)
+            export.addArrayRow("A-" + i)
         }
         export.createSheet("Sheet1")
-        export.addRow("A row on Sheet1")
+        export.addArrayRow("A row on Sheet1")
         export.writeToStream(new FileOutputStream(testFile))
         then:
         noExceptionThrown()

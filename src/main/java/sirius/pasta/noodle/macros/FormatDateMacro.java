@@ -8,7 +8,7 @@
 
 package sirius.pasta.noodle.macros;
 
-import parsii.tokenizer.Position;
+import sirius.kernel.tokenizer.Position;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.nls.NLS;

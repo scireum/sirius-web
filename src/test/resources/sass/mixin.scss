@@ -1,0 +1,41 @@
+@mixin border-radius($radius) {
+  -webkit-border-radius: $radius;
+  -moz-border-radius: $radius;
+  -ms-border-radius: $radius;
+  -o-border-radius: $radius;
+  border-radius: $radius;
+}
+.box { @include border-radius(10px); }
+
+@mixin color() {
+  body.white & {
+    background-color: #fff;
+  }
+  body.black & {
+    background-color: #000;
+  }
+}
+
+@mixin test() {
+  x.test &, y.test & {
+    background-color: #fff;
+  }
+}
+
+@mixin dark() {
+  .dark &, &.dark, .dark {
+    background-color: #000000;
+  }
+}
+
+.element {
+  @include color();
+}
+
+.a, .b {
+  @include test();
+}
+
+.dark-test {
+  @include dark();
+}

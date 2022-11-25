@@ -18,12 +18,14 @@ import sirius.kernel.commons.CachingSupplier;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.PriorityCollector;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.Injector;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Log;
 import sirius.kernel.xml.StructuredOutput;
 import sirius.web.http.Firewall;
@@ -34,6 +36,7 @@ import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 import sirius.web.security.MaintenanceInfo;
 import sirius.web.security.UserContext;
+import sirius.web.security.UserInfo;
 import sirius.web.services.Format;
 
 import javax.annotation.Nullable;
@@ -271,9 +274,17 @@ public class ControllerDispatcher implements WebDispatcher {
         }
 
         if (route.isServiceCall()) {
-            throw Exceptions.createHandled()
-                            .withSystemErrorMessage("Missing permission: %s", missingPermission)
-                            .handle();
+            if (UserInfo.PERMISSION_LOGGED_IN.equals(missingPermission)) {
+                throw Exceptions.createHandled()
+                                .withDirectMessage(HttpResponseStatus.UNAUTHORIZED.reasonPhrase())
+                                .hint(Controller.HTTP_STATUS, HttpResponseStatus.UNAUTHORIZED.code())
+                                .handle();
+            } else {
+                throw Exceptions.createHandled()
+                                .withDirectMessage(Strings.apply("Missing permission: %s", missingPermission))
+                                .hint(Controller.HTTP_STATUS, HttpResponseStatus.FORBIDDEN.code())
+                                .handle();
+            }
         }
 
         // No Interceptor is in charge...report error...
@@ -286,6 +297,15 @@ public class ControllerDispatcher implements WebDispatcher {
             // closed the browser / socket mid-processing...
             if (cause instanceof ClosedChannelException && webContext.isResponseCommitted()) {
                 Exceptions.ignore(cause);
+                return;
+            }
+
+            // A special permission error was detected which is to be handled just like a missing @Permission
+            if (cause instanceof HandledException handledException
+                && handledException.getHint(Controller.MISSING_PERMISSION).isFilled()) {
+                handlePermissionError(webContext,
+                                      route,
+                                      handledException.getHint(Controller.MISSING_PERMISSION).asString());
                 return;
             }
 

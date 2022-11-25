@@ -10,7 +10,7 @@ package sirius.pasta.noodle.macros;
 
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
-import parsii.tokenizer.Position;
+import sirius.kernel.tokenizer.Position;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.xml.StructuredNode;
 import sirius.pasta.noodle.Environment;
