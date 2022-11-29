@@ -1,3 +1,7 @@
+//
+// A list of all licenses can be obtained via /licenses
+//
+
 <i:include name="/assets/wondergem/jquery/jquery-1.10.2.min.js"/>
 
 <i:include name="/assets/wondergem/bootstrap/js/bootstrap.min.js"/>
