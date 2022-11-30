@@ -24,6 +24,7 @@ import sirius.kernel.health.Exceptions;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -45,7 +46,7 @@ public class ChunkedOutputStream extends OutputStream {
         buffer = null;
     }
 
-    private void ensureCapacity(int length) {
+    private void ensureCapacity(int length) throws IOException {
         if (buffer != null && buffer.writableBytes() < length) {
             flushBuffer(false);
         }
@@ -54,7 +55,7 @@ public class ChunkedOutputStream extends OutputStream {
         }
     }
 
-    private void flushBuffer(boolean last) {
+    private void flushBuffer(boolean last) throws IOException {
         if ((buffer == null || buffer.readableBytes() == 0) && !last) {
             if (buffer != null) {
                 buffer.release();
@@ -116,14 +117,15 @@ public class ChunkedOutputStream extends OutputStream {
         }
     }
 
-    private void failIfChannelIsNotOpen() {
+    private void failIfChannelIsNotOpen() throws IOException {
         if (!response.ctx.channel().isOpen()) {
             open = false;
             if (buffer != null) {
                 buffer.release();
                 buffer = null;
             }
-            throw Exceptions.createHandled().withSystemErrorMessage("Channel was closed").handle();
+
+            throw new ClosedChannelException();
         }
     }
 
