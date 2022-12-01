@@ -1,5 +1,3 @@
-@import "i-do-not-exist";
-
 .sci-slider-wrapper {
   .sci-slider-top {
     position: relative;
@@ -39,7 +37,7 @@
         background-size: contain;
 
         &.sci-slider-previous-icon {
-          background-image: url(base64Resource('/assets/images/icons/slider/previous-not-existing.png'));
+          background-image: url(base64Resource('/assets/images/icons/slider/previous.png'));
         }
 
         &.sci-slider-next-icon {
