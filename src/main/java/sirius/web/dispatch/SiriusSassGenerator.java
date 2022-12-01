@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
 
-/*
- * Subclass of generator which takes care of proper logging
+/**
+ * Subclass of {@link Generator} which takes care of proper logging.
  */
 class SiriusSassGenerator extends Generator {
 
