@@ -8,7 +8,6 @@
 
 package sirius.pasta.noodle.macros;
 
-import sirius.kernel.commons.Strings;
 import sirius.web.sass.ast.FunctionCall;
 import sirius.kernel.tokenizer.Position;
 import sirius.kernel.di.std.Part;
@@ -79,14 +78,12 @@ public class Base64ResourceMacro extends BasicMacro implements SassFunction {
 
     @Nonnull
     private String encodeResource(String path) {
-        if (!path.startsWith("/assets")) {
+        if (!path.startsWith("/assets/")) {
             throw new IllegalArgumentException("Only assets can be inlined for security reasons.");
         }
 
-        Resource resource = resources.resolve(path).orElse(null);
-        if (resource == null) {
-            return "";
-        }
+        Resource resource =
+                resources.resolve(path).orElseThrow(() -> new IllegalArgumentException("Unknown resource: " + path));
 
         String base64Data = Base64.getEncoder().encodeToString(resource.getContent());
 
@@ -100,12 +97,7 @@ public class Base64ResourceMacro extends BasicMacro implements SassFunction {
             path = path.substring(1, path.length() - 1);
         }
 
-        String code = encodeResource(path);
-        if (Strings.isEmpty(code)) {
-            throw new IllegalArgumentException("Unknown resource: " + path);
-        }
-
-        return code;
+        return encodeResource(path);
     }
 
     @Nonnull
