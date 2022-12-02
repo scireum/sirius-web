@@ -86,6 +86,7 @@ public class ReportBrokenStylesheets implements TestLifecycleParticipant {
     }
 
     private boolean isLocalStylesheet(Resource resource) {
+        // external libs may have style sheets that use SASS features not supported by our implementation
         return !resource.getUrl().toString().startsWith("jar:file:") && !resource.getPath().contains("/libs/");
     }
 
