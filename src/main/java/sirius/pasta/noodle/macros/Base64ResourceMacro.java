@@ -8,7 +8,6 @@
 
 package sirius.pasta.noodle.macros;
 
-import sirius.kernel.commons.Strings;
 import sirius.web.sass.ast.FunctionCall;
 import sirius.kernel.tokenizer.Position;
 import sirius.kernel.di.std.Part;
