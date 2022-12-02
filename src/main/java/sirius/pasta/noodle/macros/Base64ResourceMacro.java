@@ -79,7 +79,7 @@ public class Base64ResourceMacro extends BasicMacro implements SassFunction {
 
     @Nonnull
     private String encodeResource(String path) {
-        if (!path.startsWith("/assets")) {
+        if (!path.startsWith("/assets/")) {
             throw new IllegalArgumentException("Only assets can be inlined for security reasons.");
         }
 
