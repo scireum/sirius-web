@@ -32,7 +32,8 @@ import java.io.StringWriter;
 import java.util.List;
 
 /**
- * Provides a macro which inlines an SVG file.
+ * Provides a macro for inlining an SVG file into a DOM tree by dropping the XML declaration from the beginning and
+ * returning the rest.
  */
 @Register
 public class InlineSvgMacro extends BasicMacro {
@@ -124,6 +125,6 @@ public class InlineSvgMacro extends BasicMacro {
     @Nonnull
     @Override
     public String getDescription() {
-        return "Returns the root <svg> tag from an SVG file as string.";
+        return "Returns the root <svg> tag of an SVG file as string, to be included in other DOM trees.";
     }
 }
