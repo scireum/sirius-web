@@ -82,34 +82,54 @@ public class InlineSvgMacro extends BasicMacro {
             throw new IllegalArgumentException("Only assets can be inlined for security reasons.");
         }
 
-        Resource resource = resources.resolve(path).orElse(null);
-        if (resource == null) {
-            return "";
-        }
-
-        Element root = parseDocument(resource).getDocumentElement();
-        if (!Strings.areEqual("svg", root.getTagName())) {
-            throw Exceptions.createHandled().withDirectMessage("The referenced resource is not an SVG file.").handle();
-        }
-
-        return stringifyElement(root);
+        return stringifyElement(parseSvgDocument(resources.resolve(path)
+                                                          .orElseThrow(() -> new IllegalArgumentException(
+                                                                  "Unknown resource: " + path))).getDocumentElement(),
+                                false);
     }
 
-    private Document parseDocument(Resource resource) {
+    /**
+     * Parses an SVG DOM tree from the given resource.
+     *
+     * @param resource the resource to parse
+     * @return the parsed DOM tree
+     * @throws HandledException when parsing errors occur
+     */
+    public static Document parseSvgDocument(Resource resource) {
         try (InputStream stream = resource.openStream()) {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            return factory.newDocumentBuilder().parse(stream);
+
+            Document document = factory.newDocumentBuilder().parse(stream);
+            if (!Strings.areEqual("svg", document.getDocumentElement().getTagName())) {
+                throw Exceptions.createHandled()
+                                .withDirectMessage("The referenced resource is not an SVG file.")
+                                .handle();
+            }
+
+            return document;
         } catch (Exception exception) {
             throw Exceptions.handle(exception);
         }
     }
 
-    private String stringifyElement(Element element) {
+    /**
+     * Converts a DOM tree, given the {@code root}, to an XML string, optionally with or without a leading XML
+     * declaration like {@code <?xml version="1.0" encoding="UTF-8" ?>}.
+     *
+     * @param root               the tree's root element
+     * @param withXmlDeclaration <b>true</b> to synthesize a leading XML declaration, <b>false</b> else
+     * @return a {@link String} representation of the DOM tree
+     */
+    public static String stringifyElement(Element root, boolean withXmlDeclaration) {
         try (StringWriter writer = new StringWriter()) {
             TransformerFactory factory = TransformerFactory.newInstance();
+
             Transformer transformer = factory.newTransformer();
-            transformer.setOutputProperty("omit-xml-declaration", "yes");
-            transformer.transform(new DOMSource(element), new StreamResult(writer));
+            if (!withXmlDeclaration) {
+                transformer.setOutputProperty("omit-xml-declaration", "yes");
+            }
+
+            transformer.transform(new DOMSource(root), new StreamResult(writer));
             return writer.toString();
         } catch (Exception exception) {
             throw Exceptions.handle(exception);
