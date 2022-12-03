@@ -10,10 +10,12 @@ package sirius.pasta.noodle.macros;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.health.HandledException;
 import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
@@ -110,6 +112,25 @@ public class InlineSvgMacro extends BasicMacro {
         } catch (Exception exception) {
             throw Exceptions.handle(exception);
         }
+    }
+
+    /**
+     * Recursively cleans indentation and newlines from a DOM tree, given the {@code root}.
+     *
+     * @param root the tree's root element
+     * @return a convenience reference to the given {@code root} element
+     */
+    public static Element cleanIndentationAndNewlines(Element root) {
+        NodeList children = root.getChildNodes();
+        for (int i = 0; i < children.getLength(); ++i) {
+            org.w3c.dom.Node child = children.item(i);
+            if (child.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
+                child.setTextContent(child.getTextContent().trim());
+            } else if (child.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                cleanIndentationAndNewlines((Element) child);
+            }
+        }
+        return root;
     }
 
     /**
