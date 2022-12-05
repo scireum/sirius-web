@@ -9,28 +9,15 @@
 package sirius.pasta.noodle.macros;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
-import sirius.kernel.health.Exceptions;
-import sirius.kernel.health.HandledException;
 import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
-import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 
 import javax.annotation.Nonnull;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.InputStream;
-import java.io.StringWriter;
 import java.util.List;
 
 /**
@@ -38,7 +25,7 @@ import java.util.List;
  * returning the rest.
  */
 @Register
-public class InlineSvgMacro extends BasicMacro {
+public class InlineSvgMacro extends XmlProcessingMacro {
 
     @Part
     private Resources resources;
@@ -88,73 +75,6 @@ public class InlineSvgMacro extends BasicMacro {
                                                       .orElseThrow(() -> new IllegalArgumentException(
                                                               "Unknown resource: " + path)));
         return stringifyElement(document.getDocumentElement(), false);
-    }
-
-    /**
-     * Parses an SVG DOM tree from the given resource.
-     *
-     * @param resource the resource to parse
-     * @return the parsed DOM tree
-     * @throws HandledException when parsing errors occur
-     */
-    public static Document parseSvgDocument(Resource resource) {
-        try (InputStream stream = resource.openStream()) {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-
-            Document document = factory.newDocumentBuilder().parse(stream);
-            if (!Strings.areEqual("svg", document.getDocumentElement().getTagName())) {
-                throw Exceptions.createHandled()
-                                .withDirectMessage("The referenced resource is not an SVG file.")
-                                .handle();
-            }
-
-            return document;
-        } catch (Exception exception) {
-            throw Exceptions.handle(exception);
-        }
-    }
-
-    /**
-     * Recursively cleans indentation and newlines from a DOM tree, given the {@code root}.
-     *
-     * @param root the tree's root element
-     * @return a convenience reference to the given {@code root} element
-     */
-    public static Element cleanIndentationAndNewlines(Element root) {
-        NodeList children = root.getChildNodes();
-        for (int i = 0; i < children.getLength(); ++i) {
-            org.w3c.dom.Node child = children.item(i);
-            if (child.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
-                child.setTextContent(child.getTextContent().trim());
-            } else if (child.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                cleanIndentationAndNewlines((Element) child);
-            }
-        }
-        return root;
-    }
-
-    /**
-     * Converts a DOM tree, given the {@code root}, to an XML string, optionally with or without a leading XML
-     * declaration like {@code <?xml version="1.0" encoding="UTF-8" ?>}.
-     *
-     * @param root               the tree's root element
-     * @param withXmlDeclaration <b>true</b> to synthesize a leading XML declaration, <b>false</b> else
-     * @return a {@link String} representation of the DOM tree
-     */
-    public static String stringifyElement(Element root, boolean withXmlDeclaration) {
-        try (StringWriter writer = new StringWriter()) {
-            TransformerFactory factory = TransformerFactory.newInstance();
-
-            Transformer transformer = factory.newTransformer();
-            if (!withXmlDeclaration) {
-                transformer.setOutputProperty("omit-xml-declaration", "yes");
-            }
-
-            transformer.transform(new DOMSource(root), new StreamResult(writer));
-            return writer.toString();
-        } catch (Exception exception) {
-            throw Exceptions.handle(exception);
-        }
     }
 
     @Nonnull

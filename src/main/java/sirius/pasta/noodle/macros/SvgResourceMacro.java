@@ -40,7 +40,7 @@ import java.util.function.Consumer;
  * @see InlineSvgMacro
  */
 @Register
-public class SvgResourceMacro extends BasicMacro implements SassFunction {
+public class SvgResourceMacro extends XmlProcessingMacro implements SassFunction {
 
     @Part
     private Resources resources;
