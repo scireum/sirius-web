@@ -19,6 +19,7 @@ import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
 import sirius.web.dispatch.SassFunction;
 import sirius.web.http.MimeHelper;
+import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 import sirius.web.sass.ast.Color;
 import sirius.web.sass.ast.FunctionCall;
@@ -112,11 +113,11 @@ public class SvgResourceMacro extends XmlProcessingMacro implements SassFunction
         }
 
         // parse XML, clean whitespace and XML declaration, and synthesize a string representation
-        Document document = InlineSvgMacro.parseSvgDocument(resources.resolve(path)
-                                                                     .orElseThrow(() -> new IllegalArgumentException(
-                                                                             "Unknown resource: " + path)));
-        Element root = InlineSvgMacro.cleanIndentationAndNewlines(document.getDocumentElement());
-        String svgCode = InlineSvgMacro.stringifyElement(root, false);
+        Resource resource =
+                resources.resolve(path).orElseThrow(() -> new IllegalArgumentException("Unknown resource: " + path));
+        Document document = parseDocument(resource, "svg");
+        Element root = cleanIndentationAndNewlines(document.getDocumentElement());
+        String svgCode = stringifyElement(root, false);
 
         // optionally replace black with given tint color
         if (Strings.isFilled(color)) {

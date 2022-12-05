@@ -15,6 +15,7 @@ import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
+import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 
 import javax.annotation.Nonnull;
@@ -71,9 +72,9 @@ public class InlineSvgMacro extends XmlProcessingMacro {
             throw new IllegalArgumentException("Only assets can be inlined for security reasons.");
         }
 
-        Document document = parseSvgDocument(resources.resolve(path)
-                                                      .orElseThrow(() -> new IllegalArgumentException(
-                                                              "Unknown resource: " + path)));
+        Resource resource =
+                resources.resolve(path).orElseThrow(() -> new IllegalArgumentException("Unknown resource: " + path));
+        Document document = parseDocument(resource, "svg");
         return stringifyElement(document.getDocumentElement(), false);
     }
 
