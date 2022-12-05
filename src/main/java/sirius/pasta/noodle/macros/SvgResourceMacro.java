@@ -27,6 +27,7 @@ import javax.annotation.Nonnull;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Provides a macro which encodes the given SVG resource as UTF-8 string, after optionally modifying the tint color.
@@ -74,11 +75,8 @@ public class SvgResourceMacro extends BasicMacro implements SassFunction {
         }
 
         if (args.size() > 1 && args.get(1).isConstant()) {
-            try {
-                new Color(String.valueOf(args.get(1).getConstantValue()));
-            } catch (IllegalArgumentException exception) {
-                context.warning(position, exception.getMessage());
-            }
+            verifyColorValue(String.valueOf(args.get(1).getConstantValue()),
+                             exception -> context.warning(position, exception.getMessage()));
         }
     }
 
@@ -99,6 +97,14 @@ public class SvgResourceMacro extends BasicMacro implements SassFunction {
         return encodeResource(path, color);
     }
 
+    private void verifyColorValue(String color, Consumer<IllegalArgumentException> exceptionConsumer) {
+        try {
+            new Color(color);
+        } catch (IllegalArgumentException exception) {
+            exceptionConsumer.accept(exception);
+        }
+    }
+
     @Nonnull
     private String encodeResource(String path, String color) {
         if (!path.startsWith("/assets/")) {
@@ -114,12 +120,9 @@ public class SvgResourceMacro extends BasicMacro implements SassFunction {
 
         // optionally replace black with given tint color
         if (Strings.isFilled(color)) {
-            try {
-                new Color(color);
-            } catch (IllegalArgumentException exception) {
+            verifyColorValue(color, ignored -> {
                 throw new IllegalArgumentException("Unknown color: " + color + " (Hex-color #rrggbb expected.)");
-            }
-
+            });
             svgCode = svgCode.replace("#000000", color);
         }
 
