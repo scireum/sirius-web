@@ -80,8 +80,9 @@ public class PublicServices {
                                                                                     Parameter.class))).toList(),
                                                               Arrays.stream(route.getAnnotationsByType(RequestBody.class))
                                                                     .toList(),
-                                                              Arrays.stream(route.getAnnotationsByType(ApiResponse.class))
-                                                                    .toList());
+                                                              Stream.concat(collectSharedApiResponses(route).stream(),
+                                                                            Arrays.stream(route.getAnnotationsByType(
+                                                                                    ApiResponse.class))).toList());
         synchronized (apis) {
             PublicApiInfo apiInfo = apis.stream()
                                         .filter(api -> Strings.areEqual(api.getApiName(), publicService.apiName()))
@@ -108,6 +109,20 @@ public class PublicServices {
             }
         });
         return sharedParameters;
+    }
+
+    private List<ApiResponse> collectSharedApiResponses(Method route) {
+        List<ApiResponse> sharedResponses = new ArrayList<>();
+        Arrays.stream(route.getAnnotationsByType(ApiResponsesFrom.class)).forEach(responsesFrom -> {
+            try {
+                sharedResponses.addAll(Arrays.asList(responsesFrom.value()
+                                                                  .getMethod("responseMethod")
+                                                                  .getAnnotationsByType(ApiResponse.class)));
+            } catch (NoSuchMethodException e) {
+                Exceptions.handle(e);
+            }
+        });
+        return sharedResponses;
     }
 
     private PublicApiInfo buildApiInfo(String apiName, Method route) {
