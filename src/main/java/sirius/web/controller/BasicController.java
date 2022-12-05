@@ -218,7 +218,7 @@ public class BasicController implements Controller {
         if (webContext.isResponseCommitted()) {
             WebServer.LOG.WARN("""
                                        Cannot send service error for: %s - %s
-                                       As a partially successful response has already been created and committed!
+                                       A partially successful response has already been created and committed!
                                        """, webContext.getRequest().uri(), error.getMessage());
 
             // Force underlying request / response to be closed...
