@@ -124,6 +124,14 @@ public class SystemController extends BasicController {
     @ApiResponse(responseCode = "200",
             description = "Successful response",
             content = @Content(mediaType = "text/plain", examples = @ExampleObject("OK")))
+    @ApiResponse(responseCode = "417",
+    description = "Failing metrics",
+    content = @Content(mediaType = "text/plain", examples = @ExampleObject("""
+            ERROR
+            
+            Failing Metrics on this node:
+            sirius_node_state 0.0
+            """)))
     public void monitorNode(WebContext ctx) {
         if (!cluster.isAlarmPresent() || cluster.getNodeState() != MetricState.RED) {
             ctx.respondWith().direct(HttpResponseStatus.OK, "OK");
@@ -186,6 +194,9 @@ public class SystemController extends BasicController {
                     # TYPE sirius_http_open_connections gauge
                     sirius_http_open_connections 7.0
                     """)))
+    @ApiResponse(responseCode = "403",
+                description = "Invalid authentication",
+                content = @Content(mediaType = "text/plain"))
     public void metrics(WebContext ctx) {
         if (blockPublicAccess && ctx.getHeaderValue(WebServer.HEADER_X_FORWARDED_FOR).isFilled()) {
             ctx.respondWith().error(HttpResponseStatus.FORBIDDEN);
