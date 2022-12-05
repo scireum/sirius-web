@@ -84,10 +84,10 @@ public class InlineSvgMacro extends BasicMacro {
             throw new IllegalArgumentException("Only assets can be inlined for security reasons.");
         }
 
-        return stringifyElement(parseSvgDocument(resources.resolve(path)
-                                                          .orElseThrow(() -> new IllegalArgumentException(
-                                                                  "Unknown resource: " + path))).getDocumentElement(),
-                                false);
+        Document document = parseSvgDocument(resources.resolve(path)
+                                                      .orElseThrow(() -> new IllegalArgumentException(
+                                                              "Unknown resource: " + path)));
+        return stringifyElement(document.getDocumentElement(), false);
     }
 
     /**
