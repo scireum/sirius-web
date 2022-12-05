@@ -9,6 +9,7 @@
 package sirius.web.services;
 
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 /**
@@ -18,7 +19,13 @@ public class DefaultErrorResponsesXml implements SharedResponses {
     @Override
     @ApiResponse(responseCode = "400",
             description = "Missing parameter or malformed request",
-            content = @Content(mediaType = "text/xml"))
+            content = @Content(mediaType = "text/xml", examples = @ExampleObject("""
+                    <result>
+                        <success>false</success>
+                        <error>true</error>
+                        <message>The parameter {missingParameter} must be filled.</message>
+                    </result>
+                    """)))
     @ApiResponse(responseCode = "401",
             description = "Authentication required but none provided",
             content = @Content(mediaType = "text/xml"))
