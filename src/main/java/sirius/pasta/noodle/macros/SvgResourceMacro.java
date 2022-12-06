@@ -36,7 +36,7 @@ import java.util.function.Consumer;
  * The tint color, if set, is used to replace occurrences of black <tt>#000000</tt>.
  * <p>
  * The macro can be used in CSS like <tt>background: url(svgResource('/assets/img.svg', '#ff0000'));</tt> or in IMG tags
- * via <tt>&lt;img src="@base64Resource('/assets/img.png', '#ff0000')" /&gt;</tt>.
+ * via <tt>&lt;img src="@base64Resource('/assets/img.svg', '#ff0000')" /&gt;</tt>.
  *
  * @see InlineSvgMacro
  */
