@@ -9,11 +9,8 @@
 package sirius.pasta.noodle.macros;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
-import sirius.kernel.health.Exceptions;
 import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
@@ -22,20 +19,14 @@ import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 
 import javax.annotation.Nonnull;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.InputStream;
-import java.io.StringWriter;
 import java.util.List;
 
 /**
- * Provides a macro which inlines an SVG file.
+ * Provides a macro for inlining an SVG file into a DOM tree by dropping the XML declaration from the beginning and
+ * returning the rest.
  */
 @Register
-public class InlineSvgMacro extends BasicMacro {
+public class InlineSvgMacro extends XmlProcessingMacro {
 
     @Part
     private Resources resources;
@@ -81,38 +72,10 @@ public class InlineSvgMacro extends BasicMacro {
             throw new IllegalArgumentException("Only assets can be inlined for security reasons.");
         }
 
-        Resource resource = resources.resolve(path).orElse(null);
-        if (resource == null) {
-            return "";
-        }
-
-        Element root = parseDocument(resource).getDocumentElement();
-        if (!Strings.areEqual("svg", root.getTagName())) {
-            throw Exceptions.createHandled().withDirectMessage("The referenced resource is not an SVG file.").handle();
-        }
-
-        return stringifyElement(root);
-    }
-
-    private Document parseDocument(Resource resource) {
-        try (InputStream stream = resource.openStream()) {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            return factory.newDocumentBuilder().parse(stream);
-        } catch (Exception exception) {
-            throw Exceptions.handle(exception);
-        }
-    }
-
-    private String stringifyElement(Element element) {
-        try (StringWriter writer = new StringWriter()) {
-            TransformerFactory factory = TransformerFactory.newInstance();
-            Transformer transformer = factory.newTransformer();
-            transformer.setOutputProperty("omit-xml-declaration", "yes");
-            transformer.transform(new DOMSource(element), new StreamResult(writer));
-            return writer.toString();
-        } catch (Exception exception) {
-            throw Exceptions.handle(exception);
-        }
+        Resource resource =
+                resources.resolve(path).orElseThrow(() -> new IllegalArgumentException("Unknown resource: " + path));
+        Document document = parseDocument(resource, "svg");
+        return stringifyElement(document.getDocumentElement(), false);
     }
 
     @Nonnull
@@ -124,6 +87,6 @@ public class InlineSvgMacro extends BasicMacro {
     @Nonnull
     @Override
     public String getDescription() {
-        return "Returns the root <svg> tag from an SVG file as string.";
+        return "Returns the root <svg> tag of an SVG file as string, to be included in other DOM trees.";
     }
 }

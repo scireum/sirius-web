@@ -22,7 +22,7 @@ class Base64ResourceMacroSpec extends BaseSpecification {
     @Part
     private static Resources resources
 
-    def "tests the base64ResourceMacro"() {
+    def "base64Resource inlines the encoded file with correct media type"() {
         when:
         def ctx = tagliatelle.createInlineCompilationContext("inline", "@base64Resource('/assets/test.png')", null)
         new TemplateCompiler(ctx).compile()

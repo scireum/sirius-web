@@ -135,16 +135,18 @@ public class Color implements Expression {
             b = Integer.parseInt(m.group(3).toLowerCase(), 16);
             return;
         }
+
         m = SHORT_RGB_HEX_PATTERN.matcher(hexString);
         if (m.matches()) {
             r = Integer.parseInt(m.group(1).toLowerCase() + m.group(1).toLowerCase(), 16);
             g = Integer.parseInt(m.group(2).toLowerCase() + m.group(2).toLowerCase(), 16);
             b = Integer.parseInt(m.group(3).toLowerCase() + m.group(3).toLowerCase(), 16);
-        } else {
-            throw new IllegalArgumentException("Cannot parse '"
-                                               + hexString
-                                               + "' as hex color. Expected a pattern like #FF00FF");
+            return;
         }
+
+        throw new IllegalArgumentException("Cannot parse '"
+                                           + hexString
+                                           + "' as hex color. Expected a pattern like #FF00FF");
     }
 
     /**
