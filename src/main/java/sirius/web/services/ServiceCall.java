@@ -145,9 +145,10 @@ public abstract class ServiceCall {
             HandledException he = handle(t);
 
             if (ctx.isResponseCommitted()) {
-                ServiceCall.LOG.WARN("Cannot send service error for: %s. "
-                                     + "As a partially successful response has already been created and committed!",
-                                     ctx.getRequest().uri());
+                ServiceCall.LOG.WARN("""
+                                             Cannot send service error for: %s - %s
+                                             A partially successful response has already been created and committed!
+                                             """, ctx.getRequest().uri(), exception.getMessage());
 
                 // Force underlying request / response to be closed...
                 ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, he);
