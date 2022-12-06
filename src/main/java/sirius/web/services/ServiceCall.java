@@ -9,6 +9,7 @@
 package sirius.web.services;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.Value;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
@@ -150,7 +151,8 @@ public abstract class ServiceCall {
                                              A partially successful response has already been created and committed!
                                              
                                              %s
-                                             """, ctx.getRequest().uri(), exception.getMessage(), ExecutionPoint.snapshot().toString());
+                                             """, ctx.getRequest().uri(), exception.getMessage(),
+                                     ExecutionPoint.snapshot().toString());
 
                 // Force underlying request / response to be closed...
                 ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, handledException);
