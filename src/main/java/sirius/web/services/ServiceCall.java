@@ -148,7 +148,9 @@ public abstract class ServiceCall {
                 ServiceCall.LOG.WARN("""
                                              Cannot send service error for: %s - %s
                                              A partially successful response has already been created and committed!
-                                             """, ctx.getRequest().uri(), exception.getMessage());
+                                             
+                                             %s
+                                             """, ctx.getRequest().uri(), exception.getMessage(), ExecutionPoint.snapshot().toString());
 
                 // Force underlying request / response to be closed...
                 ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, handledException);
