@@ -83,8 +83,8 @@ public class PublicServices {
                                                               Stream.concat(collectSharedApiResponses(route).stream(),
                                                                             Arrays.stream(route.getAnnotationsByType(
                                                                                     ApiResponse.class)))
-                                                                    .sorted(Comparator.comparingInt(x -> Integer.parseInt(
-                                                                            x.responseCode())))
+                                                                    .sorted(Comparator.comparingInt(apiResponse -> Integer.parseInt(
+                                                                            apiResponse.responseCode())))
                                                                     .toList());
         synchronized (apis) {
             PublicApiInfo apiInfo = apis.stream()
