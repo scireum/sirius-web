@@ -9,6 +9,7 @@
 package sirius.web.controller;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
@@ -219,7 +220,12 @@ public class BasicController implements Controller {
             WebServer.LOG.WARN("""
                                        Cannot send service error for: %s - %s
                                        A partially successful response has already been created and committed!
-                                       """, webContext.getRequest().uri(), error.getMessage());
+                                                                              
+                                       %s
+                                       """,
+                               webContext.getRequest().uri(),
+                               error.getMessage(),
+                               ExecutionPoint.snapshot().toString());
 
             // Force underlying request / response to be closed...
             webContext.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
