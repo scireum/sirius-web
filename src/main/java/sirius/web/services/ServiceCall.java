@@ -141,8 +141,8 @@ public abstract class ServiceCall {
         } catch (ClosedChannelException ex) {
             // If the user unexpectedly closes the connection, we do not need to log an error...
             Exceptions.ignore(ex);
-        } catch (Exception t) {
-            HandledException he = handle(t);
+        } catch (Exception exception) {
+            HandledException handledException = handle(exception);
 
             if (ctx.isResponseCommitted()) {
                 ServiceCall.LOG.WARN("""
@@ -151,11 +151,11 @@ public abstract class ServiceCall {
                                              """, ctx.getRequest().uri(), exception.getMessage());
 
                 // Force underlying request / response to be closed...
-                ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, he);
+                ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, handledException);
                 return;
             }
 
-            serv.handleException(this, createOutput(), he);
+            serv.handleException(this, createOutput(), handledException);
         }
     }
 
