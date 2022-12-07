@@ -9,6 +9,7 @@
 package sirius.web.services;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.Value;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
@@ -141,20 +142,24 @@ public abstract class ServiceCall {
         } catch (ClosedChannelException ex) {
             // If the user unexpectedly closes the connection, we do not need to log an error...
             Exceptions.ignore(ex);
-        } catch (Exception t) {
-            HandledException he = handle(t);
+        } catch (Exception exception) {
+            HandledException handledException = handle(exception);
 
             if (ctx.isResponseCommitted()) {
-                ServiceCall.LOG.WARN("Cannot send service error for: %s. "
-                                     + "As a partially successful response has already been created and committed!",
-                                     ctx.getRequest().uri());
+                ServiceCall.LOG.WARN("""
+                                             Cannot send service error for: %s - %s
+                                             A partially successful response has already been created and committed!
+                                             
+                                             %s
+                                             """, ctx.getRequest().uri(), exception.getMessage(),
+                                     ExecutionPoint.snapshot().toString());
 
                 // Force underlying request / response to be closed...
-                ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, he);
+                ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, handledException);
                 return;
             }
 
-            serv.handleException(this, createOutput(), he);
+            serv.handleException(this, createOutput(), handledException);
         }
     }
 
