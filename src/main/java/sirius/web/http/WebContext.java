@@ -172,9 +172,9 @@ public class WebContext implements SubContext {
     protected InterfaceHttpPostRequestDecoder postDecoder;
 
     /**
-     * Sometimes it is usefult to "hide" the fact that this is a POST request.
+     * Sometimes it is useful to "hide" the fact that this is a POST request.
      * One case are login-forms. There are submitted for any URL but must not
-     * interact with other POST handlers. Therefore a user manager can
+     * interact with other POST handlers. Therefore, a user manager can
      * call hidePost() so that isPOST() will return false even if a post request
      * is present.
      */
@@ -217,7 +217,7 @@ public class WebContext implements SubContext {
     private volatile boolean sessionModified;
 
     /**
-     * Specifies the microtiming key used for this request. If null, no microtiming will be recorded.
+     * Specifies the micro-timing key used for this request. If null, no micro-timing will be recorded.
      */
     protected String microtimingKey;
 
@@ -249,7 +249,7 @@ public class WebContext implements SubContext {
     protected Boolean ssl;
 
     /**
-     * Contains the remote IP. If a proxyIP is specified (WebServer#proxyIPs), a X-Forwarded-For header is checked
+     * Contains the remote IP. If a proxyIP is specified (WebServer#proxyIPs), an X-Forwarded-For header is checked
      */
     private InetAddress remoteIp;
 
@@ -264,8 +264,8 @@ public class WebContext implements SubContext {
     protected ContentHandler contentHandler;
 
     /**
-     * Contains the timestamp this request was dispatched. (Will not be filled in predispatch, as we only
-     * want to measure how long it takes to generate an "average" result, not how long an upload took....
+     * Contains the timestamp this request was dispatched. (Will not be filled in pre-dispatch, as we only
+     * want to measure how long it takes to generate an "average" result, not how long an upload took....)
      */
     protected volatile long started = 0;
 
@@ -277,7 +277,7 @@ public class WebContext implements SubContext {
     protected volatile long scheduled = 0;
 
     /**
-     * Contains the timestamp this request was commited (a response was created).
+     * Contains the timestamp this request was committed (a response was created).
      * This can be used to actually measure the server performance and not the download speed of clients.
      */
     protected volatile long committed = 0;
@@ -406,13 +406,13 @@ public class WebContext implements SubContext {
     }
 
     /**
-     * Enables microtiming for this request.
+     * Enables micro-timing for this request.
      * <p>
      * If <tt>null</tt> is passed in as key, the request uri is used.
      * <p>
-     * If the microtiming was already enabled, it will remain enabled, with the original key
+     * If the micro-timing was already enabled, it will remain enabled, with the original key
      *
-     * @param key the key used to pass to the microtiming framework.
+     * @param key the key used to pass to the micro-timing framework.
      * @return <tt>this</tt> to fluently work with this context
      */
     public WebContext enableTiming(String key) {
@@ -634,13 +634,13 @@ public class WebContext implements SubContext {
     }
 
     /**
-     * Returns the first non empty value for the given keys.
+     * Returns the first non-empty value for the given keys.
      * <p>
      * This is a boilerplate method for {@link #get(String)} in case the same value could be sent via different
      * parameter names.
      *
      * @param keys the keys to check
-     * @return the first non empty value or an empty value if no data was found for all given keys.
+     * @return the first non-empty value or an empty value if no data was found for all given keys.
      */
     public Value getFirstFilled(String... keys) {
         for (String key : keys) {
@@ -680,12 +680,12 @@ public class WebContext implements SubContext {
     }
 
     /**
-     * Returns the value provided for the given key(s) or reports an error if no non empty value was found.
+     * Returns the value provided for the given key(s) or reports an error if no non-empty value was found.
      * <p>
-     * The first non empty value is used. If all values are empty, an exception is thrown.
+     * The first non-empty value is used. If all values are empty, an exception is thrown.
      *
      * @param keys the keys to check for a value
-     * @return the first non empty value found for one of the given keys
+     * @return the first non-empty value found for one of the given keys
      */
     public Value require(String... keys) {
         for (String key : keys) {
@@ -746,7 +746,7 @@ public class WebContext implements SubContext {
     /**
      * Sets an attribute for the current request.
      * <p>
-     * Attributes are neither stored nor transmitted to the client. Therefore they are only visible during the
+     * Attributes are neither stored nor transmitted to the client. Therefore, they are only visible during the
      * processing of this request.
      *
      * @param key   name of the attribute
@@ -906,7 +906,7 @@ public class WebContext implements SubContext {
     /**
      * Sets an explicit session cookie TTL (time to live).
      * <p>
-     * If a non null value is given, this will overwrite {@link #defaultSessionCookieTTL} for this request/response.
+     * If a non-null value is given, this will overwrite {@link #defaultSessionCookieTTL} for this request/response.
      *
      * @param customSessionCookieTTL the new TTL for the client session cookie.
      */
@@ -994,9 +994,9 @@ public class WebContext implements SubContext {
     }
 
     /**
-     * Returns the raw undecoded requested URI of the underlying HTTP request, without the query string
+     * Returns the raw un-decoded requested URI of the underlying HTTP request, without the query string
      *
-     * @return the undecoded uri of the underlying request
+     * @return the un-decoded uri of the underlying request
      */
     public String getRawRequestedURI() {
         if (rawRequestedURI == null && request != null) {
@@ -1038,7 +1038,7 @@ public class WebContext implements SubContext {
     /**
      * Returns the remote address which sent the request
      *
-     * @return the remote address of the underlying TCP connection. This will take a X-Forwarded-For header into
+     * @return the remote address of the underlying TCP connection. This will take an X-Forwarded-For header into
      * account if the connection was opened from a known proxy ip.
      */
     public InetAddress getRemoteIP() {
@@ -1054,9 +1054,9 @@ public class WebContext implements SubContext {
      * @return <tt>true</tt> if this is an HTTPS request, <tt>false</tt> otherwise
      */
     public boolean isSSL() {
-        // If the request is coming from a SSL channel locally, <tt>ssl</tt> is already set true.
+        // If the request is coming from an SSL channel locally, <tt>ssl</tt> is already set true.
         if (ssl == null) {
-            // Otherwise, we might sit behind a SSL offloading proxy, therefore we check
+            // Otherwise, we might sit behind an SSL offloading proxy, therefore we check
             // for the header "X-Forwarded-Proto".
             ssl = PROTOCOL_HTTPS.equalsIgnoreCase(getHeaderValue(HEADER_X_FORWARDED_PROTO).asString());
         }
@@ -1646,7 +1646,7 @@ public class WebContext implements SubContext {
      * Hide the fact that this request is a POST request.
      * <p>
      * Sometimes it is useful to make <tt>isPOST</tt> methods return false even if the
-     * current request is a POST requests. Login forms woule be one example. As
+     * current request is a POST requests. Login forms would be one example. As
      * a login request is sent to any URL, we don't want a common POST handler to
      * trigger on that post data.
      */
@@ -1754,7 +1754,7 @@ public class WebContext implements SubContext {
     /**
      * Returns the content of the HTTP request as file on disk.
      * <p>
-     * Note that the file will <b>NOT</b> be deleted once the request is completely handled. Therefore the caller must
+     * Note that the file will <b>NOT</b> be deleted once the request is completely handled. Therefore, the caller must
      * delete this file once it has been processed.
      *
      * @return the file pointing to the content sent by the client
@@ -1798,7 +1798,7 @@ public class WebContext implements SubContext {
     /**
      * Returns the body of the HTTP request as XML data without considering xml namespaces.
      * <p>
-     * Note that all data is loaded into the heap. Therefore certain limits apply. If the data is too large, an
+     * Note that all data is loaded into the heap. Therefore, certain limits apply. If the data is too large, an
      * exception will be thrown.
      * <p>
      * See: {@link #getXMLContent(boolean)} for controlling namespace awareness
@@ -1812,7 +1812,7 @@ public class WebContext implements SubContext {
     /**
      * Returns the body of the HTTP request as XML data.
      * <p>
-     * Note that all data is loaded into the heap. Therefore certain limits apply. If the data is too large, an
+     * Note that all data is loaded into the heap. Therefore, certain limits apply. If the data is too large, an
      * exception will be thrown.
      *
      * @param namespaceAware if true the XML will be parsed namespace aware.
@@ -1860,7 +1860,7 @@ public class WebContext implements SubContext {
     /**
      * Returns the body of the HTTP request as JSON data.
      * <p>
-     * Note that all data is loaded into the heap. Therefore certain limits apply. If the data is too large, an
+     * Note that all data is loaded into the heap. Therefore, certain limits apply. If the data is too large, an
      * exception will be thrown.
      *
      * @return the body of the HTTP request as JSON input
@@ -2058,7 +2058,7 @@ public class WebContext implements SubContext {
     }
 
     /**
-     * Returns {@link UserAgent} for easy access to the user agent used for this request. Also it provides access to
+     * Returns {@link UserAgent} for easy access to the user agent used for this request. Also, it provides access to
      * some assumptions based on the user agent e.g. which device was used.
      *
      * @return user agent wrapper object
@@ -2098,7 +2098,7 @@ public class WebContext implements SubContext {
      * Returns the time it took from the request being scheduled for execution up until
      * the (at least) first byte of the response being sent.
      * <p>
-     * At first glance this might sound like a complex metric to measure. However this ensures
+     * At first glance this might sound like a complex metric to measure. However, this ensures
      * that only the local behaviour and duration is measured without taking system load and
      * downstream bandwidth into account.
      *
