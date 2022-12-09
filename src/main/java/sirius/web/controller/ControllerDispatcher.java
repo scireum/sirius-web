@@ -295,7 +295,8 @@ public class ControllerDispatcher implements WebDispatcher {
         try {
             // We never want to log or handle exceptions which are caused by the user which
             // closed the browser / socket mid-processing...
-            if (cause instanceof ClosedChannelException && webContext.isResponseCommitted()) {
+            if ((cause instanceof ClosedChannelException || cause.getCause() instanceof ClosedChannelException)
+                && webContext.isResponseCommitted()) {
                 Exceptions.ignore(cause);
                 return;
             }
