@@ -223,10 +223,6 @@ public class ControllerDispatcher implements WebDispatcher {
             }
         } catch (InvocationTargetException ex) {
             handleFailure(webContext, route, ex.getTargetException());
-        } catch (ClosedChannelException ex) {
-            // Especially a service call might re-throw this. As this simply states, the connection was
-            // closed while writing data, we can safely ignore it....
-            Exceptions.ignore(ex);
         } catch (Exception ex) {
             handleFailure(webContext, route, ex);
         }
@@ -295,7 +291,8 @@ public class ControllerDispatcher implements WebDispatcher {
         try {
             // We never want to log or handle exceptions which are caused by the user which
             // closed the browser / socket mid-processing...
-            if (cause instanceof ClosedChannelException && webContext.isResponseCommitted()) {
+            if ((cause instanceof ClosedChannelException || cause.getCause() instanceof ClosedChannelException)
+                && webContext.isResponseCommitted()) {
                 Exceptions.ignore(cause);
                 return;
             }
