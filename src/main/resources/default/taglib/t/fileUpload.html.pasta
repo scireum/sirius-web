@@ -109,7 +109,7 @@
                     hideIndicator();
                 }, false);
                 document.addEventListener('dragleave', function (event) {
-                    if (event.relatedTarget === null) {
+                    if (sirius.isDragleaveEventLeavingWindow(event)) {
                         // left window
                         hideIndicator();
                     }
