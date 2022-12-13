@@ -17,6 +17,7 @@ import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.CachingSupplier;
 import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Explain;
+import sirius.kernel.commons.Monoflop;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.Injector;
@@ -69,6 +70,8 @@ public class ControllerDispatcher implements WebDispatcher {
     public static final String ATTRIBUTE_MATCHED_ROUTE = "sirius_matchedRoute";
 
     private List<Route> routes;
+
+    private final Monoflop routingInitialized = Monoflop.create();
 
     @PriorityParts(Interceptor.class)
     private List<Interceptor> interceptors;
@@ -336,7 +339,7 @@ public class ControllerDispatcher implements WebDispatcher {
     /**
      * Compiles all available controllers and their methods into a route table
      */
-    private List<Route> buildRouter() {
+    private synchronized List<Route> buildRouter() {
         PriorityCollector<Route> collector = PriorityCollector.create();
         for (Controller controller : Injector.context().getParts(Controller.class)) {
             compileController(collector, controller);
@@ -409,7 +412,11 @@ public class ControllerDispatcher implements WebDispatcher {
      */
     public List<Route> getRoutes() {
         if (routes == null) {
-            routes = buildRouter();
+            synchronized (routingInitialized) {
+                if (routingInitialized.firstCall()) {
+                    routes = buildRouter();
+                }
+            }
         }
 
         return Collections.unmodifiableList(routes);
