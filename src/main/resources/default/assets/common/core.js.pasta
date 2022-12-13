@@ -489,3 +489,31 @@ sirius.writeLocalStore = function (name, value) {
         console.log('Cannot write local store', {name: name, value: value, error: e});
     }
 }
+
+/**@
+ * Checks if the given 'dragleave' event on the document is leaving the window.
+ * This method exists because in safari the simple way of checking the relatedTarget does not work,
+ * and we have to fall back to checking the coordinates to see if it is at the edge of the document.
+ *
+ * @param event the event to check
+ */
+sirius.isDragleaveEventLeavingWindow = function (event) {
+    const isSafari = /^((?!chrome|android|edge).)*safari/i.test(navigator.userAgent);
+
+    if (!isSafari && event.relatedTarget === null) {
+        return true;
+    }
+    if (event.clientX >= window.innerWidth) {
+        return true;
+    }
+    if (event.offsetX <= 0) {
+        return true;
+    }
+    if (event.clientY >= window.innerHeight) {
+        return true;
+    }
+    if (event.clientY <= 1) {
+        return true;
+    }
+    return false;
+}
