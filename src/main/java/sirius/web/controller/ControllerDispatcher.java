@@ -38,6 +38,7 @@ import sirius.web.security.MaintenanceInfo;
 import sirius.web.security.UserContext;
 import sirius.web.security.UserInfo;
 import sirius.web.services.Format;
+import sirius.web.services.PublicServices;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
@@ -78,6 +79,9 @@ public class ControllerDispatcher implements WebDispatcher {
     @Part
     @Nullable
     private Firewall firewall;
+
+    @Part
+    private PublicServices publicServices;
 
     /**
      * The priority of this controller is {@code PriorityCollector.DEFAULT_PRIORITY + 10} as it is quite complex
@@ -329,7 +333,7 @@ public class ControllerDispatcher implements WebDispatcher {
         }
     }
 
-    /*
+    /**
      * Compiles all available controllers and their methods into a route table
      */
     private List<Route> buildRouter() {
@@ -340,6 +344,7 @@ public class ControllerDispatcher implements WebDispatcher {
 
         List<Route> allRoutes = collector.getData();
         optimizeRoutes(allRoutes);
+        allRoutes.forEach(route -> publicServices.recordPublicService(route.getMethod()));
 
         return allRoutes;
     }
@@ -410,7 +415,7 @@ public class ControllerDispatcher implements WebDispatcher {
         return Collections.unmodifiableList(routes);
     }
 
-    /*
+    /**
      * Compiles a method wearing a Routed annotation.
      */
     private Route compileMethod(Routed routed, final Controller controller, final Method method) {
