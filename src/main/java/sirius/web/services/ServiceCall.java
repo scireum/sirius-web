@@ -152,7 +152,7 @@ public abstract class ServiceCall {
                 ServiceCall.LOG.WARN("""
                                              Cannot send service error for: %s - %s
                                              A partially successful response has already been created and committed!
-                                                                                          
+
                                              %s
                                              """,
                                      ctx.getRequest().uri(),
