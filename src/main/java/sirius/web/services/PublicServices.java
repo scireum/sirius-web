@@ -20,7 +20,6 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.settings.Extension;
 import sirius.web.controller.ControllerDispatcher;
-import sirius.web.controller.Route;
 import sirius.web.controller.Routed;
 import sirius.web.http.WebServer;
 
@@ -56,10 +55,7 @@ public class PublicServices {
     public List<PublicApiInfo> getApis() {
         synchronized (apis) {
             if (apis.isEmpty()) {
-                List<Route> knownRoutes = controllerDispatcher.getRoutes();
-                if (!knownRoutes.isEmpty()) {
-                    knownRoutes.forEach(route -> recordPublicService(route.getMethod()));
-                }
+                controllerDispatcher.getRoutes().forEach(route -> recordPublicService(route.getMethod()));
             }
             return new ArrayList<>(apis);
         }
