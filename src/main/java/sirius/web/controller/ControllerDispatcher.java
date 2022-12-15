@@ -71,8 +71,6 @@ public class ControllerDispatcher implements WebDispatcher {
 
     private List<Route> routes;
 
-    private final Monoflop routingInitialized = Monoflop.create();
-
     @PriorityParts(Interceptor.class)
     private List<Interceptor> interceptors;
 
@@ -82,9 +80,6 @@ public class ControllerDispatcher implements WebDispatcher {
     @Part
     @Nullable
     private Firewall firewall;
-
-    @Part
-    private PublicServices publicServices;
 
     /**
      * The priority of this controller is {@code PriorityCollector.DEFAULT_PRIORITY + 10} as it is quite complex
@@ -341,7 +336,7 @@ public class ControllerDispatcher implements WebDispatcher {
      *
      * @return a list holding all available {@link Route routes}
      */
-    private synchronized List<Route> buildRouter() {
+    private List<Route> buildRouter() {
         PriorityCollector<Route> collector = PriorityCollector.create();
         for (Controller controller : Injector.context().getParts(Controller.class)) {
             compileController(collector, controller);
@@ -349,7 +344,6 @@ public class ControllerDispatcher implements WebDispatcher {
 
         List<Route> allRoutes = collector.getData();
         optimizeRoutes(allRoutes);
-        allRoutes.forEach(route -> publicServices.recordPublicService(route.getMethod()));
 
         return allRoutes;
     }
@@ -414,11 +408,7 @@ public class ControllerDispatcher implements WebDispatcher {
      */
     public List<Route> getRoutes() {
         if (routes == null) {
-            synchronized (routingInitialized) {
-                if (routingInitialized.firstCall()) {
-                    routes = buildRouter();
-                }
-            }
+            routes = buildRouter();
         }
 
         return Collections.unmodifiableList(routes);
