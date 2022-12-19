@@ -50,9 +50,6 @@ import java.util.regex.Pattern;
  */
 public class Route {
 
-    @Part
-    private static PublicServices publicServices;
-
     protected static final List<Object> NO_MATCH = Collections.unmodifiableList(new ArrayList<>());
     private static final Class<?>[] CLASS_ARRAY = new Class[0];
     private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
@@ -162,7 +159,6 @@ public class Route {
             PublicService publicServiceAnnotation = method.getAnnotation(PublicService.class);
             result.enforceMaintenanceMode = publicServiceAnnotation.enforceMaintenanceMode();
             result.format = publicServiceAnnotation.format();
-            publicServices.recordPublicService(method);
         } else if (method.isAnnotationPresent(InternalService.class)) {
             result.format = method.getAnnotation(InternalService.class).format();
         } else if (routed.jsonCall()) {

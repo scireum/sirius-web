@@ -14,7 +14,7 @@
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
     <properties>
-        <sirius.kernel>ga-6.0.0</sirius.kernel>
+        <sirius.kernel>dev-33.4.0</sirius.kernel>
     </properties>
 
     <repositories>
@@ -146,7 +146,13 @@
         <dependency>
             <groupId>com.github.pjfanning</groupId>
             <artifactId>excel-streaming-reader</artifactId>
-            <version>4.0.4</version>
+            <version>4.0.5</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.h2database</groupId>
+                    <artifactId>h2</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Swagger Annotations are used for API/Service documentation -->
