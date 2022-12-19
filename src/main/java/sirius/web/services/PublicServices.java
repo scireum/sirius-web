@@ -26,6 +26,7 @@ import sirius.web.http.WebServer;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -39,7 +40,7 @@ import java.util.stream.Stream;
 @Register(classes = PublicServices.class)
 public class PublicServices {
 
-    private final List<PublicApiInfo> apis = new ArrayList<>();
+    private List<PublicApiInfo> apis;
 
     @Part
     private GlobalContext globalContext;
@@ -53,22 +54,20 @@ public class PublicServices {
      * @return the list of all known public APIs
      */
     public List<PublicApiInfo> getApis() {
-        synchronized (apis) {
-            if (apis.isEmpty()) {
-                controllerDispatcher.getRoutes().forEach(route -> recordPublicService(route.getMethod()));
-            }
-            return new ArrayList<>(apis);
+        if (apis == null) {
+            this.apis = discoverPublicServices();
         }
+
+        return Collections.unmodifiableList(apis);
     }
 
-    /**
-     * Records a new public service for the given routed method.
-     * <p>
-     * Note that this is somewhat of an internal method and should not be invoked manually.
-     *
-     * @param route the routed method which is recognized as a public service
-     */
-    public void recordPublicService(Method route) {
+    private List<PublicApiInfo> discoverPublicServices() {
+        List<PublicApiInfo> modifiableApis = new ArrayList<>();
+        controllerDispatcher.getRoutes().forEach(route -> recordPublicService(route.getMethod(), modifiableApis));
+        return modifiableApis;
+    }
+
+    private void recordPublicService(Method route, List<PublicApiInfo> modifiableApis) {
         Routed routed = route.getAnnotation(Routed.class);
         if (routed == null) {
             return;
@@ -93,18 +92,18 @@ public class PublicServices {
                                                                     .sorted(Comparator.comparingInt(apiResponse -> Integer.parseInt(
                                                                             apiResponse.responseCode())))
                                                                     .toList());
-        synchronized (apis) {
-            PublicApiInfo apiInfo = apis.stream()
-                                        .filter(api -> Strings.areEqual(api.getApiName(), publicService.apiName()))
-                                        .findFirst()
-                                        .orElse(null);
-            if (apiInfo == null) {
-                apiInfo = buildApiInfo(publicService.apiName(), route);
-                apis.add(apiInfo);
-                apis.sort(Comparator.comparing(PublicApiInfo::getPriority).thenComparing(PublicApiInfo::getApiName));
-            }
-            apiInfo.addService(serviceInfo);
+        PublicApiInfo apiInfo = modifiableApis.stream()
+                                              .filter(api -> Strings.areEqual(api.getApiName(),
+                                                                              publicService.apiName()))
+                                              .findFirst()
+                                              .orElse(null);
+        if (apiInfo == null) {
+            apiInfo = buildApiInfo(publicService.apiName(), route);
+            modifiableApis.add(apiInfo);
+            modifiableApis.sort(Comparator.comparing(PublicApiInfo::getPriority)
+                                          .thenComparing(PublicApiInfo::getApiName));
         }
+        apiInfo.addService(serviceInfo);
     }
 
     private List<Parameter> collectSharedApiParameters(Method route) {
