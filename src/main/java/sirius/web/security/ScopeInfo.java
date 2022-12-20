@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
  * The scope is determined using the installed {@link sirius.web.security.ScopeDetector} (Any class
  * implementing the interface and wearing a {@link sirius.kernel.di.std.Register} annotation will do.)
  * <p>
- * The current scope is used to determine which {@link sirius.web.security.UserManager} is used. Therefore
+ * The current scope is used to determine which {@link sirius.web.security.UserManager} is used. Therefore,
  * a system consisting of a backend and frontend can use distinct scopes and a different user manager for each.
  */
 public class ScopeInfo extends Composable {
@@ -402,7 +402,7 @@ public class ScopeInfo extends Composable {
     /**
      * Returns the default config for all scopes.
      * <p>
-     * This is built by loading all <tt>scope-*.conf</tt> files. Additionally the <tt>scope-settings.conf</tt> for
+     * This is built by loading all <tt>scope-*.conf</tt> files. Additionally, the <tt>scope-settings.conf</tt> for
      * all active customizations are used as well (if present).
      *
      * @return the default config object shared by all scopes
@@ -575,7 +575,7 @@ public class ScopeInfo extends Composable {
      * Checks if the given language is supported. Returns the default language otherwise.
      * <p>
      * Note that if the given language is empty or <tt>null</tt>, this method will also return <tt>null</tt> as a call
-     * to {@link sirius.kernel.async.CallContext#setLang(String)} with <tt>null</tt> as parameter won't change
+     * to {@link sirius.kernel.async.CallContext#setLanguage(String)} with <tt>null</tt> as parameter won't change
      * the language at all.
      *
      * @param language the language to check
@@ -591,7 +591,7 @@ public class ScopeInfo extends Composable {
      * Checks if the given language is supported. Returns the default language otherwise.
      * <p>
      * Note that if the given language is empty or <tt>null</tt>, this method will also return <tt>null</tt> as a call
-     * to {@link sirius.kernel.async.CallContext#setLang(String)} with <tt>null</tt> as parameter won't change
+     * to {@link sirius.kernel.async.CallContext#setLanguage(String)} with <tt>null</tt> as parameter won't change
      * the language at all.
      *
      * @param language the language to check
