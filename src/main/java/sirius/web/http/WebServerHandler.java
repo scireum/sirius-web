@@ -193,8 +193,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         // if everything else fails, parse the lang header.
         currentCall.deferredSetLanguage(callContext -> {
             if (callContext.get(UserContext.class).bindUserIfPresent(webContext).isEmpty()) {
-                callContext.setLangIfEmpty(UserContext.getCurrentScope()
-                                                      .makeLanguage(webContext.fetchLanguage().orElse(null)));
+                callContext.setLanguageIfEmpty(UserContext.getCurrentScope()
+                                                          .makeLanguage(webContext.fetchLanguage().orElse(null)));
             }
         });
 
