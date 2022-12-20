@@ -50,7 +50,7 @@
     </i:block>
 
     <i:block name="breadcrumbs">
-        <li><a href="/help/@NLS.getCurrentLang()">@i18n('help')</a></li>
+        <li><a href="/help/@NLS.getCurrentLanguage()">@i18n('help')</a></li>
         <i:render name="breadcrumbs"/>
         <i:if test="showCurrentPageBreadcrumb">
             <li><a href="#">@title</a></li>

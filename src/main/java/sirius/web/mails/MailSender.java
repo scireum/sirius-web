@@ -205,7 +205,7 @@ public class MailSender {
 
     /**
      * Specifies the NLS key used to generate the subject line of the mail.
-     * This uses the language specified in {@link #setLang(String...)} if provided
+     * This uses the language specified in {@link #setLanguage(String...)} if provided
      *
      * @param subjectKey the NLS key for the subject line to use.
      * @return the builder itself
@@ -216,7 +216,7 @@ public class MailSender {
 
     /**
      * Specifies the NLS key and optional parameters used to generate the subject line of the mail.
-     * This uses the language specified in {@link #setLang(String...)} if provided
+     * This uses the language specified in {@link #setLanguage(String...)} if provided
      *
      * @param subjectKey    the NLS key for the subject line to use.
      * @param subjectParams the parameters used to format the subject line

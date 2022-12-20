@@ -189,9 +189,9 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         // If a user is present, the system will sooner or later detect it and set the appropriate
         // language. If not, this handler will be evaluated, check for a user in the session or
         // if everything else fails, parse the lang header.
-        currentCall.deferredSetLang(callContext -> {
+        currentCall.deferredSetLanguage(callContext -> {
             if (callContext.get(UserContext.class).bindUserIfPresent(wc).isEmpty()) {
-                callContext.setLangIfEmpty(UserContext.getCurrentScope().makeLang(wc.getLang().orElse(null)));
+                callContext.setLangIfEmpty(UserContext.getCurrentScope().makeLanguage(wc.getLanguage().orElse(null)));
             }
         });
 

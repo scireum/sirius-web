@@ -9,7 +9,7 @@
 <i:pragma name="description" value="Provides the base layout for a Tycho page"/>
 
 <!DOCTYPE html>
-<html lang="@NLS.getCurrentLang()">
+<html lang="@NLS.getCurrentLanguage()">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
     <i:if test="isFilled(config('http.contentSecurityPolicy'))">
@@ -42,7 +42,7 @@
     <i:render name="head"/>
     <script type="text/javascript">
         // This cannot be moved into tycho.js as it has to be re-evaluated for each call and must not be cached...
-        const tycho_current_locale = '@NLS.getCurrentLang()';
+        const tycho_current_locale = '@NLS.getCurrentLanguage()';
         randomizeCharts('@sirius.kernel.commons.Hasher.md5().hash(currentRenderContext().getRootContext().getTemplate().getName()).toString()')
     </script>
 </head>

@@ -11,7 +11,7 @@
                 <b>Remote IP:</b> @webContext.getRemoteIP().getHostAddress()
             </t:inlineInfo>
             <t:inlineInfo class="d-none d-md-block">
-                <b>Language:</b> @webContext.getLang().orElse('?')
+                <b>Language:</b> @webContext.getLanguage().orElse('?')
             </t:inlineInfo>
 
             <i:block name="actions">
