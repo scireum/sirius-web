@@ -1457,11 +1457,11 @@ public class WebContext implements SubContext {
      *
      * @return the two-letter code of the accepted language of the user agent or <tt>null</tt> if no valid accept
      * language was found
-     * @deprecated Use {@link #getLanguage()} instead.
+     * @deprecated Use {@link #fetchLanguage()} instead.
      */
     @Deprecated
     public final Optional<String> getLang() {
-        return getLanguage();
+        return fetchLanguage();
     }
 
     /**
@@ -1470,7 +1470,7 @@ public class WebContext implements SubContext {
      * @return the two-letter code of the accepted language of the user agent or <tt>null</tt> if no valid accept
      * language was found
      */
-    public Optional<String> getLanguage() {
+    public Optional<String> fetchLanguage() {
         return LangHelper.from(request.headers().get(HttpHeaderNames.ACCEPT_LANGUAGE));
     }
 
