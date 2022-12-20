@@ -70,7 +70,7 @@ public class ScopeInfo extends Composable {
     private final String scopeId;
     private final String scopeType;
     private final String scopeName;
-    private final String lang;
+    private final String language;
     private final Function<ScopeInfo, Config> configSupplier;
     private final Function<ScopeInfo, Object> scopeSupplier;
     private final Map<Class<?>, Object> helpersByType = new ConcurrentHashMap<>();
@@ -95,7 +95,7 @@ public class ScopeInfo extends Composable {
      * @param scopeType      the type of the scope (like "backend" or "frontend"). This is used to retrieve the
      *                       associated {@link UserManager} from the system config.
      * @param scopeName      the representative name of the scope
-     * @param lang           the language used by the scope or <tt>null</tt>  for the default language
+     * @param language       the language used by the scope or <tt>null</tt>  for the default language
      * @param configSupplier used to fetch the scope specific configuration
      * @param scopeSupplier  used to fetch the associated scope object. This can be a database entity or the like
      *                       associated with the scope
@@ -103,13 +103,13 @@ public class ScopeInfo extends Composable {
     public ScopeInfo(@Nonnull String scopeId,
                      @Nonnull String scopeType,
                      @Nonnull String scopeName,
-                     @Nullable String lang,
+                     @Nullable String language,
                      @Nullable Function<ScopeInfo, Config> configSupplier,
                      @Nullable Function<ScopeInfo, Object> scopeSupplier) {
         this.scopeId = scopeId;
         this.scopeType = scopeType;
         this.scopeName = scopeName;
-        this.lang = lang;
+        this.language = language;
         this.configSupplier = configSupplier;
         this.scopeSupplier = scopeSupplier;
     }
@@ -155,7 +155,18 @@ public class ScopeInfo extends Composable {
      */
     @Nullable
     public String getLang() {
-        return lang;
+        return getLanguage();
+    }
+
+    /**
+     * Returns the two letter language code of this scope as understood by
+     * {@link sirius.kernel.nls.NLS#setDefaultLanguage(String)}.
+     *
+     * @return the language code used by this scope or <tt>null</tt> if there is no specific language used
+     */
+    @Nullable
+    public String getLanguage() {
+        return language;
     }
 
     /**
@@ -250,13 +261,13 @@ public class ScopeInfo extends Composable {
         try {
             Constructor<?> constructor = aClass.getDeclaredConstructor(ScopeInfo.class);
             return constructor.newInstance(this);
-        } catch (NoSuchMethodException | IllegalAccessException e) {
+        } catch (NoSuchMethodException | IllegalAccessException exception) {
             // There is either no constructor or it isn't accessible -> ignore
-            Exceptions.ignore(e);
-        } catch (InstantiationException | InvocationTargetException e) {
+            Exceptions.ignore(exception);
+        } catch (InstantiationException | InvocationTargetException exception) {
             throw Exceptions.handle()
                             .to(UserContext.LOG)
-                            .error(e)
+                            .error(exception)
                             .withSystemErrorMessage("Cannot auto instantiate a helper of type %s - %s (%s)",
                                                     aClass.getName())
                             .handle();
@@ -266,13 +277,13 @@ public class ScopeInfo extends Composable {
         try {
             Constructor<?> constructor = aClass.getDeclaredConstructor();
             return constructor.newInstance();
-        } catch (NoSuchMethodException | IllegalAccessException e) {
+        } catch (NoSuchMethodException | IllegalAccessException exception) {
             // There is either no constructor or it isn't accessible -> ignore
-            Exceptions.ignore(e);
-        } catch (InstantiationException | InvocationTargetException e) {
+            Exceptions.ignore(exception);
+        } catch (InstantiationException | InvocationTargetException exception) {
             throw Exceptions.handle()
                             .to(UserContext.LOG)
-                            .error(e)
+                            .error(exception)
                             .withSystemErrorMessage("Cannot auto instantiate a helper of type %s - %s (%s)",
                                                     aClass.getName())
                             .handle();
@@ -307,9 +318,9 @@ public class ScopeInfo extends Composable {
                           scopeSettings.injectValueFromConfig(result,
                                                               field,
                                                               field.getAnnotation(HelperConfig.class).value());
-                      } catch (IllegalArgumentException e) {
+                      } catch (IllegalArgumentException exception) {
                           UserContext.LOG.WARN("Failed to fill a helper-config value: %s for scope %s",
-                                               e.getMessage(),
+                                               exception.getMessage(),
                                                getScopeId());
                       }
                   });
@@ -330,9 +341,9 @@ public class ScopeInfo extends Composable {
             }
             field.setAccessible(true);
             field.set(helper, friend);
-        } catch (Exception e) {
+        } catch (Exception exception) {
             Exceptions.handle()
-                      .error(e)
+                      .error(exception)
                       .to(UserContext.LOG)
                       .withSystemErrorMessage("Cannot fill friend %s in %s of helper %s (%s): %s (%s)",
                                               field.getType().getName(),
@@ -382,8 +393,8 @@ public class ScopeInfo extends Composable {
             }
 
             return Streams.readToString(new InputStreamReader(contents, StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            Exceptions.ignore(e);
+        } catch (IOException exception) {
+            Exceptions.ignore(exception);
             return "";
         }
     }
@@ -417,17 +428,17 @@ public class ScopeInfo extends Composable {
 
     private static void collectCustomizationConfigFiles(Map<String, String> configFiles,
                                                         ValueHolder<Config> configHolder) {
-        for (String conf : Sirius.getActiveConfigurations()) {
-            String configName = "customizations/" + conf + "/scope-settings.conf";
+        for (String activeConfig : Sirius.getActiveConfigurations()) {
+            String configName = "customizations/" + activeConfig + "/scope-settings.conf";
             if (Sirius.class.getResource("/" + configName) != null) {
-                UserContext.LOG.INFO("loading scope-settings.conf for customization '" + conf + "'");
+                UserContext.LOG.INFO("loading scope-settings.conf for customization '" + activeConfig + "'");
                 try {
                     Config configInFile = ConfigFactory.load(Sirius.getSetup().getLoader(), configName);
-                    configFiles.put("scope-settings.conf (" + conf + ")", configName);
+                    configFiles.put("scope-settings.conf (" + activeConfig + ")", configName);
                     configHolder.set(configInFile.withFallback(configHolder.get()));
-                } catch (Exception e) {
-                    Exceptions.ignore(e);
-                    UserContext.LOG.WARN("Cannot load %s: %s", configName, e.getMessage());
+                } catch (Exception exception) {
+                    Exceptions.ignore(exception);
+                    UserContext.LOG.WARN("Cannot load %s: %s", configName, exception.getMessage());
                 }
             }
         }
@@ -442,9 +453,9 @@ public class ScopeInfo extends Composable {
                 Config configInFile = ConfigFactory.load(Sirius.getSetup().getLoader(), value.group());
                 configFiles.put(value.group(1), value.group());
                 configHolder.set(configInFile.withFallback(configHolder.get()));
-            } catch (Exception e) {
-                Exceptions.ignore(e);
-                UserContext.LOG.WARN("Cannot load %s: %s", value.group(), e.getMessage());
+            } catch (Exception exception) {
+                Exceptions.ignore(exception);
+                UserContext.LOG.WARN("Cannot load %s: %s", value.group(), exception.getMessage());
             }
         });
     }
@@ -573,6 +584,22 @@ public class ScopeInfo extends Composable {
      */
     @Nullable
     public String makeLang(@Nullable String language) {
+        return makeLanguage(language);
+    }
+
+    /**
+     * Checks if the given language is supported. Returns the default language otherwise.
+     * <p>
+     * Note that if the given language is empty or <tt>null</tt>, this method will also return <tt>null</tt> as a call
+     * to {@link sirius.kernel.async.CallContext#setLang(String)} with <tt>null</tt> as parameter won't change
+     * the language at all.
+     *
+     * @param language the language to check
+     * @return <tt>lang</tt> if it was a supported language or the defaultLanguage otherwise, unless an empty string
+     * was passed in, in which case <tt>null</tt> is returned.
+     */
+    @Nullable
+    public String makeLanguage(@Nullable String language) {
         if (Strings.isEmpty(language)) {
             return null;
         }
