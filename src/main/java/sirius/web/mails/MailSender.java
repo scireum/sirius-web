@@ -612,8 +612,10 @@ public class MailSender {
      * Returns the language which is set for the mail for example to set NLS-keys in the context to the right language.
      *
      * @return the language
+     * @deprecated Use {@link #getLanguage()} instead.
      */
-    public String getLang() {
+    @Deprecated
+    public final String getLang() {
         return getLanguage();
     }
 

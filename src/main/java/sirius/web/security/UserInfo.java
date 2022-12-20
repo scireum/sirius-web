@@ -157,8 +157,10 @@ public class UserInfo extends Composable {
          *
          * @param language a two-letter language code which should be understood by {@link sirius.kernel.nls.NLS}.
          * @return the builder itself for fluent method calls
+         * @deprecated Use {@link #withLanguage(String)} instead.
          */
-        public Builder withLang(String language) {
+        @Deprecated
+        public final Builder withLang(String language) {
             return withLanguage(language);
         }
 
@@ -300,8 +302,10 @@ public class UserInfo extends Composable {
      * The language code of the user.
      *
      * @return the two-letter language code of the user
+     * @deprecated Use {@link #getLanguage()} instead.
      */
-    public String getLang() {
+    @Deprecated
+    public final String getLang() {
         return getLanguage();
     }
 

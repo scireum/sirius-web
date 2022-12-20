@@ -1435,9 +1435,10 @@ public class WebContext implements SubContext {
      *
      * @return the two-letter code of the accepted language of the user agent or <tt>null</tt> if no valid accept
      * language was found
+     * @deprecated Use {@link #getLanguage()} instead.
      */
-    // todo: deprecate
-    public Optional<String> getLang() {
+    @Deprecated
+    public final Optional<String> getLang() {
         return getLanguage();
     }
 

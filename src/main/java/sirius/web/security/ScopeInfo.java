@@ -152,9 +152,11 @@ public class ScopeInfo extends Composable {
      * {@link sirius.kernel.nls.NLS#setDefaultLanguage(String)}.
      *
      * @return the language code used by this scope or <tt>null</tt> if there is no specific language used
+     * @deprecated Use {@link #getLanguage()} instead.
      */
     @Nullable
-    public String getLang() {
+    @Deprecated
+    public final String getLang() {
         return getLanguage();
     }
 
@@ -581,9 +583,11 @@ public class ScopeInfo extends Composable {
      * @param language the language to check
      * @return <tt>lang</tt> if it was a supported language or the defaultLanguage otherwise, unless an empty string
      * was passed in, in which case <tt>null</tt> is returned.
+     * @deprecated Use {@link #makeLanguage(String)} instead.
      */
     @Nullable
-    public String makeLang(@Nullable String language) {
+    @Deprecated
+    public final String makeLang(@Nullable String language) {
         return makeLanguage(language);
     }
 
