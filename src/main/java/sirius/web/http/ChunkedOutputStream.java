@@ -51,7 +51,7 @@ public class ChunkedOutputStream extends OutputStream {
             flushBuffer(false);
         }
         if (buffer == null) {
-            buffer = response.channelHandlerContext.alloc().buffer(Response.BUFFER_SIZE);
+            buffer = response.getChannelHandlerContext().alloc().buffer(Response.BUFFER_SIZE);
         }
     }
 
@@ -78,7 +78,7 @@ public class ChunkedOutputStream extends OutputStream {
         } else {
             try {
                 Object message = new DefaultHttpContent(buffer);
-                ChannelFuture writeFuture = response.channelHandlerContext.writeAndFlush(message);
+                ChannelFuture writeFuture = response.getChannelHandlerContext().writeAndFlush(message);
                 if (contentionControl) {
                     writeFuture.await(60, TimeUnit.SECONDS);
                 }
@@ -111,14 +111,14 @@ public class ChunkedOutputStream extends OutputStream {
 
     private void completeRequest() {
         if (buffer != null) {
-            response.complete(response.channelHandlerContext.writeAndFlush(new DefaultLastHttpContent(buffer)));
+            response.complete(response.getChannelHandlerContext().writeAndFlush(new DefaultLastHttpContent(buffer)));
         } else {
-            response.complete(response.channelHandlerContext.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT));
+            response.complete(response.getChannelHandlerContext().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT));
         }
     }
 
     private void failIfChannelIsNotOpen() throws IOException {
-        if (!response.channelHandlerContext.channel().isOpen()) {
+        if (!response.getChannelHandlerContext().channel().isOpen()) {
             open = false;
             if (buffer != null) {
                 buffer.release();
@@ -198,7 +198,7 @@ public class ChunkedOutputStream extends OutputStream {
         }
         open = false;
         super.close();
-        if (response.channelHandlerContext.channel().isOpen()) {
+        if (response.getChannelHandlerContext().channel().isOpen()) {
             flushBuffer(true);
         } else if (buffer != null) {
             buffer.release();

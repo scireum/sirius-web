@@ -411,6 +411,15 @@ public class Response {
     }
 
     /**
+     * Provides access to the channel handler context.
+     *
+     * @return the channel handler context
+     */
+    protected ChannelHandlerContext getChannelHandlerContext() {
+        return channelHandlerContext;
+    }
+
+    /**
      * Disables keep-alive protocol (even if it would have been otherwise supported).
      *
      * @return the response itself for fluent method calls

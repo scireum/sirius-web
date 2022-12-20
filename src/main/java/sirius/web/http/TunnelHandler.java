@@ -272,7 +272,7 @@ public class TunnelHandler implements AsyncHandler<String> {
                                    webContext.getRequestedURI(),
                                    bodyPart.isLast());
             }
-            if (!response.channelHandlerContext.channel().isOpen()) {
+            if (!response.getChannelHandlerContext().channel().isOpen()) {
                 return State.ABORT;
             }
 
@@ -314,10 +314,10 @@ public class TunnelHandler implements AsyncHandler<String> {
     private void writeBodyPart(ByteBuf data) {
         Object msg = response.responseChunked ? new DefaultHttpContent(data) : data;
         if (unflushedBytes.addAndGet(data.readableBytes()) >= Response.BUFFER_SIZE) {
-            response.channelHandlerContext.writeAndFlush(msg);
+            response.getChannelHandlerContext().writeAndFlush(msg);
             unflushedBytes.set(0);
         } else {
-            response.channelHandlerContext.write(msg);
+            response.getChannelHandlerContext().write(msg);
         }
     }
 
@@ -332,13 +332,14 @@ public class TunnelHandler implements AsyncHandler<String> {
             transformLastContentAndComplete(bodyPart);
         } else if (response.responseChunked) {
             ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
-            ChannelFuture writeFuture = response.channelHandlerContext.writeAndFlush(new DefaultLastHttpContent(data));
+            ChannelFuture writeFuture =
+                    response.getChannelHandlerContext().writeAndFlush(new DefaultLastHttpContent(data));
             response.complete(writeFuture);
         } else {
             ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
-            response.channelHandlerContext.channel().write(data);
+            response.getChannelHandlerContext().channel().write(data);
             ChannelFuture writeFuture =
-                    response.channelHandlerContext.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+                    response.getChannelHandlerContext().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
             response.complete(writeFuture);
         }
     }
@@ -357,19 +358,19 @@ public class TunnelHandler implements AsyncHandler<String> {
         // Now we figure out which is simply sent and which is sent while obtaining the completion future
         // to finish the response...
         if (lastResult != null && completeResult != null) {
-            response.channelHandlerContext.write(new DefaultHttpContent(lastResult));
+            response.getChannelHandlerContext().write(new DefaultHttpContent(lastResult));
             ChannelFuture writeFuture =
-                    response.channelHandlerContext.writeAndFlush(new DefaultLastHttpContent(completeResult));
+                    response.getChannelHandlerContext().writeAndFlush(new DefaultLastHttpContent(completeResult));
             response.complete(writeFuture);
         } else if (completeResult != null) {
             throw new IllegalStateException("lastResult was null but completeResult wasn't!");
         } else if (lastResult != null) {
             ChannelFuture writeFuture =
-                    response.channelHandlerContext.writeAndFlush(new DefaultLastHttpContent(lastResult));
+                    response.getChannelHandlerContext().writeAndFlush(new DefaultLastHttpContent(lastResult));
             response.complete(writeFuture);
         } else {
             ChannelFuture writeFuture =
-                    response.channelHandlerContext.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+                    response.getChannelHandlerContext().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
             response.complete(writeFuture);
         }
     }
@@ -407,7 +408,7 @@ public class TunnelHandler implements AsyncHandler<String> {
             response.complete(response.commit(res));
         } else if (!webContext.responseCompleted) {
             ChannelFuture writeFuture =
-                    response.channelHandlerContext.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+                    response.getChannelHandlerContext().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
             response.complete(writeFuture);
         }
         return "";
