@@ -1436,7 +1436,18 @@ public class WebContext implements SubContext {
      * @return the two-letter code of the accepted language of the user agent or <tt>null</tt> if no valid accept
      * language was found
      */
+    // todo: deprecate
     public Optional<String> getLang() {
+        return getLanguage();
+    }
+
+    /**
+     * Returns the accepted language of the client as two-letter language code.
+     *
+     * @return the two-letter code of the accepted language of the user agent or <tt>null</tt> if no valid accept
+     * language was found
+     */
+    public Optional<String> getLanguage() {
         return LangHelper.from(request.headers().get(HttpHeaderNames.ACCEPT_LANGUAGE));
     }
 
