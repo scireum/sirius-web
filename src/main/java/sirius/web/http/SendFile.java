@@ -112,7 +112,7 @@ class SendFile {
      * Determines if we're running on SSL
      */
     private boolean isSSL() {
-        return response.ctx.channel().pipeline().get(SslHandler.class) != null;
+        return response.channelHandlerContext.channel().pipeline().get(SslHandler.class) != null;
     }
 
     private boolean sendFileResponse() throws IOException {
@@ -137,18 +137,23 @@ class SendFile {
     private ChannelFuture executeChunkedWrite() throws IOException {
         if (response.responseChunked) {
             // Send chunks of data which can be compressed
-            response.ctx.write(new HttpChunkedInput(new ChunkedFile(raf,
-                                                                    contentStart,
-                                                                    expectedContentLength,
-                                                                    Response.BUFFER_SIZE)));
-            return response.ctx.writeAndFlush(Unpooled.EMPTY_BUFFER);
+            response.channelHandlerContext.write(new HttpChunkedInput(new ChunkedFile(raf,
+                                                                                      contentStart,
+                                                                                      expectedContentLength,
+                                                                                      Response.BUFFER_SIZE)));
+            return response.channelHandlerContext.writeAndFlush(Unpooled.EMPTY_BUFFER);
         } else if (isSSL()) {
-            response.ctx.write(new ChunkedFile(raf, contentStart, expectedContentLength, Response.BUFFER_SIZE));
-            return response.ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+            response.channelHandlerContext.write(new ChunkedFile(raf,
+                                                                 contentStart,
+                                                                 expectedContentLength,
+                                                                 Response.BUFFER_SIZE));
+            return response.channelHandlerContext.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
         } else {
             // Send file using zero copy approach!
-            response.ctx.write(new DefaultFileRegion(raf.getChannel(), contentStart, expectedContentLength));
-            return response.ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+            response.channelHandlerContext.write(new DefaultFileRegion(raf.getChannel(),
+                                                                       contentStart,
+                                                                       expectedContentLength));
+            return response.channelHandlerContext.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
         }
     }
 
