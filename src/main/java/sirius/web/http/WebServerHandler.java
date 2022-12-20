@@ -181,7 +181,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         if (isSSL) {
             wc.ssl = true;
         }
-        wc.setCtx(ctx);
+        wc.setChannelHandlerContext(ctx);
         wc.setRequest(req);
         currentCall.get(TaskContext.class).setSystem("HTTP").setJob(wc.getRequestedURI());
 

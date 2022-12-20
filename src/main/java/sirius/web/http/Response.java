@@ -188,7 +188,7 @@ public class Response {
      */
     protected Response(WebContext wc) {
         this.wc = wc;
-        this.ctx = wc.getCtx();
+        this.ctx = wc.getChannelHandlerContext();
     }
 
     /*

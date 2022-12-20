@@ -123,7 +123,7 @@ public class WebContext implements SubContext {
     /**
      * Underlying channel to send and receive data
      */
-    private ChannelHandlerContext ctx;
+    private ChannelHandlerContext channelHandlerContext;
 
     /**
      * Internal attributes which can be set and read back during processing. This will not contain any posted or
@@ -400,9 +400,20 @@ public class WebContext implements SubContext {
      * Provides access to the underlying ChannelHandlerContext
      *
      * @return the underlying channel handler context
+     * @deprecated Use {@link #getChannelHandlerContext()} instead.
      */
-    public ChannelHandlerContext getCtx() {
-        return ctx;
+    @Deprecated
+    public final ChannelHandlerContext getCtx() {
+        return getChannelHandlerContext();
+    }
+
+    /**
+     * Provides access to the underlying ChannelHandlerContext
+     *
+     * @return the underlying channel handler context
+     */
+    public ChannelHandlerContext getChannelHandlerContext() {
+        return channelHandlerContext;
     }
 
     /**
@@ -471,9 +482,20 @@ public class WebContext implements SubContext {
      * Sets the ChannelHandlerContext for this context.
      *
      * @param ctx the channel handler context to use
+     * @deprecated Use {@link #setChannelHandlerContext(ChannelHandlerContext)} instead.
      */
-    protected void setCtx(ChannelHandlerContext ctx) {
-        this.ctx = ctx;
+    @Deprecated
+    protected final void setCtx(ChannelHandlerContext ctx) {
+        setChannelHandlerContext(ctx);
+    }
+
+    /**
+     * Sets the ChannelHandlerContext for this context.
+     *
+     * @param channelHandlerContext the channel handler context to use
+     */
+    protected void setChannelHandlerContext(ChannelHandlerContext channelHandlerContext) {
+        this.channelHandlerContext = channelHandlerContext;
     }
 
     /**
@@ -1043,7 +1065,7 @@ public class WebContext implements SubContext {
      */
     public InetAddress getRemoteIP() {
         if (remoteIp == null) {
-            remoteIp = WebServer.determineRemoteIP(ctx, request);
+            remoteIp = WebServer.determineRemoteIP(channelHandlerContext, request);
         }
         return remoteIp;
     }
