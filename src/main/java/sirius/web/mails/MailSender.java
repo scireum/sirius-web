@@ -427,8 +427,20 @@ public class MailSender {
      *
      * @param languages an array of languages. The first non-empty value is used.
      * @return the builder itself
+     * @deprecated Use {@link #setLanguage(String...)} instead.
      */
-    public MailSender setLang(String... languages) {
+    @Deprecated
+    public final MailSender setLang(String... languages) {
+        return setLanguage(languages);
+    }
+
+    /**
+     * Sets the language used to perform {@link sirius.kernel.nls.NLS} lookups when rendering templates.
+     *
+     * @param languages an array of languages. The first non-empty value is used.
+     * @return the builder itself
+     */
+    public MailSender setLanguage(String... languages) {
         if (languages == null) {
             return this;
         }
