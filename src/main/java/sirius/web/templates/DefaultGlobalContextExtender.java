@@ -58,7 +58,7 @@ public class DefaultGlobalContextExtender implements GlobalContextExtender {
         parameterCollector.collect("isDev", Sirius.isDev());
         parameterCollector.collect("call", ctx.get(WebContext.class));
         parameterCollector.collect("watch", ctx.getWatch());
-        parameterCollector.collect("lang", NLS.getCurrentLang());
+        parameterCollector.collect("lang", NLS.getCurrentLanguage());
         parameterCollector.collect("contentHelper", ContentHelper.INSTANCE);
         parameterCollector.collect("wondergemRoot", wondergemRoot, String.class);
         parameterCollector.collect("tychoRoot", wondergemRoot, String.class);

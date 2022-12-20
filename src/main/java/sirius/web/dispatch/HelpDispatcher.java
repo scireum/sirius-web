@@ -42,7 +42,7 @@ public class HelpDispatcher implements WebDispatcher {
 
     private static final String HELP_PREFIX = "/help";
     private static final int HELP_PREFIX_LENGTH = "/help/".length();
-    private static final Pattern LANG_PATTERN = Pattern.compile("[a-z]{2}");
+    private static final Pattern LANGUAGE_PATTERN = Pattern.compile("[a-z]{2}");
     private static final String PASTA_SUFFIX = ".html.pasta";
 
     @ConfigValue("help.indexTemplate")
@@ -85,7 +85,7 @@ public class HelpDispatcher implements WebDispatcher {
 
         // cut /help/ and try to extract the locale
         Tuple<String, String> langAndTopic = Strings.split(uri.substring(HELP_PREFIX_LENGTH), "/");
-        boolean languageFound = setupLang(langAndTopic.getFirst());
+        boolean languageFound = setupLanguage(langAndTopic.getFirst());
 
         if (!languageFound || Strings.isFilled(langAndTopic.getSecond())) {
             DispatchDecision topicDecision = serveTopic(ctx, uri);
@@ -135,9 +135,9 @@ public class HelpDispatcher implements WebDispatcher {
         }
     }
 
-    private boolean setupLang(String lang) {
-        if (LANG_PATTERN.matcher(lang).matches() && helpSystemLanguageDirectories.contains(lang)) {
-            CallContext.getCurrent().setLang(lang);
+    private boolean setupLanguage(String language) {
+        if (LANGUAGE_PATTERN.matcher(language).matches() && helpSystemLanguageDirectories.contains(language)) {
+            CallContext.getCurrent().setLanguage(language);
             return true;
         }
 

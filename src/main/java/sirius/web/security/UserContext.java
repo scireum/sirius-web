@@ -43,20 +43,20 @@ import java.util.Optional;
 public class UserContext implements SubContext {
 
     /**
-     * The key used to store the current scope in the MDC
+     * The key used to store the current scope in the MDC.
      */
     public static final String MDC_SCOPE = "scope";
     /**
-     * The key used to store the current user id in the MDC
+     * The key used to store the current user id in the MDC.
      */
     public static final String MDC_USER_ID = "userId";
     /**
-     * The key used to store the current user name in the MDC
+     * The key used to store the current username in the MDC.
      */
     public static final String MDC_USER_NAME = "username";
 
     /**
-     * Contains the logger <tt>user</tt> used by the auth framework
+     * Contains the logger <tt>user</tt> used by the auth framework.
      */
     public static final Log LOG = Log.get("user");
 
@@ -83,7 +83,7 @@ public class UserContext implements SubContext {
 
     private ScopeInfo currentScope = null;
     private boolean fetchingCurrentScope = false;
-    private List<Message> msgList = new ArrayList<>();
+    private List<Message> messages = new ArrayList<>();
     private Map<String, String> fieldErrors = new HashMap<>();
     private Map<String, String> fieldErrorMessages = new HashMap<>();
     private boolean addedAdditionalMessages = false;
@@ -122,7 +122,7 @@ public class UserContext implements SubContext {
     /**
      * Returns the helper of the given class for the current scope.
      * <p>
-     * NOTE: This helper is per {@link ScopeInfo} not per {@link UserInfo}! Therefore no user dependent data may be kept
+     * NOTE: This helper is per {@link ScopeInfo} not per {@link UserInfo}! Therefore, no user dependent data may be kept
      * in its state.
      *
      * @param helperType the type of the helper to fetch
@@ -163,10 +163,10 @@ public class UserContext implements SubContext {
     /**
      * Adds a message to the current UserContext.
      *
-     * @param msg the message to add
+     * @param message the message to add
      */
-    public static void message(Message msg) {
-        get().addMessage(msg);
+    public static void message(Message message) {
+        get().addMessage(message);
     }
 
     /**
@@ -182,11 +182,11 @@ public class UserContext implements SubContext {
     /*
      * Loads the current scope from the given web context.
      */
-    private void bindScopeToRequest(WebContext ctx) {
-        if (ctx != null && ctx.isValid() && detector != null) {
-            ScopeInfo scope = detector.detectScope(ctx);
+    private void bindScopeToRequest(WebContext webContext) {
+        if (webContext != null && webContext.isValid() && detector != null) {
+            ScopeInfo scope = detector.detectScope(webContext);
             setCurrentScope(scope);
-            CallContext.getCurrent().setLangIfEmpty(scope.getLang());
+            CallContext.getCurrent().setLanguageIfEmpty(scope.getLanguage());
         } else {
             setCurrentScope(ScopeInfo.DEFAULT_SCOPE);
         }
@@ -195,9 +195,9 @@ public class UserContext implements SubContext {
     /*
      * Loads the current user from the given web context.
      */
-    private void bindUserToRequest(WebContext ctx) {
-        if (ctx != null && ctx.isValid()) {
-            setCurrentUser(getUserManager().bindToRequest(ctx));
+    private void bindUserToRequest(WebContext webContext) {
+        if (webContext != null && webContext.isValid()) {
+            setCurrentUser(getUserManager().bindToRequest(webContext));
         } else {
             setCurrentUser(UserInfo.NOBODY);
         }
@@ -209,11 +209,11 @@ public class UserContext implements SubContext {
      * If no user is available (currently logged in) nothing will happen. User {@link #getUser()}
      * to fully bind a user and attempt a login.
      *
-     * @param ctx the current web context to bind against
+     * @param webContext the current web context to bind against
      * @return the user which was found in the session or an empty optional if none is present
      */
-    public Optional<UserInfo> bindUserIfPresent(WebContext ctx) {
-        if (ctx == null || !ctx.isValid()) {
+    public Optional<UserInfo> bindUserIfPresent(WebContext webContext) {
+        if (webContext == null || !webContext.isValid()) {
             return Optional.empty();
         }
 
@@ -228,7 +228,7 @@ public class UserContext implements SubContext {
         }
 
         UserManager manager = getUserManager();
-        UserInfo user = manager.findUserForRequest(ctx);
+        UserInfo user = manager.findUserForRequest(webContext);
         if (user.isLoggedIn()) {
             setCurrentUser(user);
             return Optional.of(user);
@@ -267,7 +267,7 @@ public class UserContext implements SubContext {
         CallContext call = CallContext.getCurrent();
         call.addToMDC(MDC_USER_ID, currentUser::getUserId);
         call.addToMDC(MDC_USER_NAME, currentUser::getUserName);
-        call.setLangIfEmpty(currentUser.getLang());
+        call.setLanguageIfEmpty(currentUser.getLanguage());
     }
 
     /**
@@ -282,11 +282,11 @@ public class UserContext implements SubContext {
         UserInfo lastUser = getCurrentUser();
         CallContext call = CallContext.getCurrent();
         try {
-            call.resetLang();
+            call.resetLanguage();
             setCurrentUser(user);
             section.run();
         } finally {
-            call.resetLang();
+            call.resetLanguage();
             setCurrentUser(lastUser);
         }
     }
@@ -294,10 +294,10 @@ public class UserContext implements SubContext {
     /**
      * Adds a message to be shown to the user.
      *
-     * @param msg the message to be shown to the user
+     * @param message the message to be shown to the user
      */
-    public void addMessage(Message msg) {
-        msgList.add(msg);
+    public void addMessage(Message message) {
+        messages.add(message);
     }
 
     /**
@@ -320,7 +320,7 @@ public class UserContext implements SubContext {
             messageProviders.forEach(provider -> provider.addMessages(this::addMessage));
         }
 
-        return Collections.unmodifiableList(msgList);
+        return Collections.unmodifiableList(messages);
     }
 
     /**
@@ -329,7 +329,7 @@ public class UserContext implements SubContext {
      * @return a list of "real" messages which were created while processing the current request
      */
     public List<Message> getUserSpecificMessages() {
-        return Collections.unmodifiableList(msgList);
+        return Collections.unmodifiableList(messages);
     }
 
     /**
@@ -524,12 +524,12 @@ public class UserContext implements SubContext {
      * This can be considered a <tt>logout</tt>.
      */
     public void detachUserFromSession() {
-        WebContext ctx = CallContext.getCurrent().get(WebContext.class);
-        if (!ctx.isValid()) {
+        WebContext webContext = CallContext.getCurrent().get(WebContext.class);
+        if (!webContext.isValid()) {
             return;
         }
         UserManager manager = getUserManager();
-        manager.logout(ctx);
+        manager.logout(webContext);
     }
 
     /**
@@ -558,12 +558,12 @@ public class UserContext implements SubContext {
     @Override
     public SubContext fork() {
         // We return a copy which keeps the same user and scope - but which can be change independently.
-        // Otherwise a UserContext.runAs(...) which forks a task, would run into trouble as the
+        // Otherwise, a UserContext.runAs(...) which forks a task, would run into trouble as the
         // context is immediately switched back.
         UserContext child = new UserContext();
         child.currentUser = currentUser;
         child.currentScope = currentScope;
-        child.msgList = msgList;
+        child.messages = messages;
         child.fieldErrors = fieldErrors;
         child.fieldErrorMessages = fieldErrorMessages;
         child.addedAdditionalMessages = addedAdditionalMessages;
