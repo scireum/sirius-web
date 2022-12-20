@@ -410,7 +410,7 @@ public abstract class GenericUserManager implements UserManager {
                                .withUsername(computeUsername(webContext, userId.asString()))
                                .withTenantId(tenantId)
                                .withTenantName(computeTenantname(webContext, tenantId))
-                               .withLang(computeLang(webContext, userId.asString()))
+                               .withLanguage(computeLang(webContext, userId.asString()))
                                .withPermissions(roles)
                                .withSettingsSupplier(user -> getUserSettings(getScopeSettings(), user))
                                .withSubScopeCheck(this::checkSubScope)

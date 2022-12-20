@@ -267,7 +267,7 @@ public class UserContext implements SubContext {
         CallContext call = CallContext.getCurrent();
         call.addToMDC(MDC_USER_ID, currentUser::getUserId);
         call.addToMDC(MDC_USER_NAME, currentUser::getUserName);
-        call.setLanguageIfEmpty(currentUser.getLang());
+        call.setLanguageIfEmpty(currentUser.getLanguage());
     }
 
     /**

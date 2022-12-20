@@ -49,7 +49,7 @@ public class UserInfo extends Composable {
     protected String tenantName;
     protected String userId;
     protected String username;
-    protected String lang;
+    protected String language;
     protected Set<String> permissions = new HashSet<>();
     protected boolean hasEveryPermission = false;
     protected Supplier<String> nameAppendixSupplier;
@@ -88,7 +88,7 @@ public class UserInfo extends Composable {
          * @return the builder itself for fluent method calls
          */
         public static Builder withUser(@Nonnull UserInfo info) {
-            return createUser(info.getUserId()).withLang(info.getLang())
+            return createUser(info.getUserId()).withLanguage(info.getLanguage())
                                                .withUsername(info.getUserName())
                                                .withNameAppendixSupplier(info.getNameAppendixSupplier())
                                                .withTenantId(info.getTenantId())
@@ -170,7 +170,7 @@ public class UserInfo extends Composable {
          */
         public Builder withLanguage(String language) {
             verifyState();
-            user.lang = language;
+            user.language = language;
             return this;
         }
 
@@ -311,7 +311,7 @@ public class UserInfo extends Composable {
      * @return the two-letter language code of the user
      */
     public String getLanguage() {
-        return lang;
+        return language;
     }
 
     /**
