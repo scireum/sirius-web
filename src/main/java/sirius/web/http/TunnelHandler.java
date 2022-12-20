@@ -73,7 +73,7 @@ public class TunnelHandler implements AsyncHandler<String> {
     private final Processor<ByteBuf, Optional<ByteBuf>> transformer;
     private final IntConsumer failureHandler;
     private final Consumer<TunnelHandler> completionHandler;
-    private final CallContext cc;
+    private final CallContext callContext;
     private final Watch watch;
     private volatile long timeToDns = -1;
     private volatile long timeToConnectAttempt = -1;
@@ -100,7 +100,7 @@ public class TunnelHandler implements AsyncHandler<String> {
         this.transformer = transformer;
         this.failureHandler = failureHandler;
         this.completionHandler = completionHandler;
-        this.cc = CallContext.getCurrent();
+        this.callContext = CallContext.getCurrent();
         this.watch = Watch.start();
     }
 
@@ -133,7 +133,7 @@ public class TunnelHandler implements AsyncHandler<String> {
     public State onStatusReceived(org.asynchttpclient.HttpResponseStatus status) throws Exception {
         logTiming(status);
 
-        CallContext.setCurrent(cc);
+        CallContext.setCurrent(callContext);
 
         if (WebServer.LOG.isFINE()) {
             WebServer.LOG.FINE("Tunnel - STATUS %s for %s",
@@ -155,8 +155,8 @@ public class TunnelHandler implements AsyncHandler<String> {
         if (status.getStatusCode() >= 400 && failureHandler != null) {
             try {
                 failureHandler.accept(status.getStatusCode());
-            } catch (Exception t) {
-                response.error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
+            } catch (Exception exception) {
+                response.error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, exception));
             }
         } else {
             // Even not technically an error, status codes 300..399 are handled here,
@@ -170,7 +170,7 @@ public class TunnelHandler implements AsyncHandler<String> {
 
     @Override
     public State onHeadersReceived(HttpHeaders httpHeaders) throws Exception {
-        CallContext.setCurrent(cc);
+        CallContext.setCurrent(callContext);
 
         if (webContext.responseCommitted) {
             if (WebServer.LOG.isFINE()) {
@@ -255,8 +255,8 @@ public class TunnelHandler implements AsyncHandler<String> {
             return WebServer.parseDateHeader(entry.getValue())
                             .map(date -> date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
                             .orElse(0L);
-        } catch (Exception e) {
-            Exceptions.ignore(e);
+        } catch (Exception ignored) {
+            Exceptions.ignore(ignored);
             return 0;
         }
     }
@@ -264,7 +264,7 @@ public class TunnelHandler implements AsyncHandler<String> {
     @Override
     public State onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
         try {
-            CallContext.setCurrent(cc);
+            CallContext.setCurrent(callContext);
 
             if (WebServer.LOG.isFINE()) {
                 WebServer.LOG.FINE("Tunnel - CHUNK: %s for %s (Last: %s)",
@@ -302,11 +302,11 @@ public class TunnelHandler implements AsyncHandler<String> {
             }
 
             return State.CONTINUE;
-        } catch (HandledException e) {
-            Exceptions.ignore(e);
+        } catch (HandledException ignored) {
+            Exceptions.ignore(ignored);
             return State.ABORT;
-        } catch (Exception e) {
-            Exceptions.handle(e);
+        } catch (Exception exception) {
+            Exceptions.handle(exception);
             return State.ABORT;
         }
     }
@@ -396,7 +396,7 @@ public class TunnelHandler implements AsyncHandler<String> {
             return "";
         }
 
-        CallContext.setCurrent(cc);
+        CallContext.setCurrent(callContext);
 
         if (WebServer.LOG.isFINE()) {
             WebServer.LOG.FINE("Tunnel - COMPLETE for %s", webContext.getRequestedURI());
@@ -447,10 +447,10 @@ public class TunnelHandler implements AsyncHandler<String> {
                                              .map(param -> param + ": " + Strings.limit(webContext.get(param)
                                                                                                   .asString(), 50))
                                              .collect(Collectors.joining("\n")),
-                                   cc);
+                                   callContext);
             }
-        } catch (Exception e) {
-            Exceptions.handle(e);
+        } catch (Exception exception) {
+            Exceptions.handle(exception);
         }
     }
 
@@ -463,15 +463,15 @@ public class TunnelHandler implements AsyncHandler<String> {
     }
 
     @Override
-    public void onThrowable(Throwable t) {
-        CallContext.setCurrent(cc);
+    public void onThrowable(Throwable throwable) {
+        CallContext.setCurrent(callContext);
 
         WebServer.LOG.WARN("Tunnel - ERROR %s for tunneling to '%s' performed at '%s'",
-                           t.getMessage() + " (" + t.getClass().getName() + ")",
+                           throwable.getMessage() + " (" + throwable.getClass().getName() + ")",
                            url,
                            webContext.getRequestedURI());
 
-        if (t instanceof ClosedChannelException) {
+        if (throwable instanceof ClosedChannelException) {
             failed = true;
             if (completionHandler != null) {
                 completionHandler.accept(this);
@@ -489,11 +489,11 @@ public class TunnelHandler implements AsyncHandler<String> {
             if (completionHandler != null) {
                 completionHandler.accept(this);
             }
-        } catch (Exception e) {
-            Exceptions.handle(WebServer.LOG, e);
+        } catch (Exception exception) {
+            Exceptions.handle(WebServer.LOG, exception);
         }
         if (!failed) {
-            response.error(HttpResponseStatus.valueOf(responseCode), Exceptions.handle(WebServer.LOG, t));
+            response.error(HttpResponseStatus.valueOf(responseCode), Exceptions.handle(WebServer.LOG, throwable));
         }
     }
 

@@ -82,10 +82,10 @@ public class ChunkedOutputStream extends OutputStream {
                 if (contentionControl) {
                     writeFuture.await(60, TimeUnit.SECONDS);
                 }
-            } catch (InterruptedException e) {
+            } catch (InterruptedException exception) {
                 Exceptions.handle()
                           .to(WebServer.LOG)
-                          .error(e)
+                          .error(exception)
                           .withSystemErrorMessage("Got interrupted while waiting for data to be flushed: % (%s)")
                           .handle();
 
