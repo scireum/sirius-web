@@ -29,7 +29,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URI;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -253,10 +252,10 @@ public class TestResponse extends Response {
     private void completeResponse() {
         innerCallContext = CallContext.getCurrent();
         responsePromise.success(this);
-        wc.responseCompleted = true;
+        webContext.responseCompleted = true;
 
-        if (wc.completionPromise != null) {
-            wc.completionPromise.success(status.code());
+        if (webContext.completionPromise != null) {
+            webContext.completionPromise.success(status.code());
         }
     }
 

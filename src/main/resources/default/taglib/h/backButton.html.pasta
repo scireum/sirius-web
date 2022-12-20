@@ -1,6 +1,6 @@
 <i:arg type="String" name="titleKey" default="Help.back"/>
 <i:arg type="String" name="title" default="@i18n(titleKey)"/>
-<i:arg type="String" name="backUrl" default="@apply('/help/%s', NLS.getCurrentLang())"/>
+<i:arg type="String" name="backUrl" default="@apply('/help/%s', NLS.getCurrentLanguage())"/>
 
 <i:pragma name="description" value="Provides a back button for the help system"/>
 

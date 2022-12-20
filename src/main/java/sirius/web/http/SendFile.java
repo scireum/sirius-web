@@ -38,7 +38,7 @@ class SendFile {
 
     private final Response response;
     private File file;
-    private RandomAccessFile raf;
+    private RandomAccessFile randomAccessFile;
     private String contentType;
     private long contentStart;
     private long expectedContentLength;
@@ -61,7 +61,7 @@ class SendFile {
                 return;
             }
 
-            raf = new RandomAccessFile(file, "r");
+            randomAccessFile = new RandomAccessFile(file, "r");
             response.setDateAndCacheHeaders(file.lastModified(),
                                             response.cacheSeconds == null ? Response.HTTP_CACHE : response.cacheSeconds,
                                             response.isPrivate);
@@ -75,8 +75,8 @@ class SendFile {
                 response.setContentDisposition(response.name, response.download);
             }
             sendFileResponse();
-        } catch (Exception e) {
-            response.internalServerError("File: " + file.getAbsolutePath(), e);
+        } catch (Exception exception) {
+            response.internalServerError("File: " + file.getAbsolutePath(), exception);
         }
     }
 
@@ -84,8 +84,8 @@ class SendFile {
         try {
             response.addHeaderIfNotExists(HttpHeaderNames.ACCEPT_RANGES, HttpHeaderValues.BYTES);
             contentStart = 0;
-            expectedContentLength = raf.length();
-            range = parseRange(raf.length());
+            expectedContentLength = randomAccessFile.length();
+            range = parseRange(randomAccessFile.length());
             if (range == null) {
                 response.addHeaderIfNotExists(HttpHeaderNames.CONTENT_LENGTH, expectedContentLength);
             } else {
@@ -93,12 +93,17 @@ class SendFile {
                 expectedContentLength = range.getSecond() - range.getFirst() + 1;
                 response.setHeader(HttpHeaderNames.CONTENT_LENGTH, expectedContentLength);
                 response.setHeader(HttpHeaderNames.CONTENT_RANGE,
-                                   "bytes " + range.getFirst() + "-" + range.getSecond() + "/" + raf.length());
+                                   "bytes "
+                                   + range.getFirst()
+                                   + "-"
+                                   + range.getSecond()
+                                   + "/"
+                                   + randomAccessFile.length());
             }
 
             return true;
-        } catch (IllegalArgumentException e) {
-            Exceptions.ignore(e);
+        } catch (IllegalArgumentException ignored) {
+            Exceptions.ignore(ignored);
             return false;
         }
     }
@@ -112,7 +117,7 @@ class SendFile {
      * Determines if we're running on SSL
      */
     private boolean isSSL() {
-        return response.ctx.channel().pipeline().get(SslHandler.class) != null;
+        return response.getChannelHandlerContext().channel().pipeline().get(SslHandler.class) != null;
     }
 
     private boolean sendFileResponse() throws IOException {
@@ -127,7 +132,7 @@ class SendFile {
         response.commit(res, false);
         response.installChunkedWriteHandler();
         ChannelFuture writeFuture = executeChunkedWrite();
-        writeFuture.addListener(ignored -> raf.close());
+        writeFuture.addListener(ignored -> randomAccessFile.close());
         response.removedChunkedWriteHandler(writeFuture);
 
         response.complete(writeFuture);
@@ -137,23 +142,29 @@ class SendFile {
     private ChannelFuture executeChunkedWrite() throws IOException {
         if (response.responseChunked) {
             // Send chunks of data which can be compressed
-            response.ctx.write(new HttpChunkedInput(new ChunkedFile(raf,
-                                                                    contentStart,
-                                                                    expectedContentLength,
-                                                                    Response.BUFFER_SIZE)));
-            return response.ctx.writeAndFlush(Unpooled.EMPTY_BUFFER);
+            response.getChannelHandlerContext()
+                    .write(new HttpChunkedInput(new ChunkedFile(randomAccessFile,
+                                                                contentStart,
+                                                                expectedContentLength,
+                                                                Response.BUFFER_SIZE)));
+            return response.getChannelHandlerContext().writeAndFlush(Unpooled.EMPTY_BUFFER);
         } else if (isSSL()) {
-            response.ctx.write(new ChunkedFile(raf, contentStart, expectedContentLength, Response.BUFFER_SIZE));
-            return response.ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+            response.getChannelHandlerContext()
+                    .write(new ChunkedFile(randomAccessFile,
+                                           contentStart,
+                                           expectedContentLength,
+                                           Response.BUFFER_SIZE));
+            return response.getChannelHandlerContext().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
         } else {
             // Send file using zero copy approach!
-            response.ctx.write(new DefaultFileRegion(raf.getChannel(), contentStart, expectedContentLength));
-            return response.ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+            response.getChannelHandlerContext()
+                    .write(new DefaultFileRegion(randomAccessFile.getChannel(), contentStart, expectedContentLength));
+            return response.getChannelHandlerContext().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
         }
     }
 
     private Tuple<Long, Long> parseRange(long availableLength) {
-        String header = response.wc.getHeader(HttpHeaderNames.RANGE);
+        String header = response.getWebContext().getHeader(HttpHeaderNames.RANGE);
         if (Strings.isEmpty(header)) {
             return null;
         }

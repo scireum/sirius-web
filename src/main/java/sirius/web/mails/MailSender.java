@@ -205,7 +205,7 @@ public class MailSender {
 
     /**
      * Specifies the NLS key used to generate the subject line of the mail.
-     * This uses the language specified in {@link #setLang(String...)} if provided
+     * This uses the language specified in {@link #setLanguage(String...)} if provided
      *
      * @param subjectKey the NLS key for the subject line to use.
      * @return the builder itself
@@ -216,7 +216,7 @@ public class MailSender {
 
     /**
      * Specifies the NLS key and optional parameters used to generate the subject line of the mail.
-     * This uses the language specified in {@link #setLang(String...)} if provided
+     * This uses the language specified in {@link #setLanguage(String...)} if provided
      *
      * @param subjectKey    the NLS key for the subject line to use.
      * @param subjectParams the parameters used to format the subject line
@@ -427,8 +427,20 @@ public class MailSender {
      *
      * @param languages an array of languages. The first non-empty value is used.
      * @return the builder itself
+     * @deprecated Use {@link #setLanguage(String...)} instead.
      */
-    public MailSender setLang(String... languages) {
+    @Deprecated
+    public final MailSender setLang(String... languages) {
+        return setLanguage(languages);
+    }
+
+    /**
+     * Sets the language used to perform {@link sirius.kernel.nls.NLS} lookups when rendering templates.
+     *
+     * @param languages an array of languages. The first non-empty value is used.
+     * @return the builder itself
+     */
+    public MailSender setLanguage(String... languages) {
         if (languages == null) {
             return this;
         }
@@ -612,8 +624,10 @@ public class MailSender {
      * Returns the language which is set for the mail for example to set NLS-keys in the context to the right language.
      *
      * @return the language
+     * @deprecated Use {@link #getLanguage()} instead.
      */
-    public String getLang() {
+    @Deprecated
+    public final String getLang() {
         return getLanguage();
     }
 

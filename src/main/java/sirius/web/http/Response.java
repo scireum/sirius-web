@@ -122,12 +122,12 @@ public class Response {
     /*
      * Stores the associated request
      */
-    protected WebContext wc;
+    protected WebContext webContext;
 
     /*
      * Stores the underlying channel
      */
-    protected ChannelHandlerContext ctx;
+    protected ChannelHandlerContext channelHandlerContext;
 
     /*
      * Stores the outgoing headers to be sent
@@ -184,11 +184,11 @@ public class Response {
     /**
      * Creates a new response for the given request.
      *
-     * @param wc the context representing the request for which this response is created
+     * @param webContext the context representing the request for which this response is created
      */
-    protected Response(WebContext wc) {
-        this.wc = wc;
-        this.ctx = wc.getCtx();
+    protected Response(WebContext webContext) {
+        this.webContext = webContext;
+        this.channelHandlerContext = webContext.getChannelHandlerContext();
     }
 
     /*
@@ -227,7 +227,7 @@ public class Response {
      * Takes care of the keep alive logic, cookies and other default headers
      */
     protected DefaultHttpResponse createChunkedResponse(HttpResponseStatus status, boolean keepalive) {
-        if (HttpVersion.HTTP_1_0.equals(wc.getRequest().protocolVersion())) {
+        if (HttpVersion.HTTP_1_0.equals(webContext.getRequest().protocolVersion())) {
             // HTTP 1.0 does not support chunked results...
             return createResponse(status, keepalive);
         }
@@ -258,7 +258,7 @@ public class Response {
         if (responseKeepalive && keepalive && isKeepalive()) {
             response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
         } else {
-            if (!HttpVersion.HTTP_1_0.equals(wc.getRequest().protocolVersion())) {
+            if (!HttpVersion.HTTP_1_0.equals(webContext.getRequest().protocolVersion())) {
                 response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
             }
             responseKeepalive = false;
@@ -275,7 +275,7 @@ public class Response {
         }
 
         response.headers().set(HttpHeaderNames.VARY, HttpHeaderNames.ORIGIN);
-        String requestedOrigin = wc.getHeader(HttpHeaderNames.ORIGIN);
+        String requestedOrigin = webContext.getHeader(HttpHeaderNames.ORIGIN);
         if (Strings.isFilled(requestedOrigin)) {
             response.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, requestedOrigin);
             if (!response.headers().contains(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS)) {
@@ -285,7 +285,7 @@ public class Response {
     }
 
     private void setupCookies(DefaultHttpResponse response) {
-        Collection<Cookie> cookies = wc.getOutCookies(isCacheable(response));
+        Collection<Cookie> cookies = webContext.getOutCookies(isCacheable(response));
         if (cookies != null && !cookies.isEmpty()) {
             response.headers().set(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.LAX.encode(cookies));
         }
@@ -330,8 +330,8 @@ public class Response {
                         WebServer.parseDateHeader(response.headers().get(HttpHeaderNames.EXPIRES)).orElse(null);
                 if (expires != null && LocalDateTime.now().isBefore(expires)) {
                     WebServer.LOG.WARN("A response with 'set-cookie' and 'expires' was created for URI: %s%n%s%n%s",
-                                       wc.getRequestedURI(),
-                                       wc,
+                                       webContext.getRequestedURI(),
+                                       webContext,
                                        ExecutionPoint.snapshot());
                     response.headers().remove(HttpHeaderNames.EXPIRES);
                 }
@@ -342,8 +342,8 @@ public class Response {
                 && !cacheControl.startsWith(HttpHeaderValues.MUST_REVALIDATE.toString())
                 && !cacheControl.startsWith(HttpHeaderValues.NO_STORE.toString())) {
                 WebServer.LOG.WARN("A response with 'set-cookie' and 'cache-control' was created for URI: %s%n%s%n%s",
-                                   wc.getRequestedURI(),
-                                   wc,
+                                   webContext.getRequestedURI(),
+                                   webContext,
                                    ExecutionPoint.snapshot());
                 response.headers().set(HttpHeaderNames.CACHE_CONTROL, NO_CACHE);
             }
@@ -371,33 +371,34 @@ public class Response {
      * Commits the response. Once this was called, no other response can be created for this request (WebContext).
      */
     protected ChannelFuture commit(HttpResponse response, boolean flush) {
-        if (wc.responseCommitted) {
+        if (webContext.responseCommitted) {
             if (response instanceof FullHttpResponse fullHttpResponse) {
                 fullHttpResponse.release();
             }
             throw Exceptions.handle()
                             .to(WebServer.LOG)
                             .error(new IllegalStateException())
-                            .withSystemErrorMessage("Response for %s was already committed!", wc.getRequestedURI())
+                            .withSystemErrorMessage("Response for %s was already committed!",
+                                                    webContext.getRequestedURI())
                             .handle();
         }
         if (WebServer.LOG.isFINE()) {
-            WebServer.LOG.FINE("COMMITTING: " + wc.getRequestedURI());
+            WebServer.LOG.FINE("COMMITTING: " + webContext.getRequestedURI());
         }
 
         // If the request has not been fully read, now is the time to discard all
         // data, as most HTTP clients do not accept a response while uploading data.
         // -> This mostly happened when handling an exception in a pre-dispatchable
         // controller...
-        if (wc.contentHandler != null) {
-            wc.contentHandler.exhaust();
+        if (webContext.contentHandler != null) {
+            webContext.contentHandler.exhaust();
         }
 
         responseCode = response.status().code();
-        wc.responseCommitted = true;
-        wc.committed = System.currentTimeMillis();
-        wc.releaseContentHandler();
-        return flush ? ctx.writeAndFlush(response) : ctx.write(response);
+        webContext.responseCommitted = true;
+        webContext.committed = System.currentTimeMillis();
+        webContext.releaseContentHandler();
+        return flush ? channelHandlerContext.writeAndFlush(response) : channelHandlerContext.write(response);
     }
 
     /**
@@ -406,7 +407,16 @@ public class Response {
      * @return the HTTP request for which this response was created
      */
     public WebContext getWebContext() {
-        return wc;
+        return webContext;
+    }
+
+    /**
+     * Provides access to the channel handler context.
+     *
+     * @return the channel handler context
+     */
+    protected ChannelHandlerContext getChannelHandlerContext() {
+        return channelHandlerContext;
     }
 
     /**
@@ -423,23 +433,24 @@ public class Response {
      * Determines if keepalive is requested by the client and wanted by the server
      */
     private boolean isKeepalive() {
-        return HttpUtil.isKeepAlive(wc.getRequest()) && ((WebServerHandler) ctx.handler()).shouldKeepAlive();
+        return HttpUtil.isKeepAlive(webContext.getRequest())
+               && ((WebServerHandler) channelHandlerContext.handler()).shouldKeepAlive();
     }
 
     /*
      * Completes the response and closes the underlying channel if necessary
      */
     private void complete(ChannelFuture future, final boolean supportKeepalive) {
-        if (wc.responseCompleted) {
-            WebServer.LOG.FINE("Response for %s was already completed!", wc.getRequestedURI());
+        if (webContext.responseCompleted) {
+            WebServer.LOG.FINE("Response for %s was already completed!", webContext.getRequestedURI());
             return;
         }
-        wc.responseCompleted = true;
-        if (wc.completionPromise != null) {
-            wc.completionPromise.success(responseCode);
+        webContext.responseCompleted = true;
+        if (webContext.completionPromise != null) {
+            webContext.completionPromise.success(responseCode);
         }
         if (WebServer.LOG.isFINE()) {
-            WebServer.LOG.FINE("COMPLETING: " + wc.getRequestedURI());
+            WebServer.LOG.FINE("COMPLETING: " + webContext.getRequestedURI());
         }
         // If we're still confident, that keepalive is supported, and we announced this in the response header,
         // we'll keep the connection open. Otherwise, it will be closed by the server
@@ -449,29 +460,29 @@ public class Response {
     }
 
     private void onCompleteCompleted(CallContext callContext, boolean keepalive, ChannelFuture future) {
-        if (wc.completionCallback != null) {
+        if (webContext.completionCallback != null) {
             try {
-                wc.completionCallback.invoke(callContext);
+                webContext.completionCallback.invoke(callContext);
             } catch (Exception e) {
                 Exceptions.handle(WebServer.LOG, e);
             }
         }
-        wc.release();
+        webContext.release();
         updateResponseTimeMetrics(callContext);
         handleKeepalive(keepalive, future);
     }
 
     private void updateResponseTimeMetrics(CallContext callContext) {
-        if (wc.microtimingKey != null && Microtiming.isEnabled()) {
-            callContext.getWatch().submitMicroTiming("HTTP", WebServer.microtimingMode.getMicrotimingKey(wc));
+        if (webContext.microtimingKey != null && Microtiming.isEnabled()) {
+            callContext.getWatch().submitMicroTiming("HTTP", WebServer.microtimingMode.getMicrotimingKey(webContext));
         }
-        if (wc.isLongCall() || wc.scheduled == 0) {
+        if (webContext.isLongCall() || webContext.scheduled == 0) {
             // No response time measurement for long-running or aborted requests...
             return;
         }
-        long queuedMillis = wc.scheduled - wc.started;
-        long ttfbMillis = wc.getTTFBMillis();
-        long responseTimeMillis = System.currentTimeMillis() - wc.started;
+        long queuedMillis = webContext.scheduled - webContext.started;
+        long ttfbMillis = webContext.getTTFBMillis();
+        long responseTimeMillis = System.currentTimeMillis() - webContext.started;
 
         WebServer.queueTime.addValue(queuedMillis);
         WebServer.timeToFirstByte.addValue(ttfbMillis);
@@ -487,15 +498,15 @@ public class Response {
                                + "%n%s"
                                + "%nMDC:"
                                + "%n%s%n",
-                               wc.getRequestedURI(),
+                               webContext.getRequestedURI(),
                                NLS.convertDuration(responseTimeMillis, true, true),
                                NLS.convertDuration(queuedMillis, true, true),
                                NLS.convertDuration(ttfbMillis, true, true),
-                               wc.getRequestedURL(),
-                               wc.getParameterNames()
-                                 .stream()
-                                 .map(param -> param + ": " + censor(param))
-                                 .collect(Collectors.joining("\n")),
+                               webContext.getRequestedURL(),
+                               webContext.getParameterNames()
+                                         .stream()
+                                         .map(param -> param + ": " + censor(param))
+                                         .collect(Collectors.joining("\n")),
                                callContext);
         }
     }
@@ -505,19 +516,19 @@ public class Response {
         if (CENSORED_LOWERCASE_PARAMETER_NAMES.contains(parameterName.toLowerCase())) {
             return "(censored)";
         } else {
-            return Strings.limit(wc.get(parameterName).asString(), 50);
+            return Strings.limit(webContext.get(parameterName).asString(), 50);
         }
     }
 
     private void handleKeepalive(boolean keepalive, ChannelFuture future) {
         if (!keepalive) {
             if (WebServer.LOG.isFINE()) {
-                WebServer.LOG.FINE("CLOSING: " + wc.getRequestedURI());
+                WebServer.LOG.FINE("CLOSING: " + webContext.getRequestedURI());
             }
             future.channel().close();
         } else {
             if (WebServer.LOG.isFINE()) {
-                WebServer.LOG.FINE("KEEP-ALIVE: " + wc.getRequestedURI());
+                WebServer.LOG.FINE("KEEP-ALIVE: " + webContext.getRequestedURI());
             }
             if (WebServer.keepalives.incrementAndGet() < 0) {
                 WebServer.keepalives.set(0);
@@ -757,7 +768,7 @@ public class Response {
      * @param url the URL to redirect to
      */
     public void redirectTemporarily(String url) {
-        if (HttpVersion.HTTP_1_0.equals(wc.getRequest().protocolVersion())) {
+        if (HttpVersion.HTTP_1_0.equals(webContext.getRequest().protocolVersion())) {
             // Fallback to HTTP/1.0 code 302 found, which does mostly the same job but has a bad image due to
             // URL hijacking via faulty search engines. The main difference is that 307 will enforce the browser
             // to use the same method for the request to the reported location. Where as 302 doesn't specify which
@@ -765,7 +776,7 @@ public class Response {
             redirectToGet(url);
         } else {
             if (cacheSeconds == null || cacheSeconds == 0) {
-                userMessagesCache.cacheUserMessages(wc);
+                userMessagesCache.cacheUserMessages(webContext);
             }
 
             // Prefer the HTTP/1.1 code 307 as temporary redirect
@@ -787,7 +798,7 @@ public class Response {
      */
     public void redirectToGet(String url) {
         if (cacheSeconds == null || cacheSeconds == 0) {
-            userMessagesCache.cacheUserMessages(wc);
+            userMessagesCache.cacheUserMessages(webContext);
         }
 
         HttpResponse response = createFullResponse(HttpResponseStatus.FOUND, true, Unpooled.EMPTY_BUFFER);
@@ -802,7 +813,7 @@ public class Response {
      */
     public void redirectPermanently(String url) {
         if (cacheSeconds == null || cacheSeconds == 0) {
-            userMessagesCache.cacheUserMessages(wc);
+            userMessagesCache.cacheUserMessages(webContext);
         }
 
         HttpResponse response = createFullResponse(HttpResponseStatus.MOVED_PERMANENTLY, true, Unpooled.EMPTY_BUFFER);
@@ -814,7 +825,7 @@ public class Response {
      * Determines if the current request should be compressed or not
      */
     protected boolean canBeCompressed(String contentType) {
-        String acceptEncoding = wc.getRequest().headers().get(HttpHeaderNames.ACCEPT_ENCODING);
+        String acceptEncoding = webContext.getRequest().headers().get(HttpHeaderNames.ACCEPT_ENCODING);
         if (acceptEncoding == null || (!acceptEncoding.contains(HttpHeaderValues.GZIP) && !acceptEncoding.contains(
                 HttpHeaderValues.DEFLATE))) {
             return false;
@@ -823,15 +834,17 @@ public class Response {
     }
 
     protected void installChunkedWriteHandler() {
-        if (ctx.channel().pipeline().get(ChunkedWriteHandler.class) == null && ctx.channel().isOpen()) {
-            ctx.channel().pipeline().addBefore("handler", "chunkedWriter", new ChunkedWriteHandler());
+        if (channelHandlerContext.channel().pipeline().get(ChunkedWriteHandler.class) == null
+            && channelHandlerContext.channel().isOpen()) {
+            channelHandlerContext.channel().pipeline().addBefore("handler", "chunkedWriter", new ChunkedWriteHandler());
         }
     }
 
     protected void removedChunkedWriteHandler(ChannelFuture writeFuture) {
         writeFuture.addListener(ignored -> {
-            if (ctx.channel().pipeline().get(ChunkedWriteHandler.class) != null && ctx.channel().isOpen()) {
-                ctx.pipeline().remove(ChunkedWriteHandler.class);
+            if (channelHandlerContext.channel().pipeline().get(ChunkedWriteHandler.class) != null
+                && channelHandlerContext.channel().isOpen()) {
+                channelHandlerContext.pipeline().remove(ChunkedWriteHandler.class);
             }
         });
     }
@@ -861,8 +874,8 @@ public class Response {
                 error(HttpResponseStatus.INTERNAL_SERVER_ERROR, handledException);
             } else {
                 String requestUri = "?";
-                if (wc != null && wc.getRequest() != null) {
-                    requestUri = wc.getRequest().uri();
+                if (webContext != null && webContext.getRequest() != null) {
+                    requestUri = webContext.getRequest().uri();
                 }
                 Exceptions.handle()
                           .to(WebServer.LOG)
@@ -981,13 +994,14 @@ public class Response {
             commit(response);
             installChunkedWriteHandler();
             if (responseChunked) {
-                ctx.write(new HttpChunkedInput(new ChunkedStream(urlConnection.getInputStream(), BUFFER_SIZE)));
-                ChannelFuture writeFuture = ctx.writeAndFlush(Unpooled.EMPTY_BUFFER);
+                channelHandlerContext.write(new HttpChunkedInput(new ChunkedStream(urlConnection.getInputStream(),
+                                                                                   BUFFER_SIZE)));
+                ChannelFuture writeFuture = channelHandlerContext.writeAndFlush(Unpooled.EMPTY_BUFFER);
                 removedChunkedWriteHandler(writeFuture);
                 complete(writeFuture);
             } else {
-                ctx.write(new ChunkedStream(urlConnection.getInputStream(), BUFFER_SIZE));
-                ChannelFuture writeFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+                channelHandlerContext.write(new ChunkedStream(urlConnection.getInputStream(), BUFFER_SIZE));
+                ChannelFuture writeFuture = channelHandlerContext.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
                 removedChunkedWriteHandler(writeFuture);
                 complete(writeFuture);
             }
@@ -1046,17 +1060,18 @@ public class Response {
      */
     public void error(HttpResponseStatus status, String message) {
         try {
-            if (wc.responseCommitted) {
-                if (ctx.channel().isOpen()) {
-                    ctx.channel().close();
+            if (webContext.responseCommitted) {
+                if (channelHandlerContext.channel().isOpen()) {
+                    channelHandlerContext.channel().close();
                 }
                 return;
             }
-            if (!ctx.channel().isWritable()) {
-                ctx.channel().close();
+            if (!channelHandlerContext.channel().isWritable()) {
+                channelHandlerContext.channel().close();
                 return;
             }
-            if (HttpMethod.HEAD.equals(wc.getRequest().method()) || HttpResponseStatus.NOT_MODIFIED.equals(status)) {
+            if (HttpMethod.HEAD.equals(webContext.getRequest().method()) || HttpResponseStatus.NOT_MODIFIED.equals(
+                    status)) {
                 status(status);
                 return;
             }
@@ -1103,18 +1118,18 @@ public class Response {
                                                                 + "URL: %s - %s (%s)",
                                                                 status == null ? "null" : status.code(),
                                                                 message,
-                                                                wc == null || wc.getRequest() == null ?
+                                                                webContext == null || webContext.getRequest() == null ?
                                                                 "?" :
-                                                                wc.getRequest().uri())
+                                                                webContext.getRequest().uri())
                                         .handle();
 
-        if (wc == null || wc.responseCommitted) {
-            if (ctx.channel().isOpen()) {
-                ctx.channel().close();
+        if (webContext == null || webContext.responseCommitted) {
+            if (channelHandlerContext.channel().isOpen()) {
+                channelHandlerContext.channel().close();
             }
             return;
         }
-        if (!ctx.channel().isWritable()) {
+        if (!channelHandlerContext.channel().isWritable()) {
             return;
         }
 
@@ -1216,7 +1231,7 @@ public class Response {
      * @see #template(HttpResponseStatus, String, Object...)
      */
     public void template(HttpResponseStatus status, Template template, Object... params) {
-        wc.enableTiming(null);
+        webContext.enableTiming(null);
         try {
             Object[] effectiveParams = fixParams(params);
             GlobalRenderContext renderContext = engine.createRenderContext();
@@ -1468,13 +1483,13 @@ public class Response {
             BoundRequestBuilder brb = getAsyncClient().prepareGet(url);
 
             // Adds support for detecting stale cache contents via if-modified-since...
-            WebServer.parseDateHeader(wc.getHeader(HttpHeaderNames.IF_MODIFIED_SINCE))
+            WebServer.parseDateHeader(webContext.getHeader(HttpHeaderNames.IF_MODIFIED_SINCE))
                      .ifPresent(ifModifiedSince -> brb.addHeader(HttpHeaderNames.IF_MODIFIED_SINCE.toString(),
                                                                  ifModifiedSince.atZone(ZoneId.systemDefault())
                                                                                 .format(Outcall.RFC2616_INSTANT)));
 
             // Support range requests...
-            String range = wc.getHeader(HttpHeaderNames.RANGE);
+            String range = webContext.getHeader(HttpHeaderNames.RANGE);
             if (Strings.isFilled(range)) {
                 brb.addHeader(HttpHeaderNames.RANGE.toString(), range);
             }
@@ -1525,8 +1540,8 @@ public class Response {
      * @return a structured output which will be sent as JSON response
      */
     public JSONStructuredOutput json(HttpResponseStatus status) {
-        String callback = wc.get("callback").getString();
-        String encoding = wc.get("encoding").first().asString(StandardCharsets.UTF_8.name());
+        String callback = webContext.get("callback").getString();
+        String encoding = webContext.get("encoding").first().asString(StandardCharsets.UTF_8.name());
         String mimeType = Strings.isFilled(callback) ? "application/javascript" : MimeHelper.APPLICATION_JSON;
         return new JSONStructuredOutput(outputStream(status, mimeType + ";charset=" + encoding), callback, encoding);
     }
@@ -1569,9 +1584,10 @@ public class Response {
      * @return an output stream which will be sent as response
      */
     public ChunkedOutputStream outputStream(HttpResponseStatus status, @Nullable String contentType) {
-        if (wc.responseCommitted) {
+        if (webContext.responseCommitted) {
             throw Exceptions.createHandled()
-                            .withSystemErrorMessage("Response for %s was already committed!", wc.getRequestedURI())
+                            .withSystemErrorMessage("Response for %s was already committed!",
+                                                    webContext.getRequestedURI())
                             .handle();
         }
 
@@ -1584,11 +1600,11 @@ public class Response {
 
     @Override
     public String toString() {
-        return "Response for: " + wc.toString();
+        return "Response for: " + webContext.toString();
     }
 
     private GlobalRenderContext.DebugLevel fetchDebugLevel() {
-        return Optional.ofNullable(wc.getCookie(SIRIUS_DEBUG_COOKIE))
+        return Optional.ofNullable(webContext.getCookie(SIRIUS_DEBUG_COOKIE))
                        .map(cookie -> Value.of(cookie.value().toUpperCase())
                                            .asEnum(GlobalRenderContext.DebugLevel.class))
                        .orElse(GlobalRenderContext.DebugLevel.OFF);

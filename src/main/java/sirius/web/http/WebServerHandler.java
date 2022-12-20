@@ -113,17 +113,17 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
      * Used when this handler is bound to an incoming connection
      */
     @Override
-    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+    public void channelRegistered(ChannelHandlerContext channelHandlerContext) throws Exception {
         WebServer.addOpenConnection(this);
-        this.remoteAddress = ctx.channel().remoteAddress();
-        super.channelRegistered(ctx);
+        this.remoteAddress = channelHandlerContext.channel().remoteAddress();
+        super.channelRegistered(channelHandlerContext);
     }
 
     /*
      * Get notified about each exception which occurs while processing channel events
      */
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable e) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext channelHandlerContext, Throwable exception) throws Exception {
         if (currentCall != null) {
             CallContext.setCurrent(currentCall);
         }
@@ -133,24 +133,24 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             uri = currentContext.getRequest().uri();
         }
 
-        if (e instanceof SSLHandshakeException || e.getCause() instanceof SSLHandshakeException) {
-            SSLWebServerInitializer.LOG.FINE(e);
-        } else if (e instanceof IOException || e instanceof DecoderException) {
-            WebServer.LOG.FINE("Received an error for url: %s - %s", uri, NLS.toUserString(e));
+        if (exception instanceof SSLHandshakeException || exception.getCause() instanceof SSLHandshakeException) {
+            SSLWebServerInitializer.LOG.FINE(exception);
+        } else if (exception instanceof IOException || exception instanceof DecoderException) {
+            WebServer.LOG.FINE("Received an error for url: %s - %s", uri, NLS.toUserString(exception));
         } else {
             Exceptions.handle()
                       .to(WebServer.LOG)
-                      .error(e)
+                      .error(exception)
                       .withSystemErrorMessage("Received an error for %s - %s (%s)", uri)
                       .handle();
         }
 
         try {
-            if (ctx.channel().isOpen()) {
-                ctx.channel().close();
+            if (channelHandlerContext.channel().isOpen()) {
+                channelHandlerContext.channel().close();
             }
-        } catch (Exception t) {
-            Exceptions.ignore(t);
+        } catch (Exception ignored) {
+            Exceptions.ignore(ignored);
         }
         currentRequest = null;
     }
@@ -158,40 +158,43 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     /*
      * Binds the request to the CallContext
      */
-    private WebContext setupContext(ChannelHandlerContext ctx, HttpRequest req) {
-        currentCall = initializeContext(ctx, req, this.ssl);
+    private WebContext setupContext(ChannelHandlerContext channelHandlerContext, HttpRequest request) {
+        currentCall = initializeContext(channelHandlerContext, request, this.ssl);
         return currentCall.get(WebContext.class);
     }
 
     /**
      * Creates a new CallContext for given request.
      *
-     * @param ctx   the current handler
-     * @param req   the current request
-     * @param isSSL true if the current connection is known to be SSL protected
+     * @param channelHandlerContext the current handler
+     * @param request               the current request
+     * @param isSSL                 true if the current connection is known to be SSL protected
      * @return the newly initialized call context
      */
-    protected static CallContext initializeContext(ChannelHandlerContext ctx, HttpRequest req, boolean isSSL) {
+    protected static CallContext initializeContext(ChannelHandlerContext channelHandlerContext,
+                                                   HttpRequest request,
+                                                   boolean isSSL) {
         CallContext currentCall = CallContext.initialize();
-        currentCall.addToMDC("uri", req.uri());
-        WebContext wc = currentCall.get(WebContext.class);
+        currentCall.addToMDC("uri", request.uri());
+        WebContext webContext = currentCall.get(WebContext.class);
         // If we know we're an SSL endpoint, tell the WebContext, otherwise let the null value remain
         // so that the automatic detection (headers set by an upstream proxy like X-Forwarded-Proto)
         // is performed when needed...
         if (isSSL) {
-            wc.ssl = true;
+            webContext.ssl = true;
         }
-        wc.setCtx(ctx);
-        wc.setRequest(req);
-        currentCall.get(TaskContext.class).setSystem("HTTP").setJob(wc.getRequestedURI());
+        webContext.setChannelHandlerContext(channelHandlerContext);
+        webContext.setRequest(request);
+        currentCall.get(TaskContext.class).setSystem("HTTP").setJob(webContext.getRequestedURI());
 
         // Adds a deferred handler to determine the language to i18n stuff.
         // If a user is present, the system will sooner or later detect it and set the appropriate
         // language. If not, this handler will be evaluated, check for a user in the session or
         // if everything else fails, parse the lang header.
-        currentCall.deferredSetLang(callContext -> {
-            if (callContext.get(UserContext.class).bindUserIfPresent(wc).isEmpty()) {
-                callContext.setLangIfEmpty(UserContext.getCurrentScope().makeLang(wc.getLang().orElse(null)));
+        currentCall.deferredSetLanguage(callContext -> {
+            if (callContext.get(UserContext.class).bindUserIfPresent(webContext).isEmpty()) {
+                callContext.setLanguageIfEmpty(UserContext.getCurrentScope()
+                                                          .makeLanguage(webContext.fetchLanguage().orElse(null)));
             }
         });
 
@@ -202,12 +205,12 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
      * Will be notified by the IdleStateHandler if a channel is completely idle for a certain amount of time
      */
     @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt instanceof IdleStateEvent) {
+    public void userEventTriggered(ChannelHandlerContext channelHandlerContext, Object event) throws Exception {
+        if (event instanceof IdleStateEvent) {
             if (currentCall != null) {
                 CallContext.setCurrent(currentCall);
             } else {
-                ctx.channel().close();
+                channelHandlerContext.channel().close();
                 return;
             }
             WebContext wc = currentCall.get(WebContext.class);
@@ -218,7 +221,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                 if (WebServer.idleTimeouts.incrementAndGet() < 0) {
                     WebServer.idleTimeouts.set(0);
                 }
-                ctx.channel().close();
+                channelHandlerContext.channel().close();
             }
         }
     }
@@ -247,7 +250,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
      * independent requests can be handled via one connection
      */
     @Override
-    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
+    public void channelUnregistered(ChannelHandlerContext channelHandlerContext) throws Exception {
         cleanup();
 
         WebServer.removeOpenConnection(this);
@@ -257,67 +260,68 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             CallContext.setCurrent(currentCall);
             CallContext.detach();
         }
-        super.channelUnregistered(ctx);
+        super.channelUnregistered(channelHandlerContext);
     }
 
     /*
      * Notified if a new message is available
      */
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) {
+    public void channelRead(ChannelHandlerContext channelHandlerContext, Object message) {
         try {
             if (latencyWatch != null) {
                 inboundLatency.addValue(latencyWatch.elapsed(TimeUnit.MILLISECONDS, true));
             } else {
                 latencyWatch = Watch.start();
             }
-            if (msg instanceof HttpRequest httpRequest) {
-                channelReadRequest(ctx, httpRequest);
-            } else if (msg instanceof LastHttpContent) {
-                channelReadLastHttpContent(ctx, msg);
-            } else if (msg instanceof HttpContent) {
-                channelReadHttpContent(msg);
+            if (message instanceof HttpRequest httpRequest) {
+                channelReadRequest(channelHandlerContext, httpRequest);
+            } else if (message instanceof LastHttpContent) {
+                channelReadLastHttpContent(channelHandlerContext, message);
+            } else if (message instanceof HttpContent) {
+                channelReadHttpContent(message);
             }
-        } catch (Exception t) {
-            String errorMessage = Exceptions.handle(WebServer.LOG, t).getMessage();
+        } catch (Exception exception) {
+            String errorMessage = Exceptions.handle(WebServer.LOG, exception).getMessage();
             if (currentRequest != null && currentContext != null) {
                 try {
                     if (!currentContext.responseCompleted) {
                         currentContext.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, errorMessage);
                     }
-                } catch (Exception e) {
-                    Exceptions.ignore(e);
+                } catch (Exception ignored) {
+                    Exceptions.ignore(ignored);
                 }
                 currentRequest = null;
             }
-            ctx.channel().close();
+            channelHandlerContext.channel().close();
         }
         processLatency.addValue(latencyWatch.elapsed(TimeUnit.MILLISECONDS, true));
     }
 
-    private void channelReadHttpContent(Object msg) throws IOException {
+    private void channelReadHttpContent(Object message) throws IOException {
         try {
             if (currentRequest == null || currentCall == null) {
-                WebServer.LOG.FINE("Ignoring CHUNK without request: " + msg);
+                WebServer.LOG.FINE("Ignoring CHUNK without request: " + message);
                 return;
             }
-            boolean last = msg instanceof LastHttpContent;
+            boolean last = message instanceof LastHttpContent;
             if (!last && WebServer.chunks.incrementAndGet() < 0) {
                 WebServer.chunks.set(0);
             }
             if (currentContext.contentHandler != null) {
                 CallContext.setCurrent(currentCall);
-                currentContext.contentHandler.handle(((HttpContent) msg).content(), last);
+                currentContext.contentHandler.handle(((HttpContent) message).content(), last);
             } else {
-                processContent((HttpContent) msg);
+                processContent((HttpContent) message);
             }
         } finally {
-            ((HttpContent) msg).release();
+            ((HttpContent) message).release();
         }
     }
 
-    private void channelReadLastHttpContent(ChannelHandlerContext ctx, Object msg) throws Exception {
-        channelReadHttpContent(msg);
+    private void channelReadLastHttpContent(ChannelHandlerContext channelHandlerContext, Object message)
+            throws Exception {
+        channelReadHttpContent(message);
         if (currentRequest != null && currentCall != null) {
             CallContext.setCurrent(currentCall);
             if (!preDispatched) {
@@ -328,8 +332,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                 }
             }
         } else if (!preDispatched) {
-            WebServer.LOG.FINE("Terminating a channel for a last http content without a request: " + msg);
-            ctx.channel().close();
+            WebServer.LOG.FINE("Terminating a channel for a last http content without a request: " + message);
+            channelHandlerContext.channel().close();
         }
     }
 
@@ -351,7 +355,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         return currentRequest.headers().contains(HttpHeaderNames.ACCESS_CONTROL_REQUEST_METHOD);
     }
 
-    private void channelReadRequest(ChannelHandlerContext ctx, HttpRequest msg) {
+    private void channelReadRequest(ChannelHandlerContext channelHandlerContext, HttpRequest message) {
         // Reset stats
         bytesIn.set(0);
         bytesOut.set(0);
@@ -366,72 +370,73 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         preDispatched = false;
         dispatched = false;
 
-        handleRequest(ctx, msg);
+        handleRequest(channelHandlerContext, message);
     }
 
     /*
      * Signals that a bad or incomplete request was received
      */
-    private void signalBadRequest(ChannelHandlerContext ctx) {
+    private void signalBadRequest(ChannelHandlerContext channelHandlerContext) {
         if (WebServer.clientErrors.incrementAndGet() < 0) {
             WebServer.clientErrors.set(0);
         }
-        ctx.writeAndFlush(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST))
-           .addListener(ChannelFutureListener.CLOSE);
+        channelHandlerContext.writeAndFlush(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
+                                                                        HttpResponseStatus.BAD_REQUEST))
+                             .addListener(ChannelFutureListener.CLOSE);
         currentRequest = null;
     }
 
     /*
      * Handles a new request - called once the first chunk of data of a request is available.
      */
-    private void handleRequest(ChannelHandlerContext ctx, HttpRequest req) {
+    private void handleRequest(ChannelHandlerContext channelHandlerContext, HttpRequest request) {
         try {
             if (WebServer.LOG.isFINE()) {
-                WebServer.LOG.FINE("REQUEST: " + req.uri());
+                WebServer.LOG.FINE("REQUEST: " + request.uri());
             }
 
             // Handle a bad request.
-            if (!req.decoderResult().isSuccess()) {
-                signalBadRequest(ctx);
+            if (!request.decoderResult().isSuccess()) {
+                signalBadRequest(channelHandlerContext);
                 return;
             }
-            currentRequest = req;
-            currentContext = setupContext(ctx, req);
+            currentRequest = request;
+            currentContext = setupContext(channelHandlerContext, request);
 
-            processRequest(ctx, req);
-        } catch (Exception t) {
-            Exceptions.handle(WebServer.LOG, t);
+            processRequest(channelHandlerContext, request);
+        } catch (Exception exception) {
+            Exceptions.handle(WebServer.LOG, exception);
             try {
-                ctx.channel().close();
-            } catch (Exception ex) {
-                Exceptions.ignore(ex);
+                channelHandlerContext.channel().close();
+            } catch (Exception ignored) {
+                Exceptions.ignore(ignored);
             }
             cleanup();
             currentRequest = null;
         }
     }
 
-    private void processRequest(ChannelHandlerContext ctx, HttpRequest req) {
+    private void processRequest(ChannelHandlerContext channelHandlerContext, HttpRequest request) {
         try {
-            if (checkIfBlockedByIPFilter(ctx, req)) {
+            if (checkIfBlockedByIPFilter(channelHandlerContext, request)) {
                 return;
             }
 
-            handle100Continue(ctx, req);
+            handle100Continue(channelHandlerContext, request);
 
-            processRequestMethod(req);
-        } catch (Exception t) {
+            processRequestMethod(request);
+        } catch (Exception exception) {
             currentContext.respondWith()
-                          .error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
+                          .error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, exception));
             currentRequest = null;
         }
     }
 
-    private void processRequestMethod(HttpRequest req) throws Exception {
-        if (HttpMethod.POST.equals(req.method()) || HttpMethod.PUT.equals(req.method())) {
+    private void processRequestMethod(HttpRequest request) throws Exception {
+        if (HttpMethod.POST.equals(request.method()) || HttpMethod.PUT.equals(request.method())) {
             preDispatched = preDispatch();
             if (!preDispatched) {
-                setupContentReceiver(req);
+                setupContentReceiver(request);
             }
         } else if (!HttpMethod.GET.equals(currentRequest.method())
                    && !HttpMethod.HEAD.equals(currentRequest.method())
@@ -440,25 +445,25 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             currentContext.respondWith()
                           .error(HttpResponseStatus.BAD_REQUEST,
                                  Strings.apply("Cannot %s as method. Use GET, POST, PUT, HEAD, DELETE, OPTIONS",
-                                               req.method().name()));
+                                               request.method().name()));
             currentRequest = null;
         }
     }
 
-    private void setupContentReceiver(HttpRequest req) throws IOException {
-        String contentType = req.headers().get(HttpHeaderNames.CONTENT_TYPE);
+    private void setupContentReceiver(HttpRequest request) throws IOException {
+        String contentType = request.headers().get(HttpHeaderNames.CONTENT_TYPE);
         if (isDecodeableContent(contentType)) {
             if (WebServer.LOG.isFINE()) {
-                WebServer.LOG.FINE("POST/PUT-FORM: " + req.uri());
+                WebServer.LOG.FINE("POST/PUT-FORM: " + request.uri());
             }
-            HttpPostRequestDecoder postDecoder = new HttpPostRequestDecoder(WebServer.getHttpDataFactory(), req);
+            HttpPostRequestDecoder postDecoder = new HttpPostRequestDecoder(WebServer.getHttpDataFactory(), request);
             currentContext.setPostDecoder(postDecoder);
         } else {
             if (WebServer.LOG.isFINE()) {
-                WebServer.LOG.FINE("POST/PUT-DATA: " + req.uri());
+                WebServer.LOG.FINE("POST/PUT-DATA: " + request.uri());
             }
-            Attribute body = WebServer.getHttpDataFactory().createAttribute(req, "body");
-            if (req instanceof FullHttpRequest fullHttpRequest) {
+            Attribute body = WebServer.getHttpDataFactory().createAttribute(request, "body");
+            if (request instanceof FullHttpRequest fullHttpRequest) {
                 body.setContent(fullHttpRequest.content().retain());
             }
             currentContext.content = body;
@@ -470,12 +475,12 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                                                  || contentType.startsWith("application/x-www-form-urlencoded"));
     }
 
-    private void handle100Continue(ChannelHandlerContext ctx, HttpRequest req) {
-        if (HttpUtil.is100ContinueExpected(req)) {
+    private void handle100Continue(ChannelHandlerContext channelHandlerContext, HttpRequest request) {
+        if (HttpUtil.is100ContinueExpected(request)) {
             if (WebServer.LOG.isFINE()) {
-                WebServer.LOG.FINE("CONTINUE: " + req.uri());
+                WebServer.LOG.FINE("CONTINUE: " + request.uri());
             }
-            send100Continue(ctx);
+            send100Continue(channelHandlerContext);
         }
     }
 
@@ -484,41 +489,41 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
      * we now check again, as the parsed request might contain a X-Forwarded-For header,
      * which contains the effective remote IP to verify.
      *
-     * @param ctx the current channel
-     * @param req the current request
+     * @param channelHandlerContext the current channel
+     * @param request               the current request
      * @return <tt>true</tt> if the request was blocked, false otherwise
      */
-    private boolean checkIfBlockedByIPFilter(ChannelHandlerContext ctx, HttpRequest req) {
+    private boolean checkIfBlockedByIPFilter(ChannelHandlerContext channelHandlerContext, HttpRequest request) {
         if (isBlocked(currentContext)) {
             if (WebServer.blocks.incrementAndGet() < 0) {
                 WebServer.blocks.set(0);
             }
             if (WebServer.LOG.isFINE()) {
-                WebServer.LOG.FINE("BLOCK: " + req.uri());
+                WebServer.LOG.FINE("BLOCK: " + request.uri());
             }
-            ctx.channel().close();
+            channelHandlerContext.channel().close();
             return true;
         }
         return false;
     }
 
-    private boolean isBlocked(WebContext ctx) {
-        if (!WebServer.getIPFilter().isEmpty() && WebServer.getIPFilter().accepts(ctx.getRemoteIP())) {
+    private boolean isBlocked(WebContext webContext) {
+        if (!WebServer.getIPFilter().isEmpty() && WebServer.getIPFilter().accepts(webContext.getRemoteIP())) {
             return true;
         }
 
-        return firewall != null && firewall.isIPBlacklisted(ctx);
+        return firewall != null && firewall.isIPBlacklisted(webContext);
     }
 
     /*
      * Sends an 100 CONTINUE response to conform to the keepalive protocol
      */
-    private void send100Continue(ChannelHandlerContext e) {
+    private void send100Continue(ChannelHandlerContext channelHandlerContext) {
         if (WebServer.LOG.isFINE()) {
             WebServer.LOG.FINE("100 - CONTINUE: " + currentContext.getRequestedURI());
         }
         HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE);
-        e.writeAndFlush(response);
+        channelHandlerContext.writeAndFlush(response);
     }
 
     /*
@@ -568,9 +573,9 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                               .error(HttpResponseStatus.BAD_REQUEST, "Only POST or PUT may sent chunked data");
                 currentRequest = null;
             }
-        } catch (Exception ex) {
+        } catch (Exception exception) {
             currentContext.respondWith()
-                          .error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, ex));
+                          .error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, exception));
             currentRequest = null;
         }
     }

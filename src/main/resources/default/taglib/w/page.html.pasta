@@ -8,7 +8,7 @@
 <i:pragma name="description" value="Provides the base layout for a Wondergem page"/>
 
 <!DOCTYPE html>
-<html lang="@NLS.getCurrentLang()">
+<html lang="@NLS.getCurrentLanguage()">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
     <i:if test="isFilled(config('http.contentSecurityPolicy'))">
