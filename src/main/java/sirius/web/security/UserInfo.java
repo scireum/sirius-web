@@ -155,12 +155,22 @@ public class UserInfo extends Composable {
         /**
          * Sets the language code of the user.
          *
-         * @param lang a two-letter language code which should be understood by {@link sirius.kernel.nls.NLS}.
+         * @param language a two-letter language code which should be understood by {@link sirius.kernel.nls.NLS}.
          * @return the builder itself for fluent method calls
          */
-        public Builder withLang(String lang) {
+        public Builder withLang(String language) {
+            return withLanguage(language);
+        }
+
+        /**
+         * Sets the language code of the user.
+         *
+         * @param language a two-letter language code which should be understood by {@link sirius.kernel.nls.NLS}.
+         * @return the builder itself for fluent method calls
+         */
+        public Builder withLanguage(String language) {
             verifyState();
-            user.lang = lang;
+            user.lang = language;
             return this;
         }
 
@@ -292,6 +302,15 @@ public class UserInfo extends Composable {
      * @return the two-letter language code of the user
      */
     public String getLang() {
+        return getLanguage();
+    }
+
+    /**
+     * The language code of the user.
+     *
+     * @return the two-letter language code of the user
+     */
+    public String getLanguage() {
         return lang;
     }
 
