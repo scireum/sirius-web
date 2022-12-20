@@ -449,11 +449,11 @@ public class MailSender {
      * of invalid settings (bad mail address etc.).
      */
     public void send() {
-        String tmpLang = NLS.getCurrentLang();
+        String tmpLanguage = NLS.getCurrentLanguage();
         try {
             try {
                 if (lang != null) {
-                    CallContext.getCurrent().setLang(lang);
+                    CallContext.getCurrent().setLanguage(lang);
                 }
                 render();
                 buildSubject();
@@ -461,7 +461,7 @@ public class MailSender {
                 check();
                 sendMailAsync();
             } finally {
-                CallContext.getCurrent().setLang(tmpLang);
+                CallContext.getCurrent().setLanguage(tmpLanguage);
             }
         } catch (HandledException e) {
             throw e;

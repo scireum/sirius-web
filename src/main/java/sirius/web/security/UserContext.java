@@ -186,7 +186,7 @@ public class UserContext implements SubContext {
         if (ctx != null && ctx.isValid() && detector != null) {
             ScopeInfo scope = detector.detectScope(ctx);
             setCurrentScope(scope);
-            CallContext.getCurrent().setLangIfEmpty(scope.getLang());
+            CallContext.getCurrent().setLanguageIfEmpty(scope.getLang());
         } else {
             setCurrentScope(ScopeInfo.DEFAULT_SCOPE);
         }
