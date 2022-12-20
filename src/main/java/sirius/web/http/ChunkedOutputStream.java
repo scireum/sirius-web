@@ -66,7 +66,7 @@ public class ChunkedOutputStream extends OutputStream {
 
         failIfChannelIsNotOpen();
 
-        if (!response.wc.responseCommitted) {
+        if (!response.getWebContext().responseCommitted) {
             createResponse(last);
             if (last) {
                 return;

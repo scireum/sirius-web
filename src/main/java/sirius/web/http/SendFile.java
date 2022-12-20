@@ -153,7 +153,7 @@ class SendFile {
     }
 
     private Tuple<Long, Long> parseRange(long availableLength) {
-        String header = response.wc.getHeader(HttpHeaderNames.RANGE);
+        String header = response.getWebContext().getHeader(HttpHeaderNames.RANGE);
         if (Strings.isEmpty(header)) {
             return null;
         }

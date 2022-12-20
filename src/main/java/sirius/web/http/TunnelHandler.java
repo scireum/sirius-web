@@ -95,7 +95,7 @@ public class TunnelHandler implements AsyncHandler<String> {
                   IntConsumer failureHandler,
                   Consumer<TunnelHandler> completionHandler) {
         this.response = response;
-        this.webContext = response.wc;
+        this.webContext = response.getWebContext();
         this.url = url;
         this.transformer = transformer;
         this.failureHandler = failureHandler;
@@ -136,7 +136,7 @@ public class TunnelHandler implements AsyncHandler<String> {
         CallContext.setCurrent(cc);
 
         if (WebServer.LOG.isFINE()) {
-            WebServer.LOG.FINE("Tunnel - STATUS %s for %s", status.getStatusCode(), response.wc.getRequestedURI());
+            WebServer.LOG.FINE("Tunnel - STATUS %s for %s", status.getStatusCode(), response.getWebContext().getRequestedURI());
         }
         if ((status.getStatusCode() >= 200 && status.getStatusCode() < 300)
             || PASS_THROUGH_STATUS.contains(status.getStatusCode())) {
