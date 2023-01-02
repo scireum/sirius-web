@@ -89,7 +89,9 @@ public class JSONCall {
      * @throws IOException in case of an IO error while receiving the result
      */
     public JSONObject getInput() throws IOException {
-        if (!outcall.isErroneous() || outcall.getHeaderField("content-type").toLowerCase().contains(APPLICATION_JSON)) {
+        if (!outcall.isErroneous() || outcall.getHeaderField("content-type")
+                                             .toLowerCase()
+                                             .contains(MimeHelper.APPLICATION_JSON)) {
             return JSON.parseObject(Streams.readToString(new InputStreamReader(outcall.getResponse().body(),
                                                                                outcall.getContentEncoding())));
         }
