@@ -101,6 +101,7 @@ public class JSONCall {
 
     /**
      * Returns the response of the call as plain text.
+     * @deprecated use {@link #getInput()}}
      *
      * @return the response of the call as String
      * @throws IOException in case of an IO error while receiving the result
