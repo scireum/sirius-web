@@ -89,9 +89,9 @@ public class JSONCall {
      * @throws IOException in case of an IO error while receiving the result
      */
     public JSONObject getInput() throws IOException {
-        if (!outcall.isErroneous() || outcall.getHeaderField("content-type")
-                                             .toLowerCase()
-                                             .contains(MimeHelper.APPLICATION_JSON)) {
+        String contentType = outcall.getHeaderField("content-type");
+        if (!outcall.isErroneous() || (contentType != null && contentType.toLowerCase()
+                                                                         .contains(MimeHelper.APPLICATION_JSON))) {
             return JSON.parseObject(Streams.readToString(new InputStreamReader(outcall.getResponse().body(),
                                                                                outcall.getContentEncoding())));
         }
@@ -101,10 +101,10 @@ public class JSONCall {
 
     /**
      * Returns the response of the call as plain text.
-     * @deprecated use {@link #getInput()}}
      *
      * @return the response of the call as String
      * @throws IOException in case of an IO error while receiving the result
+     * @deprecated use {@link #getInput()}}
      */
     @Deprecated
     public String getPlainInput() throws IOException {
