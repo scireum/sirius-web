@@ -139,19 +139,24 @@ public abstract class ServiceCall {
         try {
             StructuredOutput output = createOutput();
             serv.call(this, output);
-        } catch (ClosedChannelException ex) {
-            // If the user unexpectedly closes the connection, we do not need to log an error...
-            Exceptions.ignore(ex);
         } catch (Exception exception) {
+            if (exception instanceof ClosedChannelException || exception.getCause() instanceof ClosedChannelException) {
+                // If the user unexpectedly closes the connection, we do not need to log an error...
+                Exceptions.ignore(exception);
+                return;
+            }
+
             HandledException handledException = handle(exception);
 
             if (ctx.isResponseCommitted()) {
                 ServiceCall.LOG.WARN("""
                                              Cannot send service error for: %s - %s
                                              A partially successful response has already been created and committed!
-                                             
+
                                              %s
-                                             """, ctx.getRequest().uri(), exception.getMessage(),
+                                             """,
+                                     ctx.getRequest().uri(),
+                                     exception.getMessage(),
                                      ExecutionPoint.snapshot().toString());
 
                 // Force underlying request / response to be closed...
