@@ -48,7 +48,7 @@
       }
 
       .sci-overlay-button-close {
-        background-image: url(base64Resource('/assets/images/icons/overlay/close.png'));
+        background-image: url(svgResource('/assets/images/icons/overlay/close.svg', #4B4B4B));
       }
     }
 

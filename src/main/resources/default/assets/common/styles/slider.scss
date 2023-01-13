@@ -35,13 +35,15 @@
         width: 1.5rem;
         height: 1.5rem;
         background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
 
         &.sci-slider-previous-icon {
-          background-image: url(base64Resource('/assets/images/icons/slider/previous.png'));
+          background-image: url(svgResource('/assets/images/icons/slider/previous.svg', #c0c0c0));
         }
 
         &.sci-slider-next-icon {
-          background-image: url(base64Resource('/assets/images/icons/slider/next.png'));
+          background-image: url(svgResource('/assets/images/icons/slider/next.svg', #c0c0c0));
         }
       }
     }
