@@ -38,7 +38,7 @@
         <div class="card card-border mb-4">
             <div class="card-body">
                 <h4 class="card-title">
-                    @service.getLabel()
+                    <a href="@apply('#%s', service.getUri())" class="text-black">@service.getLabel()</a>
                     <i:if test="service.isDeprecated()">
                         <t:tag color="red-light" class="align-middle">Deprecated</t:tag>
                     </i:if>
