@@ -8,8 +8,6 @@
 
 package sirius.pasta.tagliatelle;
 
-import sirius.kernel.tokenizer.ParseError;
-import sirius.kernel.tokenizer.Position;
 import sirius.kernel.Sirius;
 import sirius.kernel.cache.Cache;
 import sirius.kernel.cache.CacheEntry;
@@ -21,6 +19,8 @@ import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.tokenizer.ParseError;
+import sirius.kernel.tokenizer.Position;
 import sirius.pasta.Pasta;
 import sirius.pasta.noodle.compiler.CompileError;
 import sirius.pasta.noodle.compiler.CompileException;
@@ -36,6 +36,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +80,8 @@ public class Tagliatelle {
             MultiMap<String, String> result = MultiMap.createOrdered();
             Sirius.getClasspath()
                   .find(Pattern.compile("(default/|customizations/[^/]+/)?taglib/([a-z]+)/([^.]*).*.pasta"))
-                  .forEach(m -> result.put(m.group(2), m.group(3)));
+                  .sorted(Comparator.comparing(matcher -> matcher.group(2) + matcher.group(3)))
+                  .forEach(matcher -> result.put(matcher.group(2), matcher.group(3)));
             taglibTags = result;
         }
 
