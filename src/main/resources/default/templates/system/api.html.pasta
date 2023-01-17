@@ -92,7 +92,7 @@
                                     <td>
                                         <i:raw>@expandMessage(smartTranslate(parameter.description()))</i:raw>
                                     </td>
-                                    <td>@toUserString(parameter.required())</td>
+                                    <td>@parameter.required()</td>
                                     <td class="text-monospace whitespace-pre-wrap">@parameter.example()</td>
                                 </tr>
                             </i:for>
