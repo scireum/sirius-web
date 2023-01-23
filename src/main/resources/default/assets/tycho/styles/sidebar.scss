@@ -33,11 +33,11 @@
 
 .sticky-sidebar {
   height: fit-content;
+  z-index: 0;
 }
 
 @media (max-width: 992px) {
   .sticky-sidebar {
     position: static;
-    z-index: 0;
   }
 }
