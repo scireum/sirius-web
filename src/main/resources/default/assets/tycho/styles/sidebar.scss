@@ -30,3 +30,14 @@
     background-color: $primary-color;
   }
 }
+
+.sticky-sidebar {
+  height: fit-content;
+}
+
+@media (max-width: 992px) {
+  .sticky-sidebar {
+    position: static;
+    z-index: 0;
+  }
+}
