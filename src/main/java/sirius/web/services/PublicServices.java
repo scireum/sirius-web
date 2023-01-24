@@ -77,13 +77,20 @@ public class PublicServices {
             return;
         }
 
+        List<Parameter> parameters = new ArrayList<>(List.of(route.getAnnotationsByType(Parameter.class)));
+        parameters.addAll(collectSharedApiParameters(route).stream()
+                                                           .filter(parameter -> parameters.stream()
+                                                                                          .map(Parameter::name)
+                                                                                          .noneMatch(override -> Strings.areEqual(
+                                                                                                  override,
+                                                                                                  parameter.name())))
+                                                           .toList());
+
         PublicServiceInfo serviceInfo = new PublicServiceInfo(publicService,
                                                               routed.value(),
                                                               route.isAnnotationPresent(Deprecated.class),
                                                               route.getAnnotation(Operation.class),
-                                                              Stream.concat(collectSharedApiParameters(route).stream(),
-                                                                            Arrays.stream(route.getAnnotationsByType(
-                                                                                    Parameter.class))).toList(),
+                                                              parameters,
                                                               Arrays.stream(route.getAnnotationsByType(RequestBody.class))
                                                                     .toList(),
                                                               Stream.concat(collectSharedApiResponses(route).stream(),

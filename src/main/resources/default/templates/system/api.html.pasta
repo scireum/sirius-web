@@ -21,166 +21,154 @@
         </t:pageHeader>
     </i:block>
 
-    <i:if test="isFilled(api.getDescription()) || isFilled(api.getDocumentationUri())">
-        <t:helpbox>
-            <div>
-                @api.getDescription()
-            </div>
-            <i:if test="isFilled(api.getDocumentationUri())">
-                <div class="mt-2">
-                    <a href="@api.getDocumentationUri()"><i class="fa fa-file-alt"></i> Documentation</a>
-                </div>
-            </i:if>
-        </t:helpbox>
-    </i:if>
+    <t:sidebar class="sticky-sidebar sticky-top mb-4">
+        <i:block name="sidebar">
+            <t:navbox labelKey="template.html.tableOfContent.heading">
+                <i:for type="sirius.web.services.PublicServiceInfo" var="service" items="api.getServices()">
+                    <t:navboxLink url="@apply('#%s', service.getUri())"
+                                  icon="fa fa-file-alt">
+                        @service.getLabel()
+                    </t:navboxLink>
+                </i:for>
+            </t:navbox>
+        </i:block>
 
-    <i:for type="sirius.web.services.PublicServiceInfo" var="service" items="api.getServices()">
-        <div class="card card-border mb-4">
-            <div class="card-body">
-                <h4 class="card-title">
-                    @service.getLabel()
-                    <i:if test="service.isDeprecated()">
-                        <t:tag color="red-light" class="align-middle">Deprecated</t:tag>
-                    </i:if>
-                </h4>
-                <p>
-                    @service.getDescription()
-                </p>
-                <i:if test="isFilled(service.getDocumentationUri())">
-                    <p>
-                        <a href="@service.getDocumentationUri()"><i class="fa fa-file-alt"></i> Documentation</a>
-                    </p>
-                </i:if>
-
+        <i:if test="isFilled(api.getDescription()) || isFilled(api.getDocumentationUri())">
+            <t:helpbox>
                 <div>
-                    <div class="p-2" style="border-radius: 4px; background-color: #EEEEEE">
-                        <t:fullTag color="@service.determineHttpMethodColor(service.getHttpMethod())"
-                                   class="align-text-top">
-                            @service.getHttpMethod().name()
-                        </t:fullTag>
-
-                        <i:if test="service.getFormat() == sirius.web.services.Format.JSON">
-                            <t:fullTag color="blue-light" class="align-text-top">JSON</t:fullTag>
-                        </i:if>
-                        <i:if test="service.getFormat() == sirius.web.services.Format.XML">
-                            <t:fullTag color="green-light" class="align-text-top">XML</t:fullTag>
-                        </i:if>
-                        <i:if test="service.getFormat() == sirius.web.services.Format.RAW">
-                            <t:fullTag color="violet-light" class="align-text-top">RAW</t:fullTag>
-                        </i:if>
-
-                        <span class="text-monospace whitespace-pre-wrap">@service.getUri()</span>
-                    </div>
+                    @api.getDescription()
                 </div>
+                <i:if test="isFilled(api.getDocumentationUri())">
+                    <div class="mt-2">
+                        <a href="@api.getDocumentationUri()"><i class="fa fa-file-alt"></i> Documentation</a>
+                    </div>
+                </i:if>
+            </t:helpbox>
+        </i:if>
 
-                <i:if test="!service.getParameters().isEmpty()">
-                    <div class="mt-4">
-                        <h5>Parameters</h5>
-                        <table class="table">
-                            <tr>
-                                <th>Name</th>
+        <i:for type="sirius.web.services.PublicServiceInfo" var="service" items="api.getServices()">
+            <div class="card card-border mb-4" id="@service.getUri()">
+                <div class="card-body">
+                    <h4 class="card-title">
+                        <a href="@apply('#%s', service.getUri())" class="text-black">@service.getLabel()</a>
+                        <i:if test="service.isDeprecated()">
+                            <t:tag color="red-light" class="align-middle">Deprecated</t:tag>
+                        </i:if>
+                    </h4>
+                    <p>
+                        @service.getDescription()
+                    </p>
+                    <i:if test="isFilled(service.getDocumentationUri())">
+                        <p>
+                            <a href="@service.getDocumentationUri()"><i class="fa fa-file-alt"></i> Documentation</a>
+                        </p>
+                    </i:if>
+
+                    <div>
+                        <div class="p-2" style="border-radius: 4px; background-color: #EEEEEE">
+                            <t:fullTag color="@service.determineHttpMethodColor(service.getHttpMethod())"
+                                       class="align-text-top">
+                                @service.getHttpMethod().name()
+                            </t:fullTag>
+
+                            <i:if test="service.getFormat() == sirius.web.services.Format.JSON">
+                                <t:fullTag color="blue-light" class="align-text-top">JSON</t:fullTag>
+                            </i:if>
+                            <i:if test="service.getFormat() == sirius.web.services.Format.XML">
+                                <t:fullTag color="green-light" class="align-text-top">XML</t:fullTag>
+                            </i:if>
+                            <i:if test="service.getFormat() == sirius.web.services.Format.RAW">
+                                <t:fullTag color="violet-light" class="align-text-top">RAW</t:fullTag>
+                            </i:if>
+
+                            <span class="text-monospace whitespace-pre-wrap">@service.getUri()</span>
+                        </div>
+                    </div>
+
+                    <i:if test="!service.getParameters().isEmpty()">
+                        <div class="mt-4">
+                            <h5>Parameters</h5>
+                            <table class="table">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Required</th>
+                                    <th>Example</th>
+                                </tr>
+                                <i:for type="io.swagger.v3.oas.annotations.Parameter" var="parameter"
+                                       items="service.getParameters()">
+                                    <tr>
+                                        <td class="@if (parameter.required()) { font-weight-bold }">
+                                            @parameter.name()
+                                        </td>
+                                        <td>
+                                            <i:raw>@expandMessage(smartTranslate(parameter.description()))</i:raw>
+                                        </td>
+                                        <td>@parameter.required()</td>
+                                        <td class="text-monospace whitespace-pre-wrap">@parameter.example()</td>
+                                    </tr>
+                                </i:for>
+                            </table>
+                        </div>
+                    </i:if>
+                    <i:if test="!service.getRequestBodies().isEmpty()">
+                        <div class="mt-4">
+                            <h5>Requests</h5>
+                            <table class="table table-hover">
+                                <thead>
                                 <th>Description</th>
-                                <th>Required</th>
-                                <th>Example</th>
-                            </tr>
-                            <i:for type="io.swagger.v3.oas.annotations.Parameter" var="parameter"
-                                   items="service.getParameters()">
-                                <tr>
-                                    <td class="@if (parameter.required()) { font-weight-bold }">
-                                        @parameter.name()
-                                    </td>
-                                    <td>
-                                        <i:raw>@expandMessage(smartTranslate(parameter.description()))</i:raw>
-                                    </td>
-                                    <td>@toUserString(parameter.required())</td>
-                                    <td class="text-monospace whitespace-pre-wrap">@parameter.example()</td>
-                                </tr>
-                            </i:for>
-                        </table>
-                    </div>
-                </i:if>
-                <i:if test="!service.getRequestBodies().isEmpty()">
-                    <div class="mt-4">
-                        <h5>Requests</h5>
-                        <table class="table table-hover">
-                            <thead>
-                            <th>Description</th>
-                            <th class="col-md-8">Example</th>
-                            </thead>
-                            <tbody>
-                            <i:for type="io.swagger.v3.oas.annotations.parameters.RequestBody" var="request"
-                                   items="service.getRequestBodies()">
-                                <tr>
-                                    <i:local name="requestContents" value="@toList(request.content())"/>
-                                    <i:if test="!requestContents.isEmpty()">
-                                        <i:local name="requestContent"
-                                                 value="requestContents.get(0).as(io.swagger.v3.oas.annotations.media.Content.class)"/>
-                                        <td>
-                                            <span>@request.description()</span>
-                                            <i:if test="@isFilled(requestContent.mediaType())">
-                                                <div class="mt-2"><strong>Content-Type:</strong>
-                                                    @requestContent.mediaType()
-                                                </div>
-                                            </i:if>
-                                        </td>
-                                        <td>
-                                            <i:for type="io.swagger.v3.oas.annotations.media.ExampleObject"
-                                                   var="example"
-                                                   items="@toList(requestContent.examples())">
-                                                <pre class="prettyprint p-2">@example.value()</pre>
-                                            </i:for>
-                                        </td>
+                                <th class="col-md-8">Example</th>
+                                </thead>
+                                <tbody>
+                                <i:for type="io.swagger.v3.oas.annotations.parameters.RequestBody" var="request"
+                                       items="service.getRequestBodies()">
+                                    <tr>
+                                        <i:local name="requestContents" value="@toList(request.content())"/>
+                                        <i:if test="!requestContents.isEmpty()">
+                                            <i:local name="requestContent"
+                                                     value="requestContents.get(0).as(io.swagger.v3.oas.annotations.media.Content.class)"/>
+                                            <td>
+                                                <span>@request.description()</span>
+                                                <i:if test="@isFilled(requestContent.mediaType())">
+                                                    <div class="mt-2"><strong>Content-Type:</strong>
+                                                        @requestContent.mediaType()
+                                                    </div>
+                                                </i:if>
+                                            </td>
+                                            <td>
+                                                <i:for type="io.swagger.v3.oas.annotations.media.ExampleObject"
+                                                       var="example"
+                                                       items="@toList(requestContent.examples())">
+                                                    <pre class="prettyprint p-2">@example.value()</pre>
+                                                </i:for>
+                                            </td>
 
-                                        <i:else>
-                                            <td>@request.description()</td>
-                                        </i:else>
-                                    </i:if>
-                                </tr>
-                            </i:for>
-                            </tbody>
-                        </table>
-                    </div>
-                </i:if>
-                <i:if test="!service.getResponses().isEmpty()">
-                    <div class="mt-4">
-                        <h5>Responses</h5>
-                        <table class="table table-hover">
-                            <thead>
-                            <th>Description</th>
-                            <th class="col-md-8">Example</th>
-                            </thead>
-                            <tbody>
-                            <i:for type="io.swagger.v3.oas.annotations.responses.ApiResponse" var="response"
-                                   items="service.getResponses()">
-                                <tr>
-                                    <i:local name="responseContents" value="@toList(response.content())"/>
-                                    <i:if test="!responseContents.isEmpty()">
-                                        <i:local name="responseContent"
-                                                 value="responseContents.get(0).as(io.swagger.v3.oas.annotations.media.Content.class)"/>
-                                        <td>
-                                            <i:if test="@isFilled(response.responseCode())">
-                                                <t:fullTag
-                                                        color="@service.determineStatusCodeColor(response.responseCode())"
-                                                        class="align-text-top mr-1">
-                                                    @response.responseCode()
-                                                </t:fullTag>
-                                            </i:if>
-                                            <span>@response.description()</span>
-                                            <i:if test="@isFilled(responseContent.mediaType())">
-                                                <div class="mt-2"><strong>Content-Type:</strong>
-                                                    @responseContent.mediaType()
-                                                </div>
-                                            </i:if>
-                                        </td>
-                                        <td>
-                                            <i:for type="io.swagger.v3.oas.annotations.media.ExampleObject"
-                                                   var="example"
-                                                   items="@toList(responseContent.examples())">
-                                                <pre class="prettyprint p-2">@example.value()</pre>
-                                            </i:for>
-                                        </td>
-
-                                        <i:else>
+                                            <i:else>
+                                                <td>@request.description()</td>
+                                            </i:else>
+                                        </i:if>
+                                    </tr>
+                                </i:for>
+                                </tbody>
+                            </table>
+                        </div>
+                    </i:if>
+                    <i:if test="!service.getResponses().isEmpty()">
+                        <div class="mt-4">
+                            <h5>Responses</h5>
+                            <table class="table table-hover">
+                                <thead>
+                                <th>Description</th>
+                                <th class="col-md-8">Example</th>
+                                </thead>
+                                <tbody>
+                                <i:for type="io.swagger.v3.oas.annotations.responses.ApiResponse" var="response"
+                                       items="service.getResponses()">
+                                    <tr>
+                                        <i:local name="responseContents" value="@toList(response.content())"/>
+                                        <i:if test="!responseContents.isEmpty()">
+                                            <i:local name="responseContent"
+                                                     value="responseContents.get(0).as(io.swagger.v3.oas.annotations.media.Content.class)"/>
                                             <td>
                                                 <i:if test="@isFilled(response.responseCode())">
                                                     <t:fullTag
@@ -190,19 +178,44 @@
                                                     </t:fullTag>
                                                 </i:if>
                                                 <span>@response.description()</span>
+                                                <i:if test="@isFilled(responseContent.mediaType())">
+                                                    <div class="mt-2"><strong>Content-Type:</strong>
+                                                        @responseContent.mediaType()
+                                                    </div>
+                                                </i:if>
                                             </td>
-                                            <td></td>
-                                        </i:else>
-                                    </i:if>
-                                </tr>
-                            </i:for>
-                            </tbody>
-                        </table>
-                    </div>
-                </i:if>
+                                            <td>
+                                                <i:for type="io.swagger.v3.oas.annotations.media.ExampleObject"
+                                                       var="example"
+                                                       items="@toList(responseContent.examples())">
+                                                    <pre class="prettyprint p-2">@example.value()</pre>
+                                                </i:for>
+                                            </td>
+
+                                            <i:else>
+                                                <td>
+                                                    <i:if test="@isFilled(response.responseCode())">
+                                                        <t:fullTag
+                                                                color="@service.determineStatusCodeColor(response.responseCode())"
+                                                                class="align-text-top mr-1">
+                                                            @response.responseCode()
+                                                        </t:fullTag>
+                                                    </i:if>
+                                                    <span>@response.description()</span>
+                                                </td>
+                                                <td></td>
+                                            </i:else>
+                                        </i:if>
+                                    </tr>
+                                </i:for>
+                                </tbody>
+                            </table>
+                        </div>
+                    </i:if>
+                </div>
             </div>
-        </div>
-    </i:for>
+        </i:for>
+    </t:sidebar>
 
     <script>
         sirius.ready(function () {
