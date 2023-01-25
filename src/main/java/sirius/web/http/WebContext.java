@@ -390,10 +390,10 @@ public class WebContext implements SubContext {
     protected static int hstsMaxAge;
 
     /**
-     * Determines if CSRF tokens should be enforced.
+     * Determines if CSRF tokens should be skipped.
      */
-    @ConfigValue("http.ssl.useCSRFTokens")
-    protected static boolean useCSRFTokens;
+    @ConfigValue("http.skipCSRFTokens")
+    protected static boolean skipCSRFTokens;
 
     @Part
     @Nullable
@@ -1674,7 +1674,7 @@ public class WebContext implements SubContext {
     }
 
     private boolean checkCSRFToken() {
-        if (!useCSRFTokens) {
+        if (skipCSRFTokens) {
             return true;
         }
 
