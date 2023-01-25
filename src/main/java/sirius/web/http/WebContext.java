@@ -389,6 +389,12 @@ public class WebContext implements SubContext {
     @ConfigValue("http.ssl.hstsMaxAge")
     protected static int hstsMaxAge;
 
+    /**
+     * Determines if CSRF tokens should be enforced.
+     */
+    @ConfigValue("http.ssl.useCSRFTokens")
+    protected static boolean useCSRFTokens;
+
     @Part
     @Nullable
     private static SessionSecretComputer sessionSecretComputer;
@@ -1668,6 +1674,10 @@ public class WebContext implements SubContext {
     }
 
     private boolean checkCSRFToken() {
+        if (!useCSRFTokens) {
+            return true;
+        }
+
         String requestToken = this.get(CSRFHelper.CSRF_TOKEN).asString();
         String sessionToken = getSessionValue(CSRFHelper.CSRF_TOKEN).asString();
         String lastSessionToken = getSessionValue(CSRFHelper.PREVIOUS_CSRF_TOKEN).asString();
