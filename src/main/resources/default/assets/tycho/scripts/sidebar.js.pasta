@@ -2,12 +2,12 @@ sirius.ready(function() {
     let _menuButton = document.querySelector('.page-header .sidebar-button-js');
     let _sidebarDiv = document.querySelector('.sidebar-js');
 
-    if (_sidebarDiv.classList.contains("sticky-sidebar")) {
+    if (_sidebar && _sidebarDiv.classList.contains("sticky-sidebar")) {
         let _navbar = document.querySelector('#wrapper-menu')
         _sidebarDiv.style.top = _navbar.clientHeight + 'px';
     }
 
-    if (_menuButton !== null && _sidebarDiv !== null) {
+    if (_menuButton && _sidebarDiv) {
         _menuButton.classList.remove("d-none");
         _menuButton.classList.add("d-xs-block");
         _menuButton.addEventListener('click', function () {
