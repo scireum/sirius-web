@@ -2,7 +2,7 @@ sirius.ready(function() {
     let _menuButton = document.querySelector('.page-header .sidebar-button-js');
     let _sidebarDiv = document.querySelector('.sidebar-js');
 
-    if (_sidebar && _sidebarDiv.classList.contains("sticky-sidebar")) {
+    if (_sidebarDiv && _sidebarDiv.classList.contains("sticky-sidebar")) {
         let _navbar = document.querySelector('#wrapper-menu')
         _sidebarDiv.style.top = _navbar.clientHeight + 'px';
     }
