@@ -11,6 +11,7 @@
 <i:arg name="helpKey" type="String" default=""/>
 <i:arg name="help" type="String" default="@i18n(helpKey)"/>
 <i:arg name="readonly" type="boolean" default="false"/>
+<i:arg name="optional" type="boolean" default="false"/>
 
 <i:pragma name="description" value="Renders a dropdown for boolean values within a Tycho template" />
 
@@ -25,9 +26,9 @@
                         name="@name"
                         label="@label"
                         help="@help"
-                        optional="false">
-            <option value="true" @selected="@value">@trueLabel</option>
-            <option value="false" @selected="@!value">@falseLabel</option>
+                        optional="@optional">
+            <option value="true" @selected="value && !optional">@trueLabel</option>
+            <option value="false" @selected="!value && !optional">@falseLabel</option>
         </t:singleSelect>
     </i:else>
 </i:if>
