@@ -28,6 +28,16 @@ a {
   display: none;
 }
 
+.admin-link:after {
+  font-family: "Font Awesome 5 Free";
+  font-weight: bold;
+  font-size: 10px;
+  line-height: 12px;
+  vertical-align: top;
+  margin-left: 0.5em;
+  content: "\f023";
+}
+
 .admin-link-icon {
   font-size: 10px;
   line-height: 12px;
