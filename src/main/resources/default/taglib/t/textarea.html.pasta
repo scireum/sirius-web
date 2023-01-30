@@ -1,6 +1,7 @@
 <i:arg name="id" type="String" default="" />
 <i:arg name="class" type="String" default="" description="Lists additional CSS classes to apply to the component."/>
 <i:arg name="fieldClass" type="String" default="" description="Lists additional CSS classes to apply to the field."/>
+<i:arg name="labelClass" type="String" default="" description="Lists additional CSS classes to apply to the label."/>
 <i:arg name="rows" type="int" default="3" />
 <i:arg name="name" type="String" />
 <i:arg name="value" type="String" />
@@ -17,7 +18,7 @@
 
 <div class="form-group @UserContext.get().signalFieldError(name) @class">
     <i:if test="isFilled(label)">
-        <label><span>@label</span></label>
+        <label><span class="@labelClass">@label</span></label>
     </i:if>
 
     <textarea @id="@id" name="@name" rows="@rows" class="form-control input-block-level @fieldClass" @readonly="readonly">@UserContext.get().getFieldValue(name, value)</textarea>

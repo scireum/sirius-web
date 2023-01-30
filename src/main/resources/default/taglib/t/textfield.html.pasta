@@ -1,6 +1,7 @@
 <i:arg name="id" type="String" default=""/>
 <i:arg name="class" type="String" default="" description="Lists additional CSS classes to apply to the field."/>
 <i:arg name="fieldClass" type="String" default="" description="Lists additional CSS classes to apply to the field."/>
+<i:arg name="labelClass" type="String" default="" description="Lists additional CSS classes to apply to the label."/>
 <i:arg name="name" type="String" default=""/>
 <i:arg name="fieldName" type="String" default="@name"/>
 <i:arg name="value" type="String"/>
@@ -21,7 +22,7 @@
 
 <div class="form-group @UserContext.get().signalFieldError(name) @class">
     <i:if test="isFilled(label) || forceLabel">
-        <label><span>@label</span></label>
+        <label><span class="@labelClass">@label</span></label>
     </i:if>
     <i:if test="isFilled(addonText)">
         <div class="input-group">
