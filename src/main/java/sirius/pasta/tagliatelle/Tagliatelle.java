@@ -228,7 +228,7 @@ public class Tagliatelle {
                                                                      @Nonnull String code,
                                                                      @Nullable TemplateCompilationContext parent) {
         Template template = new Template(name, null);
-        return new TemplateCompilationContext(template, SourceCodeInfo.forInlineCode(code), parent);
+        return new TemplateCompilationContext(template, SourceCodeInfo.forCustomCode(name, code, null), parent);
     }
 
     /**
@@ -246,7 +246,7 @@ public class Tagliatelle {
                                                                      @Nonnull SandboxMode sandboxMode,
                                                                      @Nullable TemplateCompilationContext parent) {
         Template template = new Template(name, null);
-        return new TemplateCompilationContext(template, SourceCodeInfo.forInlineCode(code, sandboxMode), parent);
+        return new TemplateCompilationContext(template, SourceCodeInfo.forCustomCode(name, code, sandboxMode), parent);
     }
 
     /**

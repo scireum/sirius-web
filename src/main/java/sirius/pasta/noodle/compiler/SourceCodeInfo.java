@@ -17,6 +17,8 @@ import sirius.pasta.noodle.sandbox.Sandbox;
 import sirius.pasta.noodle.sandbox.SandboxMode;
 import sirius.web.resources.Resource;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -76,10 +78,28 @@ public class SourceCodeInfo {
     }
 
     /**
+     * Creates a new instance representing custom named code.
+     * <p>
+     * If no sandbox mode is given, the {@link sirius.pasta.noodle.sandbox.Sandbox sandbox} is usef, if enabled for this
+     * system.
+     *
+     * @param code the code to wrap
+     * @return the newly created source code info
+     */
+    public static SourceCodeInfo forCustomCode(@Nonnull String name,
+                                               @Nonnull String code,
+                                               @Nullable SandboxMode sandboxMode) {
+        return new SourceCodeInfo(name,
+                                  null,
+                                  sandboxMode != null ? sandboxMode : sandbox.getMode(),
+                                  () -> new StringReader(code));
+    }
+
+    /**
      * Creates a new instance representing inline or ad-hoc source code.
      * <p>
      * Note that this will enable the built-in {@link sirius.pasta.noodle.sandbox.Sandbox sandbox} if enabled for this
-     * system
+     * system.
      *
      * @param code the code to wrap
      * @return the newly created source code info
