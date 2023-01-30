@@ -11,14 +11,11 @@
 
 <i:if test="isFrameworkEnabled(framework)">
     <t:permission permission="@permission">
-        <a href="@url" class="dropdown-item @class">
+        <a href="@url" class="dropdown-item @if (adminOnly) { admin-link } @class">
             <i:if test="isFilled(icon)">
                 <i class="@icon"></i>
             </i:if>
             @label
-            <i:if test="adminOnly">
-                <i class="fa fa-fw fa-lock admin-link-icon"></i>
-            </i:if>
         </a>
     </t:permission>
 </i:if>
