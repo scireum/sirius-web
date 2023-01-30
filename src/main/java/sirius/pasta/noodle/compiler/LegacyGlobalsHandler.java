@@ -51,7 +51,7 @@ public abstract class LegacyGlobalsHandler {
             return result;
         }
 
-        result = compileReplacement(name);
+        result = compileReplacement(name, compilationContext);
         if (result != null) {
             cache.put(name, result);
         }
@@ -59,7 +59,7 @@ public abstract class LegacyGlobalsHandler {
         return result;
     }
 
-    protected Tuple<String, Node> compileReplacement(String name) {
+    protected Tuple<String, Node> compileReplacement(String name, CompilationContext compilationContext) {
         String replacementText = determineReplacement(name);
         if (replacementText == null) {
             return null;
@@ -67,6 +67,7 @@ public abstract class LegacyGlobalsHandler {
 
         CompilationContext context = new CompilationContext(new SourceCodeInfo(getClass().getSimpleName(),
                                                                                getClass().getName(),
+                                                                               compilationContext.getSandboxMode(),
                                                                                () -> new StringReader(replacementText)));
         Parser parser = new Parser(context, context.getSourceCodeInfo().createReader());
         Tuple<String, Node> result = Tuple.create(replacementText, parser.parseExpression(true));

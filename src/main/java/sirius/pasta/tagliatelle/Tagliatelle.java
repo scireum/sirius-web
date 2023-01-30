@@ -25,6 +25,7 @@ import sirius.pasta.Pasta;
 import sirius.pasta.noodle.compiler.CompileError;
 import sirius.pasta.noodle.compiler.CompileException;
 import sirius.pasta.noodle.compiler.SourceCodeInfo;
+import sirius.pasta.noodle.sandbox.SandboxMode;
 import sirius.pasta.tagliatelle.compiler.TemplateCompilationContext;
 import sirius.pasta.tagliatelle.compiler.TemplateCompiler;
 import sirius.pasta.tagliatelle.rendering.GlobalRenderContext;
@@ -213,8 +214,11 @@ public class Tagliatelle {
 
     /**
      * Creates a new {@link TemplateCompilationContext} for the given inline code.
+     * <p>
+     * Note that this will enable the built-in {@link sirius.pasta.noodle.sandbox.Sandbox sandbox} if enabled for this
+     * system
      *
-     * @param name   the name of the source code / orign
+     * @param name   the name of the source code / origin
      * @param code   the actual template code to compile
      * @param parent if the compilation was started while compiling another template, its context is given here. This
      *               is mainly used to detect and abort cyclic dependencies at compile time.
@@ -225,6 +229,24 @@ public class Tagliatelle {
                                                                      @Nullable TemplateCompilationContext parent) {
         Template template = new Template(name, null);
         return new TemplateCompilationContext(template, SourceCodeInfo.forInlineCode(code), parent);
+    }
+
+    /**
+     * Creates a new {@link TemplateCompilationContext} for the given inline code.
+     *
+     * @param name        the name of the source code / origin
+     * @param code        the actual template code to compile
+     * @param sandboxMode the sandbox mode to apply
+     * @param parent      if the compilation was started while compiling another template, its context is given here. This
+     *                    is mainly used to detect and abort cyclic dependencies at compile time.
+     * @return a new compilation context for the given resource
+     */
+    public TemplateCompilationContext createInlineCompilationContext(@Nonnull String name,
+                                                                     @Nonnull String code,
+                                                                     @Nonnull SandboxMode sandboxMode,
+                                                                     @Nullable TemplateCompilationContext parent) {
+        Template template = new Template(name, null);
+        return new TemplateCompilationContext(template, SourceCodeInfo.forInlineCode(code, sandboxMode), parent);
     }
 
     /**

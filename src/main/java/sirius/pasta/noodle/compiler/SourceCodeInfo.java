@@ -8,10 +8,13 @@
 
 package sirius.pasta.noodle.compiler;
 
-import sirius.kernel.tokenizer.LookaheadReader;
 import sirius.kernel.commons.Files;
 import sirius.kernel.commons.Streams;
+import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.tokenizer.LookaheadReader;
+import sirius.pasta.noodle.sandbox.Sandbox;
+import sirius.pasta.noodle.sandbox.SandboxMode;
 import sirius.web.resources.Resource;
 
 import java.io.IOException;
@@ -34,17 +37,29 @@ public class SourceCodeInfo {
     private final Supplier<Reader> input;
     private List<String> lines;
 
+    @Part
+    private static Sandbox sandbox;
+
+    /**
+     * Determines if the security sandbox is enabled.
+     * <p>
+     * The sandbox is used to safely execute code provided by users of the system.
+     */
+    private final SandboxMode sandboxMode;
+
     /**
      * Creates a new instance for the given source code.
      *
-     * @param name     the name of the resource being compiled
-     * @param location a detailed info of the source code location
-     * @param input    a supplier to provide the actual source code when needed
+     * @param name        the name of the resource being compiled
+     * @param location    a detailed info of the source code location
+     * @param sandboxMode the sandbox mode to apply when compiling the code
+     * @param input       a supplier to provide the actual source code when needed
      */
-    public SourceCodeInfo(String name, String location, Supplier<Reader> input) {
+    public SourceCodeInfo(String name, String location, SandboxMode sandboxMode, Supplier<Reader> input) {
         this.name = name;
         this.location = location;
         this.input = input;
+        this.sandboxMode = sandboxMode;
     }
 
     /**
@@ -56,17 +71,32 @@ public class SourceCodeInfo {
     public static SourceCodeInfo forResource(Resource resource) {
         return new SourceCodeInfo(Files.getFilenameAndExtension(resource.getPath()),
                                   resource.getUrl().toString(),
+                                  sandbox.determineEffectiveSandboxMode(resource.getPath()),
                                   () -> new StringReader(resource.getContentAsString()));
     }
 
     /**
      * Creates a new instance representing inline or ad-hoc source code.
+     * <p>
+     * Note that this will enable the built-in {@link sirius.pasta.noodle.sandbox.Sandbox sandbox} if enabled for this
+     * system
      *
      * @param code the code to wrap
      * @return the newly created source code info
      */
     public static SourceCodeInfo forInlineCode(String code) {
-        return new SourceCodeInfo("inline", null, () -> new StringReader(code));
+        return new SourceCodeInfo("inline", null, sandbox.getMode(), () -> new StringReader(code));
+    }
+
+    /**
+     * Creates a new instance representing inline or ad-hoc source code.
+     *
+     * @param code        the code to wrap
+     * @param sandboxMode the sandbox mode to use
+     * @return the newly created source code info
+     */
+    public static SourceCodeInfo forInlineCode(String code, SandboxMode sandboxMode) {
+        return new SourceCodeInfo("inline", null, sandboxMode, () -> new StringReader(code));
     }
 
     /**
@@ -108,6 +138,10 @@ public class SourceCodeInfo {
 
     public String getLocation() {
         return location;
+    }
+
+    public SandboxMode getSandboxMode() {
+        return sandboxMode;
     }
 
     @Override

@@ -21,5 +21,23 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE, ElementType.FIELD})
-public @interface PublicApi {
+public @interface NoodleSandbox {
+
+    /**
+     * Controls the accessibility of the annotated element.
+     * <p>
+     * <tt>GRANTED</tt> is probably the default case, however, if a whole class is granted, <tt>REJECTED</tt>
+     * can be used to overwrite this (as annotations on methods and fields win over ones on classes).
+     */
+    enum Accessibility {
+        GRANTED, REJECTED
+    }
+
+    /**
+     * Specifies the accessibility value.
+     *
+     * @return <tt>@{@link Accessibility#GRANTED}</tt> to grant access or @{@link Accessibility#REJECTED} to reject
+     * existing access rights.
+     */
+    Accessibility value();
 }
