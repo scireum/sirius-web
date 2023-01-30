@@ -15,6 +15,7 @@ import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.List;
  * this is a constant call and will be optimized away entirely.
  */
 @Register
+@NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
 public class PartMacro extends BasicMacro {
 
     @Override
