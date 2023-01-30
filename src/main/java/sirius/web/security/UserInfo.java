@@ -13,6 +13,7 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.di.transformers.Composable;
 import sirius.kernel.di.transformers.Transformable;
 import sirius.kernel.health.Exceptions;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 import sirius.web.controller.Controller;
 
 import javax.annotation.CheckReturnValue;
@@ -256,6 +257,7 @@ public class UserInfo extends Composable {
      *
      * @return the unique ID of the user
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getUserId() {
         return userId;
     }
@@ -265,6 +267,7 @@ public class UserInfo extends Composable {
      *
      * @return the name of the user
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getUserName() {
         return username;
     }
@@ -284,6 +287,7 @@ public class UserInfo extends Composable {
      * @return the unique ID the tenant the user belongs to
      */
     @Nullable
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getTenantId() {
         return tenantId;
     }
@@ -294,6 +298,7 @@ public class UserInfo extends Composable {
      * @return the name of the tenant the user belongs to
      */
     @Nullable
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getTenantName() {
         return tenantName;
     }
@@ -314,6 +319,7 @@ public class UserInfo extends Composable {
      *
      * @return the two-letter language code of the user
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getLanguage() {
         return language;
     }
@@ -324,6 +330,7 @@ public class UserInfo extends Composable {
      * @param permissions the permissions to check
      * @return <tt>true</tt> if the user has all the requested permissions, <tt>false</tt> otherwise
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean hasPermissions(String... permissions) {
         for (String permission : permissions) {
             if (!hasPermission(permission)) {
@@ -348,6 +355,7 @@ public class UserInfo extends Composable {
      * @param permission the permission to check
      * @return <tt>true</tt> if the user has the permission, <tt>false</tt> otherwise
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean hasPermission(String permission) {
         return Permissions.hasPermission(permission, hasEveryPermission ? s -> true : permissions::contains);
     }
@@ -359,6 +367,7 @@ public class UserInfo extends Composable {
      *
      * @param permission the permission to check
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public void assertPermission(String permission) {
         if (!hasPermission(permission)) {
             throw Exceptions.createHandled()
@@ -374,6 +383,7 @@ public class UserInfo extends Composable {
      *
      * @return <tt>true</tt> if the user has the permission {@link #PERMISSION_LOGGED_IN}, <tt>false</tt> otherwise
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean isLoggedIn() {
         return hasPermission(PERMISSION_LOGGED_IN);
     }
@@ -384,6 +394,7 @@ public class UserInfo extends Composable {
      *
      * @return the name of the user
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getProtocolUsername() {
         if (nameAppendixSupplier != null) {
             String appendix = nameAppendixSupplier.get();
@@ -404,6 +415,7 @@ public class UserInfo extends Composable {
      */
     @SuppressWarnings("unchecked")
     @Nullable
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public <T> T getUserObject(Class<T> clazz) {
         if (userSupplier == null) {
             return null;
@@ -416,6 +428,7 @@ public class UserInfo extends Composable {
     }
 
     @Override
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean is(@Nonnull Class<?> type) {
         Transformable userObject = getUserObject(Transformable.class);
         if (userObject != null) {
@@ -426,6 +439,7 @@ public class UserInfo extends Composable {
     }
 
     @Override
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public <A> Optional<A> tryAs(@Nonnull Class<A> adapterType) {
         return Optional.ofNullable(getUserObject(Transformable.class))
                        .flatMap(userObject -> userObject.tryAs(adapterType))
@@ -439,6 +453,7 @@ public class UserInfo extends Composable {
      *
      * @return all permissions granted to the user.
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public Set<String> getPermissions() {
         return Collections.unmodifiableSet(permissions);
     }
@@ -450,6 +465,7 @@ public class UserInfo extends Composable {
      *
      * @return the config object which contains all settings of the current scope, current tenant and user.
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public UserSettings getSettings() {
         if (settingsSupplier == null) {
             return UserContext.getCurrentScope().getSettings();

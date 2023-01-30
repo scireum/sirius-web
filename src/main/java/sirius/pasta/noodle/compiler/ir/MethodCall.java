@@ -8,7 +8,6 @@
 
 package sirius.pasta.noodle.compiler.ir;
 
-import sirius.kernel.tokenizer.Position;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
@@ -17,12 +16,14 @@ import sirius.kernel.di.transformers.Transformable;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
+import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.MethodPointer;
 import sirius.pasta.noodle.OpCode;
 import sirius.pasta.noodle.compiler.Assembler;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.TypeTools;
 import sirius.pasta.noodle.sandbox.Sandbox;
+import sirius.pasta.noodle.sandbox.SandboxMode;
 import sirius.web.security.UserContext;
 
 import javax.annotation.Nullable;
@@ -196,13 +197,20 @@ public class MethodCall extends Call {
     }
 
     private void checkSandbox(CompilationContext context) {
-        if (context.isSandboxEnabled() && !sandbox.canInvoke(method)) {
-            context.error(position,
-                          "Cannot invoke %s on %s as this is restricted by the security sandbox!",
-                          method.getName(),
-                          method.getDeclaringClass().getName());
-            this.method = null;
-        }
+        context.ifEnforceSandbox(() -> !sandbox.canInvoke(method), mode -> {
+            if (mode == SandboxMode.ENABLED) {
+                context.error(position,
+                              "Cannot invoke %s on %s as this is restricted by the security sandbox!",
+                              method.getName(),
+                              method.getDeclaringClass().getName());
+                this.method = null;
+            } else if (mode == SandboxMode.WARN_ONLY) {
+                context.warning(position,
+                                "Cannot invoke %s on %s as this is restricted by the security sandbox!",
+                                method.getName(),
+                                method.getDeclaringClass().getName());
+            }
+        });
     }
 
     private Method findMethod(Class<?> type, String name, Class<?>[] parameterTypes) throws NoSuchMethodException {

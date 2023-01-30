@@ -1,5 +1,7 @@
 package sirius.web.controller;
 
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
+
 /**
  * Declares the severity of a message and provides a convenient way to determine a proper Bootstrap CSS class to render
  * the message.
@@ -39,6 +41,7 @@ public enum MessageLevel {
      *
      * @return the name of the css class used to render the message
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getCssClass() {
         return cssClass;
     }
@@ -48,6 +51,7 @@ public enum MessageLevel {
      *
      * @return the name of the color used for this message level
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getColor() {
         return color;
     }

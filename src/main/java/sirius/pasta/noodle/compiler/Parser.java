@@ -8,9 +8,6 @@
 
 package sirius.pasta.noodle.compiler;
 
-import sirius.kernel.tokenizer.Char;
-import sirius.kernel.tokenizer.LookaheadReader;
-import sirius.kernel.tokenizer.Position;
 import sirius.kernel.commons.Reflection;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
@@ -19,6 +16,9 @@ import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.transformers.Transformable;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
+import sirius.kernel.tokenizer.Char;
+import sirius.kernel.tokenizer.LookaheadReader;
+import sirius.kernel.tokenizer.Position;
 import sirius.pasta.Pasta;
 import sirius.pasta.noodle.InterpreterCall;
 import sirius.pasta.noodle.OpCode;
@@ -209,16 +209,9 @@ public class Parser extends InputProcessor {
         skipWhitespaces();
         if (reader.current().is('=') && (expression instanceof PushField pushField)) {
             Field field = pushField.getField();
-            PopField popField = new PopField(reader.consume(), field);
+            PopField popField = new PopField(context, reader.consume(), field);
             popField.setSelfExpression(pushField.getSelfExpression());
             popField.setValueExpression(parseExpression());
-
-            if (Modifier.isFinal(field.getModifiers())) {
-                context.error(popField.getPosition(),
-                              "The field '%s' of '%s' is final and cannot be assigned with a value.",
-                              field.getName(),
-                              field.getDeclaringClass().getName());
-            }
 
             return popField;
         }
@@ -682,14 +675,7 @@ public class Parser extends InputProcessor {
                                       .findAny()
                                       .orElse(null);
         if (targetField != null) {
-            if (context.isSandboxEnabled() && !Modifier.isPublic(targetField.getModifiers())) {
-                context.error(position,
-                              "The field '%s' of '%s' is not public accessible.",
-                              targetField.getName(),
-                              targetField.getDeclaringClass().getName());
-            }
-
-            PushField pushField = new PushField(position, targetField);
+            PushField pushField = new PushField(context, position, targetField);
             pushField.setSelfExpression(self);
             return pushField;
         }
@@ -713,14 +699,7 @@ public class Parser extends InputProcessor {
                                       .findAny()
                                       .orElse(null);
         if (staticField != null) {
-            if (context.isSandboxEnabled() && !Modifier.isPublic(staticField.getModifiers())) {
-                context.error(position,
-                              "The field '%s' of '%s' is not public accessible.",
-                              staticField.getName(),
-                              staticField.getDeclaringClass().getName());
-            }
-
-            return new PushField(position, staticField);
+            return new PushField(context, position, staticField);
         }
 
         if (parentClass.isEnum()) {

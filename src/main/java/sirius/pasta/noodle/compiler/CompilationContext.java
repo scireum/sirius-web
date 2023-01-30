@@ -8,14 +8,15 @@
 
 package sirius.pasta.noodle.compiler;
 
-import sirius.kernel.tokenizer.ParseError;
-import sirius.kernel.tokenizer.Position;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.tokenizer.ParseError;
+import sirius.kernel.tokenizer.Position;
 import sirius.pasta.Pasta;
 import sirius.pasta.noodle.ClassAliasProvider;
+import sirius.pasta.noodle.sandbox.SandboxMode;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Provides a context for compiling a <tt>Noodle</tt> script.
@@ -47,13 +50,6 @@ public class CompilationContext {
      * Used to keep track of all shared variables.
      */
     private final VariableScoper variableScoper = new VariableScoper(this);
-
-    /**
-     * Determines if the security sandbox is enabled.
-     * <p>
-     * The sandbox is used to safely execute code provided by users of the system.
-     */
-    private boolean enableSandbox;
 
     /**
      * Used to control which errors are really reported.
@@ -407,34 +403,29 @@ public class CompilationContext {
     }
 
     /**
-     * Determines if the security sandbox is active or not.
+     * Determines if the security sandbox is active.
      *
-     * @return <tt>true</tt> if the sandbox should be active, <tt>false</tt> otherwise
+     * @return the current mode in which the {@link sirius.pasta.noodle.sandbox.Sandbox} operates
      */
-    public boolean isSandboxEnabled() {
-        return enableSandbox;
+    public SandboxMode getSandboxMode() {
+        return getSourceCodeInfo().getSandboxMode();
     }
 
     /**
-     * Enables the security sandbox.
+     * Executes the given condition if the {@link sirius.pasta.noodle.sandbox.Sandbox} is enabled.
      * <p>
-     * The {@link sirius.pasta.noodle.sandbox.Sandbox} performs checks for each method call and macro invocation
-     * and only permits to call accessible methods which are considered safe to be invoked by user supplied code.
-     * <p>
-     * Note that the sandbox is disabled by default and has to be enabled when compiling user supplied code.
+     * The given handler is executed if the sandboxViolationCheck yields <tt>true</tt>.
+     *
+     * @param sandboxViolationCheck the check to evaluate if a sandbox violation is present (only called if the sandbox
+     *                              is active).
+     * @param violationHandler      the handler to invoke if a sandbox violation is present
      */
-    public void enableSandbox() {
-        this.enableSandbox = true;
-    }
+    public void ifEnforceSandbox(Supplier<Boolean> sandboxViolationCheck, Consumer<SandboxMode> violationHandler) {
+        if (getSandboxMode() == SandboxMode.DISABLED || !Boolean.TRUE.equals(sandboxViolationCheck.get())) {
+            return;
+        }
 
-    /**
-     * Disables the security sandbox.
-     * <p>
-     * Note that the sandbox is disabled by default so this method only needs to be invoked if the sandbox has
-     * previously been enabled manually.
-     */
-    public void disableSandbox() {
-        this.enableSandbox = false;
+        violationHandler.accept(getSandboxMode());
     }
 
     @Override

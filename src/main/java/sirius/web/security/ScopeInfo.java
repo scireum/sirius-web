@@ -24,6 +24,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.settings.Extension;
 import sirius.kernel.settings.Settings;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -120,6 +121,7 @@ public class ScopeInfo extends Composable {
      * @return the unique ID identifying the scope
      */
     @Nonnull
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getScopeId() {
         return scopeId;
     }
@@ -133,6 +135,7 @@ public class ScopeInfo extends Composable {
      * @return the type of the scope
      */
     @Nonnull
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getScopeType() {
         return scopeType;
     }
@@ -143,6 +146,7 @@ public class ScopeInfo extends Composable {
      * @return the representative (non-technical) name of the scope
      */
     @Nonnull
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getScopeName() {
         return scopeName;
     }
@@ -167,6 +171,7 @@ public class ScopeInfo extends Composable {
      * @return the language code used by this scope or <tt>null</tt> if there is no specific language used
      */
     @Nullable
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getLanguage() {
         return language;
     }
@@ -182,6 +187,7 @@ public class ScopeInfo extends Composable {
      * class did not match
      */
     @SuppressWarnings("unchecked")
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public <T> T getScopeObject(Class<T> clazz) {
         if (scopeSupplier == null) {
             return null;
@@ -194,6 +200,7 @@ public class ScopeInfo extends Composable {
     }
 
     @Override
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean is(@Nonnull Class<?> type) {
         Transformable userObject = getScopeObject(Transformable.class);
         if (userObject != null && userObject.is(type)) {
@@ -203,6 +210,7 @@ public class ScopeInfo extends Composable {
     }
 
     @Override
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public <A> Optional<A> tryAs(@Nonnull Class<A> adapterType) {
         Transformable userObject = getScopeObject(Transformable.class);
         if (userObject != null) {
@@ -224,6 +232,7 @@ public class ScopeInfo extends Composable {
      * @return a cached or newly created instance of the helper for this scope.
      */
     @SuppressWarnings("unchecked")
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public <T> T getHelper(Class<T> clazz) {
         Object result = helpersByType.get(clazz);
         if (result == null) {
@@ -470,6 +479,7 @@ public class ScopeInfo extends Composable {
      *
      * @return the config of this scope
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public UserSettings getSettings() {
         if (settings == null) {
             if (configSupplier != null) {
