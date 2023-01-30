@@ -26,7 +26,7 @@ public @interface NoodleSandbox {
     /**
      * Controls the accessibility of the annotated element.
      * <p>
-     * <tt>GRANTED</tt> is probably the default case, however, if a whole class is granted, <tt>REJECTED</tt>
+     * <tt>GRANTED</tt> might be the correct value for most cases, however, if a whole class is granted, <tt>REJECTED</tt>
      * can be used to overwrite this (as annotations on methods and fields win over ones on classes).
      */
     enum Accessibility {
