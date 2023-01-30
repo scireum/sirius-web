@@ -162,7 +162,7 @@ public class UserAgent {
     /**
      * Determines whether the user agent hints to an Android device.
      *
-     * @return whether the user agent hints to a Android device
+     * @return whether the user agent hints to an Android device
      */
     public boolean isAndroid() {
         return android;
@@ -180,16 +180,16 @@ public class UserAgent {
     /**
      * Determines whether the user agent hints to an internet explorer browser.
      *
-     * @return whether the user agent hints to an internet explorer browser
+     * @return whether the user agent hints to an Internet-Explorer browser
      */
     public boolean isInternetExplorer() {
         return internetExplorer;
     }
 
     /**
-     * Determines whether the user agent hints to an microsoft edge browser.
+     * Determines whether the user agent hints to a Microsoft Edge browser.
      *
-     * @return whether the user agent hints to an microsoft edge browser
+     * @return whether the user agent hints to a Microsoft Edge browser
      */
     public boolean isMsEdge() {
         return msEdge;

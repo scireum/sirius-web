@@ -72,7 +72,7 @@ public class Sandbox {
      */
     public SandboxMode determineEffectiveSandboxMode(String resourcePath) {
         String effectiveResourcePath = resourcePath.startsWith("/") ? resourcePath : "/" + resourcePath;
-        
+
         if (getMode() != SandboxMode.DISABLED && detectors.getParts()
                                                           .stream()
                                                           .anyMatch(detector -> detector.shouldSandbox(
