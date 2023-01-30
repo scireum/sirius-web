@@ -14,7 +14,7 @@ import sirius.kernel.nls.Formatter;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
-import sirius.pasta.noodle.sandbox.PublicApi;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -23,7 +23,7 @@ import java.util.List;
  * Permits to create a new {@link Formatter} via a <tt>{@literal @}format(pattern)</tt>.
  */
 @Register
-@PublicApi
+@NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
 public class FormatMacro extends BasicMacro {
 
     @Override

@@ -50,6 +50,7 @@ import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.BasicNamespaceContext;
 import sirius.kernel.xml.StructuredInput;
 import sirius.kernel.xml.XMLStructuredInput;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -562,6 +563,7 @@ public class WebContext implements SubContext {
      * @return a Value representing the provided data.
      */
     @Nonnull
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public Value get(String key) {
         if (attribute != null && attribute.containsKey(key)) {
             return Value.of(attribute.get(key));
@@ -735,6 +737,7 @@ public class WebContext implements SubContext {
      * @param key used to specify which part of the post request should be returned.
      * @return the data provided for the given key or <tt>null</tt> if no data was supplied.
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public HttpData getHttpData(String key) {
         if (postDecoder == null) {
             return null;
@@ -1014,6 +1017,7 @@ public class WebContext implements SubContext {
      *
      * @return the decoded uri of the underlying request
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getRequestedURI() {
         if (requestedURI == null && request != null) {
             decodeQueryString();
@@ -1026,6 +1030,7 @@ public class WebContext implements SubContext {
      *
      * @return the un-decoded uri of the underlying request
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getRawRequestedURI() {
         if (rawRequestedURI == null && request != null) {
             rawRequestedURI = stripQueryFromURI(request.uri());
@@ -1038,6 +1043,7 @@ public class WebContext implements SubContext {
      *
      * @return the base url which created this request, without the actual URI
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getBaseURL() {
         if (baseURL == null) {
             StringBuilder sb = new StringBuilder();
@@ -1059,6 +1065,7 @@ public class WebContext implements SubContext {
      *
      * @return the complete url (base url + uri) which created this request
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getRequestedURL() {
         return getBaseURL() + getRequestedURI();
     }
@@ -1069,6 +1076,7 @@ public class WebContext implements SubContext {
      * @return the remote address of the underlying TCP connection. This will take an X-Forwarded-For header into
      * account if the connection was opened from a known proxy ip.
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public InetAddress getRemoteIP() {
         if (remoteIp == null) {
             remoteIp = WebServer.determineRemoteIP(channelHandlerContext, request);
@@ -1111,6 +1119,7 @@ public class WebContext implements SubContext {
      * @param key the name of the parameter to fetch
      * @return the first value or <tt>null</tt> if the parameter was not set or empty
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getParameter(String key) {
         return Values.of(getParameters(key)).at(0).getString();
     }
@@ -1124,6 +1133,7 @@ public class WebContext implements SubContext {
      * @param key the name of the parameter to fetch
      * @return all values in the query string
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public List<String> getParameters(String key) {
         if (queryString == null) {
             decodeQueryString();
@@ -1527,6 +1537,7 @@ public class WebContext implements SubContext {
      * @return the value of the given header or <tt>null</tt> if no such header is present
      */
     @Nullable
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getHeader(CharSequence header) {
         if (request == null) {
             return null;
@@ -1541,6 +1552,7 @@ public class WebContext implements SubContext {
      * @return the contents of the named header wrapped as <tt>Value</tt>
      */
     @Nonnull
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public Value getHeaderValue(CharSequence header) {
         if (request == null) {
             return Value.EMPTY;
@@ -1583,6 +1595,7 @@ public class WebContext implements SubContext {
      *
      * @return a collection of all parameters sent by the client
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public Collection<String> getParameterNames() {
         if (queryString == null) {
             decodeQueryString();
@@ -2107,6 +2120,7 @@ public class WebContext implements SubContext {
      *
      * @return user agent wrapper object
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public UserAgent getUserAgent() {
         if (userAgent == null) {
             userAgent = new UserAgent(getHeader(HttpHeaderNames.USER_AGENT));

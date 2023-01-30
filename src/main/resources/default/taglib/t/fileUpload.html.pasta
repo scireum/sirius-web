@@ -42,7 +42,7 @@
         maxFilesize: null,
         acceptedFiles: '@raw {@acceptedFiles}' || null,
         previewTemplate: '' +
-            '<div class="dropzone-item">\n' +
+            '<div class="dropzone-item mb-3">\n' +
             '   <div class="dropzone-file">\n' +
             '       <div class="dropzone-filename">\n' +
             '           <span data-dz-name></span>\n' +

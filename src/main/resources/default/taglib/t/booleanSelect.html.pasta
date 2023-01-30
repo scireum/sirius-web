@@ -1,5 +1,6 @@
 <i:arg name="id" type="String" default=""/>
 <i:arg name="class" type="String" default="" description="Lists additional CSS classes to apply to the field."/>
+<i:arg name="labelClass" type="String" default="" description="Lists additional CSS classes to apply to the label."/>
 <i:arg name="name" type="String"/>
 <i:arg name="value" type="boolean"/>
 <i:arg name="labelKey" type="String" default=""/>
@@ -11,23 +12,26 @@
 <i:arg name="helpKey" type="String" default=""/>
 <i:arg name="help" type="String" default="@i18n(helpKey)"/>
 <i:arg name="readonly" type="boolean" default="false"/>
+<i:arg name="optional" type="boolean" default="false"/>
 
 <i:pragma name="description" value="Renders a dropdown for boolean values within a Tycho template" />
 
 <i:if test="readonly">
     <t:textfield class="@class"
+                 labelClass="@labelClass"
                  value="value ? trueLabel : falseLabel"
                  label="@label"
                  help="@help"
                  readonly="true"/>
     <i:else>
         <t:singleSelect class="@class"
+                        labelClass="@labelClass"
                         name="@name"
                         label="@label"
                         help="@help"
-                        optional="false">
-            <option value="true" @selected="@value">@trueLabel</option>
-            <option value="false" @selected="@!value">@falseLabel</option>
+                        optional="@optional">
+            <option value="true" @selected="value && !optional">@trueLabel</option>
+            <option value="false" @selected="!value && !optional">@falseLabel</option>
         </t:singleSelect>
     </i:else>
 </i:if>

@@ -13,7 +13,9 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.pasta.noodle.OpCode;
 import sirius.pasta.noodle.compiler.Assembler;
+import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.TypeTools;
+import sirius.pasta.noodle.sandbox.SandboxMode;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -33,9 +35,23 @@ public class PushField extends Node {
      * @param position the position in the source code
      * @param field    the field to push
      */
-    public PushField(Position position, Field field) {
+    public PushField(CompilationContext compilationContext, Position position, Field field) {
         super(position);
         this.field = field;
+
+        if (!Modifier.isPublic(field.getModifiers())) {
+            if (compilationContext.getSandboxMode() == SandboxMode.ENABLED) {
+                compilationContext.error(position,
+                              "The field '%s' of '%s' is not public accessible.",
+                              field.getName(),
+                              field.getDeclaringClass().getName());
+            } else if (compilationContext.getSandboxMode() == SandboxMode.WARN_ONLY) {
+                compilationContext.warning(position,
+                                "The field '%s' of '%s' is not public accessible.",
+                                field.getName(),
+                                field.getDeclaringClass().getName());
+            }
+        }
     }
 
     public Node getSelfExpression() {

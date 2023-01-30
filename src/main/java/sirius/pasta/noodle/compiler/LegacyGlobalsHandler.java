@@ -25,11 +25,11 @@ import java.util.Map;
  * <p>
  * If previous versions of <tt>Tagliatelle</tt> there were <tt>GlobalContextExtenders</tt>. These could
  * provide magic global variables which were "just there". This proved to be confusing and a maintenance
- * nightmare. Now with a more powerful expression system we can replace these varibles with appropriate
+ * nightmare. Now with a more powerful expression system we can replace these variables with appropriate
  * expressions so that legacy templates remain compilable. However, we log a warning so that one can
  * easily identify the places to update.
  * <p>
- * To provide a custom handler, sub class this and add a {@link sirius.kernel.di.std.Register} annotation to it.
+ * To provide a custom handler, subclass this and add a {@link sirius.kernel.di.std.Register} annotation to it.
  */
 @AutoRegister
 public abstract class LegacyGlobalsHandler {
@@ -51,7 +51,7 @@ public abstract class LegacyGlobalsHandler {
             return result;
         }
 
-        result = compileReplacement(name);
+        result = compileReplacement(name, compilationContext);
         if (result != null) {
             cache.put(name, result);
         }
@@ -59,7 +59,7 @@ public abstract class LegacyGlobalsHandler {
         return result;
     }
 
-    protected Tuple<String, Node> compileReplacement(String name) {
+    protected Tuple<String, Node> compileReplacement(String name, CompilationContext compilationContext) {
         String replacementText = determineReplacement(name);
         if (replacementText == null) {
             return null;
@@ -67,6 +67,7 @@ public abstract class LegacyGlobalsHandler {
 
         CompilationContext context = new CompilationContext(new SourceCodeInfo(getClass().getSimpleName(),
                                                                                getClass().getName(),
+                                                                               compilationContext.getSandboxMode(),
                                                                                () -> new StringReader(replacementText)));
         Parser parser = new Parser(context, context.getSourceCodeInfo().createReader());
         Tuple<String, Node> result = Tuple.create(replacementText, parser.parseExpression(true));

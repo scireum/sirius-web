@@ -16,6 +16,7 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 import sirius.web.controller.ErrorMessageTransformer;
 import sirius.web.controller.Message;
 import sirius.web.http.UserMessagesCache;
@@ -93,6 +94,7 @@ public class UserContext implements SubContext {
      *
      * @return the current user context.
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public static UserContext get() {
         return CallContext.getCurrent().get(UserContext.class);
     }
@@ -103,6 +105,7 @@ public class UserContext implements SubContext {
      * @return the current user
      * @see #getUser()
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public static UserInfo getCurrentUser() {
         return get().getUser();
     }
@@ -115,6 +118,7 @@ public class UserContext implements SubContext {
      * @return the config for the current user
      * @see UserInfo#getSettings()
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public static UserSettings getSettings() {
         return get().getUser().getSettings();
     }
@@ -131,6 +135,7 @@ public class UserContext implements SubContext {
      * thrown.
      */
     @Nonnull
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public static <H> H getHelper(@Nonnull Class<H> helperType) {
         return getCurrentScope().getHelper(helperType);
     }
@@ -141,6 +146,7 @@ public class UserContext implements SubContext {
      * @return the currently active scope
      * @see #getScope()
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public static ScopeInfo getCurrentScope() {
         return get().getScope();
     }
@@ -154,6 +160,7 @@ public class UserContext implements SubContext {
      *
      * @param exception the exception to handle. If the given exception is <tt>null</tt>, nothing will happen.
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public static void handle(@Nullable Throwable exception) {
         if (exception != null) {
             message(Message.error(exception));
@@ -165,6 +172,7 @@ public class UserContext implements SubContext {
      *
      * @param message the message to add
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public static void message(Message message) {
         get().addMessage(message);
     }
@@ -296,6 +304,7 @@ public class UserContext implements SubContext {
      *
      * @param message the message to be shown to the user
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public void addMessage(Message message) {
         messages.add(message);
     }
@@ -305,6 +314,7 @@ public class UserContext implements SubContext {
      *
      * @return a list of messages to be shown to the user
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public List<Message> getMessages() {
         userMessagesCache.restoreCachedUserMessages(CallContext.getCurrent().get(WebContext.class));
 
@@ -328,6 +338,7 @@ public class UserContext implements SubContext {
      *
      * @return a list of "real" messages which were created while processing the current request
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public List<Message> getUserSpecificMessages() {
         return Collections.unmodifiableList(messages);
     }
@@ -339,6 +350,7 @@ public class UserContext implements SubContext {
      * @param value the value which was supplied and rejected
      */
 
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public void addFieldError(String field, String value) {
         fieldErrors.put(field, value);
     }
@@ -349,6 +361,7 @@ public class UserContext implements SubContext {
      * @param field the field to check for errors
      * @return <tt>true</tt> if an error was added for the field, <tt>false</tt> otherwise
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean hasError(String field) {
         return fieldErrors.containsKey(field) || fieldErrorMessages.containsKey(field);
     }
@@ -362,6 +375,7 @@ public class UserContext implements SubContext {
      * @param field the field to check
      * @return "has-error" if an error was added for the given field, an empty string otherwise
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String signalFieldError(String field) {
         return hasError(field) ? "has-error" : "";
     }
@@ -373,6 +387,7 @@ public class UserContext implements SubContext {
      * @param value the entity value (used if no error occurred)
      * @return the originally submitted value (if an error occurred), the given value otherwise
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getFieldValue(String field, Object value) {
         if (fieldErrors.containsKey(field)) {
             return fieldErrors.get(field);
@@ -387,6 +402,7 @@ public class UserContext implements SubContext {
      * @return the originally submitted value (if an error occurred) or the parameter (using field as name)
      * from the current {@link WebContext} otherwise
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getFieldValue(String field) {
         if (fieldErrors.containsKey(field)) {
             return fieldErrors.get(field);
@@ -400,6 +416,7 @@ public class UserContext implements SubContext {
      * @param field the name of the field which values should be extracted
      * @return a list of values submitted for the given field
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public Collection<String> getFieldValues(String field) {
         return CallContext.getCurrent().get(WebContext.class).getParameters(field);
     }
@@ -410,6 +427,7 @@ public class UserContext implements SubContext {
      * @param field        name of the form field
      * @param errorMessage value to be added
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public static void setErrorMessage(String field, String errorMessage) {
         get().addFieldErrorMessage(field, errorMessage);
     }
@@ -420,6 +438,7 @@ public class UserContext implements SubContext {
      * @param field        name of the form field
      * @param errorMessage value to be added
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public void addFieldErrorMessage(String field, String errorMessage) {
         fieldErrorMessages.put(field, errorMessage);
     }
@@ -429,6 +448,7 @@ public class UserContext implements SubContext {
      *
      * @return all field errors
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public Map<String, String> getFieldErrors() {
         return Collections.unmodifiableMap(fieldErrors);
     }
@@ -439,6 +459,7 @@ public class UserContext implements SubContext {
      * @param field name of the form field
      * @return error message if existent else an empty string
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getFieldErrorMessage(String field) {
         if (fieldErrorMessages.containsKey(field)) {
             return fieldErrorMessages.get(field);
@@ -455,6 +476,7 @@ public class UserContext implements SubContext {
      *
      * @return the currently active user
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public UserInfo getUser() {
         if (currentUser == null) {
             if (fetchingCurrentUser) {
@@ -500,6 +522,7 @@ public class UserContext implements SubContext {
      *
      * @return the currently active user
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean isUserPresent() {
         return currentUser != null;
     }
@@ -540,6 +563,7 @@ public class UserContext implements SubContext {
      *
      * @return the currently active scope
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public ScopeInfo getScope() {
         if (currentScope == null) {
             if (fetchingCurrentScope) {

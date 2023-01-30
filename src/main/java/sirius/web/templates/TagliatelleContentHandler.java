@@ -12,6 +12,8 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.compiler.CompileException;
+import sirius.pasta.noodle.sandbox.Sandbox;
+import sirius.pasta.noodle.sandbox.SandboxMode;
 import sirius.pasta.tagliatelle.Tagliatelle;
 import sirius.pasta.tagliatelle.Template;
 import sirius.pasta.tagliatelle.compiler.TemplateCompiler;
@@ -36,6 +38,9 @@ public class TagliatelleContentHandler implements ContentHandler {
     @Part
     private Tagliatelle tagliatelle;
 
+    @Part
+    private Sandbox sandbox;
+
     protected Template getTemplate(Generator generator) throws CompileException {
         if (Strings.isFilled(generator.getTemplateCode())) {
             TemplateCompiler compiler =
@@ -43,12 +48,20 @@ public class TagliatelleContentHandler implements ContentHandler {
                                                                                     generator.getTemplateName() :
                                                                                     "inline",
                                                                                     generator.getTemplateCode(),
+                                                                                    determineSandboxMode(generator.getTemplateName()),
                                                                                     null));
             compiler.compile();
             return compiler.getContext().getTemplate();
         } else {
             return tagliatelle.resolve(generator.getTemplateName()).orElse(null);
         }
+    }
+
+    private SandboxMode determineSandboxMode(String templateName) {
+        if (Strings.isEmpty(templateName)) {
+            return sandbox.getMode();
+        }
+        return sandbox.determineEffectiveSandboxMode(templateName);
     }
 
     @Override

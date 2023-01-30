@@ -58,8 +58,7 @@ public class PragmaTag extends TagHandler {
     public void apply(CompositeEmitter targetBlock) {
         Value value = getConstantAttribute(PARAM_VALUE);
         if (value.isFilled()) {
-            getCompilationContext().getTemplate()
-                                   .addPragma(getConstantAttribute(PARAM_NAME).asString(), value.asString());
+            getCompilationContext().getTemplate().addPragma(getConstantAttribute(PARAM_NAME).asString(), value.asString());
         } else if (getBlock("body") != null) {
             getCompilationContext().getTemplate()
                                    .addPragma(getConstantAttribute(PARAM_NAME).asString(), getBlock("body").toString());
