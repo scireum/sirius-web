@@ -9,6 +9,7 @@
 package sirius.web.http;
 
 import sirius.kernel.commons.Strings;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 
 import javax.annotation.Nonnull;
 
@@ -128,6 +129,7 @@ public class UserAgent {
      *
      * @return whether user agent hints to a mobile device
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean isMobile() {
         return isPhone() || isTablet();
     }
@@ -137,6 +139,7 @@ public class UserAgent {
      *
      * @return whether the user agent hints to a phone
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean isPhone() {
         return phone;
     }
@@ -146,6 +149,7 @@ public class UserAgent {
      *
      * @return whether the user agent hints to a tablet
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean isTablet() {
         return tablet;
     }
@@ -155,6 +159,7 @@ public class UserAgent {
      *
      * @return whether the user agent hints a desktop device
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean isDesktop() {
         return !isMobile();
     }
@@ -164,6 +169,7 @@ public class UserAgent {
      *
      * @return whether the user agent hints to an Android device
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean isAndroid() {
         return android;
     }
@@ -173,6 +179,7 @@ public class UserAgent {
      *
      * @return whether the user agent hints to an iOS device
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean isIOS() {
         return iOS;
     }
@@ -182,6 +189,7 @@ public class UserAgent {
      *
      * @return whether the user agent hints to an Internet-Explorer browser
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean isInternetExplorer() {
         return internetExplorer;
     }
@@ -191,6 +199,7 @@ public class UserAgent {
      *
      * @return whether the user agent hints to a Microsoft Edge browser
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean isMsEdge() {
         return msEdge;
     }
@@ -200,6 +209,7 @@ public class UserAgent {
      *
      * @return the user agent as String
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getUserAgentString() {
         return userAgentString;
     }
@@ -210,6 +220,7 @@ public class UserAgent {
      * @param expectedUserAgent the expected user agent
      * @return <tt>true</tt> if the user agent matches, <tt>false</tt> otherwise
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean is(@Nonnull String expectedUserAgent) {
         return Strings.areEqual(userAgentString, expectedUserAgent);
     }
@@ -220,6 +231,7 @@ public class UserAgent {
      * @param userAgentPart the user agent to check for
      * @return <tt>true</tt> if the usr agent contains the given value, <tt>false</tt> otherwise
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean contains(@Nonnull String userAgentPart) {
         return userAgentString != null && userAgentString.contains(userAgentPart);
     }
