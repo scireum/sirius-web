@@ -80,7 +80,7 @@ public class SourceCodeInfo {
     /**
      * Creates a new instance representing custom named code.
      * <p>
-     * If no sandbox mode is given, the {@link sirius.pasta.noodle.sandbox.Sandbox sandbox} is usef, if enabled for this
+     * If no sandbox mode is given, the {@link sirius.pasta.noodle.sandbox.Sandbox sandbox} is used, if enabled for this
      * system.
      *
      * @param code the code to wrap
