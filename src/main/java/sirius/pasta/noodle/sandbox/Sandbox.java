@@ -130,7 +130,7 @@ public class Sandbox {
     }
 
     private String cleanupKey(String key) {
-        if (key.startsWith("")) {
+        if (key.startsWith("\"")) {
             return key.substring(1, key.length() - 1);
         }
 
