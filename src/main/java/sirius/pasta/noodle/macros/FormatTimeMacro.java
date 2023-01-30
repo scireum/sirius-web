@@ -12,7 +12,7 @@ import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.nls.NLS;
 import sirius.pasta.noodle.Environment;
-import sirius.pasta.noodle.sandbox.PublicApi;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 
 import javax.annotation.Nonnull;
 import java.time.LocalTime;
@@ -27,7 +27,7 @@ import java.util.Date;
  * {@link Value#asLocalTime(LocalTime)}.
  */
 @Register
-@PublicApi
+@NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
 public class FormatTimeMacro extends FormatDateMacro {
 
     @Override

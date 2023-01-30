@@ -11,7 +11,7 @@ package sirius.pasta.noodle.macros;
 import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
-import sirius.pasta.noodle.sandbox.PublicApi;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 
 import javax.annotation.Nonnull;
 import java.time.LocalDateTime;
@@ -21,7 +21,7 @@ import java.util.List;
  * Checks whether a given date is after another given date or now.
  */
 @Register
-@PublicApi
+@NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
 public class IsAfterMacro extends DateComparingBaseMacro {
 
     @Override
