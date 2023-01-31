@@ -1,0 +1,77 @@
+.sci-icon-small {
+  width: 1rem;
+  height: 1rem;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.sci-icon-medium, .sci-icon-availability, .sci-icon-availability-supplier {
+  width: 1.5rem;
+  height: 1.5rem;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.sci-icon-large {
+  width: 2rem;
+  height: 2rem;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.sci-icon-availability-unknown {
+  background-image: url(svgResource('/assets/images/icons/availability/unknown.svg'));
+}
+
+.sci-icon-availability-no_longer_available {
+  background-image: url(svgResource('/assets/images/icons/availability/no-longer-available.svg'));
+}
+
+.sci-icon-availability-made_to_order {
+  background-image: url(svgResource('/assets/images/icons/availability/made-to-order.svg'));
+}
+
+.sci-icon-availability-out_of_stock {
+  background-image: url(svgResource('/assets/images/icons/availability/out-of-stock.svg'));
+}
+
+.sci-icon-availability-low {
+  background-image: url(svgResource('/assets/images/icons/availability/low.svg'));
+}
+
+.sci-icon-availability-full {
+  background-image: url(svgResource('/assets/images/icons/availability/full.svg'));
+}
+
+.sci-icon-availability-supplier-unknown {
+  background-image: url(svgResource('/assets/images/icons/availability/supplier-unknown.svg'));
+}
+
+.sci-icon-availability-supplier-no_longer_available {
+  background-image: url(svgResource('/assets/images/icons/availability/supplier-no-longer-available.svg'));
+}
+
+.sci-icon-availability-supplier-made_to_order {
+  background-image: url(svgResource('/assets/images/icons/availability/supplier-made-to-order.svg'));
+}
+
+.sci-icon-availability-supplier-out_of_stock {
+  background-image: url(svgResource('/assets/images/icons/availability/supplier-out-of-stock.svg'));
+}
+
+.sci-icon-availability-supplier-low {
+  background-image: url(svgResource('/assets/images/icons/availability/supplier-low.svg'));
+}
+
+.sci-icon-availability-supplier-full {
+  background-image: url(svgResource('/assets/images/icons/availability/supplier-full.svg'));
+}
+
+/* Automatically turns blue cart icon white on hover when used inside of blue outline button */
+.sci-icon-product-cart-white, .sci-btn-primary-outline:hover .sci-icon-product-cart-blue {
+  background-image: url(svgResource('/assets/images/icons/cart.svg', #ffffff));
+}
+
+.sci-icon-product-cart-blue {
+  background-image: url(svgResource('/assets/images/icons/cart.svg', #3465CC));
+}

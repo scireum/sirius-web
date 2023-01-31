@@ -1,0 +1,22 @@
+.sci-line-table {
+
+  border-collapse: collapse;
+  border-spacing: 0;
+
+  th {
+    text-align: left;
+    padding: 0.25rem;
+  }
+
+  tbody {
+    td {
+      border-top: 1px solid rgba(0, 0, 0, .125);
+      padding: 0.25rem;
+    }
+
+    tr.sci-cursor-pointer:hover {
+      background-color: rgba(0, 0, 0, .05);
+    }
+  }
+
+}
