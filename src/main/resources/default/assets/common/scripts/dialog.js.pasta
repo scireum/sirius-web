@@ -1,0 +1,182 @@
+(function (dialog) {
+    const template = '<div id="sci-dialog-background" class="sci-d-none sci-position-absolute sci-align-items-center sci-justify-content-center sci-p-2 sci-text sci-font">' +
+        '   <div id="sci-dialog" class="sci-d-flex sci-font sci-bg-white sci-p-2 sci-shadow sci-card sci-flex-column sci-overflow-hidden">' +
+        '      <div id="sci-dialog-header" class="sci-pt-1 sci-pb-2 sci-d-flex sci-justify-content-space-between sci-border-grey sci-flex-shrink-0 sci-overflow-hidden">' +
+        '          <div id="sci-dialog-title" class="sci-text-size-h2 sci-text-ellipsis sci-text-grey-dark"></div>' +
+        '          <div class="sci-cursor-pointer sci-d-flex sci-dialog-button-close-js" style="width: 1.5rem;">@escapeJS(inlineSVG("/assets/images/icons/navigation/close-thin.svg"))</div>' +
+        '      </div>' +
+        '      <div id="sci-dialog-content" class="sci-text sci-flex-grow-1 sci-d-flex sci-flex-column"></div>' +
+        '      <div id="sci-dialog-footer" class="sci-pt-2 sci-d-flex sci-border-grey sci-flex-shrink-0 sci-d-none sci-overflow-hidden"></div>' +
+        '   </div>' +
+        '</div>';
+
+    /**@
+     * Stores a reference to the DOM element of the currently open dialog (or null if no dialog is currently open).
+     */
+    let _dialog = null;
+    let _dialogBackground = null;
+    let translationProvider = null;
+
+    /**@
+     * Creates a new (hidden) dialog. This can be made visible to the user afterwards by calling `dialog.show`.
+     *
+     * @param {Object} args map specifying the behaviour of the created dialog
+     * @param {string|HTMLElement} args.translationProvider function that will be called to retrieve displayed texts
+     */
+    dialog.create = function (args) {
+        if (_dialog) {
+            dialog.destroy();
+        }
+
+        translationProvider = args ? args.translationProvider : function (key) {
+            return key;
+        };
+
+        // Reset viewport zoom if user zoomed in via pinch to zoom gesture. If not done it could possibly lead to the user
+        // not being able to close the dialog when the close button is rendered outside the visible area.
+        sirius.resetMobileZoom();
+
+        // Blur the current focus target, since it will be in the background now.
+        if (document.activeElement) {
+            document.activeElement.blur();
+        }
+
+        const _dialogContainer = document.createElement('div');
+        _dialogContainer.innerHTML = template;
+
+        _dialogBackground = _dialogContainer.firstChild;
+        _dialog = _dialogBackground.querySelector('#sci-dialog');
+
+        _dialog.querySelector('.sci-dialog-button-close-js').addEventListener('click', function () {
+            sirius.dispatchEvent('sci-dialog-dismissed');
+            sirius.dialog.destroy();
+        });
+
+        document.documentElement.classList.add('sci-dialog-static-body');
+
+        window.addEventListener('keyup', destroyDialogEventHandler);
+        document.body.appendChild(_dialogBackground);
+
+        sirius.dispatchEvent('sci-dialog-created');
+    }
+
+    /**@
+     * Shows the previously created (via `dialog.create`) dialog.
+     */
+    dialog.show = function () {
+        if (_dialogBackground) {
+            _dialogBackground.classList.remove('sci-d-none');
+            _dialogBackground.classList.add('sci-d-flex');
+            sirius.dispatchEvent('sci-dialog-shown');
+        }
+    }
+
+    /**@
+     * Fills the dialog box with the given content, title and an optional footer.
+     *
+     * @param {string} tile a title text that should be rendered in the header area of the dialog
+     * @param {string|HTMLElement} content elements that should be rendered in the content area of the dialog
+     */
+    dialog.fill = function (title, content) {
+        _dialog.querySelector('#sci-dialog-title').textContent = title;
+        _dialog.querySelector('#sci-dialog-content').innerHTML = content;
+        sirius.dialog.clearFooter();
+    };
+
+    /**@
+     * Fills the dialog box with the given message and title. It also adds an explicit close button to the footer area.
+     *
+     * @param {string} tile a title text that should be rendered in the header area of the dialog
+     * @param {string} message a message text that should be rendered in the content area of the dialog
+     */
+    dialog.fillWithMessage = function (title, message) {
+        const content =
+            '<div class="sci-flex-grow-1 sci-d-flex sci-justify-content-center sci-align-items-center">' +
+            '   <div>' + message + '</div>' +
+            '</div>';
+
+        sirius.dialog.fill(title, content);
+        sirius.dialog.addFooterButton(translationProvider.call(this, 'close'), sirius.dialog.destroy);
+    };
+
+    /**@
+     * Fills the dialog box with a loading indicator and the given title and message.
+     *
+     * @param {string} tile a title text that should be rendered in the header area of the dialog
+     * @param {string} message a message text that should be rendered in the content area of the dialog below the preloader
+     */
+    dialog.fillWithPreloader = function (title, message) {
+        const content =
+            '<div class="sci-flex-grow-1 sci-d-flex sci-justify-content-center sci-align-items-center sci-flex-column">' +
+            '   <div class="sci-preloader sci-m-3"></div>' +
+            '   <div>' + message + '</div>' +
+            '</div>';
+
+        sirius.dialog.fill(title, content);
+
+        if (!dialog.isVisible()) {
+            dialog.show();
+        }
+    };
+
+    /**@
+     * Determines if the dialog is currently visible.
+     */
+    dialog.isVisible = function () {
+        return _dialog && !_dialogBackground.classList.contains('sci-d-none');
+    };
+
+    /**@
+     * Closes the currently open dialog (if one is open) and cleans up listeners.
+     */
+    dialog.destroy = function () {
+        if (_dialogBackground) {
+            _dialogBackground.parentElement.removeChild(_dialogBackground);
+            _dialogBackground = null;
+            _dialog = null;
+        }
+
+        window.removeEventListener('keyup', destroyDialogEventHandler);
+        document.documentElement.classList.remove('sci-dialog-static-body');
+
+        sirius.dispatchEvent('sci-dialog-destroyed');
+    }
+
+    /**@
+     * Adds a button with the given label text and callback function to the footer area of the currently displayed dialog.
+     *
+     * Note: If multiple buttons are added this way they are ordered in reverse orders, so from right to left.
+     */
+    dialog.addFooterButton = function (label, callback) {
+        const _button = document.createElement('a');
+        _button.classList.add('sci-btn-secondary-outline', 'sci-btn-small', 'sci-ml-2');
+        _button.addEventListener('click', callback);
+        _button.textContent = label;
+
+        const _footer = _dialog.querySelector('#sci-dialog-footer');
+        _footer.append(_button);
+        if (_footer.classList.contains('sci-d-none')) {
+            _footer.classList.remove('sci-d-none');
+            _footer.classList.add('sci-d-flex');
+        }
+    }
+
+    /**@
+     * Clears the footer area of the currently displayed dialog.
+     */
+    dialog.clearFooter = function () {
+        if (_dialog) {
+            const _footer = _dialog.querySelector('#sci-dialog-footer');
+            _footer.classList.add('sci-d-none');
+            _footer.classList.remove('sci-d-flex');
+            _footer.textContent = '';
+        }
+    }
+
+    const destroyDialogEventHandler = function (event) {
+        if (event.key === 'Escape') {
+            sirius.dispatchEvent('sci-dialog-dismissed');
+            dialog.destroy();
+        }
+    }
+}(window.sirius.dialog = window.sirius.dialog || {}));

@@ -1,0 +1,54 @@
+#sci-dialog-background {
+  /* A bit higher than the z-index of the overlay component */
+  z-index: 11000;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+#sci-dialog {
+  flex-basis: 600px;
+  max-width: 800px;
+  min-height: 200px;
+
+  #sci-dialog-header {
+    border-bottom: 1px solid;
+  }
+
+  #sci-dialog-footer {
+    flex-direction: row-reverse;
+    border-top: 1px solid;
+  }
+
+  #sci-dialog-content {
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 576px) {
+  #sci-dialog-background {
+    justify-content: stretch;
+  }
+
+  #sci-dialog {
+    flex-basis: 100%;
+    height: calc(100% - 2rem);
+    min-height: unset;
+    max-width: unset;
+  }
+}
+
+@media (max-height: 280px) {
+  #sci-dialog-background {
+    justify-content: stretch;
+  }
+
+  #sci-dialog {
+    flex-basis: 100%;
+    height: calc(100% - 2rem);
+    min-height: unset;
+    max-width: unset;
+  }
+}
