@@ -9,6 +9,7 @@
 package sirius.web.controller;
 
 import sirius.kernel.commons.Strings;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 
 /**
  * Represents a single item of a {@link Facet}.
@@ -33,6 +34,7 @@ public class FacetItem {
      *
      * @return the key or content represented by this item
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getKey() {
         return key;
     }
@@ -42,6 +44,7 @@ public class FacetItem {
      *
      * @return the user representation of this item
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getTitle() {
         return title;
     }
@@ -51,6 +54,7 @@ public class FacetItem {
      *
      * @return the number of matches
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public int getCount() {
         return count;
     }
@@ -85,6 +89,7 @@ public class FacetItem {
      *
      * @return <tt>true</tt> if this is currently an active filter, <tt>false</tt> otherwise
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean isActive() {
         return forceActive || facet.values.stream().anyMatch(value -> Strings.areEqual(value, key));
     }

@@ -9,6 +9,7 @@
 package sirius.web.controller;
 
 import sirius.kernel.commons.Amount;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 
 /**
  * Represents a range filter for a {@link Facet} used for filtering on lower and/or upper bounds.
@@ -37,6 +38,7 @@ public class FacetRange {
      *
      * @return the smallest value
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public Amount getMin() {
         return min;
     }
@@ -46,6 +48,7 @@ public class FacetRange {
      *
      * @return the largest value
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public Amount getMax() {
         return max;
     }
@@ -55,6 +58,7 @@ public class FacetRange {
      *
      * @return the lower bound
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public Amount getFrom() {
         return from;
     }
@@ -64,6 +68,7 @@ public class FacetRange {
      *
      * @return the upper bound
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public Amount getTo() {
         return to;
     }
