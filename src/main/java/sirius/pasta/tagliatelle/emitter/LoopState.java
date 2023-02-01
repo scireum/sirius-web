@@ -8,6 +8,8 @@
 
 package sirius.pasta.tagliatelle.emitter;
 
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
+
 import java.util.List;
 
 /**
@@ -15,6 +17,7 @@ import java.util.List;
  * <p>
  * An instance of this can be obtained by providing a variable name for "state" in a {@link sirius.pasta.tagliatelle.tags.ForTag}.
  */
+@NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
 public class LoopState {
 
     /**
