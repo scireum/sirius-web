@@ -9,6 +9,7 @@
 package sirius.pasta.noodle.sandbox;
 
 import sirius.kernel.Sirius;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
@@ -147,21 +148,28 @@ public class Sandbox {
     private Optional<Boolean> checkFieldForGetter(Executable method) {
         try {
             if (method.getName().startsWith("get") || method.getName().startsWith("set")) {
-                String fieldName = method.getName().substring(3);
-                return Optional.ofNullable(method.getDeclaringClass()
-                                                 .getDeclaredField(fieldName)
-                                                 .getAnnotation(NoodleSandbox.class)).map(Sandbox::isAccessGranted);
+                return isAccessToFieldGranted(method, method.getName().substring(3));
             }
+
             if (method.getName().startsWith("is")) {
-                String fieldName = method.getName().substring(2);
-                return Optional.ofNullable(method.getDeclaringClass()
-                                                 .getDeclaredField(fieldName)
-                                                 .getAnnotation(NoodleSandbox.class)).map(Sandbox::isAccessGranted);
+                return isAccessToFieldGranted(method, method.getName().substring(2));
             }
         } catch (NoSuchFieldException e) {
             Exceptions.ignore(e);
         }
 
         return Optional.empty();
+    }
+
+    private Optional<Boolean> isAccessToFieldGranted(Executable method, String fieldName) throws NoSuchFieldException {
+        if (Strings.isEmpty(fieldName)) {
+            return Optional.empty();
+        }
+
+        String lowerCamelCaseName = fieldName.substring(0, 1).toLowerCase() + fieldName.substring(1);
+
+        return Optional.ofNullable(method.getDeclaringClass()
+                                         .getDeclaredField(lowerCamelCaseName)
+                                         .getAnnotation(NoodleSandbox.class)).map(Sandbox::isAccessGranted);
     }
 }
