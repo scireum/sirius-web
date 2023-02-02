@@ -79,6 +79,12 @@ class SandboxSpec extends BaseSpecification {
         sandbox.canInvoke(WebContext.class.getMethod("toString"))
         and:
         sandbox.canInvoke(ScopeInfo.class.getMethod("is", Class))
+        and:
+        sandbox.canInvoke(SandboxExample.class.getMethod("getName"))
+        and:
+        sandbox.canInvoke(SandboxExample2.class.getMethod("getName"))
+        and:
+        sandbox.canInvoke(SandboxExample3.class.getMethod("getName"))
     }
 
     def "macros with GRANTED annotation are allowed"() {
