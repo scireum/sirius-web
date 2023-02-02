@@ -347,7 +347,7 @@ window.sirius.Continuity = (function () {
         const effectiveSearchParams = searchParams || this.searchParams;
 
         if (effectiveSearchParams.entries.length > 0) {
-            url + '?' + effectiveSearchParams;
+            url = url + '?' + effectiveSearchParams;
         }
         if (window.location.hash) {
             // We want to keep the fragment component of the URL intact.
