@@ -12,6 +12,7 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -46,6 +47,7 @@ public class CSRFHelper {
      *
      * @return the CSRF security-token to protect sensitive links.
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getCSRFToken() {
         return getCSRFToken(CallContext.getCurrent().get(WebContext.class));
     }

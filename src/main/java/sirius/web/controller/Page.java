@@ -12,6 +12,7 @@ import sirius.kernel.cache.ValueComputer;
 import sirius.kernel.commons.Limit;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.nls.NLS;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 import sirius.web.http.WebContext;
 import sirius.web.util.LinkBuilder;
 
@@ -276,6 +277,7 @@ public class Page<E> {
      *
      * @return the list of items on this page
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public List<E> getItems() {
         return Collections.unmodifiableList(items);
     }
@@ -303,6 +305,7 @@ public class Page<E> {
      *
      * @return <tt>true</tt> if there is a page before this one
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean hasLess() {
         return start > 1;
     }
@@ -312,6 +315,7 @@ public class Page<E> {
      *
      * @return <tt>true</tt> if there are more items in the underlying result
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean hasMore() {
         return more;
     }
@@ -321,6 +325,7 @@ public class Page<E> {
      *
      * @return the total number of items
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public int getTotal() {
         return total;
     }
@@ -330,6 +335,7 @@ public class Page<E> {
      *
      * @return a string naming the first and last index of this page
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getRange() {
         if (getItems().isEmpty()) {
             return NLS.get("Page.noResults");
@@ -371,6 +377,7 @@ public class Page<E> {
      * @param baseUrl the base url to be used
      * @return the base url extended with all parameters (facets, query, start) to render the current page again
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String linkToCurrentPage(String baseUrl) {
         return linkToGivenStart(baseUrl, start);
     }
@@ -386,6 +393,7 @@ public class Page<E> {
      * @param baseUrl the base url to be used
      * @return the base url extended with all parameters (facets, query, start) to render the previous page
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String linkToPreviousPage(String baseUrl) {
         return linkToGivenStart(baseUrl, getPreviousStart());
     }
@@ -396,6 +404,7 @@ public class Page<E> {
      * @param baseUrl the base url to be used
      * @return the base url extended with all parameters (facets, query, start) to render the next page
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String linkToNextPage(String baseUrl) {
         return linkToGivenStart(baseUrl, getNextStart());
     }
@@ -410,6 +419,7 @@ public class Page<E> {
      * @param baseUrl the base url to be used
      * @return the base url extended with all parameters (facets, query) to render a configurable page.
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String linkToPageWithConfigurableStart(String baseUrl) {
         return addFacetsAndQuery(baseUrl, null).appendRaw(PARAM_START, "").toString();
     }
@@ -419,6 +429,7 @@ public class Page<E> {
      *
      * @return all filter facets of the underlying result set
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public List<Facet> getFacets() {
         if (hasFacets == null) {
             hasFacets = false;
@@ -438,6 +449,7 @@ public class Page<E> {
      *
      * @return <tt>true</tt> if there is at least one filter facet with items
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean hasFacets() {
         if (hasFacets == null) {
             getFacets();
@@ -451,6 +463,7 @@ public class Page<E> {
      *
      * @return <tt>true</tt> if a filter is set, <tt>false</tt> otherwise
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean isFiltered() {
         return Strings.isFilled(getQuery()) || start > 1 || getFacets().stream()
                                                                        .anyMatch(facet -> Strings.isFilled(facet.getValue()));
@@ -464,6 +477,7 @@ public class Page<E> {
      * @return the max number of items in a page
      * @see #DEFAULT_PAGE_SIZE
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public int getPageSize() {
         return pageSize;
     }

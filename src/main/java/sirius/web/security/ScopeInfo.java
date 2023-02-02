@@ -200,7 +200,6 @@ public class ScopeInfo extends Composable {
     }
 
     @Override
-    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean is(@Nonnull Class<?> type) {
         Transformable userObject = getScopeObject(Transformable.class);
         if (userObject != null && userObject.is(type)) {
@@ -210,7 +209,6 @@ public class ScopeInfo extends Composable {
     }
 
     @Override
-    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public <A> Optional<A> tryAs(@Nonnull Class<A> adapterType) {
         Transformable userObject = getScopeObject(Transformable.class);
         if (userObject != null) {

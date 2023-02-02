@@ -428,7 +428,6 @@ public class UserInfo extends Composable {
     }
 
     @Override
-    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean is(@Nonnull Class<?> type) {
         Transformable userObject = getUserObject(Transformable.class);
         if (userObject != null) {
@@ -439,7 +438,6 @@ public class UserInfo extends Composable {
     }
 
     @Override
-    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public <A> Optional<A> tryAs(@Nonnull Class<A> adapterType) {
         return Optional.ofNullable(getUserObject(Transformable.class))
                        .flatMap(userObject -> userObject.tryAs(adapterType))

@@ -159,9 +159,10 @@ public class MacroCall extends Call {
                                        macro.getClass().getName());
         }
 
-        compilationContext.ifEnforceSandbox(() -> Optional.ofNullable(macro.getClass().getAnnotation(NoodleSandbox.class))
-                                                    .filter(annotation -> !Sandbox.isAccessGranted(annotation))
-                                                    .isPresent(), mode -> {
+        compilationContext.ifEnforceSandbox(() -> Optional.ofNullable(macro.getClass()
+                                                                           .getAnnotation(NoodleSandbox.class))
+                                                          .filter(Sandbox::isAccessGranted)
+                                                          .isEmpty(), mode -> {
             if (mode == SandboxMode.ENABLED) {
                 compilationContext.error(position,
                                          "The macro %s (%s) cannot be accessed due to sandbox restrictions.",

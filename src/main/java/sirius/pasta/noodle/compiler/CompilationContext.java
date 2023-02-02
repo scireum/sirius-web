@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
  * Provides a context for compiling a <tt>Noodle</tt> script.
@@ -420,8 +420,8 @@ public class CompilationContext {
      *                              is active).
      * @param violationHandler      the handler to invoke if a sandbox violation is present
      */
-    public void ifEnforceSandbox(Supplier<Boolean> sandboxViolationCheck, Consumer<SandboxMode> violationHandler) {
-        if (getSandboxMode() == SandboxMode.DISABLED || !Boolean.TRUE.equals(sandboxViolationCheck.get())) {
+    public void ifEnforceSandbox(BooleanSupplier sandboxViolationCheck, Consumer<SandboxMode> violationHandler) {
+        if (getSandboxMode() == SandboxMode.DISABLED || !Boolean.TRUE.equals(sandboxViolationCheck.getAsBoolean())) {
             return;
         }
 

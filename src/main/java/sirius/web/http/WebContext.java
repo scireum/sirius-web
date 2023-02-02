@@ -689,6 +689,7 @@ public class WebContext implements SubContext {
      * @param key the parameter to check for
      * @return <tt>true</tt> if the parameter is present (even if its value is <tt>null</tt>), <tt>false</tt> otherwise
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean hasParameter(String key) {
         if (attribute != null && attribute.containsKey(key)) {
             return true;

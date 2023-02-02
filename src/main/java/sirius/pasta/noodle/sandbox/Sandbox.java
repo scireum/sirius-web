@@ -9,12 +9,14 @@
 package sirius.pasta.noodle.sandbox;
 
 import sirius.kernel.Sirius;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 
 import java.lang.reflect.Executable;
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -96,21 +98,64 @@ public class Sandbox {
 
     /**
      * Determines if the given method can be invoked by user code.
+     * <p>
+     * We search up the inheritance tree for the first method that is either allowed or rejected via
+     * {@link NoodleSandbox annotation} or via config. The approach however is simplified and doesn't support
+     * interfaces.
      *
      * @param method the method to check
      * @return <tt>true</tt> if it can be invoked, <tt>false</tt> otherwise
      */
     public boolean canInvoke(Executable method) {
-        return isControlledViaAnnotation(method).orElseGet(() -> isAllowed(method.getDeclaringClass().getName(),
-                                                                           method.getName()));
+        Executable currentMethod = method;
+
+        while (currentMethod != null) {
+            Optional<Boolean> controlled = isControlled(currentMethod);
+
+            if (controlled.isPresent()) {
+                return controlled.get();
+            }
+
+            currentMethod = getSuperclassMethod(currentMethod);
+        }
+
+        return false;
     }
 
-    private boolean isAllowed(String className, String methodName) {
+    private Method getSuperclassMethod(Executable method) {
+        Class<?> superclass = method.getDeclaringClass().getSuperclass();
+
+        if (superclass == null) {
+            return null;
+        }
+
+        try {
+            return superclass.getMethod(method.getName(), method.getParameterTypes());
+        } catch (NoSuchMethodException exception) {
+            Exceptions.ignore(exception);
+            return null;
+        }
+    }
+
+    private Optional<Boolean> isControlled(Executable method) {
+        return isControlledViaAnnotation(method).or(() -> isControlledViaConfig(method.getDeclaringClass().getName(),
+                                                                                method.getName()));
+    }
+
+    private Optional<Boolean> isControlledViaConfig(String className, String methodName) {
         if (denyList == null) {
             loadConfig();
         }
-        return !denyList.contains(className + "." + methodName) && (allowList.contains(className + "." + methodName)
-                                                                    || allowList.contains(className + ".*"));
+
+        if (denyList.contains(className + "." + methodName)) {
+            return Optional.of(Boolean.FALSE);
+        }
+
+        if (allowList.contains(className + "." + methodName) || allowList.contains(className + ".*")) {
+            return Optional.of(Boolean.TRUE);
+        }
+
+        return Optional.empty();
     }
 
     private void loadConfig() {
@@ -147,21 +192,28 @@ public class Sandbox {
     private Optional<Boolean> checkFieldForGetter(Executable method) {
         try {
             if (method.getName().startsWith("get") || method.getName().startsWith("set")) {
-                String fieldName = method.getName().substring(3);
-                return Optional.ofNullable(method.getDeclaringClass()
-                                                 .getDeclaredField(fieldName)
-                                                 .getAnnotation(NoodleSandbox.class)).map(Sandbox::isAccessGranted);
+                return isAccessToFieldGranted(method, method.getName().substring(3));
             }
+
             if (method.getName().startsWith("is")) {
-                String fieldName = method.getName().substring(2);
-                return Optional.ofNullable(method.getDeclaringClass()
-                                                 .getDeclaredField(fieldName)
-                                                 .getAnnotation(NoodleSandbox.class)).map(Sandbox::isAccessGranted);
+                return isAccessToFieldGranted(method, method.getName().substring(2));
             }
         } catch (NoSuchFieldException e) {
             Exceptions.ignore(e);
         }
 
         return Optional.empty();
+    }
+
+    private Optional<Boolean> isAccessToFieldGranted(Executable method, String fieldName) throws NoSuchFieldException {
+        if (Strings.isEmpty(fieldName)) {
+            return Optional.empty();
+        }
+
+        String lowerCamelCaseName = fieldName.substring(0, 1).toLowerCase() + fieldName.substring(1);
+
+        return Optional.ofNullable(method.getDeclaringClass()
+                                         .getDeclaredField(lowerCamelCaseName)
+                                         .getAnnotation(NoodleSandbox.class)).map(Sandbox::isAccessGranted);
     }
 }

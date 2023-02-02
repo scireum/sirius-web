@@ -11,6 +11,7 @@ package sirius.web.controller;
 import sirius.kernel.cache.ValueComputer;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -99,6 +100,7 @@ public class Facet {
      *
      * @return a list of all visible items of this facet
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public List<FacetItem> getItems() {
         if (!hasHiddenItems()) {
             return Collections.unmodifiableList(items);
@@ -112,6 +114,7 @@ public class Facet {
      *
      * @return a list of all hidden items of this facet, or an empty list if there are none
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public List<FacetItem> getHiddenItems() {
         if (!hasHiddenItems()) {
             return Collections.emptyList();
@@ -139,6 +142,7 @@ public class Facet {
      *
      * @return the internal name of this facet
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getName() {
         return name;
     }
@@ -148,6 +152,7 @@ public class Facet {
      *
      * @return the visible title of this facet
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getTitle() {
         return title;
     }
@@ -157,6 +162,7 @@ public class Facet {
      *
      * @return the selected filter value of this facet
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getValue() {
         return !values.isEmpty() ? values.get(0) : null;
     }
@@ -288,6 +294,7 @@ public class Facet {
      *
      * @return <tt>true</tt> if this facet has at least one hidden item, <tt>false</tt> otherwise
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean hasHiddenItems() {
         if (!facetCollapsingEnabled) {
             return false;
@@ -340,6 +347,7 @@ public class Facet {
      * @return the facet range
      */
     @SuppressWarnings("deprecation")
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public FacetRange getRange() {
         return facetRange;
     }
