@@ -131,8 +131,8 @@ public class Sandbox {
 
         try {
             return superclass.getMethod(method.getName(), method.getParameterTypes());
-        } catch (NoSuchMethodException e) {
-            Exceptions.ignore(e);
+        } catch (NoSuchMethodException exception) {
+            Exceptions.ignore(exception);
             return null;
         }
     }
