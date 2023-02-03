@@ -8,8 +8,11 @@
 
 package sirius.pasta.noodle.sandbox;
 
+import sirius.kernel.di.std.Named;
 
-public class SandboxExample {
+import javax.annotation.Nonnull;
+
+public class SandboxExample implements Named {
 
     @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String grantedMethod() {
@@ -22,5 +25,11 @@ public class SandboxExample {
 
     public String noAnnotation2() {
         return "rejected";
+    }
+
+    @Nonnull
+    @Override
+    public String getName() {
+        return "granted";
     }
 }

@@ -18,9 +18,12 @@ import sirius.kernel.health.Exceptions;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Provides a security sandbox in case <tt>Noodle</tt> is compiling a script or template provided by a user.
@@ -101,7 +104,7 @@ public class Sandbox {
      * <p>
      * We search up the inheritance tree for the first method that is either allowed or rejected via
      * {@link NoodleSandbox annotation} or via config. The approach however is simplified and doesn't support
-     * interfaces.
+     * methods of interfaces that override the method of an extended interface (which isn't common case anyway).
      *
      * @param method the method to check
      * @return <tt>true</tt> if it can be invoked, <tt>false</tt> otherwise
@@ -116,10 +119,29 @@ public class Sandbox {
                 return controlled.get();
             }
 
+            for (Method interfaceMethod : getInterfaceMethods(currentMethod)) {
+                controlled = isControlled(interfaceMethod);
+
+                if (controlled.isPresent()) {
+                    return controlled.get();
+                }
+            }
+
             currentMethod = getSuperclassMethod(currentMethod);
         }
 
         return false;
+    }
+
+    private List<Method> getInterfaceMethods(Executable method) {
+        return Stream.of(method.getDeclaringClass().getInterfaces()).map(interfaceOfClass -> {
+            try {
+                return interfaceOfClass.getMethod(method.getName(), method.getParameterTypes());
+            } catch (NoSuchMethodException exception) {
+                Exceptions.ignore(exception);
+                return null;
+            }
+        }).filter(Objects::nonNull).toList();
     }
 
     private Method getSuperclassMethod(Executable method) {
