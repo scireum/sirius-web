@@ -8,13 +8,15 @@
 
 package sirius.pasta.noodle.macros;
 
-import sirius.kernel.tokenizer.Position;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
+import sirius.pasta.noodle.sandbox.SandboxMode;
 import sirius.pasta.tagliatelle.Tagliatelle;
 import sirius.pasta.tagliatelle.Template;
 import sirius.web.resources.Resource;
@@ -38,7 +40,10 @@ import java.util.Optional;
  * @see EscapeJsMacro
  */
 @Register
+@NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
 public class InlineResourceMacro extends BasicMacro {
+
+    private static final String PASTA_SUFFIX = ".pasta";
 
     @Part
     private Resources resources;
@@ -68,6 +73,26 @@ public class InlineResourceMacro extends BasicMacro {
                 context.warning(position, "Unknown resource: %s", resourceName);
             }
         }
+
+        if (context.getSandboxMode() != SandboxMode.DISABLED) {
+            if (!args.get(0).isConstant()) {
+                raiseSandboxRestriction(context,
+                                        position,
+                                        "Only constant resource paths are supported due to sandbox restrictions.");
+            } else if (String.valueOf(args.get(0).getConstantValue()).endsWith(PASTA_SUFFIX)) {
+                raiseSandboxRestriction(context,
+                                        position,
+                                        "Only constant resources are supported due to sandbox restrictions.");
+            }
+        }
+    }
+
+    private void raiseSandboxRestriction(CompilationContext context, Position position, String message) {
+        if (context.getSandboxMode() == SandboxMode.WARN_ONLY) {
+            context.warning(position, message);
+        } else {
+            context.error(position, message);
+        }
     }
 
     @Override
@@ -77,7 +102,7 @@ public class InlineResourceMacro extends BasicMacro {
             throw new IllegalArgumentException("Only assets can be inlined for security reasons.");
         }
 
-        if (path.endsWith(".pasta")) {
+        if (path.endsWith(PASTA_SUFFIX)) {
             try {
                 Template template = tagliatelle.resolve(path)
                                                .orElseThrow(() -> new IllegalArgumentException(
@@ -113,6 +138,6 @@ public class InlineResourceMacro extends BasicMacro {
             return false;
         }
 
-        return !String.valueOf(args.get(0).getConstantValue()).endsWith(".pasta");
+        return !String.valueOf(args.get(0).getConstantValue()).endsWith(PASTA_SUFFIX);
     }
 }
