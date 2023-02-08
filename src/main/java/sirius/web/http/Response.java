@@ -807,6 +807,8 @@ public class Response {
             userMessagesCache.cacheUserMessages(webContext);
         }
 
+        setDateAndCacheHeaders(System.currentTimeMillis(), cacheSeconds == null ? 0 : cacheSeconds, isPrivate);
+
         HttpResponse response = createFullResponse(status, true, Unpooled.EMPTY_BUFFER);
         response.headers().set(HttpHeaderNames.LOCATION, url);
         complete(commit(response));
