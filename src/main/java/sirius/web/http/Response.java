@@ -805,9 +805,9 @@ public class Response {
     private void performRedirect(String url, HttpResponseStatus status) {
         if (cacheSeconds == null || cacheSeconds == 0) {
             userMessagesCache.cacheUserMessages(webContext);
+        } else {
+            setDateAndCacheHeaders(System.currentTimeMillis(), cacheSeconds, isPrivate);
         }
-
-        setDateAndCacheHeaders(System.currentTimeMillis(), cacheSeconds == null ? 0 : cacheSeconds, isPrivate);
 
         HttpResponse response = createFullResponse(status, true, Unpooled.EMPTY_BUFFER);
         response.headers().set(HttpHeaderNames.LOCATION, url);
