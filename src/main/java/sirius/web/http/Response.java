@@ -771,19 +771,12 @@ public class Response {
         if (HttpVersion.HTTP_1_0.equals(webContext.getRequest().protocolVersion())) {
             // Fallback to HTTP/1.0 code 302 found, which does mostly the same job but has a bad image due to
             // URL hijacking via faulty search engines. The main difference is that 307 will enforce the browser
-            // to use the same method for the request to the reported location. Where as 302 doesn't specify which
+            // to use the same method for the request to the reported location. Whereas 302 doesn't specify which
             // method to use, so a POST might be re-sent as GET to the new location
             redirectToGet(url);
         } else {
-            if (cacheSeconds == null || cacheSeconds == 0) {
-                userMessagesCache.cacheUserMessages(webContext);
-            }
-
             // Prefer the HTTP/1.1 code 307 as temporary redirect
-            HttpResponse response =
-                    createFullResponse(HttpResponseStatus.TEMPORARY_REDIRECT, true, Unpooled.EMPTY_BUFFER);
-            response.headers().set(HttpHeaderNames.LOCATION, url);
-            complete(commit(response));
+            performRedirect(url, HttpResponseStatus.TEMPORARY_REDIRECT);
         }
     }
 
@@ -797,13 +790,7 @@ public class Response {
      * @param url the URL to redirect to
      */
     public void redirectToGet(String url) {
-        if (cacheSeconds == null || cacheSeconds == 0) {
-            userMessagesCache.cacheUserMessages(webContext);
-        }
-
-        HttpResponse response = createFullResponse(HttpResponseStatus.FOUND, true, Unpooled.EMPTY_BUFFER);
-        response.headers().set(HttpHeaderNames.LOCATION, url);
-        complete(commit(response));
+        performRedirect(url, HttpResponseStatus.FOUND);
     }
 
     /**
@@ -812,11 +799,17 @@ public class Response {
      * @param url the URL to redirect to
      */
     public void redirectPermanently(String url) {
+        performRedirect(url, HttpResponseStatus.MOVED_PERMANENTLY);
+    }
+
+    private void performRedirect(String url, HttpResponseStatus status) {
         if (cacheSeconds == null || cacheSeconds == 0) {
             userMessagesCache.cacheUserMessages(webContext);
+        } else {
+            setDateAndCacheHeaders(System.currentTimeMillis(), cacheSeconds, isPrivate);
         }
 
-        HttpResponse response = createFullResponse(HttpResponseStatus.MOVED_PERMANENTLY, true, Unpooled.EMPTY_BUFFER);
+        HttpResponse response = createFullResponse(status, true, Unpooled.EMPTY_BUFFER);
         response.headers().set(HttpHeaderNames.LOCATION, url);
         complete(commit(response));
     }
