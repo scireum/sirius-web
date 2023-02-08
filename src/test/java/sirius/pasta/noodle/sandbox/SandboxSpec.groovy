@@ -114,4 +114,32 @@ class SandboxSpec extends BaseSpecification {
         and:
         errors.get(0).getError().getMessage().contains("sandbox restrictions")
     }
+
+    def "Static assets included via inlineResource are allowed"() {
+        when:
+        def code = "@escapeJS(inlineResource('/assets/test.css'))"
+        def compilationContext = new TemplateCompilationContext(new Template("test", null),
+                                                                SourceCodeInfo
+                                                                        .forInlineCode(code, SandboxMode.WARN_ONLY),
+                                                                null)
+        def errors = new TemplateCompiler(compilationContext).compile()
+        then:
+        errors.size() == 0
+    }
+
+    def "Tagliatelle files included via inlineResource are forbidden"() {
+        when:
+        def code = "@escapeJS(inlineResource('/assets/test/test.js.pasta'))"
+        def compilationContext = new TemplateCompilationContext(new Template("test", null),
+                                                                SourceCodeInfo
+                                                                        .forInlineCode(code, SandboxMode.WARN_ONLY),
+                                                                null)
+        def errors = new TemplateCompiler(compilationContext).compile()
+        then:
+        errors.size() == 1
+        and:
+        errors.get(0).getError().getSeverity() == ParseError.Severity.WARNING
+        and:
+        errors.get(0).getError().getMessage().contains("sandbox restrictions")
+    }
 }
