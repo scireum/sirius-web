@@ -80,7 +80,7 @@ public class MailSender {
     protected String type;
     protected List<DataSource> attachments = new ArrayList<>();
     protected String bounceToken;
-    protected String lang;
+    protected String language;
     protected Map<String, String> headers = new TreeMap<>();
 
     @Part
@@ -205,7 +205,7 @@ public class MailSender {
 
     /**
      * Specifies the NLS key used to generate the subject line of the mail.
-     * This uses the language specified in {@link #setLang(String...)} if provided
+     * This uses the language specified in {@link #setLanguage(String...)} if provided
      *
      * @param subjectKey the NLS key for the subject line to use.
      * @return the builder itself
@@ -216,7 +216,7 @@ public class MailSender {
 
     /**
      * Specifies the NLS key and optional parameters used to generate the subject line of the mail.
-     * This uses the language specified in {@link #setLang(String...)} if provided
+     * This uses the language specified in {@link #setLanguage(String...)} if provided
      *
      * @param subjectKey    the NLS key for the subject line to use.
      * @param subjectParams the parameters used to format the subject line
@@ -362,10 +362,10 @@ public class MailSender {
      * @see #addResourceAsAttachment(String, String, String)
      */
     public String addResourceAsAttachment(@Nonnull String resource, @Nullable String filename) {
-        String cid = Strings.generateCode(16) + "@mail.local";
-        addResourceAsAttachment(resource, filename, cid);
+        String contentId = Strings.generateCode(16) + "@mail.local";
+        addResourceAsAttachment(resource, filename, contentId);
 
-        return cid;
+        return contentId;
     }
 
     /**
@@ -425,16 +425,28 @@ public class MailSender {
     /**
      * Sets the language used to perform {@link sirius.kernel.nls.NLS} lookups when rendering templates.
      *
-     * @param langs an array of languages. The first non-empty value is used.
+     * @param languages an array of languages. The first non-empty value is used.
+     * @return the builder itself
+     * @deprecated Use {@link #setLanguage(String...)} instead.
+     */
+    @Deprecated
+    public final MailSender setLang(String... languages) {
+        return setLanguage(languages);
+    }
+
+    /**
+     * Sets the language used to perform {@link sirius.kernel.nls.NLS} lookups when rendering templates.
+     *
+     * @param languages an array of languages. The first non-empty value is used.
      * @return the builder itself
      */
-    public MailSender setLang(String... langs) {
-        if (langs == null) {
+    public MailSender setLanguage(String... languages) {
+        if (languages == null) {
             return this;
         }
-        for (String language : langs) {
-            if (Strings.isFilled(language)) {
-                this.lang = language;
+        for (String newLanguage : languages) {
+            if (Strings.isFilled(newLanguage)) {
+                this.language = newLanguage;
                 return this;
             }
         }
@@ -449,11 +461,11 @@ public class MailSender {
      * of invalid settings (bad mail address etc.).
      */
     public void send() {
-        String tmpLang = NLS.getCurrentLang();
+        String tmpLanguage = NLS.getCurrentLanguage();
         try {
             try {
-                if (lang != null) {
-                    CallContext.getCurrent().setLang(lang);
+                if (language != null) {
+                    CallContext.getCurrent().setLanguage(language);
                 }
                 render();
                 buildSubject();
@@ -461,11 +473,11 @@ public class MailSender {
                 check();
                 sendMailAsync();
             } finally {
-                CallContext.getCurrent().setLang(tmpLang);
+                CallContext.getCurrent().setLanguage(tmpLanguage);
             }
-        } catch (HandledException e) {
-            throw e;
-        } catch (Exception e) {
+        } catch (HandledException exception) {
+            throw exception;
+        } catch (Exception exception) {
             throw Exceptions.handle()
                             .withSystemErrorMessage(
                                     "Cannot send mail to '%s (%s)' from '%s (%s)' with subject '%s': %s (%s)",
@@ -475,7 +487,7 @@ public class MailSender {
                                     senderName,
                                     subject)
                             .to(Mails.LOG)
-                            .error(e)
+                            .error(exception)
                             .handle();
         }
     }
@@ -536,10 +548,10 @@ public class MailSender {
         }
     }
 
-    private void logInvalidAddress(Exception e, String nlsKey, String name, String email) {
+    private void logInvalidAddress(Exception exception, String nlsKey, String name, String email) {
         throw Exceptions.handle()
                         .to(Mails.LOG)
-                        .error(e)
+                        .error(exception)
                         .withNLSKey(nlsKey)
                         .set("address", Strings.isFilled(name) ? email + " (" + name + ")" : email)
                         .handle();
@@ -612,8 +624,19 @@ public class MailSender {
      * Returns the language which is set for the mail for example to set NLS-keys in the context to the right language.
      *
      * @return the language
+     * @deprecated Use {@link #getLanguage()} instead.
      */
-    public String getLang() {
-        return lang;
+    @Deprecated
+    public final String getLang() {
+        return getLanguage();
+    }
+
+    /**
+     * Returns the language which is set for the mail for example to set NLS-keys in the context to the right language.
+     *
+     * @return the language
+     */
+    public String getLanguage() {
+        return language;
     }
 }

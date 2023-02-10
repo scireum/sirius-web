@@ -13,6 +13,7 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.di.transformers.Composable;
 import sirius.kernel.di.transformers.Transformable;
 import sirius.kernel.health.Exceptions;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 import sirius.web.controller.Controller;
 
 import javax.annotation.CheckReturnValue;
@@ -49,7 +50,7 @@ public class UserInfo extends Composable {
     protected String tenantName;
     protected String userId;
     protected String username;
-    protected String lang;
+    protected String language;
     protected Set<String> permissions = new HashSet<>();
     protected boolean hasEveryPermission = false;
     protected Supplier<String> nameAppendixSupplier;
@@ -88,7 +89,7 @@ public class UserInfo extends Composable {
          * @return the builder itself for fluent method calls
          */
         public static Builder withUser(@Nonnull UserInfo info) {
-            return createUser(info.getUserId()).withLang(info.getLang())
+            return createUser(info.getUserId()).withLanguage(info.getLanguage())
                                                .withUsername(info.getUserName())
                                                .withNameAppendixSupplier(info.getNameAppendixSupplier())
                                                .withTenantId(info.getTenantId())
@@ -155,12 +156,24 @@ public class UserInfo extends Composable {
         /**
          * Sets the language code of the user.
          *
-         * @param lang a two-letter language code which should be understood by {@link sirius.kernel.nls.NLS}.
+         * @param language a two-letter language code which should be understood by {@link sirius.kernel.nls.NLS}.
+         * @return the builder itself for fluent method calls
+         * @deprecated Use {@link #withLanguage(String)} instead.
+         */
+        @Deprecated
+        public final Builder withLang(String language) {
+            return withLanguage(language);
+        }
+
+        /**
+         * Sets the language code of the user.
+         *
+         * @param language a two-letter language code which should be understood by {@link sirius.kernel.nls.NLS}.
          * @return the builder itself for fluent method calls
          */
-        public Builder withLang(String lang) {
+        public Builder withLanguage(String language) {
             verifyState();
-            user.lang = lang;
+            user.language = language;
             return this;
         }
 
@@ -244,6 +257,7 @@ public class UserInfo extends Composable {
      *
      * @return the unique ID of the user
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getUserId() {
         return userId;
     }
@@ -253,6 +267,7 @@ public class UserInfo extends Composable {
      *
      * @return the name of the user
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getUserName() {
         return username;
     }
@@ -272,6 +287,7 @@ public class UserInfo extends Composable {
      * @return the unique ID the tenant the user belongs to
      */
     @Nullable
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getTenantId() {
         return tenantId;
     }
@@ -282,6 +298,7 @@ public class UserInfo extends Composable {
      * @return the name of the tenant the user belongs to
      */
     @Nullable
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getTenantName() {
         return tenantName;
     }
@@ -290,9 +307,21 @@ public class UserInfo extends Composable {
      * The language code of the user.
      *
      * @return the two-letter language code of the user
+     * @deprecated Use {@link #getLanguage()} instead.
      */
-    public String getLang() {
-        return lang;
+    @Deprecated
+    public final String getLang() {
+        return getLanguage();
+    }
+
+    /**
+     * The language code of the user.
+     *
+     * @return the two-letter language code of the user
+     */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
+    public String getLanguage() {
+        return language;
     }
 
     /**
@@ -301,6 +330,7 @@ public class UserInfo extends Composable {
      * @param permissions the permissions to check
      * @return <tt>true</tt> if the user has all the requested permissions, <tt>false</tt> otherwise
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean hasPermissions(String... permissions) {
         for (String permission : permissions) {
             if (!hasPermission(permission)) {
@@ -325,6 +355,7 @@ public class UserInfo extends Composable {
      * @param permission the permission to check
      * @return <tt>true</tt> if the user has the permission, <tt>false</tt> otherwise
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean hasPermission(String permission) {
         return Permissions.hasPermission(permission, hasEveryPermission ? s -> true : permissions::contains);
     }
@@ -336,6 +367,7 @@ public class UserInfo extends Composable {
      *
      * @param permission the permission to check
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public void assertPermission(String permission) {
         if (!hasPermission(permission)) {
             throw Exceptions.createHandled()
@@ -351,6 +383,7 @@ public class UserInfo extends Composable {
      *
      * @return <tt>true</tt> if the user has the permission {@link #PERMISSION_LOGGED_IN}, <tt>false</tt> otherwise
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean isLoggedIn() {
         return hasPermission(PERMISSION_LOGGED_IN);
     }
@@ -361,6 +394,7 @@ public class UserInfo extends Composable {
      *
      * @return the name of the user
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getProtocolUsername() {
         if (nameAppendixSupplier != null) {
             String appendix = nameAppendixSupplier.get();
@@ -381,6 +415,7 @@ public class UserInfo extends Composable {
      */
     @SuppressWarnings("unchecked")
     @Nullable
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public <T> T getUserObject(Class<T> clazz) {
         if (userSupplier == null) {
             return null;
@@ -416,6 +451,7 @@ public class UserInfo extends Composable {
      *
      * @return all permissions granted to the user.
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public Set<String> getPermissions() {
         return Collections.unmodifiableSet(permissions);
     }
@@ -427,6 +463,7 @@ public class UserInfo extends Composable {
      *
      * @return the config object which contains all settings of the current scope, current tenant and user.
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public UserSettings getSettings() {
         if (settingsSupplier == null) {
             return UserContext.getCurrentScope().getSettings();

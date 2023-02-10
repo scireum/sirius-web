@@ -1,0 +1,101 @@
+.sci-btn {
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  border-radius: 0.25rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  padding: 0.75rem 1rem;
+  display: inline-block;
+
+  transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out;
+}
+
+.sci-btn-small {
+  @extend .sci-btn;
+
+  padding: 0.35rem 0.35rem;
+}
+
+.sci-btn-outline {
+  @extend .sci-btn;
+
+  border-width: 0.125rem;
+  border-style: solid;
+}
+
+.sci-btn-primary {
+  @extend .sci-btn;
+
+  background-color: $sirius-primary !important;
+  color: $sirius-white !important;
+
+  &:hover {
+    background-color: lighten($sirius-primary, 25%) !important;
+    color: $sirius-white !important;
+  }
+}
+
+.sci-btn-secondary {
+  @extend .sci-btn;
+
+  background-color: $sirius-gray-dark !important;
+  color: $sirius-white !important;
+
+  &:hover {
+    background-color: lighten($sirius-gray-dark, 25%) !important;
+    color: $sirius-white !important;
+  }
+}
+
+.sci-btn-white {
+  @extend .sci-btn;
+
+  background-color: $sirius-white;
+  color: $sirius-gray-dark !important;
+
+  &:hover {
+    background-color: $sirius-gray-light !important;
+    color: $sirius-gray-dark !important;
+  }
+}
+
+.sci-btn-primary-outline {
+  @extend .sci-btn;
+  @extend .sci-btn-outline;
+
+  border-color: $sirius-primary !important;
+  color: $sirius-primary !important;
+
+  &:hover {
+    background-color: $sirius-primary !important;
+    color: $sirius-white !important;
+  }
+}
+
+.sci-btn-secondary-outline {
+  @extend .sci-btn;
+  @extend .sci-btn-outline;
+
+  border-color: $sirius-gray-dark !important;
+  color: $sirius-gray-dark !important;
+
+  &:hover {
+    background-color: $sirius-gray-dark !important;
+    color: $sirius-white !important;
+  }
+}
+
+.sci-btn-white-outline {
+  @extend .sci-btn;
+  @extend .sci-btn-outline;
+
+  border-color: $sirius-white !important;
+  color: $sirius-white !important;
+
+  &:hover {
+    background-color: $sirius-white !important;
+    color: $sirius-gray-dark !important;
+  }
+}

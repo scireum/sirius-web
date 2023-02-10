@@ -78,14 +78,12 @@ public class Base64ResourceMacro extends BasicMacro implements SassFunction {
 
     @Nonnull
     private String encodeResource(String path) {
-        if (!path.startsWith("/assets")) {
+        if (!path.startsWith("/assets/")) {
             throw new IllegalArgumentException("Only assets can be inlined for security reasons.");
         }
 
-        Resource resource = resources.resolve(path).orElse(null);
-        if (resource == null) {
-            return "";
-        }
+        Resource resource =
+                resources.resolve(path).orElseThrow(() -> new IllegalArgumentException("Unknown resource: " + path));
 
         String base64Data = Base64.getEncoder().encodeToString(resource.getContent());
 

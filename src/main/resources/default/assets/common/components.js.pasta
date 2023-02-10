@@ -1,0 +1,6 @@
+___invoke("/assets/common/common.js.pasta");
+___invoke("/assets/common/scripts/overlay.js.pasta");
+___invoke("/assets/common/scripts/dialog.js.pasta");
+___invoke("/assets/common/scripts/slider.js.pasta");
+___invoke("/assets/common/scripts/accordion.js.pasta");
+___invoke("/assets/common/scripts/continuity.js.pasta");

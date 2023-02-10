@@ -8,8 +8,6 @@
 
 package sirius.pasta.tagliatelle;
 
-import sirius.kernel.tokenizer.ParseError;
-import sirius.kernel.tokenizer.Position;
 import sirius.kernel.Sirius;
 import sirius.kernel.cache.Cache;
 import sirius.kernel.cache.CacheEntry;
@@ -21,10 +19,13 @@ import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.tokenizer.ParseError;
+import sirius.kernel.tokenizer.Position;
 import sirius.pasta.Pasta;
 import sirius.pasta.noodle.compiler.CompileError;
 import sirius.pasta.noodle.compiler.CompileException;
 import sirius.pasta.noodle.compiler.SourceCodeInfo;
+import sirius.pasta.noodle.sandbox.SandboxMode;
 import sirius.pasta.tagliatelle.compiler.TemplateCompilationContext;
 import sirius.pasta.tagliatelle.compiler.TemplateCompiler;
 import sirius.pasta.tagliatelle.rendering.GlobalRenderContext;
@@ -36,6 +37,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +81,8 @@ public class Tagliatelle {
             MultiMap<String, String> result = MultiMap.createOrdered();
             Sirius.getClasspath()
                   .find(Pattern.compile("(default/|customizations/[^/]+/)?taglib/([a-z]+)/([^.]*).*.pasta"))
-                  .forEach(m -> result.put(m.group(2), m.group(3)));
+                  .sorted(Comparator.comparing(matcher -> matcher.group(2) + matcher.group(3)))
+                  .forEach(matcher -> result.put(matcher.group(2), matcher.group(3)));
             taglibTags = result;
         }
 
@@ -211,8 +214,11 @@ public class Tagliatelle {
 
     /**
      * Creates a new {@link TemplateCompilationContext} for the given inline code.
+     * <p>
+     * Note that this will enable the built-in {@link sirius.pasta.noodle.sandbox.Sandbox sandbox} if enabled for this
+     * system
      *
-     * @param name   the name of the source code / orign
+     * @param name   the name of the source code / origin
      * @param code   the actual template code to compile
      * @param parent if the compilation was started while compiling another template, its context is given here. This
      *               is mainly used to detect and abort cyclic dependencies at compile time.
@@ -222,7 +228,25 @@ public class Tagliatelle {
                                                                      @Nonnull String code,
                                                                      @Nullable TemplateCompilationContext parent) {
         Template template = new Template(name, null);
-        return new TemplateCompilationContext(template, SourceCodeInfo.forInlineCode(code), parent);
+        return new TemplateCompilationContext(template, SourceCodeInfo.forCustomCode(name, code, null), parent);
+    }
+
+    /**
+     * Creates a new {@link TemplateCompilationContext} for the given inline code.
+     *
+     * @param name        the name of the source code / origin
+     * @param code        the actual template code to compile
+     * @param sandboxMode the sandbox mode to apply
+     * @param parent      if the compilation was started while compiling another template, its context is given here. This
+     *                    is mainly used to detect and abort cyclic dependencies at compile time.
+     * @return a new compilation context for the given resource
+     */
+    public TemplateCompilationContext createInlineCompilationContext(@Nonnull String name,
+                                                                     @Nonnull String code,
+                                                                     @Nonnull SandboxMode sandboxMode,
+                                                                     @Nullable TemplateCompilationContext parent) {
+        Template template = new Template(name, null);
+        return new TemplateCompilationContext(template, SourceCodeInfo.forCustomCode(name, code, sandboxMode), parent);
     }
 
     /**

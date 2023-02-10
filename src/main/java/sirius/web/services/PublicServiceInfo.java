@@ -20,6 +20,7 @@ import sirius.kernel.nls.NLS;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -49,6 +50,9 @@ public class PublicServiceInfo {
         this.deprecated = deprecated;
         this.operation = operation;
         this.serviceParameters.addAll(serviceParameters);
+        this.serviceParameters.sort(Comparator.comparing(Parameter::required)
+                                              .reversed()
+                                              .thenComparing(Parameter::name));
         this.requestBodies.addAll(requestBodies);
         this.responses.addAll(responses);
     }

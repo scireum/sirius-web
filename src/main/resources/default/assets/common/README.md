@@ -3,6 +3,10 @@
 Provides a helper library providing commonly used JS snippets. Use or include
 [common.js.pasta](common.js.pasta) which brings all other parts with it.
 
+Alternatively use or include [components.js.pasta](components.js.pasta) and [components.scss](components.scss)
+to also get access to the larger components like the [slider](scripts/slider.js.pasta),
+[history handling](scripts/continuity.js.pasta) and many more.
+
 Additionally, for IE include [ie-polyfill.js](ie-polyfill.js.pasta) which brings
 some libraries otherwise missing from Internet Explorer.
 

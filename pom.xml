@@ -14,7 +14,7 @@
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
     <properties>
-        <sirius.kernel>ga-6.0.0</sirius.kernel>
+        <sirius.kernel>ga-7.0.0</sirius.kernel>
     </properties>
 
     <repositories>
@@ -69,12 +69,12 @@
         <dependency>
             <groupId>com.google.zxing</groupId>
             <artifactId>core</artifactId>
-            <version>3.5.0</version>
+            <version>3.5.1</version>
         </dependency>
         <dependency>
             <groupId>com.google.zxing</groupId>
             <artifactId>javase</artifactId>
-            <version>3.5.0</version>
+            <version>3.5.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.github.jai-imageio</groupId>
@@ -146,14 +146,20 @@
         <dependency>
             <groupId>com.github.pjfanning</groupId>
             <artifactId>excel-streaming-reader</artifactId>
-            <version>4.0.4</version>
+            <version>4.0.5</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.h2database</groupId>
+                    <artifactId>h2</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Swagger Annotations are used for API/Service documentation -->
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-annotations</artifactId>
-            <version>2.2.4</version>
+            <version>2.2.6</version>
         </dependency>
     </dependencies>
 

@@ -9,27 +9,23 @@
 package sirius.pasta.noodle.macros;
 
 import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
 import sirius.kernel.tokenizer.Position;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.xml.StructuredNode;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
-import sirius.pasta.noodle.sandbox.PublicApi;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 
 import javax.annotation.Nonnull;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.StringReader;
 import java.util.List;
 
 /**
  * Parses the given XML string into a {@link StructuredNode}.
  */
 @Register
-@PublicApi
-public class XmlMacro extends BasicMacro {
+@NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
+public class XmlMacro extends XmlProcessingMacro {
 
     @Override
     public Class<?> getType() {
@@ -47,23 +43,16 @@ public class XmlMacro extends BasicMacro {
     public Object invoke(Environment environment, Object[] args) {
         try {
             String xmlString = (String) args[0];
-            Document doc = parse(xmlString);
+            Document doc = parseDocument(xmlString);
             return StructuredNode.of(doc.getDocumentElement());
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid xml: " + e.getMessage(), e);
         }
     }
 
-    private Document parse(String xmlString) throws Exception {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        InputSource is = new InputSource(new StringReader(xmlString));
-        return builder.parse(is);
-    }
-
     @Override
     public String getDescription() {
-        return "Parses the given XML string into a SturcturedNode";
+        return "Parses the given XML string into a StructuredNode";
     }
 
     @Nonnull

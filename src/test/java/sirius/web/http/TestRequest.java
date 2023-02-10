@@ -316,7 +316,7 @@ public class TestRequest extends WebContext implements HttpRequest {
     }
 
     @Override
-    public ChannelHandlerContext getCtx() {
+    public ChannelHandlerContext getChannelHandlerContext() {
         return null;
     }
 
@@ -326,7 +326,7 @@ public class TestRequest extends WebContext implements HttpRequest {
     }
 
     @Override
-    protected void setCtx(ChannelHandlerContext ctx) {
+    protected void setChannelHandlerContext(ChannelHandlerContext channelHandlerContext) {
         throw new UnsupportedOperationException();
     }
 

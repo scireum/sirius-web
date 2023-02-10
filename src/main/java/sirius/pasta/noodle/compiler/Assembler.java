@@ -8,8 +8,8 @@
 
 package sirius.pasta.noodle.compiler;
 
-import sirius.kernel.tokenizer.Position;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.InterpreterCall;
 import sirius.pasta.noodle.Invocation;
 import sirius.pasta.noodle.OpCode;
@@ -29,8 +29,8 @@ public class Assembler {
     /**
      * Represents the maximum internal index or offset which can be encoded in a bytecode.
      * <p>
-     * A bytecode is a 32 bit integer, where the 16 "MSBs" are used to encode the {@link OpCode} and
-     * the lower 16 bits are used to store the index, we cannot store more than 2^16.
+     * A bytecode is a 32-bit integer, where the 16 "MSBs" are used to encode the {@link OpCode} and
+     * the lower 16 bits are used to store the index (we cannot store more than 2^16).
      */
     private static final int MAX_INDEX = (1 << 16) - 1;
 
@@ -38,6 +38,7 @@ public class Assembler {
      * Represents a label which can be used to generate a jump instruction to jump to the label.
      */
     public class Label {
+
         protected int id;
         protected int targetIP = -1;
         protected List<Integer> waitingIPs = new ArrayList<>();

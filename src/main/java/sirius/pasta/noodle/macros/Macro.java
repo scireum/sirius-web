@@ -14,7 +14,7 @@ import sirius.kernel.di.std.Named;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
-import sirius.pasta.noodle.sandbox.PublicApi;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ import java.util.List;
  * Represents a macro or constant function.
  * <p>
  * Note that {@link BasicMacro} is a base class which simplifies writing macros. Also note that if a macro is safe
- * to be called from custom code (provided by users of the system), {@link PublicApi}
+ * to be called from custom code (provided by users of the system), {@link NoodleSandbox}
  * should be added as annotation to the class.
  */
 @AutoRegister

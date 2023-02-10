@@ -10,6 +10,7 @@ package sirius.web.templates;
 
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 
@@ -46,6 +47,7 @@ public class ContentHelper {
      * @param content the content to parse
      * @return the value of <b>content</b> where all line breaks are replaced by &lt;br&gt; tags.
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String nl2br(String content) {
         if (content == null) {
             return null;
@@ -61,6 +63,7 @@ public class ContentHelper {
      * @return a string which can safely output in XML or HTML. Returns an empty string if the input was <tt>null</tt>.
      */
     @Nonnull
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public static String escapeXML(@Nullable Object aText) {
         if (Strings.isEmpty(aText)) {
             return "";
@@ -97,6 +100,7 @@ public class ContentHelper {
      * @param content content to strip XML of
      * @return content without XML tags
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String stripXML(String content) {
         if (Strings.isEmpty(content)) {
             return content;
@@ -119,6 +123,7 @@ public class ContentHelper {
      * cannot be found an empty string is returned
      */
     @Nonnull
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getResourceAsInlineString(String resource) {
         Optional<Resource> res = resources.resolve(resource);
         return res.map(r -> r.getContentAsString().replaceAll("\\r?\\n", " ").replace("'", "\\'")).orElse("");

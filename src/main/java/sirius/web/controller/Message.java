@@ -14,6 +14,7 @@ import sirius.kernel.health.ExceptionHint;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.nls.Formatter;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 import sirius.web.security.UserContext;
 import sirius.web.templates.ContentHelper;
 
@@ -232,10 +233,12 @@ public class Message {
         this.html = messageExpanders.expand(html);
     }
 
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public MessageLevel getType() {
         return type;
     }
 
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getHtml() {
         return html;
     }

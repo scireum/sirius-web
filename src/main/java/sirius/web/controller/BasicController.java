@@ -232,7 +232,7 @@ public class BasicController implements Controller {
             return;
         }
 
-        HttpResponseStatus status = HttpResponseStatus.OK;
+        HttpResponseStatus status = HttpResponseStatus.BAD_REQUEST;
         if (error.getHint(Controller.HTTP_STATUS).isNumeric()) {
             status = HttpResponseStatus.valueOf(error.getHint(Controller.HTTP_STATUS)
                                                      .asInt(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()));

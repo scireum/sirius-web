@@ -8,9 +8,9 @@
 
 package sirius.pasta.noodle.compiler.ir;
 
-import sirius.kernel.tokenizer.Position;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
+import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.OpCode;
 import sirius.pasta.noodle.compiler.Assembler;
 import sirius.pasta.noodle.compiler.CompilationContext;
@@ -18,11 +18,14 @@ import sirius.pasta.noodle.macros.HelperMacro;
 import sirius.pasta.noodle.macros.I18nMacro;
 import sirius.pasta.noodle.macros.Macro;
 import sirius.pasta.noodle.macros.UserMacro;
-import sirius.pasta.noodle.sandbox.PublicApi;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
+import sirius.pasta.noodle.sandbox.Sandbox;
+import sirius.pasta.noodle.sandbox.SandboxMode;
 import sirius.web.security.UserInfo;
 
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -156,13 +159,23 @@ public class MacroCall extends Call {
                                        macro.getClass().getName());
         }
 
-        if (compilationContext.isSandboxEnabled() && !macro.getClass().isAnnotationPresent(PublicApi.class)) {
-            compilationContext.error(position,
-                                     "The macro %s (%s) cannot be accessed due to sandbox restrictions.",
-                                     macro.getName(),
-                                     macro.getClass().getName());
-            this.macro = null;
-        }
+        compilationContext.ifEnforceSandbox(() -> Optional.ofNullable(macro.getClass()
+                                                                           .getAnnotation(NoodleSandbox.class))
+                                                          .filter(Sandbox::isAccessGranted)
+                                                          .isEmpty(), mode -> {
+            if (mode == SandboxMode.ENABLED) {
+                compilationContext.error(position,
+                                         "The macro %s (%s) cannot be accessed due to sandbox restrictions.",
+                                         macro.getName(),
+                                         macro.getClass().getName());
+                this.macro = null;
+            } else if (mode == SandboxMode.WARN_ONLY) {
+                compilationContext.warning(position,
+                                           "The macro %s (%s) cannot be accessed due to sandbox restrictions.",
+                                           macro.getName(),
+                                           macro.getClass().getName());
+            }
+        });
 
         return macro != null;
     }

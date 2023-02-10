@@ -16,6 +16,7 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.NLS;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 import sirius.web.controller.ErrorMessageTransformer;
 import sirius.web.controller.Message;
 import sirius.web.http.UserMessagesCache;
@@ -43,20 +44,20 @@ import java.util.Optional;
 public class UserContext implements SubContext {
 
     /**
-     * The key used to store the current scope in the MDC
+     * The key used to store the current scope in the MDC.
      */
     public static final String MDC_SCOPE = "scope";
     /**
-     * The key used to store the current user id in the MDC
+     * The key used to store the current user id in the MDC.
      */
     public static final String MDC_USER_ID = "userId";
     /**
-     * The key used to store the current user name in the MDC
+     * The key used to store the current username in the MDC.
      */
     public static final String MDC_USER_NAME = "username";
 
     /**
-     * Contains the logger <tt>user</tt> used by the auth framework
+     * Contains the logger <tt>user</tt> used by the auth framework.
      */
     public static final Log LOG = Log.get("user");
 
@@ -83,7 +84,7 @@ public class UserContext implements SubContext {
 
     private ScopeInfo currentScope = null;
     private boolean fetchingCurrentScope = false;
-    private List<Message> msgList = new ArrayList<>();
+    private List<Message> messages = new ArrayList<>();
     private Map<String, String> fieldErrors = new HashMap<>();
     private Map<String, String> fieldErrorMessages = new HashMap<>();
     private boolean addedAdditionalMessages = false;
@@ -93,6 +94,7 @@ public class UserContext implements SubContext {
      *
      * @return the current user context.
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public static UserContext get() {
         return CallContext.getCurrent().get(UserContext.class);
     }
@@ -103,6 +105,7 @@ public class UserContext implements SubContext {
      * @return the current user
      * @see #getUser()
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public static UserInfo getCurrentUser() {
         return get().getUser();
     }
@@ -115,6 +118,7 @@ public class UserContext implements SubContext {
      * @return the config for the current user
      * @see UserInfo#getSettings()
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public static UserSettings getSettings() {
         return get().getUser().getSettings();
     }
@@ -122,7 +126,7 @@ public class UserContext implements SubContext {
     /**
      * Returns the helper of the given class for the current scope.
      * <p>
-     * NOTE: This helper is per {@link ScopeInfo} not per {@link UserInfo}! Therefore no user dependent data may be kept
+     * NOTE: This helper is per {@link ScopeInfo} not per {@link UserInfo}! Therefore, no user dependent data may be kept
      * in its state.
      *
      * @param helperType the type of the helper to fetch
@@ -131,6 +135,7 @@ public class UserContext implements SubContext {
      * thrown.
      */
     @Nonnull
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public static <H> H getHelper(@Nonnull Class<H> helperType) {
         return getCurrentScope().getHelper(helperType);
     }
@@ -141,6 +146,7 @@ public class UserContext implements SubContext {
      * @return the currently active scope
      * @see #getScope()
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public static ScopeInfo getCurrentScope() {
         return get().getScope();
     }
@@ -154,6 +160,7 @@ public class UserContext implements SubContext {
      *
      * @param exception the exception to handle. If the given exception is <tt>null</tt>, nothing will happen.
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public static void handle(@Nullable Throwable exception) {
         if (exception != null) {
             message(Message.error(exception));
@@ -163,10 +170,11 @@ public class UserContext implements SubContext {
     /**
      * Adds a message to the current UserContext.
      *
-     * @param msg the message to add
+     * @param message the message to add
      */
-    public static void message(Message msg) {
-        get().addMessage(msg);
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
+    public static void message(Message message) {
+        get().addMessage(message);
     }
 
     /**
@@ -182,11 +190,11 @@ public class UserContext implements SubContext {
     /*
      * Loads the current scope from the given web context.
      */
-    private void bindScopeToRequest(WebContext ctx) {
-        if (ctx != null && ctx.isValid() && detector != null) {
-            ScopeInfo scope = detector.detectScope(ctx);
+    private void bindScopeToRequest(WebContext webContext) {
+        if (webContext != null && webContext.isValid() && detector != null) {
+            ScopeInfo scope = detector.detectScope(webContext);
             setCurrentScope(scope);
-            CallContext.getCurrent().setLangIfEmpty(scope.getLang());
+            CallContext.getCurrent().setLanguageIfEmpty(scope.getLanguage());
         } else {
             setCurrentScope(ScopeInfo.DEFAULT_SCOPE);
         }
@@ -195,9 +203,9 @@ public class UserContext implements SubContext {
     /*
      * Loads the current user from the given web context.
      */
-    private void bindUserToRequest(WebContext ctx) {
-        if (ctx != null && ctx.isValid()) {
-            setCurrentUser(getUserManager().bindToRequest(ctx));
+    private void bindUserToRequest(WebContext webContext) {
+        if (webContext != null && webContext.isValid()) {
+            setCurrentUser(getUserManager().bindToRequest(webContext));
         } else {
             setCurrentUser(UserInfo.NOBODY);
         }
@@ -209,11 +217,11 @@ public class UserContext implements SubContext {
      * If no user is available (currently logged in) nothing will happen. User {@link #getUser()}
      * to fully bind a user and attempt a login.
      *
-     * @param ctx the current web context to bind against
+     * @param webContext the current web context to bind against
      * @return the user which was found in the session or an empty optional if none is present
      */
-    public Optional<UserInfo> bindUserIfPresent(WebContext ctx) {
-        if (ctx == null || !ctx.isValid()) {
+    public Optional<UserInfo> bindUserIfPresent(WebContext webContext) {
+        if (webContext == null || !webContext.isValid()) {
             return Optional.empty();
         }
 
@@ -228,7 +236,7 @@ public class UserContext implements SubContext {
         }
 
         UserManager manager = getUserManager();
-        UserInfo user = manager.findUserForRequest(ctx);
+        UserInfo user = manager.findUserForRequest(webContext);
         if (user.isLoggedIn()) {
             setCurrentUser(user);
             return Optional.of(user);
@@ -267,7 +275,7 @@ public class UserContext implements SubContext {
         CallContext call = CallContext.getCurrent();
         call.addToMDC(MDC_USER_ID, currentUser::getUserId);
         call.addToMDC(MDC_USER_NAME, currentUser::getUserName);
-        call.setLangIfEmpty(currentUser.getLang());
+        call.setLanguageIfEmpty(currentUser.getLanguage());
     }
 
     /**
@@ -282,11 +290,11 @@ public class UserContext implements SubContext {
         UserInfo lastUser = getCurrentUser();
         CallContext call = CallContext.getCurrent();
         try {
-            call.resetLang();
+            call.resetLanguage();
             setCurrentUser(user);
             section.run();
         } finally {
-            call.resetLang();
+            call.resetLanguage();
             setCurrentUser(lastUser);
         }
     }
@@ -294,10 +302,11 @@ public class UserContext implements SubContext {
     /**
      * Adds a message to be shown to the user.
      *
-     * @param msg the message to be shown to the user
+     * @param message the message to be shown to the user
      */
-    public void addMessage(Message msg) {
-        msgList.add(msg);
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
+    public void addMessage(Message message) {
+        messages.add(message);
     }
 
     /**
@@ -305,6 +314,7 @@ public class UserContext implements SubContext {
      *
      * @return a list of messages to be shown to the user
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public List<Message> getMessages() {
         userMessagesCache.restoreCachedUserMessages(CallContext.getCurrent().get(WebContext.class));
 
@@ -320,7 +330,7 @@ public class UserContext implements SubContext {
             messageProviders.forEach(provider -> provider.addMessages(this::addMessage));
         }
 
-        return Collections.unmodifiableList(msgList);
+        return Collections.unmodifiableList(messages);
     }
 
     /**
@@ -328,8 +338,9 @@ public class UserContext implements SubContext {
      *
      * @return a list of "real" messages which were created while processing the current request
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public List<Message> getUserSpecificMessages() {
-        return Collections.unmodifiableList(msgList);
+        return Collections.unmodifiableList(messages);
     }
 
     /**
@@ -339,6 +350,7 @@ public class UserContext implements SubContext {
      * @param value the value which was supplied and rejected
      */
 
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public void addFieldError(String field, String value) {
         fieldErrors.put(field, value);
     }
@@ -349,6 +361,7 @@ public class UserContext implements SubContext {
      * @param field the field to check for errors
      * @return <tt>true</tt> if an error was added for the field, <tt>false</tt> otherwise
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean hasError(String field) {
         return fieldErrors.containsKey(field) || fieldErrorMessages.containsKey(field);
     }
@@ -362,6 +375,7 @@ public class UserContext implements SubContext {
      * @param field the field to check
      * @return "has-error" if an error was added for the given field, an empty string otherwise
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String signalFieldError(String field) {
         return hasError(field) ? "has-error" : "";
     }
@@ -373,6 +387,7 @@ public class UserContext implements SubContext {
      * @param value the entity value (used if no error occurred)
      * @return the originally submitted value (if an error occurred), the given value otherwise
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getFieldValue(String field, Object value) {
         if (fieldErrors.containsKey(field)) {
             return fieldErrors.get(field);
@@ -387,6 +402,7 @@ public class UserContext implements SubContext {
      * @return the originally submitted value (if an error occurred) or the parameter (using field as name)
      * from the current {@link WebContext} otherwise
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getFieldValue(String field) {
         if (fieldErrors.containsKey(field)) {
             return fieldErrors.get(field);
@@ -400,6 +416,7 @@ public class UserContext implements SubContext {
      * @param field the name of the field which values should be extracted
      * @return a list of values submitted for the given field
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public Collection<String> getFieldValues(String field) {
         return CallContext.getCurrent().get(WebContext.class).getParameters(field);
     }
@@ -410,6 +427,7 @@ public class UserContext implements SubContext {
      * @param field        name of the form field
      * @param errorMessage value to be added
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public static void setErrorMessage(String field, String errorMessage) {
         get().addFieldErrorMessage(field, errorMessage);
     }
@@ -420,6 +438,7 @@ public class UserContext implements SubContext {
      * @param field        name of the form field
      * @param errorMessage value to be added
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public void addFieldErrorMessage(String field, String errorMessage) {
         fieldErrorMessages.put(field, errorMessage);
     }
@@ -429,6 +448,7 @@ public class UserContext implements SubContext {
      *
      * @return all field errors
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public Map<String, String> getFieldErrors() {
         return Collections.unmodifiableMap(fieldErrors);
     }
@@ -439,6 +459,7 @@ public class UserContext implements SubContext {
      * @param field name of the form field
      * @return error message if existent else an empty string
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getFieldErrorMessage(String field) {
         if (fieldErrorMessages.containsKey(field)) {
             return fieldErrorMessages.get(field);
@@ -455,6 +476,7 @@ public class UserContext implements SubContext {
      *
      * @return the currently active user
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public UserInfo getUser() {
         if (currentUser == null) {
             if (fetchingCurrentUser) {
@@ -500,6 +522,7 @@ public class UserContext implements SubContext {
      *
      * @return the currently active user
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean isUserPresent() {
         return currentUser != null;
     }
@@ -524,12 +547,12 @@ public class UserContext implements SubContext {
      * This can be considered a <tt>logout</tt>.
      */
     public void detachUserFromSession() {
-        WebContext ctx = CallContext.getCurrent().get(WebContext.class);
-        if (!ctx.isValid()) {
+        WebContext webContext = CallContext.getCurrent().get(WebContext.class);
+        if (!webContext.isValid()) {
             return;
         }
         UserManager manager = getUserManager();
-        manager.logout(ctx);
+        manager.logout(webContext);
     }
 
     /**
@@ -540,6 +563,7 @@ public class UserContext implements SubContext {
      *
      * @return the currently active scope
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public ScopeInfo getScope() {
         if (currentScope == null) {
             if (fetchingCurrentScope) {
@@ -558,12 +582,12 @@ public class UserContext implements SubContext {
     @Override
     public SubContext fork() {
         // We return a copy which keeps the same user and scope - but which can be change independently.
-        // Otherwise a UserContext.runAs(...) which forks a task, would run into trouble as the
+        // Otherwise, a UserContext.runAs(...) which forks a task, would run into trouble as the
         // context is immediately switched back.
         UserContext child = new UserContext();
         child.currentUser = currentUser;
         child.currentScope = currentScope;
-        child.msgList = msgList;
+        child.messages = messages;
         child.fieldErrors = fieldErrors;
         child.fieldErrorMessages = fieldErrorMessages;
         child.addedAdditionalMessages = addedAdditionalMessages;

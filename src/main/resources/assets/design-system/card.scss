@@ -1,0 +1,28 @@
+.sci-card {
+  background: white;
+  border-radius: 0.25rem;
+  min-width: 0;
+  word-wrap: break-word;
+  background-clip: border-box;
+  border: 1px solid rgba(0,0,0,.125);
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.sci-card-header img:first-of-type {
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
+}
+
+.sci-card-header-only img:first-of-type {
+  border-bottom-left-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
+}
+
+.sci-flat-style .sci-card, .sci-card-flat {
+  box-shadow: none;
+}
+
+.sci-square-style .sci-card, .sci-card-square {
+  border-radius: none;
+}

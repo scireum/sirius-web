@@ -10,6 +10,7 @@ package sirius.web.security;
 
 import com.typesafe.config.Config;
 import sirius.kernel.settings.ExtendedSettings;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 
 /**
  * Extends the {@link ExtendedSettings} wrapper by a boilerplate method to quickly check for a permission given in the
@@ -35,6 +36,7 @@ public class UserSettings extends ExtendedSettings {
      * @return <tt>true</tt> if the current user has the permission given in the requested setting, <tt>false</tt>
      * otherwise
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public boolean hasPermissionOfSetting(String key) {
         return UserContext.getCurrentUser().hasPermission(getString(key));
     }

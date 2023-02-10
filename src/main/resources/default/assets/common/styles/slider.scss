@@ -35,13 +35,15 @@
         width: 1.5rem;
         height: 1.5rem;
         background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
 
         &.sci-slider-previous-icon {
-          background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAGKADAAQAAAABAAAAGAAAAADiNXWtAAACG0lEQVRIDbVWQUsCQRjd3Q6e/AOaEHjpLCHaMQgEI+nuxR9Q0KlDSOShQ5dIOgpevHUoBSEIuioe/AdCh/APeAgPq723zW6zuzPrpvXBOLPfvO+9+Wa/ndE0Imw4HG5juoJWRssul8sU4aZpTtFN0Ppo3UKh8IFeaabKOx6PU/P5/BpzNbQtFUby2Ri3E4nEVS6Xo7DPQgKDweAYiA5a0odc/TADpFosFnsy1JIfQH6G9J/g+y05aZKMJYfM6WXAlQPwjH32fDIwML4Fdg/Yg4Cf72cB/4mbiZMB9xzATkzyGwRfpNPpI5C9BQXAQc6O4DQcAfFC42wLyS9JmslkPnUimE4KTsNkKUL1Hc5V1eKRA+sZ4huIr3uOn4GNDHeYAet8XfK6hpwy5KxQgB9RlOlWTvJGVCDmyhTIRoA2ISdt1sIqnM9fIbIpuUFuZhAyvJxXt1rkydFoVIqxLXKIYYEsdH6A5DD4RTIqn8+/oHvwMUQ8kJsZ8FRU2b1KBJmdAhxXZEIBHrk621SkT4EuGo9cna0rQs6uJS6Lto5d+LUi2OdHTWyb3E4V8bIAiOd5lIVEUFX7KIiSImgmOL8PO3ETVbGahQIsuzwRktu2zaryHZKCo+rebr6zn1UDwB1W5WQmM8tjYJrA1FTk8J+j0pou3idAJy8edP9zZVIA6j3s3y6GLbSo6iKcRkyLMYx1PNJPKANpzviLvy1fsLX3pKS/lL0AAAAASUVORK5CYII=');
+          background-image: url(svgResource('/assets/images/icons/slider/previous.svg', #c0c0c0));
         }
 
         &.sci-slider-next-icon {
-          background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAGKADAAQAAAABAAAAGAAAAADiNXWtAAACKUlEQVRIDbVWPUsDQRC9yxWpgn2wENKIwSZNklLbgMHKIgGxVgR/gfgLFLEMpFEkVYiQ33BJk/KwCViIYCNIqhRnfG/ZPec+8uWRgc3uzbx5szs7uxvbWiCDwWAb5jpaDa0wm83yhNu2/YFujNZH61UqlXf0iWInaUejUX46nd7AdobmJGGEzse4nc1mr0ulEgOHJBbAdd0jIB7RciHk8o8JIM1qtfoioRn5AfJLLL8L3brkpMnRlxySMwjAmQNwizwHOg30HcdpwtaRjklj+pJDZ0FBVIp0zl+hic6c+W1g2R04O8Ph8An9SRJ5RDfBnuxyT9Rs9YZGyS3M/JTkdMbM/HK53FhlJYDnNKdlsxQxqzcoY9VCMk3KlShZYyU+/He4AtZ5jJxsTIdOS2BfYyX0qTMAD9FcSRmkxgCFuezakCJIIQNndfw3EYTcqoqWkQv7vud5W+JbVRe+XamTYx6M2P0hAWYMnIfxYbFY/DI69qjCc8z0TurMmNxcAW/FhWLIcWt+SqAmf5C6yHjMALxy50oKcnL2GaCHFhwkao2kJCdnL6Mfi7YhjfQX/0iLoWiTW1URHwtoeZ9H5Rl53jPKFXJuoLzsyGkFD46+rruoCBXUIJEmbuwh2gFsizZUuQD/A9yxeXiCALTysQAg9iZA9w2nUP0rtsiPJr8C+b0xhQJQqR+LzTyZDMCl8bHAsIWWWF3ECSGmRR+TFmH72wOpNGNsauq/Lb+9vR52vy7P2AAAAABJRU5ErkJggg==');
+          background-image: url(svgResource('/assets/images/icons/slider/next.svg', #c0c0c0));
         }
       }
     }

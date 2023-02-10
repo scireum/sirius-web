@@ -310,8 +310,16 @@ public class ControllerDispatcher implements WebDispatcher {
                        .addToMDC("controller",
                                  route.getController().getClass().getName() + "." + route.getMethod().getName());
             if (route.isServiceCall()) {
-                route.getController()
-                     .onApiError(webContext, Exceptions.handle(LOG, cause), route.getApiResponseFormat());
+                if (cause instanceof HandledException handledException) {
+                    route.getController().onApiError(webContext, handledException, route.getApiResponseFormat());
+                } else {
+                    route.getController()
+                         .onApiError(webContext,
+                                     Exceptions.handle(LOG, cause)
+                                               .withHint(Controller.HTTP_STATUS,
+                                                         HttpResponseStatus.INTERNAL_SERVER_ERROR.code()),
+                                     route.getApiResponseFormat());
+                }
             } else {
                 route.getController().onError(webContext, Exceptions.handle(LOG, cause));
             }
@@ -321,8 +329,10 @@ public class ControllerDispatcher implements WebDispatcher {
         }
     }
 
-    /*
+    /**
      * Compiles all available controllers and their methods into a route table
+     *
+     * @return a list holding all available {@link Route routes}
      */
     private List<Route> buildRouter() {
         PriorityCollector<Route> collector = PriorityCollector.create();
@@ -402,8 +412,10 @@ public class ControllerDispatcher implements WebDispatcher {
         return Collections.unmodifiableList(routes);
     }
 
-    /*
-     * Compiles a method wearing a Routed annotation.
+    /**
+     * Compiles a method wearing a {@link Routed} annotation.
+     *
+     * @return a {@link Route} matching the annotated criteria
      */
     private Route compileMethod(Routed routed, final Controller controller, final Method method) {
         try {

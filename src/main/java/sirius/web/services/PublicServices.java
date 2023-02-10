@@ -19,12 +19,14 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.settings.Extension;
+import sirius.web.controller.ControllerDispatcher;
 import sirius.web.controller.Routed;
 import sirius.web.http.WebServer;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -38,10 +40,13 @@ import java.util.stream.Stream;
 @Register(classes = PublicServices.class)
 public class PublicServices {
 
-    private final List<PublicApiInfo> apis = new ArrayList<>();
+    private List<PublicApiInfo> apis;
 
     @Part
     private GlobalContext globalContext;
+
+    @Part
+    private ControllerDispatcher controllerDispatcher;
 
     /**
      * Lists all known public APIs.
@@ -49,19 +54,20 @@ public class PublicServices {
      * @return the list of all known public APIs
      */
     public List<PublicApiInfo> getApis() {
-        synchronized (apis) {
-            return new ArrayList<>(apis);
+        if (apis == null) {
+            this.apis = discoverPublicServices();
         }
+
+        return Collections.unmodifiableList(apis);
     }
 
-    /**
-     * Records a new public service for the given routed method.
-     * <p>
-     * Note that this is somewhat of an internal method and should not be invoked manually.
-     *
-     * @param route the routed method which is recognized as a public service
-     */
-    public void recordPublicService(Method route) {
+    private List<PublicApiInfo> discoverPublicServices() {
+        List<PublicApiInfo> modifiableApis = new ArrayList<>();
+        controllerDispatcher.getRoutes().forEach(route -> recordPublicService(route.getMethod(), modifiableApis));
+        return modifiableApis;
+    }
+
+    private void recordPublicService(Method route, List<PublicApiInfo> modifiableApis) {
         Routed routed = route.getAnnotation(Routed.class);
         if (routed == null) {
             return;
@@ -71,29 +77,40 @@ public class PublicServices {
             return;
         }
 
+        List<Parameter> parameters = new ArrayList<>(List.of(route.getAnnotationsByType(Parameter.class)));
+        parameters.addAll(collectSharedApiParameters(route).stream()
+                                                           .filter(parameter -> parameters.stream()
+                                                                                          .map(Parameter::name)
+                                                                                          .noneMatch(override -> Strings.areEqual(
+                                                                                                  override,
+                                                                                                  parameter.name())))
+                                                           .toList());
+
         PublicServiceInfo serviceInfo = new PublicServiceInfo(publicService,
                                                               routed.value(),
                                                               route.isAnnotationPresent(Deprecated.class),
                                                               route.getAnnotation(Operation.class),
-                                                              Stream.concat(collectSharedApiParameters(route).stream(),
-                                                                            Arrays.stream(route.getAnnotationsByType(
-                                                                                    Parameter.class))).toList(),
+                                                              parameters,
                                                               Arrays.stream(route.getAnnotationsByType(RequestBody.class))
                                                                     .toList(),
-                                                              Arrays.stream(route.getAnnotationsByType(ApiResponse.class))
+                                                              Stream.concat(collectSharedApiResponses(route).stream(),
+                                                                            Arrays.stream(route.getAnnotationsByType(
+                                                                                    ApiResponse.class)))
+                                                                    .sorted(Comparator.comparingInt(apiResponse -> Integer.parseInt(
+                                                                            apiResponse.responseCode())))
                                                                     .toList());
-        synchronized (apis) {
-            PublicApiInfo apiInfo = apis.stream()
-                                        .filter(api -> Strings.areEqual(api.getApiName(), publicService.apiName()))
-                                        .findFirst()
-                                        .orElse(null);
-            if (apiInfo == null) {
-                apiInfo = buildApiInfo(publicService.apiName(), route);
-                apis.add(apiInfo);
-                apis.sort(Comparator.comparing(PublicApiInfo::getPriority).thenComparing(PublicApiInfo::getApiName));
-            }
-            apiInfo.addService(serviceInfo);
+        PublicApiInfo apiInfo = modifiableApis.stream()
+                                              .filter(api -> Strings.areEqual(api.getApiName(),
+                                                                              publicService.apiName()))
+                                              .findFirst()
+                                              .orElse(null);
+        if (apiInfo == null) {
+            apiInfo = buildApiInfo(publicService.apiName(), route);
+            modifiableApis.add(apiInfo);
+            modifiableApis.sort(Comparator.comparing(PublicApiInfo::getPriority)
+                                          .thenComparing(PublicApiInfo::getApiName));
         }
+        apiInfo.addService(serviceInfo);
     }
 
     private List<Parameter> collectSharedApiParameters(Method route) {
@@ -108,6 +125,20 @@ public class PublicServices {
             }
         });
         return sharedParameters;
+    }
+
+    private List<ApiResponse> collectSharedApiResponses(Method route) {
+        List<ApiResponse> sharedResponses = new ArrayList<>();
+        Arrays.stream(route.getAnnotationsByType(ApiResponsesFrom.class)).forEach(responsesFrom -> {
+            try {
+                sharedResponses.addAll(Arrays.asList(responsesFrom.value()
+                                                                  .getMethod("responseMethod")
+                                                                  .getAnnotationsByType(ApiResponse.class)));
+            } catch (NoSuchMethodException e) {
+                Exceptions.handle(e);
+            }
+        });
+        return sharedResponses;
     }
 
     private PublicApiInfo buildApiInfo(String apiName, Method route) {

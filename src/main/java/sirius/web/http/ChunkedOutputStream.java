@@ -51,7 +51,7 @@ public class ChunkedOutputStream extends OutputStream {
             flushBuffer(false);
         }
         if (buffer == null) {
-            buffer = response.ctx.alloc().buffer(Response.BUFFER_SIZE);
+            buffer = response.getChannelHandlerContext().alloc().buffer(Response.BUFFER_SIZE);
         }
     }
 
@@ -66,7 +66,7 @@ public class ChunkedOutputStream extends OutputStream {
 
         failIfChannelIsNotOpen();
 
-        if (!response.wc.responseCommitted) {
+        if (!response.getWebContext().responseCommitted) {
             createResponse(last);
             if (last) {
                 return;
@@ -78,14 +78,14 @@ public class ChunkedOutputStream extends OutputStream {
         } else {
             try {
                 Object message = new DefaultHttpContent(buffer);
-                ChannelFuture writeFuture = response.ctx.writeAndFlush(message);
+                ChannelFuture writeFuture = response.getChannelHandlerContext().writeAndFlush(message);
                 if (contentionControl) {
                     writeFuture.await(60, TimeUnit.SECONDS);
                 }
-            } catch (InterruptedException e) {
+            } catch (InterruptedException exception) {
                 Exceptions.handle()
                           .to(WebServer.LOG)
-                          .error(e)
+                          .error(exception)
                           .withSystemErrorMessage("Got interrupted while waiting for data to be flushed: % (%s)")
                           .handle();
 
@@ -111,14 +111,14 @@ public class ChunkedOutputStream extends OutputStream {
 
     private void completeRequest() {
         if (buffer != null) {
-            response.complete(response.ctx.writeAndFlush(new DefaultLastHttpContent(buffer)));
+            response.complete(response.getChannelHandlerContext().writeAndFlush(new DefaultLastHttpContent(buffer)));
         } else {
-            response.complete(response.ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT));
+            response.complete(response.getChannelHandlerContext().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT));
         }
     }
 
     private void failIfChannelIsNotOpen() throws IOException {
-        if (!response.ctx.channel().isOpen()) {
+        if (!response.getChannelHandlerContext().channel().isOpen()) {
             open = false;
             if (buffer != null) {
                 buffer.release();
@@ -198,7 +198,7 @@ public class ChunkedOutputStream extends OutputStream {
         }
         open = false;
         super.close();
-        if (response.ctx.channel().isOpen()) {
+        if (response.getChannelHandlerContext().channel().isOpen()) {
             flushBuffer(true);
         } else if (buffer != null) {
             buffer.release();

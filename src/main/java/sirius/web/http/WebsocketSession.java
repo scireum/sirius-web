@@ -52,7 +52,7 @@ public abstract class WebsocketSession {
      * @param text the string to send
      */
     public void sendMessage(String text) {
-        ctx.getCtx().writeAndFlush(new TextWebSocketFrame(text));
+        ctx.getChannelHandlerContext().writeAndFlush(new TextWebSocketFrame(text));
     }
 
     /**

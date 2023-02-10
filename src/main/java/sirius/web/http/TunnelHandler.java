@@ -73,7 +73,7 @@ public class TunnelHandler implements AsyncHandler<String> {
     private final Processor<ByteBuf, Optional<ByteBuf>> transformer;
     private final IntConsumer failureHandler;
     private final Consumer<TunnelHandler> completionHandler;
-    private final CallContext cc;
+    private final CallContext callContext;
     private final Watch watch;
     private volatile long timeToDns = -1;
     private volatile long timeToConnectAttempt = -1;
@@ -95,12 +95,12 @@ public class TunnelHandler implements AsyncHandler<String> {
                   IntConsumer failureHandler,
                   Consumer<TunnelHandler> completionHandler) {
         this.response = response;
-        this.webContext = response.wc;
+        this.webContext = response.getWebContext();
         this.url = url;
         this.transformer = transformer;
         this.failureHandler = failureHandler;
         this.completionHandler = completionHandler;
-        this.cc = CallContext.getCurrent();
+        this.callContext = CallContext.getCurrent();
         this.watch = Watch.start();
     }
 
@@ -133,10 +133,12 @@ public class TunnelHandler implements AsyncHandler<String> {
     public State onStatusReceived(org.asynchttpclient.HttpResponseStatus status) throws Exception {
         logTiming(status);
 
-        CallContext.setCurrent(cc);
+        CallContext.setCurrent(callContext);
 
         if (WebServer.LOG.isFINE()) {
-            WebServer.LOG.FINE("Tunnel - STATUS %s for %s", status.getStatusCode(), response.wc.getRequestedURI());
+            WebServer.LOG.FINE("Tunnel - STATUS %s for %s",
+                               status.getStatusCode(),
+                               response.getWebContext().getRequestedURI());
         }
         if ((status.getStatusCode() >= 200 && status.getStatusCode() < 300)
             || PASS_THROUGH_STATUS.contains(status.getStatusCode())) {
@@ -153,8 +155,8 @@ public class TunnelHandler implements AsyncHandler<String> {
         if (status.getStatusCode() >= 400 && failureHandler != null) {
             try {
                 failureHandler.accept(status.getStatusCode());
-            } catch (Exception t) {
-                response.error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, t));
+            } catch (Exception exception) {
+                response.error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(WebServer.LOG, exception));
             }
         } else {
             // Even not technically an error, status codes 300..399 are handled here,
@@ -168,7 +170,7 @@ public class TunnelHandler implements AsyncHandler<String> {
 
     @Override
     public State onHeadersReceived(HttpHeaders httpHeaders) throws Exception {
-        CallContext.setCurrent(cc);
+        CallContext.setCurrent(callContext);
 
         if (webContext.responseCommitted) {
             if (WebServer.LOG.isFINE()) {
@@ -253,8 +255,8 @@ public class TunnelHandler implements AsyncHandler<String> {
             return WebServer.parseDateHeader(entry.getValue())
                             .map(date -> date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
                             .orElse(0L);
-        } catch (Exception e) {
-            Exceptions.ignore(e);
+        } catch (Exception ignored) {
+            Exceptions.ignore(ignored);
             return 0;
         }
     }
@@ -262,7 +264,7 @@ public class TunnelHandler implements AsyncHandler<String> {
     @Override
     public State onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
         try {
-            CallContext.setCurrent(cc);
+            CallContext.setCurrent(callContext);
 
             if (WebServer.LOG.isFINE()) {
                 WebServer.LOG.FINE("Tunnel - CHUNK: %s for %s (Last: %s)",
@@ -270,7 +272,7 @@ public class TunnelHandler implements AsyncHandler<String> {
                                    webContext.getRequestedURI(),
                                    bodyPart.isLast());
             }
-            if (!response.ctx.channel().isOpen()) {
+            if (!response.getChannelHandlerContext().channel().isOpen()) {
                 return State.ABORT;
             }
 
@@ -300,11 +302,11 @@ public class TunnelHandler implements AsyncHandler<String> {
             }
 
             return State.CONTINUE;
-        } catch (HandledException e) {
-            Exceptions.ignore(e);
+        } catch (HandledException ignored) {
+            Exceptions.ignore(ignored);
             return State.ABORT;
-        } catch (Exception e) {
-            Exceptions.handle(e);
+        } catch (Exception exception) {
+            Exceptions.handle(exception);
             return State.ABORT;
         }
     }
@@ -312,10 +314,10 @@ public class TunnelHandler implements AsyncHandler<String> {
     private void writeBodyPart(ByteBuf data) {
         Object msg = response.responseChunked ? new DefaultHttpContent(data) : data;
         if (unflushedBytes.addAndGet(data.readableBytes()) >= Response.BUFFER_SIZE) {
-            response.ctx.writeAndFlush(msg);
+            response.getChannelHandlerContext().writeAndFlush(msg);
             unflushedBytes.set(0);
         } else {
-            response.ctx.write(msg);
+            response.getChannelHandlerContext().write(msg);
         }
     }
 
@@ -330,12 +332,14 @@ public class TunnelHandler implements AsyncHandler<String> {
             transformLastContentAndComplete(bodyPart);
         } else if (response.responseChunked) {
             ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
-            ChannelFuture writeFuture = response.ctx.writeAndFlush(new DefaultLastHttpContent(data));
+            ChannelFuture writeFuture =
+                    response.getChannelHandlerContext().writeAndFlush(new DefaultLastHttpContent(data));
             response.complete(writeFuture);
         } else {
             ByteBuf data = Unpooled.wrappedBuffer(bodyPart.getBodyByteBuffer());
-            response.ctx.channel().write(data);
-            ChannelFuture writeFuture = response.ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+            response.getChannelHandlerContext().channel().write(data);
+            ChannelFuture writeFuture =
+                    response.getChannelHandlerContext().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
             response.complete(writeFuture);
         }
     }
@@ -354,16 +358,19 @@ public class TunnelHandler implements AsyncHandler<String> {
         // Now we figure out which is simply sent and which is sent while obtaining the completion future
         // to finish the response...
         if (lastResult != null && completeResult != null) {
-            response.ctx.write(new DefaultHttpContent(lastResult));
-            ChannelFuture writeFuture = response.ctx.writeAndFlush(new DefaultLastHttpContent(completeResult));
+            response.getChannelHandlerContext().write(new DefaultHttpContent(lastResult));
+            ChannelFuture writeFuture =
+                    response.getChannelHandlerContext().writeAndFlush(new DefaultLastHttpContent(completeResult));
             response.complete(writeFuture);
         } else if (completeResult != null) {
             throw new IllegalStateException("lastResult was null but completeResult wasn't!");
         } else if (lastResult != null) {
-            ChannelFuture writeFuture = response.ctx.writeAndFlush(new DefaultLastHttpContent(lastResult));
+            ChannelFuture writeFuture =
+                    response.getChannelHandlerContext().writeAndFlush(new DefaultLastHttpContent(lastResult));
             response.complete(writeFuture);
         } else {
-            ChannelFuture writeFuture = response.ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+            ChannelFuture writeFuture =
+                    response.getChannelHandlerContext().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
             response.complete(writeFuture);
         }
     }
@@ -389,7 +396,7 @@ public class TunnelHandler implements AsyncHandler<String> {
             return "";
         }
 
-        CallContext.setCurrent(cc);
+        CallContext.setCurrent(callContext);
 
         if (WebServer.LOG.isFINE()) {
             WebServer.LOG.FINE("Tunnel - COMPLETE for %s", webContext.getRequestedURI());
@@ -400,7 +407,8 @@ public class TunnelHandler implements AsyncHandler<String> {
             HttpUtil.setContentLength(res, 0);
             response.complete(response.commit(res));
         } else if (!webContext.responseCompleted) {
-            ChannelFuture writeFuture = response.ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+            ChannelFuture writeFuture =
+                    response.getChannelHandlerContext().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
             response.complete(writeFuture);
         }
         return "";
@@ -439,10 +447,10 @@ public class TunnelHandler implements AsyncHandler<String> {
                                              .map(param -> param + ": " + Strings.limit(webContext.get(param)
                                                                                                   .asString(), 50))
                                              .collect(Collectors.joining("\n")),
-                                   cc);
+                                   callContext);
             }
-        } catch (Exception e) {
-            Exceptions.handle(e);
+        } catch (Exception exception) {
+            Exceptions.handle(exception);
         }
     }
 
@@ -455,15 +463,15 @@ public class TunnelHandler implements AsyncHandler<String> {
     }
 
     @Override
-    public void onThrowable(Throwable t) {
-        CallContext.setCurrent(cc);
+    public void onThrowable(Throwable throwable) {
+        CallContext.setCurrent(callContext);
 
         WebServer.LOG.WARN("Tunnel - ERROR %s for tunneling to '%s' performed at '%s'",
-                           t.getMessage() + " (" + t.getClass().getName() + ")",
+                           throwable.getMessage() + " (" + throwable.getClass().getName() + ")",
                            url,
                            webContext.getRequestedURI());
 
-        if (t instanceof ClosedChannelException) {
+        if (throwable instanceof ClosedChannelException) {
             failed = true;
             if (completionHandler != null) {
                 completionHandler.accept(this);
@@ -481,11 +489,11 @@ public class TunnelHandler implements AsyncHandler<String> {
             if (completionHandler != null) {
                 completionHandler.accept(this);
             }
-        } catch (Exception e) {
-            Exceptions.handle(WebServer.LOG, e);
+        } catch (Exception exception) {
+            Exceptions.handle(WebServer.LOG, exception);
         }
         if (!failed) {
-            response.error(HttpResponseStatus.valueOf(responseCode), Exceptions.handle(WebServer.LOG, t));
+            response.error(HttpResponseStatus.valueOf(responseCode), Exceptions.handle(WebServer.LOG, throwable));
         }
     }
 

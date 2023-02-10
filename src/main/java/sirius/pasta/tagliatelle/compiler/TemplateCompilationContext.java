@@ -8,12 +8,12 @@
 
 package sirius.pasta.tagliatelle.compiler;
 
-import sirius.kernel.tokenizer.Char;
-import sirius.kernel.tokenizer.ParseError;
-import sirius.kernel.tokenizer.Position;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
+import sirius.kernel.tokenizer.Char;
+import sirius.kernel.tokenizer.ParseError;
+import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.Callable;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.CompileError;

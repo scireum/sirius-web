@@ -45,7 +45,7 @@ class MailsSpec extends BaseSpecification {
         mails.createEmail()
              .to("test@scireum.de", "Test")
              .nlsSubject("mail.subject", Context.create().set("nr", "1"))
-             .setLang("fr")
+             .setLanguage("fr")
              .textContent("This is a Test.")
              .send()
         then:

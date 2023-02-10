@@ -8,19 +8,19 @@
 
 package sirius.pasta.noodle.compiler.ir;
 
-import sirius.kernel.tokenizer.Position;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
+import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.OpCode;
 import sirius.pasta.noodle.compiler.Assembler;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.TypeTools;
 import sirius.pasta.noodle.sandbox.Sandbox;
+import sirius.pasta.noodle.sandbox.SandboxMode;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
@@ -100,12 +100,18 @@ public class ConstructorCall extends Call {
     }
 
     private void checkSandbox(CompilationContext context) {
-        if (context.isSandboxEnabled() && !sandbox.canInvoke(constructor)) {
-            context.error(position,
-                          "Cannot invoke the constructor on %s as this is restricted by the security sandbox!",
-                          constructor.getDeclaringClass().getName());
-            this.constructor = null;
-        }
+        context.ifEnforceSandbox(() -> !sandbox.canInvoke(constructor), mode -> {
+            if (mode == SandboxMode.ENABLED) {
+                context.error(position,
+                              "Cannot invoke the constructor on %s as this is restricted by the security sandbox!",
+                              constructor.getDeclaringClass().getName());
+                this.constructor = null;
+            } else if (mode == SandboxMode.WARN_ONLY) {
+                context.warning(position,
+                                "Cannot invoke the constructor on %s as this is restricted by the security sandbox!",
+                                constructor.getDeclaringClass().getName());
+            }
+        });
     }
 
     private Constructor<?> findConstructor(Class<?> type, Class<?>[] parameterTypes) throws NoSuchMethodException {

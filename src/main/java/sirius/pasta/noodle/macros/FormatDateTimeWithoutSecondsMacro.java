@@ -12,7 +12,7 @@ import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.nls.NLS;
 import sirius.pasta.noodle.Environment;
-import sirius.pasta.noodle.sandbox.PublicApi;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 
 import javax.annotation.Nonnull;
 import java.time.temporal.TemporalAccessor;
@@ -23,10 +23,10 @@ import java.util.Date;
  * <p>
  * The macro supports the datatypes {@code long} for epoch milliseconds, {@link Date} for legacy applications, and
  * {@link TemporalAccessor}. The invocation is forwarded to {@link NLS#getDateTimeFormatWithoutSeconds(String)#format}
- * via {@link Value#asLocalDateTime(java.time.LocalDateTime)} and using {@link NLS#getCurrentLang()}.
+ * via {@link Value#asLocalDateTime(java.time.LocalDateTime)} and using {@link NLS#getCurrentLanguage()}.
  */
 @Register
-@PublicApi
+@NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
 public class FormatDateTimeWithoutSecondsMacro extends FormatDateMacro {
 
     @Override
@@ -35,7 +35,7 @@ public class FormatDateTimeWithoutSecondsMacro extends FormatDateMacro {
         if (evalResult.isNull()) {
             return "";
         }
-        return NLS.getDateTimeFormatWithoutSeconds(NLS.getCurrentLang()).format(evalResult.asLocalDateTime(null));
+        return NLS.getDateTimeFormatWithoutSeconds(NLS.getCurrentLanguage()).format(evalResult.asLocalDateTime(null));
     }
 
     @Nonnull

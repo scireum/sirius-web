@@ -15,7 +15,7 @@ import sirius.kernel.nls.NLS;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
-import sirius.pasta.noodle.sandbox.PublicApi;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -24,7 +24,7 @@ import java.util.List;
  * Represents <tt>smartTranslate(String)</tt> which is essentially a call to {@link NLS#smartGet(String)}}.
  */
 @Register
-@PublicApi
+@NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
 public class SmartTranslateMacro extends BasicMacro {
     @Override
     public Class<?> getType() {

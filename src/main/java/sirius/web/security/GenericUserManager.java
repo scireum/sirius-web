@@ -410,7 +410,7 @@ public abstract class GenericUserManager implements UserManager {
                                .withUsername(computeUsername(webContext, userId.asString()))
                                .withTenantId(tenantId)
                                .withTenantName(computeTenantname(webContext, tenantId))
-                               .withLang(computeLang(webContext, userId.asString()))
+                               .withLanguage(computeLanguage(webContext, userId.asString()))
                                .withPermissions(roles)
                                .withSettingsSupplier(user -> getUserSettings(getScopeSettings(), user))
                                .withSubScopeCheck(this::checkSubScope)
@@ -495,7 +495,7 @@ public abstract class GenericUserManager implements UserManager {
      * @return the language code for the user
      */
     @Nonnull
-    protected abstract String computeLang(WebContext webContext, String userId);
+    protected abstract String computeLanguage(WebContext webContext, String userId);
 
     /**
      * Removes all stored user information from the current session.

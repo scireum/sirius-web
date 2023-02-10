@@ -49,7 +49,7 @@
     <t:heading label="Tag Libraries"/>
 
     <t:datacards>
-        <t:datacard title="Build-Ins">
+        <t:datacard title="Built-Ins">
             <t:navbox>
                 <i:for type="String" var="tag" items="builtIns">
                     <t:navboxLink label="@apply('i:%s', tag)"

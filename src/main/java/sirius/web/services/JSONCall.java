@@ -11,10 +11,13 @@ package sirius.web.services;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import io.netty.handler.codec.http.HttpHeaderNames;
+import sirius.kernel.commons.Streams;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.xml.Outcall;
 import sirius.web.http.MimeHelper;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
@@ -72,7 +75,7 @@ public class JSONCall {
      * <p>
      * This will mark the underlying {@link Outcall} as a POST request.
      *
-     * @return the an input which can be used to generate a JSON document which is sent to the URL
+     * @return the input which can be used to generate a JSON document which is sent to the URL
      * @throws IOException in case of an IO error while sending the JSON document
      */
     public JSONStructuredOutput getOutput() throws IOException {
@@ -86,7 +89,14 @@ public class JSONCall {
      * @throws IOException in case of an IO error while receiving the result
      */
     public JSONObject getInput() throws IOException {
-        return JSON.parseObject(getPlainInput());
+        String contentType = outcall.getHeaderField("content-type");
+        if (!outcall.isErroneous() || (contentType != null && contentType.toLowerCase()
+                                                                         .contains(MimeHelper.APPLICATION_JSON))) {
+            return JSON.parseObject(Streams.readToString(new InputStreamReader(outcall.getResponse().body(),
+                                                                               outcall.getContentEncoding())));
+        }
+        throw new IOException(Strings.apply("A non-OK response (%s) was received as a result of an HTTP call",
+                                            outcall.getResponse().statusCode()));
     }
 
     /**
@@ -94,13 +104,15 @@ public class JSONCall {
      *
      * @return the response of the call as String
      * @throws IOException in case of an IO error while receiving the result
+     * @deprecated use {@link #getInput()}}
      */
+    @Deprecated
     public String getPlainInput() throws IOException {
         return outcall.getData();
     }
 
     /**
-     * Provides access to the underlying outcall.
+     * Provides access to the underlying <tt>outcall</tt>.
      *
      * @return the underlying outcall
      */
