@@ -83,7 +83,9 @@ public class SourceCodeInfo {
      * If no sandbox mode is given, the {@link sirius.pasta.noodle.sandbox.Sandbox sandbox} is used, if enabled for this
      * system.
      *
-     * @param code the code to wrap
+     * @param name        the name of the code to wrap
+     * @param code        the code to wrap
+     * @param sandboxMode the sandbox mode to apply when compiling the code
      * @return the newly created source code info
      */
     public static SourceCodeInfo forCustomCode(@Nonnull String name,

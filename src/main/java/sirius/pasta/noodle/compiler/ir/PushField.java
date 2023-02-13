@@ -8,9 +8,9 @@
 
 package sirius.pasta.noodle.compiler.ir;
 
-import sirius.kernel.tokenizer.Position;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
+import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.OpCode;
 import sirius.pasta.noodle.compiler.Assembler;
 import sirius.pasta.noodle.compiler.CompilationContext;
@@ -32,8 +32,9 @@ public class PushField extends Node {
     /**
      * Creates a new node for the given field.
      *
-     * @param position the position in the source code
-     * @param field    the field to push
+     * @param compilationContext the current compilation context
+     * @param position           the position in the source code
+     * @param field              the field to push
      */
     public PushField(CompilationContext compilationContext, Position position, Field field) {
         super(position);
@@ -42,14 +43,14 @@ public class PushField extends Node {
         if (!Modifier.isPublic(field.getModifiers())) {
             if (compilationContext.getSandboxMode() == SandboxMode.ENABLED) {
                 compilationContext.error(position,
-                              "The field '%s' of '%s' is not public accessible.",
-                              field.getName(),
-                              field.getDeclaringClass().getName());
+                                         "The field '%s' of '%s' is not public accessible.",
+                                         field.getName(),
+                                         field.getDeclaringClass().getName());
             } else if (compilationContext.getSandboxMode() == SandboxMode.WARN_ONLY) {
                 compilationContext.warning(position,
-                                "The field '%s' of '%s' is not public accessible.",
-                                field.getName(),
-                                field.getDeclaringClass().getName());
+                                           "The field '%s' of '%s' is not public accessible.",
+                                           field.getName(),
+                                           field.getDeclaringClass().getName());
             }
         }
     }
