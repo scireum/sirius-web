@@ -1,7 +1,7 @@
 <t:page title="Console">
     <i:block name="head">
         <script type="text/javascript" src="/assets/terminal/jquery.terminal-2.31.1.min.js"></script>
-        <link href="/assets/terminal/jquery.terminal-2.31.1.min.css" rel="stylesheet" />
+        <link href="/assets/terminal/jquery.terminal-2.31.1.min.css" rel="stylesheet"/>
         <script>
             $(document).ready(function ($) {
                 const padZeros = function (str, length) {
@@ -23,13 +23,13 @@
                     }
 
                     term.pause();
-                    $.post('/system/console/api', {command: command}).then(function (response) {
-                        if (response.error) {
-                            term.echo("\n", {exec: false}).error(response.message).echo("\n\n", {exec: false}).resume();
-                        } else {
+                    $.post('/system/console/api', {command: command})
+                        .done(function (response) {
                             term.echo(response.result, {exec: false}).resume();
-                        }
-                    });
+                        })
+                        .fail(function (call) {
+                            term.echo("\n", {exec: false}).error(call.responseJSON.message).echo("\n\n", {exec: false}).resume();
+                        });
                 }, {
                     prompt: function (output) {
                         const now = new Date();
