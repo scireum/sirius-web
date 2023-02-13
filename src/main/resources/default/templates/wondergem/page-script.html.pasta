@@ -282,12 +282,13 @@
             data,
             function (json) {
                 clearMessages();
-                if (json.error) {
-                    addError(json.message);
-                } else {
-                    addInfo('@i18n("BasicController.changesSaved")');
-                }
-            }, 'json');
+                addInfo('@i18n("BasicController.changesSaved")');
+
+            }, 'json')
+            .fail(function (call) {
+                clearMessages();
+                addError(call.responseJSON.message);
+            });
     }
 
     $(function () {
