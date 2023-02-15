@@ -14,7 +14,6 @@ import sirius.kernel.async.Promise;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
-import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.XMLStructuredOutput;
@@ -27,7 +26,6 @@ import sirius.web.services.Format;
 import sirius.web.services.InternalService;
 import sirius.web.services.JSONStructuredOutput;
 import sirius.web.services.PublicService;
-import sirius.web.services.PublicServices;
 
 import javax.annotation.Nonnull;
 import java.io.UnsupportedEncodingException;
