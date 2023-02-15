@@ -13,10 +13,14 @@ import com.alibaba.fastjson.JSONObject;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import sirius.kernel.commons.Streams;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.health.Log;
+import sirius.kernel.nls.Formatter;
 import sirius.kernel.xml.Outcall;
 import sirius.web.http.MimeHelper;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -27,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 public class JSONCall {
 
     private Outcall outcall;
+    private Log logger = Log.get("json");
 
     /*
      * Use .to(URL) to generate an instance.
@@ -61,13 +66,28 @@ public class JSONCall {
     }
 
     /**
+     * Log the outcall to {@code logger}.
+     * <p>
+     * The outcall is only logged when the logger is set to FINE. The default logger is "json".
+     *
+     * @param logger the logger to log to
+     * @return returns the JSON call itself for fluent method calls
+     */
+    public JSONCall withFineLogger(Log logger) {
+        this.logger = logger;
+        return this;
+    }
+
+    /**
      * Adds a custom header field to the call
      *
      * @param name  name of the field
      * @param value value of the field
+     * @return returns the JSON call itself for fluent method calls
      */
-    public void addHeader(String name, String value) {
+    public JSONCall addHeader(String name, String value) {
         outcall.setRequestProperty(name, value);
+        return this;
     }
 
     /**
@@ -82,6 +102,35 @@ public class JSONCall {
         return new JSONStructuredOutput(outcall.postFromOutput(), null, StandardCharsets.UTF_8.name());
     }
 
+    private InputStream getInputStream() throws IOException {
+        if (logger != null && logger.isFINE()) {
+            // log the request, even when parsing fails
+            try (InputStream body = outcall.getResponse().body()) {
+                String text = new String(body.readAllBytes(), StandardCharsets.UTF_8);
+                boolean isPost = outcall.isPostRequest();
+                logger.FINE(Formatter.create("""
+                                                     ---------- call ----------
+                                                     ${httpMethod} ${url} [
+                                                                                  
+                                                     ${callBody}]
+                                                     ---------- response ----------
+                                                     HTTP-Response-Code: ${responseCode}
+                                                                                  
+                                                     ${response}
+                                                     ---------- end ----------
+                                                     """)
+                                     .set("httpMethod", isPost ? "POST" : "GET")
+                                     .set("url", outcall.getRequest().uri())
+                                     .set("callBody", isPost ? getOutput() : null)
+                                     .set("responseCode", getOutcall().getResponseCode())
+                                     .set("response", text)
+                                     .smartFormat());
+                return new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
+            }
+        }
+        return outcall.getResponse().body();
+    }
+
     /**
      * Provides access to the JSON answer of the call.
      *
@@ -92,7 +141,7 @@ public class JSONCall {
         String contentType = outcall.getHeaderField("content-type");
         if (!outcall.isErroneous() || (contentType != null && contentType.toLowerCase()
                                                                          .contains(MimeHelper.APPLICATION_JSON))) {
-            return JSON.parseObject(Streams.readToString(new InputStreamReader(outcall.getResponse().body(),
+            return JSON.parseObject(Streams.readToString(new InputStreamReader(getInputStream(),
                                                                                outcall.getContentEncoding())));
         }
         throw new IOException(Strings.apply("A non-OK response (%s) was received as a result of an HTTP call",
