@@ -83,7 +83,7 @@ public class JSONCall {
      *
      * @param name  name of the field
      * @param value value of the field
-     * @return returns the JSON call itself for fluent method calls
+     * @return the JSON call itself for fluent method calls
      */
     public JSONCall addHeader(String name, String value) {
         outcall.setRequestProperty(name, value);
