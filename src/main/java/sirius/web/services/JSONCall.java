@@ -133,6 +133,7 @@ public class JSONCall {
         String body =
                 Streams.readToString(new InputStreamReader(outcall.getResponse().body(), outcall.getContentEncoding()));
         logRequest(body);
+        
         String contentType = outcall.getHeaderField("content-type");
         if (!outcall.isErroneous() || (contentType != null && contentType.toLowerCase()
                                                                          .contains(MimeHelper.APPLICATION_JSON))) {
