@@ -112,10 +112,10 @@ function _inlineBarChart(selector, data, color, roundedBars) {
                 }
             },
             scales: {
-                xAxis: {
+                x: {
                     display: false
                 },
-                yAxis: {
+                y: {
                     display: false
                 },
             }
@@ -149,10 +149,10 @@ function _inlineLineChart(selector, data, color, fill) {
                 }
             },
             scales: {
-                xAxis: {
+                x: {
                     display: false
                 },
-                yAxis: {
+                y: {
                     display: false
                 },
             }
