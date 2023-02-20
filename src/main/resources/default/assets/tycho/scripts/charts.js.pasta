@@ -2,7 +2,9 @@ const SIRIUS_CHART_COLOR_WHEEL = [
     "#5cbae6",
     "#fac364",
     "#b6d957",
-    "#d998cb"
+    "#d998cb",
+    "#f2d249",
+    "#98aafb"
 ];
 const SIRIUS_INLINE_CHART_TYPES = [
     'bar', 'line', 'soft-bar', 'area'
