@@ -235,6 +235,23 @@ function _lineChart(selector, labels, datasets, stacked) {
         }
     };
 
+    if (stacked) {
+        customConfig.interaction = {
+            mode: 'nearest',
+            axis: 'x',
+            intersect: false
+        }
+        customConfig.plugins.tooltip = {
+            callbacks: {
+                footer: function (tooltipItems) {
+                    return '___i18n("Charts.total"): ' + tooltipItems.reduce(function (acc, item) {
+                        return acc + item.parsed.y;
+                    }, 0);
+                }
+            }
+        }
+    }
+
     if (hasRightYAxis) {
         customConfig.scales = {
             y: {
