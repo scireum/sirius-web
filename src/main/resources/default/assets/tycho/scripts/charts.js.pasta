@@ -265,6 +265,9 @@ function _lineChart(selector, labels, datasets, stacked) {
                 position: 'right',
                 min: 0,
                 stacked: stacked,
+                border: {
+                    dash: [5,5]
+                }
             }
         };
     }
@@ -360,7 +363,10 @@ function barChart(selector, labels, datasets) {
             yRight: {
                 type: 'linear',
                 position: 'right',
-                min: 0
+                min: 0,
+                border: {
+                    dash: [5,5]
+                }
             }
         };
     }
