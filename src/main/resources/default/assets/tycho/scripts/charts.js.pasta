@@ -112,10 +112,10 @@ function _inlineBarChart(selector, data, color, roundedBars) {
                 }
             },
             scales: {
-                xAxis: {
+                x: {
                     display: false
                 },
-                yAxis: {
+                y: {
                     display: false
                 },
             }
@@ -149,10 +149,10 @@ function _inlineLineChart(selector, data, color, fill) {
                 }
             },
             scales: {
-                xAxis: {
+                x: {
                     display: false
                 },
-                yAxis: {
+                y: {
                     display: false
                 },
             }
@@ -235,6 +235,23 @@ function _lineChart(selector, labels, datasets, stacked) {
         }
     };
 
+    if (stacked) {
+        customConfig.interaction = {
+            mode: 'nearest',
+            axis: 'x',
+            intersect: false
+        }
+        customConfig.plugins.tooltip = {
+            callbacks: {
+                footer: function (tooltipItems) {
+                    return '___i18n("Charts.total"): ' + tooltipItems.reduce(function (acc, item) {
+                        return acc + item.parsed.y;
+                    }, 0);
+                }
+            }
+        }
+    }
+
     if (hasRightYAxis) {
         customConfig.scales = {
             y: {
@@ -248,6 +265,9 @@ function _lineChart(selector, labels, datasets, stacked) {
                 position: 'right',
                 min: 0,
                 stacked: stacked,
+                border: {
+                    dash: [5,5]
+                }
             }
         };
     }
@@ -343,7 +363,10 @@ function barChart(selector, labels, datasets) {
             yRight: {
                 type: 'linear',
                 position: 'right',
-                min: 0
+                min: 0,
+                border: {
+                    dash: [5,5]
+                }
             }
         };
     }
