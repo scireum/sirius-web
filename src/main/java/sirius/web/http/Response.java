@@ -198,7 +198,14 @@ public class Response {
     protected DefaultFullHttpResponse createFullResponse(HttpResponseStatus status, boolean keepalive, ByteBuf buffer) {
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, buffer);
         setupResponse(status, keepalive, response);
-        response.headers().set(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());
+
+        // The user may have manually set a content-length, for instance when
+        // responding to a HEAD request. In such cases, we trust the user that
+        // the value is correct and don't change it.
+        if (!response.headers().contains(HttpHeaderNames.CONTENT_LENGTH)) {
+            response.headers().set(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());
+        }
+
         return response;
     }
 
