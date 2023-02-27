@@ -173,11 +173,7 @@ public class Generator {
         }
         try {
             try {
-                if (Strings.isFilled(handlerType)) {
-                    generateContentUsingHandler(out);
-                } else {
-                    findAndInvokeContentHandler(out);
-                }
+                invokeContentHandler(out);
             } catch (ExceptionConverter exceptionConverter) {
                 // We need to unwrap exceptions created by iText here...
                 if (exceptionConverter.getException() instanceof ChannelClosedException
@@ -211,6 +207,14 @@ public class Generator {
             }
         } finally {
             CallContext.getCurrent().removeFromMDC("content-generator-template");
+        }
+    }
+
+    private void invokeContentHandler(OutputStream out) throws Exception {
+        if (Strings.isFilled(handlerType)) {
+            generateContentUsingHandler(out);
+        } else {
+            findAndInvokeContentHandler(out);
         }
     }
 
