@@ -36,6 +36,7 @@ import sirius.kernel.nls.NLS;
 import javax.net.ssl.SSLSession;
 import java.net.InetSocketAddress;
 import java.nio.channels.ClosedChannelException;
+import java.time.Duration;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
@@ -458,7 +459,7 @@ public class TunnelHandler implements AsyncHandler<String> {
         if (durationMillis <= 0) {
             return "-";
         } else {
-            return NLS.convertDuration(durationMillis, true, true);
+            return NLS.convertDuration(Duration.ofMillis(durationMillis), true, true);
         }
     }
 
