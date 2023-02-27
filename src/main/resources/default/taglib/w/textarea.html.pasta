@@ -11,6 +11,8 @@
 <i:arg name="required" type="boolean" default="false" />
 <i:arg name="readonly" type="boolean" default="false" />
 <i:arg name="adminOnly" type="boolean" default="false" />
+<i:arg name="class" type="String" default=""/>
+<i:arg name="style" type="String" default=""/>
 
 <i:pragma name="description" value="Renders a text area within a Wondergem template" />
 
@@ -22,7 +24,12 @@
         </span>
         </label>
     </i:if>
-    <textarea @id="@id" name="@name" rows="@rows" class="form-control input-block-level" @readonly="readonly">@UserContext.get().getFieldValue(name, value)</textarea>
+    <textarea @id="@id"
+              name="@name"
+              rows="@rows"
+              class="form-control input-block-level @class"
+              style="@style"
+              @readonly="readonly">@UserContext.get().getFieldValue(name, value)</textarea>
 
     <i:if test="isFilled(help)">
         <span class="help-block"><i:raw>@help</i:raw></span>
