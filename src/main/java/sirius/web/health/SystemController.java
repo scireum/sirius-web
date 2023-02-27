@@ -43,6 +43,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -315,7 +316,7 @@ public class SystemController extends BasicController {
                      cluster,
                      metrics,
                      ctx.get("all").asBoolean(false),
-                     NLS.convertDuration(Sirius.getUptimeInMilliseconds(), true, false));
+                     NLS.convertDuration(Duration.ofMillis(Sirius.getUptimeInMilliseconds()), true, false));
     }
 
     /**
@@ -351,7 +352,7 @@ public class SystemController extends BasicController {
         }
 
         String periodSinceReset =
-                NLS.convertDuration(System.currentTimeMillis() - Microtiming.getLastReset(), true, false);
+                NLS.convertDuration(Duration.ofMillis(System.currentTimeMillis() - Microtiming.getLastReset()), true, false);
 
         Page<String> page = new Page<>();
         page.bindToRequest(ctx);

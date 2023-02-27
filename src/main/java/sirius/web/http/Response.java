@@ -64,6 +64,7 @@ import java.io.IOException;
 import java.net.URLConnection;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -506,9 +507,9 @@ public class Response {
                                + "%nMDC:"
                                + "%n%s%n",
                                webContext.getRequestedURI(),
-                               NLS.convertDuration(responseTimeMillis, true, true),
-                               NLS.convertDuration(queuedMillis, true, true),
-                               NLS.convertDuration(ttfbMillis, true, true),
+                               NLS.convertDuration(Duration.ofMillis(responseTimeMillis), true, true),
+                               NLS.convertDuration(Duration.ofMillis(queuedMillis), true, true),
+                               NLS.convertDuration(Duration.ofMillis(ttfbMillis), true, true),
                                webContext.getRequestedURL(),
                                webContext.getParameterNames()
                                          .stream()
