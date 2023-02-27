@@ -194,9 +194,16 @@ public class Generator {
                                                             Strings.isEmpty(templateName) ? templateCode : templateName)
                                     .handle();
                 }
-            } catch (Exception e) {
+            } catch (Exception exception) {
+                if (exception instanceof ClosedChannelException
+                    || exception.getCause() instanceof ClosedChannelException) {
+                    // A ClosedChannelException, we know, that the underlying socket was closed "aka browser was closed"
+                    // There is no need to jam the logs up with such messages, as there is no way of avoiding this...
+                    Exceptions.ignore(exception);
+                    return;
+                }
                 throw Exceptions.handle()
-                                .error(e)
+                                .error(exception)
                                 .to(Templates.LOG)
                                 .withSystemErrorMessage("Error applying template '%s': %s (%s)",
                                                         Strings.isEmpty(templateName) ? templateCode : templateName)
