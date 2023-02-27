@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 
@@ -179,7 +180,9 @@ public class Generator {
                 }
             } catch (ExceptionConverter exceptionConverter) {
                 // We need to unwrap exceptions created by iText here...
-                if (exceptionConverter.getException() instanceof ChannelClosedException) {
+                if (exceptionConverter.getException() instanceof ChannelClosedException
+                    || exceptionConverter.getException() instanceof ClosedChannelException
+                    || exceptionConverter.getException().getCause() instanceof ClosedChannelException) {
                     // A ChannelClosedException, we know, that the underlying socket was closed "aka browser was closed"
                     // There is no need to jam the logs up with such messages, as there is no way of avoiding this...
                     Exceptions.ignore(exceptionConverter.getException());
