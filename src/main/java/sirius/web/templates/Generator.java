@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 
@@ -172,14 +173,12 @@ public class Generator {
         }
         try {
             try {
-                if (Strings.isFilled(handlerType)) {
-                    generateContentUsingHandler(out);
-                } else {
-                    findAndInvokeContentHandler(out);
-                }
+                invokeContentHandler(out);
             } catch (ExceptionConverter exceptionConverter) {
                 // We need to unwrap exceptions created by iText here...
-                if (exceptionConverter.getException() instanceof ChannelClosedException) {
+                if (exceptionConverter.getException() instanceof ChannelClosedException
+                    || exceptionConverter.getException() instanceof ClosedChannelException
+                    || exceptionConverter.getException().getCause() instanceof ClosedChannelException) {
                     // A ChannelClosedException, we know, that the underlying socket was closed "aka browser was closed"
                     // There is no need to jam the logs up with such messages, as there is no way of avoiding this...
                     Exceptions.ignore(exceptionConverter.getException());
@@ -191,16 +190,31 @@ public class Generator {
                                                             Strings.isEmpty(templateName) ? templateCode : templateName)
                                     .handle();
                 }
-            } catch (Exception e) {
-                throw Exceptions.handle()
-                                .error(e)
-                                .to(Templates.LOG)
-                                .withSystemErrorMessage("Error applying template '%s': %s (%s)",
-                                                        Strings.isEmpty(templateName) ? templateCode : templateName)
-                                .handle();
+            } catch (Exception exception) {
+                if (exception instanceof ClosedChannelException
+                    || exception.getCause() instanceof ClosedChannelException) {
+                    // A ClosedChannelException, we know, that the underlying socket was closed "aka browser was closed"
+                    // There is no need to jam the logs up with such messages, as there is no way of avoiding this...
+                    Exceptions.ignore(exception);
+                } else {
+                    throw Exceptions.handle()
+                                    .error(exception)
+                                    .to(Templates.LOG)
+                                    .withSystemErrorMessage("Error applying template '%s': %s (%s)",
+                                                            Strings.isEmpty(templateName) ? templateCode : templateName)
+                                    .handle();
+                }
             }
         } finally {
             CallContext.getCurrent().removeFromMDC("content-generator-template");
+        }
+    }
+
+    private void invokeContentHandler(OutputStream out) throws Exception {
+        if (Strings.isFilled(handlerType)) {
+            generateContentUsingHandler(out);
+        } else {
+            findAndInvokeContentHandler(out);
         }
     }
 
