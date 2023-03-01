@@ -30,13 +30,13 @@
             <div class="modal-footer">
                 <i:render name="footer"/>
                 <i:if test="isFilled(submit)">
-                    <button type="submit" class="btn btn-primary">@i18n(submitKey)</button>
+                    <button type="submit" class="btn btn-primary">@submit</button>
                 </i:if>
                 <i:if test="isFilled(danger)">
-                    <button type="submit" class="btn btn-danger">@i18n(dangerKey)</button>
+                    <button type="submit" class="btn btn-danger">@danger</button>
                 </i:if>
                 <i:if test="isFilled(cancel)">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">@i18n(cancelKey)</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">@cancel</button>
                 </i:if>
             </div>
         </div>
