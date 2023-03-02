@@ -107,5 +107,7 @@ nav.navbar {
     font-size: 2rem;
     font-weight: lighter;
     margin-bottom: 0px;
+    overflow-x: clip;
+    overflow-y: inherit;
   }
 }
