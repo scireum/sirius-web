@@ -61,12 +61,12 @@
             <i:else>
                 <i:render name="header"/>
 
-                <div id="page-header">
+                <div id="page-header" class="mt-1 mt-md-3">
                     <div class="container-fluid">
                         <div id="page-nav">
-                            <div class="d-flex flex-column flex-lg-row">
+                            <div class="d-flex flex-row">
                                 <i:render name="breadcrumbBar">
-                                    <div class="overflow-hidden mr-auto mb-2 mb-lg-0">
+                                    <div class="overflow-hidden mr-auto">
                                         <i:invoke template="/templates/tycho/page-breadcrumbs.html.pasta">
                                             <i:render name="breadcrumbs"/>
                                         </i:invoke>
@@ -79,7 +79,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="main-container" class="container-fluid mb-2 pb-lg-5">
+                <div id="main-container" class="container-fluid mb-2 mt-1 mt-md-3 pb-lg-5">
                     <i:render name="page-header"/>
 
                     <i:render name="messages">

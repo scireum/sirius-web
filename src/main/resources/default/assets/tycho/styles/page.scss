@@ -10,39 +10,30 @@ body {
   background-color: $backgroundGray;
 }
 
-#wrapper-menu {
-  margin-bottom: 1rem;
-}
-
-
 #wrapper-body {
   min-width: 0;
 }
 
-@media (min-width: 960px) {
+#wrapper {
+  display: grid;
+  grid-template-rows: 63px 1fr 40px;
+}
 
-  #wrapper {
-    display: grid;
-    grid-template-rows: 80px 1fr 40px;
-  }
+#wrapper-menu {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+  margin-bottom: 0;
+}
 
-  #wrapper-menu {
-    position: -webkit-sticky;
-    position: sticky;
-    top: 0;
-    z-index: 1020;
-    margin-bottom: 0;
-  }
-
-  #wrapper-footer {
-    position: fixed;
-    bottom: 0;
-    right: 0;
-    left: 0;
-    /*z-index 999, to display the footer in front of cards/links (bootstrap), but behind autocompleteSingleSelect*/
-    z-index: 999;
-  }
-
+#wrapper-footer {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  /*z-index 999, to display the footer in front of cards/links (bootstrap), but behind autocompleteSingleSelect*/
+  z-index: 999;
 }
 
 nav.navbar {
@@ -61,7 +52,6 @@ nav.navbar {
 #page-header h1 {
   font-size: 1.5rem;
 }
-
 
 .breadcrumb {
   background-color: transparent;
@@ -93,7 +83,6 @@ nav.navbar {
 }
 
 #main-container {
-  padding-top: 1rem;
   display: flex;
   flex-flow: column;
   justify-content: stretch;
