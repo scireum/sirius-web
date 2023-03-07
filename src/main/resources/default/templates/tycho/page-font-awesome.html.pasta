@@ -1,0 +1,2 @@
+<link rel="stylesheet" media="screen" href="@staticAssetUri()/tycho/libs/fontawesome/css/all.css"/>
+<script src="@staticAssetUri()/tycho/libs/fontawesome/js/all.js" type="text/javascript"></script>
