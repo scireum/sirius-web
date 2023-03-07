@@ -13,6 +13,9 @@
 <link rel="stylesheet"
       media="screen"
       href="@fontAwesomePath/css/regular.css">
+<link rel="stylesheet"
+      media="screen"
+      href="@fontAwesomePath/css/v5-font-face.css">
 
 <script defer
         src="@fontAwesomePath/js/fontawesome.js"></script>
