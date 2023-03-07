@@ -10,7 +10,7 @@
 <t:dropdownItem class="danger confirm-link-js @class"
                 permission="@permission"
                 framework="@framework"
-                icon="fa fa-trash"
+                icon="fa fa-trash fa-fw"
                 labelKey="NLS.delete"
                 adminOnly="@adminOnly"
                 url="@(page != null) ? page.linkToCurrentPage(url) : url"/>
