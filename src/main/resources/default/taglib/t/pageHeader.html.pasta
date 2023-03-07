@@ -17,7 +17,7 @@
     <div class="card-body pl-3 pr-3 pt-3 @if (isFilled(details)) { pb-1 } else { pb-3 }">
         <div class="d-flex flex-row">
             <a class="btn btn-link btn-outline-link sidebar-button-js d-none d-lg-none mr-2">
-                <i class="fa fa-bars"></i>
+                <i class="fa-solid fa-bars"></i>
             </a>
             <i:if test="isFilled(title)">
                 <h1 class="legend mr-auto text-ellipsis text-nowrap">@title</h1>

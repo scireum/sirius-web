@@ -59,7 +59,7 @@
             '                         aria-valuenow="0" data-dz-uploadprogress>' +
             '           </div>\n' +
             '       </div>\n' +
-            '       <span class="dropzone-delete ml-4" data-dz-remove><i class="fa fa-times"></i></span>\n' +
+            '       <span class="dropzone-delete ml-4" data-dz-remove><i class="fa-solid fa-xmark"></i></span>\n' +
             '   </div>\n' +
             '</div>',
         previewsContainer: '@previewsContainer' || '#' + '@id' + ' .dropzone-items',

@@ -31,7 +31,7 @@
                                    value="@page.getQuery()" placeholder="@i18n('NLS.searchkey')" autofocus/>
                             <div class="input-group-append">
                                 <a class="btn btn-outline-secondary" onclick="sirius.requestSubmitForm(document.getElementById('search'))">
-                                    <i class="fa fa-search"></i>
+                                    <i class="fa-solid fa-magnifying-glass"></i>
                                 </a>
                             </div>
                         </div>
@@ -41,7 +41,7 @@
             <div class="col-4 col-xl-3 d-flex flex-row justify-content-end">
                 <i:render name="body"/>
                 <a class="ml-2 btn btn-outline-secondary" href="@page.linkToCurrentPage(baseUrl)">
-                    <i class="fa fa-sync"></i>
+                    <i class="fa-solid fa-arrows-rotate"></i>
                 </a>
             </div>
         </div>

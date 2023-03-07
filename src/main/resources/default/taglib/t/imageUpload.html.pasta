@@ -17,7 +17,7 @@
 
 <div class="dropzone sirius-imageupload card shadow-sm mb-4 @class" id="@id">
     <div class="sirius-upload-hover h-100 d-none flex-column align-items-center justify-content-center">
-        <i class="fa fa-2x fa-cloud-upload-alt"></i>
+        <i class="fa-solid fa-cloud-arrow-up fa-2x"></i>
         <span>@i18n("template.html.uploadArea")</span>
     </div>
     <div class="sirius-upload-content h-100 d-flex flex-column">
@@ -64,7 +64,7 @@
             '                         aria-valuenow="0" data-dz-uploadprogress>' +
             '           </div>\n' +
             '       </div>\n' +
-            '       <span class="dropzone-delete ml-4" data-dz-remove><i class="fa fa-times"></i></span>\n' +
+            '       <span class="dropzone-delete ml-4" data-dz-remove><i class="fa-solid fa-xmark"></i></span>\n' +
             '   </div>\n' +
             '</div>',
         createImageThumbnails: false,
