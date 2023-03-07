@@ -1,2 +1,24 @@
-<link rel="stylesheet" media="screen" href="@staticAssetUri()/tycho/libs/fontawesome/css/all.css"/>
-<script src="@staticAssetUri()/tycho/libs/fontawesome/js/all.js" type="text/javascript"></script>
+<i:local name="fontAwesomePath"
+         value="apply('%s/tycho/libs/fontawesome', staticAssetUri())" />
+
+<link rel="stylesheet"
+      media="screen"
+      href="@fontAwesomePath/css/fontawesome.css">
+<link rel="stylesheet"
+      media="screen"
+      href="@fontAwesomePath/css/brands.css">
+<link rel="stylesheet"
+      media="screen"
+      href="@fontAwesomePath/css/solid.css">
+<link rel="stylesheet"
+      media="screen"
+      href="@fontAwesomePath/css/regular.css">
+
+<script defer
+        src="@fontAwesomePath/js/fontawesome.js"></script>
+<script defer
+        src="@fontAwesomePath/js/brands.js"></script>
+<script defer
+        src="@fontAwesomePath/js/solid.js"></script>
+<script defer
+        src="@fontAwesomePath/js/regular.js"></script>
