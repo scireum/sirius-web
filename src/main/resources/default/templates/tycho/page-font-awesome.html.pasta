@@ -17,11 +17,12 @@
       media="screen"
       href="@fontAwesomePath/css/v5-font-face.css">
 
-<script defer
-        src="@fontAwesomePath/js/fontawesome.js"></script>
+<!-- fontawesome.js needs to load last in order to support v5 -->
 <script defer
         src="@fontAwesomePath/js/brands.js"></script>
 <script defer
         src="@fontAwesomePath/js/solid.js"></script>
 <script defer
         src="@fontAwesomePath/js/regular.js"></script>
+<script defer
+        src="@fontAwesomePath/js/fontawesome.js"></script>
