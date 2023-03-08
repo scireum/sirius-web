@@ -2,7 +2,7 @@
 <i:arg name="singleClick" type="boolean" default="true" />
 <i:arg name="btnLabelKey" type="String" default="NLS.save" />
 <i:arg name="btnLabel" type="String" default="@i18n(btnLabelKey)" />
-<i:arg name="icon" type="String" default="fa fa-check" />
+<i:arg name="icon" type="String" default="fa-solid fa-check" />
 <i:arg name="class" type="String" default="" />
 
 <i:pragma name="description" value="Renders a footer bar for forms within a Tycho template" />
@@ -15,7 +15,7 @@
     </i:if>
     <i:if test="backButton">
         <a href="javascript:window.history.back()" class="btn btn-outline-secondary back-button">
-            <i class="fa fa-chevron-left"></i>
+            <i class="fa-solid fa-chevron-left"></i>
             @i18n("NLS.back")
         </a>
     </i:if>

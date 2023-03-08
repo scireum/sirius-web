@@ -21,7 +21,7 @@
                     <h4 class="modal-title" id="@(name + 'Title')">@title</h4>
                 </i:if>
                 <button type="button" class="close" data-dismiss="modal" aria-label="@i18n('NLS.close')">
-                    <i class="fa fa-times" aria-hidden="true"></i>
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                 </button>
             </div>
             <div class="modal-body">

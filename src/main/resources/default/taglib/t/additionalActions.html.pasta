@@ -20,7 +20,7 @@
                 <i:if test="isFilled(label)">
                     <span class="@labelClass pr-2">@label</span>
                 </i:if>
-                <span><i class="fa fa-ellipsis-v"></i></span>
+                <span><i class="fa-solid fa-ellipsis-vertical"></i></span>
             </span>
         </a>
         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">

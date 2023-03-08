@@ -7,5 +7,5 @@
 <a class="btn btn-link btn-danger confirm-link-js @class"
    title="@i18n('NLS.delete')"
    href="@if(page != null) {@page.linkToCurrentPage(url)} else {@url}">
-    <i class="fa fa-trash"></i>
+    <i class="fa-solid fa-trash"></i>
 </a>
