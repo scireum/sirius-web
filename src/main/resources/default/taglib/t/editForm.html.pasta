@@ -1,9 +1,10 @@
 <i:arg type="String" name="url" description="Contains the target URL to post to." />
 <i:arg type="String" name="class" default="" description="Contains additional classes to be added to the form tag."/>
+<i:arg type="String" name="id" default="" description="Defines the id."/>
 
 <i:pragma name="description" value="Renders an editor form within a Tycho template" />
 
-<form action="@url" method="post" class="edit-form @class">
+<form @if (isFilled(id)) { id="@id" } action="@url" method="post" class="edit-form @class">
     <i:render name="body" />
     <input name="CSRFToken" value="@part(sirius.web.http.CSRFHelper.class).getCSRFToken()" type="hidden"/>
 </form>
