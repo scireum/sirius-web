@@ -129,6 +129,10 @@
   }
 }
 
+.card .dropzone.sirius-imageupload {
+  box-shadow: none !important;
+}
+
 .dropzone.sirius-fileupload {
   border: none;
   background: transparent;
