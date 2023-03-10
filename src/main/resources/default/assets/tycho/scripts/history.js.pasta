@@ -24,8 +24,8 @@ function storeTychoHistory(urls) {
 
         window.sessionStorage.setItem("tycho-history", JSON.stringify(urls));
         window.sessionStorage.setItem('tycho-history-browser-length', window.history.length);
-    } catch (e) {
-        console.log(e);
+    } catch (exception) {
+        console.log(exception);
     }
 }
 
@@ -71,25 +71,24 @@ function appendHistoryUrl(url) {
             urls.splice(lastIndexOf + 1);
         }
         storeTychoHistory(urls);
-        return;
-    }
-
-    if (urls.length !== 0 && urls[urls.length - 1] === url && lastKnownBrowserHistoryLength < window.history.length) {
-        // If the user navigates back from this state, we need to skip the entries with the same url
-        window.sessionStorage.setItem('tycho-history-skip-url', url);
-        // We also want to skip it, if this state is called..
-        url = '-';
     } else {
-        window.sessionStorage.removeItem('tycho-history-skip-url');
-    }
+        if (urls.length !== 0 && urls[urls.length - 1] === url && lastKnownBrowserHistoryLength < window.history.length) {
+            // If the user navigates back from this state, we need to skip the entries with the same url
+            window.sessionStorage.setItem('tycho-history-skip-url', url);
+            // We also want to skip it, if this state is called...
+            url = '-';
+        } else {
+            window.sessionStorage.removeItem('tycho-history-skip-url');
+        }
 
-    if (url !== '-') {
-        urls.push(url);
-        storeTychoHistory(urls);
-    }
+        if (url !== '-') {
+            urls.push(url);
+            storeTychoHistory(urls);
+        }
 
-    // Store the url to load in the current state
-    window.history.replaceState({url: url}, document.title, window.location.href);
+        // Store the url to load in the current state
+        window.history.replaceState({url: url}, document.title, window.location.href);
+    }
 }
 
 function hasHistoryUrls() {
@@ -112,8 +111,7 @@ sirius.ready(function () {
     }
 });
 
-// On page load, if we have a state with a different url, load it
-if (window.history.state) {
+function handleHistoryStateOnLoad() {
     const url = window.history.state.url;
     if (url === '-') {
         window.sessionStorage.removeItem('tycho-history-skip-url');
@@ -124,4 +122,9 @@ if (window.history.state) {
     } else if (url !== currentUri()) {
         window.location.href = url;
     }
+}
+
+if (window.history.state) {
+    // On page load, if we have a state with a different url, load it
+    handleHistoryStateOnLoad();
 }
