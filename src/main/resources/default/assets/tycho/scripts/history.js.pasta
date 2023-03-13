@@ -1,4 +1,3 @@
-
 function currentUri() {
     return location.pathname + location.search;
 }
@@ -25,12 +24,23 @@ function storeTychoHistory(urls) {
 
         window.sessionStorage.setItem("tycho-history", JSON.stringify(urls));
         window.sessionStorage.setItem('tycho-history-browser-length', window.history.length);
-    } catch (e) {
-        console.log(e);
+    } catch (exception) {
+        console.log(exception);
     }
 }
 
+const tychoHistory = {
+    /*
+     * This flag is used to prevent the execution of the appendHistoryUrl logic when we previously issued a back navigation.
+     */
+    backNavigationQueued: false
+}
+
 function appendHistoryUrl(url) {
+    if (tychoHistory.backNavigationQueued) {
+        tychoHistory.backNavigationQueued = false;
+        return;
+    }
     // No explicit URL is given, use the current one...
     if (url === '') {
         url = currentUri();
@@ -61,25 +71,24 @@ function appendHistoryUrl(url) {
             urls.splice(lastIndexOf + 1);
         }
         storeTychoHistory(urls);
-        return;
-    }
-
-    if (urls.length !== 0 && urls[urls.length - 1] === url && lastKnownBrowserHistoryLength < window.history.length) {
-        // If the user navigates back from this state, we need to skip the entries with the same url
-        window.sessionStorage.setItem('tycho-history-skip-url', url);
-        // We also want to skip it, if this state is called..
-        url = '-';
     } else {
-        window.sessionStorage.removeItem('tycho-history-skip-url')
-    }
+        if (urls.length !== 0 && urls[urls.length - 1] === url && lastKnownBrowserHistoryLength < window.history.length) {
+            // If the user navigates back from this state, we need to skip the entries with the same url
+            window.sessionStorage.setItem('tycho-history-skip-url', url);
+            // We also want to skip it, if this state is called...
+            url = '-';
+        } else {
+            window.sessionStorage.removeItem('tycho-history-skip-url');
+        }
 
-    if (url !== '-') {
-        urls.push(url);
-        storeTychoHistory(urls);
-    }
+        if (url !== '-') {
+            urls.push(url);
+            storeTychoHistory(urls);
+        }
 
-    // Store the url to load in the current state
-    window.history.replaceState({url: url}, document.title, window.location.href);
+        // Store the url to load in the current state
+        window.history.replaceState({url: url}, document.title, window.location.href);
+    }
 }
 
 function hasHistoryUrls() {
@@ -100,15 +109,22 @@ sirius.ready(function () {
             _node.parentNode.classList.remove('d-none');
         });
     }
-})
+});
 
-// On page load, if we have a state with a different url, load it
-if (window.history.state) {
+function handleHistoryStateOnLoad() {
     const url = window.history.state.url;
     if (url === '-') {
         window.sessionStorage.removeItem('tycho-history-skip-url');
+        // Ensure we don't execute the appendHistoryUrl logic when we issue a back navigation.
+        // Some browsers (e.g. Chrome) will still execute code in the current execution context, others (e.g. Firefox) won't.
+        tychoHistory.backNavigationQueued = true;
         window.history.back();
     } else if (url !== currentUri()) {
         window.location.href = url;
     }
+}
+
+if (window.history.state) {
+    // On page load, if we have a state with a different url, load it
+    handleHistoryStateOnLoad();
 }
