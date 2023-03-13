@@ -122,8 +122,14 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
                     property(attr.getName(), attr.getValue());
                 }
             }
-        } catch (IOException e) {
-            throw Exceptions.handle(e);
+        } catch (IOException exception) {
+            if (exception instanceof ClosedChannelException || exception.getCause() instanceof ClosedChannelException) {
+                // A ClosedChannelException, we know, that the underlying socket was closed "aka browser was closed"
+                // There is no need to jam the logs up with such messages, as there is no way of avoiding this...
+                Exceptions.ignore(exception);
+            } else {
+                throw Exceptions.handle(exception);
+            }
         }
     }
 
