@@ -122,6 +122,8 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
                     property(attr.getName(), attr.getValue());
                 }
             }
+        } catch (ClosedChannelException e) {
+            throw handleClosedChannel(e);
         } catch (IOException e) {
             throw Exceptions.handle(e);
         }
