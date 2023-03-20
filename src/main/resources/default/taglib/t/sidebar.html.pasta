@@ -1,7 +1,7 @@
 <i:arg type="String" name="class" default="" description="Permits adding additional classes to the sidebar."/>
 
 <div class="row flex-grow-0 flex-lg-grow-1">
-    <div class="col-12 col-lg-4 col-xl-3 sidebar-js d-none d-lg-block @class">
+    <div class="col-12 col-lg-4 col-xl-3 sidebar-js mb-4 mb-lg-0 d-none d-lg-block @class">
         <div class="card h-100 shadow-sm">
             <div class="card-body">
                 <div class="d-flex flex-column">
@@ -15,7 +15,7 @@
             </div>
         </div>
     </div>
-    <div class="col-12 col-lg-8 col-xl-9 d-flex mb-4">
+    <div class="col-12 col-lg-8 col-xl-9">
         <div class="flex-grow-1">
             <i:render name="body"/>
         </div>
