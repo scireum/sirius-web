@@ -344,9 +344,9 @@ window.sirius.Continuity = (function () {
 
         let url = this.path;
 
-        const effectiveSearchParams = searchParams || this.searchParams;
+        const effectiveSearchParams = (searchParams || this.searchParams).toString();
 
-        if (effectiveSearchParams.entries.length > 0) {
+        if (effectiveSearchParams.length > 0) {
             url = url + '?' + effectiveSearchParams;
         }
         if (window.location.hash) {
