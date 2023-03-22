@@ -18,6 +18,11 @@ window.sirius.Continuity = (function () {
         this.lastState = null;
         this.currentState = null;
 
+        // This separator can be used in the added state entries to expand the generic entry name (used when configuring entryTypes via options)
+        // by a more specific sub-scope. This is useful when multiple elements with the same entryType are placed on the same page but should not influence each others history state.
+        // An entry handler can then be registered by each for `entryType|subScope` to handle the state changes of the specific element.
+        this.entryScopeSeparator = '|';
+
         this.path = window.location.pathname;
         this.searchParams = new URLSearchParams(window.location.search);
 
@@ -295,7 +300,8 @@ window.sirius.Continuity = (function () {
     Continuity.prototype.buildStateUrlParam = function (state) {
         const paramState = {};
         for (var entryKey in state) {
-            if (this.options.entryTypes[entryKey] && !this.options.entryTypes[entryKey].excludeFromParameter) {
+            const entryName = entryKey.split(this.entryScopeSeparator)[0];
+            if (this.options.entryTypes[entryName] && !this.options.entryTypes[entryName].excludeFromParameter) {
                 paramState[entryKey] = state[entryKey];
             }
         }
