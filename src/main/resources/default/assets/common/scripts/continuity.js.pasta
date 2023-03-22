@@ -120,6 +120,16 @@ window.sirius.Continuity = (function () {
     };
 
     /**@
+     * Allows to unregister a previously registered state entry handler for the given type.
+     *
+     * @param entryType the type/key of the state entry to remove the handler for.
+     */
+    Continuity.prototype.unregisterStateEntryHandler = function (entryType) {
+        this.log('[CONTINUITY] [INTERNAL] Unregistered state handler for type "%s".', entryType);
+        delete this.stateEntryHandlers[entryType];
+    }
+
+    /**@
      * Handles the change to the given state by calling the responsible state entry handles and updating some internal fields.
      * For state entries contained in the new history state the `restore` callback is triggered, for omitted state entries the `destroy` callback is triggered.
      *
@@ -146,7 +156,10 @@ window.sirius.Continuity = (function () {
         Object.keys(this.stateEntryHandlers).forEach(function (entryKey) {
             if (!state[entryKey]) {
                 me.log('[CONTINUITY] [INTERNAL] State handler of type "%s" called to destroy!', entryKey);
-                me.stateEntryHandlers[entryKey].destroy.call(me);
+                let handler = me.stateEntryHandlers[entryKey];
+                if (handler) {
+                    handler.destroy.call(me);
+                }
             }
         });
     };
