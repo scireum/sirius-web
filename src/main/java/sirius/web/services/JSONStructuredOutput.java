@@ -13,7 +13,6 @@ import com.alibaba.fastjson.JSONObject;
 import sirius.kernel.commons.Amount;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
-import sirius.kernel.health.HandledException;
 import sirius.kernel.xml.AbstractStructuredOutput;
 import sirius.kernel.xml.Attribute;
 import sirius.kernel.xml.StructuredOutput;
@@ -70,13 +69,6 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
         } catch (IOException e) {
             throw Exceptions.handle(e);
         }
-    }
-
-    private HandledException handleClosedChannel(ClosedChannelException e) {
-        return Exceptions.createHandled()
-                         .error(e)
-                         .withSystemErrorMessage("An IO exception occurred (closed channel): %s")
-                         .handle();
     }
 
     @Override
