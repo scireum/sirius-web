@@ -23,7 +23,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.nio.channels.ClosedChannelException;
 
 /**
  * Encoder to generate JSON via the {@link sirius.kernel.xml.StructuredOutput} interface.
@@ -64,10 +63,8 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
     protected void endArray(String name) {
         try {
             writer.write("]");
-        } catch (ClosedChannelException exception) {
-            throw handleClosedChannel(exception);
         } catch (IOException exception) {
-            throw Exceptions.handle(exception);
+            throw handleOutputException(exception);
         }
     }
 
@@ -75,10 +72,8 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
     protected void endObject(String name) {
         try {
             writer.write("}");
-        } catch (ClosedChannelException exception) {
-            throw handleClosedChannel(exception);
         } catch (IOException exception) {
-            throw Exceptions.handle(exception);
+            throw handleOutputException(exception);
         }
     }
 
@@ -92,10 +87,8 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
             } else {
                 writer.write("[");
             }
-        } catch (ClosedChannelException exception) {
-            throw handleClosedChannel(exception);
         } catch (IOException exception) {
-            throw Exceptions.handle(exception);
+            throw handleOutputException(exception);
         }
     }
 
@@ -114,10 +107,8 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
                     property(attr.getName(), attr.getValue());
                 }
             }
-        } catch (ClosedChannelException exception) {
-            throw handleClosedChannel(exception);
         } catch (IOException exception) {
-            throw Exceptions.handle(exception);
+            throw handleOutputException(exception);
         }
     }
 
@@ -196,10 +187,8 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
                 writer.write("(");
             }
             beginObject("result");
-        } catch (ClosedChannelException exception) {
-            throw handleClosedChannel(exception);
         } catch (IOException exception) {
-            throw Exceptions.handle(exception);
+            throw handleOutputException(exception);
         }
 
         return this;
@@ -242,10 +231,8 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
             } else {
                 writeString(transformToStringRepresentation(data));
             }
-        } catch (ClosedChannelException exception) {
-            throw handleClosedChannel(exception);
         } catch (IOException exception) {
-            throw Exceptions.handle(exception);
+            throw handleOutputException(exception);
         }
     }
 
@@ -256,7 +243,7 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
             addObjectName(name);
             writer.write(Strings.isFilled(formattedAmount) ? formattedAmount : "null");
         } catch (IOException exception) {
-            throw Exceptions.handle(exception);
+            throw handleOutputException(exception);
         }
     }
 
@@ -271,10 +258,8 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
         if (!isCurrentObjectEmpty()) {
             try {
                 writer.write(",");
-            } catch (ClosedChannelException exception) {
-                throw handleClosedChannel(exception);
             } catch (IOException exception) {
-                throw Exceptions.handle(exception);
+                throw handleOutputException(exception);
             }
         }
     }
@@ -297,10 +282,8 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
                 writer.write(")");
             }
             writer.close();
-        } catch (ClosedChannelException exception) {
-            throw handleClosedChannel(exception);
         } catch (IOException exception) {
-            throw Exceptions.handle(exception);
+            throw handleOutputException(exception);
         }
     }
 }
