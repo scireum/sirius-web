@@ -44,8 +44,8 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
         try {
             this.callback = callback;
             writer = new OutputStreamWriter(out, encoding);
-        } catch (UnsupportedEncodingException e) {
-            throw Exceptions.handle(e);
+        } catch (UnsupportedEncodingException exception) {
+            throw Exceptions.handle(exception);
         }
     }
 
@@ -64,10 +64,10 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
     protected void endArray(String name) {
         try {
             writer.write("]");
-        } catch (ClosedChannelException e) {
-            throw handleClosedChannel(e);
-        } catch (IOException e) {
-            throw Exceptions.handle(e);
+        } catch (ClosedChannelException exception) {
+            throw handleClosedChannel(exception);
+        } catch (IOException exception) {
+            throw Exceptions.handle(exception);
         }
     }
 
@@ -75,10 +75,10 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
     protected void endObject(String name) {
         try {
             writer.write("}");
-        } catch (ClosedChannelException e) {
-            throw handleClosedChannel(e);
-        } catch (IOException e) {
-            throw Exceptions.handle(e);
+        } catch (ClosedChannelException exception) {
+            throw handleClosedChannel(exception);
+        } catch (IOException exception) {
+            throw Exceptions.handle(exception);
         }
     }
 
@@ -92,10 +92,10 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
             } else {
                 writer.write("[");
             }
-        } catch (ClosedChannelException e) {
-            throw handleClosedChannel(e);
-        } catch (IOException e) {
-            throw Exceptions.handle(e);
+        } catch (ClosedChannelException exception) {
+            throw handleClosedChannel(exception);
+        } catch (IOException exception) {
+            throw Exceptions.handle(exception);
         }
     }
 
@@ -114,10 +114,10 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
                     property(attr.getName(), attr.getValue());
                 }
             }
-        } catch (ClosedChannelException e) {
-            throw handleClosedChannel(e);
-        } catch (IOException e) {
-            throw Exceptions.handle(e);
+        } catch (ClosedChannelException exception) {
+            throw handleClosedChannel(exception);
+        } catch (IOException exception) {
+            throw Exceptions.handle(exception);
         }
     }
 
@@ -196,10 +196,10 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
                 writer.write("(");
             }
             beginObject("result");
-        } catch (ClosedChannelException e) {
-            throw handleClosedChannel(e);
-        } catch (IOException e) {
-            throw Exceptions.handle(e);
+        } catch (ClosedChannelException exception) {
+            throw handleClosedChannel(exception);
+        } catch (IOException exception) {
+            throw Exceptions.handle(exception);
         }
 
         return this;
@@ -242,10 +242,10 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
             } else {
                 writeString(transformToStringRepresentation(data));
             }
-        } catch (ClosedChannelException e) {
-            throw handleClosedChannel(e);
-        } catch (IOException e) {
-            throw Exceptions.handle(e);
+        } catch (ClosedChannelException exception) {
+            throw handleClosedChannel(exception);
+        } catch (IOException exception) {
+            throw Exceptions.handle(exception);
         }
     }
 
@@ -255,8 +255,8 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
             addRequiredComma();
             addObjectName(name);
             writer.write(Strings.isFilled(formattedAmount) ? formattedAmount : "null");
-        } catch (IOException e) {
-            throw Exceptions.handle(e);
+        } catch (IOException exception) {
+            throw Exceptions.handle(exception);
         }
     }
 
@@ -271,10 +271,10 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
         if (!isCurrentObjectEmpty()) {
             try {
                 writer.write(",");
-            } catch (ClosedChannelException e) {
-                throw handleClosedChannel(e);
-            } catch (IOException e) {
-                throw Exceptions.handle(e);
+            } catch (ClosedChannelException exception) {
+                throw handleClosedChannel(exception);
+            } catch (IOException exception) {
+                throw Exceptions.handle(exception);
             }
         }
     }
@@ -288,7 +288,7 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
     /**
      * Finalizes the output and closes the stream.
      * <p>
-     * In constrast to {@link #endResult()} this does not require an open result object.
+     * In contrast to {@link #endResult()} this does not require an open result object.
      */
     public void finalizeOutput() {
         try {
@@ -297,10 +297,10 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
                 writer.write(")");
             }
             writer.close();
-        } catch (ClosedChannelException e) {
-            throw handleClosedChannel(e);
-        } catch (IOException e) {
-            throw Exceptions.handle(e);
+        } catch (ClosedChannelException exception) {
+            throw handleClosedChannel(exception);
+        } catch (IOException exception) {
+            throw Exceptions.handle(exception);
         }
     }
 }
