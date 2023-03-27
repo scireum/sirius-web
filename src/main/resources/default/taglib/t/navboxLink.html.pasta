@@ -1,10 +1,10 @@
 <i:arg name="url" type="String" default=""/>
 <i:arg name="labelKey" type="String" default=""/>
 <i:arg name="label" type="String" default="@i18n(labelKey)"/>
+<i:arg name="labelClass" type="String" default=""/>
 <i:arg name="active" type="boolean" default="false"/>
 <i:arg name="permission" type="String" default=""/>
 <i:arg name="icon" type="String" default=""/>
-<i:arg name="class" type="String" default=""/>
 <i:arg name="target" type="String" default=""/>
 
 <i:pragma name="description" value="Renders navigation link within a navbox." />
@@ -17,7 +17,7 @@
             <i:if test="isFilled(icon)">
                 <span class="nav-link-icon pr-2"><i class="@icon"></i></span>
             </i:if>
-            <span class="flex-grow-1 overflow-hidden text-break @class">
+            <span class="flex-grow-1 overflow-hidden text-break @labelClass">
                 @label
                 <i:render name="body"/>
             </span>
