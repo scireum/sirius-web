@@ -31,7 +31,8 @@
                 </i:else>
             </i:if>
             <i:render name="actions"/>
-            <t:additionalActions labelKey="template.html.additionalActions" class="@('ml-1 ' + additionalActionsClass)"
+            <t:additionalActions class="@('ml-1 ' + additionalActionsClass)"
+                                 labelKey="template.html.additionalActions"
                                  labelClass="d-none d-xl-inline-block text-nowrap">
                 <i:render name="additionalActions"/>
             </t:additionalActions>
