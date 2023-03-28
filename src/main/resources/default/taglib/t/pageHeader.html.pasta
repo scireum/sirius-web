@@ -1,6 +1,6 @@
 <i:arg type="String" name="titleKey" default=""/>
 <i:arg type="String" name="title" default="@i18n(titleKey)"/>
-<i:arg type="String" name="additionalActionsClass" default="" />
+<i:arg type="String" name="additionalActionsClass" default=""/>
 
 <i:pragma name="description">
     Provides a header for a Tycho page. This element should most probably be placed in
@@ -12,7 +12,7 @@
     their visibility based on screen real estate...
 </i:pragma>
 
-<i:local name="details" value="@renderToString('body')" />
+<i:local name="details" value="@renderToString('body')"/>
 <div class="card shadow-sm mb-4 page-header">
     <div class="card-body pl-3 pr-3 pt-3 @if (isFilled(details)) { pb-1 } else { pb-3 }">
         <div class="d-flex flex-row">
@@ -24,13 +24,17 @@
                 <i:else>
                     <i:local name="markupTitle" value="@renderToString('title')"/>
                     <i:if test="isFilled(markupTitle)">
-                        <h1 class="legend mr-auto overflow-hidden text-nowrap text-truncate"><i:raw>@markupTitle</i:raw></h1>
+                        <h1 class="legend mr-auto overflow-hidden text-nowrap text-truncate">
+                            <i:raw>@markupTitle</i:raw>
+                        </h1>
                     </i:if>
                 </i:else>
             </i:if>
-            <i:render name="actions" />
-            <t:additionalActions labelKey="template.html.additionalActions" class="@('ml-1 ' + additionalActionsClass)" labelClass="d-none d-xl-inline-block">
-                <i:render name="additionalActions" />
+            <i:render name="actions"/>
+            <t:additionalActions class="@('ml-1 ' + additionalActionsClass)"
+                                 labelKey="template.html.additionalActions"
+                                 labelClass="d-none d-xl-inline-block text-nowrap">
+                <i:render name="additionalActions"/>
             </t:additionalActions>
         </div>
         <i:if test="isFilled(details)">
