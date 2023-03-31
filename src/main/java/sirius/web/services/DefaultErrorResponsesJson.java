@@ -22,9 +22,9 @@ public class DefaultErrorResponsesJson implements SharedResponses {
             content = @Content(mediaType = "application/json",examples = @ExampleObject(//language=JSON
             """
                     {
-                        "success":false,
-                        "error":true,
-                        "message":"The parameter {missingParameter} must be filled."
+                        "success": false,
+                        "error": true,
+                        "message": "The parameter {missingParameter} must be filled."
                     }
                     """)))
     @ApiResponse(responseCode = "401",
