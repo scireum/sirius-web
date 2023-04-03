@@ -104,6 +104,16 @@
   border-style: solid;
 }
 
+.sci-border-top-solid-1 {
+  border-top-width: 0.125rem;
+  border-top-style: solid;
+}
+
+.sci-border-bottom-solid-1 {
+  border-bottom-width: 0.125rem;
+  border-bottom-style: solid;
+}
+
 .sci-position-relative {
   position: relative;
 }
@@ -223,5 +233,7 @@
 }
 
 @keyframes sciPreloader {
-  to {transform: rotate(360deg);}
+  to {
+    transform: rotate(360deg);
+  }
 }
