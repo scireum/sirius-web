@@ -20,6 +20,9 @@ import sirius.kernel.health.HandledException;
 @Register
 public class PreserveErrorMessageTransformer implements ErrorMessageTransformer {
 
+    /**
+     * Marks an error message as "to be preserved" - so that more or less a &lt;pre&gt; tag is wrapped around it.
+     */
     public static final ExceptionHint PRESERVE = new ExceptionHint("preserve");
 
     @Override
