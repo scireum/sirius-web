@@ -483,7 +483,11 @@ sirius.writeLocalStore = function (name, value) {
     }
     try {
         if (sirius.isDefined(window.localStorage)) {
-            window.localStorage.setItem(name, value);
+            if (sirius.isEmpty(value)) {
+                window.localStorage.removeItem(name);
+            } else {
+                window.localStorage.setItem(name, value);
+            }
         }
     } catch (e) {
         console.log('Cannot write local store', {name: name, value: value, error: e});
