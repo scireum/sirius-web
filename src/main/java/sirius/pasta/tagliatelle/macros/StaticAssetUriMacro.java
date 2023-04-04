@@ -8,14 +8,15 @@
 
 package sirius.pasta.tagliatelle.macros;
 
-import sirius.kernel.tokenizer.Position;
 import sirius.kernel.Sirius;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.info.Product;
+import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
 import sirius.pasta.noodle.macros.BasicMacro;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -31,6 +32,7 @@ import java.util.List;
  * a <tt>no-cache</tt> URI.
  */
 @Register
+@NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
 public class StaticAssetUriMacro extends BasicMacro {
 
     @Override
@@ -69,5 +71,4 @@ public class StaticAssetUriMacro extends BasicMacro {
     public boolean isConstant(CompilationContext context, List<Node> args) {
         return true;
     }
-
 }
