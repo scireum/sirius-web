@@ -24,7 +24,7 @@
             <i:render name="header"></i:render>
             <div class="d-flex flex-column flex-grow-1">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-between align-items-baseline">
                         <i:if test="isFilled(title)">
                             <h5 class="card-title overflow-hidden text-ellipsis @titleClass">@title</h5>
                             <i:else>
