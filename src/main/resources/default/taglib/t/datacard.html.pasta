@@ -6,6 +6,10 @@
        default="false"
        description="Determines if the header should be placed at the left side of the card instead of its top"/>
 <i:arg type="String"
+       name="headerLeftAlignmentClass"
+       default="align-items-center"
+       description="Allows to change the mutual alignment when the header is at the left side. Defaults to `align-items-center`, but any other flex-layout alignment classes are fine. Only used when `headerLeft` is `true`."/>
+<i:arg type="String"
        name="link"
        default=""
        description="Specifies the target this card points to. Use the CSS class card-link for links within the card to win over this link."/>
@@ -27,7 +31,7 @@
 
 <div class="col mb-4">
     <div class="card card-border card-hover-shadow @if(fullHeight) { h-100 }  @class">
-        <div class="d-flex flex-grow-1 @(headerLeft ? 'flex-row align-items-center' : 'flex-column')">
+        <div class="d-flex flex-grow-1 @(headerLeft ? apply('flex-row %s', headerLeftAlignmentClass) : 'flex-column')">
             <i:render name="header"></i:render>
             <div class="d-flex flex-column flex-grow-1">
                 <div class="card-body">
