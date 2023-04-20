@@ -317,6 +317,8 @@ window.sirius.Continuity = (function () {
             const entryName = entryKey.split(this.entryScopeSeparator)[0];
             if (this.options.entryTypes[entryName] && !this.options.entryTypes[entryName].excludeFromParameter) {
                 const paramStateEntry = Object.assign({}, state[entryKey]);
+                // Omit the entry depth from the parameter state as it only makes sense on the current page with the current history stack.
+                // When opening the URL in a new tab the entry depth would be wrong.
                 delete paramStateEntry['entryDepth'];
                 paramState[entryKey] = paramStateEntry;
 
