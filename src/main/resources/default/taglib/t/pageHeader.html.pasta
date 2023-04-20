@@ -31,6 +31,9 @@
                 </i:else>
             </i:if>
             <i:render name="actions"/>
+            <i:render name="help">
+                <i:extensions target="tycho-page-header" point="help" />
+            </i:render>
             <t:additionalActions class="@('ml-1 ' + additionalActionsClass)"
                                  labelKey="template.html.additionalActions"
                                  labelClass="d-none d-xl-inline-block text-nowrap">
