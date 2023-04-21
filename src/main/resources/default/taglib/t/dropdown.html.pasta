@@ -13,9 +13,8 @@
 
 <i:if test="isFilled(contents)">
     <div class="dropdown @class">
-        <a class="@btnClass"
-           style="z-index: 3;
-           position: relative"
+        <a class="h-100 @btnClass"
+           style="z-index: 3; position: relative"
            data-toggle="dropdown"
            aria-haspopup="true"
            aria-expanded="false">
