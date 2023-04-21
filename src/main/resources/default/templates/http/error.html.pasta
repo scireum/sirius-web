@@ -7,6 +7,7 @@
 
     <i:block name="page-header">
         <t:pageHeader titleKey="BasicController.error">
+            <i:block name="help"></i:block>
             <i:if test="code < 500">
                 <t:dot color="yellow">@code - @reason</t:dot>
                 <i:else>
