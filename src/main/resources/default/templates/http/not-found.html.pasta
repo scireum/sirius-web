@@ -5,6 +5,7 @@
 
     <i:block name="page-header">
         <t:pageHeader titleKey="BasicController.404">
+            <i:block name="help"></i:block>
             <t:dot color="yellow">404 - Not Found</t:dot>
         </t:pageHeader>
     </i:block>
