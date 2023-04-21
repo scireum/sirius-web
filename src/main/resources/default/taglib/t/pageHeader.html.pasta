@@ -36,7 +36,7 @@
             </i:render>
             <t:additionalActions class="@('ml-2 ' + additionalActionsClass)"
                                  labelKey="template.html.additionalActions"
-                                 labelClass="d-none d-xl-inline-block text-nowrap">
+                                 labelClass="d-none d-xl-inline text-nowrap">
                 <i:render name="additionalActions"/>
             </t:additionalActions>
         </div>
