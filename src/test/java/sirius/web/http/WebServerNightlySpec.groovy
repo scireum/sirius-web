@@ -8,7 +8,6 @@
 
 package sirius.web.http
 
-import com.alibaba.fastjson.JSON
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.*
 import io.netty.channel.nio.NioEventLoopGroup
@@ -18,7 +17,7 @@ import io.netty.handler.codec.http.*
 import org.junit.jupiter.api.Tag
 import sirius.kernel.BaseSpecification
 import sirius.kernel.Tags
-
+import sirius.kernel.commons.Json
 
 /**
  * Simulates a bunch of "real" (outside) requests through netty and sirius.
@@ -26,7 +25,7 @@ import sirius.kernel.Tags
  * This ensures a basic performance profile and also makes sure no trivial race conditions or memory leaks
  * are added.
  *
- * This contains long running tests to be exucuted nightly.
+ * This contains long running tests to be executed nightly.
  */
 @Tag(Tags.NIGHTLY)
 class WebServerNightlySpec extends BaseSpecification {
@@ -117,7 +116,7 @@ class WebServerNightlySpec extends BaseSpecification {
         when:
         def data = WebServerSpec.callAndRead(uri, null, expectedHeaders)
         then:
-        JSON.parseObject(data).get("test") == '1'
+        Json.parseObject(data).get("test").asText == '1'
     }
 
 }

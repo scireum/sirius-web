@@ -8,10 +8,10 @@
 
 package sirius.pasta.noodle.macros;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import sirius.kernel.tokenizer.Position;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import sirius.kernel.commons.Json;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
@@ -21,7 +21,7 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
- * Parses the given JSON string into a {@link JSONObject}.
+ * Parses the given JSON string into a jackson {@link ObjectNode}.
  */
 @Register
 @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
@@ -29,7 +29,7 @@ public class JsonMacro extends BasicMacro {
 
     @Override
     public Class<?> getType() {
-        return JSONObject.class;
+        return ObjectNode.class;
     }
 
     @Override
@@ -43,15 +43,15 @@ public class JsonMacro extends BasicMacro {
     public Object invoke(Environment environment, Object[] args) {
         try {
             String jsonString = (String) args[0];
-            return JSON.parseObject(jsonString);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid json: " + e.getMessage(), e);
+            return Json.tryParseObject(jsonString);
+        } catch (Exception exception) {
+            throw new IllegalArgumentException("Invalid json: " + exception.getMessage(), exception);
         }
     }
 
     @Override
     public String getDescription() {
-        return "Parses the given JSON string into a JSONObject";
+        return "Parses the given JSON string into a jackson ObjectNode";
     }
 
     @Nonnull
@@ -64,5 +64,4 @@ public class JsonMacro extends BasicMacro {
     public boolean isConstant(CompilationContext context, List<Node> args) {
         return true;
     }
-
 }

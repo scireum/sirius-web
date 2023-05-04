@@ -8,7 +8,8 @@
 
 package sirius.web.util;
 
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import sirius.kernel.commons.Json;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
@@ -34,7 +35,7 @@ public class JSONPath {
      * @param path the path to evaluate
      * @return the result of the query wrapped as <tt>Value</tt>
      */
-    public static Value queryValue(JSONObject root, String path) {
+    public static Value queryValue(ObjectNode root, String path) {
         return Value.of(queryRawValue(root, path));
     }
 
@@ -44,15 +45,16 @@ public class JSONPath {
             return Value.EMPTY;
         }
 
-        if (!(root instanceof JSONObject)) {
+        if (!(root instanceof ObjectNode)) {
             return Value.EMPTY;
         }
 
         if (Strings.isEmpty(splitPath.getSecond())) {
-            return Value.of(((JSONObject) root).get(splitPath.getFirst()));
+            Object rawValue = Json.convertToJavaObject(((ObjectNode) root).get(splitPath.getFirst()));
+            return Value.of(rawValue);
         }
 
-        return queryRawValue(((JSONObject) root).get(splitPath.getFirst()), splitPath.getSecond());
+        return queryRawValue(((ObjectNode) root).get(splitPath.getFirst()), splitPath.getSecond());
     }
 
     /**
@@ -62,7 +64,7 @@ public class JSONPath {
      * @param path the path to evaluate
      * @return the result object of the query wrapped as <tt>Optional</tt>
      */
-    public static Optional<JSONObject> queryObject(JSONObject root, String path) {
-        return Optional.ofNullable(queryValue(root, path).get(JSONObject.class, null));
+    public static Optional<ObjectNode> queryObject(ObjectNode root, String path) {
+        return Optional.ofNullable(queryValue(root, path).get(ObjectNode.class, null));
     }
 }
