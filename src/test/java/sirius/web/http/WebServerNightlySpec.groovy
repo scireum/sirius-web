@@ -116,7 +116,7 @@ class WebServerNightlySpec extends BaseSpecification {
         when:
         def data = WebServerSpec.callAndRead(uri, null, expectedHeaders)
         then:
-        Json.parseObject(data).get("test").asText == '1'
+        Json.parseObject(data).get("test").asText() == '1'
     }
 
 }
