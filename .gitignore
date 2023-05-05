@@ -4,3 +4,5 @@ target
 logs
 /data
 instance.conf
+.gradle
+build
