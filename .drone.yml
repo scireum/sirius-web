@@ -19,7 +19,7 @@ steps:
   - name: compile
     image: scireum/sirius-build-jdk18
     commands:
-      - mvn clean compile
+      - ./gradlew clean assemble
     volumes: *scireum_volumes
     when:
       branch:
@@ -30,7 +30,7 @@ steps:
   - name: cron_unit_tests
     image: scireum/sirius-build-jdk18
     commands:
-      - mvn clean test
+      - ./gradlew clean test
     volumes: *scireum_volumes
     when:
       event:
@@ -50,7 +50,7 @@ steps:
   - name: test
     image: scireum/sirius-build-jdk18
     commands:
-      - mvn clean test -Dtest.excluded.groups=nightly
+      - ./gradlew clean testWithoutNightly
     volumes: *scireum_volumes
     when:
       event:
@@ -59,8 +59,13 @@ steps:
   - name: deploy
     image: scireum/sirius-build-jdk18
     commands:
-      - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' pom.xml
-      - mvn clean deploy -DskipTests
+      - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' gradle.properties
+      - ./gradlew clean publish
+    environment:
+      MAVEN_USERNAME:
+        from_secret: maven_public_username
+      MAVEN_PASSWORD:
+        from_secret: maven_public_password
     volumes: *scireum_volumes
     when:
       event:
@@ -79,8 +84,8 @@ steps:
   - name: sonar
     image: scireum/sirius-build-jdk18
     commands:
-      - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' pom.xml
-      - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent test org.jacoco:jacoco-maven-plugin:report sonar:sonar -Dsonar.projectKey=${DRONE_REPO_NAME}
+      - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' gradle.properties
+        - ./gradlew clean test sonarqube -Dsonar.projectKey=${DRONE_REPO_NAME} -Dsonar.host.url=https://sonarqube.scireum.com/ -Dsonar.login=${sonar_login}
     volumes: *scireum_volumes
     when:
       event:
