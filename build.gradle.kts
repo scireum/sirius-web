@@ -13,7 +13,12 @@ plugins {
 }
 
 dependencies {
-    api("com.scireum:sirius-kernel:dev-35.3.0")
+    api("com.scireum:sirius-kernel:${property("sirius-kernel")}")
+    testImplementation("com.scireum:sirius-kernel:${property("sirius-kernel")}") {
+        artifact {
+            classifier = "tests"
+        }
+    }
 
     // Netty is the foundation of the built-in web server
     api("io.netty:netty-all:4.1.82.Final")

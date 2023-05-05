@@ -8,11 +8,19 @@
 
 import com.googlecode.junittoolbox.SuiteClasses;
 import org.junit.BeforeClass;
+import org.junit.platform.suite.api.IncludeClassNamePatterns;
+import org.junit.platform.suite.api.SelectPackages;
+import org.junit.platform.suite.api.Suite;
 import org.junit.runner.RunWith;
 import sirius.kernel.ScenarioSuite;
 
+// JUnit 4 annotations below
 @RunWith(ScenarioSuite.class)
 @SuiteClasses({"**/*Test.class", "**/*Spec.class"})
+// JUnit 5 annotations below
+@Suite
+@IncludeClassNamePatterns({"^.*Test$", "^.*Spec$"})
+@SelectPackages("sirius")
 public class TestSuite {
 
     @BeforeClass
