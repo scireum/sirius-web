@@ -64,3 +64,9 @@ dependencies {
     // Swagger Annotations are used for API/Service documentation
     api("io.swagger.core.v3:swagger-annotations:2.2.6")
 }
+
+sonarqube {
+    properties {
+        property("sonar.sourceEncoding", "UTF-8")
+    }
+}
