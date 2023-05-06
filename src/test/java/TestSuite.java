@@ -8,6 +8,7 @@
 
 import com.googlecode.junittoolbox.SuiteClasses;
 import org.junit.BeforeClass;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.platform.suite.api.IncludeClassNamePatterns;
 import org.junit.platform.suite.api.SelectPackages;
 import org.junit.platform.suite.api.Suite;
@@ -24,6 +25,7 @@ import sirius.kernel.ScenarioSuite;
 public class TestSuite {
 
     @BeforeClass
+    @BeforeAll
     public static void setUp() {
         // Allow us to set the Origin: header...
         // This is also set in the CORSSpec, but if the whole TestSuite is executed,
