@@ -14,7 +14,10 @@
 <i:local name="actions" value="@renderToString('body')"/>
 <i:if test="isFilled(actions)">
     <div class="dropdown @class">
-        <a class="h-100 btn btn-link" style="z-index: 3; position: relative" data-toggle="dropdown" aria-haspopup="true"
+        <a class="h-100 btn btn-link text-nowrap"
+           style="z-index: 3; position: relative"
+           data-toggle="dropdown"
+           aria-haspopup="true"
            aria-expanded="false">
             <i:if test="isFilled(label)">
                 <span class="@labelClass pr-2">@label</span>
