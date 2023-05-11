@@ -8,13 +8,13 @@
 
 package sirius.web.http;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
+import sirius.kernel.commons.Json;
 import sirius.kernel.commons.Streams;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
@@ -81,7 +81,7 @@ public class TestResponse extends Response {
     private String errorMessage;
     private String tunnelTargetUrl;
     private final Promise<TestResponse> responsePromise;
-    private JSONObject jsonContent;
+    private ObjectNode jsonContent;
     private XMLStructuredInput xmlContent;
     private CallContext innerCallContext;
     private boolean followRedirect = false;
@@ -181,9 +181,9 @@ public class TestResponse extends Response {
         return new String(content, StandardCharsets.UTF_8);
     }
 
-    public JSONObject getContentAsJson() {
+    public ObjectNode getContentAsJson() {
         if (jsonContent == null) {
-            jsonContent = JSON.parseObject(getContentAsString());
+            jsonContent = Json.parseObject(getContentAsString());
         }
         return jsonContent;
     }

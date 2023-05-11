@@ -8,10 +8,11 @@
 
 package sirius.web.http
 
-import com.alibaba.fastjson.JSON
+
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpResponseStatus
 import sirius.kernel.BaseSpecification
+import sirius.kernel.commons.Json
 import sirius.kernel.commons.Streams
 import sirius.kernel.commons.Strings
 import sirius.kernel.commons.Wait
@@ -286,7 +287,7 @@ class WebServerSpec extends BaseSpecification {
         when:
         def data = callAndRead(uri, null, expectedHeaders)
         then:
-        JSON.parseObject(data).get("test") == 'Hello_World'
+        Json.parseObject(data).get("test").asText() == 'Hello_World'
     }
 
     def "Invoke /test/json-param testing built in JSON handling"() {
@@ -296,7 +297,7 @@ class WebServerSpec extends BaseSpecification {
         when:
         def data = callAndRead(uri, null, expectedHeaders)
         then:
-        JSON.parseObject(data).get("test") == 'Hello'
+        Json.parseObject(data).get("test").asText() == 'Hello'
     }
 
     def "Invoke /test/json-params/1/2 testing multiple parameter"() {
@@ -306,9 +307,9 @@ class WebServerSpec extends BaseSpecification {
         when:
         def data = callAndRead(uri, null, expectedHeaders)
         then:
-        JSON.parseObject(data).get("param1") == '1'
+        Json.parseObject(data).get("param1").asText() == '1'
         and:
-        JSON.parseObject(data).get("param2") == '2'
+        Json.parseObject(data).get("param2").asText() == '2'
     }
 
     def "Invoke /test/mixed-json-params/2/1 testing mixed parameter order"() {
@@ -318,9 +319,9 @@ class WebServerSpec extends BaseSpecification {
         when:
         def data = callAndRead(uri, null, expectedHeaders)
         then:
-        JSON.parseObject(data).get("param1") == '1'
+        Json.parseObject(data).get("param1").asText() == '1'
         and:
-        JSON.parseObject(data).get("param2") == '2'
+        Json.parseObject(data).get("param2").asText() == '2'
     }
 
     def "Invoke /test/json-params-varargs/1/2/3/4/5/6/7/8/9 testing varargs"() {
@@ -330,14 +331,14 @@ class WebServerSpec extends BaseSpecification {
         when:
         def data = callAndRead(uri, null, expectedHeaders)
         then:
-        JSON.parseObject(data).get("param1") == '1'
+        Json.parseObject(data).get("param1").asText() == '1'
         and:
-        JSON.parseObject(data).get("param2") == '2'
+        Json.parseObject(data).get("param2").asText() == '2'
         and:
-        def varargs = JSON.parseObject(data).getJSONArray("params")
+        def varargs = Json.getArray(Json.parseObject(data), "params")
         varargs.size() == 7
-        varargs.get(0) == '3'
-        varargs.get(6) == '9'
+        varargs.get(0).asText() == '3'
+        varargs.get(6).asText() == '9'
     }
 
     /**
@@ -496,7 +497,7 @@ class WebServerSpec extends BaseSpecification {
         when:
         def data = callAndRead(uri, null, expectedHeaders)
         then:
-        JSON.parseObject(data).get("test") == 'Hello/World'
+        Json.parseObject(data).get("test").asText() == 'Hello/World'
     }
 
     def "Invoke /test/json testing correct decoding space"() {
@@ -506,7 +507,7 @@ class WebServerSpec extends BaseSpecification {
         when:
         def data = callAndRead(uri, null, expectedHeaders)
         then:
-        JSON.parseObject(data).get("test") == 'Hello World'
+        Json.parseObject(data).get("test").asText() == 'Hello World'
     }
 
     def "Invoke /test/json-param testing correct decoding delimiter"() {
@@ -516,7 +517,7 @@ class WebServerSpec extends BaseSpecification {
         when:
         def data = callAndRead(uri, null, expectedHeaders)
         then:
-        JSON.parseObject(data).get("test") == 'Hello/World'
+        Json.parseObject(data).get("test").asText() == 'Hello/World'
     }
 
     def "Invoke /test/json-param testing correct decoding space"() {
@@ -526,7 +527,7 @@ class WebServerSpec extends BaseSpecification {
         when:
         def data = callAndRead(uri, null, expectedHeaders)
         then:
-        JSON.parseObject(data).get("test") == 'Hello World'
+        Json.parseObject(data).get("test").asText() == 'Hello World'
     }
 
     def "Invoke /test/json-params/one/t%2Fwotesting multiple parameter decoding delimiter"() {
@@ -536,9 +537,9 @@ class WebServerSpec extends BaseSpecification {
         when:
         def data = callAndRead(uri, null, expectedHeaders)
         then:
-        JSON.parseObject(data).get("param1") == 'one'
+        Json.parseObject(data).get("param1").asText() == 'one'
         and:
-        JSON.parseObject(data).get("param2") == 't/wo'
+        Json.parseObject(data).get("param2").asText() == 't/wo'
     }
 
     def "Invoke /test/json-params/one/t%20wo testing multiple parameter decoding space"() {
@@ -548,9 +549,9 @@ class WebServerSpec extends BaseSpecification {
         when:
         def data = callAndRead(uri, null, expectedHeaders)
         then:
-        JSON.parseObject(data).get("param1") == 'one'
+        Json.parseObject(data).get("param1").asText() == 'one'
         and:
-        JSON.parseObject(data).get("param2") == 't wo'
+        Json.parseObject(data).get("param2").asText() == 't wo'
     }
 
     def "Invoke /test/json-params-varargs/1%2F/%2F2/one/t%2Fwo/t%2Fhree/%2Ffour/five%2F testing varargs decoding delimiter"() {
@@ -560,17 +561,17 @@ class WebServerSpec extends BaseSpecification {
         when:
         def data = callAndRead(uri, null, expectedHeaders)
         then:
-        JSON.parseObject(data).get("param1") == '1/'
+        Json.parseObject(data).get("param1").asText() == '1/'
         and:
-        JSON.parseObject(data).get("param2") == '/2'
+        Json.parseObject(data).get("param2").asText() == '/2'
         and:
-        def varargs = JSON.parseObject(data).getJSONArray("params")
+        def varargs = Json.getArray(Json.parseObject(data), "params")
         varargs.size() == 5
-        varargs.get(0) == 'one'
-        varargs.get(1) == 't/wo'
-        varargs.get(2) == 't/hree'
-        varargs.get(3) == '/four'
-        varargs.get(4) == 'five/'
+        varargs.get(0).asText() == 'one'
+        varargs.get(1).asText() == 't/wo'
+        varargs.get(2).asText() == 't/hree'
+        varargs.get(3).asText() == '/four'
+        varargs.get(4).asText() == 'five/'
     }
 
     def "Invoke /test/json-params-varargs/1%20/%202/one/t%20wo/t%20hree/%20four/five%20 testing varargs decoding space"() {
@@ -580,17 +581,17 @@ class WebServerSpec extends BaseSpecification {
         when:
         def data = callAndRead(uri, null, expectedHeaders)
         then:
-        JSON.parseObject(data).get("param1") == '1 '
+        Json.parseObject(data).get("param1").asText() == '1 '
         and:
-        JSON.parseObject(data).get("param2") == ' 2'
+        Json.parseObject(data).get("param2").asText() == ' 2'
         and:
-        def varargs = JSON.parseObject(data).getJSONArray("params")
+        def varargs = Json.getArray(Json.parseObject(data), "params")
         varargs.size() == 5
-        varargs.get(0) == 'one'
-        varargs.get(1) == 't wo'
-        varargs.get(2) == 't hree'
-        varargs.get(3) == ' four'
-        varargs.get(4) == 'five '
+        varargs.get(0).asText() == 'one'
+        varargs.get(1).asText() == 't wo'
+        varargs.get(2).asText() == 't hree'
+        varargs.get(3).asText() == ' four'
+        varargs.get(4).asText() == 'five '
     }
 
     def "Invoke /test/json-param testing param with only delimiter"() {
@@ -600,7 +601,7 @@ class WebServerSpec extends BaseSpecification {
         when:
         def data = callAndRead(uri, null, expectedHeaders)
         then:
-        JSON.parseObject(data).get("test") == '///'
+        Json.parseObject(data).get("test").asText() == '///'
     }
 
     def "Invoke /test/json-param testing param with only space"() {
@@ -610,7 +611,7 @@ class WebServerSpec extends BaseSpecification {
         when:
         def data = callAndRead(uri, null, expectedHeaders)
         then:
-        JSON.parseObject(data).get("test") == '   '
+        Json.parseObject(data).get("test").asText() == '   '
     }
 
     def "testRequest follows redirects if instructed"() {

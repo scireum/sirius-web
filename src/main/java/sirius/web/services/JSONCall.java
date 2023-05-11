@@ -8,9 +8,9 @@
 
 package sirius.web.services;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.handler.codec.http.HttpHeaderNames;
+import sirius.kernel.commons.Json;
 import sirius.kernel.commons.Streams;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Log;
@@ -129,15 +129,15 @@ public class JSONCall {
      * @return the JSON result of the call
      * @throws IOException in case of an IO error while receiving the result
      */
-    public JSONObject getInput() throws IOException {
+    public ObjectNode getInput() throws IOException {
         String body =
                 Streams.readToString(new InputStreamReader(outcall.getResponse().body(), outcall.getContentEncoding()));
         logRequest(body);
-        
+
         String contentType = outcall.getHeaderField("content-type");
         if (!outcall.isErroneous() || (contentType != null && contentType.toLowerCase()
                                                                          .contains(MimeHelper.APPLICATION_JSON))) {
-            return JSON.parseObject(body);
+            return Json.parseObject(body);
         }
         throw new IOException(Strings.apply("A non-OK response (%s) was received as a result of an HTTP call",
                                             outcall.getResponse().statusCode()));
