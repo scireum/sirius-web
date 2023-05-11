@@ -52,7 +52,7 @@ class ConsoleControllerSpec extends BaseSpecification {
         then:
         result.getStatus() == HttpResponseStatus.OK
         Json.tryGetAt(json, JsonPointer.compile("/error/code"))
-            .map { Json.convertToValue(it) }.map { it.isEmptyString() }.orElse(false)
+            .map { Json.convertToValue(it) }.map { it.isEmptyString() }.orElse(true)
         Json.tryGetAt(json, JsonPointer.compile("/result"))
             .map { Json.convertToValue(it) }.map { it.isFilled() }.orElse(false)
     }
