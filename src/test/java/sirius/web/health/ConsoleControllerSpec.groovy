@@ -9,6 +9,7 @@
 
 package sirius.web.health
 
+import com.fasterxml.jackson.core.JsonPointer
 import io.netty.handler.codec.http.HttpResponseStatus
 import sirius.kernel.BaseSpecification
 import sirius.kernel.commons.Context
@@ -50,8 +51,10 @@ class ConsoleControllerSpec extends BaseSpecification {
         def json = result.getContentAsJson()
         then:
         result.getStatus() == HttpResponseStatus.OK
-        Json.tryGetAt(json, "/error/code").map { Json.convertToValue(it) }.map { it.isEmptyString() }.orElse(false)
-        Json.tryGetAt(json, "/result").map { Json.convertToValue(it) }.map { it.isFilled() }.orElse(false)
+        Json.tryGetAt(json, JsonPointer.compile("/error/code"))
+            .map { Json.convertToValue(it) }.map { it.isEmptyString() }.orElse(false)
+        Json.tryGetAt(json, JsonPointer.compile("/result"))
+            .map { Json.convertToValue(it) }.map { it.isFilled() }.orElse(false)
     }
 
 }
