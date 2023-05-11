@@ -8,9 +8,12 @@
 
 package sirius.web.services;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.POJONode;
 import sirius.kernel.commons.Amount;
+import sirius.kernel.commons.Json;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.xml.AbstractStructuredOutput;
@@ -201,14 +204,18 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
 
     @Override
     public void writeProperty(String name, Object data) {
-        if (data instanceof JSONObject jsonObject) {
+        if (data instanceof ObjectNode jsonObject) {
             beginObject(name);
-            jsonObject.forEach(this::property);
+            jsonObject.properties().forEach(entry -> property(entry.getKey(), entry.getValue()));
             endObject();
-        } else if (data instanceof JSONArray jsonArray) {
+        } else if (data instanceof ArrayNode jsonArray) {
             beginArray(name);
             jsonArray.forEach(element -> property("", element));
             endArray();
+        } else if (data instanceof POJONode pojoNode) {
+            writeProperty(name, pojoNode.getPojo());
+        } else if (data instanceof JsonNode jsonNode) {
+            writePlainProperty(name, Json.convertToJavaObject(jsonNode));
         } else {
             writePlainProperty(name, data);
         }

@@ -7,8 +7,7 @@
  */
 package sirius.web.http;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -36,6 +35,7 @@ import sirius.kernel.commons.Callback;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Files;
 import sirius.kernel.commons.Hasher;
+import sirius.kernel.commons.Json;
 import sirius.kernel.commons.Streams;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
@@ -1923,7 +1923,7 @@ public class WebContext implements SubContext {
      *
      * @return the body of the HTTP request as JSON input
      */
-    public JSONObject getJSONContent() {
+    public ObjectNode getJSONContent() {
         try {
             if (content == null) {
                 throw Exceptions.handle()
@@ -1941,7 +1941,7 @@ public class WebContext implements SubContext {
                                         maxStructuredInputSize)
                                 .handle();
             }
-            return JSON.parseObject(content.getString(getRequestEncoding()));
+            return Json.parseObject(content.getString(getRequestEncoding()));
         } catch (HandledException e) {
             throw e;
         } catch (Exception e) {

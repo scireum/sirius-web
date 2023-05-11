@@ -6,6 +6,7 @@
 <i:arg type="String" name="class" default=""/>
 <i:arg type="String" name="url"/>
 <i:arg type="boolean" name="adminOnly" default="false"/>
+<i:arg type="String" name="linkTarget" default="_self"/>
 <i:arg type="java.util.Map" name="data" default="java.util.Collections.emptyMap()"/>
 
 <i:pragma name="description" value="Renders menu entry within a tycho template"/>
@@ -18,7 +19,7 @@
 
 <i:if test="isFrameworkEnabled(framework)">
     <t:permission permission="@permission">
-        <a href="@url" class="dropdown-item @if (adminOnly) { admin-link } @class" <i:raw>@dataSerialized</i:raw>>
+        <a href="@url" class="dropdown-item @if (adminOnly) { admin-link } @class" target="@linkTarget" <i:raw>@dataSerialized</i:raw>>
             <i:if test="isFilled(icon)">
                 <i class="@icon fa-fw"></i>
             </i:if>

@@ -8,7 +8,7 @@
 
 package sirius.web.http;
 
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
@@ -26,6 +26,7 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.async.CombinedFuture;
 import sirius.kernel.async.Promise;
 import sirius.kernel.commons.Context;
+import sirius.kernel.commons.Json;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Part;
@@ -65,7 +66,7 @@ public class TestRequest extends WebContext implements HttpRequest {
     private final HttpHeaders testHeaders = new DefaultHttpHeaders();
     private final Map<String, Object> parameters = Context.create();
     private final List<Cookie> testCookies = new ArrayList<>();
-    private final  Map<String, String> testSession;
+    private final Map<String, String> testSession;
     private String testUri;
     private InputStream resource;
     private HttpMethod testMethod;
@@ -205,10 +206,10 @@ public class TestRequest extends WebContext implements HttpRequest {
      * @param uri  the relative uri to call
      * @param json the JSON data be included in the post request
      * @return an instance used to further specify the request to send
-     * @deprecated use {@link #POST(String)} and {@link #sendData(JSONObject)}
+     * @deprecated use {@link #POST(String)} and {@link #sendData(ObjectNode)}
      */
     @Deprecated
-    public static TestRequest POST(String uri, JSONObject json) {
+    public static TestRequest POST(String uri, ObjectNode json) {
         return POST(uri).sendData(json);
     }
 
@@ -288,8 +289,8 @@ public class TestRequest extends WebContext implements HttpRequest {
         return this;
     }
 
-    public TestRequest sendData(JSONObject postData) {
-        sendData(postData.toString());
+    public TestRequest sendData(ObjectNode postData) {
+        sendData(Json.write(postData));
 
         return this;
     }
@@ -440,8 +441,9 @@ public class TestRequest extends WebContext implements HttpRequest {
                 this.testUri + (Strings.isFilled(queryString) ? (testUri.contains("?") ? "&" : "?") + queryString : "");
 
         // send resource in body
-        if (resource != null && (testMethod.equals(HttpMethod.PATCH) || testMethod.equals(HttpMethod.POST) || testMethod
-                .equals(HttpMethod.PUT))) {
+        if (resource != null && (testMethod.equals(HttpMethod.PATCH)
+                                 || testMethod.equals(HttpMethod.POST)
+                                 || testMethod.equals(HttpMethod.PUT))) {
             try {
                 addHeader(HttpHeaderNames.CONTENT_LENGTH, resource.available());
                 Attribute body = new MemoryAttribute("body");

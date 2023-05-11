@@ -8,10 +8,10 @@
 
 package sirius.web.http
 
-import com.alibaba.fastjson.JSON
 import org.junit.jupiter.api.Tag
 import sirius.kernel.BaseSpecification
 import sirius.kernel.Tags
+import sirius.kernel.commons.Json
 import sirius.kernel.commons.Streams
 
 import java.nio.charset.StandardCharsets
@@ -44,11 +44,11 @@ class UploadSpec extends BaseSpecification {
         when:
         def response = upload("/upload-test", file)
         and:
-        def json = JSON.parseObject(response)
+        def json = Json.parseObject(response)
         then:
-        json.get("success") == true
+        json.get("success").asBoolean() == true
         and:
-        json.get("size") == file.length()
+        json.get("size").asLong() == file.length()
     }
 
     def "Uploads a gzip-file to /upload-gzip"() {
@@ -57,10 +57,10 @@ class UploadSpec extends BaseSpecification {
         when:
         def response = upload("/upload-gzip", file)
         and:
-        def json = JSON.parseObject(response)
+        def json = Json.parseObject(response)
         then:
-        json.get("success") == true
+        json.get("success").asBoolean() == true
         and:
-        json.get("lines") == 3
+        json.get("lines").asLong() == 3
     }
 }
