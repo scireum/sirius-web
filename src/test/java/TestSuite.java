@@ -9,11 +9,6 @@
 import com.googlecode.junittoolbox.SuiteClasses;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.platform.suite.api.IncludeClassNamePatterns;
-import org.junit.platform.suite.api.SelectPackages;
-import org.junit.platform.suite.api.Suite;
 import org.junit.runner.RunWith;
 import sirius.kernel.ScenarioSuite;
 import sirius.kernel.TestHelper;
