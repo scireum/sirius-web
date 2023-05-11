@@ -9,15 +9,16 @@
 
 package sirius.web.health
 
+import com.fasterxml.jackson.core.JsonPointer
 import io.netty.handler.codec.http.HttpResponseStatus
 import sirius.kernel.BaseSpecification
 import sirius.kernel.commons.Context
+import sirius.kernel.commons.Json
 import sirius.web.health.console.ConsoleController
 import sirius.web.http.TestRequest
 import sirius.web.http.TestResponse
 import sirius.web.security.UserContext
 import sirius.web.security.UserInfo
-import sirius.web.util.JSONPath
 
 class ConsoleControllerSpec extends BaseSpecification {
 
@@ -25,7 +26,8 @@ class ConsoleControllerSpec extends BaseSpecification {
         given:
         UserContext.get().setCurrentUser(UserInfo.Builder.createUser("test")
                                                  .withPermissions(Collections.
-                                                         singleton(ConsoleController.PERMISSION_SYSTEM_CONSOLE)).build())
+                                                         singleton(ConsoleController.PERMISSION_SYSTEM_CONSOLE))
+                                                 .build())
         when:
         def result = TestRequest.GET("/system/console").execute()
         then:
@@ -49,8 +51,10 @@ class ConsoleControllerSpec extends BaseSpecification {
         def json = result.getContentAsJson()
         then:
         result.getStatus() == HttpResponseStatus.OK
-        JSONPath.queryValue(json, "error.code").isEmptyString()
-        JSONPath.queryValue(json, "result").isFilled()
+        Json.tryGetAt(json, JsonPointer.compile("/error/code"))
+            .map { Json.convertToValue(it) }.map { it.isEmptyString() }.orElse(true)
+        Json.tryGetAt(json, JsonPointer.compile("/result"))
+            .map { Json.convertToValue(it) }.map { it.isFilled() }.orElse(false)
     }
 
 }
