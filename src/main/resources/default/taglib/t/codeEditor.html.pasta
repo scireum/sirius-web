@@ -12,9 +12,7 @@
 
 <div class="flex-grow-1 mb-4 h-100 w-100">
     <!--@ Do not reformat the following line... it will cause ugly extra-lines in the editor-->
-    <div id="@id" class="@class" style="min-height: 350px; height: 100%;">
-        <i:render name="body"/>
-    </div>
+    <div id="@id" class="@class" style="min-height: 350px; height: 100%;"><i:render name="body"/></div>
 </div>
 
 <script type="text/javascript">
