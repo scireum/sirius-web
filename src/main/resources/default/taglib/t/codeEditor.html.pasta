@@ -7,7 +7,7 @@
     Provides a ACE based code editor. Note that "/assets/tycho/libs/ace/ace.js" needs to be present when using this.
 </i:pragma>
 
-<div class="flex-grow-1 mb-4">
+<div class="flex-grow-1 mb-4 h-100 w-100">
     <div id="@id" class="@class" style="min-height: 350px; height: 100%"><i:render name="body" /></div>
 </div>
 
