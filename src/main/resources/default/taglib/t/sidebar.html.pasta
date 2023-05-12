@@ -10,12 +10,12 @@
             </div>
             <div class="card-footer">
                 <i:render name="sidebar-footer">
-                    <t:backButton class="mt-4 d-block" />
+                    <t:backButton class="mt-4 d-block"/>
                 </i:render>
             </div>
         </div>
     </div>
-    <div class="col-12 col-lg-8 col-xl-9">
+    <div class="col-12 col-lg-8 col-xl-9 d-flex">
         <div class="flex-grow-1">
             <i:render name="body"/>
         </div>
