@@ -45,13 +45,6 @@
             <!-- Set version below in <dependencyManagement>. -->
         </dependency>
 
-        <!-- Used as chosen JSON implementation -->
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
-            <version>1.2.83</version>
-        </dependency>
-
         <!-- Async http client used to tunnel http data from a backend server -->
         <dependency>
             <groupId>org.asynchttpclient</groupId>
