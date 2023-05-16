@@ -9,6 +9,7 @@
 package sirius.web.services;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -18,10 +19,11 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
+@Repeatable(ApiResponsesFromList.class)
 public @interface ApiResponsesFrom {
 
     /**
-     * Contains the descriptor class documenting the set of shared parameters.
+     * Contains the descriptor class documenting the set of shared api responses.
      *
      * @return the descriptor to copy from
      */
