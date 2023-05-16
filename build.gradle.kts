@@ -23,9 +23,6 @@ dependencies {
     // Netty is the foundation of the built-in web server
     api("io.netty:netty-all:4.1.82.Final")
 
-    // Used as chosen JSON implementation
-    api("com.alibaba:fastjson:1.2.83")
-
     // Async http client used to tunnel http data from a backend server
     api("org.asynchttpclient:async-http-client:2.12.3") {
         exclude(group = "io.netty")
