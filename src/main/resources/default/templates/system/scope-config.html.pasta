@@ -31,6 +31,6 @@
                 </i:for>
             </t:navbox>
         </i:block>
-        <t:codeEditor mode="text" readonly="true">@contents</t:codeEditor>
+        <t:codeEditor mode="json" readonly="true">@contents</t:codeEditor>
     </t:sidebar>
 </t:page>
