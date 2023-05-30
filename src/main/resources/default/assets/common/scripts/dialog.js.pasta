@@ -147,9 +147,9 @@
      *
      * Note: If multiple buttons are added this way they are ordered in reverse orders, so from right to left.
      */
-    dialog.addFooterButton = function (label, callback) {
+    dialog.addFooterButton = function (label, callback, buttonClass) {
         const _button = document.createElement('a');
-        _button.classList.add('sci-btn-secondary-outline', 'sci-btn-small', 'sci-ml-2');
+        _button.classList.add(buttonClass, 'sci-btn-small', 'sci-ml-2');
         _button.addEventListener('click', callback);
         _button.textContent = label;
 
@@ -159,6 +159,24 @@
             _footer.classList.remove('sci-d-none');
             _footer.classList.add('sci-d-flex');
         }
+    }
+
+    /**@
+     * Adds a primary button with the given label text and callback function to the footer area of the currently displayed dialog.
+     *
+     * Note: If multiple buttons are added this way they are ordered in reverse orders, so from right to left.
+     */
+    dialog.addPrimaryFooterButton = function (label, callback) {
+        dialog.addFooterButton(label, callback, 'sci-btn-primary-outline');
+    }
+
+    /**@
+     * Adds a secondary button with the given label text and callback function to the footer area of the currently displayed dialog.
+     *
+     * Note: If multiple buttons are added this way they are ordered in reverse orders, so from right to left.
+     */
+    dialog.addSecondaryFooterButton = function (label, callback) {
+        dialog.addFooterButton(label, callback, 'sci-btn-secondary-outline');
     }
 
     /**@
