@@ -6,3 +6,4 @@ logs
 instance.conf
 .gradle
 build
+out
