@@ -159,6 +159,23 @@
   white-space: nowrap;
 }
 
+.sci-pill {
+  padding: 0.25rem 0.5rem;
+  border-radius: 1rem;
+
+  font-size: 0.9rem;
+  line-height: 1;
+  font-weight: 300;
+
+  color: $sirius-white;
+  background-color: $sirius-gray;
+
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .sci-muted-link {
   text-decoration: none;
   cursor: pointer;
