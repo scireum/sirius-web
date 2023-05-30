@@ -22,7 +22,8 @@ dependencies {
     }
 
     // Netty is the foundation of the built-in web server
-    api("io.netty:netty-all:4.1.82.Final")
+    api(platform("io.netty:netty-bom:4.1.82.Final"))
+    api("io.netty:netty-all")
 
     // Async http client used to tunnel http data from a backend server
     api("org.asynchttpclient:async-http-client:2.12.3") {
