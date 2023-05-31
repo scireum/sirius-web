@@ -2,8 +2,8 @@
 scireum_volumes: &scireum_volumes
   - name: docker_socket
     path: /var/run/docker.sock
-  - name: m2
-    path: /root/.m2
+  - name: gradle
+    path: /root/.gradle
 
 kind: pipeline
 name: default
@@ -95,6 +95,6 @@ volumes:
   - name: docker_socket
     host:
       path: /var/run/docker.sock
-  - name: m2
+  - name: gradle
     host:
-      path: /root/.m2
+      path: /root/.gradle
