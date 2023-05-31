@@ -5,7 +5,7 @@ scireum_volumes: &scireum_volumes
   - name: m2
     path: /root/.m2
   - name: gradle
-    path: /root/.gradle
+    path: /root/.gradle/caches
 
 kind: pipeline
 name: default
@@ -102,4 +102,4 @@ volumes:
       path: /root/.m2
   - name: gradle
     host:
-      path: /root/.gradle
+      path: /root/.gradle/caches
