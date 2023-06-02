@@ -54,7 +54,7 @@ public class UserMacro extends BasicMacro {
 
     @Override
     public String getDescription() {
-        return "Returns the current user as reported by UserContexr.getCurrentUser()";
+        return "Returns the current user as reported by UserContext.getCurrentUser()";
     }
 
     @Nonnull
