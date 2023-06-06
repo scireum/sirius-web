@@ -1,15 +1,25 @@
-<i:arg type="String" name="color" default="gray" description="Specifies the color to use."/>
-<i:arg type="boolean" name="marginRight" default="true" description="Determines if the dot has an auto margin at the right"/>
-<i:arg type="String" name="class" default=""
+<i:arg type="String"
+       name="color"
+       default="gray"
+       description="Specifies the color to use."/>
+<i:arg type="boolean"
+       name="marginRight"
+       default="true"
+       description="Determines if the dot has an auto margin at the right"/>
+<i:arg type="int"
+       name="marginBottom"
+       default="2"
+       description="Determines the height of the margin at the bottom"/>
+<i:arg type="String"
+       name="class"
+       default=""
        description="Defines addition classes to add."/>
 
 <i:pragma name="description">
     Renders a colored dot along with an info text.
 </i:pragma>
 
-<span>
-<span class="mb-2 @if(marginRight) { mr-2 } dot-block @class">
+<span class="mb-@marginBottom @if(marginRight) { mr-2 } dot-block @class">
     <span class="d-inline-block dot mr-1 bg-sirius-@color">&nbsp;</span>
     <i:render name="body"/>
-</span>
 </span>
