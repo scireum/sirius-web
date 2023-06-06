@@ -9,7 +9,7 @@
 <i:arg type="int"
        name="marginBottom"
        default="2"
-       description="Determines the width of the margin at the bottom"/>
+       description="Determines the height of the margin at the bottom"/>
 <i:arg type="String"
        name="class"
        default=""
