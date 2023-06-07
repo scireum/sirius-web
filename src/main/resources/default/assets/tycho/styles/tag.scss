@@ -12,7 +12,6 @@
     width: 8px;
     height: 8px;
     border-radius: 5px;
-    align-self: center;
     color: $grayDark;
   }
 
@@ -20,6 +19,7 @@
   flex-flow: row;
   line-height: 1;
   font-size: 0.85rem;
+  align-items: center;
 }
 
 .tycho-tag {
