@@ -82,10 +82,10 @@ public class Template {
     /**
      * Adds an argument to the template.
      *
-     * @param arg the argument to add
+     * @param argument the argument to add
      */
-    public void addArgument(TemplateArgument arg) {
-        arguments.add(arg);
+    public void addArgument(TemplateArgument argument) {
+        arguments.add(argument);
     }
 
     /**
@@ -119,15 +119,15 @@ public class Template {
     /**
      * Invokes the template and renders it into a string using the given arguments.
      *
-     * @param args the arguments to supply
+     * @param arguments the arguments to supply
      * @return the result of the emitters contained in the template
      * @throws RenderException in case of an error when creating the output
      */
-    public String renderToString(Object... args) throws RenderException {
-        GlobalRenderContext ctx = engine.createRenderContext();
-        render(ctx, args);
+    public String renderToString(Object... arguments) throws RenderException {
+        GlobalRenderContext globalRenderContext = engine.createRenderContext();
+        render(globalRenderContext, arguments);
 
-        return ctx.toString();
+        return globalRenderContext.toString();
     }
 
     /**
@@ -138,13 +138,13 @@ public class Template {
      * @throws RenderException in case of an error when creating the output
      */
     public String renderWithParams(Context context) throws RenderException {
-        GlobalRenderContext ctx = engine.createRenderContext();
-        setupEscaper(ctx);
-        LocalRenderContext renderContext = ctx.createContext(this);
+        GlobalRenderContext globalRenderContext = engine.createRenderContext();
+        setupEscaper(globalRenderContext);
+        LocalRenderContext renderContext = globalRenderContext.createContext(this);
         transferArguments(context, renderContext);
         renderWithContext(renderContext);
 
-        return ctx.toString();
+        return globalRenderContext.toString();
     }
 
     /**
@@ -152,16 +152,18 @@ public class Template {
      * <p>
      * Also, all given values are verified and default values are used, where required.
      *
-     * @param args          the arguments to use
+     * @param arguments     the arguments to use
      * @param renderContext the context to fill
      * @throws RenderException in case of invalid or missing arguments
      */
-    public void transferArguments(Map<String, Object> args, LocalRenderContext renderContext) throws RenderException {
+    public void transferArguments(Map<String, Object> arguments, LocalRenderContext renderContext)
+            throws RenderException {
         int index = 0;
-        for (TemplateArgument arg : getArguments()) {
-            Object argumentValue =
-                    (args.containsKey(arg.getName())) ? args.get(arg.getName()) : getDefaultValue(renderContext, arg);
-            verifyArgument(renderContext, arg, argumentValue);
+        for (TemplateArgument argument : getArguments()) {
+            Object argumentValue = (arguments.containsKey(argument.getName())) ?
+                                   arguments.get(argument.getName()) :
+                                   getDefaultValue(renderContext, argument);
+            verifyArgument(renderContext, argument, argumentValue);
             renderContext.writeVariable(index, argumentValue);
 
             index++;
@@ -171,14 +173,14 @@ public class Template {
     /**
      * Returns the template using the given context and arguments.
      *
-     * @param ctx  the context used to render the template
-     * @param args the arguments being supplied to the template
+     * @param globalRenderContext the context used to render the template
+     * @param arguments           the arguments being supplied to the template
      * @throws RenderException in case of an error when creating the output
      */
-    public void render(GlobalRenderContext ctx, Object... args) throws RenderException {
-        setupEscaper(ctx);
-        LocalRenderContext context = ctx.createContext(this);
-        applyArguments(context, args);
+    public void render(GlobalRenderContext globalRenderContext, Object... arguments) throws RenderException {
+        setupEscaper(globalRenderContext);
+        LocalRenderContext context = globalRenderContext.createContext(this);
+        applyArguments(context, arguments);
         renderWithContext(context);
     }
 
@@ -197,47 +199,49 @@ public class Template {
                 ".pdf");
     }
 
-    private void setupEscaper(GlobalRenderContext ctx) {
+    private void setupEscaper(GlobalRenderContext globalRenderContext) {
         if (isXmlContentExpected()) {
-            ctx.setEscaper(GlobalRenderContext::escapeXML);
+            globalRenderContext.setEscaper(GlobalRenderContext::escapeXML);
         }
     }
 
-    private void applyArguments(LocalRenderContext ctx, Object[] args) throws RenderException {
+    private void applyArguments(LocalRenderContext localRenderContext, Object[] arguments) throws RenderException {
         int index = 0;
-        for (TemplateArgument arg : getArguments()) {
-            Object argumentValue = (index < args.length) ? args[index] : getDefaultValue(ctx, arg);
-            verifyArgument(ctx, arg, argumentValue);
-            ctx.writeVariable(index, argumentValue);
+        for (TemplateArgument argument : getArguments()) {
+            Object argumentValue =
+                    (index < arguments.length) ? arguments[index] : getDefaultValue(localRenderContext, argument);
+            verifyArgument(localRenderContext, argument, argumentValue);
+            localRenderContext.writeVariable(index, argumentValue);
 
             index++;
         }
     }
 
-    private Object getDefaultValue(LocalRenderContext ctx, TemplateArgument arg) throws RenderException {
-        if (arg.getDefaultValue() != null) {
+    private Object getDefaultValue(LocalRenderContext localRenderContext, TemplateArgument argument)
+            throws RenderException {
+        if (argument.getDefaultValue() != null) {
             try {
-                return arg.getDefaultValue().call(ctx);
-            } catch (ScriptingException e) {
-                throw RenderException.create(ctx, e);
+                return argument.getDefaultValue().call(localRenderContext);
+            } catch (ScriptingException exception) {
+                throw RenderException.create(localRenderContext, exception);
             }
         } else {
-            throw RenderException.create(ctx,
+            throw RenderException.create(localRenderContext,
                                          new IllegalArgumentException(Strings.apply(
                                                  "The required parameter '%s' must not be empty.",
-                                                 arg.getName())));
+                                                 argument.getName())));
         }
     }
 
-    private void verifyArgument(LocalRenderContext ctx, TemplateArgument arg, Object argumentValue)
+    private void verifyArgument(LocalRenderContext localRenderContext, TemplateArgument argument, Object argumentValue)
             throws RenderException {
-        if (!CompilationContext.isAssignable(argumentValue, arg.getType())) {
-            throw RenderException.create(ctx,
+        if (!CompilationContext.isAssignable(argumentValue, argument.getType())) {
+            throw RenderException.create(localRenderContext,
                                          new IllegalArgumentException(Strings.apply(
                                                  "An invalid value was supplied for parameter '%s'. "
                                                  + "Expected was: %s, Given was: %s",
-                                                 arg.getName(),
-                                                 arg.getType(),
+                                                 argument.getName(),
+                                                 argument.getType(),
                                                  argumentValue == null ? "null" : argumentValue.getClass())));
         }
     }
@@ -245,13 +249,13 @@ public class Template {
     /**
      * Renders the template with the given local context.
      *
-     * @param ctx the local render context
+     * @param localRenderContext the local render context
      * @throws RenderException in case of an error when creating the output
      */
-    public void renderWithContext(LocalRenderContext ctx) throws RenderException {
-        Watch w = Watch.start();
-        emitter.emit(ctx);
-        renderTime.addValue(w.elapsedMillis());
+    public void renderWithContext(LocalRenderContext localRenderContext) throws RenderException {
+        Watch watch = Watch.start();
+        emitter.emit(localRenderContext);
+        renderTime.addValue(watch.elapsedMillis());
     }
 
     /**
@@ -400,9 +404,9 @@ public class Template {
      * @return a possibly shortened name of the template to be used in warnings and error messages
      */
     public String getShortName() {
-        Matcher m = TAGLIB_NAME.matcher(name);
-        if (m.matches()) {
-            return "<" + m.group(1) + ":" + m.group(2) + ">";
+        Matcher matcher = TAGLIB_NAME.matcher(name);
+        if (matcher.matches()) {
+            return "<" + matcher.group(1) + ":" + matcher.group(2) + ">";
         } else {
             return Files.getFilenameAndExtension(name);
         }
