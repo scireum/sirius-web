@@ -9,6 +9,7 @@
 package sirius.pasta.tagliatelle;
 
 import sirius.kernel.Sirius;
+import sirius.kernel.commons.Context;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.pasta.noodle.compiler.CompileException;
@@ -65,6 +66,14 @@ public class TemplateReference {
     public String render(Object... args) {
         try {
             return fetchTemplate().renderToString(args);
+        } catch (RenderException e) {
+            throw Exceptions.handle(Resources.LOG, e);
+        }
+    }
+
+    public String renderWithParams(Context args) {
+        try {
+            return fetchTemplate().renderWithParams(args);
         } catch (RenderException e) {
             throw Exceptions.handle(Resources.LOG, e);
         }
