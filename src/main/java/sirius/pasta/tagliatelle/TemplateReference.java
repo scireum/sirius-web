@@ -60,22 +60,28 @@ public class TemplateReference {
     /**
      * Directly renders the referenced template using the given arguments and returns the resulting string.
      *
-     * @param args the arguments to pass to the template
+     * @param arguments the arguments to pass to the template
      * @return the string produced by <tt>Tagliatelle</tt>
      */
-    public String render(Object... args) {
+    public String render(Object... arguments) {
         try {
-            return fetchTemplate().renderToString(args);
-        } catch (RenderException e) {
-            throw Exceptions.handle(Resources.LOG, e);
+            return fetchTemplate().renderToString(arguments);
+        } catch (RenderException exception) {
+            throw Exceptions.handle(Resources.LOG, exception);
         }
     }
 
-    public String renderWithParams(Context args) {
+    /**
+     * Directly renders the referenced template using the given arguments and returns the resulting string.
+     *
+     * @param arguments the arguments to pass to the template
+     * @return the string produced by <tt>Tagliatelle</tt>
+     */
+    public String renderWithParams(Context arguments) {
         try {
-            return fetchTemplate().renderWithParams(args);
-        } catch (RenderException e) {
-            throw Exceptions.handle(Resources.LOG, e);
+            return fetchTemplate().renderWithParams(arguments);
+        } catch (RenderException exception) {
+            throw Exceptions.handle(Resources.LOG, exception);
         }
     }
 
@@ -88,8 +94,8 @@ public class TemplateReference {
             }
 
             return result;
-        } catch (CompileException e) {
-            throw Exceptions.handle(Resources.LOG, e);
+        } catch (CompileException exception) {
+            throw Exceptions.handle(Resources.LOG, exception);
         }
     }
 }
