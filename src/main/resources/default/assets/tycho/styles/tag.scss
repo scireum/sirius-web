@@ -6,22 +6,6 @@
  * http://www.scireum.de - info@scireum.de
  */
 
-.dot-block {
-  .dot {
-    min-width: 8px;
-    width: 8px;
-    height: 8px;
-    border-radius: 5px;
-    color: $grayDark;
-  }
-
-  display: inline-flex;
-  flex-flow: row;
-  line-height: 1;
-  font-size: 0.85rem;
-  align-items: center;
-}
-
 .tycho-tag {
   padding: 4px 8px;
   background-color: $whiteDark;

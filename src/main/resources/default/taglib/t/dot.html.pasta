@@ -19,7 +19,11 @@
     Renders a colored dot along with an info text.
 </i:pragma>
 
-<span class="mb-@marginBottom @if(marginRight) { mr-2 } dot-block @class">
-    <span class="d-inline-block dot mr-1 bg-sirius-@color">&nbsp;</span>
-    <i:render name="body"/>
+<span class="dot-block mb-@marginBottom @if(marginRight) { mr-2 } d-flex flex-flow text-small @class">
+    <span class="dot text-sirius-@color dot">
+        <i class="fa-solid fa-circle fa-2xs"></i>
+    </span>
+    <span class="pl-1 overflow-hidden text-break">
+        <i:render name="body"/>
+    </span>
 </span>
