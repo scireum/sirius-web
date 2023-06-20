@@ -9,3 +9,7 @@
 .table-sm {
   font-size: .8rem;
 }
+
+.table-hover tbody tr:hover {
+  background-color: $sirius-gray-lighter;
+}

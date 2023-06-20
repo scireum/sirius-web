@@ -335,7 +335,7 @@ public class SAMLHelper {
             }
 
             for (XMLStructure xmlStructure : keyInfo.getContent()) {
-                if (xmlStructure instanceof X509Data x509Data) {
+                if (xmlStructure instanceof X509Data x509Data && !x509Data.getContent().isEmpty()) {
                     X509Certificate x509Certificate = (X509Certificate) x509Data.getContent().get(0);
                     return new X509CertificateResult(x509Certificate);
                 }
