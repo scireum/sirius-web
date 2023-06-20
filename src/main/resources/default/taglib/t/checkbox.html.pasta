@@ -20,7 +20,7 @@
             <input type="checkbox" name="@name" value="@valueAttribute" @id="@id"
                    @if (value) { checked="checked" } @if (readonly) { disabled="disabled" }/>
             <i:if test="isFilled(label)">
-                <label><span>@label</span></label>
+                <span>@label</span>
             </i:if>
             <i:if test="isFilled(help)">
                 <small class="form-text text-muted"><i:raw>@expandMessage(help)</i:raw></small>
