@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
@@ -232,13 +233,23 @@ public class Permissions {
     }
 
     /**
-     * Trys to translate the given permission.
+     * Tries to translate the given permission.
+     *
+     * @param permission the permission to translate
+     * @return the translated permission wrapped as optional or an empty optional if it could not be translated
+     */
+    public static Optional<String> tryGetTranslatedPermission(String permission) {
+        return NLS.getIfExists("Permission." + permission, null);
+    }
+
+    /**
+     * Translates the given permission.
      *
      * @param permission the permission to translate
      * @return the translated permission or the permission string if it could not be translated
      */
     public static String getTranslatedPermission(String permission) {
-        return NLS.getIfExists("Permission." + permission, null).orElse(permission);
+        return tryGetTranslatedPermission(permission).orElse(permission);
     }
 
     /**
