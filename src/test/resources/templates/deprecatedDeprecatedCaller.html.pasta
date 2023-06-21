@@ -1,0 +1,7 @@
+<i:pragma name="unchecked" value="true" />
+<i:pragma name="deprecated" value="This template is deprecated so that deprecated children can be invoked without warning." />
+<i:arg type="sirius.pasta.tagliatelle.TestObject" name="test" />
+
+@test.deprecatedMethod()
+<e:deprecated />
+<i:invoke template="/taglib/e/deprecated.html.pasta" />
