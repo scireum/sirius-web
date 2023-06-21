@@ -224,12 +224,13 @@ public class TemplateCompilationContext extends CompilationContext {
     }
 
     private void outputArgumentDeprecationWarning(Position position, TemplateArgument arg) {
-        if (arg.getDeprecationWarning() != null) {
+        if (arg.getDeprecationWarning() != null && !isDeprecated()) {
             warning(position, "The attribute '%s' is deprecated: %s", arg.getName(), arg.getDeprecationWarning());
         }
     }
 
     private void outputTemplateDeprecationWarning(Position position, Template templateToInvoke) {
+        if (templateToInvoke.isDeprecated() && !isDeprecated()) {
             warning(position,
                     "The template '%s' is deprecated: %s",
                     templateToInvoke.getShortName(),
