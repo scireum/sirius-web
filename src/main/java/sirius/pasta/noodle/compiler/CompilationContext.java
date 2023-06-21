@@ -97,7 +97,7 @@ public class CompilationContext {
     /**
      * Records an error for the given position.
      *
-     * @param pos     the position where the error occured
+     * @param pos     the position where the error occurred
      * @param message the message to show
      * @param params  the formatting parameters applied to the message
      */
