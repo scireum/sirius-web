@@ -428,6 +428,15 @@ public class CompilationContext {
         violationHandler.accept(getSandboxMode());
     }
 
+    /**
+     * Determines if the underlying script or template is deprecated.
+     * @return <tt>true</tt> if the underlying script or template is deprecated, <tt>false</tt> otherwise
+     */
+    public boolean isDeprecated() {
+        // This should be overwritten by subclasses which can detect if a deprecation notice is present...
+        return false;
+    }
+
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();

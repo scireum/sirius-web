@@ -168,6 +168,11 @@ public class TemplateCompilationContext extends CompilationContext {
         }
     }
 
+    @Override
+    public boolean isDeprecated() {
+        return getTemplate().isDeprecated();
+    }
+
     /**
      * Generates an <tt>emitter</tt> which invokes the given template at runtime.
      * <p>

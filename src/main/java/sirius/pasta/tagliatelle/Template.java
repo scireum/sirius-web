@@ -41,6 +41,11 @@ import java.util.regex.Pattern;
  */
 public class Template {
 
+    /**
+     * Contains the deprecation notice for a template.
+     */
+    public static final String PRAGMA_DEPRECATED = "deprecated";
+
     protected String name;
     protected Resource resource;
     protected Emitter emitter;
@@ -114,6 +119,15 @@ public class Template {
         }
 
         return Value.of(pragmas.get(name));
+    }
+
+    /**
+     * Determines if the template is marked as deprecated by setting the pragma <tt>deprecated</tt>.
+     *
+     * @return <tt>true</tt> if the template is marked as deprecated, <tt>false</tt> otherwise
+     */
+    public boolean isDeprecated() {
+        return getPragma(PRAGMA_DEPRECATED).isFilled();
     }
 
     /**
