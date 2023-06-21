@@ -43,8 +43,6 @@ import java.util.function.Function;
  */
 public class TemplateCompilationContext extends CompilationContext {
 
-    private static final String PRAGMA_DEPRECATED = "deprecated";
-
     /**
      * Contains the context of the template which was being compiled and triggered the compilation of this template.
      * <p>
@@ -180,20 +178,20 @@ public class TemplateCompilationContext extends CompilationContext {
      * template will be detected and applied.
      *
      * @param position  the position where the invocation took place
-     * @param template  the template to call
+     * @param templateToInvoke  the template to call
      * @param arguments the arguments passed to the template
      * @param blocks    the emitter blocks passed to the template
      * @return an appropriate emitter which invokes the template with the given argument expressions at runtime
      */
     public Emitter invokeTemplate(Position position,
-                                  Template template,
+                                  Template templateToInvoke,
                                   Function<String, Callable> arguments,
                                   Map<String, Emitter> blocks) {
-        outputTemplateDeprecationWarning(position, template);
-        InvokeTemplateEmitter emitter = new InvokeTemplateEmitter(position, template.getName());
+        outputTemplateDeprecationWarning(position, templateToInvoke);
+        InvokeTemplateEmitter emitter = new InvokeTemplateEmitter(position, templateToInvoke.getName());
 
-        if (!template.getArguments().isEmpty()) {
-            Callable[] args = collectArgumentsForInvoke(position, template, arguments);
+        if (!templateToInvoke.getArguments().isEmpty()) {
+            Callable[] args = collectArgumentsForInvoke(position, templateToInvoke, arguments);
             emitter.setArguments(args);
         }
 
@@ -202,17 +200,17 @@ public class TemplateCompilationContext extends CompilationContext {
     }
 
     private Callable[] collectArgumentsForInvoke(Position position,
-                                                 Template template,
+                                                 Template templateToInvoke,
                                                  Function<String, Callable> arguments) {
-        Callable[] args = new Callable[template.getArguments().size()];
+        Callable[] args = new Callable[templateToInvoke.getArguments().size()];
         int index = 0;
-        for (TemplateArgument arg : template.getArguments()) {
+        for (TemplateArgument arg : templateToInvoke.getArguments()) {
             Callable argumentExpression = arguments.apply(arg.getName());
             if (argumentExpression != null) {
                 if (!isAssignableTo(argumentExpression.getType(), arg.getType())) {
                     error(position,
                           "Incompatible attribute types. '%s' expects %s for '%s', but %s was given.",
-                          template.getName(),
+                          templateToInvoke.getName(),
                           arg.getType(),
                           arg.getName(),
                           argumentExpression.getType());
@@ -231,12 +229,11 @@ public class TemplateCompilationContext extends CompilationContext {
         }
     }
 
-    private void outputTemplateDeprecationWarning(Position position, Template template) {
-        if (Strings.isFilled(template.getPragma(PRAGMA_DEPRECATED))) {
+    private void outputTemplateDeprecationWarning(Position position, Template templateToInvoke) {
             warning(position,
                     "The template '%s' is deprecated: %s",
-                    template.getShortName(),
-                    template.getPragma(PRAGMA_DEPRECATED));
+                    templateToInvoke.getShortName(),
+                    templateToInvoke.getPragma(Template.PRAGMA_DEPRECATED));
         }
     }
 }
