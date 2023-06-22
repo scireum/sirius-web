@@ -188,7 +188,7 @@ public class MethodCall extends Call {
     }
 
     private void checkDeprecation(CompilationContext context) {
-        if (this.method.isAnnotationPresent(Deprecated.class)) {
+        if (this.method.isAnnotationPresent(Deprecated.class) && !context.isDeprecated()) {
             context.warning(position,
                             "The method %s.%s is marked as deprecated",
                             this.method.getDeclaringClass().getName(),

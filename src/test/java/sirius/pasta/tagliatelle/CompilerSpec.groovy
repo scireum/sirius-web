@@ -336,6 +336,14 @@ class CompilerSpec extends BaseSpecification {
         errors.get(0).getMessage().contains("The template '<e:deprecated>' is deprecated: Test of deprecated")
     }
 
+    def "deprecation warning is skipped for deprecated templates"() {
+        when:
+        TemplateCompilationContext compilationContext = compile("/templates/deprecatedDeprecatedCaller.html.pasta")
+        List<ParseError> errors = compilationContext.getErrors()
+        then:
+        errors.size() == 0
+    }
+
     def "calling a deprecated method is detected"() {
         when:
         TemplateCompilationContext compilationContext = compile("/templates/deprecatedMethodCall.html.pasta")

@@ -152,7 +152,7 @@ public class MacroCall extends Call {
             return false;
         }
 
-        if (macro.getClass().isAnnotationPresent(Deprecated.class)) {
+        if (macro.getClass().isAnnotationPresent(Deprecated.class) && !compilationContext.isDeprecated()) {
             compilationContext.warning(position,
                                        "The macro %s (%s) is deprecated.",
                                        macro.getName(),

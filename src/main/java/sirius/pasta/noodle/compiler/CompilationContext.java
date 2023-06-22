@@ -97,7 +97,7 @@ public class CompilationContext {
     /**
      * Records an error for the given position.
      *
-     * @param pos     the position where the error occured
+     * @param pos     the position where the error occurred
      * @param message the message to show
      * @param params  the formatting parameters applied to the message
      */
@@ -426,6 +426,15 @@ public class CompilationContext {
         }
 
         violationHandler.accept(getSandboxMode());
+    }
+
+    /**
+     * Determines if the underlying script or template is deprecated.
+     * @return <tt>true</tt> if the underlying script or template is deprecated, <tt>false</tt> otherwise
+     */
+    public boolean isDeprecated() {
+        // This should be overwritten by subclasses which can detect if a deprecation notice is present...
+        return false;
     }
 
     @Override
