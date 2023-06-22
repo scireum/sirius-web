@@ -4,7 +4,7 @@
        default="true"
        description="Determines if the dot has an auto margin at the right"/>
 <i:arg type="String" name="class" default="" description="Defines addition classes to add."/>
-<i:arg type="String" name="id" default="" description="Defines the id of the rendered span."/>
+<i:arg type="String" name="id" default="" description="Defines the ID of the rendered span."/>
 <i:arg type="String" name="value" default="@renderToString('body')"/>
 
 <i:pragma name="description">
