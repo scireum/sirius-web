@@ -1,17 +1,19 @@
 <i:arg type="String" name="labelKey" default=""/>
 <i:arg type="String" name="label" default="@i18n(labelKey)"/>
-<i:arg type="String" name="class" default="" />
-<i:local name="markupLabel" value="@renderToString('body')" />
+<i:arg type="String" name="class" default=""/>
+
+<i:local name="markupLabel" value="@renderToString('body')"/>
+
 <i:if test="isFilled(label)">
     <div class="bb-gray pb-2 mt-4 mb-3 h5 text-black-75 align-items-end d-flex flex-row @class">
         <span class="overflow-hidden">@label</span>
-        <span class="ml-auto"><i:render name="actions" /></span>
+        <span class="ml-auto"><i:render name="actions"/></span>
     </div>
     <i:else>
         <i:if test="isFilled(markupLabel)">
             <div class="bb-gray pb-2 mt-4 mb-3 h5 text-black-75 align-items-end d-flex flex-row @class">
                 <span class="overflow-hidden"><i:raw>@markupLabel</i:raw></span>
-                <span class="ml-auto"><i:render name="actions" /></span>
+                <span class="ml-auto"><i:render name="actions"/></span>
             </div>
         </i:if>
     </i:else>
