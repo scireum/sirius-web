@@ -2,10 +2,11 @@
 <i:arg type="Page" name="page" default=""/>
 <i:arg name="class" type="String" default="" description="Lists additional CSS classes to apply to the field."/>
 <i:arg name="withLabel" type="boolean" default="false" description="Specifies if the button should have an appropriate label."/>
+<i:arg name="asBtnLink" type="boolean" default="true" description="Specifies if the button should be of type link"/>
 
 <i:pragma name="description" value="Renders a delete button to be used in tables or lists."/>
 
-<a class="btn btn-link btn-danger confirm-link-js @class"
+<a class="btn @if(true) { btn-link } btn-danger confirm-link-js @class"
    title="@i18n('NLS.delete')"
    href="@if(page != null) {@page.linkToCurrentPage(url)} else {@url}">
     <i class="fa-solid fa-trash"></i> @if(withLabel) { @i18n("NLS.delete") }
