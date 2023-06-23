@@ -21,15 +21,15 @@ import sirius.pasta.tagliatelle.rendering.LocalRenderContext;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Invokes and renders a sub template at runtime.
  */
 public class InvokeTemplateEmitter extends Emitter {
 
-    private static final Callable[] NO_ARGS = {};
-    private Callable[] arguments = NO_ARGS;
     private final Callable templateNameSupplier;
+    private Function<String, Callable> argumentsSupplier;
     private Map<String, Emitter> blocks = null;
 
     /**
@@ -103,22 +103,22 @@ public class InvokeTemplateEmitter extends Emitter {
      * @param template   the template being called
      * @param subContext the context of the callee
      * @param index      the index of the parameter being transferred
-     * @param arg        the template argument being applied
+     * @param argument   the template argument being applied
      */
     private void applyArgument(LocalRenderContext context,
                                Template template,
                                LocalRenderContext subContext,
                                int index,
-                               TemplateArgument arg) {
-        Object argumentValue = determineArgumentValue(context, template, subContext, index, arg);
+                               TemplateArgument argument) {
+        Object argumentValue = determineArgumentValue(context, template, subContext, argument);
 
-        if (!CompilationContext.isAssignable(argumentValue, arg.getType())) {
+        if (!CompilationContext.isAssignable(argumentValue, argument.getType())) {
             throw new IllegalArgumentException(Strings.apply(
                     "An invalid argument was provided for '%s' when calling '%s'. Given: %s but expected was: %s",
-                    arg.getName(),
+                    argument.getName(),
                     template,
                     argumentValue == null ? null : argumentValue.getClass(),
-                    arg.getType()));
+                    argument.getType()));
         }
 
         subContext.writeVariable(index, argumentValue);
@@ -127,19 +127,19 @@ public class InvokeTemplateEmitter extends Emitter {
     private Object determineArgumentValue(LocalRenderContext context,
                                           Template template,
                                           LocalRenderContext subContext,
-                                          int index,
-                                          TemplateArgument arg) {
+                                          TemplateArgument argument) {
         try {
-            if (index < arguments.length && arguments[index] != null) {
-                return arguments[index].call(context);
+            Callable argumentCallable = argumentsSupplier.apply(argument.getName());
+            if (argumentCallable != null) {
+                return argumentCallable.call(context);
             }
 
-            if (arg.getDefaultValue() != null) {
-                return arg.getDefaultValue().call(subContext);
+            if (argument.getDefaultValue() != null) {
+                return argument.getDefaultValue().call(subContext);
             } else {
                 throw new IllegalArgumentException(Strings.apply(
                         "Neither a value nor a default value was provided for argument '%s' when calling '%s'",
-                        arg.getName(),
+                        argument.getName(),
                         template));
             }
         } catch (ScriptingException e) {
@@ -149,14 +149,12 @@ public class InvokeTemplateEmitter extends Emitter {
     }
 
     /**
-     * Sets the argument expressions for the template invocation.
-     * <p>
-     * Note that the order must match the arguments of the template itself.
+     * Sets the argument supplier for the template invocation. If the supplier is set, the lis
      *
-     * @param args the expressions to evaluate and supply as arguments
+     * @param argumentsSupplier the supplier to use for obtaining the arguments
      */
-    public void setArguments(Callable[] args) {
-        this.arguments = args;
+    public void setArgumentsSupplier(Function<String, Callable> argumentsSupplier) {
+        this.argumentsSupplier = argumentsSupplier;
     }
 
     /**

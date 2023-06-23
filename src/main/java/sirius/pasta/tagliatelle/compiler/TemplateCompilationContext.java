@@ -172,15 +172,15 @@ public class TemplateCompilationContext extends CompilationContext {
     }
 
     /**
-     * Generates an <tt>emitter</tt> which invokes the given template at runtime.
+     * Generates an <tt>emitter</tt> which invokes the given statically determined template at runtime.
      * <p>
      * Note that only the template name, not the template itself is stored, so that modifications of the referenced
      * template will be detected and applied.
      *
-     * @param position  the position where the invocation took place
-     * @param templateToInvoke  the template to call
-     * @param arguments the arguments passed to the template
-     * @param blocks    the emitter blocks passed to the template
+     * @param position         the position where the invocation took place
+     * @param templateToInvoke the template to call
+     * @param arguments        the arguments passed to the template
+     * @param blocks           the emitter blocks passed to the template
      * @return an appropriate emitter which invokes the template with the given argument expressions at runtime
      */
     public Emitter invokeTemplate(Position position,
@@ -191,36 +191,31 @@ public class TemplateCompilationContext extends CompilationContext {
         InvokeTemplateEmitter emitter = new InvokeTemplateEmitter(position, templateToInvoke.getName());
 
         if (!templateToInvoke.getArguments().isEmpty()) {
-            Callable[] args = collectArgumentsForInvoke(position, templateToInvoke, arguments);
-            emitter.setArguments(args);
+            checkArgumentsForStaticInvoke(position, templateToInvoke, arguments);
+            emitter.setArgumentsSupplier(arguments);
         }
 
         emitter.setBlocks(blocks);
         return emitter;
     }
 
-    private Callable[] collectArgumentsForInvoke(Position position,
-                                                 Template templateToInvoke,
-                                                 Function<String, Callable> arguments) {
-        Callable[] args = new Callable[templateToInvoke.getArguments().size()];
-        int index = 0;
-        for (TemplateArgument arg : templateToInvoke.getArguments()) {
-            Callable argumentExpression = arguments.apply(arg.getName());
+    private void checkArgumentsForStaticInvoke(Position position,
+                                               Template templateToInvoke,
+                                               Function<String, Callable> arguments) {
+        for (TemplateArgument argument : templateToInvoke.getArguments()) {
+            Callable argumentExpression = arguments.apply(argument.getName());
             if (argumentExpression != null) {
-                if (!isAssignableTo(argumentExpression.getType(), arg.getType())) {
+                if (!isAssignableTo(argumentExpression.getType(), argument.getType())) {
                     error(position,
                           "Incompatible attribute types. '%s' expects %s for '%s', but %s was given.",
                           templateToInvoke.getName(),
-                          arg.getType(),
-                          arg.getName(),
+                          argument.getType(),
+                          argument.getName(),
                           argumentExpression.getType());
                 }
-                outputArgumentDeprecationWarning(position, arg);
+                outputArgumentDeprecationWarning(position, argument);
             }
-            args[index] = argumentExpression;
-            index++;
         }
-        return args;
     }
 
     private void outputArgumentDeprecationWarning(Position position, TemplateArgument arg) {
