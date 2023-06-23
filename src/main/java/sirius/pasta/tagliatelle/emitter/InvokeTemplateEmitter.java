@@ -8,9 +8,10 @@
 
 package sirius.pasta.tagliatelle.emitter;
 
-import sirius.kernel.tokenizer.Position;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.Callable;
+import sirius.pasta.noodle.ConstantCall;
 import sirius.pasta.noodle.ScriptingException;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.tagliatelle.Template;
@@ -27,8 +28,8 @@ import java.util.Map;
 public class InvokeTemplateEmitter extends Emitter {
 
     private static final Callable[] NO_ARGS = {};
-    private final String templateName;
     private Callable[] arguments = NO_ARGS;
+    private final Callable templateNameSupplier;
     private Map<String, Emitter> blocks = null;
 
     /**
@@ -39,7 +40,19 @@ public class InvokeTemplateEmitter extends Emitter {
      */
     public InvokeTemplateEmitter(Position startOfBlock, String templateName) {
         super(startOfBlock);
-        this.templateName = templateName;
+        this.templateNameSupplier = new ConstantCall(templateName);
+    }
+
+    /**
+     * Creates a new instance at the given position with the given dynamically determined target
+     * template.
+     *
+     * @param startOfBlock         the position where the invocation was declared
+     * @param templateNameSupplier the expression determining the name of the template to invoke at runtime
+     */
+    public InvokeTemplateEmitter(Position startOfBlock, Callable templateNameSupplier) {
+        super(startOfBlock);
+        this.templateNameSupplier = templateNameSupplier;
     }
 
     @Override
@@ -57,6 +70,7 @@ public class InvokeTemplateEmitter extends Emitter {
 
     @Override
     protected void emitToContext(LocalRenderContext context) throws Exception {
+        String templateName = (String) templateNameSupplier.call(context);
         Template template = context.resolve(templateName).orElseThrow(() -> new FileNotFoundException(templateName));
         LocalRenderContext subContext = context.createChildContext(template);
         if (blocks != null) {
