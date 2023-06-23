@@ -199,6 +199,26 @@ public class TemplateCompilationContext extends CompilationContext {
         return emitter;
     }
 
+    /**
+     * Generates an <tt>emitter</tt> which invokes the given dynamically determined template at runtime.
+     *
+     * @param position             the position where the invocation took place
+     * @param templateNameSupplier the expression determining the template to call
+     * @param arguments            the arguments passed to the template
+     * @param blocks               the emitter blocks passed to the template
+     * @return an appropriate emitter which invokes the template with the given argument expressions at runtime
+     */
+    public Emitter invokeTemplate(Position position,
+                                  Callable templateNameSupplier,
+                                  Function<String, Callable> arguments,
+                                  Map<String, Emitter> blocks) {
+        InvokeTemplateEmitter emitter = new InvokeTemplateEmitter(position, templateNameSupplier);
+        emitter.setArgumentsSupplier(arguments);
+
+        emitter.setBlocks(blocks);
+        return emitter;
+    }
+
     private void checkArgumentsForStaticInvoke(Position position,
                                                Template templateToInvoke,
                                                Function<String, Callable> arguments) {

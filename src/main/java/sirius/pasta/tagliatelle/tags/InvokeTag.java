@@ -11,6 +11,7 @@ package sirius.pasta.tagliatelle.tags;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Register;
 import sirius.pasta.noodle.Callable;
+import sirius.pasta.noodle.ConstantCall;
 import sirius.pasta.noodle.compiler.CompileException;
 import sirius.pasta.tagliatelle.Template;
 import sirius.pasta.tagliatelle.TemplateArgument;
@@ -67,13 +68,22 @@ public class InvokeTag extends TagHandler {
         }
 
         if (template != null) {
-            invokeTemplate(template, targetBlock);
+            invokeStaticTemplate(template, targetBlock);
+        } else if (getAttribute(ATTR_TEMPLATE) != null) {
+            invokeDynamicTemplate(getAttribute(ATTR_TEMPLATE), targetBlock);
         }
     }
 
-    protected void invokeTemplate(Template template, CompositeEmitter targetBlock) {
+    protected void invokeStaticTemplate(Template template, CompositeEmitter targetBlock) {
         targetBlock.addChild(getCompilationContext().invokeTemplate(getStartOfTag(),
                                                                     template,
+                                                                    this::getAttribute,
+                                                                    blocks));
+    }
+
+    protected void invokeDynamicTemplate(Callable templateNameSupplier, CompositeEmitter targetBlock) {
+        targetBlock.addChild(getCompilationContext().invokeTemplate(getStartOfTag(),
+                                                                    templateNameSupplier,
                                                                     this::getAttribute,
                                                                     blocks));
     }
@@ -117,6 +127,13 @@ public class InvokeTag extends TagHandler {
     }
 
     private boolean ensureThatTemplateIsPresent() {
+        // If the "template" attribute isn't a constant, we can not load the template right now; we will just accept
+        // any attribute in `getExpectedAttributeType(String)` and hope for the best...
+        if (getAttribute(ATTR_TEMPLATE) != null && !(getAttribute(ATTR_TEMPLATE) instanceof ConstantCall)) {
+            templateResolved = true;
+            return false;
+        }
+
         if (template == null) {
             if (templateResolved) {
                 // We already tried and failed...
