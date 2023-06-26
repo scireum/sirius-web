@@ -2,7 +2,7 @@
 <i:arg type="boolean"
        name="marginRight"
        default="true"
-       description="Determines if the dot has an auto margin at the right"/>
+       description="Determines if the dot has an auto margin at the right."/>
 <i:arg type="int"
        name="marginBottom"
        default="2"
