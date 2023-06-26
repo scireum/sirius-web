@@ -1,4 +1,4 @@
-<i:arg name="url" type="String" description="Specifies the url which should be called. Is only used when page is left empty."/>
+<i:arg name="url" type="String" description="Specifies the url which should be called."/>
 <i:arg name="page" type="Page" default=""/>
 <i:arg name="class" type="String" default="" description="Lists additional CSS classes to apply to the field."/>
 <i:arg name="labelKey" type="String" default="" description="Specifies if the label of the button."/>
