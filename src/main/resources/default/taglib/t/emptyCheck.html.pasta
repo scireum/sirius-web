@@ -15,7 +15,7 @@
 <i:if test="(data.is(Page.class) && data.as(Page.class).getItems().isEmpty()) || (data.is(java.util.Collection.class) && data.as(java.util.Collection.class).isEmpty())">
     <div class="card mb-4">
         <div class="card-body">
-            <div class="mt-4 row">
+            <div class="row">
                 <div class="col-12 col-lg-10 col-xl-8 offset-lg-1 offset-xl-2">
                     <div class="d-flex flex-column align-items-center">
                         <i:if test="data.is(Page.class) && data.as(Page.class).isFiltered()">
@@ -23,7 +23,7 @@
                             <i:if test="isFilled(body)">
                                 <i:raw>@body</i:raw>
                                 <i:else>
-                                    <span class="h5 mb-4">@i18n("emptyCheck.html.filteredEmpty")</span>
+                                    <span class="h5 mt-4 mb-4">@i18n("emptyCheck.html.filteredEmpty")</span>
                                     <i:render name="filtered-empty-extensions" />
                                 </i:else>
                             </i:if>
@@ -32,7 +32,7 @@
                                 <i:if test="isFilled(body)">
                                     <i:raw>@body</i:raw>
                                     <i:else>
-                                        <span class="h5 mb-4">@i18n("emptyCheck.html.empty")</span>
+                                        <span class="h5 mt-4 mb-4">@i18n("emptyCheck.html.empty")</span>
                                         <i:render name="empty-extensions" />
                                     </i:else>
                                 </i:if>
