@@ -16,7 +16,7 @@
     <div class="card mb-4">
         <div class="card-body">
             <div class="row">
-                <div class="col-12 col-lg-10 col-xl-8 offset-lg-1 offset-xl-2">
+                <div class="col-12">
                     <div class="d-flex flex-column align-items-center">
                         <i:if test="data.is(Page.class) && data.as(Page.class).isFiltered()">
                             <i:local name="body" value="@renderToString('filtered-empty')"/>
