@@ -1,4 +1,4 @@
-<i:arg name="id" type="String" default=""/>
+<i:arg name="id" type="String" default="@generateId('singleselect-%s')"/>
 <i:arg name="class" type="String" default="" description="Lists additional CSS classes to apply to the field."/>
 <i:arg name="labelClass" type="String" default="" description="Lists additional CSS classes to apply to the label."/>
 <i:arg name="name" type="String"/>
@@ -17,14 +17,16 @@
 <i:pragma name="description" value="Renders a dropdown for boolean values within a Tycho template" />
 
 <i:if test="readonly">
-    <t:textfield class="@class"
+    <t:textfield id="@id"
+                 class="@class"
                  labelClass="@labelClass"
                  value="value ? trueLabel : falseLabel"
                  label="@label"
                  help="@help"
                  readonly="true"/>
     <i:else>
-        <t:singleSelect class="@class"
+        <t:singleSelect id="@id"
+                        class="@class"
                         labelClass="@labelClass"
                         name="@name"
                         label="@label"
