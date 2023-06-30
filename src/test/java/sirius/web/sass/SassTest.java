@@ -27,6 +27,12 @@ public class SassTest {
         compare("variables.scss", "variables.css");
     }
 
+
+    @Test
+    public void testFunctions() {
+        compare("functions.scss", "functions.css");
+    }
+
     @Test
     public void testEscape() {
         compare("escape.scss", "escape.css");

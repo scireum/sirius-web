@@ -1,0 +1,7 @@
+.test {
+  // Apply function...
+  value: opacity(#FF00FF);
+
+  // Leave CSS function in place...
+  filters: opacity(40%);
+}
