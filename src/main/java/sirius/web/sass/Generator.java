@@ -537,9 +537,12 @@ public class Generator {
                                                                       .replaceAll("[^a-z0-9]", ""),
                                                                   Generator.class,
                                                                   FunctionCall.class).invoke(null, this, call);
-        } catch (NoSuchMethodException | IllegalArgumentException ignored) {
+        } catch (NoSuchMethodException ignored) {
             return new Value(call.toString());
         } catch (InvocationTargetException e) {
+            if (e.getTargetException() instanceof IllegalArgumentException) {
+                return new Value(call.toString());
+            }
             warn("Cannot execute function: " + call + " - " + e.getCause().getMessage());
         } catch (Exception e) {
             warn("Cannot execute function: " + call + " - " + e.getMessage());
