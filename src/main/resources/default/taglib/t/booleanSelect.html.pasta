@@ -1,4 +1,4 @@
-<i:arg name="id" type="String" default="@generateId('singleselect-%s')"/>
+<i:arg name="id" type="String" default="@generateId('booleanselect-%s')"/>
 <i:arg name="class" type="String" default="" description="Lists additional CSS classes to apply to the field."/>
 <i:arg name="labelClass" type="String" default="" description="Lists additional CSS classes to apply to the label."/>
 <i:arg name="name" type="String"/>
