@@ -46,7 +46,7 @@ public class ContentHelper {
      * @see StringCleanup#nlToBr(String)
      */
     @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
-    public String nl2br(String content) {
+    public static String nl2br(String content) {
         return Strings.cleanup(content, StringCleanup::nlToBr);
     }
 
