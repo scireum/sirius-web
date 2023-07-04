@@ -50,10 +50,13 @@ public class Profile {
     /**
      * Applies the profile to the given set of permissions.
      *
-     * @param permissions the permissions the profile should be applied to
+     * @param permissions         the permissions the profile should be applied to
+     * @param excludedPermissions the set of permissions to exclude
      */
-    public void apply(Set<String> permissions) {
-        if (Permissions.hasPermission(name, permissions::contains)) {
+    public void apply(Set<String> permissions, Set<String> excludedPermissions) {
+        if (Permissions.hasPermission(name,
+                                      permission -> !excludedPermissions.contains(permission) && permissions.contains(
+                                              permission))) {
             permissions.addAll(permissionsToAdd);
             permissions.removeAll(permissionsToRemove);
         }

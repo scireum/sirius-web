@@ -317,9 +317,21 @@ public abstract class GenericUserManager implements UserManager {
      * transformations
      */
     protected Set<String> transformRoles(Collection<String> roles) {
+        return transformRoles(roles, Collections.emptySet());
+    }
+
+    /**
+     * Applies profile transformations and adds default roles to the set of given roles.
+     *
+     * @param roles         the roles granted to a user
+     * @param excludedRoles the set of permissions to exclude from the expansion
+     * @return a set of permissions which contain the given roles as well as the default roles and profile
+     * transformations
+     */
+    protected Set<String> transformRoles(Collection<String> roles, Set<String> excludedRoles) {
         Set<String> allRoles = new TreeSet<>(roles);
         allRoles.addAll(defaultRoles);
-        Permissions.applyProfiles(allRoles);
+        Permissions.applyProfiles(allRoles, excludedRoles);
 
         return allRoles;
     }
