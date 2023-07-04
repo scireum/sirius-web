@@ -112,8 +112,20 @@ public class Permissions {
      * @param permissions the set of permissions and or profiles to expand
      */
     public static void applyProfiles(Set<String> permissions) {
+        applyProfiles(permissions, Collections.emptySet());
+    }
+
+    /**
+     * Applies all known profiles on the given set of roles/permissions while excluding the given exemptions.
+     * <p>
+     * Applies the profiles as defined in <tt>security.profiles</tt>.
+     *
+     * @param permissions         the set of permissions and or profiles to expand
+     * @param excludedPermissions the set of permissions to exclude from the expansion
+     */
+    public static void applyProfiles(Set<String> permissions, Set<String> excludedPermissions) {
         for (Profile profile : getProfiles()) {
-            profile.apply(permissions);
+            profile.apply(permissions, excludedPermissions);
         }
     }
 
@@ -126,8 +138,21 @@ public class Permissions {
      * @return an effective list of permissions based on the profiles defined in <tt>security.profiles</tt>
      */
     public static Set<String> copyAndApplyProfiles(Collection<String> roles) {
+        return copyAndApplyProfiles(roles, Collections.emptySet());
+    }
+
+    /**
+     * Adds all known profiles by creating and enhancing a new roles set while excluding the given exemptions.
+     * <p>
+     * Applies all known profiles on the given set of roles/permissions just like {@link #applyProfiles(java.util.Set)}.
+     *
+     * @param roles         the list of permissions and or profiles to expand
+     * @param excludedRoles the set of permissions to exclude from the expansion
+     * @return an effective list of permissions based on the profiles defined in <tt>security.profiles</tt>
+     */
+    public static Set<String> copyAndApplyProfiles(Collection<String> roles, Set<String> excludedRoles) {
         Set<String> allRoles = new HashSet<>(roles);
-        applyProfiles(allRoles);
+        applyProfiles(allRoles, excludedRoles);
 
         return allRoles;
     }
