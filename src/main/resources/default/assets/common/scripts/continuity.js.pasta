@@ -137,8 +137,9 @@ window.sirius.Continuity = (function () {
      * @param {boolean} dontSetLastState whether the internal last state should be replaced by the current history state (before the new one became active)
      */
     Continuity.prototype.handleStateChange = function (state, dontSetLastState) {
+        let stateBeforeChange = Object.assign({}, this.currentState);
         if (!dontSetLastState) {
-            this.lastState = Object.assign({}, this.currentState);
+            this.lastState = stateBeforeChange;
         }
         this.currentState = state;
 
@@ -148,7 +149,12 @@ window.sirius.Continuity = (function () {
             if (handler) {
                 const entry = state[entryKey];
                 me.log('[CONTINUITY] [INTERNAL] State handler of type "%s" called for entry: %o', entryKey, entry);
-                handler.restore.call(me, entry);
+                if (!sirius.areObjectsDeeplyEqual(stateBeforeChange[entryKey], entry)) {
+                    // We only call the handler if the specific entry has actually changed.
+                    handler.restore.call(me, entry);
+                } else {
+                    me.log('[CONTINUITY] [INTERNAL] State handler of type "%s" called for unchanged entry: %o', entryKey, entry);
+                }
             } else {
                 me.log('[CONTINUITY] [INTERNAL] State handler of type "%s" not found!', entryKey);
             }

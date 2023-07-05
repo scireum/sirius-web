@@ -521,3 +521,44 @@ sirius.isDragleaveEventLeavingWindow = function (event) {
     }
     return false;
 }
+
+/**@
+ * Compares the two given objects for equality, allowing for nested objects.
+ *
+ * @param object1 the first object to compare
+ * @param object2 the second object to compare
+ * @returns {boolean} true if the objects are equal, false otherwise
+ */
+sirius.areObjectsDeeplyEqual = function (object1, object2) {
+    const keys1 = Object.keys(object1);
+    const keys2 = Object.keys(object2);
+
+    if (keys1.length !== keys2.length) {
+        return false;
+    }
+
+    // var is used here instead of const to keep the code compatible with IE11.
+    for (var key of keys1) {
+        const value1 = object1[key];
+        const value2 = object2[key];
+        const areObjects = sirius.isObject(value1) && sirius.isObject(value2);
+        if (areObjects && !sirius.areObjectsDeeplyEqual(value1, value2)) {
+            return false;
+        }
+        if (!areObjects && value1 !== value2) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/**@
+ * Checks if the given value is an object.
+ *
+ * @param object the value to check
+ * @returns {boolean} true if the value is an object, false otherwise
+ */
+sirius.isObject = function (object) {
+    return object != null && typeof object === 'object';
+}
