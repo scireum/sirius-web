@@ -79,7 +79,7 @@
                 }
 
                 file.previewElement.querySelector('[data-dz-errormessage]').innerHTML = message;
-                addErrorMessage(message);
+                addHtmlMessage('red', message);
             }
         },
         init: function () {
@@ -140,7 +140,7 @@
                     file.previewElement.classList.remove('dz-success');
                     const message = response.message || '___i18n("template.html.uploadFailed")';
                     file.previewElement.querySelector('[data-dz-errormessage]').innerHTML = message;
-                    addErrorMessage(message);
+                    addHtmlMessage('red', message);
                 } else if (response.refresh) {
                     dropzone.reloadAfterQueueComplete = true;
                 }
