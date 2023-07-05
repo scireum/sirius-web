@@ -149,7 +149,7 @@ window.sirius.Continuity = (function () {
             if (handler) {
                 const entry = state[entryKey];
                 me.log('[CONTINUITY] [INTERNAL] State handler of type "%s" called for entry: %o', entryKey, entry);
-                if (!deepEqual(stateBeforeChange[entryKey], entry)) {
+                if (!sirius.areObjectsDeeplyEqual(stateBeforeChange[entryKey], entry)) {
                     // We only call the handler if the specific entry has actually changed.
                     handler.restore.call(me, entry);
                 } else {
@@ -428,34 +428,6 @@ window.sirius.Continuity = (function () {
             event.detail = this;
             document.dispatchEvent(event);
         }
-    }
-
-    function deepEqual(object1, object2) {
-        const keys1 = Object.keys(object1);
-        const keys2 = Object.keys(object2);
-
-        if (keys1.length !== keys2.length) {
-            return false;
-        }
-
-        // var is used here instead of const to keep the code compatible with IE11.
-        for (var key of keys1) {
-            const value1 = object1[key];
-            const value2 = object2[key];
-            const areObjects = isObject(value1) && isObject(value2);
-            if (areObjects && !deepEqual(value1, value2)) {
-                return false;
-            }
-            if (!areObjects && value1 !== value2) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    function isObject(object) {
-        return object != null && typeof object === 'object';
     }
 
     return Continuity;
