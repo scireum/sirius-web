@@ -32,7 +32,7 @@ sirius.isEmpty = function (value) {
  * @returns {boolean} true if the given object is empty, false otherwise
  */
 function isEmptyObject (obj) {
-    for (const prop in obj) {
+    for (var prop in obj) {
         if (Object.hasOwn(obj, prop)) {
             return false;
         }
