@@ -19,7 +19,26 @@ sirius.isEmpty = function (value) {
         return true;
     }
 
+    if (sirius.isDefined(value) && typeof value === 'object') {
+        return isEmptyObject(value);
+    }
+
     return !sirius.isDefined(value) || value === '';
+}
+
+/**@
+ * Checks if the given object is empty.
+ * @param obj the object to check
+ * @returns {boolean} true if the given object is empty, false otherwise
+ */
+function isEmptyObject (obj) {
+    for (var prop in obj) {
+        if (Object.hasOwn(obj, prop)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 /**@
