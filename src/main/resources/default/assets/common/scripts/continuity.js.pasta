@@ -23,6 +23,9 @@ window.sirius.Continuity = (function () {
         // An entry handler can then be registered by each for `entryType|subScope` to handle the state changes of the specific element.
         this.entryScopeSeparator = '|';
 
+        // This flag is used, to prevent the execution of the history state change logic when we previously issued a back navigation.
+        this.navigationQueued = false;
+
         this.path = window.location.pathname;
         this.searchParams = new URLSearchParams(window.location.search);
 
@@ -138,6 +141,10 @@ window.sirius.Continuity = (function () {
      * @param {boolean} [forceHandlerCall] whether the state entry handlers should be called even if the state entry did not change
      */
     Continuity.prototype.handleStateChange = function (state, dontSetLastState, forceHandlerCall) {
+        if (this.navigationQueued) {
+            this.navigationQueued = false;
+            return;
+        }
         let stateBeforeChange = Object.assign({}, this.currentState);
         if (!dontSetLastState) {
             this.lastState = stateBeforeChange;
@@ -265,6 +272,9 @@ window.sirius.Continuity = (function () {
         this.log('[CONTINUITY] [ACTION] Popping state for type "%s"', type);
         if (this.lastState && !forceNewState) {
             const entryDepth = this.currentState[type].entryDepth || 1;
+            // Ensure we don't execute the history state change logic when we issue a back navigation.
+            // Some browsers (e.g. Chrome) will still execute code in the current execution context, others (e.g. Firefox) won't.
+            this.navigationQueued = true;
             history.go(-entryDepth);
         } else {
             this.lastState = Object.assign({}, this.currentState);
