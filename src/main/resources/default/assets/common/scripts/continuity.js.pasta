@@ -24,7 +24,7 @@ window.sirius.Continuity = (function () {
         this.entryScopeSeparator = '|';
 
         // This flag is used, to prevent the execution of the history state change logic when we previously issued a back navigation.
-        this.navigationQueued= false;
+        this.navigationQueued = false;
 
         this.path = window.location.pathname;
         this.searchParams = new URLSearchParams(window.location.search);
