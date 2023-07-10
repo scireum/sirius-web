@@ -154,7 +154,8 @@
         _button.textContent = label;
 
         const _footer = _dialog.querySelector('#sci-dialog-footer');
-        _footer.append(_button);
+        // IE11 does not support the 'append' method on DOM elements for which we are using 'appendChild' as a fallback.
+        _footer.appendChild(_button);
         if (_footer.classList.contains('sci-d-none')) {
             _footer.classList.remove('sci-d-none');
             _footer.classList.add('sci-d-flex');
