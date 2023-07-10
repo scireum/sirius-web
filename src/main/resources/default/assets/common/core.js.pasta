@@ -318,7 +318,7 @@ sirius.camelize = function (str) {
  * Submits the given form using
  * {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement/requestSubmit HTMLFormElement.requestSubmit}
  * to trigger its submit event as well as constraint validation.
- * Falls back to silently submitting the form via {@link HTMLFormElement.submit} in unsupported browsers.
+ * Falls back to silently submitting the form via a hidden submit button in unsupported browsers.
  *
  * @param form the form to submit
  */
@@ -327,7 +327,17 @@ sirius.requestSubmitForm = function (_form) {
         if (_form.requestSubmit) {
             _form.requestSubmit();
         } else {
-            _form.submit();
+            // Workaround for browsers (like IE 11) that don't support requestSubmit.
+            // Calling submit directly would skip the onsubmit event and constraint validation.
+            // This means there is no way to prevent the page from reloading when submitting the form.
+            const _submitButton = document.createElement('button');
+            _submitButton.type = 'submit';
+            _submitButton.style.display = 'none';
+            _form.appendChild(_submitButton);
+
+            _submitButton.click();
+
+            _form.removeChild(_submitButton);
         }
     }
 }
