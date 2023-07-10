@@ -322,12 +322,12 @@ sirius.camelize = function (str) {
  *
  * @param form the form to submit
  */
-sirius.requestSubmitForm = function (form) {
-    if (form != null) {
-        if (form.requestSubmit) {
-            form.requestSubmit();
+sirius.requestSubmitForm = function (_form) {
+    if (_form != null) {
+        if (_form.requestSubmit) {
+            _form.requestSubmit();
         } else {
-            form.submit();
+            _form.submit();
         }
     }
 }
