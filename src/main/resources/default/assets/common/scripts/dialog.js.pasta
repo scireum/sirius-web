@@ -1,9 +1,9 @@
 (function (dialog) {
     const template = '<div id="sci-dialog-background" class="sci-d-none sci-position-fixed sci-align-items-center sci-justify-content-center sci-p-2 sci-text sci-font sci-enable-font">' +
         '   <div id="sci-dialog" class="sci-d-flex sci-font sci-bg-white sci-p-2 sci-shadow sci-card sci-flex-column sci-overflow-hidden">' +
-        '      <div id="sci-dialog-header" class="sci-pt-1 sci-pb-2 sci-d-flex sci-justify-content-space-between sci-border-grey sci-flex-shrink-0 sci-overflow-hidden">' +
+        '      <div id="sci-dialog-header" class="sci-pt-1 sci-pb-2 sci-d-flex sci-justify-content-space-between sci-align-items-center sci-border-grey sci-flex-shrink-0 sci-overflow-hidden">' +
         '          <div id="sci-dialog-title" class="sci-text-size-h2 sci-text-ellipsis sci-text-grey-dark"></div>' +
-        '          <div class="sci-cursor-pointer sci-d-flex sci-dialog-button-close-js" style="width: 1.5rem;">@escapeJS(inlineSVG("/assets/images/icons/navigation/close-thin.svg"))</div>' +
+        '          <div class="sci-cursor-pointer sci-d-flex sci-dialog-button-close-js" style="width: 1.5rem; height: 1.5rem;">@escapeJS(inlineSVG("/assets/images/icons/navigation/close-thin.svg"))</div>' +
         '      </div>' +
         '      <div id="sci-dialog-content" class="sci-text sci-flex-grow-1 sci-d-flex sci-flex-column"></div>' +
         '      <div id="sci-dialog-footer" class="sci-pt-2 sci-d-flex sci-border-grey sci-flex-shrink-0 sci-d-none sci-overflow-hidden"></div>' +
