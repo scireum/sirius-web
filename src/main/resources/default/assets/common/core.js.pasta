@@ -557,10 +557,12 @@ sirius.areObjectsDeeplyEqual = function (object1, object2) {
     }
 
     // var is used here instead of const to keep the code compatible with IE11.
-    for (var key of keys1) {
-        const value1 = object1[key];
-        const value2 = object2[key];
-        const areObjects = sirius.isObject(value1) && sirius.isObject(value2);
+    // the same applies to the for loop below.
+    for (var i = 0; i < keys1.length; i++) {
+        var key = keys1[i];
+        var value1 = object1[key];
+        var value2 = object2[key];
+        var areObjects = sirius.isObject(value1) && sirius.isObject(value2);
         if (areObjects && !sirius.areObjectsDeeplyEqual(value1, value2)) {
             return false;
         }
