@@ -33,7 +33,7 @@ sirius.isEmpty = function (value) {
  */
 function isEmptyObject (obj) {
     for (var prop in obj) {
-        if (Object.hasOwn(obj, prop)) {
+        if (obj.hasOwnProperty(prop)) {
             return false;
         }
     }
