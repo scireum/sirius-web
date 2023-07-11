@@ -97,7 +97,7 @@ var TokenAutocomplete = /** @class */ (function () {
             this.textInput.addEventListener("paste", function (event) {
                 var _a, _b, _c;
                 event.preventDefault();
-                if (event.hasOwnProperty('clipboardData')) {
+                if (event.clipboardData) {
                     //  Normal handling for modern browsers
                     var text = (_a = event.clipboardData) === null || _a === void 0 ? void 0 : _a.getData("text/plain");
                     document.execCommand("insertHTML", false, text);
