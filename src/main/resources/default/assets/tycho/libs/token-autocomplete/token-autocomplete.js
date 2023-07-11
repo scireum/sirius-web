@@ -24,6 +24,10 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
+var __setFunctionName = (this && this.__setFunctionName) || function (f, name, prefix) {
+    if (typeof name === "symbol") name = name.description ? "[".concat(name.description, "]") : "";
+    return Object.defineProperty(f, "name", { configurable: true, value: prefix ? "".concat(prefix, " ", name) : name });
+};
 var SelectModes;
 (function (SelectModes) {
     SelectModes[SelectModes["SINGLE"] = 0] = "SINGLE";
@@ -91,10 +95,19 @@ var TokenAutocomplete = /** @class */ (function () {
             }
             this.textInput.contentEditable = 'true';
             this.textInput.addEventListener("paste", function (event) {
-                var _a;
+                var _a, _b, _c;
                 event.preventDefault();
-                var text = (_a = event.clipboardData) === null || _a === void 0 ? void 0 : _a.getData("text/plain");
-                document.execCommand("insertHTML", false, text);
+                if (event.hasOwnProperty('clipboardData')) {
+                    //  Normal handling for modern browsers
+                    var text = (_a = event.clipboardData) === null || _a === void 0 ? void 0 : _a.getData("text/plain");
+                    document.execCommand("insertHTML", false, text);
+                }
+                else {
+                    // Fallback logic for IE11
+                    var globalText = (_b = window.clipboardData) === null || _b === void 0 ? void 0 : _b.getData("Text");
+                    var range = (_c = document.getSelection()) === null || _c === void 0 ? void 0 : _c.getRangeAt(0);
+                    range === null || range === void 0 ? void 0 : range.insertNode(document.createTextNode(globalText));
+                }
             });
         }
         else {
@@ -476,6 +489,7 @@ var TokenAutocomplete = /** @class */ (function () {
             };
             return class_1;
         }()),
+        __setFunctionName(_a, "MultiSelect"),
         _a.defaultRenderer = function (token) {
             var chip = document.createElement('span');
             chip.classList.add('token-autocomplete-token');
@@ -1066,6 +1080,7 @@ var TokenAutocomplete = /** @class */ (function () {
             };
             return class_4;
         }()),
+        __setFunctionName(_b, "Autocomplete"),
         _b.defaultRenderer = function (suggestion) {
             var option = document.createElement('li');
             option.textContent = suggestion.completionLabel || suggestion.fieldLabel;
