@@ -9,7 +9,9 @@
 
 <i:pragma name="description" value="Renders a delete link to be used in a dropdown menu (e.g. card actions)."/>
 
-<t:dropdownItem class="danger @(withConfirm ? 'confirm-link-js' : '') @class"
+<i:local name="dropdownClass" value="@apply('danger %s %s', class, withConfirm ? 'confirm-link-js' : '')"/>
+
+<t:dropdownItem class="@dropdownClass"
                 permission="@permission"
                 framework="@framework"
                 icon="fa-solid fa-trash fa-fw"
