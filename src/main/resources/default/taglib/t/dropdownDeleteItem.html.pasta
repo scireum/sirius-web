@@ -2,9 +2,10 @@
 <i:arg type="Page" name="page" default=""/>
 <i:arg type="String" name="permission" default=""/>
 <i:arg type="String" name="framework" default=""/>
-<i:arg type="String" name="class"  default="" description="Lists additional CSS classes to apply to the item."/>
+<i:arg type="String" name="class" default="" description="Lists additional CSS classes to apply to the item."/>
 <i:arg type="boolean" name="adminOnly" default="false"/>
-<i:arg type="boolean" name="withConfirm" default="true" description="Specifies if a confirmation modal should pop up when clicked on the item"/>
+<i:arg type="boolean" name="withConfirm" default="true"
+       description="Specifies if a confirmation modal should pop up when clicked on the item"/>
 <i:arg type="String" name="labelKey" default="NLS.delete"/>
 
 <i:pragma name="description" value="Renders a delete link to be used in a dropdown menu (e.g. card actions)."/>
