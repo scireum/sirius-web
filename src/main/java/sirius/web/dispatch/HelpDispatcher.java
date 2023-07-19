@@ -132,7 +132,7 @@ public class HelpDispatcher implements WebDispatcher {
         try {
             Template template = tagliatelle.resolve(uri.endsWith(PASTA_SUFFIX) ? uri : uri + PASTA_SUFFIX).orElse(null);
             if (templateInvocationHandlers != null) {
-                templateInvocationHandlers.forEach(provider -> provider.handleUriInvocation(uri, template != null));
+                templateInvocationHandlers.forEach(handler -> handler.handleUriInvocation(uri, template != null));
             }
             return template;
         } catch (CompileException e) {
