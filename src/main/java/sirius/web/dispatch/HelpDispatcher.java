@@ -14,6 +14,7 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.PriorityCollector;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
+import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
@@ -60,7 +61,7 @@ public class HelpDispatcher implements WebDispatcher {
     private Tagliatelle tagliatelle;
 
     @Parts(UriHandler.class)
-    private List<UriHandler> uriHandlers;
+    private PartCollection<UriHandler> uriHandlers;
 
     @Override
     public int getPriority() {
