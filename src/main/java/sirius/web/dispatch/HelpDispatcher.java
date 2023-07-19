@@ -25,7 +25,7 @@ import sirius.pasta.noodle.compiler.CompileException;
 import sirius.pasta.tagliatelle.Tagliatelle;
 import sirius.pasta.tagliatelle.Template;
 import sirius.web.controller.Message;
-import sirius.web.event.UriProvider;
+import sirius.web.event.UriHandler;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 import sirius.web.resources.Resource;
@@ -59,8 +59,8 @@ public class HelpDispatcher implements WebDispatcher {
     @Part
     private Tagliatelle tagliatelle;
 
-    @Parts(UriProvider.class)
-    private List<UriProvider> uriProviders;
+    @Parts(UriHandler.class)
+    private List<UriHandler> uriHandlers;
 
     @Override
     public int getPriority() {
@@ -129,7 +129,7 @@ public class HelpDispatcher implements WebDispatcher {
 
     private Template resolveTemplate(String uri) {
         try {
-            uriProviders.forEach(provider -> provider.handleUri(uri));
+            uriHandlers.forEach(provider -> provider.handle(uri));
             return tagliatelle.resolve(uri.endsWith(PASTA_SUFFIX) ? uri : uri + PASTA_SUFFIX).orElse(null);
         } catch (CompileException e) {
             Exceptions.handle()
