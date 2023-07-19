@@ -22,6 +22,7 @@ public interface UriHandler {
      * Handles the given URI.
      *
      * @param uri the URI to handle
+     * @param templateExists <tt>true</tt> if a template exists for the given URI, <tt>false</tt> otherwise
      */
-    void handle(String uri);
+    void handle(String uri, boolean templateExists);
 }
