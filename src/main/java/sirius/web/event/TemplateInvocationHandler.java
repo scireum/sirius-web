@@ -12,8 +12,6 @@ import sirius.kernel.di.std.AutoRegister;
 
 /**
  * Represents a handler which handles template invocations.
- * <p>
- * This is used as a temporary solution in order to be able to log PageImpressionEvents for the HelpDispatcher.
  */
 @AutoRegister
 public interface TemplateInvocationHandler {
