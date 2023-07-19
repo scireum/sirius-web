@@ -11,18 +11,18 @@ package sirius.web.event;
 import sirius.kernel.di.std.AutoRegister;
 
 /**
- * Represents a handler which handles a given URI.
+ * Represents a handler which handles template invocations.
  * <p>
  * This is used as a temporary solution in order to be able to log PageImpressionEvents for the HelpDispatcher.
  */
 @AutoRegister
-public interface UriHandler {
+public interface TemplateInvocationHandler {
 
     /**
-     * Handles the given URI.
+     * Handles a template invocation which has been invoked via uri.
      *
      * @param uri the URI to handle
      * @param templateExists <tt>true</tt> if a template exists for the given URI, <tt>false</tt> otherwise
      */
-    void handle(String uri, boolean templateExists);
+    void handleUriInvocation(String uri, boolean templateExists);
 }
