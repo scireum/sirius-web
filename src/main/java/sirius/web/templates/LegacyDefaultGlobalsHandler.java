@@ -33,7 +33,6 @@ public class LegacyDefaultGlobalsHandler extends LegacyGlobalsHandler {
             case "call" -> "CallContext.getCurrent().get(WebContext.class)";
             case "watch" -> "CallContext.getCurrent().getWatch()";
             case "lang" -> "NLS.getCurrentLanguage()";
-            case "contentHelper" -> "ContentHelper.INSTANCE";
             case "wondergemRoot" -> "config('product.wondergemRoot')";
             case "tychoRoot" -> "config('product.tychoRoot')";
             case "tagLine" -> "config('product.tagLine')";
