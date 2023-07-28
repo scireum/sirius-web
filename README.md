@@ -1,7 +1,7 @@
 # sirius-web
 [![Build Status](https://drone.scireum.com/api/badges/scireum/sirius-web/status.svg?ref=refs/heads/develop)](https://drone.scireum.com/scireum/sirius-web)
 
-Provides a modern and scalable web server a content generation framework and an email sender as a Sirius module.
+Provides a modern and scalable web server, a content generation framework and an email sender as a Sirius module.
 
 This is a module of the Sirius OpenSource project by scireum GmbH. For further information visit the project website: [sirius-lib.net](http://sirius-lib.net)
 
@@ -21,7 +21,7 @@ An overview of all versions can be found on [Sonatype](https://oss.sonatype.org/
 
 ## Contributions
 
-Contributions as issues or pull requests are always welcome. Please [sign-off](http://developercertificate.org) 
+Contributions as issues or pull requests are always welcome. Please [sign off](http://developercertificate.org) 
 all your commits by adding a line like "Signed-off-by: Name <email>" at the end of each commit, indicating that
 you wrote the code and have the right to pass it on as an open source
 

@@ -17,6 +17,7 @@ body {
 #wrapper {
   display: grid;
   grid-template-rows: 63px 1fr 40px;
+  min-height: 100vh;
 }
 
 #wrapper-menu {

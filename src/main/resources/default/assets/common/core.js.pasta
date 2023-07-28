@@ -19,7 +19,26 @@ sirius.isEmpty = function (value) {
         return true;
     }
 
+    if (sirius.isDefined(value) && typeof value === 'object') {
+        return isEmptyObject(value);
+    }
+
     return !sirius.isDefined(value) || value === '';
+}
+
+/**@
+ * Checks if the given object is empty.
+ * @param obj the object to check
+ * @returns {boolean} true if the given object is empty, false otherwise
+ */
+function isEmptyObject (obj) {
+    for (var prop in obj) {
+        if (obj.hasOwnProperty(prop)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 /**@
@@ -299,16 +318,26 @@ sirius.camelize = function (str) {
  * Submits the given form using
  * {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement/requestSubmit HTMLFormElement.requestSubmit}
  * to trigger its submit event as well as constraint validation.
- * Falls back to silently submitting the form via {@link HTMLFormElement.submit} in unsupported browsers.
+ * Falls back to silently submitting the form via a hidden submit button in unsupported browsers.
  *
  * @param form the form to submit
  */
-sirius.requestSubmitForm = function (form) {
-    if (form != null) {
-        if (form.requestSubmit) {
-            form.requestSubmit();
+sirius.requestSubmitForm = function (_form) {
+    if (_form != null) {
+        if (_form.requestSubmit) {
+            _form.requestSubmit();
         } else {
-            form.submit();
+            // Workaround for browsers (like IE 11) that don't support requestSubmit.
+            // Calling submit directly would skip the onsubmit event and constraint validation.
+            // This means there is no way to prevent the page from reloading when submitting the form.
+            const _submitButton = document.createElement('button');
+            _submitButton.type = 'submit';
+            _submitButton.style.display = 'none';
+            _form.appendChild(_submitButton);
+
+            _submitButton.click();
+
+            _form.removeChild(_submitButton);
         }
     }
 }
@@ -520,4 +549,47 @@ sirius.isDragleaveEventLeavingWindow = function (event) {
         return true;
     }
     return false;
+}
+
+/**@
+ * Compares the two given objects for equality, allowing for nested objects.
+ *
+ * @param object1 the first object to compare
+ * @param object2 the second object to compare
+ * @returns {boolean} true if the objects are equal, false otherwise
+ */
+sirius.areObjectsDeeplyEqual = function (object1, object2) {
+    const keys1 = Object.keys(object1);
+    const keys2 = Object.keys(object2);
+
+    if (keys1.length !== keys2.length) {
+        return false;
+    }
+
+    // var is used here instead of const to keep the code compatible with IE11.
+    // the same applies to the for loop below.
+    for (var i = 0; i < keys1.length; i++) {
+        var key = keys1[i];
+        var value1 = object1[key];
+        var value2 = object2[key];
+        var areObjects = sirius.isObject(value1) && sirius.isObject(value2);
+        if (areObjects && !sirius.areObjectsDeeplyEqual(value1, value2)) {
+            return false;
+        }
+        if (!areObjects && value1 !== value2) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/**@
+ * Checks if the given value is an object.
+ *
+ * @param object the value to check
+ * @returns {boolean} true if the value is an object, false otherwise
+ */
+sirius.isObject = function (object) {
+    return object != null && typeof object === 'object';
 }

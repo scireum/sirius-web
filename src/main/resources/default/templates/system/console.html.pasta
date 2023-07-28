@@ -58,6 +58,10 @@
                 height: 100vh;
             }
 
+            #main-container {
+                padding-bottom: 1rem !important;
+            }
+
             #wrapper-body {
                 max-height: 100%;
                 overflow: hidden;

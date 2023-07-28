@@ -8,6 +8,8 @@
 
 package sirius.web.controller;
 
+import sirius.kernel.commons.StringCleanup;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.health.ExceptionHint;
@@ -16,7 +18,6 @@ import sirius.kernel.health.HandledException;
 import sirius.kernel.nls.Formatter;
 import sirius.pasta.noodle.sandbox.NoodleSandbox;
 import sirius.web.security.UserContext;
-import sirius.web.templates.ContentHelper;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -69,7 +70,7 @@ public class Message {
          * @return the generated message
          */
         public Message withTextMessage(String textMessage) {
-            return new Message(type, ContentHelper.escapeXML(textMessage));
+            return new Message(type, Strings.cleanup(textMessage, StringCleanup::escapeXml));
         }
 
         /**
@@ -212,7 +213,7 @@ public class Message {
     public static Message error(HandledException exception) {
         String message = exception.getMessage();
         if (!exception.getHint(HTML_ERROR_MESSAGE).asBoolean()) {
-            message = ContentHelper.escapeXML(message);
+            message = Strings.cleanup(message, StringCleanup::escapeXml);
         }
 
         for (ErrorMessageTransformer transformer : errorMessageTransformers) {

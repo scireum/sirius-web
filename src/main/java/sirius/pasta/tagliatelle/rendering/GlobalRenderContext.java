@@ -8,11 +8,11 @@
 
 package sirius.pasta.tagliatelle.rendering;
 
+import sirius.kernel.commons.StringCleanup;
 import sirius.kernel.commons.Strings;
 import sirius.pasta.noodle.compiler.CompileException;
 import sirius.pasta.tagliatelle.Tagliatelle;
 import sirius.pasta.tagliatelle.Template;
-import sirius.web.templates.ContentHelper;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -186,10 +186,10 @@ public class GlobalRenderContext {
      * Provides a XML escaper which processes XML control characters.
      *
      * @param input the string to output
-     * @return the given string where XML control characters were replaced using {@link ContentHelper#escapeXML(Object)}
+     * @return the given string where XML control characters were replaced using {@link StringCleanup#escapeXml(String)}
      */
     public static String escapeXML(String input) {
-        return ContentHelper.escapeXML(input);
+        return Strings.cleanup(input, StringCleanup::escapeXml);
     }
 
     /**
