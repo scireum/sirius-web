@@ -148,9 +148,13 @@ sirius.findParentOfType = function (_node, type) {
  *
  * @param _node the node to attach the listener on
  * @param listener the listener to attach
+ * @param [suppressOnShift] if true, the listener is only invoked if shift is not simulataniously pressed
  */
-sirius.addEnterListener = function (_node, listener) {
+sirius.addEnterListener = function (_node, listener, suppressOnShift) {
     _node.addEventListener('keydown', function (event) {
+        if (suppressOnShift && event.shiftKey) {
+            return;
+        }
         if (event.key === 'Enter') {
             event.preventDefault();
             listener(event);
