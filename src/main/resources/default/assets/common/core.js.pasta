@@ -148,7 +148,7 @@ sirius.findParentOfType = function (_node, type) {
  *
  * @param _node the node to attach the listener on
  * @param listener the listener to attach
- * @param [suppressOnShift] if true, the listener is only invoked if shift is not simulataniously pressed
+ * @param [suppressOnShift] if true, the listener is only invoked if shift is not simultaneously pressed
  */
 sirius.addEnterListener = function (_node, listener, suppressOnShift) {
     _node.addEventListener('keydown', function (event) {
@@ -250,7 +250,7 @@ sirius.throttle = function (fn, threshold) {
 /**@
  * Adds an event listener that triggers exactly once per element when it becomes visible or is about to become visible.
  * <p>
- * The event will trigger once an element comes within a certain distance to the viewport. By default the vertical and
+ * The event will trigger once an element comes within a certain distance to the viewport. By default, the vertical and
  * horizontal distances are equal to the element's height and width respectively. This distance can be increased by
  * specifying a value greater than 1 as the distanceFactor.
  *
