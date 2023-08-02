@@ -181,11 +181,11 @@ class WebServerSpec extends BaseSpecification {
         def uri = "/api/test/test_large_failure"
         def expectedHeaders = ['content-type': 'text/xml;charset=UTF-8']
         when:
-        LogHelper.clearMessages()
+        LogHelper.INSTANCE.clearMessages()
         and:
         def data = callAndRead(uri, null, expectedHeaders)
         then: "We expect a warning as the server was unable to send an error"
-        LogHelper.hasMessage(Level.WARNING, "web", "Cannot send service error for.*")
+        LogHelper.INSTANCE.hasMessage(Level.WARNING, "web", "Cannot send service error for.*")
         and: "As the connection is closed due to an inconsistent state, an IO exception will occur on the client side"
         thrown(IOException)
     }
