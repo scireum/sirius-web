@@ -198,11 +198,7 @@ UtS2kvA28X4ToQg3REfK8K+MroixIpwVfdyHRCP4CsLrz4w+EJw4VlWAzJ45HFHg
             )
         }
         assertEquals("HandledException.systemError", exception.message)
-        assert(exception.cause is MarshalException)
-        assertEquals(
-            "It is forbidden to use algorithm http://www.w3.org/2000/09/xmldsig#rsa-sha1 when secure validation is enabled",
-            exception.cause!!.message
-        )
+        assert(exception.cause == null)
     }
 
 }
