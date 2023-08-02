@@ -361,7 +361,10 @@ var TokenAutocomplete = /** @class */ (function () {
                         this.removeTokenWithText(highlightedSuggestion.dataset.tokenText);
                     }
                     else {
-                        this.addToken(highlightedSuggestion.dataset.value, highlightedSuggestion.dataset.tokenText, highlightedSuggestion.dataset.type, false);
+                        if (highlightedSuggestion.dataset.becomesToken !== 'false') {
+                            this.addToken(highlightedSuggestion.dataset.value, highlightedSuggestion.dataset.tokenText, highlightedSuggestion.dataset.type, false);
+                        }
+                        this.parent.autocomplete.dispatchSuggestionSelectedEvent(highlightedSuggestion);
                     }
                 }
                 else {
@@ -969,6 +972,15 @@ var TokenAutocomplete = /** @class */ (function () {
                     }, me.parent.options.requestDelay);
                 }
             };
+            class_4.prototype.dispatchSuggestionSelectedEvent = function (_suggestion) {
+                _suggestion.dispatchEvent(new CustomEvent('suggestion-selected', {
+                    detail: {
+                        value: _suggestion.dataset.value,
+                        text: _suggestion.dataset.text,
+                        type: _suggestion.dataset.type || null
+                    }
+                }));
+            };
             class_4.prototype.debouncedRequestSuggestions = function (query) {
                 var me = this;
                 if (me.request != null && me.request.readyState) {
@@ -1053,7 +1065,10 @@ var TokenAutocomplete = /** @class */ (function () {
                             me.parent.select.clear(false);
                         }
                         else {
-                            me.parent.select.addToken(value, suggestion.fieldLabel, suggestion.type, false);
+                            if (element.dataset.becomesToken !== 'false') {
+                                me.parent.select.addToken(value, suggestion.fieldLabel, suggestion.type, false);
+                            }
+                            me.dispatchSuggestionSelectedEvent(element);
                         }
                     }
                     else {
@@ -1063,7 +1078,10 @@ var TokenAutocomplete = /** @class */ (function () {
                             multiSelect.removeTokenWithText(suggestion.fieldLabel);
                         }
                         else {
-                            me.parent.select.addToken(value, suggestion.fieldLabel, suggestion.type, false);
+                            if (element.dataset.becomesToken !== 'false') {
+                                me.parent.select.addToken(value, suggestion.fieldLabel, suggestion.type, false);
+                            }
+                            me.dispatchSuggestionSelectedEvent(element);
                         }
                     }
                     me.clearSuggestions();
