@@ -37,7 +37,7 @@
         <i:if test="isFilled(api.getDescription()) || isFilled(api.getDocumentationUri())">
             <t:helpbox>
                 <div>
-                    @api.getDescription()
+                    <i:raw>@api.getDescription()</i:raw>
                 </div>
                 <i:if test="isFilled(api.getDocumentationUri())">
                     <div class="mt-2">
@@ -57,7 +57,7 @@
                         </i:if>
                     </h4>
                     <p>
-                        @service.getDescription()
+                        <i:raw>@service.getDescription()</i:raw>
                     </p>
                     <i:if test="isFilled(service.getDocumentationUri())">
                         <p>
@@ -115,7 +115,7 @@
                                             <i:local name="requestContent"
                                                      value="requestContents.get(0).as(io.swagger.v3.oas.annotations.media.Content.class)"/>
                                             <td>
-                                                <span>@request.description()</span>
+                                                <span><i:raw>@expandMessage(smartTranslate(request.description()))</i:raw></span>
                                                 <i:if test="@isFilled(requestContent.mediaType())">
                                                     <div class="mt-2"><strong>Content-Type:</strong>
                                                         @requestContent.mediaType()
@@ -131,7 +131,7 @@
                                             </td>
 
                                             <i:else>
-                                                <td>@request.description()</td>
+                                                <td><i:raw>@expandMessage(smartTranslate(request.description()))</i:raw></td>
                                             </i:else>
                                         </i:if>
                                     </tr>
@@ -164,7 +164,7 @@
                                                         @response.responseCode()
                                                     </t:fullTag>
                                                 </i:if>
-                                                <span>@response.description()</span>
+                                                <span><i:raw>@expandMessage(smartTranslate(response.description()))</i:raw></span>
                                                 <i:if test="@isFilled(responseContent.mediaType())">
                                                     <div class="mt-2"><strong>Content-Type:</strong>
                                                         @responseContent.mediaType()
@@ -188,7 +188,7 @@
                                                             @response.responseCode()
                                                         </t:fullTag>
                                                     </i:if>
-                                                    <span>@response.description()</span>
+                                                    <span><i:raw>@expandMessage(smartTranslate(response.description()))</i:raw></span>
                                                 </td>
                                                 <td></td>
                                             </i:else>
