@@ -1318,7 +1318,9 @@ public class WebContext implements SubContext {
      *
      * @param name  the cookie to create
      * @param value the contents of the cookie
+     * @deprecated Use {@link #setHTTPSessionCookie(String, String)} instead.
      */
+    @Deprecated(since = "2023/08/08", forRemoval = true)
     public void setSessionCookie(String name, String value) {
         setCookie(name, value, Long.MIN_VALUE, sessionCookieSameSite, sessionCookieSecurity);
     }
