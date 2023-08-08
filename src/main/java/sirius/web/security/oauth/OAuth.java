@@ -20,7 +20,7 @@ public class OAuth {
     /**
      * The token type bearer. It gets prepended in the authentication header and returned with the valid token.
      *
-     * @see #OAUTH_TOKEN_TYPE
+     * @see #TOKEN_TYPE
      */
     public static final String TOKEN_TYPE_BEARER = "bearer";
 
