@@ -90,7 +90,7 @@ import java.util.stream.Collectors;
 /**
  * Provides access to a request received by the WebServer.
  * <p>
- * This can be used to obtain all infos received for a HTTP request and also to create an appropriate response.
+ * This can be used to obtain all infos received for an HTTP request and also to create an appropriate response.
  * <p>
  * This context can either be passed along as variable or be accessed using {@link CallContext#get(Class)}
  */
@@ -1318,7 +1318,9 @@ public class WebContext implements SubContext {
      *
      * @param name  the cookie to create
      * @param value the contents of the cookie
+     * @deprecated Use {@link #setHTTPSessionCookie(String, String)} instead.
      */
+    @Deprecated(since = "2023/08/08", forRemoval = true)
     public void setSessionCookie(String name, String value) {
         setCookie(name, value, Long.MIN_VALUE, sessionCookieSameSite, sessionCookieSecurity);
     }
@@ -1326,14 +1328,28 @@ public class WebContext implements SubContext {
     /**
      * Sets a http only cookie value to be sent back to the client.
      * <p>
-     * The generated cookie will be a session cookie and vanish once the user agent is closed. Also this cookie
+     * The generated cookie will be a session cookie and vanish once the user agent is closed. Also, this cookie
      * will not be accessible by JavaScript and therefore slightly more secure.
      *
      * @param name  the cookie to create
      * @param value the contents of the cookie
      */
     public void setHTTPSessionCookie(String name, String value) {
-        setCookie(name, value, Long.MIN_VALUE, sessionCookieSameSite, sessionCookieSecurity);
+        setHTTPCookie(name, value, Long.MIN_VALUE);
+    }
+
+    /**
+     * Sets a http only cookie value to be sent back to the client.
+     * <p>
+     * The generated cookie will have a defined maximum lifetime. Also, this cookie
+     * will not be accessible by JavaScript and therefore slightly more secure.
+     *
+     * @param name          the cookie to create
+     * @param value         the contents of the cookie
+     * @param maxAgeSeconds contains the max age of this cookie in seconds
+     */
+    public void setHTTPCookie(String name, String value, long maxAgeSeconds) {
+        setCookie(name, value, maxAgeSeconds, sessionCookieSameSite, sessionCookieSecurity);
     }
 
     /**
@@ -1521,7 +1537,7 @@ public class WebContext implements SubContext {
     /**
      * Determines if a response was already committed.
      * <p>
-     * If a response is committed a HTTP state and some headers have already been sent. Therefore, a new / other
+     * If a response is committed an HTTP state and some headers have already been sent. Therefore, a new / other
      * response
      * cannot be created to this request.
      *
@@ -2045,7 +2061,7 @@ public class WebContext implements SubContext {
      * Releases the content handler for a pre-dispatched request.
      * <p>
      * If the handler didn't yet read all input, all available data is drained and trashed, so that
-     * the response can be sent (otherwise netty might internally hang, as it waits for the request
+     * the response can be sent. Otherwise, netty might internally hang, as it waits for the request
      * to be completely read before a (premature) response (e.g. an error message) is sent.
      * <p>
      * If no content handler is present, or if it has already been released, nothing will happen, especially nothing
