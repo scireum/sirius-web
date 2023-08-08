@@ -40,12 +40,12 @@ public class OAuthUtils {
                                                    String state,
                                                    String redirectUrl,
                                                    String scope) {
-        return new URLBuilder(oauthAuthUrl).addParameter(OAuth.OAUTH_RESPONSE_TYPE, OAuth.OAUTH_CODE)
-                                           .addParameter(OAuth.OAUTH_CLIENT_ID, clientId)
-                                           .addParameter(OAuth.OAUTH_GRANT_TYPE, OAuth.GRANT_TYPE_AUTH_CODE)
-                                           .addParameter(OAuth.OAUTH_REDIRECT_URI, redirectUrl)
-                                           .addParameter(OAuth.OAUTH_STATE, state)
-                                           .addParameter(OAuth.OAUTH_SCOPE, scope)
+        return new URLBuilder(oauthAuthUrl).addParameter(OAuth.RESPONSE_TYPE, OAuth.CODE)
+                                           .addParameter(OAuth.CLIENT_ID, clientId)
+                                           .addParameter(OAuth.GRANT_TYPE, OAuth.GRANT_TYPE_AUTH_CODE)
+                                           .addParameter(OAuth.REDIRECT_URI, redirectUrl)
+                                           .addParameter(OAuth.STATE, state)
+                                           .addParameter(OAuth.SCOPE, scope)
                                            .build();
     }
 
@@ -66,10 +66,10 @@ public class OAuthUtils {
                                              String oauthLoginUrl,
                                              String clientId,
                                              String sharedSecret) throws IOException {
-        String loginUrl = new URLBuilder(oauthLoginUrl).addParameter(OAuth.OAUTH_CLIENT_SECRET, sharedSecret)
-                                                       .addParameter(OAuth.OAUTH_CLIENT_ID, clientId)
-                                                       .addParameter(OAuth.OAUTH_CODE, authenticationCode)
-                                                       .addParameter(OAuth.OAUTH_GRANT_TYPE, OAuth.GRANT_TYPE_AUTH_CODE)
+        String loginUrl = new URLBuilder(oauthLoginUrl).addParameter(OAuth.CLIENT_SECRET, sharedSecret)
+                                                       .addParameter(OAuth.CLIENT_ID, clientId)
+                                                       .addParameter(OAuth.CODE, authenticationCode)
+                                                       .addParameter(OAuth.GRANT_TYPE, OAuth.GRANT_TYPE_AUTH_CODE)
                                                        .build();
         return JSONCall.to(URI.create(loginUrl)).getInput();
     }
