@@ -1335,7 +1335,21 @@ public class WebContext implements SubContext {
      * @param value the contents of the cookie
      */
     public void setHTTPSessionCookie(String name, String value) {
-        setCookie(name, value, Long.MIN_VALUE, sessionCookieSameSite, sessionCookieSecurity);
+        setHTTPCookie(name, value, Long.MIN_VALUE);
+    }
+
+    /**
+     * Sets a http only cookie value to be sent back to the client.
+     * <p>
+     * The generated cookie will have a defined maximum lifetime. Also, this cookie
+     * will not be accessible by JavaScript and therefore slightly more secure.
+     *
+     * @param name          the cookie to create
+     * @param value         the contents of the cookie
+     * @param maxAgeSeconds contains the max age of this cookie in seconds
+     */
+    public void setHTTPCookie(String name, String value, long maxAgeSeconds) {
+        setCookie(name, value, maxAgeSeconds, sessionCookieSameSite, sessionCookieSecurity);
     }
 
     /**
