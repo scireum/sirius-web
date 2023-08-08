@@ -19,8 +19,8 @@ import java.net.URI;
 /**
  * Provides utility methods to perform OAuth authentication flows.
  */
-@Register(classes = OAuthUtils.class)
-public class OAuthUtils {
+@Register(classes = OAuthAuthentication.class)
+public class OAuthAuthentication {
 
     /**
      * Creates the URL to start the OAuth authentication flow. Will return a URL to which the user must be redirected
