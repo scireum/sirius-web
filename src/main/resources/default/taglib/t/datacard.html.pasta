@@ -33,7 +33,7 @@
     <div class="card card-border card-hover-shadow @if(fullHeight) { h-100 }  @class">
         <div class="d-flex flex-grow-1 @(headerLeft ? apply('flex-row %s', headerLeftAlignmentClass) : 'flex-column')">
             <i:render name="header"></i:render>
-            <div class="d-flex flex-column flex-grow-1">
+            <div class="d-flex flex-column flex-grow-1" style="min-width: 0;">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-baseline">
                         <i:if test="isFilled(title)">
