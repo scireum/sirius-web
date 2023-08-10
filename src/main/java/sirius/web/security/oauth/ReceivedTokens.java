@@ -51,9 +51,9 @@ public record ReceivedTokens(String accessToken, String refreshToken, String typ
                 // No valid JWT, fall back to implementation from OAuth expires_in or the default value
             }
         }
-        long expiresIn = response.path(OAuth.EXPIRES_IN).asLong(0L);
 
         // Check if the 'expires in' field, actually meant for the access token, is better than our default tomorrow.
+        long expiresIn = response.path(OAuth.EXPIRES_IN).asLong(0L);
         if (expiresIn > TWO_DAYS_IN_SECONDS) {
             LocalDateTime expiresDate = LocalDateTime.now().plusSeconds(expiresIn);
             return new ReceivedTokens(accessToken, refreshToken, type, expiresDate);
