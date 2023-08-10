@@ -59,7 +59,7 @@ public record ReceivedTokens(String accessToken, String refreshToken, String typ
             return new ReceivedTokens(accessToken, refreshToken, type, expiresDate);
         }
 
-        // Use default value tomorrow, we except a refresh token to be valid at least for one more day
+        // Use default value tomorrow, we expect a refresh token to be valid at least for one more day
         LocalDateTime expiresDate = LocalDateTime.now().plusDays(MINIMUM_REFRESH_EXPIRES_DAYS);
         return new ReceivedTokens(accessToken, refreshToken, type, expiresDate);
     }
