@@ -22,7 +22,7 @@ public class OAuth {
      *
      * @see #TOKEN_TYPE
      */
-    public static final String TOKEN_TYPE_BEARER = "bearer";
+    public static final String TOKEN_TYPE_BEARER = "Bearer";
 
     /**
      * Determines the access token used to access the API.
