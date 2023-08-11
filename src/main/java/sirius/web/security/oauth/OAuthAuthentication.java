@@ -59,18 +59,47 @@ public class OAuthAuthentication {
      * @param oauthLoginUrl      the url of the login endpoint at the authorization server
      * @param clientId           the client id, which is registered at the authorization server
      * @param sharedSecret       the client secret, which is registered at the authorization server
-     * @return the json response that should contain an access and refresh token in case of success
+     * @return the tokens in case of success
      * @throws IOException in case of a connection error
      */
-    public ObjectNode performLoginByAuthCode(String authenticationCode,
-                                             String oauthLoginUrl,
-                                             String clientId,
-                                             String sharedSecret) throws IOException {
+    public ReceivedTokens performLoginByAuthCode(String authenticationCode,
+                                                 String oauthLoginUrl,
+                                                 String clientId,
+                                                 String sharedSecret) throws IOException {
         String loginUrl = new URLBuilder(oauthLoginUrl).addParameter(OAuth.CLIENT_SECRET, sharedSecret)
                                                        .addParameter(OAuth.CLIENT_ID, clientId)
                                                        .addParameter(OAuth.CODE, authenticationCode)
                                                        .addParameter(OAuth.GRANT_TYPE, OAuth.GRANT_TYPE_AUTH_CODE)
                                                        .build();
-        return JSONCall.to(URI.create(loginUrl)).getInput();
+
+        ObjectNode response = JSONCall.to(URI.create(loginUrl)).getInput();
+        return ReceivedTokens.fromJson(response);
+    }
+
+    /**
+     * After the authentication flow has been completed by returning an authentication code to the redirect URL, this
+     * method can be used to obtain an access token in exchange for the authentication code.
+     * <p>
+     * This is to be used in the backend, where the client secret can be kept secret.
+     *
+     * @param refreshToken  the authentication code returned by the authorization server
+     * @param oauthLoginUrl the url of the login endpoint at the authorization server
+     * @param clientId      the client id, which is registered at the authorization server
+     * @param sharedSecret  the client secret, which is registered at the authorization server
+     * @return the tokens in case of success
+     * @throws IOException in case of a connection error
+     */
+    public ReceivedTokens performRefreshToken(String refreshToken,
+                                              String oauthLoginUrl,
+                                              String clientId,
+                                              String sharedSecret) throws IOException {
+        String loginUrl = new URLBuilder(oauthLoginUrl).addParameter(OAuth.CLIENT_SECRET, sharedSecret)
+                                                       .addParameter(OAuth.CLIENT_ID, clientId)
+                                                       .addParameter(OAuth.REFRESH_TOKEN, refreshToken)
+                                                       .addParameter(OAuth.GRANT_TYPE, OAuth.GRANT_TYPE_REFRESH_TOKEN)
+                                                       .build();
+
+        ObjectNode response = JSONCall.to(URI.create(loginUrl)).getInput();
+        return ReceivedTokens.fromJson(response);
     }
 }
