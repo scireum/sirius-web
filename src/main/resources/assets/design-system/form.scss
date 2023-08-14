@@ -30,3 +30,16 @@
 .sci-token-single-select.token-autocomplete-container.token-autocomplete-singleselect .token-autocomplete-input:after {
   top: 0.5rem;
 }
+
+// DISABLED STATE
+// --------------
+// Disabled and read-only inputs
+input[disabled],
+select[disabled],
+textarea[disabled],
+input[readonly],
+select[readonly],
+textarea[readonly] {
+  border-color: #747474;
+  background-color: #E6E6E6;
+}
