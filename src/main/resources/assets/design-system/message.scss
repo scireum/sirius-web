@@ -1,0 +1,18 @@
+.sci-message-banner {
+  padding: 1rem;
+  color: $sirius-black;
+  background-color: $sirius-white;
+  border-radius: 0.25rem;
+  // This is no shadow, but an auxiliary border.
+  box-shadow: 0 0 1px $sirius-black;
+}
+
+.sci-message-banner-success {
+  @extend .sci-message-banner;
+  border-left: 0.25rem solid $sirius-deep-blue-dark;
+}
+
+.sci-message-banner-error{
+  @extend .sci-message-banner;
+  border-left: 0.25rem solid $sirius-red;
+}
