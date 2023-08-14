@@ -7,3 +7,26 @@
   font-size: 1rem;
   line-height: 1.5;
 }
+
+.sci-text-input-label {
+  @extend .sci-text;
+  @extend .sci-text-larger;
+}
+
+.sci-token-single-select {
+  border-width: 0.125rem;
+  border-style: solid;
+  border-radius: 0.25rem;
+  border-color: $sirius-gray;
+  padding: 0.75rem;
+}
+
+.sci-token-single-select.token-autocomplete-container.token-autocomplete-singleselect .token-autocomplete-input {
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.sci-token-single-select.token-autocomplete-container.token-autocomplete-singleselect .token-autocomplete-input:after {
+  top: 0.5rem;
+}
