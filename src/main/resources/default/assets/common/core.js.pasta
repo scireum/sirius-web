@@ -597,3 +597,17 @@ sirius.areObjectsDeeplyEqual = function (object1, object2) {
 sirius.isObject = function (object) {
     return object != null && typeof object === 'object';
 }
+
+/**@
+ * Extracts the file extension from the given filename.
+ *
+ * @param filename the filename to get the extension from
+ * @returns {string} the extension of the given filename (including the dot)
+ */
+sirius.extractFileExtension = function (filename) {
+    var a = filename.split('.');
+    if (a.length === 1 || (a[0] === '' && a.length === 2)) {
+        return '';
+    }
+    return '.' + a.pop();
+}
