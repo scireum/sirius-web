@@ -31,7 +31,7 @@ sirius.isEmpty = function (value) {
  * @param obj the object to check
  * @returns {boolean} true if the given object is empty, false otherwise
  */
-function isEmptyObject (obj) {
+function isEmptyObject(obj) {
     for (var prop in obj) {
         if (obj.hasOwnProperty(prop)) {
             return false;
@@ -596,4 +596,18 @@ sirius.areObjectsDeeplyEqual = function (object1, object2) {
  */
 sirius.isObject = function (object) {
     return object != null && typeof object === 'object';
+}
+
+/**@
+ * Extracts the file extension from the given filename.
+ *
+ * @param filename the filename to get the extension from
+ * @returns {string} the extension of the given filename (including the dot)
+ */
+sirius.extractFileExtension = function (filename) {
+    const nameAndExtension = filename.split('.');
+    if (nameAndExtension.length === 1 || (nameAndExtension[0] === '' && nameAndExtension.length === 2)) {
+        return '';
+    }
+    return '.' + nameAndExtension.pop();
 }
