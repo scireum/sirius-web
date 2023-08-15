@@ -34,12 +34,10 @@
 // DISABLED STATE
 // --------------
 // Disabled and read-only inputs
-input[disabled],
-select[disabled],
-textarea[disabled],
-input[readonly],
-select[readonly],
-textarea[readonly] {
+input.sci-text-input[disabled],
+textarea.sci-text-input[disabled],
+input.sci-text-input[readonly],
+textarea.sci-text-input[readonly] {
   border-color: #747474;
   background-color: #E6E6E6;
 }
