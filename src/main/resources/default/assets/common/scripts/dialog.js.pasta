@@ -192,6 +192,159 @@
         }
     }
 
+    /**@
+     * Callback that is invoked after the wizard is created.
+     *
+     * @callback dialog~fillWithWizard
+     * @param {Wizard} wizard an instance of the wizard helper class
+     */
+
+    /**@
+     * Fills the dialog with a wizard.
+     *
+     * This uses the Wizard helper class to add steps to the wizard afterward.
+     *
+     * @param {string} title the title of the dialog
+     * @param {boolean} wrapInForm if true the content of the dialog will be wrapped in a form element
+     * @param {dialog~fillWithWizard} callback a callback that is invoked when the wizard is created
+     */
+    dialog.fillWithWizard = function (title, wrapInForm, callback) {
+        const content =
+            '<div id="sci-dialog-wizard" class="sci-position-relative sci-mt-2 sci-mb-4">' +
+            '   <div id="sci-dialog-wizard-line"></div>' +
+            '   <div id="sci-dialog-wizard-steps" class="sci-position-relative sci-d-flex sci-flex-wrap sci-justify-content-space-between">' +
+            '</div>' +
+            '<div id="sci-dialog-wizard-tabs">' +
+            '</div>';
+        if (wrapInForm) {
+            sirius.dialog.fill(title, '<form>' + content + '</form>');
+        } else {
+            sirius.dialog.fill(title, content);
+        }
+        if (callback) {
+            callback(new sirius.dialog.Wizard());
+        }
+    };
+
+    /**@
+     * Encapsulates the functionality of a wizard dialog.
+     *
+     * This allows adding steps to the wizard and switching between them.
+     *
+     * @type {Wizard} the wizard helper
+     */
+    dialog.Wizard = (function () {
+        function Wizard() {
+            this._wizard = _dialog.querySelector('#sci-dialog-wizard');
+            this._steps = this._wizard.querySelector('#sci-dialog-wizard-steps');
+            this._tabs = _dialog.querySelector('#sci-dialog-wizard-tabs');
+            this.activeStep = null;
+        }
+
+        /**@
+         * Returns the identifier of the currently active step.
+         *
+         * @returns {string|null} the identifier of the currently active step or null if no step is added yet
+         */
+        Wizard.prototype.getActiveStep = function () {
+            return this.activeStep;
+        }
+
+
+        /**@
+         * Callback that is invoked after a step is added to the wizard.
+         *
+         * @callback Wizard~addStepCallback
+         * @param {HTMLDivElement} _button the DOM element of the step button
+         * @param {HTMLDivElement} _tab the DOM element of the step tab
+         */
+
+        /**@
+         * Adds a new step to the wizard.
+         *
+         * @param {string} stepId the identifier of the step
+         * @param {string} title the title of the step
+         * @param {Wizard~addStepCallback}callback a callback that is invoked when the step is added.
+         */
+        Wizard.prototype.addStep = function (stepId, title, callback) {
+            const _button = document.createElement('div');
+            _button.classList.add('sci-dialog-wizard-step', 'sci-position-relative');
+            _button.dataset.step = stepId;
+            if (this._steps.children.length === 0) {
+                // Activate the first step by default.
+                _button.classList.add('sci-dialog-wizard-step-active');
+                this.activeStep = stepId;
+            }
+
+            const _bubble = document.createElement('div');
+            _bubble.classList.add('sci-dialog-wizard-step-bubble');
+            _button.appendChild(_bubble);
+
+            const _label = document.createElement('div');
+            _label.classList.add('sci-dialog-wizard-step-label');
+            _label.textContent = title;
+            _button.appendChild(_label);
+
+            this._steps.appendChild(_button);
+
+            const me = this;
+            _button.addEventListener('click', function () {
+                me.switchToStep(_button.dataset.step);
+            });
+
+            const _tab = document.createElement('div');
+            _tab.classList.add('sci-dialog-wizard-tab', 'sci-flex-wrap', 'sci-mt-4', 'sci-p-2');
+            _tab.dataset.step = stepId;
+            if (this._tabs.children.length === 0) {
+                // Activate the first step by default.
+                _tab.classList.add('sci-dialog-wizard-tab-active');
+            }
+
+            this._tabs.appendChild(_tab);
+
+            if (callback) {
+                callback(_button, _tab);
+            }
+        }
+
+        /**@
+         * Switches to the step with the given identifier.
+         *
+         * @param {string} stepId the identifier of the step to switch to
+         */
+        Wizard.prototype.switchToStep = function (stepId) {
+            this.activeStep = stepId;
+            this._steps.querySelectorAll('.sci-dialog-wizard-step').forEach(function (_step) {
+                if (_step.dataset.step === stepId) {
+                    _step.classList.add('sci-dialog-wizard-step-active');
+                } else {
+                    _step.classList.remove('sci-dialog-wizard-step-active');
+                }
+            });
+
+            this._tabs.querySelectorAll('.sci-dialog-wizard-tab').forEach(function (_tab) {
+                if (_tab.dataset.step === stepId) {
+                    _tab.classList.add('sci-dialog-wizard-tab-active');
+                } else {
+                    _tab.classList.remove('sci-dialog-wizard-tab-active');
+                }
+            });
+
+            sirius.dispatchEvent('sci-dialog-wizard-step-changed', this._wizard);
+        }
+
+        /**@
+         * Adds a callback that is invoked when the active step of the wizard changes.
+         *
+         * @param {function} callback the callback to invoke
+         */
+        Wizard.prototype.onStepChanged = function (callback) {
+            this._wizard.addEventListener('sci-dialog-wizard-step-changed', callback);
+        }
+
+        return Wizard;
+    }());
+
     const destroyDialogEventHandler = function (event) {
         if (event.key === 'Escape') {
             sirius.dispatchEvent('sci-dialog-dismissed');

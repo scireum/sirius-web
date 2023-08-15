@@ -33,6 +33,13 @@
   background-repeat: no-repeat;
 }
 
+.sci-icon-larger {
+  width: 4rem;
+  height: 4rem;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
 .sci-icon-availability-unknown {
   background-image: url(svgResource('/assets/images/icons/availability/unknown.svg'));
 }
