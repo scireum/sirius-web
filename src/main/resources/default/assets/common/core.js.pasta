@@ -605,9 +605,9 @@ sirius.isObject = function (object) {
  * @returns {string} the extension of the given filename (including the dot)
  */
 sirius.extractFileExtension = function (filename) {
-    var a = filename.split('.');
-    if (a.length === 1 || (a[0] === '' && a.length === 2)) {
+    const array = filename.split('.');
+    if (array.length === 1 || (array[0] === '' && array.length === 2)) {
         return '';
     }
-    return '.' + a.pop();
+    return '.' + array.pop();
 }
