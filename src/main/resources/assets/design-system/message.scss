@@ -12,7 +12,7 @@
   border-left: 0.25rem solid $sirius-deep-blue-dark;
 }
 
-.sci-message-banner-error{
+.sci-message-banner-error {
   @extend .sci-message-banner;
   border-left: 0.25rem solid $sirius-red;
 }
