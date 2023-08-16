@@ -589,6 +589,40 @@ sirius.areObjectsDeeplyEqual = function (object1, object2) {
 }
 
 /**@
+ * Creates a deep clone of the given context.
+ * Also merges the contents of two or more objects together.
+ *
+ * @param {object} context the context to clone or merge
+ * @returns {object} the cloned or merged context
+ */
+sirius.deepExtend = function (context) {
+    context = context || {};
+
+    // var is used here instead of const to keep the code compatible with IE11.
+    // the same applies to the for loop below.
+    for (var i = 1; i < arguments.length; i++) {
+        var object = arguments[i];
+
+        if (!object) continue;
+
+        for (var key in object) {
+            if (object.hasOwnProperty(key)) {
+                var rawType = Object.prototype.toString.call(object[key]);
+                if (rawType === '[object Object]') {
+                    context[key] = sirius.deepExtend(context[key], object[key]);
+                } else if (rawType === '[object Array]') {
+                    context[key] = sirius.deepExtend(new Array(object[key].length), object[key]);
+                } else {
+                    context[key] = object[key];
+                }
+            }
+        }
+    }
+
+    return context;
+}
+
+/**@
  * Checks if the given value is an object.
  *
  * @param object the value to check
