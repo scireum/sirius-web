@@ -349,6 +349,8 @@
                 }
             });
 
+            updateReachableSteps(this);
+
             sirius.dispatchEvent('sci-dialog-wizard-step-changed', this._wizard);
         }
 
@@ -369,6 +371,7 @@
          * @returns {boolean} true if the user can switch to the next step, false otherwise
          */
         Wizard.prototype.canSwitchToNextStep = function () {
+            updateReachableSteps(this);
             // Check if the current tab is validated and valid.
             const _tab = this._tabs.querySelector('.sci-dialog-wizard-tab-active');
             return isStepValid(_tab);
@@ -380,6 +383,7 @@
          * @returns {boolean} true if all steps are valid, false otherwise
          */
         Wizard.prototype.allStepsValid = function () {
+            updateReachableSteps(this);
             const _tabs = this._tabs.querySelectorAll('.sci-dialog-wizard-tab');
             for (let i = 0; i < _tabs.length; i++) {
                 const _tab = _tabs[i];
@@ -416,8 +420,7 @@
         function updateReachableSteps(wizard) {
             // Go through all tabs and check if they should be reachable by the user.
             const _tabs = wizard._tabs.querySelectorAll('.sci-dialog-wizard-tab');
-            const _activeTab = wizard._tabs.querySelector('.sci-dialog-wizard-tab-active');
-            let lastReachableIndex = Array.prototype.indexOf.call(_tabs, _activeTab);
+            let lastReachableIndex = 0;
             // Check the following steps whether they are valid or dont have a form.
             for (let i = lastReachableIndex + 1; i < _tabs.length; i++) {
                 const _tab = _tabs[i];
