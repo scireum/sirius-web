@@ -261,9 +261,10 @@
          *
          * @param {string} stepId the identifier of the step
          * @param {string} title the title of the step
+         * @param {boolean} withForm whether the step should contain a form
          * @param {Wizard~addStepCallback}callback a callback that is invoked when the step is added.
          */
-        Wizard.prototype.addStep = function (stepId, title, callback) {
+        Wizard.prototype.addStep = function (stepId, title, withForm, callback) {
             const _button = document.createElement('div');
             _button.classList.add('sci-dialog-wizard-step', 'sci-position-relative');
             _button.dataset.step = stepId;
@@ -291,6 +292,7 @@
 
             const _tab = document.createElement('div');
             _tab.classList.add('sci-dialog-wizard-tab', 'sci-flex-wrap', 'sci-mt-4', 'sci-p-2');
+            _tab.id = 'sci-dialog-wizard-tab-' + stepId;
             _tab.dataset.step = stepId;
             if (this._tabs.children.length === 0) {
                 // Activate the first step by default.
@@ -298,6 +300,14 @@
             }
 
             this._tabs.appendChild(_tab);
+
+            if (withForm) {
+                const _form = document.createElement('form');
+                _form.id = 'sci-dialog-wizard-form-' + stepId;
+                _form.classList.add('sci-d-flex', 'sci-flex-wrap');
+                _form.dataset.step = stepId;
+                _tab.appendChild(_form);
+            }
 
             if (callback) {
                 callback(_button, _tab);
