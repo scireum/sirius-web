@@ -99,10 +99,9 @@
       }
 
       &.sci-dialog-wizard-step-reachable {
-        border: initial;
-
         .sci-dialog-wizard-step-bubble {
           background: $sirius-grey-light;
+          border: initial;
         }
 
         .sci-dialog-wizard-step-label {
@@ -111,10 +110,9 @@
       }
 
       &.sci-dialog-wizard-step-active {
-        border: initial;
-
         .sci-dialog-wizard-step-bubble {
           background: $sirius-primary;
+          border: initial;
         }
 
         .sci-dialog-wizard-step-label {
