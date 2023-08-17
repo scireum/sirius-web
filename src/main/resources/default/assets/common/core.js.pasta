@@ -194,13 +194,24 @@ sirius.getJSON = function (url, params) {
  * @param params the parameters to send POST data (parameters with 'undefined' values are not sent to the server)
  * @returns {Promise<any>} the received JSON data
  */
-sirius.postJSON = function (url, params) {
+sirius.postJson = function (url, params) {
     return fetch(url, {
         method: "post",
         body: sirius.convertObjectToFormData(params)
     }).then(function (response) {
         return response.json();
     });
+}
+
+/**@
+ * Calls the given URL, posts the given params and retrieves the resulting JSON.
+ *
+ * @param url the URL to invoke
+ * @param params the parameters to send POST data (parameters with 'undefined' values are not sent to the server)
+ * @returns {Promise<any>} the received JSON data
+ */
+sirius.postJSON = function (url, params) {
+    return sirius.postJson(url, params);
 }
 
 /**@
@@ -211,7 +222,7 @@ sirius.postJSON = function (url, params) {
  * @param file the file to upload
  * @returns {Promise<any>} the received JSON data
  */
-sirius.postJSONFile = function (url, params, file) {
+sirius.postJsonAndFile = function (url, params, file) {
     let formData = sirius.convertObjectToFormData(params);
     formData.append('filename', file.name);
     formData.append('file', file, file.name);
