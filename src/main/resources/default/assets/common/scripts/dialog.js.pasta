@@ -289,7 +289,7 @@
 
             const me = this;
             _button.addEventListener('click', function () {
-                if (this.classList.contains('sci-dialog-wizard-step-reachable')) {
+                if (me.canSwitchToNextStep() && this.classList.contains('sci-dialog-wizard-step-reachable')) {
                     me.switchToStep(_button.dataset.step);
                 }
             });
@@ -350,6 +350,23 @@
             });
 
             sirius.dispatchEvent('sci-dialog-wizard-step-changed', this._wizard);
+        }
+
+
+        Wizard.prototype.canSwitchToNextStep = function () {
+            // Check if the current tab is validated and valid.
+            const _tab = this._tabs.querySelector('.sci-dialog-wizard-tab-active');
+            if (_tab.dataset.validated === 'false') {
+                // Current tab needs no validation so leaving is always possible.
+                return true;
+            }
+            const _form = _tab.querySelector('form');
+            if (_form && !_form.checkValidity()) {
+                // Current tab has a form that is not valid -> show errors.
+                sirius.requestSubmitForm(_form);
+                return false;
+            }
+            return true;
         }
 
         /**@
