@@ -254,6 +254,7 @@
          * @callback Wizard~addStepCallback
          * @param {HTMLDivElement} _button the DOM element of the step button
          * @param {HTMLDivElement} _tab the DOM element of the step tab
+         * @param {HTMLFormElement} [_form] the DOM element of the form that is contained in the step tab (if enabled)
          */
 
         /**@
@@ -267,6 +268,7 @@
         Wizard.prototype.addStep = function (stepId, title, withForm, callback) {
             const _button = document.createElement('div');
             _button.classList.add('sci-dialog-wizard-step', 'sci-position-relative');
+            _button.id = 'sci-dialog-wizard-step-' + stepId;
             _button.dataset.step = stepId;
             if (this._steps.children.length === 0) {
                 // Activate the first step by default.
@@ -287,13 +289,16 @@
 
             const me = this;
             _button.addEventListener('click', function () {
-                me.switchToStep(_button.dataset.step);
+                if (this.classList.contains('sci-dialog-wizard-step-reachable')) {
+                    me.switchToStep(_button.dataset.step);
+                }
             });
 
             const _tab = document.createElement('div');
             _tab.classList.add('sci-dialog-wizard-tab', 'sci-flex-wrap', 'sci-mt-4', 'sci-p-2');
             _tab.id = 'sci-dialog-wizard-tab-' + stepId;
             _tab.dataset.step = stepId;
+            _tab.dataset.validated = withForm;
             if (this._tabs.children.length === 0) {
                 // Activate the first step by default.
                 _tab.classList.add('sci-dialog-wizard-tab-active');
@@ -301,17 +306,24 @@
 
             this._tabs.appendChild(_tab);
 
+            let _form = null;
             if (withForm) {
-                const _form = document.createElement('form');
+                _form = document.createElement('form');
                 _form.id = 'sci-dialog-wizard-form-' + stepId;
-                _form.classList.add('sci-d-flex', 'sci-flex-wrap');
+                _form.classList.add('sci-d-flex', 'sci-flex-wrap', 'sci-w-100');
                 _form.dataset.step = stepId;
                 _tab.appendChild(_form);
             }
 
             if (callback) {
-                callback(_button, _tab);
+                if (withForm) {
+                    callback(_button, _tab, _form);
+                } else {
+                    callback(_button, _tab);
+                }
             }
+
+            updateReachableSteps(this);
         }
 
         /**@
@@ -347,6 +359,34 @@
          */
         Wizard.prototype.onStepChanged = function (callback) {
             this._wizard.addEventListener('sci-dialog-wizard-step-changed', callback);
+        }
+
+        function updateReachableSteps(wizard) {
+            // Go through all tabs and check if they should be reachable by the user.
+            const _tabs = wizard._tabs.querySelectorAll('.sci-dialog-wizard-tab');
+            const _activeTab = wizard._tabs.querySelector('.sci-dialog-wizard-tab-active');
+            let lastReachableIndex = Array.prototype.indexOf.call(_tabs, _activeTab);
+            // Check the following steps whether they are valid or dont have a form.
+            for (let i = lastReachableIndex + 1; i < _tabs.length; i++) {
+                const _tab = _tabs[i];
+
+                if (_tab.dataset.validated === 'false') {
+                    lastReachableIndex = i;
+                    return;
+                }
+
+                lastReachableIndex = i;
+                const _form = _tab.querySelector('form');
+                if (_form && !_form.checkValidity()) {
+                    break;
+                }
+            }
+            const _steps = wizard._steps.querySelectorAll('.sci-dialog-wizard-step');
+            // Disable all steps that should not be reachable.
+            for (let i = 0; i < _steps.length; i++) {
+                const _step = _steps[i];
+                _step.classList.toggle('sci-dialog-wizard-step-reachable', i <= lastReachableIndex);
+            }
         }
 
         return Wizard;

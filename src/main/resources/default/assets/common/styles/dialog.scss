@@ -72,11 +72,14 @@
     margin: 0 auto;
 
     .sci-dialog-wizard-step {
+      cursor: not-allowed;
+
       .sci-dialog-wizard-step-bubble {
         width: 20px;
         height: 20px;
         border-radius: 50%;
-        background: $sirius-grey-light;
+        background: $sirius-white;
+        border: 0.25rem solid $sirius-grey-light;
         z-index: 1;
       }
 
@@ -95,7 +98,21 @@
         }
       }
 
+      &.sci-dialog-wizard-step-reachable {
+        border: initial;
+
+        .sci-dialog-wizard-step-bubble {
+          background: $sirius-grey-light;
+        }
+
+        .sci-dialog-wizard-step-label {
+          color: $sirius-grey-light;
+        }
+      }
+
       &.sci-dialog-wizard-step-active {
+        border: initial;
+
         .sci-dialog-wizard-step-bubble {
           background: $sirius-primary;
         }
@@ -105,7 +122,7 @@
         }
       }
 
-      &:hover {
+      &.sci-dialog-wizard-step-reachable:hover {
         .sci-dialog-wizard-step-bubble {
           background: $sirius-grey-dark;
           cursor: pointer;
