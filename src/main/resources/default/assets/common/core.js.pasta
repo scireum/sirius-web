@@ -195,9 +195,49 @@ sirius.getJSON = function (url, params) {
  * @returns {Promise<any>} the received JSON data
  */
 sirius.postJSON = function (url, params) {
+    return fetch(url, {
+        method: "post",
+        body: sirius.convertObjectToFormData(params)
+    }).then(function (response) {
+        return response.json();
+    });
+}
+
+/**@
+ * Calls the given URL, posts the given params and file and retrieves the resulting JSON.
+ *
+ * @param url the URL to invoke
+ * @param params the parameters to send POST data (parameters with 'undefined' values are not sent to the server)
+ * @param file the file to upload
+ * @returns {Promise<any>} the received JSON data
+ */
+sirius.postJSONFile = function (url, params, file) {
+    let formData = sirius.convertObjectToFormData(params);
+    formData.append('filename', file.name);
+    formData.append('file', file, file.name);
+
+    return fetch(url, {
+        method: "post",
+        headers: {
+            'X-File-Name': encodeURIComponent(file.name),
+            'X-Mime-Type': file.type,
+        },
+        body: formData
+    }).then(function (response) {
+        return response.json();
+    });
+}
+
+/**@
+ * Converts the given object to a FormData object.
+ *
+ * @param {object} object the object to convert
+ * @returns {FormData} the FormData object
+ */
+sirius.convertObjectToFormData = function(object) {
     let formData = new FormData();
-    Object.keys(params).forEach(function (key) {
-        const value = params[key];
+    Object.keys(object).forEach(function (key) {
+        const value = object[key];
         if (Array.isArray(value)) {
             value.forEach(function (entry) {
                 formData.append(key, entry);
@@ -206,13 +246,7 @@ sirius.postJSON = function (url, params) {
             formData.append(key, value);
         }
     });
-
-    return fetch(url, {
-        method: "post",
-        body: formData
-    }).then(function (response) {
-        return response.json();
-    });
+    return formData;
 }
 
 /**@
