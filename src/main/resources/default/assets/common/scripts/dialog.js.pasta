@@ -422,7 +422,7 @@
             const _tabs = wizard._tabs.querySelectorAll('.sci-dialog-wizard-tab');
             let lastReachableIndex = 0;
             // Check the following steps whether they are valid or dont have a form.
-            for (let i = lastReachableIndex + 1; i < _tabs.length; i++) {
+            for (let i = lastReachableIndex; i < _tabs.length; i++) {
                 const _tab = _tabs[i];
 
                 if (_tab.dataset.validated === 'false') {
