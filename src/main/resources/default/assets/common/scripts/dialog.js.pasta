@@ -205,10 +205,9 @@
      * This uses the Wizard helper class to add steps to the wizard afterward.
      *
      * @param {string} title the title of the dialog
-     * @param {boolean} wrapInForm if true the content of the dialog will be wrapped in a form element
      * @param {dialog~fillWithWizard} callback a callback that is invoked when the wizard is created
      */
-    dialog.fillWithWizard = function (title, wrapInForm, callback) {
+    dialog.fillWithWizard = function (title, callback) {
         const content =
             '<div id="sci-dialog-wizard" class="sci-position-relative sci-mt-2 sci-mb-4">' +
             '   <div id="sci-dialog-wizard-line"></div>' +
@@ -216,11 +215,9 @@
             '</div>' +
             '<div id="sci-dialog-wizard-tabs">' +
             '</div>';
-        if (wrapInForm) {
-            sirius.dialog.fill(title, '<form>' + content + '</form>');
-        } else {
-            sirius.dialog.fill(title, content);
-        }
+
+        sirius.dialog.fill(title, content);
+
         if (callback) {
             callback(new sirius.dialog.Wizard());
         }
@@ -234,7 +231,7 @@
      * @type {Wizard} the wizard helper
      */
     dialog.Wizard = (function () {
-        function Wizard() {
+        function Wizard(_form) {
             this._wizard = _dialog.querySelector('#sci-dialog-wizard');
             this._steps = this._wizard.querySelector('#sci-dialog-wizard-steps');
             this._tabs = _dialog.querySelector('#sci-dialog-wizard-tabs');
