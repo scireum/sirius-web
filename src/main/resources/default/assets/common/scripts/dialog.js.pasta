@@ -231,7 +231,7 @@
      * @type {Wizard} the wizard helper
      */
     dialog.Wizard = (function () {
-        function Wizard(_form) {
+        function Wizard() {
             this._wizard = _dialog.querySelector('#sci-dialog-wizard');
             this._steps = this._wizard.querySelector('#sci-dialog-wizard-steps');
             this._tabs = _dialog.querySelector('#sci-dialog-wizard-tabs');
