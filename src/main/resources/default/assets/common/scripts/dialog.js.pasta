@@ -205,10 +205,9 @@
      * This uses the Wizard helper class to add steps to the wizard afterward.
      *
      * @param {string} title the title of the dialog
-     * @param {boolean} wrapInForm if true the content of the dialog will be wrapped in a form element
      * @param {dialog~fillWithWizard} callback a callback that is invoked when the wizard is created
      */
-    dialog.fillWithWizard = function (title, wrapInForm, callback) {
+    dialog.fillWithWizard = function (title, callback) {
         const content =
             '<div id="sci-dialog-wizard" class="sci-position-relative sci-mt-2 sci-mb-4">' +
             '   <div id="sci-dialog-wizard-line"></div>' +
@@ -216,11 +215,9 @@
             '</div>' +
             '<div id="sci-dialog-wizard-tabs">' +
             '</div>';
-        if (wrapInForm) {
-            sirius.dialog.fill(title, '<form>' + content + '</form>');
-        } else {
-            sirius.dialog.fill(title, content);
-        }
+
+        sirius.dialog.fill(title, content);
+
         if (callback) {
             callback(new sirius.dialog.Wizard());
         }
@@ -257,6 +254,7 @@
          * @callback Wizard~addStepCallback
          * @param {HTMLDivElement} _button the DOM element of the step button
          * @param {HTMLDivElement} _tab the DOM element of the step tab
+         * @param {HTMLFormElement} [_form] the DOM element of the form that is contained in the step tab (if enabled)
          */
 
         /**@
@@ -264,11 +262,13 @@
          *
          * @param {string} stepId the identifier of the step
          * @param {string} title the title of the step
+         * @param {boolean} withForm whether the step should contain a form
          * @param {Wizard~addStepCallback}callback a callback that is invoked when the step is added.
          */
-        Wizard.prototype.addStep = function (stepId, title, callback) {
+        Wizard.prototype.addStep = function (stepId, title, withForm, callback) {
             const _button = document.createElement('div');
             _button.classList.add('sci-dialog-wizard-step', 'sci-position-relative');
+            _button.id = 'sci-dialog-wizard-step-' + stepId;
             _button.dataset.step = stepId;
             if (this._steps.children.length === 0) {
                 // Activate the first step by default.
@@ -289,12 +289,16 @@
 
             const me = this;
             _button.addEventListener('click', function () {
-                me.switchToStep(_button.dataset.step);
+                if (me.canSwitchToNextStep() && this.classList.contains('sci-dialog-wizard-step-reachable')) {
+                    me.switchToStep(_button.dataset.step);
+                }
             });
 
             const _tab = document.createElement('div');
             _tab.classList.add('sci-dialog-wizard-tab', 'sci-flex-wrap', 'sci-mt-4', 'sci-p-2');
+            _tab.id = 'sci-dialog-wizard-tab-' + stepId;
             _tab.dataset.step = stepId;
+            _tab.dataset.validated = withForm;
             if (this._tabs.children.length === 0) {
                 // Activate the first step by default.
                 _tab.classList.add('sci-dialog-wizard-tab-active');
@@ -302,9 +306,24 @@
 
             this._tabs.appendChild(_tab);
 
-            if (callback) {
-                callback(_button, _tab);
+            let _form = null;
+            if (withForm) {
+                _form = document.createElement('form');
+                _form.id = 'sci-dialog-wizard-form-' + stepId;
+                _form.classList.add('sci-d-flex', 'sci-flex-wrap', 'sci-w-100');
+                _form.dataset.step = stepId;
+                _tab.appendChild(_form);
             }
+
+            if (callback) {
+                if (withForm) {
+                    callback(_button, _tab, _form);
+                } else {
+                    callback(_button, _tab);
+                }
+            }
+
+            updateReachableSteps(this);
         }
 
         /**@
@@ -330,7 +349,63 @@
                 }
             });
 
+            updateReachableSteps(this);
+
             sirius.dispatchEvent('sci-dialog-wizard-step-changed', this._wizard);
+        }
+
+        /**@
+         * Switches to the next step.
+         */
+        Wizard.prototype.switchToNextStep = function () {
+            const _activeTab = this._tabs.querySelector('.sci-dialog-wizard-tab-active');
+            const _nextTab = _activeTab.nextElementSibling;
+            if (_nextTab) {
+                this.switchToStep(_nextTab.dataset.step);
+            }
+        }
+
+        /**@
+         * Determines if the user can switch to the next step.
+         *
+         * @returns {boolean} true if the user can switch to the next step, false otherwise
+         */
+        Wizard.prototype.canSwitchToNextStep = function () {
+            updateReachableSteps(this);
+            // Check if the current tab is validated and valid.
+            const _tab = this._tabs.querySelector('.sci-dialog-wizard-tab-active');
+            return isStepValid(_tab);
+        }
+
+        /**@
+         * Determines if all steps are valid.
+         *
+         * @returns {boolean} true if all steps are valid, false otherwise
+         */
+        Wizard.prototype.allStepsValid = function () {
+            updateReachableSteps(this);
+            const _tabs = this._tabs.querySelectorAll('.sci-dialog-wizard-tab');
+            for (let i = 0; i < _tabs.length; i++) {
+                const _tab = _tabs[i];
+                if (!isStepValid(_tab)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function isStepValid(_tab) {
+            if (_tab.dataset.validated === 'false') {
+                // Current tab needs no validation so leaving is always possible.
+                return true;
+            }
+            const _form = _tab.querySelector('form');
+            if (_form && !_form.checkValidity()) {
+                // Current tab has a form that is not valid -> show errors.
+                sirius.requestSubmitForm(_form);
+                return false;
+            }
+            return true;
         }
 
         /**@
@@ -340,6 +415,33 @@
          */
         Wizard.prototype.onStepChanged = function (callback) {
             this._wizard.addEventListener('sci-dialog-wizard-step-changed', callback);
+        }
+
+        function updateReachableSteps(wizard) {
+            // Go through all tabs and check if they should be reachable by the user.
+            const _tabs = wizard._tabs.querySelectorAll('.sci-dialog-wizard-tab');
+            let lastReachableIndex = 0;
+            // Check the following steps whether they are valid or dont have a form.
+            for (let i = lastReachableIndex; i < _tabs.length; i++) {
+                const _tab = _tabs[i];
+
+                if (_tab.dataset.validated === 'false') {
+                    lastReachableIndex = i;
+                    return;
+                }
+
+                lastReachableIndex = i;
+                const _form = _tab.querySelector('form');
+                if (_form && !_form.checkValidity()) {
+                    break;
+                }
+            }
+            const _steps = wizard._steps.querySelectorAll('.sci-dialog-wizard-step');
+            // Disable all steps that should not be reachable.
+            for (let i = 0; i < _steps.length; i++) {
+                const _step = _steps[i];
+                _step.classList.toggle('sci-dialog-wizard-step-reachable', i <= lastReachableIndex);
+            }
         }
 
         return Wizard;
