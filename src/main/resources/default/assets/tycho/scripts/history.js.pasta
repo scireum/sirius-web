@@ -128,7 +128,5 @@ function handleHistoryStateOnLoad() {
     }
 }
 
-if (window.history.state) {
-    // On page load, if we have a state with a different url, load it
-    handleHistoryStateOnLoad();
-}
+// On page load, if we have a state with a different url, load it
+handleHistoryStateOnLoad();
