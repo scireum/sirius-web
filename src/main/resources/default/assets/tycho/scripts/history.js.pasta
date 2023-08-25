@@ -112,6 +112,10 @@ sirius.ready(function () {
 });
 
 function handleHistoryStateOnLoad() {
+    if (!window.history.state || !window.history.state.url) {
+        return;
+    }
+
     const url = window.history.state.url;
     if (url === '-') {
         window.sessionStorage.removeItem('tycho-history-skip-url');
