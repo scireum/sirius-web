@@ -25,6 +25,7 @@
 <i:pragma name="description">
     Renders a data centric card which has a title an optional subtitle and body contents.
     Via the block 'actions' a list of additional actions can be provided for this card.
+    Via the block 'additionalTags' tags (or other div-content) can be provided next to the title.
     Using the block 'footer' the bottom part of the card can be supplied with additional
     infos, tags etc.
 </i:pragma>
@@ -47,6 +48,7 @@
                                 </i:if>
                             </i:else>
                         </i:if>
+                        <i:render name="additionalTags"/>
                         <t:additionalActions>
                             <i:render name="actions"/>
                         </t:additionalActions>
