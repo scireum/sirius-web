@@ -112,6 +112,10 @@ sirius.ready(function () {
 });
 
 function handleHistoryStateOnLoad() {
+    if (!window.history.state || !window.history.state.url) {
+        return;
+    }
+
     const url = window.history.state.url;
     if (url === '-') {
         window.sessionStorage.removeItem('tycho-history-skip-url');
@@ -124,7 +128,5 @@ function handleHistoryStateOnLoad() {
     }
 }
 
-if (window.history.state) {
-    // On page load, if we have a state with a different url, load it
-    handleHistoryStateOnLoad();
-}
+// On page load, if we have a state with a different url, load it
+handleHistoryStateOnLoad();
