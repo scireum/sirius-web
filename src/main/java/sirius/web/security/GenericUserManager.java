@@ -39,7 +39,7 @@ public abstract class GenericUserManager implements UserManager {
     /**
      * Defines the default grace period (max age of an sso timestamp) which is accepted by the system
      */
-    private static final long DEFAULT_SSO_GRACE_INTERVAL = TimeUnit.HOURS.toSeconds(24);
+    private static final long DEFAULT_SSO_GRACE_INTERVAL = TimeUnit.HOURS.toSeconds(4);
     private static final String SUFFIX_USER_ID = "-user-id";
     private static final String SUFFIX_TENANT_ID = "-tenant-id";
     private static final String SUFFIX_TTL = "-ttl";
@@ -174,7 +174,7 @@ public abstract class GenericUserManager implements UserManager {
     /**
      * Updates the login cookie.
      * <p>
-     * Limits the lifetime to the browser session if the login should not be kept. Furthermore the time to life and
+     * Limits the lifetime to the browser session if the login should not be kept. Furthermore, the time to life and
      * login information is stored in the session.
      *
      * @param webContext the current request
@@ -434,7 +434,7 @@ public abstract class GenericUserManager implements UserManager {
     /**
      * Determines if the given sub scope is enabled for the given user.
      * <p>
-     * By default all sub scopes are enabled for all users. This can and should however be overwritten
+     * By default, all sub scopes are enabled for all users. This can and should however be overwritten
      * by sophisticated custom user managers.
      *
      * @param user  the user to check
