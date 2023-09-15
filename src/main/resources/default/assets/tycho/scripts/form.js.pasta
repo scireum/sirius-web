@@ -3,6 +3,7 @@ sirius.ready(function () {
         _node.addEventListener('click', function (e) {
             if (_node.classList.contains('single-click-pending-js')) {
                 e.preventDefault();
+                e.stopPropagation();
                 e.cancelBubble = true;
                 return true;
             }
