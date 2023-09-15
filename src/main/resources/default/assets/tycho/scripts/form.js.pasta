@@ -7,7 +7,7 @@ sirius.ready(function () {
                 return true;
             }
             _node.classList.add('single-click-pending-js');
-        });
+        }, true);
     });
 
     document.querySelectorAll('.submit-link-js').forEach(function (_node) {
