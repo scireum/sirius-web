@@ -1,10 +1,10 @@
 sirius.ready(function () {
     document.querySelectorAll('.single-click-link-js').forEach(function (_node) {
-        _node.addEventListener('click', function (e) {
+        _node.addEventListener('click', function (event) {
             if (_node.classList.contains('single-click-pending-js')) {
-                e.preventDefault();
-                e.stopPropagation();
-                e.cancelBubble = true;
+                event.preventDefault();
+                event.stopPropagation();
+                event.cancelBubble = true;
                 return true;
             }
             _node.classList.add('single-click-pending-js');
