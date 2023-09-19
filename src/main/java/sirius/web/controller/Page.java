@@ -30,7 +30,7 @@ import java.util.function.Supplier;
  */
 public class Page<E> {
 
-    private static final int DEFAULT_PAGE_SIZE = 25;
+    private static final int DEFAULT_PAGE_SIZE = 24;
 
     /**
      * The MAXIMUM_PAGE_SIZE is used to limit the {@link #bindToRequest(WebContext)}
@@ -88,7 +88,7 @@ public class Page<E> {
      * Provides a simple way of supplying the proper number of items for this page.
      * <p>
      * The <tt>itemsSupplier</tt> receives a pre-computed {@link Limit} and returns the expected number of
-     * items als list. The limit it computed in a way, that we can then determine if more items are available,
+     * items as a list. The limit it computed in a way, that we can then determine if more items are available,
      * and we thus should render a "show more" button.
      *
      * @param itemsSupplier the supplier to supply items to the current page limited by the provided limit
