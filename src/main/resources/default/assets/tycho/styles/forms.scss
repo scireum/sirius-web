@@ -112,6 +112,9 @@
   }
 }
 
+.has-error .form-control.token-autocomplete-container {
+  border-color: $sirius-red;
+}
 
 .form-control.token-autocomplete-container.token-autocomplete-singleselect {
   .token-autocomplete-input:after {
