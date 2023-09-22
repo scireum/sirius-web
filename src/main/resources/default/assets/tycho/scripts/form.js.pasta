@@ -1,14 +1,16 @@
 sirius.ready(function () {
     document.querySelectorAll('.single-click-link-js').forEach(function (_node) {
-        _node.addEventListener('click', function (event) {
-            if (_node.classList.contains('single-click-pending-js')) {
-                event.preventDefault();
-                event.stopPropagation();
-                event.cancelBubble = true;
-                return true;
-            }
-            _node.classList.add('single-click-pending-js');
-        }, true);
+        if (sirius.findParentOfType(_node, 'FORM') != null) {
+            _node.addEventListener('click', function (event) {
+                if (_node.classList.contains('single-click-pending-js')) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    event.cancelBubble = true;
+                    return true;
+                }
+                _node.classList.add('single-click-pending-js');
+            }, true);
+        }
     });
 
     document.querySelectorAll('.submit-link-js').forEach(function (_node) {
