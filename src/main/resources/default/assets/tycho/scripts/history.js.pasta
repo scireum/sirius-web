@@ -36,7 +36,7 @@ const tychoHistory = {
     backNavigationQueued: false
 }
 
-function appendHistoryUrl(url) {
+function appendHistoryUrl(url, pushAsNewState) {
     if (tychoHistory.backNavigationQueued) {
         tychoHistory.backNavigationQueued = false;
         return;
@@ -84,6 +84,11 @@ function appendHistoryUrl(url) {
         if (url !== '-') {
             urls.push(url);
             storeTychoHistory(urls);
+        }
+
+        if (pushAsNewState) {
+            window.history.pushState({url: url}, document.title, url);
+            return;
         }
 
         // Store the url to load in the current state
