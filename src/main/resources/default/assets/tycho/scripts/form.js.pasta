@@ -1,6 +1,6 @@
 sirius.ready(function () {
     document.querySelectorAll('.single-click-link-js').forEach(function (_node) {
-        if (sirius.findParentOfType(_node, 'FORM')) {
+        if (sirius.findParentOfType(_node, 'FORM') != null) {
             _node.addEventListener('click', function (event) {
                 if (_node.classList.contains('single-click-pending-js')) {
                     event.preventDefault();
