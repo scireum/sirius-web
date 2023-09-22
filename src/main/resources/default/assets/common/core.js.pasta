@@ -245,7 +245,7 @@ sirius.postJsonAndFile = function (url, params, file) {
  * @param {object} object the object to convert
  * @returns {FormData} the FormData object
  */
-sirius.convertObjectToFormData = function(object) {
+sirius.convertObjectToFormData = function (object) {
     let formData = new FormData();
     Object.keys(object).forEach(function (key) {
         const value = object[key];
@@ -690,4 +690,65 @@ sirius.extractFileExtension = function (filename) {
         return '';
     }
     return '.' + nameAndExtension.pop();
+}
+
+/**@
+ * Copies the given text to the clipboard.
+ *
+ * If an element is given, it will be marked as "copied" for a short time.
+ *
+ * Inspired by clipboard.js v1.5.12
+ * https://zenorocha.github.io/clipboard.js
+ * Licensed MIT © Zeno Rocha
+ *
+ * @param textToCopy
+ * @param _element
+ */
+sirius.copyToClipboard = function (textToCopy, _element) {
+    var _fakeElement = document.createElement('textarea');
+    _fakeElement.contentEditable = true;
+    // Prevent zooming on iOS
+    _fakeElement.style.fontSize = '12pt';
+    // Reset the box-model
+    _fakeElement.style.border = '0';
+    _fakeElement.style.padding = '0';
+    _fakeElement.style.margin = '0';
+    // Move element out of screen horizontally
+    _fakeElement.style.position = 'absolute';
+    _fakeElement.style[document.documentElement.getAttribute('dir') == 'rtl' ? 'right' : 'left'] = '-9999px';
+    // Move the element to the same position vertically
+    _fakeElement.style.top = (window.pageYOffset || document.documentElement.scrollTop) + 'px';
+    _fakeElement.setAttribute('readonly', '');
+    _fakeElement.value = textToCopy;
+    document.body.appendChild(_fakeElement);
+    _fakeElement.focus();
+
+    var range = document.createRange();
+    range.selectNodeContents(_fakeElement);
+    var selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    _fakeElement.setSelectionRange(0, textToCopy.length);
+
+    if (document.execCommand('copy') && typeof _element !== 'undefined' && typeof _element.addClass === 'function') {
+        _element.addClass('sci-copied');
+        setTimeout(function () {
+            _element.removeClass('sci-copied');
+        }, 1000);
+    }
+    document.body.removeChild(_fakeElement);
+
+    /* Try alternative */
+    const copy = function (event) {
+        if (event.clipboardData) {
+            event.clipboardData.setData('text/plain', textToCopy);
+        } else if (window.clipboardData) {
+            window.clipboardData.setData('Text', textToCopy);
+        }
+        event.preventDefault();
+    }
+
+    window.addEventListener('copy', copy);
+    document.execCommand('copy');
+    window.removeEventListener('copy', copy);
 }

@@ -43,6 +43,24 @@ sirius.ready(function () {
             return false;
         });
     });
+
+    document.querySelectorAll('.copy-input-value-js').forEach(function (_node) {
+        _node.addEventListener('click', function () {
+            const fieldName = this.dataset.fieldName;
+            const _input = document.querySelector('input[name="' + fieldName + '"]');
+            if (_input == null || _input.tagName !== 'INPUT') {
+                return;
+            }
+            sirius.copyToClipboard(_input.value);
+
+            const originalTooltipTitle = this.dataset.originalTitle;
+            this.dataset.originalTitle = this.dataset.copiedTitle;
+            $(this).tooltip('show');
+            // Reset the tooltip, so it shows the initial title the next time the button is hovered
+            this.dataset.originalTitle = originalTooltipTitle;
+        });
+
+    });
 });
 
 /**@
