@@ -1,11 +1,3 @@
-/*
- * Made with all the love in the world
- * by scireum in Remshalden, Germany
- *
- * Copyright by scireum GmbH
- * http://www.scireum.de - info@scireum.de
- */
-
 /*!
  * Bootstrap Colorpicker - Bootstrap Colorpicker is a modular color picker plugin for Bootstrap 4.
  * @package bootstrap-colorpicker
