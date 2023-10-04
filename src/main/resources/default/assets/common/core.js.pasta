@@ -451,9 +451,9 @@ sirius.autoReloadImage = function (_image, imageSource, callback) {
     sirius.hide(_image);
 
     // spawn placeholder div
-    const _div = document.createElement("div");
-    _div.classList.add('sci-placeholder', 'sci-m-auto', 'sci-max-width-100');
-    _image.parentNode.insertBefore(_div, _image.nextSibling);
+    const _placeholder = document.createElement("div");
+    _placeholder.classList.add('sci-placeholder', 'sci-m-auto', 'sci-max-width-100');
+    _image.parentNode.insertBefore(_placeholder, _image.nextSibling);
 
     // error handler with retry logic
     _image.onerror = function () {
@@ -467,7 +467,7 @@ sirius.autoReloadImage = function (_image, imageSource, callback) {
 
     // load handler which removes the placeholder div
     _image.onload = function () {
-        _div.remove();
+        _placeholder.remove();
         // finally display our beautiful image
         sirius.show(_image);
 
