@@ -434,41 +434,41 @@ sirius.embedSvgImages = function (_container, selector) {
  *     <li>Shows a placeholder with a three-dotted-animation while waiting</li>
  * </ul>
  *
- * @param _img the DOM element of the image to reload
- * @param imgSrc the source of the image to load
+ * @param _image the DOM element of the image to reload
+ * @param imageSource the source of the image to load
  * @param callback an optional callback to execute once the image is loaded
  */
-sirius.autoReloadImage = function (_img, imgSrc, callback) {
+sirius.autoReloadImage = function (_image, imageSource, callback) {
     let maxRetryCount = 3;
     let retryCount = 1;
     let waitTime = 1000;
 
-    if (sirius.isEmpty(_img) || sirius.isEmpty(imgSrc)) {
+    if (sirius.isEmpty(_image) || sirius.isEmpty(imageSource)) {
         return;
     }
 
     // hide our beautiful img for now
-    _img.classList.add('sci-d-none');
+    _image.classList.add('sci-d-none');
 
     // spawn placeholder div
     const _div = document.createElement("div");
     _div.classList.add('sci-placeholder', 'sci-m-auto', 'sci-max-width-100');
-    _img.parentNode.insertBefore(_div, _img.nextSibling);
+    _image.parentNode.insertBefore(_div, _image.nextSibling);
 
     // error handler with retry logic
-    _img.onerror = function () {
+    _image.onerror = function () {
         if (retryCount <= maxRetryCount) {
             retryCount++;
             setTimeout(function () {
-                _img.src = imgSrc;
+                _image.src = imageSource;
             }, waitTime);
         }
     };
 
     // load handler which removes the placeholder div
-    _img.onload = function () {
+    _image.onload = function () {
         _div.remove();
-        _img.classList.remove('sci-d-none');
+        _image.classList.remove('sci-d-none');
 
         // execute the callback if available
         if (sirius.isFilled(callback)) {
@@ -477,7 +477,7 @@ sirius.autoReloadImage = function (_img, imgSrc, callback) {
     };
 
     // trigger the first try
-    _img.src = imgSrc;
+    _image.src = imageSource;
 }
 
 /**@
