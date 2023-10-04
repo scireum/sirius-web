@@ -427,6 +427,61 @@ sirius.embedSvgImages = function (_container, selector) {
 }
 
 /**@
+ * Handles the reload of an image. This could come in handy if the image source is not available immediately (since its processing takes some time).
+ * <ul>
+ *     <li>Tries to reload the image up to three times</li>
+ *     <li>There is a one-second delay between each try</li>
+ *     <li>Shows a placeholder with a three-dotted-animation while waiting</li>
+ * </ul>
+ *
+ * @param _image the DOM element of the image to reload
+ * @param imageSource the source of the image to load
+ * @param callback an optional callback to execute once the image is loaded
+ */
+sirius.autoReloadImage = function (_image, imageSource, callback) {
+    let maxRetryCount = 3;
+    let retryCount = 1;
+    let waitTime = 1000;
+
+    if (sirius.isEmpty(_image) || sirius.isEmpty(imageSource)) {
+        return;
+    }
+
+    // hide our img for now
+    sirius.hide(_image);
+
+    // spawn placeholder div
+    const _placeholder = document.createElement("div");
+    _placeholder.classList.add('sci-placeholder', 'sci-m-auto', 'sci-max-width-100');
+    _image.parentNode.insertBefore(_placeholder, _image.nextSibling);
+
+    // error handler with retry logic
+    _image.onerror = function () {
+        if (retryCount <= maxRetryCount) {
+            retryCount++;
+            setTimeout(function () {
+                _image.src = imageSource;
+            }, waitTime);
+        }
+    };
+
+    // load handler which removes the placeholder div
+    _image.onload = function () {
+        _placeholder.remove();
+        // finally display our beautiful image
+        sirius.show(_image);
+
+        // execute the callback if available
+        if (sirius.isFilled(callback)) {
+            callback();
+        }
+    };
+
+    // trigger the first try
+    _image.src = imageSource;
+}
+
+/**@
  * Actually makes the browser re-execute script nodes within a given DOM tree.
  *
  * This is mostly relevant, if a DOM subtree has been generated e.g. via Mustache. If script nodes are
