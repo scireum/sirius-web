@@ -447,8 +447,8 @@ sirius.autoReloadImage = function (_image, imageSource, callback) {
         return;
     }
 
-    // hide our beautiful img for now
-    _image.classList.add('sci-d-none');
+    // hide our img for now
+    sirius.hide(_image);
 
     // spawn placeholder div
     const _div = document.createElement("div");
@@ -468,7 +468,8 @@ sirius.autoReloadImage = function (_image, imageSource, callback) {
     // load handler which removes the placeholder div
     _image.onload = function () {
         _div.remove();
-        _image.classList.remove('sci-d-none');
+        // finally display our beautiful image
+        sirius.show(_image);
 
         // execute the callback if available
         if (sirius.isFilled(callback)) {
