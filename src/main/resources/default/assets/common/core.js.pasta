@@ -438,7 +438,7 @@ sirius.embedSvgImages = function (_container, selector) {
  * @param imgSrc the source of the image to load
  * @param callback an optional callback to execute once the image is loaded
  */
-sirius.handleImageReload = function (_img, imgSrc, callback) {
+sirius.autoReloadImage = function (_img, imgSrc, callback) {
     let maxRetryCount = 3;
     let retryCount = 1;
     let waitTime = 1000;
