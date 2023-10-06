@@ -37,6 +37,11 @@
     background-color: lighten($sirius-primary, 25%) !important;
     color: $sirius-white !important;
   }
+
+  &:disabled, &.sci-btn-disabled {
+    background-color: lighten($sirius-primary, 25%) !important;
+    cursor: default;
+  }
 }
 
 .sci-btn-secondary {
@@ -48,6 +53,11 @@
   &:hover {
     background-color: lighten($sirius-gray-dark, 25%) !important;
     color: $sirius-white !important;
+  }
+
+  &:disabled, &.sci-btn-disabled {
+    background-color: lighten($sirius-gray-dark, 25%) !important;
+    cursor: default;
   }
 }
 
@@ -74,6 +84,12 @@
     background-color: $sirius-primary !important;
     color: $sirius-white !important;
   }
+
+  &:disabled, &.sci-btn-disabled {
+    border-color: lighten($sirius-primary, 25%) !important;
+    color: lighten($sirius-primary, 25%) !important;
+    cursor: default;
+  }
 }
 
 .sci-btn-secondary-outline {
@@ -86,6 +102,12 @@
   &:hover {
     background-color: $sirius-gray-dark !important;
     color: $sirius-white !important;
+  }
+
+  &:disabled, &.sci-btn-disabled {
+    border-color: lighten($sirius-gray-dark, 25%) !important;
+    color: lighten($sirius-gray-dark, 25%) !important;
+    cursor: default;
   }
 }
 
