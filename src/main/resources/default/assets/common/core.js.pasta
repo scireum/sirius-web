@@ -227,13 +227,19 @@ sirius.postJsonAndFile = function (url, params, file) {
     formData.append('filename', file.name);
     formData.append('file', file, file.name);
 
+    // special blob handling is necessary for IE11
+    const blob = formData._blob ? formData._blob() : null;
+    const headers = {
+        'X-File-Name': encodeURIComponent(file.name),
+        'X-Mime-Type': file.type
+    };
+    if (blob) {
+        headers['Content-Type'] = blob.type;
+    }
     return fetch(url, {
         method: "post",
-        headers: {
-            'X-File-Name': encodeURIComponent(file.name),
-            'X-Mime-Type': file.type,
-        },
-        body: formData
+        headers: headers,
+        body: blob ? blob : formData
     }).then(function (response) {
         return response.json();
     });
