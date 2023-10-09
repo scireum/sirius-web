@@ -32,6 +32,10 @@ sirius.isEmptyNode = function (node) {
 
 /**@
  * Checks if the given value is empty or null.
+ * <p>
+ * Note: Regarding dom elements the method only checks if the given value is a dom element and therefore is defined.
+ * It does not specify if the provided dom element is empty in a literal sense (has no children) or not.
+ * Please use the method sirius.isEmptyNode for this purpose.
  *
  * @param value the value to check
  * @returns {boolean} true if the given value is null, undefined, an empty string or an empty array.
