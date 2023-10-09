@@ -20,6 +20,11 @@ sirius.isEmpty = function (value) {
     }
 
     if (sirius.isDefined(value) && typeof value === 'object') {
+        // Check if it's a DOM object (has a nodeType property)
+        if (value.nodeType !== undefined) {
+            return false;
+        }
+
         return isEmptyObject(value);
     }
 
