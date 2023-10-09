@@ -8,7 +8,7 @@ sirius.isDefined = function (value) {
     return typeof value !== 'undefined' && value !== null && value !== undefined;
 }
 
-/**
+/**@
  * Checks if a given DOM node is empty. An empty node has no child nodes
  * and its text content is empty or contains only whitespace characters.
  *
