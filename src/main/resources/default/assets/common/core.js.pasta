@@ -473,9 +473,10 @@ sirius.embedSvgImages = function (_container, selector) {
  *
  * @param _image the DOM element of the image to reload
  * @param imageSource the source of the image to load
+ * @param fallbackImageSource the fallback image source to use if the image cannot be loaded
  * @param callback an optional callback to execute once the image is loaded
  */
-sirius.autoReloadImage = function (_image, imageSource, callback) {
+sirius.autoReloadImage = function (_image, imageSource, fallbackImageSource, callback) {
     let maxRetryCount = 3;
     let retryCount = 1;
     let waitTime = 1000;
@@ -499,6 +500,8 @@ sirius.autoReloadImage = function (_image, imageSource, callback) {
             setTimeout(function () {
                 _image.src = imageSource;
             }, waitTime);
+        } else if (sirius.isFilled(fallbackImageSource) && retryCount === maxRetryCount + 1) {
+            _image.src = fallbackImageSource;
         }
     };
 
