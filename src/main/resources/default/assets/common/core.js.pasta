@@ -9,7 +9,33 @@ sirius.isDefined = function (value) {
 }
 
 /**@
+ * Checks if a given DOM node is empty. An empty node has no child nodes
+ * and its text content is empty or contains only whitespace characters.
+ *
+ * @param {Node} node the DOM node to check for emptiness
+ * @returns {boolean} true if the node is empty, false otherwise
+ */
+sirius.isEmptyNode = function (node) {
+    if (node.nodeType === Node.ELEMENT_NODE) {
+        // Check if the element has no child nodes
+        if (node.childNodes.length === 0) {
+            return true;
+        }
+
+        // Check if the element's text content is empty or only contains whitespace
+        const textContent = node.textContent.trim();
+        return textContent === '';
+    }
+
+    return false;
+}
+
+/**@
  * Checks if the given value is empty or null.
+ * <p>
+ * Note: Regarding DOM elements the method only checks if the given value is a DOM element and therefore is defined.
+ * It does not specify if the provided DOM element is empty in a literal sense (has no children) or not.
+ * Please use the method sirius.isEmptyNode for this purpose.
  *
  * @param value the value to check
  * @returns {boolean} true if the given value is null, undefined, an empty string or an empty array.
@@ -20,6 +46,11 @@ sirius.isEmpty = function (value) {
     }
 
     if (sirius.isDefined(value) && typeof value === 'object') {
+        // Check if it's a DOM object (has a nodeType property)
+        if (value.nodeType !== undefined) {
+            return false;
+        }
+
         return isEmptyObject(value);
     }
 
