@@ -30,7 +30,7 @@
 <script type="text/javascript">
     Dropzone.options[sirius.camelize('@id')] = {
         url: function (files) {
-            const uploadUrl = '@raw {@uploadUrl}';
+            const uploadUrl = '@raw {@escapeJS(uploadUrl)}';
             let parameterIndicator = '?';
             if (uploadUrl.indexOf('?') >= 0) {
                 parameterIndicator = '&';
