@@ -825,10 +825,10 @@ sirius.copyToClipboard = function (textToCopy, _element) {
     selection.addRange(range);
     _fakeElement.setSelectionRange(0, textToCopy.length);
 
-    if (document.execCommand('copy') && typeof _element !== 'undefined' && typeof _element.addClass === 'function') {
-        _element.addClass('sci-copied');
+    if (document.execCommand('copy') && sirius.isDefined(_element) && _element instanceof HTMLElement) {
+        _element.classList.add('sci-copied');
         setTimeout(function () {
-            _element.removeClass('sci-copied');
+            _element.classList.remove('sci-copied');
         }, 1000);
     }
     document.body.removeChild(_fakeElement);
