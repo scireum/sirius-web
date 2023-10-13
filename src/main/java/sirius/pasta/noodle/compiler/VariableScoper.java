@@ -20,7 +20,7 @@ import java.util.Set;
 /**
  * Responsible for keeping track which variables are currently visible.
  * <p>
- * This also assigns each variable an unique index as the interperter later on only stores them in a simple list.
+ * This also assigns each variable a unique index as the interpreter later on only stores them in a simple list.
  */
 public class VariableScoper {
 
@@ -128,7 +128,7 @@ public class VariableScoper {
     /**
      * Pushes a new scope on the stack.
      * <p>
-     * Use {@link Scope#pop()} to remove it once he scope / block is closed.
+     * Use {@link Scope#pop()} to remove it once the scope / block is closed.
      *
      * @return the newly created scope
      */
