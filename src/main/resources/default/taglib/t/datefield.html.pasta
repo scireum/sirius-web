@@ -10,7 +10,6 @@
 <i:arg name="help" type="String" default="@i18n(helpKey)"/>
 <i:arg name="addonText" type="String" default=""/>
 <i:arg name="readonly" type="boolean" default="false"/>
-<i:arg name="id" type="String" default=""/>
 <i:arg name="placeholder" type="String" default=""/>
 <i:arg name="tabIndex" type="String" default=""/>
 <i:arg name="noPastDates" type="boolean" default="false" />
