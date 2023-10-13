@@ -1,2 +1,3 @@
+<i:pragma name="unchecked" value="true" />
 <i:arg type="String" name="test"/>
 <i:arg type="String" name="test"/>
