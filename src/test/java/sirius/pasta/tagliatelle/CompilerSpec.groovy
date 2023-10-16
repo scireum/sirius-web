@@ -326,6 +326,16 @@ class CompilerSpec extends BaseSpecification {
         errors.get(0).getMessage().contains("The attribute 'deprecatedArg' is deprecated: Do not use")
     }
 
+    def "duplicate arguments are detected"() {
+        when:
+        TemplateCompilationContext compilationContext = compile("/templates/duplicateArgument.html.pasta")
+        List<ParseError> errors = compilationContext.getErrors()
+        then:
+        errors.size() == 1
+        errors.get(0).getSeverity() == ParseError.Severity.WARNING
+        errors.get(0).getMessage().contains("An argument with the name 'test' is already defined")
+    }
+
     def "deprecation is detected"() {
         when:
         TemplateCompilationContext compilationContext = compile("/templates/deprecatedCaller.html.pasta")

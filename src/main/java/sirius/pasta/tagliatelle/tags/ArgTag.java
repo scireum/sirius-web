@@ -99,6 +99,10 @@ public class ArgTag extends TagHandler {
                                           typeName);
         }
 
+        if (getCompilationContext().getVariableScoper().resolve(name).isPresent()) {
+            getCompilationContext().warning(getStartOfTag(), "An argument with the name '%s' is already defined.", name);
+        }
+
         getCompilationContext().getVariableScoper().defineVariable(getStartOfTag(), name, type);
         getCompilationContext().getTemplate()
                                .addArgument(new TemplateArgument(type,
