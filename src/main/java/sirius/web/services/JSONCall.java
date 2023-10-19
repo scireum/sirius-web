@@ -18,10 +18,12 @@ import sirius.kernel.nls.Formatter;
 import sirius.kernel.xml.Outcall;
 import sirius.web.http.MimeHelper;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.function.BooleanSupplier;
 
 /**
  * Simple call to send JSON to a server (URL) and receive JSON back.
@@ -30,6 +32,7 @@ public class JSONCall {
 
     private Outcall outcall;
     private Log debugLogger = Log.get("json");
+    private BooleanSupplier isDebugLogActive = () -> true;
 
     /*
      * Use .to(URL) to generate an instance.
@@ -77,6 +80,20 @@ public class JSONCall {
     }
 
     /**
+     * Logs the outcall to {@code logger}.
+     * <p>
+     * The outcall is only logged when the logger is set to FINE. The default logger is "json".
+     *
+     * @param logger the logger to log to
+     * @return returns the JSON call itself for fluent method calls
+     */
+    public JSONCall withFineLogger(Log logger, @Nonnull BooleanSupplier isDebugLogActive) {
+        this.debugLogger = logger;
+        this.isDebugLogActive = isDebugLogActive;
+        return this;
+    }
+
+    /**
      * Adds a custom header field to the call
      *
      * @param name  name of the field
@@ -101,7 +118,7 @@ public class JSONCall {
     }
 
     private void logRequest(String response) throws IOException {
-        if (debugLogger != null && debugLogger.isFINE()) {
+        if (debugLogger != null && debugLogger.isFINE() && isDebugLogActive.getAsBoolean()) {
             debugLogger.FINE(Formatter.create("""
                                                       ---------- call ----------
                                                       ${httpMethod} ${url} [
