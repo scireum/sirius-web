@@ -23,6 +23,7 @@ import sirius.web.http.InputStreamHandler;
 import sirius.web.http.Limited;
 import sirius.web.http.WebContext;
 import sirius.web.resources.Resources;
+import sirius.web.services.InternalService;
 import sirius.web.services.JSONStructuredOutput;
 
 import java.io.BufferedReader;
@@ -54,7 +55,8 @@ public class TestController extends BasicController {
            .direct(HttpResponseStatus.OK, ctx.get("value").asString());
     }
 
-    @Routed(value = "/test/json", jsonCall = true)
+    @InternalService
+    @Routed("/test/json")
     public void testJSON(WebContext ctx, JSONStructuredOutput out) {
         out.property("test", ctx.getParameter("test"));
     }
@@ -70,24 +72,28 @@ public class TestController extends BasicController {
         ctx.respondWith().cached().direct(HttpResponseStatus.OK, "OK");
     }
 
-    @Routed(value = "/test/json-param/:1", jsonCall = true)
+    @InternalService
+    @Routed("/test/json-param/:1")
     public void testJSONParam(WebContext ctx, JSONStructuredOutput out, String param) {
         out.property("test", param);
     }
 
-    @Routed(value = "/test/json-params/:1/:2", jsonCall = true)
+    @InternalService
+    @Routed("/test/json-params/:1/:2")
     public void testJSONParams(WebContext ctx, JSONStructuredOutput out, String param1, String param2) {
         out.property("param1", param1);
         out.property("param2", param2);
     }
 
-    @Routed(value = "/test/mixed-json-params/:2/:1", jsonCall = true)
+    @InternalService
+    @Routed("/test/mixed-json-params/:2/:1")
     public void testMixedJSONParams(WebContext ctx, JSONStructuredOutput out, String param1, String param2) {
         out.property("param1", param1);
         out.property("param2", param2);
     }
 
-    @Routed(value = "/test/json-params-varargs/:1/:2/**", jsonCall = true)
+    @InternalService
+    @Routed("/test/json-params-varargs/:1/:2/**")
     public void testJSONWithVarArgs(WebContext ctx,
                                     JSONStructuredOutput out,
                                     String param1,
@@ -100,9 +106,7 @@ public class TestController extends BasicController {
 
     @Routed("/tunnel/test")
     public void tunnelTest(WebContext ctx) {
-        ctx.respondWith()
-           .setHeader(HttpHeaderNames.CONTENT_TYPE, "text/test")
-           .tunnel("http://localhost:9999/api/test");
+        ctx.respondWith().setHeader(HttpHeaderNames.CONTENT_TYPE, "text/test").tunnel("http://localhost:9999/api/test");
     }
 
     @Routed("/tunnel/test/tune")
@@ -200,7 +204,8 @@ public class TestController extends BasicController {
            .resource(res.resolve("assets/test_large.css").get().getUrl().openConnection());
     }
 
-    @Routed(value = "/upload-test", preDispatchable = true, jsonCall = true)
+    @InternalService
+    @Routed(value = "/upload-test", preDispatchable = true)
     public void uploadTest(WebContext ctx, JSONStructuredOutput out, InputStreamHandler upload) throws IOException {
         try {
             long size = Streams.exhaust(upload);
@@ -210,7 +215,8 @@ public class TestController extends BasicController {
         }
     }
 
-    @Routed(value = "/upload-gzip", preDispatchable = true, jsonCall = true)
+    @InternalService
+    @Routed(value = "/upload-gzip", preDispatchable = true)
     public void uploadGzipTest(WebContext ctx, JSONStructuredOutput out, InputStreamHandler upload) throws IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(upload)))) {
             out.property("lines", reader.lines().count());
@@ -273,7 +279,8 @@ public class TestController extends BasicController {
         ctx.respondWith().direct(HttpResponseStatus.OK, "OK");
     }
 
-    @Routed(value = "/test/json/async", jsonCall = true)
+    @InternalService
+    @Routed("/test/json/async")
     public Future asyncJSONCall(WebContext ctx, JSONStructuredOutput out) {
         return tasks.defaultExecutor().start(() -> {
             Wait.seconds(1);

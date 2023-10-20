@@ -278,70 +278,6 @@ class WebServerSpec extends BaseSpecification {
     }
 
     /**
-     * Call a controller which uses JSON Calls
-     */
-    def "Invoke /test/json testing built in JSON handling"() {
-        given:
-        def uri = "/test/json?test=Hello_World"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        Json.parseObject(data).get("test").asText() == 'Hello_World'
-    }
-
-    def "Invoke /test/json-param testing built in JSON handling"() {
-        given:
-        def uri = "/test/json-param/Hello"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        Json.parseObject(data).get("test").asText() == 'Hello'
-    }
-
-    def "Invoke /test/json-params/1/2 testing multiple parameter"() {
-        given:
-        def uri = "/test/json-params/1/2"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        Json.parseObject(data).get("param1").asText() == '1'
-        and:
-        Json.parseObject(data).get("param2").asText() == '2'
-    }
-
-    def "Invoke /test/mixed-json-params/2/1 testing mixed parameter order"() {
-        given:
-        def uri = "/test/mixed-json-params/2/1"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        Json.parseObject(data).get("param1").asText() == '1'
-        and:
-        Json.parseObject(data).get("param2").asText() == '2'
-    }
-
-    def "Invoke /test/json-params-varargs/1/2/3/4/5/6/7/8/9 testing varargs"() {
-        given:
-        def uri = "/test/json-params-varargs/1/2/3/4/5/6/7/8/9"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        Json.parseObject(data).get("param1").asText() == '1'
-        and:
-        Json.parseObject(data).get("param2").asText() == '2'
-        and:
-        def varargs = Json.getArray(Json.parseObject(data), "params")
-        varargs.size() == 7
-        varargs.get(0).asText() == '3'
-        varargs.get(6).asText() == '9'
-    }
-
-    /**
      * Call a controller which uses predispatching
      * <p>
      * Also expects that the controller support keepalive after a successful request/response.
@@ -552,46 +488,6 @@ class WebServerSpec extends BaseSpecification {
         Json.parseObject(data).get("param1").asText() == 'one'
         and:
         Json.parseObject(data).get("param2").asText() == 't wo'
-    }
-
-    def "Invoke /test/json-params-varargs/1%2F/%2F2/one/t%2Fwo/t%2Fhree/%2Ffour/five%2F testing varargs decoding delimiter"() {
-        given:
-        def uri = "/test/json-params-varargs/1%2F/%2F2/one/t%2Fwo/t%2Fhree/%2Ffour/five%2F"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        Json.parseObject(data).get("param1").asText() == '1/'
-        and:
-        Json.parseObject(data).get("param2").asText() == '/2'
-        and:
-        def varargs = Json.getArray(Json.parseObject(data), "params")
-        varargs.size() == 5
-        varargs.get(0).asText() == 'one'
-        varargs.get(1).asText() == 't/wo'
-        varargs.get(2).asText() == 't/hree'
-        varargs.get(3).asText() == '/four'
-        varargs.get(4).asText() == 'five/'
-    }
-
-    def "Invoke /test/json-params-varargs/1%20/%202/one/t%20wo/t%20hree/%20four/five%20 testing varargs decoding space"() {
-        given:
-        def uri = "/test/json-params-varargs/1%20/%202/one/t%20wo/t%20hree/%20four/five%20"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        Json.parseObject(data).get("param1").asText() == '1 '
-        and:
-        Json.parseObject(data).get("param2").asText() == ' 2'
-        and:
-        def varargs = Json.getArray(Json.parseObject(data), "params")
-        varargs.size() == 5
-        varargs.get(0).asText() == 'one'
-        varargs.get(1).asText() == 't wo'
-        varargs.get(2).asText() == 't hree'
-        varargs.get(3).asText() == ' four'
-        varargs.get(4).asText() == 'five '
     }
 
     def "Invoke /test/json-param testing param with only delimiter"() {
