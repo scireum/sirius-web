@@ -70,7 +70,7 @@ public class HelpDispatcher implements WebDispatcher {
 
     @Override
     public DispatchDecision dispatch(WebContext ctx) throws Exception {
-        if (!(ctx.getRequestedURI().startsWith(HELP_PREFIX + "/") || ctx.getRequestedURI().endsWith(HELP_PREFIX))
+        if (!(ctx.getRequestedURI().startsWith(HELP_PREFIX + "/") || HELP_PREFIX.equals(ctx.getRequestedURI()))
             || !HttpMethod.GET.equals(ctx.getRequest().method())) {
             return DispatchDecision.CONTINUE;
         }
