@@ -1,4 +1,4 @@
-sirius.ready(function() {
+sirius.ready(function () {
 
     function focus(_field) {
         _field.focus();
@@ -23,10 +23,10 @@ sirius.ready(function() {
         }
     }
 
-    document.querySelectorAll('.submit-on-enter-js').forEach(function(_field) {
-       sirius.addEnterListener(_field, function() {
-           let _form = sirius.findParentOfType(_field,'FORM');
-           sirius.requestSubmitForm(_form);
-       });
+    document.querySelectorAll('.submit-on-enter-js').forEach(function (_field) {
+        sirius.addEnterListener(_field, function () {
+            let _form = sirius.findParentOfType(_field, 'FORM');
+            sirius.requestSubmitForm(_form);
+        });
     });
 });

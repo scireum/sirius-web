@@ -268,7 +268,7 @@ function _lineChart(selector, labels, datasets, stacked) {
                 min: 0,
                 stacked: stacked,
                 border: {
-                    dash: [5,5]
+                    dash: [5, 5]
                 }
             }
         };
@@ -367,7 +367,7 @@ function barChart(selector, labels, datasets) {
                 position: 'right',
                 min: 0,
                 border: {
-                    dash: [5,5]
+                    dash: [5, 5]
                 }
             }
         };
