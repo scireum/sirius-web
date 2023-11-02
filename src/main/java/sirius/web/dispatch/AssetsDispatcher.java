@@ -82,36 +82,38 @@ public class AssetsDispatcher implements WebDispatcher {
     }
 
     @Override
-    public DispatchDecision dispatch(WebContext ctx) throws Exception {
-        if (!ctx.getRequestedURI().startsWith("/assets") || !HttpMethod.GET.equals(ctx.getRequest().method())) {
+    public DispatchDecision dispatch(WebContext webContext) throws Exception {
+        if (!webContext.getRequestedURI().startsWith("/assets") || !HttpMethod.GET.equals(webContext.getRequest()
+                                                                                                    .method())) {
             return DispatchDecision.CONTINUE;
         }
 
-        Tuple<String, Integer> uriAndCacheFlag = getEffectiveURI(ctx);
+        Tuple<String, Integer> uriAndCacheFlag = getEffectiveURI(webContext);
 
-        Response response = ctx.respondWith().cachedForSeconds(uriAndCacheFlag.getSecond());
-        DispatchDecision staticResourceDecision = tryStaticResource(ctx, uriAndCacheFlag.getFirst(), response);
+        Response response = webContext.respondWith().cachedForSeconds(uriAndCacheFlag.getSecond());
+        DispatchDecision staticResourceDecision = tryStaticResource(webContext, uriAndCacheFlag.getFirst(), response);
         if (staticResourceDecision == DispatchDecision.DONE) {
             return DispatchDecision.DONE;
         }
 
-        DispatchDecision sassDecision = trySASS(ctx, uriAndCacheFlag.getFirst(), response);
+        DispatchDecision sassDecision = trySASS(webContext, uriAndCacheFlag.getFirst(), response);
         if (sassDecision == DispatchDecision.DONE) {
             return DispatchDecision.DONE;
         }
 
-        return tryTagliatelle(ctx, uriAndCacheFlag.getFirst(), response);
+        return tryTagliatelle(webContext, uriAndCacheFlag.getFirst(), response);
     }
 
-    private DispatchDecision tryStaticResource(WebContext ctx, String uri, Response response)
+    private DispatchDecision tryStaticResource(WebContext webContext, String uri, Response response)
             throws URISyntaxException, IOException {
-        Optional<Resource> res = resources.resolve(uri).filter(resource -> !resource.getPath().endsWith(PASTA_SUFFIX));
-        if (res.isEmpty()) {
+        Optional<Resource> optionalResource =
+                resources.resolve(uri).filter(resource -> !resource.getPath().endsWith(PASTA_SUFFIX));
+        if (optionalResource.isEmpty()) {
             return DispatchDecision.CONTINUE;
         }
 
-        ctx.enableTiming(ASSETS_PREFIX);
-        URL url = res.get().getUrl();
+        webContext.enableTiming(ASSETS_PREFIX);
+        URL url = optionalResource.get().getUrl();
         if ("file".equals(url.getProtocol())) {
             File file = new File(url.toURI());
             if (!handleUnmodified(file, response)) {
@@ -126,8 +128,8 @@ public class AssetsDispatcher implements WebDispatcher {
         return DispatchDecision.DONE;
     }
 
-    private Tuple<String, Integer> getEffectiveURI(WebContext ctx) {
-        String uri = ctx.getRequestedURI();
+    private Tuple<String, Integer> getEffectiveURI(WebContext webContext) {
+        String uri = webContext.getRequestedURI();
         if (uri.startsWith("/assets/dynamic/")) {
             uri = uri.substring(16);
             Tuple<String, String> pair = Strings.split(uri, "/");
@@ -141,7 +143,7 @@ public class AssetsDispatcher implements WebDispatcher {
         return Tuple.create(uri, Response.HTTP_CACHE);
     }
 
-    private DispatchDecision tryTagliatelle(WebContext ctx, String uri, Response response) {
+    private DispatchDecision tryTagliatelle(WebContext webContext, String uri, Response response) {
         try {
             Optional<Template> template = tagliatelle.resolve(uri + PASTA_SUFFIX);
             if (template.isPresent()) {
@@ -154,7 +156,8 @@ public class AssetsDispatcher implements WebDispatcher {
 
             return tryI18nTagliatelle(uri, response);
         } catch (CompileException e) {
-            ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(Templates.LOG, e));
+            webContext.respondWith()
+                      .error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(Templates.LOG, e));
             return DispatchDecision.DONE;
         }
     }
@@ -194,7 +197,7 @@ public class AssetsDispatcher implements WebDispatcher {
         return response.handleIfModifiedSince(file.lastModified());
     }
 
-    private DispatchDecision trySASS(WebContext ctx, String uri, Response response) {
+    private DispatchDecision trySASS(WebContext webContext, String uri, Response response) {
         if (!uri.endsWith(".css")) {
             return DispatchDecision.CONTINUE;
         }
@@ -207,7 +210,7 @@ public class AssetsDispatcher implements WebDispatcher {
             return DispatchDecision.CONTINUE;
         }
 
-        ctx.enableTiming("/assets/*.css");
+        webContext.enableTiming("/assets/*.css");
         String cacheKey = scopeId + "-" + Files.toSaneFileName(uri.substring(1)).orElse("");
         File file = new File(getCacheDirFile(), cacheKey);
 
@@ -217,7 +220,8 @@ public class AssetsDispatcher implements WebDispatcher {
                 compileSASS(scssUri, file);
             } catch (Exception t) {
                 Files.delete(file);
-                ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(Templates.LOG, t));
+                webContext.respondWith()
+                          .error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(Templates.LOG, t));
                 return DispatchDecision.DONE;
             }
         }
