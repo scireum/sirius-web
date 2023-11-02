@@ -138,13 +138,13 @@
             });
         };
 
-        let interrupted = false;
+        let interruptedDueToMouseInteraction = false;
         if (options.interrupt) {
             _wrapper.addEventListener('mouseenter', function (event) {
-                interrupted = true;
+                interruptedDueToMouseInteraction = true;
             });
             _wrapper.addEventListener('mouseleave', function (event) {
-                interrupted = false;
+                interruptedDueToMouseInteraction = false;
             });
         }
 
@@ -289,7 +289,7 @@
                     return;
                 }
                 fixView();
-                if (options.animation && !interrupted) {
+                if (options.animation && !interruptedDueToMouseInteraction) {
                     activateNextView();
                 }
             }, options.animation);
