@@ -32,6 +32,18 @@
         options.dots = !!options.dots;
         options.interrupt = !!options.interrupt;
 
+        if (options.columns <= 0) {
+            console.warn('Invalid number of columns, defaulting to 1.');
+            options.columns = 1;
+        }
+        if (options.columnsSm <= 0) {
+            console.warn('Invalid number of columns on small screens, defaulting to 1.');
+            options.columnsSm = 1;
+        }
+        if (options.columnsXs <= 0) {
+            console.warn('Invalid number of columns on tiny screens, defaulting to 1.');
+            options.columnsXs = 1;
+        }
         if (options.animation <= 0) {
             console.warn('Invalid animation timing, defaulting to ' + (DEFAULT_ANIMATION / 1000) + ' seconds.');
             options.animation = DEFAULT_ANIMATION;
@@ -39,6 +51,15 @@
         if (options.transition && options.transition !== TRANSITION_BLEND && options.transition !== TRANSITION_SLIDE) {
             console.warn('Invalid transition identifier, disabling transition.');
             options.transition = undefined;
+        }
+
+        if (options.columnsSm > options.columns) {
+            console.warn('Number of columns on small screen must not be larger than the number of columns on normal screens. Resetting to ' + options.columns + '.');
+            options.columnsSm = options.columns;
+        }
+        if (options.columnsXs > options.columnsSm) {
+            console.warn('Number of columns on tiny screen must not be larger than the number of columns on small screens. Resetting to ' + options.columnsSm + '.');
+            options.columnsXs = options.columnsSm;
         }
 
         // we remember the number of columns in a local variable, as the value may change according to the screen size,
