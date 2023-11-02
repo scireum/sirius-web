@@ -30,6 +30,10 @@
             console.warn('Invalid animation timing, defaulting to ' + (DEFAULT_ANIMATION / 1000) + ' seconds.');
             options.animation = DEFAULT_ANIMATION;
         }
+        if (options.transition && options.transition !== TRANSITION_BLEND && options.transition !== TRANSITION_SLIDE) {
+            console.warn('Invalid transition identifier, disabling transition.');
+            options.transition = undefined;
+        }
 
         const _slider = document.querySelector(target);
 
