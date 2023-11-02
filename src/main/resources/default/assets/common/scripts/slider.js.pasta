@@ -253,12 +253,17 @@
         };
 
         // upon resize, trigger a debounced graphics refresh
+        let interruptedWhileChangingSize = false;
         let fixViewTimeout = null;
         window.addEventListener('resize', function (event) {
+            interruptedWhileChangingSize = true;
             if (fixViewTimeout) {
                 clearTimeout(fixViewTimeout);
             }
-            fixViewTimeout = setTimeout(fixView, 500);
+            fixViewTimeout = setTimeout(function () {
+                fixView();
+                interruptedWhileChangingSize = false;
+            }, 100);
         });
 
         const initAnimation = function () {
@@ -289,7 +294,7 @@
                     return;
                 }
                 fixView();
-                if (options.animation && !interruptedDueToMouseInteraction) {
+                if (options.animation && !interruptedDueToMouseInteraction && !interruptedWhileChangingSize) {
                     activateNextView();
                 }
             }, options.animation);
