@@ -249,8 +249,17 @@
             _slides[currentIndex].classList.add("sci-slider-view-active");
 
             if (_dots) {
-                _dots.childNodes.item(previousIndex).classList.remove("sci-slider-dot-active");
-                _dots.childNodes.item(currentIndex).classList.add("sci-slider-dot-active");
+                const _dotList = _dots.childNodes;
+
+                // deactivate all dots
+                for (let i = 0; i < _dotList.length; i++) {
+                    _dotList.item(i).classList.remove("sci-slider-dot-active");
+                }
+
+                // activate the dots for the current view and the next `columns` views
+                for (let i = 0; i < columns; i++) {
+                    _dotList.item((currentIndex + i) % _slides.length).classList.add("sci-slider-dot-active");
+                }
             }
 
             if (!statically && options.transition === TRANSITION_BLEND) {
