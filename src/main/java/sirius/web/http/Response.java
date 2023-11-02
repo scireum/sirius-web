@@ -568,11 +568,10 @@ public class Response {
      * @return <tt>true</tt> if the request was answered via a 304, <tt>false</tt> otherwise
      */
     public boolean handleIfModifiedSince(long lastModifiedInMillis) {
-        long ifModifiedSinceDateSeconds = WebServer.parseDateHeader(getHeader(HttpHeaderNames.IF_MODIFIED_SINCE))
-                                                   .map(date -> date.atZone(ZoneId.systemDefault())
-                                                                    .toInstant()
-                                                                    .getEpochSecond())
-                                                   .orElse(0L);
+        long ifModifiedSinceDateSeconds =
+                WebServer.parseDateHeader(webContext.getHeader(HttpHeaderNames.IF_MODIFIED_SINCE))
+                         .map(date -> date.atZone(ZoneId.systemDefault()).toInstant().getEpochSecond())
+                         .orElse(0L);
         if (ifModifiedSinceDateSeconds > 0
             && lastModifiedInMillis > 0
             && ifModifiedSinceDateSeconds >= lastModifiedInMillis / 1000) {
