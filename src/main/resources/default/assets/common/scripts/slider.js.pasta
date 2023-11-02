@@ -181,6 +181,22 @@
 
         let previousIndex = 0;
         let currentIndex = 0;
+
+        const activateAllSlides = function () {
+            resetAllSlides(function (style) {
+                style.transition = '';
+            });
+
+            const widthPerSlide = _slider.offsetWidth / columns;
+            const totalWidth = _slides.length * widthPerSlide;
+            const offset = 0.5 * (_slider.offsetWidth - totalWidth);
+
+            for (let i = 0; i < _slides.length; i++) {
+                _slides[i].style.left = (offset + i * widthPerSlide) + 'px';
+                _slides[i].style.visibility = 'visible';
+            }
+        };
+
         const activateViewWithoutAnimation = function () {
             // set all but the currently active view hidden
             resetAllSlides();
@@ -262,7 +278,9 @@
                 }
             }
 
-            if (!statically && options.transition === TRANSITION_BLEND) {
+            if (_slides.length <= columns) {
+                activateAllSlides();
+            } else if (!statically && options.transition === TRANSITION_BLEND) {
                 activateViewByBlending();
             } else if (!statically && options.transition === TRANSITION_SLIDE) {
                 activateViewBySliding(direction);
