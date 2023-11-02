@@ -14,9 +14,14 @@ sirius.ready(function () {
     });
 
     document.querySelectorAll('.submit-link-js').forEach(function (_node) {
+        let _form = sirius.findParentOfType(_node, 'FORM');
         _node.addEventListener('click', function () {
-            let _form = sirius.findParentOfType(_node, 'FORM');
             sirius.requestSubmitForm(_form);
+        });
+        _node.addEventListener('keydown', function (event) {
+            if (event.keyCode === 13) {
+                sirius.requestSubmitForm(_form);
+            }
         });
     });
 
