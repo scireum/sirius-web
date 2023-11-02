@@ -153,13 +153,13 @@
                 // set up the slide to fill the entire view within the slider, and not more
                 _slide.style.position = 'absolute';
                 _slide.style.left = '0';
-                _slide.style.width = _slider.offsetWidth + 'px';
-                _slide.style.maxWidth = _slider.offsetWidth + 'px';
+                _slide.style.width = (_slider.offsetWidth / columns) + 'px';
+                _slide.style.maxWidth = (_slider.offsetWidth / columns) + 'px';
                 _slide.style.overflow = 'hidden';
 
                 // the slide is limited to the width provided by the slider, but we want to center the content; we do
                 // this by virtually scrolling the over-sized content such that it is centered
-                _slide.scrollLeft = 0.5 * (_slide.scrollWidth - _slider.offsetWidth);
+                _slide.scrollLeft = 0.5 * (_slide.scrollWidth - _slider.offsetWidth / columns);
 
                 _slide.style.visibility = 'hidden';
 
