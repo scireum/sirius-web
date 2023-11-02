@@ -116,12 +116,12 @@ public class AssetsDispatcher implements WebDispatcher {
         URL url = optionalResource.get().getUrl();
         if ("file".equals(url.getProtocol())) {
             File file = new File(url.toURI());
-            if (!handleUnmodified(file, response)) {
+            if (!response.handleIfModifiedSince(file.lastModified())) {
                 response.file(file);
             }
         } else {
             URLConnection urlConnection = url.openConnection();
-            if (!handleUnmodified(urlConnection, response)) {
+            if (!response.handleIfModifiedSince(urlConnection.getLastModified())) {
                 response.resource(urlConnection);
             }
         }
@@ -189,14 +189,6 @@ public class AssetsDispatcher implements WebDispatcher {
         return response.handleIfModifiedSince(template.getCompilationTimestamp());
     }
 
-    private boolean handleUnmodified(URLConnection urlConnection, Response response) {
-        return response.handleIfModifiedSince(urlConnection.getLastModified());
-    }
-
-    private boolean handleUnmodified(File file, Response response) {
-        return response.handleIfModifiedSince(file.lastModified());
-    }
-
     private DispatchDecision trySASS(WebContext webContext, String uri, Response response) {
         if (!uri.endsWith(".css")) {
             return DispatchDecision.CONTINUE;
@@ -226,7 +218,7 @@ public class AssetsDispatcher implements WebDispatcher {
             }
         }
 
-        if (!handleUnmodified(file, response)) {
+        if (!response.handleIfModifiedSince(file.lastModified())) {
             response.named(uri.substring(uri.lastIndexOf('/') + 1)).file(file);
         }
         return DispatchDecision.DONE;
