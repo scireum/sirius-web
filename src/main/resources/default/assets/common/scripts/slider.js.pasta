@@ -200,8 +200,16 @@
         const activateViewWithoutAnimation = function () {
             // set all but the currently active view hidden
             resetAllSlides();
-            _slides[currentIndex].style.visibility = 'visible';
+
+            // activate the next `columns` views following and including the current index
+            const widthPerSlide = _slider.offsetWidth / columns;
+            for (let i = 0; i < columns; i++) {
+                const index = (currentIndex + i) % _slides.length;
+                _slides[index].style.visibility = 'visible';
+                _slides[index].style.left = (i * widthPerSlide) + 'px';
+            }
         };
+
         const activateViewByBlending = function () {
             // set all but the previously and currently active view hidden
             resetAllSlides();
