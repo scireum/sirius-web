@@ -105,18 +105,18 @@ public class AssetsDispatcher implements WebDispatcher {
     private DispatchDecision tryStaticResource(WebContext ctx, String uri, Response response)
             throws URISyntaxException, IOException {
         Optional<Resource> res = resources.resolve(uri).filter(resource -> !resource.getPath().endsWith(PASTA_SUFFIX));
-        if (res.isPresent()) {
-            ctx.enableTiming(ASSETS_PREFIX);
-            URL url = res.get().getUrl();
-            if ("file".equals(url.getProtocol())) {
-                response.file(new File(url.toURI()));
-            } else {
-                response.resource(url.openConnection());
-            }
-            return DispatchDecision.DONE;
+        if (res.isEmpty()) {
+            return DispatchDecision.CONTINUE;
         }
 
-        return DispatchDecision.CONTINUE;
+        ctx.enableTiming(ASSETS_PREFIX);
+        URL url = res.get().getUrl();
+        if ("file".equals(url.getProtocol())) {
+            response.file(new File(url.toURI()));
+        } else {
+            response.resource(url.openConnection());
+        }
+        return DispatchDecision.DONE;
     }
 
     private Tuple<String, Integer> getEffectiveURI(WebContext ctx) {
