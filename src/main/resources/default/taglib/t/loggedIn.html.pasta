@@ -3,5 +3,5 @@
 </i:pragma>
 
 <i:if test="user().isLoggedIn()">
-    <i:render name="body" />
+    <i:render name="body"/>
 </i:if>

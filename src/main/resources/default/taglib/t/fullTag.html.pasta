@@ -1,4 +1,4 @@
-<i:arg type="String" name="color" default="gray" description="Specifies the color to use." />
+<i:arg type="String" name="color" default="gray" description="Specifies the color to use."/>
 <i:arg type="String" name="class" default="" description="Defines addition classes to add."/>
 
 <i:pragma name="description">
@@ -6,5 +6,5 @@
 </i:pragma>
 
 <span class="badge badge-primary bg-sirius-@color @class">
-    <i:render name="body" />
+    <i:render name="body"/>
 </span>
