@@ -222,7 +222,9 @@ public class AssetsDispatcher implements WebDispatcher {
             }
         }
 
-        response.named(uri.substring(uri.lastIndexOf('/') + 1)).file(file);
+        if (!handleUnmodified(file, response)) {
+            response.named(uri.substring(uri.lastIndexOf('/') + 1)).file(file);
+        }
         return DispatchDecision.DONE;
     }
 
