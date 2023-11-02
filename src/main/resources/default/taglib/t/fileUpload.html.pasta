@@ -14,12 +14,12 @@
 <i:pragma name="description" value="Renders a file upload within a Tycho template"/>
 
 <div class="dropzone sirius-fileupload @class" id="@id">
-    <a class="dropzone-select btn @btnClass">
+    <button class="dropzone-select btn @btnClass">
         <i class="fas fa-cloud-upload-alt"></i>
         <span class="pl-2 d-none d-xl-inline">
             @label
         </span>
-    </a>
+    </button>
 
     <i:if test="!isFilled(previewsContainer)">
         <div class="dropzone-items mt-2">

@@ -14,16 +14,16 @@
 <i:local name="actions" value="@renderToString('body')"/>
 <i:if test="isFilled(actions)">
     <div class="dropdown @class">
-        <a class="h-100 btn btn-link text-nowrap"
-           style="z-index: 3; position: relative"
-           data-toggle="dropdown"
-           aria-haspopup="true"
-           aria-expanded="false">
+        <button class="h-100 btn btn-link text-nowrap"
+                style="z-index: 3; position: relative"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false">
             <i:if test="isFilled(label)">
                 <span class="@labelClass pr-2">@label</span>
             </i:if>
             <i class="fa-solid fa-ellipsis-vertical"></i>
-        </a>
+        </button>
         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
             <i:raw>@actions</i:raw>
         </div>
