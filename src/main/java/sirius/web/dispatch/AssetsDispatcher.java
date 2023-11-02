@@ -147,7 +147,7 @@ public class AssetsDispatcher implements WebDispatcher {
         try {
             Optional<Template> template = tagliatelle.resolve(uri + PASTA_SUFFIX);
             if (template.isPresent()) {
-                if (!handleUnmodified(template.get(), response)) {
+                if (!handleUnmodifiedTemplate(template.get(), response)) {
                     response.template(HttpResponseStatus.OK, template.get());
                 }
 
@@ -170,7 +170,7 @@ public class AssetsDispatcher implements WebDispatcher {
                                                               + i18nMatcher.group("extension")
                                                               + PASTA_SUFFIX);
             if (template.isPresent()) {
-                if (!handleUnmodified(template.get(), response)) {
+                if (!handleUnmodifiedTemplate(template.get(), response)) {
                     response.template(HttpResponseStatus.OK, template.get());
                 }
 
@@ -181,7 +181,7 @@ public class AssetsDispatcher implements WebDispatcher {
         return DispatchDecision.CONTINUE;
     }
 
-    private boolean handleUnmodified(Template template, Response response) {
+    private boolean handleUnmodifiedTemplate(Template template, Response response) {
         if (!template.isConstant()) {
             return false;
         }
