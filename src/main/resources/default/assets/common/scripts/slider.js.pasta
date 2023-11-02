@@ -18,8 +18,15 @@
         const TRANSITION_BLEND = 'blend';
         const TRANSITION_SLIDE = 'slide';
 
+        const DEFAULT_ANIMATION = 5000;
+
         options = options || {};
-        options.animation = options.animation || 0;
+        options.animation = options.animation || DEFAULT_ANIMATION;
+
+        if (options.animation <= 0) {
+            console.warn('Invalid animation timing, defaulting to ' + (DEFAULT_ANIMATION / 1000) + ' seconds.');
+            options.animation = DEFAULT_ANIMATION;
+        }
 
         const _slider = document.querySelector(target);
 
@@ -278,7 +285,7 @@
                 if (options.animation && !interrupted) {
                     activateNextView();
                 }
-            }, options.animation || 5000);
+            }, options.animation);
         };
         const stopAnimationThread = function () {
             if (animationTimer) {
