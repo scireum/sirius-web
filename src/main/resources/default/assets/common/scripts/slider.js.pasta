@@ -9,6 +9,9 @@
      * @param target  css selector selecting the outer html node containing all slides as child nodes
      * @param options optional object specifying the behaviour of the slider (see constants for possible values):
      *                 - animation:  Time in ms between sliding (can be undefined for no animation)
+     *                 - columns:    Number of columns to show/slide (defaults to 1, blending only works for one column)
+     *                 - columnsSm:  Number of columns to show/slide on small screens
+     *                 - columnsXs:  Number of columns to show/slide on tiny screens
      *                 - interrupt:  What actions interrupt the animation
      *                 - transition: Behaviour of the animation
      *                 - arrows:     Whether previous and next arrows should be shown and the location of them
@@ -21,6 +24,9 @@
         const DEFAULT_ANIMATION = 5000;
 
         options = options || {};
+        options.columns = options.columns || 1;
+        options.columnsSm = options.columnsSm || options.columns;
+        options.columnsXs = options.columnsXs || options.columnsSm;
         options.animation = options.animation || DEFAULT_ANIMATION;
         options.arrows = !!options.arrows;
         options.dots = !!options.dots;
@@ -34,6 +40,10 @@
             console.warn('Invalid transition identifier, disabling transition.');
             options.transition = undefined;
         }
+
+        // we remember the number of columns in a local variable, as the value may change according to the screen size,
+        // assuming any of the values `options.columns`, `options.columnsSm`, or `options.columnsXs`
+        let columns = options.columns;
 
         const _slider = document.querySelector(target);
 
@@ -248,6 +258,16 @@
         };
 
         const fixView = function () {
+            if (window.innerWidth) {
+                if (window.innerWidth < 992) {
+                    columns = options.columnsXs;
+                } else if (window.innerWidth < 1200) {
+                    columns = options.columnsSm;
+                } else {
+                    columns = options.columns;
+                }
+            }
+
             fixSliderHeight();
             activateView(currentIndex, 1, true);
         };
