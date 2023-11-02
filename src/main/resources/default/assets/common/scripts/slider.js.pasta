@@ -61,6 +61,10 @@
             console.warn('Number of columns on tiny screen must not be larger than the number of columns on small screens. Resetting to ' + options.columnsSm + '.');
             options.columnsXs = options.columnsSm;
         }
+        if (options.columns > 1 && options.transition === TRANSITION_BLEND) {
+            console.warn('Blending only works for one column, disabling transition.');
+            options.transition = undefined;
+        }
 
         // we remember the number of columns in a local variable, as the value may change according to the screen size,
         // assuming any of the values `options.columns`, `options.columnsSm`, or `options.columnsXs`
