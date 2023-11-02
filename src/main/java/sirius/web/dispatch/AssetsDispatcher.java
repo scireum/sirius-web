@@ -39,6 +39,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -112,9 +113,15 @@ public class AssetsDispatcher implements WebDispatcher {
         ctx.enableTiming(ASSETS_PREFIX);
         URL url = res.get().getUrl();
         if ("file".equals(url.getProtocol())) {
-            response.file(new File(url.toURI()));
+            File file = new File(url.toURI());
+            if (!handleUnmodified(file, response)) {
+                response.file(file);
+            }
         } else {
-            response.resource(url.openConnection());
+            URLConnection urlConnection = url.openConnection();
+            if (!handleUnmodified(urlConnection, response)) {
+                response.resource(urlConnection);
+            }
         }
         return DispatchDecision.DONE;
     }
@@ -177,6 +184,14 @@ public class AssetsDispatcher implements WebDispatcher {
         }
 
         return response.handleIfModifiedSince(template.getCompilationTimestamp());
+    }
+
+    private boolean handleUnmodified(URLConnection urlConnection, Response response) {
+        return response.handleIfModifiedSince(urlConnection.getLastModified());
+    }
+
+    private boolean handleUnmodified(File file, Response response) {
+        return response.handleIfModifiedSince(file.lastModified());
     }
 
     private DispatchDecision trySASS(WebContext ctx, String uri, Response response) {
