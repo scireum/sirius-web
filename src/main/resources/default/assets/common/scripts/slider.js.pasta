@@ -255,15 +255,23 @@
         // upon resize, trigger a debounced graphics refresh
         let interruptedWhileChangingSize = false;
         let fixViewTimeout = null;
+        let restartAnimationTimeout = null;
         window.addEventListener('resize', function (event) {
+            // interrupt animation for at least a second, not to have it interfere with the resize
             interruptedWhileChangingSize = true;
+            if (restartAnimationTimeout) {
+                clearTimeout(restartAnimationTimeout);
+            }
+            restartAnimationTimeout = setTimeout(function () {
+                interruptedWhileChangingSize = false;
+            }, 1000);
+
             if (fixViewTimeout) {
                 clearTimeout(fixViewTimeout);
             }
             fixViewTimeout = setTimeout(function () {
                 fixView();
-                interruptedWhileChangingSize = false;
-            }, 100);
+            }, 10);
         });
 
         const initAnimation = function () {
