@@ -226,16 +226,19 @@
             _slides[currentIndex].style.zIndex = '1';
             _slides[currentIndex].style.opacity = '1';
         };
+
         const activateViewBySliding = function (direction) {
+            const widthPerSlide = _slider.offsetWidth / columns;
+
             // compute the initial and final positions of the current and previous slides
             const previousFrom = 0, currentTo = 0;
             let previousTo = 0, currentFrom = 0;
             if (direction > 0) {
-                currentFrom = _slider.offsetWidth;
-                previousTo = -_slides[previousIndex].offsetWidth;
+                currentFrom = widthPerSlide;
+                previousTo = -widthPerSlide;
             } else {
-                currentFrom = -_slides[currentIndex].offsetWidth;
-                previousTo = _slider.offsetWidth;
+                currentFrom = -widthPerSlide;
+                previousTo = widthPerSlide;
             }
 
             // without any animation, set the initial state
@@ -247,17 +250,26 @@
             _slides[previousIndex].style.left = previousFrom + 'px';
             _slides[previousIndex].style.zIndex = '0';
 
-            _slides[currentIndex].style.visibility = 'visible';
-            _slides[currentIndex].style.left = currentFrom + 'px';
-            _slides[currentIndex].style.zIndex = '1';
+            const limit = (direction > 0) ? columns : (columns + 1);
+
+            // activate the next `columns` views following and including the current index
+            for (let i = 0; i < limit; i++) {
+                const index = (currentIndex + i) % _slides.length;
+                _slides[index].style.visibility = 'visible';
+                _slides[index].style.left = (currentFrom + i * widthPerSlide) + 'px';
+                _slides[index].style.zIndex = '1';
+            }
 
             // after some time, to allow layouting to settle, trigger the actual animation
             setTimeout(function () {
                 _slides[previousIndex].style.transition = 'left 1s ease';
                 _slides[previousIndex].style.left = previousTo + 'px';
 
-                _slides[currentIndex].style.transition = 'left 1s ease';
-                _slides[currentIndex].style.left = currentTo + 'px';
+                for (let i = 0; i < limit; i++) {
+                    const index = (currentIndex + i) % _slides.length;
+                    _slides[index].style.transition = 'left 1s ease';
+                    _slides[index].style.left = (currentTo + i * widthPerSlide) + 'px';
+                }
             }, 50);
         };
 
