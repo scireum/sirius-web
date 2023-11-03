@@ -39,6 +39,7 @@
         const DEFAULT_ANIMATION = 5000;
 
         options = options || {};
+        options.animation = options.animation || 0;
         options.columns = options.columns || 1;
         options.columnsMd = options.columnsMd || options.columns;
         options.columnsSm = options.columnsSm || options.columnsMd;
