@@ -1,4 +1,16 @@
 /**@
+ * Defines some keys for easier usage.
+ */
+sirius.key = {
+    ENTER: "Enter",
+    ESCAPE: "Escape",
+    LEFT: "ArrowLeft",
+    RIGHT: "ArrowRight",
+    UP: "ArrowUp",
+    DOWN: "ArrowDown"
+}
+
+/**@
  * Checks if the given value is defined and has a value other than null.
  *
  * @param value the value to check
