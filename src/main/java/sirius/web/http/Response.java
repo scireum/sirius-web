@@ -635,6 +635,15 @@ public class Response {
     }
 
     /**
+     * Returns the default custom proxy cache duration for responses which can be cached.
+     *
+     * @return the default custom proxy cache duration in seconds
+     */
+    public static String fetchDefaultCustomProxyTTL() {
+        return Sirius.getSettings().getString("http.response.defaultCustomProxyTTL");
+    }
+
+    /**
      * Marks this response as not-cacheable.
      *
      * @return <tt>this</tt> to fluently create the response
