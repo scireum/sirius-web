@@ -88,20 +88,20 @@ public class AssetsDispatcher implements WebDispatcher {
             return DispatchDecision.CONTINUE;
         }
 
-        Tuple<String, Integer> uriAndCacheFlag = getEffectiveURI(webContext);
+        String effectiveUrl = computeEffectiveURI(webContext);
 
-        Response response = webContext.respondWith().cachedForSeconds(uriAndCacheFlag.getSecond());
-        DispatchDecision staticResourceDecision = tryStaticResource(webContext, uriAndCacheFlag.getFirst(), response);
+        Response response = webContext.respondWith();
+        DispatchDecision staticResourceDecision = tryStaticResource(webContext, effectiveUrl, response);
         if (staticResourceDecision == DispatchDecision.DONE) {
             return DispatchDecision.DONE;
         }
 
-        DispatchDecision sassDecision = trySASS(webContext, uriAndCacheFlag.getFirst(), response);
+        DispatchDecision sassDecision = trySASS(webContext, effectiveUrl, response);
         if (sassDecision == DispatchDecision.DONE) {
             return DispatchDecision.DONE;
         }
 
-        return tryTagliatelle(webContext, uriAndCacheFlag.getFirst(), response);
+        return tryTagliatelle(webContext, effectiveUrl, response);
     }
 
     private DispatchDecision tryStaticResource(WebContext webContext, String uri, Response response)
@@ -128,19 +128,19 @@ public class AssetsDispatcher implements WebDispatcher {
         return DispatchDecision.DONE;
     }
 
-    private Tuple<String, Integer> getEffectiveURI(WebContext webContext) {
+    private String computeEffectiveURI(WebContext webContext) {
         String uri = webContext.getRequestedURI();
         if (uri.startsWith("/assets/dynamic/")) {
             uri = uri.substring(16);
             Tuple<String, String> pair = Strings.split(uri, "/");
-            return Tuple.create(ASSETS_PREFIX + pair.getSecond(), Response.HTTP_CACHE_INFINITE);
+            return ASSETS_PREFIX + pair.getSecond();
         }
 
         if (uri.startsWith("/assets/no-cache/")) {
-            return Tuple.create(ASSETS_PREFIX + uri.substring(17), 0);
+            return ASSETS_PREFIX + uri.substring(17);
         }
 
-        return Tuple.create(uri, Response.fetchDefaultClientTTL());
+        return uri;
     }
 
     private DispatchDecision tryTagliatelle(WebContext webContext, String uri, Response response) {
