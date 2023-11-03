@@ -30,10 +30,10 @@
                             <input type="text" name="query" class="form-control primary-autofocus-js submit-on-enter-js"
                                    value="@page.getQuery()" placeholder="@i18n('NLS.searchkey')"/>
                             <div class="input-group-append">
-                                <a class="btn btn-outline-secondary"
-                                   onclick="sirius.requestSubmitForm(document.getElementById('search'))">
+                                <button class="btn btn-outline-secondary"
+                                        onclick="sirius.requestSubmitForm(document.getElementById('search'))">
                                     <i class="fa-solid fa-magnifying-glass"></i>
-                                </a>
+                                </button>
                             </div>
                         </div>
                     </form>

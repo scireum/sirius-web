@@ -1,4 +1,4 @@
-<i:arg type="String" name="icon" />
+<i:arg type="String" name="icon"/>
 <i:arg type="String" name="value" default=""/>
 <i:arg type="Object" name="effectiveValue" default="isFilled(value) ? value : renderToString('body')"/>
 <i:arg type="String" name="class" default=""/>
