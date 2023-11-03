@@ -117,6 +117,11 @@ public class Response {
     private static final String NO_CACHE = HttpHeaderValues.NO_CACHE + ", max-age=0";
 
     /**
+     * Represents the key used to define the custom reverse proxy cache TTL.
+     */
+    private static final String CUSTOM_PROXY_CACHE_TTL_HEADER = "X-Custom-TTL";
+
+    /**
      * Stores the associated request.
      */
     protected WebContext webContext;
@@ -141,6 +146,11 @@ public class Response {
      * by the content creator.
      */
     protected Integer cacheSeconds = null;
+
+    /**
+     * Stores the custom value for the {@link #CUSTOM_PROXY_CACHE_TTL_HEADER} header.
+     */
+    protected String cacheCustomProxy;
 
     /**
      * Stores if this response should be considered "private" by intermediate caches and proxies.
@@ -701,6 +711,17 @@ public class Response {
     }
 
     /**
+     * Sets the value for the {@link #CUSTOM_PROXY_CACHE_TTL_HEADER} header.
+     *
+     * @param ttl the value to set
+     * @return <tt>this</tt> to fluently create the response
+     */
+    public Response customProxyCached(String ttl) {
+        this.cacheCustomProxy = ttl;
+        return this;
+    }
+
+    /**
      * Returns the value of a header with the specified name. If there are
      * more than one values for the specified name, the first value is returned.
      *
@@ -941,6 +962,9 @@ public class Response {
             addHeaderIfNotExists(HttpHeaderNames.LAST_MODIFIED,
                                  Outcall.RFC2616_INSTANT.format(Instant.ofEpochMilli(lastModifiedMillis)
                                                                        .atZone(ZoneId.systemDefault())));
+        }
+        if (Strings.isFilled(cacheCustomProxy)) {
+            addHeaderIfNotExists(CUSTOM_PROXY_CACHE_TTL_HEADER, cacheCustomProxy);
         }
     }
 
