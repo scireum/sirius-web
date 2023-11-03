@@ -31,6 +31,22 @@ sirius.isEmptyNode = function (node) {
 }
 
 /**@
+ * Checks if a given DOM node is visible.
+ * <p>
+ * Note: This is not a perfect way to check for visibility, but it's a good approximation in controlled circumstances.
+ *
+ * @param {Node} node the DOM node to check for visibility
+ * @returns {boolean} true if the node is most probably visible
+ */
+sirius.isVisibleNode = function (_node) {
+    if (!sirius.isDefined(_node) || !sirius.isElement(_node)) {
+        return false;
+    }
+    const style = window.getComputedStyle(_node);
+    return style && style.display !== 'none' && style.visibility !== 'hidden' && style.visibility !== 'collapse';
+}
+
+/**@
  * Checks if the given value is empty or null.
  * <p>
  * Note: Regarding DOM elements the method only checks if the given value is a DOM element and therefore is defined.
