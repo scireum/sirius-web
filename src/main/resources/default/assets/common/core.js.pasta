@@ -31,9 +31,10 @@ sirius.isEmptyNode = function (node) {
 }
 
 /**@
- * Checks if a given DOM node is visible.
+ * Checks if a given DOM node could be visible to the user (as in it is not actively hidden).
  * <p>
  * Note: This is not a perfect way to check for visibility, but it's a good approximation in controlled circumstances.
+ * Also, it does not check if the node is actually currently in the viewport.
  *
  * @param {Node} node the DOM node to check for visibility
  * @returns {boolean} true if the node is most probably visible
