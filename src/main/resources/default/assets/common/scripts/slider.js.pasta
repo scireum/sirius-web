@@ -10,8 +10,8 @@
      * @param options optional object specifying the behaviour of the slider (see constants for possible values):
      *                 - animation:  Time in ms between sliding (can be undefined for no animation)
      *                 - columns:    Number of columns to show/slide (defaults to 1, blending only works for one column)
+     *                 - columnsMd:  Number of columns to show/slide on medium screens
      *                 - columnsSm:  Number of columns to show/slide on small screens
-     *                 - columnsXs:  Number of columns to show/slide on tiny screens
      *                 - interrupt:  What actions interrupt the animation
      *                 - transition: Behaviour of the animation
      *                 - arrows:     Whether previous and next arrows should be shown and the location of them
@@ -25,8 +25,8 @@
 
         options = options || {};
         options.columns = options.columns || 1;
-        options.columnsSm = options.columnsSm || options.columns;
-        options.columnsXs = options.columnsXs || options.columnsSm;
+        options.columnsMd = options.columnsMd || options.columns;
+        options.columnsSm = options.columnsSm || options.columnsMd;
         options.animation = options.animation || DEFAULT_ANIMATION;
         options.arrows = !!options.arrows;
         options.dots = !!options.dots;
@@ -36,13 +36,13 @@
             console.warn('Invalid number of columns, defaulting to 1.');
             options.columns = 1;
         }
+        if (options.columnsMd <= 0) {
+            console.warn('Invalid number of columns on medium screens, defaulting to 1.');
+            options.columnsMd = 1;
+        }
         if (options.columnsSm <= 0) {
             console.warn('Invalid number of columns on small screens, defaulting to 1.');
             options.columnsSm = 1;
-        }
-        if (options.columnsXs <= 0) {
-            console.warn('Invalid number of columns on tiny screens, defaulting to 1.');
-            options.columnsXs = 1;
         }
         if (options.animation <= 0) {
             console.warn('Invalid animation timing, defaulting to ' + (DEFAULT_ANIMATION / 1000) + ' seconds.');
@@ -53,13 +53,13 @@
             options.transition = undefined;
         }
 
-        if (options.columnsSm > options.columns) {
-            console.warn('Number of columns on small screen must not be larger than the number of columns on normal screens. Resetting to ' + options.columns + '.');
-            options.columnsSm = options.columns;
+        if (options.columnsMd > options.columns) {
+            console.warn('Number of columns on a medium screen must not be larger than the number of columns on a normal screens. Resetting to ' + options.columns + '.');
+            options.columnsMd = options.columns;
         }
-        if (options.columnsXs > options.columnsSm) {
-            console.warn('Number of columns on tiny screen must not be larger than the number of columns on small screens. Resetting to ' + options.columnsSm + '.');
-            options.columnsXs = options.columnsSm;
+        if (options.columnsSm > options.columnsMd) {
+            console.warn('Number of columns on a small screen must not be larger than the number of columns on a medium screens. Resetting to ' + options.columnsMd + '.');
+            options.columnsSm = options.columnsMd;
         }
         if (options.columns > 1 && options.transition === TRANSITION_BLEND) {
             console.warn('Blending only works for one column, disabling transition.');
@@ -67,7 +67,7 @@
         }
 
         // we remember the number of columns in a local variable, as the value may change according to the screen size,
-        // assuming any of the values `options.columns`, `options.columnsSm`, or `options.columnsXs`
+        // assuming any of the values `options.columns`, `options.columnsMd`, or `options.columnsSm`
         let columns = options.columns;
 
         const _slider = document.querySelector(target);
@@ -332,9 +332,9 @@
         const fixView = function () {
             if (window.innerWidth) {
                 if (window.innerWidth < 992) {
-                    columns = options.columnsXs;
-                } else if (window.innerWidth < 1200) {
                     columns = options.columnsSm;
+                } else if (window.innerWidth < 1200) {
+                    columns = options.columnsMd;
                 } else {
                     columns = options.columns;
                 }
