@@ -77,7 +77,7 @@ import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
 
 /**
- * Represents a response which is used to reply to a HTTP request.
+ * Represents a response which is used to reply to an HTTP request.
  * <p>
  * Responses are created by calling {@link sirius.web.http.WebContext#respondWith()}.
  *
@@ -430,7 +430,7 @@ public class Response {
     }
 
     /**
-     * Disables keep-alive protocol (even if it would have been otherwise supported).
+     * Disables keep-alive protocol (even if it had been otherwise supported).
      *
      * @return the response itself for fluent method calls
      */
@@ -1026,7 +1026,7 @@ public class Response {
     /**
      * Sends an 401 UNAUTHORIZED response with a WWW-Authenticate header for the given realm.
      * <p>
-     * This will generally force the client to perform a HTTP Basic authentication.
+     * This will generally force the client to perform an HTTP Basic authentication.
      *
      * @param realm the realm to report to the client. This will be used to select an appropriate username
      *              and password
@@ -1560,7 +1560,7 @@ public class Response {
     }
 
     /**
-     * Creates a XML output which can be used to generate well-formed XML.
+     * Creates an XML output which can be used to generate well-formed XML.
      * <p>
      * By default, caching will be disabled. If the generated XML is small enough, it will be transmitted in
      * one go. Otherwise, a chunked response will be sent.
@@ -1572,7 +1572,7 @@ public class Response {
     }
 
     /**
-     * Creates a XML output which can be used to generate well-formed XML.
+     * Creates an XML output which can be used to generate well-formed XML.
      * <p>
      * By default, caching will be disabled. If the generated XML is small enough, it will be transmitted in
      * one go. Otherwise, a chunked response will be sent.
