@@ -24,12 +24,12 @@
      *        number of columns to show at a time on small-sized screens, by default equal to `columnsMd`; must not be
      *        larger than `columnsMd`
      * @param {boolean} [options.interrupt=false]
-     *        if **true,** automatic sliding will be suspended while the mouse pointer hovers over the slider
+     *        if **true**, automatic sliding will be suspended while the mouse pointer hovers over the slider
      * @param {boolean} [options.arrows=false]
-     *        if **true,** clickable arrows for the previous and next views are rendered on the left and on the right of
+     *        if **true**, clickable arrows for the previous and next views are rendered on the left and on the right of
      *        the content, respectively
      * @param {boolean} [options.dots]
-     *        if **true,** clickable dots showing the currently selected view are rendered below the content
+     *        if **true**, clickable dots showing the currently selected view are rendered below the content
      */
     slider.initSlider = function (target, options) {
         const TRANSITION_BLEND = 'blend';
