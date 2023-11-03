@@ -203,7 +203,9 @@
 
         const activateViewWithoutAnimation = function () {
             // set all but the currently active view hidden
-            resetAllSlides();
+            resetAllSlides(function (style) {
+                style.transition = '';
+            });
 
             // activate the next `columns` views following and including the current index
             const widthPerSlide = _slider.offsetWidth / columns;
