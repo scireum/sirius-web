@@ -349,6 +349,8 @@
         };
 
         const fixView = function () {
+            // detemine the number of columns to use according to the current screen size; we use the break points
+            // defined for the front-end design system, see `/assets/design-system/design-system.scss`
             if (window.innerWidth) {
                 if (window.innerWidth < 992) {
                     columns = options.columnsSm;
