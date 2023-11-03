@@ -27,7 +27,6 @@
         options.columns = options.columns || 1;
         options.columnsMd = options.columnsMd || options.columns;
         options.columnsSm = options.columnsSm || options.columnsMd;
-        options.animation = options.animation || DEFAULT_ANIMATION;
         options.arrows = !!options.arrows;
         options.dots = !!options.dots;
         options.interrupt = !!options.interrupt;
@@ -44,7 +43,7 @@
             console.warn('Invalid number of columns on small screens, defaulting to 1.');
             options.columnsSm = 1;
         }
-        if (options.animation <= 0) {
+        if (options.animation < 0) {
             console.warn('Invalid animation timing, defaulting to ' + (DEFAULT_ANIMATION / 1000) + ' seconds.');
             options.animation = DEFAULT_ANIMATION;
         }
@@ -399,7 +398,7 @@
                 if (options.animation && !interruptedDueToMouseInteraction && !interruptedWhileChangingSize) {
                     activateNextView();
                 }
-            }, options.animation);
+            }, options.animation || DEFAULT_ANIMATION);
         };
         const stopAnimationThread = function () {
             if (animationTimer) {
