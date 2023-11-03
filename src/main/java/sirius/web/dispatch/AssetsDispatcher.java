@@ -140,7 +140,7 @@ public class AssetsDispatcher implements WebDispatcher {
             return Tuple.create(ASSETS_PREFIX + uri.substring(17), 0);
         }
 
-        return Tuple.create(uri, Response.HTTP_CACHE);
+        return Tuple.create(uri, Response.fetchDefaultClientTTL());
     }
 
     private DispatchDecision tryTagliatelle(WebContext webContext, String uri, Response response) {

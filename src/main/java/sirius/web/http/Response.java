@@ -84,10 +84,6 @@ import java.util.stream.Collectors;
  * @see WebContext
  */
 public class Response {
-    /**
-     * Default cache duration for responses which can be cached
-     */
-    public static final int HTTP_CACHE = 60 * 60;
 
     /**
      * Expires value used to indicate that a resource can be infinitely long cached
@@ -166,6 +162,11 @@ public class Response {
      */
     private boolean responseKeepalive = true;
 
+    /**
+     * Contains the default client cache duration for responses which can be cached.
+     */
+    protected final int defaultCacheSeconds;
+
     /*
      * Determines if the response is chunked
      */
@@ -190,6 +191,7 @@ public class Response {
     protected Response(WebContext webContext) {
         this.webContext = webContext;
         this.channelHandlerContext = webContext.getChannelHandlerContext();
+        this.defaultCacheSeconds = fetchDefaultClientTTL();
     }
 
     /*
@@ -575,7 +577,9 @@ public class Response {
         if (ifModifiedSinceDateSeconds > 0
             && lastModifiedInMillis > 0
             && ifModifiedSinceDateSeconds >= lastModifiedInMillis / 1000) {
-            setDateAndCacheHeaders(lastModifiedInMillis, cacheSeconds == null ? HTTP_CACHE : cacheSeconds, isPrivate);
+            setDateAndCacheHeaders(lastModifiedInMillis,
+                                   cacheSeconds == null ? defaultCacheSeconds : cacheSeconds,
+                                   isPrivate);
             status(HttpResponseStatus.NOT_MODIFIED);
             return true;
         }
@@ -622,6 +626,15 @@ public class Response {
     }
 
     /**
+     * Returns the default cache duration for responses which can be cached.
+     *
+     * @return the default cache duration in seconds
+     */
+    public static int fetchDefaultClientTTL() {
+        return (int) Sirius.getSettings().getDuration("http.response.defaultClientCacheTTL").getSeconds();
+    }
+
+    /**
      * Marks this response as not-cacheable.
      *
      * @return <tt>this</tt> to fluently create the response
@@ -638,7 +651,7 @@ public class Response {
      */
     public Response privateCached() {
         this.isPrivate = true;
-        this.cacheSeconds = HTTP_CACHE;
+        this.cacheSeconds = defaultCacheSeconds;
         return this;
     }
 
@@ -661,7 +674,7 @@ public class Response {
      */
     public Response cached() {
         this.isPrivate = false;
-        this.cacheSeconds = HTTP_CACHE;
+        this.cacheSeconds = defaultCacheSeconds;
         return this;
     }
 
@@ -982,7 +995,7 @@ public class Response {
             String contentType = MimeHelper.guessMimeType(name != null ? name : urlConnection.getURL().getFile());
             addHeaderIfNotExists(HttpHeaderNames.CONTENT_TYPE, contentType);
             setDateAndCacheHeaders(urlConnection.getLastModified(),
-                                   cacheSeconds == null ? HTTP_CACHE : cacheSeconds,
+                                   cacheSeconds == null ? defaultCacheSeconds : cacheSeconds,
                                    isPrivate);
             if (name != null) {
                 setContentDisposition(name, download);

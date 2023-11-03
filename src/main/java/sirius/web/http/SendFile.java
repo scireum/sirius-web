@@ -63,7 +63,9 @@ class SendFile {
 
             randomAccessFile = new RandomAccessFile(file, "r");
             response.setDateAndCacheHeaders(file.lastModified(),
-                                            response.cacheSeconds == null ? Response.HTTP_CACHE : response.cacheSeconds,
+                                            response.cacheSeconds == null ?
+                                            response.defaultCacheSeconds :
+                                            response.cacheSeconds,
                                             response.isPrivate);
 
             if (!parseRangesAndUpdateHeaders()) {
