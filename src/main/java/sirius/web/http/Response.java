@@ -106,59 +106,59 @@ public class Response {
     private static final Set<String> CENSORED_LOWERCASE_PARAMETER_NAMES =
             Set.of("password", "passphrase", "secret", "secretKey");
 
-    /*
-     * Contains the content type used for html
+    /**
+     * Contains the content type used for html.
      */
     private static final String CONTENT_TYPE_HTML = "text/html; charset=UTF-8";
 
-    /*
+    /**
      * Represents a value to be used for CACHE_CONTROL which prevents any caching...
      */
     private static final String NO_CACHE = HttpHeaderValues.NO_CACHE + ", max-age=0";
 
-    /*
-     * Stores the associated request
+    /**
+     * Stores the associated request.
      */
     protected WebContext webContext;
 
-    /*
-     * Stores the underlying channel
+    /**
+     * Stores the underlying channel.
      */
     protected ChannelHandlerContext channelHandlerContext;
 
-    /*
-     * Stores the outgoing headers to be sent
+    /**
+     * Stores the outgoing headers to be sent.
      */
     private HttpHeaders headers;
 
-    /*
+    /**
      * Stores the effective response code.
      */
     private volatile int responseCode;
 
-    /*
+    /**
      * Stores the max expiration of this response. A null value indicates to use the defaults suggested
      * by the content creator.
      */
     protected Integer cacheSeconds = null;
 
-    /*
-     * Stores if this response should be considered "private" by intermediate caches and proxies
+    /**
+     * Stores if this response should be considered "private" by intermediate caches and proxies.
      */
     protected boolean isPrivate = false;
 
-    /*
-     * Determines if the response should be marked as download
+    /**
+     * Determines if the response should be marked as download.
      */
     protected boolean download = false;
 
-    /*
-     * Contains the name of the downloadable file
+    /**
+     * Contains the name of the downloadable file.
      */
     protected String name;
 
-    /*
-     * Determines if the response supports keepalive
+    /**
+     * Determines if the response supports keepalive.
      */
     private boolean responseKeepalive = true;
 
@@ -167,8 +167,8 @@ public class Response {
      */
     protected final int defaultCacheSeconds;
 
-    /*
-     * Determines if the response is chunked
+    /**
+     * Determines if the response is chunked.
      */
     protected boolean responseChunked = false;
 
