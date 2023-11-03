@@ -118,6 +118,7 @@ public class AssetsDispatcher implements WebDispatcher {
 
         webContext.enableTiming(ASSETS_PREFIX);
         response.cachedForSeconds(computeEffectiveCacheTTL(webContext.getRequestedURI(), true));
+        response.customProxyCached(computeEffectiveCustomProxyTTL(webContext.getRequestedURI(), true));
         URL url = optionalResource.get().getUrl();
         if ("file".equals(url.getProtocol())) {
             File file = new File(url.toURI());
@@ -145,6 +146,13 @@ public class AssetsDispatcher implements WebDispatcher {
         return constantAsset ? (int) defaultStaticAssetTTL.getSeconds() : Response.fetchDefaultClientTTL();
     }
 
+    private String computeEffectiveCustomProxyTTL(String uri, boolean constantAsset) {
+        if (uri.startsWith("/assets/no-cache/") || !constantAsset) {
+            return "0s";
+        }
+        return Response.fetchDefaultCustomProxyTTL();
+    }
+
     private String computeEffectiveURI(WebContext webContext) {
         String uri = webContext.getRequestedURI();
         if (uri.startsWith("/assets/dynamic/")) {
@@ -166,6 +174,8 @@ public class AssetsDispatcher implements WebDispatcher {
             if (template.isPresent()) {
                 response.cachedForSeconds(computeEffectiveCacheTTL(webContext.getRequestedURI(),
                                                                    template.get().isConstant()));
+                response.customProxyCached(computeEffectiveCustomProxyTTL(webContext.getRequestedURI(),
+                                                                          template.get().isConstant()));
                 if (!handleUnmodifiedTemplate(template.get(), response)) {
                     response.template(HttpResponseStatus.OK, template.get());
                 }
@@ -190,6 +200,7 @@ public class AssetsDispatcher implements WebDispatcher {
                                                               + PASTA_SUFFIX);
             if (template.isPresent()) {
                 response.cachedForSeconds(computeEffectiveCacheTTL(uri, template.get().isConstant()));
+                response.customProxyCached(computeEffectiveCustomProxyTTL(uri, template.get().isConstant()));
                 if (!handleUnmodifiedTemplate(template.get(), response)) {
                     response.template(HttpResponseStatus.OK, template.get());
                 }
@@ -239,6 +250,7 @@ public class AssetsDispatcher implements WebDispatcher {
         }
 
         response.cachedForSeconds(computeEffectiveCacheTTL(webContext.getRequestedURI(), true));
+        response.customProxyCached(computeEffectiveCustomProxyTTL(webContext.getRequestedURI(), true));
         if (!response.handleIfModifiedSince(file.lastModified())) {
             response.named(uri.substring(uri.lastIndexOf('/') + 1)).file(file);
         }
