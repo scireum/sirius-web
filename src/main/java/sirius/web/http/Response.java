@@ -151,7 +151,7 @@ public class Response {
     /**
      * Stores the custom value for the {@link #CUSTOM_PROXY_CACHE_TTL_HEADER} header.
      */
-    protected String cacheCustomProxy;
+    protected String customProxyTTL;
 
     /**
      * Stores if this response should be considered "private" by intermediate caches and proxies.
@@ -708,8 +708,18 @@ public class Response {
      * @param ttl the value to set
      * @return <tt>this</tt> to fluently create the response
      */
-    public Response customProxyCached(String ttl) {
-        this.cacheCustomProxy = ttl;
+    public Response withCustomProxyTTL(String ttl) {
+        this.customProxyTTL = ttl;
+        return this;
+    }
+
+    /**
+     * Sets the default value for the {@link #CUSTOM_PROXY_CACHE_TTL_HEADER} header.
+     *
+     * @return <tt>this</tt> to fluently create the response
+     */
+    public Response withDefaultCustomProxyTTL() {
+        this.customProxyTTL = defaultCustomProxyTTL;
         return this;
     }
 
@@ -955,8 +965,8 @@ public class Response {
                                  Outcall.RFC2616_INSTANT.format(Instant.ofEpochMilli(lastModifiedMillis)
                                                                        .atZone(ZoneId.systemDefault())));
         }
-        if (Strings.isFilled(cacheCustomProxy)) {
-            addHeaderIfNotExists(CUSTOM_PROXY_CACHE_TTL_HEADER, cacheCustomProxy);
+        if (Strings.isFilled(customProxyTTL)) {
+            addHeaderIfNotExists(CUSTOM_PROXY_CACHE_TTL_HEADER, customProxyTTL);
         }
     }
 
