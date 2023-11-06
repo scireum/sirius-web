@@ -118,8 +118,7 @@ public class AssetsDispatcher implements WebDispatcher {
         }
 
         webContext.enableTiming(ASSETS_PREFIX);
-        response.cachedForSeconds(computeEffectiveCacheTTL(webContext.getRequestedURI(), true));
-        response.customProxyCached(computeEffectiveCustomProxyTTL(webContext.getRequestedURI(), true));
+        updateResponseCacheSettings(response, webContext.getRequestedURI(), true);
         URL url = optionalResource.get().getUrl();
         if ("file".equals(url.getProtocol())) {
             File file = new File(url.toURI());
@@ -135,23 +134,24 @@ public class AssetsDispatcher implements WebDispatcher {
         return DispatchDecision.DONE;
     }
 
-    private int computeEffectiveCacheTTL(String uri, boolean constantAsset) {
+    private void updateResponseCacheSettings(Response response, String uri, boolean constantAsset) {
         if (uri.startsWith("/assets/dynamic/")) {
-            return Response.HTTP_CACHE_INFINITE;
+            response.infinitelyCached();
+            return;
         }
 
         if (uri.startsWith("/assets/no-cache/")) {
-            return 0;
+            response.notCached();
+            return;
         }
 
-        return constantAsset ? (int) defaultStaticAssetTTL.getSeconds() : Response.obtainClientDurationInSeconds();
-    }
-
-    private String computeEffectiveCustomProxyTTL(String uri, boolean constantAsset) {
-        if (uri.startsWith("/assets/no-cache/") || !constantAsset) {
-            return "0s";
+        if (constantAsset) {
+            response.cachedForSeconds((int) defaultStaticAssetTTL.getSeconds());
+            response.withDefaultCustomProxyTTL();
+            return;
         }
-        return Response.fetchDefaultCustomProxyTTL();
+
+        response.cachedForSeconds(Response.obtainClientDurationInSeconds());
     }
 
     private String computeEffectiveURI(WebContext webContext) {
@@ -173,10 +173,7 @@ public class AssetsDispatcher implements WebDispatcher {
         try {
             Optional<Template> template = tagliatelle.resolve(uri + PASTA_SUFFIX);
             if (template.isPresent()) {
-                response.cachedForSeconds(computeEffectiveCacheTTL(webContext.getRequestedURI(),
-                                                                   template.get().isConstant()));
-                response.customProxyCached(computeEffectiveCustomProxyTTL(webContext.getRequestedURI(),
-                                                                          template.get().isConstant()));
+                updateResponseCacheSettings(response, webContext.getRequestedURI(), template.get().isConstant());
                 if (!handleUnmodifiedTemplate(template.get(), response)) {
                     response.template(HttpResponseStatus.OK, template.get());
                 }
@@ -200,8 +197,7 @@ public class AssetsDispatcher implements WebDispatcher {
                                                               + i18nMatcher.group("extension")
                                                               + PASTA_SUFFIX);
             if (template.isPresent()) {
-                response.cachedForSeconds(computeEffectiveCacheTTL(uri, template.get().isConstant()));
-                response.customProxyCached(computeEffectiveCustomProxyTTL(uri, template.get().isConstant()));
+                updateResponseCacheSettings(response, uri, template.get().isConstant());
                 if (!handleUnmodifiedTemplate(template.get(), response)) {
                     response.template(HttpResponseStatus.OK, template.get());
                 }
@@ -250,8 +246,7 @@ public class AssetsDispatcher implements WebDispatcher {
             }
         }
 
-        response.cachedForSeconds(computeEffectiveCacheTTL(webContext.getRequestedURI(), true));
-        response.customProxyCached(computeEffectiveCustomProxyTTL(webContext.getRequestedURI(), true));
+        updateResponseCacheSettings(response, webContext.getRequestedURI(), true);
         if (!response.handleIfModifiedSince(file.lastModified())) {
             response.named(uri.substring(uri.lastIndexOf('/') + 1)).file(file);
         }
