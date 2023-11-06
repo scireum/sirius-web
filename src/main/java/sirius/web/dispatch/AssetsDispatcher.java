@@ -71,7 +71,8 @@ public class AssetsDispatcher implements WebDispatcher {
     private String cacheDir;
 
     @ConfigValue("http.response.defaultStaticAssetTTL")
-    private Duration defaultStaticAssetTTL;
+    private static Duration defaultStaticAssetTTL;
+
     private File cacheDirFile;
 
     @Part
@@ -143,7 +144,7 @@ public class AssetsDispatcher implements WebDispatcher {
             return 0;
         }
 
-        return constantAsset ? (int) defaultStaticAssetTTL.getSeconds() : Response.fetchDefaultClientTTL();
+        return constantAsset ? (int) defaultStaticAssetTTL.getSeconds() : Response.obtainClientDurationInSeconds();
     }
 
     private String computeEffectiveCustomProxyTTL(String uri, boolean constantAsset) {

@@ -192,7 +192,7 @@ public class TunnelHandler implements AsyncHandler<String> {
 
         response.setDateAndCacheHeaders(lastModifiedMillis,
                                         response.cacheSeconds == null ?
-                                        response.defaultCacheSeconds :
+                                        Response.obtainClientDurationInSeconds() :
                                         response.cacheSeconds,
                                         response.isPrivate);
 

@@ -40,6 +40,7 @@ import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Processor;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
+import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
@@ -173,11 +174,6 @@ public class Response {
     private boolean responseKeepalive = true;
 
     /**
-     * Contains the default client cache duration for responses which can be cached.
-     */
-    protected final int defaultCacheSeconds;
-
-    /**
      * Determines if the response is chunked.
      */
     protected boolean responseChunked = false;
@@ -191,6 +187,12 @@ public class Response {
     @Part
     private static Tagliatelle engine;
 
+    @ConfigValue("http.response.defaultClientCacheTTL")
+    private static Duration defaultCacheDuration;
+
+    @ConfigValue("http.response.defaultCustomProxyTTL")
+    private static String defaultCustomProxyTTL;
+
     protected static AsyncHttpClient asyncClient;
 
     /**
@@ -201,7 +203,6 @@ public class Response {
     protected Response(WebContext webContext) {
         this.webContext = webContext;
         this.channelHandlerContext = webContext.getChannelHandlerContext();
-        this.defaultCacheSeconds = fetchDefaultClientTTL();
     }
 
     /*
@@ -588,7 +589,7 @@ public class Response {
             && lastModifiedInMillis > 0
             && ifModifiedSinceDateSeconds >= lastModifiedInMillis / 1000) {
             setDateAndCacheHeaders(lastModifiedInMillis,
-                                   cacheSeconds == null ? defaultCacheSeconds : cacheSeconds,
+                                   cacheSeconds == null ? obtainClientDurationInSeconds() : cacheSeconds,
                                    isPrivate);
             status(HttpResponseStatus.NOT_MODIFIED);
             return true;
@@ -640,17 +641,8 @@ public class Response {
      *
      * @return the default cache duration in seconds
      */
-    public static int fetchDefaultClientTTL() {
-        return (int) Sirius.getSettings().getDuration("http.response.defaultClientCacheTTL").getSeconds();
-    }
-
-    /**
-     * Returns the default custom proxy cache duration for responses which can be cached.
-     *
-     * @return the default custom proxy cache duration in seconds
-     */
-    public static String fetchDefaultCustomProxyTTL() {
-        return Sirius.getSettings().getString("http.response.defaultCustomProxyTTL");
+    public static int obtainClientDurationInSeconds() {
+        return (int) defaultCacheDuration.getSeconds();
     }
 
     /**
@@ -670,7 +662,7 @@ public class Response {
      */
     public Response privateCached() {
         this.isPrivate = true;
-        this.cacheSeconds = defaultCacheSeconds;
+        this.cacheSeconds = obtainClientDurationInSeconds();
         return this;
     }
 
@@ -693,7 +685,7 @@ public class Response {
      */
     public Response cached() {
         this.isPrivate = false;
-        this.cacheSeconds = defaultCacheSeconds;
+        this.cacheSeconds = obtainClientDurationInSeconds();
         return this;
     }
 
@@ -1028,7 +1020,7 @@ public class Response {
             String contentType = MimeHelper.guessMimeType(name != null ? name : urlConnection.getURL().getFile());
             addHeaderIfNotExists(HttpHeaderNames.CONTENT_TYPE, contentType);
             setDateAndCacheHeaders(urlConnection.getLastModified(),
-                                   cacheSeconds == null ? defaultCacheSeconds : cacheSeconds,
+                                   cacheSeconds == null ? obtainClientDurationInSeconds() : cacheSeconds,
                                    isPrivate);
             if (name != null) {
                 setContentDisposition(name, download);
