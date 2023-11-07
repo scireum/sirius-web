@@ -162,7 +162,7 @@
                 _dot.textContent = '●';
                 _dot.addEventListener('click', function (event) {
                     stopAnimationThread();
-                    activateView(index, 1, true);
+                    activateView(index, 1, columns !== 1);
                     startAnimationThread();
                 });
                 _dot.classList.add('sci-slider-dot');
