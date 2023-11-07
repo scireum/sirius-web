@@ -191,7 +191,9 @@ public class TunnelHandler implements AsyncHandler<String> {
         overrideContentTypeIfNecessary();
 
         response.setDateAndCacheHeaders(lastModifiedMillis,
-                                        response.cacheSeconds == null ? Response.HTTP_CACHE : response.cacheSeconds,
+                                        response.cacheSeconds == null ?
+                                        Response.obtainClientDurationInSeconds() :
+                                        response.cacheSeconds,
                                         response.isPrivate);
 
         if (response.name != null) {

@@ -40,6 +40,7 @@ import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Processor;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
+import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
@@ -77,17 +78,13 @@ import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
 
 /**
- * Represents a response which is used to reply to a HTTP request.
+ * Represents a response which is used to reply to an HTTP request.
  * <p>
  * Responses are created by calling {@link sirius.web.http.WebContext#respondWith()}.
  *
  * @see WebContext
  */
 public class Response {
-    /**
-     * Default cache duration for responses which can be cached
-     */
-    public static final int HTTP_CACHE = 60 * 60;
 
     /**
      * Expires value used to indicate that a resource can be infinitely long cached
@@ -110,64 +107,74 @@ public class Response {
     private static final Set<String> CENSORED_LOWERCASE_PARAMETER_NAMES =
             Set.of("password", "passphrase", "secret", "secretKey");
 
-    /*
-     * Contains the content type used for html
+    /**
+     * Contains the content type used for html.
      */
     private static final String CONTENT_TYPE_HTML = "text/html; charset=UTF-8";
 
-    /*
+    /**
      * Represents a value to be used for CACHE_CONTROL which prevents any caching...
      */
     private static final String NO_CACHE = HttpHeaderValues.NO_CACHE + ", max-age=0";
 
-    /*
-     * Stores the associated request
+    /**
+     * Represents the key used to define the custom reverse proxy cache TTL.
+     */
+    private static final String CUSTOM_PROXY_CACHE_TTL_HEADER = "X-Custom-TTL";
+
+    /**
+     * Stores the associated request.
      */
     protected WebContext webContext;
 
-    /*
-     * Stores the underlying channel
+    /**
+     * Stores the underlying channel.
      */
     protected ChannelHandlerContext channelHandlerContext;
 
-    /*
-     * Stores the outgoing headers to be sent
+    /**
+     * Stores the outgoing headers to be sent.
      */
     private HttpHeaders headers;
 
-    /*
+    /**
      * Stores the effective response code.
      */
     private volatile int responseCode;
 
-    /*
+    /**
      * Stores the max expiration of this response. A null value indicates to use the defaults suggested
      * by the content creator.
      */
     protected Integer cacheSeconds = null;
 
-    /*
-     * Stores if this response should be considered "private" by intermediate caches and proxies
+    /**
+     * Stores the custom value for the {@link #CUSTOM_PROXY_CACHE_TTL_HEADER} header.
+     */
+    protected String customProxyTTL;
+
+    /**
+     * Stores if this response should be considered "private" by intermediate caches and proxies.
      */
     protected boolean isPrivate = false;
 
-    /*
-     * Determines if the response should be marked as download
+    /**
+     * Determines if the response should be marked as download.
      */
     protected boolean download = false;
 
-    /*
-     * Contains the name of the downloadable file
+    /**
+     * Contains the name of the downloadable file.
      */
     protected String name;
 
-    /*
-     * Determines if the response supports keepalive
+    /**
+     * Determines if the response supports keepalive.
      */
     private boolean responseKeepalive = true;
 
-    /*
-     * Determines if the response is chunked
+    /**
+     * Determines if the response is chunked.
      */
     protected boolean responseChunked = false;
 
@@ -179,6 +186,12 @@ public class Response {
 
     @Part
     private static Tagliatelle engine;
+
+    @ConfigValue("http.response.defaultClientCacheTTL")
+    private static Duration defaultCacheDuration;
+
+    @ConfigValue("http.response.defaultCustomProxyTTL")
+    private static String defaultCustomProxyTTL;
 
     protected static AsyncHttpClient asyncClient;
 
@@ -428,7 +441,7 @@ public class Response {
     }
 
     /**
-     * Disables keep-alive protocol (even if it would have been otherwise supported).
+     * Disables keep-alive protocol (even if it had been otherwise supported).
      *
      * @return the response itself for fluent method calls
      */
@@ -575,7 +588,9 @@ public class Response {
         if (ifModifiedSinceDateSeconds > 0
             && lastModifiedInMillis > 0
             && ifModifiedSinceDateSeconds >= lastModifiedInMillis / 1000) {
-            setDateAndCacheHeaders(lastModifiedInMillis, cacheSeconds == null ? HTTP_CACHE : cacheSeconds, isPrivate);
+            setDateAndCacheHeaders(lastModifiedInMillis,
+                                   cacheSeconds == null ? obtainClientDurationInSeconds() : cacheSeconds,
+                                   isPrivate);
             status(HttpResponseStatus.NOT_MODIFIED);
             return true;
         }
@@ -622,6 +637,15 @@ public class Response {
     }
 
     /**
+     * Returns the default cache duration for responses which can be cached.
+     *
+     * @return the default cache duration in seconds
+     */
+    public static int obtainClientDurationInSeconds() {
+        return (int) defaultCacheDuration.getSeconds();
+    }
+
+    /**
      * Marks this response as not-cacheable.
      *
      * @return <tt>this</tt> to fluently create the response
@@ -638,7 +662,7 @@ public class Response {
      */
     public Response privateCached() {
         this.isPrivate = true;
-        this.cacheSeconds = HTTP_CACHE;
+        this.cacheSeconds = obtainClientDurationInSeconds();
         return this;
     }
 
@@ -661,7 +685,7 @@ public class Response {
      */
     public Response cached() {
         this.isPrivate = false;
-        this.cacheSeconds = HTTP_CACHE;
+        this.cacheSeconds = obtainClientDurationInSeconds();
         return this;
     }
 
@@ -675,6 +699,27 @@ public class Response {
     public Response infinitelyCached() {
         this.isPrivate = false;
         this.cacheSeconds = HTTP_CACHE_INFINITE;
+        return this;
+    }
+
+    /**
+     * Sets the value for the {@link #CUSTOM_PROXY_CACHE_TTL_HEADER} header.
+     *
+     * @param ttl the value to set
+     * @return <tt>this</tt> to fluently create the response
+     */
+    public Response withCustomProxyTTL(String ttl) {
+        this.customProxyTTL = ttl;
+        return this;
+    }
+
+    /**
+     * Sets the default value for the {@link #CUSTOM_PROXY_CACHE_TTL_HEADER} header.
+     *
+     * @return <tt>this</tt> to fluently create the response
+     */
+    public Response withDefaultCustomProxyTTL() {
+        this.customProxyTTL = defaultCustomProxyTTL;
         return this;
     }
 
@@ -920,6 +965,9 @@ public class Response {
                                  Outcall.RFC2616_INSTANT.format(Instant.ofEpochMilli(lastModifiedMillis)
                                                                        .atZone(ZoneId.systemDefault())));
         }
+        if (Strings.isFilled(customProxyTTL)) {
+            addHeaderIfNotExists(CUSTOM_PROXY_CACHE_TTL_HEADER, customProxyTTL);
+        }
     }
 
     /*
@@ -982,7 +1030,7 @@ public class Response {
             String contentType = MimeHelper.guessMimeType(name != null ? name : urlConnection.getURL().getFile());
             addHeaderIfNotExists(HttpHeaderNames.CONTENT_TYPE, contentType);
             setDateAndCacheHeaders(urlConnection.getLastModified(),
-                                   cacheSeconds == null ? HTTP_CACHE : cacheSeconds,
+                                   cacheSeconds == null ? obtainClientDurationInSeconds() : cacheSeconds,
                                    isPrivate);
             if (name != null) {
                 setContentDisposition(name, download);
@@ -1013,7 +1061,7 @@ public class Response {
     /**
      * Sends an 401 UNAUTHORIZED response with a WWW-Authenticate header for the given realm.
      * <p>
-     * This will generally force the client to perform a HTTP Basic authentication.
+     * This will generally force the client to perform an HTTP Basic authentication.
      *
      * @param realm the realm to report to the client. This will be used to select an appropriate username
      *              and password
@@ -1547,7 +1595,7 @@ public class Response {
     }
 
     /**
-     * Creates a XML output which can be used to generate well-formed XML.
+     * Creates an XML output which can be used to generate well-formed XML.
      * <p>
      * By default, caching will be disabled. If the generated XML is small enough, it will be transmitted in
      * one go. Otherwise, a chunked response will be sent.
@@ -1559,7 +1607,7 @@ public class Response {
     }
 
     /**
-     * Creates a XML output which can be used to generate well-formed XML.
+     * Creates an XML output which can be used to generate well-formed XML.
      * <p>
      * By default, caching will be disabled. If the generated XML is small enough, it will be transmitted in
      * one go. Otherwise, a chunked response will be sent.

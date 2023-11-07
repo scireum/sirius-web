@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -68,6 +69,10 @@ public class AssetsDispatcher implements WebDispatcher {
 
     @ConfigValue("http.generated-directory")
     private String cacheDir;
+
+    @ConfigValue("http.response.defaultStaticAssetTTL")
+    private static Duration defaultStaticAssetTTL;
+
     private File cacheDirFile;
 
     @Part
@@ -88,20 +93,20 @@ public class AssetsDispatcher implements WebDispatcher {
             return DispatchDecision.CONTINUE;
         }
 
-        Tuple<String, Integer> uriAndCacheFlag = getEffectiveURI(webContext);
+        String effectiveUrl = computeEffectiveURI(webContext);
 
-        Response response = webContext.respondWith().cachedForSeconds(uriAndCacheFlag.getSecond());
-        DispatchDecision staticResourceDecision = tryStaticResource(webContext, uriAndCacheFlag.getFirst(), response);
+        Response response = webContext.respondWith();
+        DispatchDecision staticResourceDecision = tryStaticResource(webContext, effectiveUrl, response);
         if (staticResourceDecision == DispatchDecision.DONE) {
             return DispatchDecision.DONE;
         }
 
-        DispatchDecision sassDecision = trySASS(webContext, uriAndCacheFlag.getFirst(), response);
+        DispatchDecision sassDecision = trySASS(webContext, effectiveUrl, response);
         if (sassDecision == DispatchDecision.DONE) {
             return DispatchDecision.DONE;
         }
 
-        return tryTagliatelle(webContext, uriAndCacheFlag.getFirst(), response);
+        return tryTagliatelle(webContext, effectiveUrl, response);
     }
 
     private DispatchDecision tryStaticResource(WebContext webContext, String uri, Response response)
@@ -113,6 +118,7 @@ public class AssetsDispatcher implements WebDispatcher {
         }
 
         webContext.enableTiming(ASSETS_PREFIX);
+        updateResponseCacheSettings(response, webContext.getRequestedURI(), true);
         URL url = optionalResource.get().getUrl();
         if ("file".equals(url.getProtocol())) {
             File file = new File(url.toURI());
@@ -128,25 +134,46 @@ public class AssetsDispatcher implements WebDispatcher {
         return DispatchDecision.DONE;
     }
 
-    private Tuple<String, Integer> getEffectiveURI(WebContext webContext) {
+    private void updateResponseCacheSettings(Response response, String uri, boolean constantAsset) {
+        if (uri.startsWith("/assets/dynamic/")) {
+            response.infinitelyCached();
+            return;
+        }
+
+        if (uri.startsWith("/assets/no-cache/")) {
+            response.notCached();
+            return;
+        }
+
+        if (constantAsset) {
+            response.cachedForSeconds((int) defaultStaticAssetTTL.getSeconds());
+            response.withDefaultCustomProxyTTL();
+            return;
+        }
+
+        response.cachedForSeconds(Response.obtainClientDurationInSeconds());
+    }
+
+    private String computeEffectiveURI(WebContext webContext) {
         String uri = webContext.getRequestedURI();
         if (uri.startsWith("/assets/dynamic/")) {
             uri = uri.substring(16);
             Tuple<String, String> pair = Strings.split(uri, "/");
-            return Tuple.create(ASSETS_PREFIX + pair.getSecond(), Response.HTTP_CACHE_INFINITE);
+            return ASSETS_PREFIX + pair.getSecond();
         }
 
         if (uri.startsWith("/assets/no-cache/")) {
-            return Tuple.create(ASSETS_PREFIX + uri.substring(17), 0);
+            return ASSETS_PREFIX + uri.substring(17);
         }
 
-        return Tuple.create(uri, Response.HTTP_CACHE);
+        return uri;
     }
 
     private DispatchDecision tryTagliatelle(WebContext webContext, String uri, Response response) {
         try {
             Optional<Template> template = tagliatelle.resolve(uri + PASTA_SUFFIX);
             if (template.isPresent()) {
+                updateResponseCacheSettings(response, webContext.getRequestedURI(), template.get().isConstant());
                 if (!handleUnmodifiedTemplate(template.get(), response)) {
                     response.template(HttpResponseStatus.OK, template.get());
                 }
@@ -170,6 +197,7 @@ public class AssetsDispatcher implements WebDispatcher {
                                                               + i18nMatcher.group("extension")
                                                               + PASTA_SUFFIX);
             if (template.isPresent()) {
+                updateResponseCacheSettings(response, uri, template.get().isConstant());
                 if (!handleUnmodifiedTemplate(template.get(), response)) {
                     response.template(HttpResponseStatus.OK, template.get());
                 }
@@ -218,6 +246,7 @@ public class AssetsDispatcher implements WebDispatcher {
             }
         }
 
+        updateResponseCacheSettings(response, webContext.getRequestedURI(), true);
         if (!response.handleIfModifiedSince(file.lastModified())) {
             response.named(uri.substring(uri.lastIndexOf('/') + 1)).file(file);
         }
