@@ -162,7 +162,7 @@
                 _dot.textContent = '●';
                 _dot.addEventListener('click', function (event) {
                     stopAnimationThread();
-                    activateView(index, 1, true);
+                    activateView(index, 1, columns !== 1);
                     startAnimationThread();
                 });
                 _dot.classList.add('sci-slider-dot');
@@ -236,7 +236,11 @@
 
         const activateViewByBlending = function () {
             // set all but the previously and currently active view hidden
-            resetAllSlides();
+            resetAllSlides(function (style) {
+                style.opacity = '0';
+                style.zIndex = '0';
+                style.transition = 'opacity 1s ease';
+            });
             _slides[previousIndex].style.visibility = 'visible';
             _slides[currentIndex].style.visibility = 'visible';
 
