@@ -8,7 +8,10 @@
 
 package sirius.web.service;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.Test;
+import sirius.kernel.commons.Amount;
+import sirius.kernel.commons.Json;
 import sirius.web.services.JSONStructuredOutput;
 
 import java.io.ByteArrayOutputStream;
@@ -28,5 +31,17 @@ class JSONStructuredOutputTest {
         out.finalizeOutput();
 
         assertEquals("[]", byteArrayOutputStream.toString());
+    }
+
+    @Test
+    void writeAmountWithinJacksonObject() {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        JSONStructuredOutput out = new JSONStructuredOutput(byteArrayOutputStream, null, StandardCharsets.UTF_8.name());
+
+        ObjectNode objectNodeWithAmount = Json.createObject().putPOJO("amount", Amount.of(1.23));
+        out.writeProperty(null, objectNodeWithAmount);
+        out.finalizeOutput();
+
+        assertEquals("{\"amount\":1.23}", byteArrayOutputStream.toString());
     }
 }
