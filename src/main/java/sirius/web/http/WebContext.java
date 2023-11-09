@@ -591,6 +591,18 @@ public class WebContext implements SubContext {
         return Value.EMPTY;
     }
 
+    /**
+     * Returns a value or parameter supplied by the request as List of Strings.
+     * <p>
+     * The individual values must be separated by a comma or a pipe character.
+     *
+     * @param key the key used to look for the value
+     * @return a List of Strings representing the provided data.
+     */
+    public List<String> getAsStringList(String key) {
+        return Arrays.stream(get(key).asString().split("[,|]")).filter(Strings::isFilled).toList();
+    }
+
     @SuppressWarnings("java:S6204")
     @Explain("We return a mutable list here, as we cannot predict what the caller does with the result.")
     private Value fetchPostAttributes(String key) {
