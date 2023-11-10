@@ -1,9 +1,9 @@
-<i:arg type="String"
-       name="class"
+<i:arg name="class"
+       type="String"
        default=""
        description="Permits adding additional classes to the sidebar."/>
-<i:arg type="boolean"
-       name="renderSidebarIfEmpty"
+<i:arg name="renderSidebarIfEmpty"
+       type="boolean"
        default="true"
        description="Permits to disable the sidebar if it is empty."/>
 
