@@ -29,7 +29,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * Represents an user.
+ * Represents a user.
  * <p>
  * A user is authenticated using a {@link UserManager}. To obtain or modify the current user, use {@link
  * UserContext#getCurrentUser()} or {@link UserContext#setCurrentUser(UserInfo)}.
@@ -69,9 +69,9 @@ public class UserInfo extends Composable {
         }
 
         /**
-         * Creates a new builder and initializes it with an id for the user.
+         * Creates a new builder and initializes it with an identifier for the user.
          *
-         * @param id the id of the user to build.
+         * @param id the identifier of the user to build.
          * @return the builder itself for fluent method calls
          */
         @CheckReturnValue
