@@ -46,6 +46,16 @@ public class UserInfo extends Composable {
      */
     public static final UserInfo NOBODY = Builder.createUser("ANONYMOUS").withUsername("(no user)").build();
 
+    /**
+     * Defines the identifier used to represent the synthetic "Administrator" user.
+     */
+    public static final String SYNTHETIC_ADMIN_USER_ID = "ADMIN";
+
+    /**
+     * Defines the name used for the synthetic "Administrator" user.
+     */
+    public static final String SYNTHETIC_ADMIN_USER_NAME = "Administrator";
+
     protected String tenantId;
     protected String tenantName;
     protected String userId;
@@ -80,6 +90,20 @@ public class UserInfo extends Composable {
             builder.user = new UserInfo();
             builder.user.userId = id;
             return builder;
+        }
+
+        /**
+         * Creates a new builder and configures it for a synthetic "Administrator" user with every possible permission.
+         *
+         * @param tenantId   the identifier of the tenant the user belongs to
+         * @param tenantName the name of the tenant the user belongs to
+         * @return the builder itself for fluent method calls
+         */
+        public static Builder createSyntheticAdminUser(String tenantId, String tenantName) {
+            return createUser(SYNTHETIC_ADMIN_USER_ID).withUsername(SYNTHETIC_ADMIN_USER_NAME)
+                                                      .withTenantId(tenantId)
+                                                      .withTenantName(tenantName)
+                                                      .withEveryPermission(true);
         }
 
         /**
