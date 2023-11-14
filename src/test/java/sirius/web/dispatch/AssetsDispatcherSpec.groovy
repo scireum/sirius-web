@@ -31,17 +31,6 @@ class AssetsDispatcherSpec extends BaseSpecification {
         '/assets/dynamic/X/test/test.js'  | 'public, max-age=615168000'
     }
 
-    def "proper custom proxy caching set for all cache-control URIs"() {
-        expect:
-        URLConnection c = new URL("http://localhost:9999" + uri).openConnection()
-        c.getHeaderField("X-Custom-TTL") == header
-        where:
-        uri                               | header
-        '/assets/test/test.css'           | '30d'
-        '/assets/no-cache/test/test.css'  | null
-        '/assets/dynamic/X/test/test.css' | null
-    }
-
     def "Custom base64ResourceFunction works"() {
         when:
         SiriusSassGenerator gen = new SiriusSassGenerator()

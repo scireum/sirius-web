@@ -147,7 +147,6 @@ public class AssetsDispatcher implements WebDispatcher {
 
         if (constantAsset) {
             response.cachedForSeconds((int) defaultStaticAssetTTL.getSeconds());
-            response.withDefaultCustomProxyTTL();
             return;
         }
 
