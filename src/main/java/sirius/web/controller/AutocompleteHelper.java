@@ -99,25 +99,25 @@ public class AutocompleteHelper {
             return this;
         }
 
-        private void writeTo(StructuredOutput out) {
-            out.beginObject("completion");
+        private void writeTo(StructuredOutput output) {
+            output.beginObject("completion");
             {
-                out.property("value", value);
-                out.property("fieldLabel", fieldLabel);
-                out.property("completionLabel", Strings.isFilled(completionLabel) ? completionLabel : fieldLabel);
-                out.property("completionDescription", completionDescription);
+                output.property("value", value);
+                output.property("fieldLabel", fieldLabel);
+                output.property("completionLabel", Strings.isFilled(completionLabel) ? completionLabel : fieldLabel);
+                output.property("completionDescription", completionDescription);
 
                 // LEGACY SUPPORT....
-                out.property("id", value);
-                out.property("text", fieldLabel == null ? "" : fieldLabel);
-                out.property("description", Strings.isFilled(completionLabel) ? completionLabel : fieldLabel);
+                output.property("id", value);
+                output.property("text", fieldLabel == null ? "" : fieldLabel);
+                output.property("description", Strings.isFilled(completionLabel) ? completionLabel : fieldLabel);
                 // END OF LEGACY SUPPORT
 
                 if (disabled) {
-                    out.property("disabled", true);
+                    output.property("disabled", true);
                 }
             }
-            out.endObject();
+            output.endObject();
         }
     }
 
@@ -150,83 +150,83 @@ public class AutocompleteHelper {
     /**
      * Handles the given request and generates the appropriate JSON as expected by the autocomplete in JavaScript.
      *
-     * @param ctx    the request to handle
-     * @param search the handler to generate suggestions
+     * @param webContext the request to handle
+     * @param search     the handler to generate suggestions
      */
-    public static void handle(WebContext ctx, ItemSearch search) {
-        StructuredOutput out = ctx.respondWith().json();
-        out.beginResult();
-        out.beginArray("completions");
-        search.search(ctx.get("query").asString(), c -> {
+    public static void handle(WebContext webContext, ItemSearch search) {
+        StructuredOutput output = webContext.respondWith().json();
+        output.beginResult();
+        output.beginArray("completions");
+        search.search(webContext.get("query").asString(), c -> {
             if (Strings.isFilled(c.value)) {
-                c.writeTo(out);
+                c.writeTo(output);
             }
         });
-        out.endArray();
-        out.endResult();
+        output.endArray();
+        output.endResult();
     }
 
     /**
      * Handles the given request and generates the appropriate JSON as expected by the autocomplete in JavaScript.
      * Also adds a "hasMore" entry with the given text if the given limit is reached.
      *
-     * @param ctx    the request to handle
-     * @param search the handler to generate suggestions
-     * @param limit  the maximum number of suggestions to generate
-     * @param hint   the hint to show for the "hasMore" entry
+     * @param webContext the request to handle
+     * @param search     the handler to generate suggestions
+     * @param limit      the maximum number of suggestions to generate
+     * @param hint       the hint to show for the "hasMore" entry
      */
-    public static void handleWithMore(WebContext ctx, ItemSearch search, int limit, String hint) {
+    public static void handleWithMore(WebContext webContext, ItemSearch search, int limit, String hint) {
         AtomicInteger counter = new AtomicInteger();
-        StructuredOutput out = ctx.respondWith().json();
-        out.beginResult();
-        out.beginArray("completions");
-        search.search(ctx.get("query").asString(), completion -> {
+        StructuredOutput output = webContext.respondWith().json();
+        output.beginResult();
+        output.beginArray("completions");
+        search.search(webContext.get("query").asString(), completion -> {
             if (counter.get() < limit) {
                 if (Strings.isFilled(completion.value)) {
-                    completion.writeTo(out);
+                    completion.writeTo(output);
                     counter.incrementAndGet();
                 }
             } else if (counter.get() == limit) {
-                new Completion("hasMore").markDisabled().withFieldLabel(hint).writeTo(out);
+                new Completion("hasMore").markDisabled().withFieldLabel(hint).writeTo(output);
                 counter.incrementAndGet();
             }
         });
-        out.endArray();
-        out.endResult();
+        output.endArray();
+        output.endResult();
     }
 
     /**
      * Handles the given request and generates the appropriate JSON as expected by the autocomplete in JavaScript.
      * Also adds a "hasMore" entry with "..." if the given limit is reached.
      *
-     * @param ctx    the request to handle
-     * @param search the handler to generate suggestions
-     * @param limit  the maximum number of suggestions to generate
+     * @param webContext the request to handle
+     * @param search     the handler to generate suggestions
+     * @param limit      the maximum number of suggestions to generate
      */
-    public static void handleWithMore(WebContext ctx, ItemSearch search, int limit) {
-        handleWithMore(ctx, search, limit, "...");
+    public static void handleWithMore(WebContext webContext, ItemSearch search, int limit) {
+        handleWithMore(webContext, search, limit, "...");
     }
 
     /**
      * Handles the given request and generates the appropriate JSON as expected by the autocomplete in JavaScript.
      * Also adds a "hasMore" entry with the given text if the DEFAULT_LIMIT limit is reached.
      *
-     * @param ctx    the request to handle
-     * @param search the handler to generate suggestions
-     * @param hint   the hint to show for the "hasMore" entry
+     * @param webContext the request to handle
+     * @param search     the handler to generate suggestions
+     * @param hint       the hint to show for the "hasMore" entry
      */
-    public static void handleWithMore(WebContext ctx, ItemSearch search, String hint) {
-        handleWithMore(ctx, search, DEFAULT_LIMIT, hint);
+    public static void handleWithMore(WebContext webContext, ItemSearch search, String hint) {
+        handleWithMore(webContext, search, DEFAULT_LIMIT, hint);
     }
 
     /**
      * Handles the given request and generates the appropriate JSON as expected by the autocomplete in JavaScript.
      * Also adds a "hasMore" entry with "..." if the DEFAULT_LIMIT is reached.
      *
-     * @param ctx    the request to handle
-     * @param search the handler to generate suggestions
+     * @param webContext the request to handle
+     * @param search     the handler to generate suggestions
      */
-    public static void handleWithMore(WebContext ctx, ItemSearch search) {
-        handleWithMore(ctx, search, DEFAULT_LIMIT, "...");
+    public static void handleWithMore(WebContext webContext, ItemSearch search) {
+        handleWithMore(webContext, search, DEFAULT_LIMIT, "...");
     }
 }
