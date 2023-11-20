@@ -12,6 +12,7 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.xml.StructuredOutput;
 import sirius.web.http.WebContext;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 /**
@@ -163,5 +164,69 @@ public class AutocompleteHelper {
         });
         out.endArray();
         out.endResult();
+    }
+
+    /**
+     * Handles the given request and generates the appropriate JSON as expected by the autocomplete in JavaScript.
+     * Also adds a "hasMore" entry with the given text if the given limit is reached.
+     *
+     * @param ctx    the request to handle
+     * @param search the handler to generate suggestions
+     * @param limit  the maximum number of suggestions to generate
+     * @param hint   the hint to show for the "hasMore" entry
+     */
+    public static void handleWithMore(WebContext ctx, ItemSearch search, int limit, String hint) {
+        AtomicInteger counter = new AtomicInteger();
+        StructuredOutput out = ctx.respondWith().json();
+        out.beginResult();
+        out.beginArray("completions");
+        search.search(ctx.get("query").asString(), completion -> {
+            if (counter.get() < limit) {
+                if (Strings.isFilled(completion.value)) {
+                    completion.writeTo(out);
+                    counter.incrementAndGet();
+                }
+            } else if (counter.get() == limit) {
+                new Completion("hasMore").markDisabled().withFieldLabel(hint).writeTo(out);
+                counter.incrementAndGet();
+            }
+        });
+        out.endArray();
+        out.endResult();
+    }
+
+    /**
+     * Handles the given request and generates the appropriate JSON as expected by the autocomplete in JavaScript.
+     * Also adds a "hasMore" entry with "..." if the given limit is reached.
+     *
+     * @param ctx    the request to handle
+     * @param search the handler to generate suggestions
+     * @param limit  the maximum number of suggestions to generate
+     */
+    public static void handleWithMore(WebContext ctx, ItemSearch search, int limit) {
+        handleWithMore(ctx, search, limit, "...");
+    }
+
+    /**
+     * Handles the given request and generates the appropriate JSON as expected by the autocomplete in JavaScript.
+     * Also adds a "hasMore" entry with the given text if the DEFAULT_LIMIT limit is reached.
+     *
+     * @param ctx    the request to handle
+     * @param search the handler to generate suggestions
+     * @param hint   the hint to show for the "hasMore" entry
+     */
+    public static void handleWithMore(WebContext ctx, ItemSearch search, String hint) {
+        handleWithMore(ctx, search, DEFAULT_LIMIT, hint);
+    }
+
+    /**
+     * Handles the given request and generates the appropriate JSON as expected by the autocomplete in JavaScript.
+     * Also adds a "hasMore" entry with "..." if the DEFAULT_LIMIT is reached.
+     *
+     * @param ctx    the request to handle
+     * @param search the handler to generate suggestions
+     */
+    public static void handleWithMore(WebContext ctx, ItemSearch search) {
+        handleWithMore(ctx, search, DEFAULT_LIMIT, "...");
     }
 }
