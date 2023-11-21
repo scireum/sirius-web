@@ -128,6 +128,11 @@
     background-color: #fdfdfd;
 }
 
+.token-autocomplete-container .token-autocomplete-suggestions li.token-autocomplete-suggestion-disabled, .token-autocomplete-container .token-autocomplete-suggestions li.token-autocomplete-suggestion-disabled:hover {
+    background-color: #cccccc;
+    cursor: unset;
+}
+
 .token-autocomplete-container .token-autocomplete-suggestions li.token-autocomplete-suggestion-active {
     color: #747474;
     background-color: #fdfdfd;
