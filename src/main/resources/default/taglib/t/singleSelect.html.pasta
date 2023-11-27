@@ -12,6 +12,7 @@
 <i:arg name="optional" type="boolean" default="false"/>
 <i:arg name="allowCustomEntries" type="boolean" default="false"/>
 <i:arg name="suggestionUri" type="String" default=""/>
+<i:arg name="dependencyFieldId" type="String" default=""/>
 
 <i:pragma name="description">
     Renders a select field for a single value using the given parameters. Note that additional flags can be set via CSS
@@ -51,6 +52,8 @@
 </div>
 <script>
     sirius.ready(function () {
+        const _dependencyField = document.getElementById('@dependencyFieldId');
+
         const autocomplete = new TokenAutocomplete(
             Object.assign({
                 selector: '#@id',
@@ -63,9 +66,24 @@
                 noMatchesText: '@i18n("template.html.selects.noMatches")',
                 noMatchesCustomEntriesDescription: '@i18n("template.html.selects.useCustomEntry")',
                 placeholderText: '@placeholder',
-                suggestionsUri: '@suggestionUri'
+                suggestionsUri: '@suggestionUri',
+                suggestionsUriBuilder: function (query) {
+                    let baseUri = this.suggestionsUri + '?query=' + encodeURIComponent(query);
+                    if (_dependencyField) {
+                        return baseUri + '&dependentValue=' + encodeURIComponent(_dependencyField.tokenAutocomplete.val().join());
+                    }
+                    return baseUri;
+                }
             }, <i:render name="autocompleteOptions"/>));
 
+        // Remove selected value if dependency field is cleared
+        if (_dependencyField) {
+            _dependencyField.addEventListener('tokens-changed', function (event) {
+                if (_dependencyField.tokenAutocomplete.val().length === 0) {
+                    autocomplete.select.clear();
+                }
+            });
+        }
         <i:render name="script"/>
     });
 </script>
