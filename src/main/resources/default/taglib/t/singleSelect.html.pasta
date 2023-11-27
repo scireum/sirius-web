@@ -68,22 +68,22 @@
                 placeholderText: '@placeholder',
                 suggestionsUri: '@suggestionUri',
                 suggestionsUriBuilder: function (query) {
-                    let baseUri = this.suggestionsUri + '?query=' + query;
+                    let baseUri = this.suggestionsUri + '?query=' + encodeURIComponent(query);
                     if (_dependencyField) {
-                        return baseUri + '&dependentValue=' + _dependencyField.tokenAutocomplete.val().join();
+                        return baseUri + '&dependentValue=' + encodeURIComponent(_dependencyField.tokenAutocomplete.val().join());
                     }
                     return baseUri;
                 }
             }, <i:render name="autocompleteOptions"/>));
 
-            // Remove selected value if dependency field is cleared
-            if (_dependencyField) {
-                _dependencyField.addEventListener('tokens-changed', function (event) {
-                    if(_dependencyField.tokenAutocomplete.val().length === 0) {
-                        autocomplete.select.clear();
-                    }
-                });
-            }
+        // Remove selected value if dependency field is cleared
+        if (_dependencyField) {
+            _dependencyField.addEventListener('tokens-changed', function (event) {
+                if (_dependencyField.tokenAutocomplete.val().length === 0) {
+                    autocomplete.select.clear();
+                }
+            });
+        }
         <i:render name="script"/>
     });
 </script>
