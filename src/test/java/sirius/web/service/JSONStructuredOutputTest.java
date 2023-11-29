@@ -49,7 +49,9 @@ class JSONStructuredOutputTest {
         out.writeProperty(null, objectNodeWithAmount);
         out.finalizeOutput();
 
-        assertEquals("{\"amountDefault\":1.23,\"amountRounded\":1.23456,\"amountNothing\":null}", byteArrayOutputStream.toString());
+        assertEquals("""
+                     {"amountDefault":1.23,"amountRounded":1.23456,"amountNothing":null}""",
+                     byteArrayOutputStream.toString());
     }
 
     @Test
@@ -61,8 +63,8 @@ class JSONStructuredOutputTest {
         out.writeProperty(null, array);
         out.finalizeOutput();
 
-        assertEquals("[{\"field1\":\"a\",\"field2\":1},{\"field1\":\"b\",\"field2\":2}]",
-                     byteArrayOutputStream.toString());
+        assertEquals("""
+                     [{"field1":"a","field2":1},{"field1":"b","field2":2}]""", byteArrayOutputStream.toString());
     }
 
     @Test
@@ -73,7 +75,8 @@ class JSONStructuredOutputTest {
         out.writeProperty(null, new POJONode(new AnObject("a", 1)));
         out.finalizeOutput();
 
-        assertEquals("{\"field1\":\"a\",\"field2\":1}", byteArrayOutputStream.toString());
+        assertEquals("""
+                     {"field1":"a","field2":1}""", byteArrayOutputStream.toString());
     }
 
     private static class AnObject {
