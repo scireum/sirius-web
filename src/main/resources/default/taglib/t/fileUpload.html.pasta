@@ -14,7 +14,8 @@
 <i:pragma name="description" value="Renders a file upload within a Tycho template"/>
 
 <div class="dropzone sirius-fileupload @class" id="@id">
-    <button class="dropzone-select btn @btnClass">
+    <button type="button"
+            class="dropzone-select btn @btnClass">
         <i class="fas fa-cloud-upload-alt"></i>
         <span class="pl-2 d-none d-xl-inline">
             @label
