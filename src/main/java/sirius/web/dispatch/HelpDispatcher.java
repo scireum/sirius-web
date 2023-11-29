@@ -27,7 +27,6 @@ import sirius.pasta.tagliatelle.Tagliatelle;
 import sirius.pasta.tagliatelle.Template;
 import sirius.web.controller.Message;
 import sirius.web.event.TemplateInvocationHandler;
-import sirius.web.http.Response;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 import sirius.web.resources.Resource;
@@ -128,13 +127,7 @@ public class HelpDispatcher implements WebDispatcher {
     private DispatchDecision serveTopic(WebContext ctx, String uri) {
         Template template = resolveTemplate(uri);
         if (template != null) {
-            Response response = ctx.respondWith();
-            if (template.isConstant()) {
-                response.cachedForSeconds((int) defaultStaticAssetTTL.getSeconds());
-            } else {
-                response.notCached();
-            }
-            response.template(HttpResponseStatus.OK, template);
+            ctx.respondWith().notCached().template(HttpResponseStatus.OK, template);
             return DispatchDecision.DONE;
         }
 
