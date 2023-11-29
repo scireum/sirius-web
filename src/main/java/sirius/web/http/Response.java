@@ -312,8 +312,7 @@ public class Response {
 
     private void setupHeaders(DefaultHttpResponse response) {
         // Add Server: nodeName as header
-        response.headers()
-                .set(HttpHeaderNames.SERVER, CallContext.getNodeName() + " (scireum SIRIUS - powered by Netty)");
+        response.headers().set(HttpHeaderNames.SERVER, CallContext.getNodeName());
 
         // Add a P3P-Header. This is used to disable the 3rd-Party auth handling of InternetExplorer
         // which is pretty broken and not used (google and facebook does the same).
