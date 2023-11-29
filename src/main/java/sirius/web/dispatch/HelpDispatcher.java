@@ -34,6 +34,7 @@ import sirius.web.resources.Resources;
 import sirius.web.security.UserContext;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -53,6 +54,9 @@ public class HelpDispatcher implements WebDispatcher {
 
     @ConfigValue("help.languages")
     private List<String> helpSystemLanguageDirectories;
+
+    @ConfigValue("http.response.defaultStaticAssetTTL")
+    private static Duration defaultStaticAssetTTL;
 
     @Part
     private Resources resources;
@@ -114,14 +118,16 @@ public class HelpDispatcher implements WebDispatcher {
             return DispatchDecision.CONTINUE;
         }
 
-        ctx.respondWith().resource(asset.getUrl().openConnection());
+        ctx.respondWith()
+           .cachedForSeconds((int) defaultStaticAssetTTL.getSeconds())
+           .resource(asset.getUrl().openConnection());
         return DispatchDecision.DONE;
     }
 
     private DispatchDecision serveTopic(WebContext ctx, String uri) {
         Template template = resolveTemplate(uri);
         if (template != null) {
-            ctx.respondWith().cached().template(HttpResponseStatus.OK, template);
+            ctx.respondWith().notCached().template(HttpResponseStatus.OK, template);
             return DispatchDecision.DONE;
         }
 
