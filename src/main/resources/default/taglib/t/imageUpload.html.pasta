@@ -26,7 +26,8 @@
         </div>
         <div class="dropzone-items mt-2 mb-2">
         </div>
-        <button class="dropzone-select btn btn-primary @btnClass">@label</button>
+        <button type="button"
+                class="dropzone-select btn btn-primary @btnClass">@label</button>
         <i:render name="body"/>
     </div>
 </div>
