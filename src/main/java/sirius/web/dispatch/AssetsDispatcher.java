@@ -140,12 +140,17 @@ public class AssetsDispatcher implements WebDispatcher {
             return;
         }
 
-        if (!constantAsset || uri.startsWith("/assets/no-cache/")) {
+        if (uri.startsWith("/assets/no-cache/")) {
             response.notCached();
             return;
         }
 
-        response.cachedForSeconds((int) defaultStaticAssetTTL.getSeconds());
+        if (constantAsset) {
+            response.cachedForSeconds((int) defaultStaticAssetTTL.getSeconds());
+            return;
+        }
+
+        response.cachedForSeconds(Response.obtainClientDurationInSeconds());
     }
 
     private String computeEffectiveURI(WebContext webContext) {
