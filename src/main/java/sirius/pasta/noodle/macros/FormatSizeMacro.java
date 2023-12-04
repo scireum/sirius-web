@@ -32,7 +32,7 @@ public class FormatSizeMacro extends BasicMacro {
 
     @Override
     public void verifyArguments(CompilationContext context, Position position, List<Class<?>> args) {
-        if (args.size() != 1 && !CompilationContext.isAssignableTo(args.get(0), Long.class)) {
+        if (args.size() != 1 && !CompilationContext.isAssignableTo(args.getFirst(), Long.class)) {
             throw new IllegalArgumentException("One parameter is expected");
         }
     }

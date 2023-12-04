@@ -81,7 +81,7 @@ public class VariableScoper {
          */
         public void pop() {
             while (variables.size() > maxIndex) {
-                variables.remove(variables.size() - 1);
+                variables.removeLast();
             }
         }
 

@@ -39,7 +39,7 @@ public class GenerateIdMacro extends BasicMacro {
         if (args.size() > 1) {
             throw new IllegalArgumentException("At most one argument is expected.");
         }
-        if (args.size() == 1 && !CompilationContext.isAssignableTo(args.get(0), String.class)) {
+        if (args.size() == 1 && !CompilationContext.isAssignableTo(args.getFirst(), String.class)) {
             throw new IllegalArgumentException("Expects a format string as parameter");
         }
     }

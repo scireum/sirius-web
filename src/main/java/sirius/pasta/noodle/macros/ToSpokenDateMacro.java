@@ -33,7 +33,7 @@ public class ToSpokenDateMacro extends BasicMacro {
 
     @Override
     public void verifyArguments(CompilationContext context, Position position, List<Class<?>> args) {
-        if (args.size() != 1 || !CompilationContext.isAssignableTo(args.get(0), Temporal.class)) {
+        if (args.size() != 1 || !CompilationContext.isAssignableTo(args.getFirst(), Temporal.class)) {
             throw new IllegalArgumentException("Expected a single Temporal argument");
         }
     }

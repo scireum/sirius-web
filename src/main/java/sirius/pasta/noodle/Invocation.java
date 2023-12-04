@@ -594,6 +594,6 @@ public class Invocation {
         if (stack.isEmpty()) {
             throw createVmError("Stack underflow");
         }
-        return stack.remove(stack.size() - 1);
+        return stack.removeLast();
     }
 }

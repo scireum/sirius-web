@@ -43,7 +43,7 @@ public class Base64ResourceMacro extends BasicMacro implements SassFunction {
 
     @Override
     protected void verifyArguments(CompilationContext compilationContext, Position position, List<Class<?>> args) {
-        if (args.size() != 1 || !CompilationContext.isAssignableTo(args.get(0), String.class)) {
+        if (args.size() != 1 || !CompilationContext.isAssignableTo(args.getFirst(), String.class)) {
             throw new IllegalArgumentException("Expected a single String as argument.");
         }
     }
@@ -52,8 +52,8 @@ public class Base64ResourceMacro extends BasicMacro implements SassFunction {
     public void verify(CompilationContext context, Position position, List<Node> args) {
         super.verify(context, position, args);
 
-        if (args.get(0).isConstant()) {
-            String resourceName = String.valueOf(args.get(0).getConstantValue());
+        if (args.getFirst().isConstant()) {
+            String resourceName = String.valueOf(args.getFirst().getConstantValue());
             if (resources.resolve(resourceName).isEmpty()) {
                 context.warning(position, "Unknown resource: %s", resourceName);
             }
@@ -62,7 +62,7 @@ public class Base64ResourceMacro extends BasicMacro implements SassFunction {
 
     @Override
     public boolean isConstant(CompilationContext context, List<Node> args) {
-        return args.get(0).isConstant();
+        return args.getFirst().isConstant();
     }
 
     @Override

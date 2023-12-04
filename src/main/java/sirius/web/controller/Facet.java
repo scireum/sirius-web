@@ -164,7 +164,7 @@ public class Facet {
      */
     @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getValue() {
-        return !values.isEmpty() ? values.get(0) : null;
+        return !values.isEmpty() ? values.getFirst() : null;
     }
 
     /**

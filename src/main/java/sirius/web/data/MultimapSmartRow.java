@@ -59,7 +59,7 @@ class MultimapSmartRow implements SmartRow {
         if (values.isEmpty()) {
             return Value.of(defaultValue);
         } else {
-            return values.get(0);
+            return values.getFirst();
         }
     }
 
@@ -81,7 +81,7 @@ class MultimapSmartRow implements SmartRow {
         if (values.isEmpty()) {
             return Value.of(defaultValue);
         } else {
-            return values.get(values.size() - 1);
+            return values.getLast();
         }
     }
 

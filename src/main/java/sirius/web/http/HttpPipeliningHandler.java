@@ -84,7 +84,7 @@ public class HttpPipeliningHandler extends ChannelDuplexHandler {
             currentRequest = null;
 
             if (!bufferedRequests.isEmpty()) {
-                currentRequest = bufferedRequests.remove(0);
+                currentRequest = bufferedRequests.removeFirst();
                 ctx.fireChannelRead(currentRequest);
                 ctx.fireChannelRead(LastHttpContent.EMPTY_LAST_CONTENT);
             }

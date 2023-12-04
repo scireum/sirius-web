@@ -58,7 +58,7 @@ public class InlineResourceMacro extends BasicMacro {
 
     @Override
     public void verifyArguments(CompilationContext context, Position position, List<Class<?>> args) {
-        if (args.size() != 1 || !CompilationContext.isAssignableTo(args.get(0), String.class)) {
+        if (args.size() != 1 || !CompilationContext.isAssignableTo(args.getFirst(), String.class)) {
             throw new IllegalArgumentException("Expected a single String as argument.");
         }
     }
@@ -67,19 +67,19 @@ public class InlineResourceMacro extends BasicMacro {
     public void verify(CompilationContext context, Position position, List<Node> args) {
         super.verify(context, position, args);
 
-        if (args.get(0).isConstant()) {
-            String resourceName = String.valueOf(args.get(0).getConstantValue());
+        if (args.getFirst().isConstant()) {
+            String resourceName = String.valueOf(args.getFirst().getConstantValue());
             if (resources.resolve(resourceName).isEmpty()) {
                 context.warning(position, "Unknown resource: %s", resourceName);
             }
         }
 
         if (context.getSandboxMode() != SandboxMode.DISABLED) {
-            if (!args.get(0).isConstant()) {
+            if (!args.getFirst().isConstant()) {
                 raiseSandboxRestriction(context,
                                         position,
                                         "Only constant resource paths are supported due to sandbox restrictions.");
-            } else if (String.valueOf(args.get(0).getConstantValue()).endsWith(PASTA_SUFFIX)) {
+            } else if (String.valueOf(args.getFirst().getConstantValue()).endsWith(PASTA_SUFFIX)) {
                 raiseSandboxRestriction(context,
                                         position,
                                         "Only constant resources are supported due to sandbox restrictions.");
@@ -134,10 +134,10 @@ public class InlineResourceMacro extends BasicMacro {
 
     @Override
     public boolean isConstant(CompilationContext context, List<Node> args) {
-        if (!args.get(0).isConstant()) {
+        if (!args.getFirst().isConstant()) {
             return false;
         }
 
-        return !String.valueOf(args.get(0).getConstantValue()).endsWith(PASTA_SUFFIX);
+        return !String.valueOf(args.getFirst().getConstantValue()).endsWith(PASTA_SUFFIX);
     }
 }

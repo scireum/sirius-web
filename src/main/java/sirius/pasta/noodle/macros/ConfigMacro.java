@@ -36,12 +36,12 @@ public class ConfigMacro extends BasicMacro {
 
     @Override
     public void verify(CompilationContext context, Position position, List<Node> args) {
-        if (args.size() != 1 || !CompilationContext.isAssignableTo(args.get(0).getType(), String.class)) {
+        if (args.size() != 1 || !CompilationContext.isAssignableTo(args.getFirst().getType(), String.class)) {
             throw new IllegalArgumentException("Expects a single string as argument.");
         }
 
-        if (args.get(0).isConstant()) {
-            String configKey = (String) args.get(0).getConstantValue();
+        if (args.getFirst().isConstant()) {
+            String configKey = (String) args.getFirst().getConstantValue();
             if (!Sirius.getSettings().has(configKey)) {
                 context.warning(position, "Unknown config value: '%s'", configKey);
             }
