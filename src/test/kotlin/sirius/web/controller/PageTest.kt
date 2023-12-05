@@ -10,56 +10,53 @@
 package sirius.web.controller
 
 import spock.lang.Specification
+import java.awt.Stroke
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 
-class PageSpec extends Specification {
+class PageTest {
 
-
-    def "linkToPageWithConfigurableStart() returns 'start=' if no filters are set"() {
-        given:
-        Page page = new Page()
-        when:
-        def result = page.linkToPageWithConfigurableStart('/test')
-        then:
-        result == "/test?start="
+    @Test
+    fun `linkToPageWithConfigurableStart() returns 'start=' if no filters are set`() {
+        val page: Page<String> = Page()
+        val result = page.linkToPageWithConfigurableStart("/test")
+        assertEquals("/test?start=", result)
     }
 
-    def "linkToCurrentPage() works with an URI that already contains a query string"() {
-        given:
-        Page page = new Page()
-        when:
-        page.withQuery("QUERY").
-        withFacets([
-            new Facet("", "field1", "value1", null),
-        new Facet("", "field2", "value2", null)
-        ])
-        and:
-        def result = page.linkToCurrentPage('/test?hallo=welt')
-        then:
-        result == '/test?hallo=welt&query=QUERY&field1=value1&field2=value2'
+    @Test
+    fun `linkToCurrentPage() works with an URI that already contains a query string`() {
+        val page: Page<String> = Page()
+        page.withQuery("QUERY").withFacets(
+            listOf(
+                Facet("", "field1", "value1", null),
+                Facet("", "field2", "value2", null)
+            )
+        )
+        val result = page.linkToCurrentPage("/test?hallo=welt")
+        assertEquals("/test?hallo=welt&query=QUERY&field1=value1&field2=value2", result)
     }
 
-    def "linkToPageWithConfigurableStart() returns a valid query string ending with start="() {
-        given:
-        Page page = new Page()
-        when:
-        page.withQuery("QUERY").
-        withFacets([
-            new Facet("", "field1", "value1", null),
-        new Facet("", "field2", "value2", null)
-        ])
-        and:
-        def result = page.linkToPageWithConfigurableStart('/test')
-        then:
+    @Test
+    fun `linkToPageWithConfigurableStart() returns a valid query string ending with start=`() {
+        val page: Page<String> = Page()
+        page.withQuery("QUERY").withFacets(
+            listOf(
+                Facet("", "field1", "value1", null),
+                Facet("", "field2", "value2", null)
+            )
+        )
+        val result = page.linkToPageWithConfigurableStart("/test")
         result.contains("field1=value1&")
         result.contains("field2=value2&")
         result.contains("query=QUERY&")
         result.endsWith("&start=")
     }
 
-    def "withLimitedItemsSupplier() removes elements which exceed the page size"() {
-        given:
-        def limitPage = new Page<>().withPageSize(5)
-        def elementsList = new ArrayList()
+    @Test
+    fun `withLimitedItemsSupplier() removes elements which exceed the page size`() {
+        val limitPage = Page<String>().withPageSize(5)
+        val elementsList = ArrayList<String>()
         elementsList.add("1")
         elementsList.add("2")
         elementsList.add("3")
@@ -67,33 +64,25 @@ class PageSpec extends Specification {
         elementsList.add("5")
         elementsList.add("6")
         elementsList.add("7")
-        when:
-        limitPage.withLimitedItemsSupplier{limit -> elementsList}
-        then:
-        limitPage.getItems().size() == 5
-        and:
-        limitPage.hasMore() == true
-        and:
-        limitPage.getItems().get(4) == "5"
-        limitPage.getItems().get(0) == "1"
+        limitPage.withLimitedItemsSupplier { limit -> elementsList }
+        assertEquals(5, limitPage.getItems().size)
+        assertEquals(true, limitPage.hasMore())
+        assertEquals("5", limitPage.getItems().get(4))
+        assertEquals("1", limitPage.getItems().get(0))
     }
 
-    def "withLimitedItemsSupplier() with a list smaller than the page size does not crash"() {
-        given:
-        def limitPage = new Page<>().withPageSize(5)
-        def elementsList = new ArrayList()
+    @Test
+    fun `withLimitedItemsSupplier() with a list smaller than the page size does not crash`() {
+        val limitPage = Page<String>().withPageSize(5)
+        val elementsList = ArrayList<String>()
         elementsList.add("1")
         elementsList.add("2")
         elementsList.add("3")
-        when:
-        limitPage.withLimitedItemsSupplier{limit -> elementsList}
-        then:
-        limitPage.getItems().size() == 3
-        and:
-        limitPage.hasMore() == false
-        and:
-        limitPage.getItems().get(2) == "3"
-        limitPage.getItems().get(0) == "1"
+        limitPage.withLimitedItemsSupplier { limit -> elementsList }
+        assertEquals(3, limitPage.getItems().size)
+        assertFalse(limitPage.hasMore())
+        assertEquals("3", limitPage.getItems().get(2))
+        assertEquals("1", limitPage.getItems().get(0))
     }
 
 }
