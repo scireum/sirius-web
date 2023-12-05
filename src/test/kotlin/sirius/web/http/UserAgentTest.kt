@@ -12,6 +12,9 @@ import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
+/**
+ * Tests the [UserAgent] class.
+ */
 class UserAgentTest {
     @Test
     fun `UserAgent detects mobile Chrome on Android phone`() {
