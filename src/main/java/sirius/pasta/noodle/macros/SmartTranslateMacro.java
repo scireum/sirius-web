@@ -33,11 +33,11 @@ public class SmartTranslateMacro extends BasicMacro {
 
     @Override
     public void verify(CompilationContext context, Position position, List<Node> args) {
-        if (args.size() != 1 || !CompilationContext.isAssignableTo(args.get(0).getType(), String.class)) {
+        if (args.size() != 1 || !CompilationContext.isAssignableTo(args.getFirst().getType(), String.class)) {
             throw new IllegalArgumentException("Expected a single String as argument.");
         }
 
-        Node expression = args.get(0);
+        Node expression = args.getFirst();
         if (expression.isConstant()) {
             String key = (String) expression.getConstantValue();
             if (key == null || !key.startsWith("$")) {
@@ -71,11 +71,11 @@ public class SmartTranslateMacro extends BasicMacro {
     public boolean isConstant(CompilationContext context, List<Node> args) {
         // This macro is inherently not constant unless it is invoked for an empty string
         // or for a literal (which doesn't start with a $)
-        if (args.size() != 1 || !args.get(0).isConstant()) {
+        if (args.size() != 1 || !args.getFirst().isConstant()) {
             return false;
         }
 
-        Object value = args.get(0).getConstantValue();
+        Object value = args.getFirst().getConstantValue();
         return Strings.isEmpty(value) || !value.toString().startsWith("$");
     }
 

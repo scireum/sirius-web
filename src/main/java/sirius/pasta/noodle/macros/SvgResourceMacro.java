@@ -69,7 +69,7 @@ public class SvgResourceMacro extends XmlProcessingMacro implements SassFunction
         super.verify(context, position, args);
 
         if (args.get(0).isConstant()) {
-            String resourceName = String.valueOf(args.get(0).getConstantValue());
+            String resourceName = String.valueOf(args.getFirst().getConstantValue());
             if (resources.resolve(resourceName).isEmpty()) {
                 context.warning(position, "Unknown resource: %s", resourceName);
             }

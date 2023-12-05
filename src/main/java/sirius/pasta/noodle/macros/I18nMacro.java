@@ -86,8 +86,8 @@ public class I18nMacro extends BasicMacro {
     @Override
     public boolean isConstant(CompilationContext context, List<Node> args) {
         // An i18n macro is inherently not constant unless it is invoked for an empty string
-        return (args.size() == 1 || args.size() == 2) && args.get(0).isConstant() && Strings.isEmpty(args.get(0)
-                                                                                                         .getConstantValue());
+        return (args.size() == 1 || args.size() == 2) && args.getFirst().isConstant() && Strings.isEmpty(args.getFirst()
+                                                                                                             .getConstantValue());
     }
 
     @Nonnull

@@ -32,7 +32,7 @@ public class MonthNameMacro extends BasicMacro {
 
     @Override
     public void verifyArguments(CompilationContext context, Position position, List<Class<?>> args) {
-        if (args.size() != 1 || !CompilationContext.isAssignableTo(args.get(0), int.class)) {
+        if (args.size() != 1 || !CompilationContext.isAssignableTo(args.getFirst(), int.class)) {
             throw new IllegalArgumentException("Expected exactly one argument as an int.");
         }
     }

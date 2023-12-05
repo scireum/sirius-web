@@ -80,7 +80,7 @@ public class CompositeEmitter extends Emitter {
         }
 
         if (result.children.size() == 1) {
-            return result.children.get(0);
+            return result.children.getFirst();
         }
 
         return result;
@@ -157,12 +157,12 @@ public class CompositeEmitter extends Emitter {
         }
 
         // trim the first child from the front
-        if (children.get(0) instanceof ConstantEmitter firstConstantEmitter) {
+        if (children.getFirst() instanceof ConstantEmitter firstConstantEmitter) {
             firstConstantEmitter.stripLeadingLineBreak();
         }
 
         // trim the last child from the back
-        if (children.get(children.size() - 1) instanceof ConstantEmitter lastConstantEmitter) {
+        if (children.getLast() instanceof ConstantEmitter lastConstantEmitter) {
             lastConstantEmitter.stripTrailingLineBreak();
         }
 

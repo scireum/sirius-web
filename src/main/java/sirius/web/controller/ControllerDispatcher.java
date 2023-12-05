@@ -161,7 +161,7 @@ public class ControllerDispatcher implements WebDispatcher {
             }
 
             // Inject WebContext as first parameter...
-            params.add(0, webContext);
+            params.addFirst(webContext);
 
             // If a route is pre-dispatchable we inject an InputStream as last parameter of the
             // call. This is also checked by the route-compiler

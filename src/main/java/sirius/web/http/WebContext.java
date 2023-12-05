@@ -576,7 +576,7 @@ public class WebContext implements SubContext {
         if (queryString.containsKey(key)) {
             List<String> val = getParameters(key);
             if (val.size() == 1) {
-                return Value.of(val.get(0));
+                return Value.of(val.getFirst());
             } else if (val.isEmpty()) {
                 return Value.EMPTY;
             } else {
@@ -599,7 +599,7 @@ public class WebContext implements SubContext {
             if (dataList == null || dataList.isEmpty()) {
                 return Value.EMPTY;
             } else if (dataList.size() == 1) {
-                return Value.of(transformHttpData(dataList.get(0)));
+                return Value.of(transformHttpData(dataList.getFirst()));
             } else {
                 List<String> attributes = dataList.stream()
                                                   .map(this::transformHttpData)

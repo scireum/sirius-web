@@ -33,8 +33,8 @@ public class HelperMacro extends BasicMacro {
 
     @Override
     public Class<?> getType(List<Node> args) {
-        if (!args.isEmpty() && args.get(0).isConstant() && Class.class.isAssignableFrom(args.get(0).getType())) {
-            return (Class<?>) args.get(0).getConstantValue();
+        if (!args.isEmpty() && args.getFirst().isConstant() && Class.class.isAssignableFrom(args.getFirst().getType())) {
+            return (Class<?>) args.getFirst().getConstantValue();
         }
 
         return super.getType(args);
@@ -47,7 +47,7 @@ public class HelperMacro extends BasicMacro {
 
     @Override
     public void verify(CompilationContext context, Position position, List<Node> args) {
-        if (args.size() != 1 || !args.get(0).isConstant() || !Class.class.isAssignableFrom(args.get(0).getType())) {
+        if (args.size() != 1 || !args.getFirst().isConstant() || !Class.class.isAssignableFrom(args.getFirst().getType())) {
             throw new IllegalArgumentException("Expected a single constant class as argument.");
         }
     }

@@ -45,7 +45,7 @@ public class BlockStatement extends Statement {
     public void addStatement(Node statement, CompilationContext compilationContext) {
         if (returnType != null) {
             // Only report the first statement as dead code and skip all others...
-            if (statements.get(statements.size() - 1) instanceof ReturnStatement) {
+            if (statements.getLast() instanceof ReturnStatement) {
                 compilationContext.error(position, "Dead code: Nothing after a return statement will be executed.");
             }
 
@@ -68,7 +68,7 @@ public class BlockStatement extends Statement {
                 statements.stream().map(statement -> statement.reduce(compilationContext)).collect(Collectors.toList());
 
         if (statements.size() == 1) {
-            return statements.get(0);
+            return statements.getFirst();
         }
 
         return this;
