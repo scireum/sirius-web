@@ -43,14 +43,14 @@ class JSONStructuredOutputTest {
         JSONStructuredOutput out = new JSONStructuredOutput(byteArrayOutputStream, null, StandardCharsets.UTF_8.name());
 
         ObjectNode objectNodeWithAmount = Json.createObject();
-        objectNodeWithAmount.putPOJO("amountDefault", Amount.of(1.23456));
-        objectNodeWithAmount.putPOJO("amountRounded", Amount.ofRounded(BigDecimal.valueOf(1.23456)));
+        objectNodeWithAmount.putPOJO("amountDefault", Amount.of(1.234567));
+        objectNodeWithAmount.putPOJO("amountRounded", Amount.ofRounded(BigDecimal.valueOf(1.234567)));
         objectNodeWithAmount.putPOJO("amountNothing", Amount.NOTHING);
         out.writeProperty(null, objectNodeWithAmount);
         out.finalizeOutput();
 
         assertEquals("""
-                     {"amountDefault":1.23,"amountRounded":1.23456,"amountNothing":null}""",
+                     {"amountDefault":1.23,"amountRounded":1.234567,"amountNothing":null}""",
                      byteArrayOutputStream.toString());
     }
 
