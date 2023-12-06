@@ -15,18 +15,19 @@ import java.io.ByteArrayOutputStream
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+
 /**
  * Tests the [JSONStructuredOutput] class.
  */
 class JsonOutputTest {
     @Test
     fun `json output uses attributes`() {
-        val os =  ByteArrayOutputStream()
-        val out =  JSONStructuredOutput(os, null, "UTF8");
-        out.beginResult("test")
-        out.beginObject("1", Attribute.set("a", "b"))
-        out.endObject()
-        out.endResult()
-        assertEquals("""{"1":{"a":"b"}}""",os.toString())
+        val outputStream = ByteArrayOutputStream()
+        val jsonOutput = JSONStructuredOutput(outputStream, null, "UTF8");
+        jsonOutput.beginResult("test")
+        jsonOutput.beginObject("1", Attribute.set("a", "b"))
+        jsonOutput.endObject()
+        jsonOutput.endResult()
+        assertEquals("""{"1":{"a":"b"}}""", outputStream.toString())
     }
 }
