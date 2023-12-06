@@ -16,7 +16,7 @@ import sirius.kernel.SiriusExtension
 import sirius.web.sass.Output
 import java.io.StringWriter
 import java.net.URL
-import kotlin.test.Test
+import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 
