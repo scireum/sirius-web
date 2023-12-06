@@ -63,7 +63,11 @@ public class Mails implements MetricProvider {
     @Override
     public void gather(MetricsCollector collector) {
         collector.metric("mails_out", "mails-out", "Mails Sent", mailsOut.getCount(), null);
-        collector.metric("mails_duration", "mails-duration", "Send Mail Duration", mailsOut.getAndClear(), Metric.UNIT_MS);
+        collector.metric("mails_duration",
+                         "mails-duration",
+                         "Send Mail Duration",
+                         mailsOut.getAndClear(),
+                         Metric.UNIT_MS);
     }
 
     /**
@@ -120,5 +124,14 @@ public class Mails implements MetricProvider {
                             .set("address", Strings.isFilled(name) ? address + " (" + name + ")" : address)
                             .handle();
         }
+    }
+
+    /**
+     * Updated the mail metrics to count sent mails and their duration.
+     *
+     * @param time the time it took to send the mail
+     */
+    public void updateMailsMetric(long time) {
+        mailsOut.addValue(time);
     }
 }
