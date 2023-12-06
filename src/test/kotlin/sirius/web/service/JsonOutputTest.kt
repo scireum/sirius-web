@@ -21,7 +21,7 @@ import kotlin.test.assertEquals
 class JsonOutputTest {
     @Test
     fun `json output uses attributes`() {
-        val os =  ByteArrayOutputStream();
+        val os =  ByteArrayOutputStream()
         val out =  JSONStructuredOutput(os, null, "UTF8");
         out.beginResult("test")
         out.beginObject("1", Attribute.set("a", "b"))
