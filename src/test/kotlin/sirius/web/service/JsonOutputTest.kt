@@ -8,22 +8,23 @@
 
 package sirius.web.service
 
-import groovy.json.JsonSlurper
-import sirius.kernel.BaseSpecification
+
 import sirius.kernel.xml.Attribute
 import sirius.web.services.JSONStructuredOutput
+import java.io.ByteArrayOutputStream
 
-class JsonOutputSpec extends BaseSpecification {
-    def "json output uses attributes"() {
-        given:
-        OutputStream os = new ByteArrayOutputStream();
-        JSONStructuredOutput out = new JSONStructuredOutput(os, null, "UTF8");
-        when:
+import kotlin.test.Test
+import kotlin.test.assertEquals
+
+class JsonOutputTest {
+    @Test
+    fun `json output uses attributes`() {
+        val os =  ByteArrayOutputStream();
+        val out =  JSONStructuredOutput(os, null, "UTF8");
         out.beginResult("test");
         out.beginObject("1", Attribute.set("a", "b"))
         out.endObject()
-        out.endResult();
-        then:
-        os.toString() == """{"1":{"a":"b"}}""";
+        out.endResult()
+        assertEquals("""{"1":{"a":"b"}}""",os.toString())
     }
 }
