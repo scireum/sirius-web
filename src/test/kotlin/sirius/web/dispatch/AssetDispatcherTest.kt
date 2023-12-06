@@ -36,7 +36,7 @@ class AssetsDispatcherTest {
         /assets/no-cache/test/test.js   | no-cache, max-age=0
         /assets/dynamic/X/test/test.css | public, max-age=615168000
         /assets/dynamic/X/test/test.txt | public, max-age=615168000
-        /assets/dynamic/X/test/test.js  | 'public, max-age=615168000"""
+        /assets/dynamic/X/test/test.js  | public, max-age=615168000"""
     )
     @ParameterizedTest
     fun `proper caching set for all kind of assets and cache-control URIs`(uri: String, header: String) {
