@@ -10,7 +10,6 @@ package sirius.web.service
 
 
 import sirius.kernel.xml.Attribute
-import sirius.web.http.UserAgent
 import sirius.web.services.JSONStructuredOutput
 import java.io.ByteArrayOutputStream
 
@@ -24,7 +23,7 @@ class JsonOutputTest {
     fun `json output uses attributes`() {
         val os =  ByteArrayOutputStream();
         val out =  JSONStructuredOutput(os, null, "UTF8");
-        out.beginResult("test");
+        out.beginResult("test")
         out.beginObject("1", Attribute.set("a", "b"))
         out.endObject()
         out.endResult()
