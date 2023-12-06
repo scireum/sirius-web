@@ -10,12 +10,15 @@ package sirius.web.service
 
 
 import sirius.kernel.xml.Attribute
+import sirius.web.http.UserAgent
 import sirius.web.services.JSONStructuredOutput
 import java.io.ByteArrayOutputStream
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-
+/**
+ * Tests the [JSONStructuredOutput] class.
+ */
 class JsonOutputTest {
     @Test
     fun `json output uses attributes`() {
