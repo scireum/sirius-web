@@ -8,34 +8,33 @@
 
 package sirius.web.security
 
-import sirius.kernel.BaseSpecification
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import sirius.kernel.SiriusExtension
 import sirius.web.http.TestRequest
 import sirius.web.http.TestResponse
+import kotlin.test.assertEquals
 
+@ExtendWith(SiriusExtension::class)
+class PermissionAnnotationTest {
 
-class PermissionAnnotationSpec extends BaseSpecification {
-
-    def "user can access '/system/tags', when permission is given"() {
-        given:
-        UserContext.get().
-        setCurrentUser(UserInfo.Builder.createUser("test").
-        withPermissions(["permission-system-tags"] as Set).build())
-        when:
-        def response = TestRequest.GET("/system/tags").execute()
-        then:
-        response.getType() == TestResponse.ResponseType.TEMPLATE
-        response.getTemplateName() == "/templates/system/tags.html.pasta"
+    @Test
+    fun `user can access 'system tags', when permission is given`() {
+        UserContext.get().setCurrentUser(
+            UserInfo.Builder.createUser("test").withPermissions(setOf("permission-system-tags")).build()
+        )
+        val response = TestRequest.GET("/system/tags").execute()
+        assertEquals(TestResponse.ResponseType.TEMPLATE, response.getType())
+        assertEquals("/templates/system/tags.html.pasta", response.getTemplateName())
     }
 
-    def "user can't access '/system/tags', when permission is not given"() {
-        given:
-        UserContext.get().
-        setCurrentUser(UserInfo.Builder.createUser("test").
-        withPermissions([] as Set).build())
-        when:
-        def response = TestRequest.GET("/system/tags").execute()
-        then:
-        response.getType() == TestResponse.ResponseType.ERROR
+    @Test
+    fun `user can't access 'system tags', when permission is not given`() {
+        UserContext.get().setCurrentUser(
+            UserInfo.Builder.createUser("test").withPermissions(setOf()).build()
+        )
+        val response = TestRequest.GET("/system/tags").execute()
+        assertEquals(TestResponse.ResponseType.ERROR, response.getType())
     }
 
 }
