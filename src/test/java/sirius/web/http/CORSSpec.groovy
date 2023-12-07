@@ -16,8 +16,7 @@ class CORSSpec extends BaseSpecification {
 
     def "expect 'Access-Control-Allow-Origin' for requests with 'origin'"() {
         when:
-        // Allow us to set the Origin: header...
-        System.setProperty("sun.net.http.allowRestrictedHeaders", "true")
+        // Setting the "Origin: header" must be allowed by -Dsun.net.http.allowRestrictedHeaders=true
         HttpURLConnection c = new URL("http://localhost:9999/system/ok").openConnection()
         c.addRequestProperty("Origin", "TEST")
 
