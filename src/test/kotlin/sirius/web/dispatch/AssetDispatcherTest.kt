@@ -26,7 +26,7 @@ import kotlin.test.assertEquals
 @ExtendWith(SiriusExtension::class)
 class AssetsDispatcherTest {
     @CsvSource(
-        delimiter = '|', useHeadersInDisplayName = true, textBlock = """
+            delimiter = '|', useHeadersInDisplayName = true, textBlock = """
          uri                            | header
         /assets/test/test.css           | public, max-age=21600
         /assets/test/test.txt           | public, max-age=21600
@@ -42,7 +42,6 @@ class AssetsDispatcherTest {
     fun `proper caching set for all kind of assets and cache-control URIs`(uri: String, header: String) {
         val connection = URL("http://localhost:9999" + uri).openConnection()
         assertEquals(header, connection.getHeaderField(HttpHeaderNames.CACHE_CONTROL.toString()))
-
     }
 
     @Test
@@ -50,12 +49,11 @@ class AssetsDispatcherTest {
         val generator = SiriusSassGenerator()
         generator.importStylesheet("/assets/test_base64.scss")
         generator.compile()
-
         val writer = StringWriter()
         generator.generate(Output(writer, true))
         assertEquals(
-            "test { background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4QsODw4S4KU/XgAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAAdElEQVRYw+3Q3Q1AMAAA4ar+qHhghq7SBQ3CPsQO5a1JS0wh+nA3wZdr5hBEfUlRZbBgwYIFCxYsWLBgwYIFCxYsWLBgwYIFCxYsWLBgfZSqDRRtWv1eC2vx2zFGV7S5pX2U+n3M2SWX1ZCNv6a+aHNL/bQvbxUXkThEKBQAAAAASUVORK5CYII=); }\n ",
-            writer.toString()
+                "test { background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4QsODw4S4KU/XgAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAAdElEQVRYw+3Q3Q1AMAAA4ar+qHhghq7SBQ3CPsQO5a1JS0wh+nA3wZdr5hBEfUlRZbBgwYIFCxYsWLBgwYIFCxYsWLBgwYIFCxYsWLBgfZSqDRRtWv1eC2vx2zFGV7S5pX2U+n3M2SWX1ZCNv6a+aHNL/bQvbxUXkThEKBQAAAAASUVORK5CYII=); }\n ",
+                writer.toString()
         )
     }
 
