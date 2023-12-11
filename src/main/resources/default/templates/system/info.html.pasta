@@ -74,7 +74,9 @@
                         <tr>
                             <td>@name</td>
                             <td class="text-right">
-                                <div style="word-wrap: break-word; word-break: break-all">@webContext.getSessionValue(name)</div>
+                                <div style="word-wrap: break-word; word-break: break-all">
+                                    @webContext.getSessionValue(name)
+                                </div>
                             </td>
                         </tr>
                     </i:for>
