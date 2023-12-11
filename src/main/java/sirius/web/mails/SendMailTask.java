@@ -206,7 +206,7 @@ class SendMailTask implements Runnable {
                         mail.remainingAttempts.get());
 
                 // Re-schedule mail in async task...
-               mail.sendMailAsync();
+                mail.sendMailAsync();
 
                 return;
             }
@@ -368,7 +368,8 @@ class SendMailTask implements Runnable {
 
     private Session getMailSession(SMTPConfiguration config) {
         Properties props = new Properties();
-        props.setProperty(MAIL_SMTP_PORT, Strings.isEmpty(config.getMailPort()) ? DEFAULT_SMTP_PORT : config.getMailPort());
+        props.setProperty(MAIL_SMTP_PORT,
+                          Strings.isEmpty(config.getMailPort()) ? DEFAULT_SMTP_PORT : config.getMailPort());
         props.setProperty(MAIL_SMTP_HOST, config.getMailHost());
         if (Strings.isFilled(config.getMailSender())) {
             props.setProperty(MAIL_FROM, config.getMailSender());
