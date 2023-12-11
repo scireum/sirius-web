@@ -131,7 +131,7 @@ public class Mails implements MetricProvider {
      *
      * @param time the time it took to send the mail
      */
-    public void updateMailsMetric(long time) {
+    public void collectMailSendMetric(long time) {
         mailsOut.addValue(time);
     }
 }

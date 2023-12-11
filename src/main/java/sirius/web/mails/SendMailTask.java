@@ -228,7 +228,7 @@ class SendMailTask implements Runnable {
         // We either successfully completed (or finally failed) sending the task - log mail and cleanup scheduler...
         tasks.forgetSynchronizer(mail.internalMessageId);
         logSentMail();
-        mails.updateMailsMetric(mailSendTime.elapsedMillis());
+        mails.collectMailSendMetric(mailSendTime.elapsedMillis());
     }
 
     private void sendMailViaTransport(Session session, Transport transport) {
