@@ -1,4 +1,4 @@
-<i:arg type="sirius.web.http.WebContext" name="webContext" />
+<i:arg type="sirius.web.http.WebContext" name="webContext"/>
 
 <t:page title="Client Info">
     <i:block name="breadcrumbs">
@@ -83,4 +83,3 @@
         </div>
     </i:if>
 </t:page>
-
