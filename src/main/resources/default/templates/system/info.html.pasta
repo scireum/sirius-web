@@ -55,7 +55,7 @@
                         <tr>
                             <td>@cookie.name()</td>
                             <td class="text-right">
-                                @cookie.value()
+                                <div style="word-wrap: break-word; word-break: break-all">@cookie.value()</div>
                             </td>
                             <td class="text-center">@cookie.isSecure()</td>
                             <td class="text-center">@cookie.isHttpOnly()</td>
@@ -74,7 +74,7 @@
                         <tr>
                             <td>@name</td>
                             <td class="text-right">
-                                @webContext.getSessionValue(name)
+                                <div style="word-wrap: break-word; word-break: break-all">@webContext.getSessionValue(name)</div>
                             </td>
                         </tr>
                     </i:for>
