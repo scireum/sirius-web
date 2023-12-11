@@ -30,7 +30,7 @@
                         <td><b>@name</b></td>
                         <td class="text-right">
                             <i:for type="String" var="value" items="webContext.getRequest().headers().getAll(name)">
-                                <div style="word-wrap: break-word; word-break: break-all">@value</div>
+                                <div class="text-break">@value</div>
                             </i:for>
                         </td>
                     </tr>
@@ -55,7 +55,7 @@
                         <tr>
                             <td>@cookie.name()</td>
                             <td class="text-right">
-                                <div style="word-wrap: break-word; word-break: break-all">@cookie.value()</div>
+                                <div class="text-break">@cookie.value()</div>
                             </td>
                             <td class="text-center">@cookie.isSecure()</td>
                             <td class="text-center">@cookie.isHttpOnly()</td>
@@ -74,9 +74,7 @@
                         <tr>
                             <td>@name</td>
                             <td class="text-right">
-                                <div style="word-wrap: break-word; word-break: break-all">
-                                    @webContext.getSessionValue(name)
-                                </div>
+                                <div class="text-break">@webContext.getSessionValue(name)</div>
                             </td>
                         </tr>
                     </i:for>
