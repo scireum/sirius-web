@@ -16,7 +16,7 @@ import sirius.web.http.TestResponse
 import kotlin.test.assertEquals
 
 @ExtendWith(SiriusExtension::class)
-class PermissionAnnotationTest {
+class PermissionsRouteTest {
 
     @Test
     fun `user can access 'system tags', when permission is given`() {
