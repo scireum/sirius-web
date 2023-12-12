@@ -41,7 +41,7 @@ class SystemControllerTest {
         assertEquals(HttpResponseStatus.OK, result.getStatus())
         assertEquals(TestResponse.ResponseType.TEMPLATE, result.getType())
         assertEquals("/templates/system/state.html.pasta", result.getTemplateName())
-        Value.indexOf(0, result.getTemplateParameters()).get() == Injector.context().getPart(Cluster::class.java)
+        assertEquals( Injector.context().getPart(Cluster::class.java), Value.indexOf(0, result.getTemplateParameters()).get())
     }
 
     @Test
@@ -49,7 +49,7 @@ class SystemControllerTest {
         val result = TestRequest.GET("/system/info").execute()
         assertEquals(HttpResponseStatus.OK, result.getStatus())
         assertEquals(TestResponse.ResponseType.TEMPLATE, result.getType())
-        result.getTemplateName() == "/templates/system/info.html.pasta"
+        assertEquals("/templates/system/info.html.pasta",  result.getTemplateName())
     }
 
 }
