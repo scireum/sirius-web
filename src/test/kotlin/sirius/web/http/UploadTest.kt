@@ -9,58 +9,56 @@
 package sirius.web.http
 
 import org.junit.jupiter.api.Tag
-import sirius.kernel.BaseSpecification
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import sirius.kernel.SiriusExtension
 import sirius.kernel.Tags
 import sirius.kernel.commons.Json
 import sirius.kernel.commons.Streams
 
+import java.io.File
+import java.io.FileInputStream
+import java.net.HttpURLConnection
+import java.net.URL
 import java.nio.charset.StandardCharsets
+import kotlin.test.assertEquals
 
 /**
  * Simulates "real" uploads through netty and sirius.
  */
 @Tag(Tags.NIGHTLY)
-class UploadSpec extends BaseSpecification {
+@ExtendWith(SiriusExtension::class)
+class UploadTest {
 
-    String lineFeed = "\r\n"
+    fun `upload`(uri: String, file: File): String {
+        val connection = URL("http://localhost:9999" + uri).openConnection() as HttpURLConnection
 
-    def upload(String uri, File file) {
-        HttpURLConnection connection = new URL("http://localhost:9999" + uri).openConnection()
-
-        InputStream inputStream = new FileInputStream(file)
+        val inputStream = FileInputStream(file)
         connection.setDoOutput(true)
         connection.setRequestMethod("POST")
-        OutputStream outputStream = connection.getOutputStream()
+        val outputStream = connection.getOutputStream()
         Streams.transfer(inputStream, outputStream)
         inputStream.close()
         outputStream.flush()
 
-        return new String(Streams.toByteArray(connection.getInputStream()), StandardCharsets.UTF_8)
+        return String(Streams.toByteArray(connection.getInputStream()), StandardCharsets.UTF_8)
     }
 
-    def "Uploads a file to /upload-test"() {
-        given:
-        File file = new File("src/test/resources/test.png")
-        when:
-        def response = upload("/upload-test", file)
-        and:
-        def json = Json.parseObject(response)
-        then:
-        json.get("success").asBoolean() == true
-        and:
-        json.get("size").asLong() == file.length()
+    @Test
+    fun `Uploads a file to upload-test`() {
+        val file = File("src/test/resources/test.png")
+        val response = upload("/upload-test", file)
+        val json = Json.parseObject(response)
+        assertEquals(true, json.get("success").asBoolean())
+        assertEquals(file.length(), json.get("size").asLong())
     }
 
-    def "Uploads a gzip-file to /upload-gzip"() {
-        given:
-        File file = new File("src/test/resources/test.csv.gz")
-        when:
-        def response = upload("/upload-gzip", file)
-        and:
-        def json = Json.parseObject(response)
-        then:
-        json.get("success").asBoolean() == true
-        and:
-        json.get("lines").asLong() == 3
+    @Test
+    fun `Uploads a gzip-file to upload-gzip`() {
+        val file = File("src/test/resources/test.csv.gz")
+        val response = upload("/upload-gzip", file)
+        val json = Json.parseObject(response)
+        assertEquals(true, json.get("success").asBoolean())
+        assertEquals(3, json.get("lines").asLong())
     }
 }
