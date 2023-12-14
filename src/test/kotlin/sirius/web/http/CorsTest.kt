@@ -27,7 +27,6 @@ class CORSTest {
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true")
         val c = URL("http://localhost:9999/system/ok").openConnection() as HttpURLConnection
         // Setting the "Origin: header" must be allowed by -Dsun.net.http.allowRestrictedHeaders=true
-
         c.addRequestProperty("Origin", "TEST")
         c.getInputStream().close()
         assertEquals("TEST", c.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN.toString()))
