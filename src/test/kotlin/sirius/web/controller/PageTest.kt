@@ -64,7 +64,7 @@ class PageTest {
         elementsList.add("5")
         elementsList.add("6")
         elementsList.add("7")
-        limitPage.withLimitedItemsSupplier { limit -> elementsList }
+        limitPage.withLimitedItemsSupplier { _ -> elementsList }
         assertEquals(5, limitPage.getItems().size)
         assertEquals(true, limitPage.hasMore())
         assertEquals("5", limitPage.getItems().get(4))
@@ -78,7 +78,7 @@ class PageTest {
         elementsList.add("1")
         elementsList.add("2")
         elementsList.add("3")
-        limitPage.withLimitedItemsSupplier { limit -> elementsList }
+        limitPage.withLimitedItemsSupplier { _ -> elementsList }
         assertEquals(3, limitPage.getItems().size)
         assertFalse(limitPage.hasMore())
         assertEquals("3", limitPage.getItems().get(2))
