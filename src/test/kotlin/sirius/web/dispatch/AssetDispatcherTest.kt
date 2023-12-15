@@ -17,6 +17,7 @@ import sirius.web.sass.Output
 import java.io.StringWriter
 import java.net.URL
 import org.junit.jupiter.api.Test
+import java.net.URI
 import kotlin.test.assertEquals
 
 
@@ -40,7 +41,7 @@ class AssetsDispatcherTest {
     )
     @ParameterizedTest
     fun `proper caching set for all kind of assets and cache-control URIs`(uri: String, header: String) {
-        val connection = URL("http://localhost:9999" + uri).openConnection()
+        val connection = URI("http://localhost:9999" + uri).toURL().openConnection()
         assertEquals(header, connection.getHeaderField(HttpHeaderNames.CACHE_CONTROL.toString()))
     }
 
