@@ -19,6 +19,7 @@ import sirius.kernel.commons.Streams
 import java.io.File
 import java.io.FileInputStream
 import java.net.HttpURLConnection
+import java.net.URI
 import java.net.URL
 import java.nio.charset.StandardCharsets
 import kotlin.test.assertEquals
@@ -31,8 +32,7 @@ import kotlin.test.assertEquals
 class UploadTest {
 
     fun `upload`(uri: String, file: File): String {
-        val connection = URL("http://localhost:9999" + uri).openConnection() as HttpURLConnection
-
+        val connection = URI("http://localhost:9999" + uri).toURL().openConnection() as HttpURLConnection
         val inputStream = FileInputStream(file)
         connection.setDoOutput(true)
         connection.setRequestMethod("POST")
