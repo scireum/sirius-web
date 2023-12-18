@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.scireum</groupId>
         <artifactId>sirius-parent</artifactId>
-        <version>11.2.0</version>
+        <version>11.3.0</version>
     </parent>
     <artifactId>sirius-web</artifactId>
     <version>DEVELOPMENT-SNAPSHOT</version>
@@ -14,7 +14,7 @@
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
     <properties>
-        <sirius.kernel>dev-41.0.0</sirius.kernel>
+        <sirius.kernel>dev-42.0.0</sirius.kernel>
     </properties>
 
     <repositories>
