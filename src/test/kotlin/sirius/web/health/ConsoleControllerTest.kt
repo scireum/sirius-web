@@ -26,7 +26,7 @@ import java.util.Collections
 @ExtendWith(SiriusExtension::class)
 class ConsoleControllerTest {
     @Test
-    fun ` system console renders its template`() {
+    fun `System console renders its template`() {
         UserContext.get().setCurrentUser(UserInfo.Builder.createUser("test")
             .withPermissions(Collections.
             singleton(ConsoleController.PERMISSION_SYSTEM_CONSOLE))
