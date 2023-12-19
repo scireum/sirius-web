@@ -23,6 +23,7 @@ import sirius.web.security.UserContext
 import sirius.web.security.UserInfo
 import kotlin.test.assertEquals
 import java.util.Collections
+
 @ExtendWith(SiriusExtension::class)
 class ConsoleControllerTest {
     @Test
