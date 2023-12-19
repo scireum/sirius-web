@@ -38,7 +38,7 @@ class ConsoleControllerTest {
     }
 
     @Test
-    fun `system console api returns JSON for help`() {
+    fun `System console API returns JSON for help`() {
         UserContext.get().setCurrentUser(UserInfo.
         Builder.
         createUser("test").
