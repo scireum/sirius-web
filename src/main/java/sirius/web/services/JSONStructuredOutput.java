@@ -205,7 +205,7 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
     @Override
     public void writeProperty(String name, Object data) {
         if (data instanceof JsonNode jsonNode) {
-            writePreformattedProperty(name, jsonNode.toString());
+            writePreformattedProperty(name, Json.write(jsonNode));
         } else {
             writePlainProperty(name, data);
         }
