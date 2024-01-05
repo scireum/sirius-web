@@ -92,7 +92,7 @@ import java.util.stream.Collectors;
  * <p>
  * This can be used to obtain all infos received for an HTTP request and also to create an appropriate response.
  * <p>
- * This context can either be passed along as variable or be accessed using {@link CallContext#get(Class)}
+ * This context can either be passed along as variable or be accessed using {@link WebContext#getCurrent()}.
  */
 public class WebContext implements SubContext {
 
@@ -402,6 +402,17 @@ public class WebContext implements SubContext {
 
     @Part
     private static CSRFHelper csrfHelper;
+
+    /**
+     * Provides access to the <tt>WebContext</tt> for the current thread.
+     * <p>
+     * This is boilerplate for {@code CallContext.getCurrent().getOrCreateSubContext(WebContext.class)}.
+     *
+     * @return the web context for the current thread
+     */
+    public static WebContext getCurrent() {
+        return CallContext.getCurrent().getOrCreateSubContext(WebContext.class);
+    }
 
     /**
      * Provides access to the underlying ChannelHandlerContext
