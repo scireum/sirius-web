@@ -30,7 +30,7 @@ public class LegacyDefaultGlobalsHandler extends LegacyGlobalsHandler {
             case "detailedVersion" -> "Product.getProduct().getDetails()";
             case "nodeName" -> "CallContext.getNodeName()";
             case "isDev" -> "Sirius.isDev()";
-            case "call" -> "CallContext.getCurrent().getOrCreateSubContext(WebContext.class)";
+            case "call" -> "WebContext.getCurrent()";
             case "watch" -> "CallContext.getCurrent().getWatch()";
             case "lang" -> "NLS.getCurrentLanguage()";
             case "wondergemRoot" -> "config('product.wondergemRoot')";

@@ -316,7 +316,7 @@ public class UserContext implements SubContext {
      */
     @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public List<Message> getMessages() {
-        userMessagesCache.restoreCachedUserMessages(CallContext.getCurrent().getOrCreateSubContext(WebContext.class));
+        userMessagesCache.restoreCachedUserMessages(WebContext.getCurrent());
 
         if (!Sirius.isStartedAsTest() && !addedAdditionalMessages) {
             addedAdditionalMessages = true;
@@ -407,7 +407,7 @@ public class UserContext implements SubContext {
         if (fieldErrors.containsKey(field)) {
             return fieldErrors.get(field);
         }
-        return CallContext.getCurrent().getOrCreateSubContext(WebContext.class).get(field).getString();
+        return WebContext.getCurrent().get(field).getString();
     }
 
     /**
@@ -418,7 +418,7 @@ public class UserContext implements SubContext {
      */
     @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public Collection<String> getFieldValues(String field) {
-        return CallContext.getCurrent().getOrCreateSubContext(WebContext.class).getParameters(field);
+        return WebContext.getCurrent().getParameters(field);
     }
 
     /**
@@ -484,7 +484,7 @@ public class UserContext implements SubContext {
             }
             try {
                 fetchingCurrentUser = true;
-                bindUserToRequest(CallContext.getCurrent().getOrCreateSubContext(WebContext.class));
+                bindUserToRequest(WebContext.getCurrent());
             } finally {
                 fetchingCurrentUser = false;
             }
@@ -511,7 +511,7 @@ public class UserContext implements SubContext {
         }
 
         cachedUser = scope.getUserManager()
-                          .findUserForRequest(CallContext.getCurrent().getOrCreateSubContext(WebContext.class));
+                          .findUserForRequest(WebContext.getCurrent());
         scopeIdOfCachedUser = scope.getScopeId();
         return cachedUser;
     }
@@ -548,7 +548,7 @@ public class UserContext implements SubContext {
      * This can be considered a <tt>logout</tt>.
      */
     public void detachUserFromSession() {
-        WebContext webContext = CallContext.getCurrent().getOrCreateSubContext(WebContext.class);
+        WebContext webContext = WebContext.getCurrent();
         if (!webContext.isValid()) {
             return;
         }
@@ -572,7 +572,7 @@ public class UserContext implements SubContext {
             }
             try {
                 fetchingCurrentScope = true;
-                bindScopeToRequest(CallContext.getCurrent().getOrCreateSubContext(WebContext.class));
+                bindScopeToRequest(WebContext.getCurrent());
             } finally {
                 fetchingCurrentScope = false;
             }

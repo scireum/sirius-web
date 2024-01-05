@@ -8,7 +8,6 @@
 
 package sirius.web.http;
 
-import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
@@ -49,7 +48,7 @@ public class CSRFHelper {
      */
     @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getCSRFToken() {
-        return getCSRFToken(CallContext.getCurrent().getOrCreateSubContext(WebContext.class));
+        return getCSRFToken(WebContext.getCurrent());
     }
 
     /**
