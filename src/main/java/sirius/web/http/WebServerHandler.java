@@ -213,10 +213,10 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                 channelHandlerContext.channel().close();
                 return;
             }
-            WebContext wc = currentCall.getOrCreateSubContext(WebContext.class);
-            if (!wc.isLongCall() && !wc.responseCompleted) {
+            WebContext webContext = currentCall.getOrCreateSubContext(WebContext.class);
+            if (!webContext.isLongCall() && !webContext.responseCompleted) {
                 if (WebServer.LOG.isFINE()) {
-                    WebServer.LOG.FINE("IDLE: " + wc.getRequestedURI());
+                    WebServer.LOG.FINE("IDLE: " + webContext.getRequestedURI());
                 }
                 if (WebServer.idleTimeouts.incrementAndGet() < 0) {
                     WebServer.idleTimeouts.set(0);
@@ -515,8 +515,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         return firewall != null && firewall.isIPBlacklisted(webContext);
     }
 
-    /*
-     * Sends an 100 CONTINUE response to conform to the keepalive protocol
+    /**
+     * Sends a 100 CONTINUE response to conform to the keepalive protocol.
      */
     private void send100Continue(ChannelHandlerContext channelHandlerContext) {
         if (WebServer.LOG.isFINE()) {
@@ -526,7 +526,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         channelHandlerContext.writeAndFlush(response);
     }
 
-    /*
+    /**
      * Releases the last context (request) which was processed by this handler.
      */
     private void cleanup() {
@@ -536,8 +536,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         }
     }
 
-    /*
-     * Reads another chunk of data for a previously started request
+    /**
+     * Reads another chunk of data for a previously started request.
      */
     private void processContent(HttpContent chunk) {
         try {
@@ -580,8 +580,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         }
     }
 
-    /*
-     * Checks if the can still upload more date
+    /**
+     * Checks if the server can still upload more data.
      */
     private void checkUploadFileLimits(File file) {
         if (file.getFreeSpace() < WebServer.getMinUploadFreespace() && WebServer.getMinUploadFreespace() > 0) {
@@ -613,7 +613,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         }
     }
 
-    /*
+    /**
      * Tries to dispatch a POST or PUT request before it is completely received so that the handler can install
      * a ContentHandler to process all incoming data.
      */
@@ -625,7 +625,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         return pipeline.preDispatch(currentContext);
     }
 
-    /*
+    /**
      * Dispatches the completely read request.
      */
     private void dispatch() {
@@ -660,16 +660,16 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         }
     }
 
-    /*
-     * Updates inbound traffic (called via LowLevelHandler)
+    /**
+     * Updates inbound traffic (called via LowLevelHandler).
      */
     protected void inbound(long bytes) {
         bytesIn.addAndGet(bytes);
         currentBytesIn.addAndGet(bytes);
     }
 
-    /*
-     * Updates outbound traffic (called via LowLevelHandler)
+    /**
+     * Updates outbound traffic (called via LowLevelHandler).
      */
     protected void outbound(long bytes) {
         bytesOut.addAndGet(bytes);

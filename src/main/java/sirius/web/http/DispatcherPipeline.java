@@ -55,17 +55,17 @@ public class DispatcherPipeline {
     /**
      * Dispatches the given request.
      *
-     * @param ctx the request to handle
+     * @param webContext the request to handle
      */
-    public void dispatch(WebContext ctx) {
-        ctx.started = System.currentTimeMillis();
+    public void dispatch(WebContext webContext) {
+        webContext.started = System.currentTimeMillis();
         tasks.executor(EXECUTOR_WEBSERVER)
-             .dropOnOverload(() -> handleDrop(ctx))
-             .fork(() -> dispatch(ctx, TaskContext.get()));
+             .dropOnOverload(() -> handleDrop(webContext))
+             .fork(() -> dispatch(webContext, TaskContext.get()));
     }
 
-    private void handleDrop(WebContext ctx) {
-        ctx.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, "Request dropped - System overload!");
+    private void handleDrop(WebContext webContext) {
+        webContext.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, "Request dropped - System overload!");
     }
 
     private void dispatch(WebContext webContext, TaskContext context) {
@@ -92,8 +92,8 @@ public class DispatcherPipeline {
                             webContext.getRequestedURL()));
                 }
             }
-        } catch (Exception e) {
-            handleInternalServerError(webContext, e);
+        } catch (Exception exception) {
+            handleInternalServerError(webContext, exception);
         }
     }
 
@@ -123,8 +123,8 @@ public class DispatcherPipeline {
                     return true;
                 }
             }
-        } catch (Exception e) {
-            handleInternalServerError(webContext, e);
+        } catch (Exception exception) {
+            handleInternalServerError(webContext, exception);
         }
 
         return false;
@@ -134,8 +134,8 @@ public class DispatcherPipeline {
         try {
             TaskContext.get().setSubSystem(dispatcher.getClass().getSimpleName());
             handler.invoke(webContext);
-        } catch (Exception e) {
-            handleInternalServerError(webContext, e);
+        } catch (Exception exception) {
+            handleInternalServerError(webContext, exception);
         }
     }
 }

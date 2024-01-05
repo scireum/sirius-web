@@ -74,7 +74,7 @@ public class UserContext implements SubContext {
     private UserInfo currentUser = null;
     private boolean fetchingCurrentUser = false;
 
-    /*
+    /**
      * As getUserForScope will most probably only hit one other scope
      * we cache the last user and scope here to speed up almost all cases
      * without the need for a map.
@@ -187,7 +187,7 @@ public class UserContext implements SubContext {
         get().addFieldError(field, NLS.toUserString(value));
     }
 
-    /*
+    /**
      * Loads the current scope from the given web context.
      */
     private void bindScopeToRequest(WebContext webContext) {
@@ -200,7 +200,7 @@ public class UserContext implements SubContext {
         }
     }
 
-    /*
+    /**
      * Loads the current user from the given web context.
      */
     private void bindUserToRequest(WebContext webContext) {
@@ -229,8 +229,8 @@ public class UserContext implements SubContext {
             return Optional.of(currentUser).filter(UserInfo::isLoggedIn);
         }
 
-        // As this method might be called concurrently (e.g. by the deferred language installer of the WebServerHandler),
-        // we also have to abort if we're already within a user lookup....
+        // As this method might be called concurrently (e.g., by the deferred language installer of the WebServerHandler),
+        // we also have to abort if we're already within a user lookup...
         if (fetchingCurrentUser) {
             return Optional.empty();
         }
