@@ -160,7 +160,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
      */
     private WebContext setupContext(ChannelHandlerContext channelHandlerContext, HttpRequest request) {
         currentCall = initializeContext(channelHandlerContext, request, this.ssl);
-        return currentCall.get(WebContext.class);
+        return currentCall.getOrCreateSubContext(WebContext.class);
     }
 
     /**
@@ -176,7 +176,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                                                    boolean isSSL) {
         CallContext currentCall = CallContext.initialize();
         currentCall.addToMDC("uri", request.uri());
-        WebContext webContext = currentCall.get(WebContext.class);
+        WebContext webContext = currentCall.getOrCreateSubContext(WebContext.class);
         // If we know we're an SSL endpoint, tell the WebContext, otherwise let the null value remain
         // so that the automatic detection (headers set by an upstream proxy like X-Forwarded-Proto)
         // is performed when needed...
@@ -185,14 +185,14 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         }
         webContext.setChannelHandlerContext(channelHandlerContext);
         webContext.setRequest(request);
-        currentCall.get(TaskContext.class).setSystem("HTTP").setJob(webContext.getRequestedURI());
+        currentCall.getOrCreateSubContext(TaskContext.class).setSystem("HTTP").setJob(webContext.getRequestedURI());
 
         // Adds a deferred handler to determine the language to i18n stuff.
         // If a user is present, the system will sooner or later detect it and set the appropriate
         // language. If not, this handler will be evaluated, check for a user in the session or
         // if everything else fails, parse the lang header.
         currentCall.deferredSetLanguage(callContext -> {
-            if (callContext.get(UserContext.class).bindUserIfPresent(webContext).isEmpty()) {
+            if (callContext.getOrCreateSubContext(UserContext.class).bindUserIfPresent(webContext).isEmpty()) {
                 callContext.setLanguageIfEmpty(UserContext.getCurrentScope()
                                                           .makeLanguage(webContext.fetchLanguage().orElse(null)));
             }
@@ -213,7 +213,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                 channelHandlerContext.channel().close();
                 return;
             }
-            WebContext wc = currentCall.get(WebContext.class);
+            WebContext wc = currentCall.getOrCreateSubContext(WebContext.class);
             if (!wc.isLongCall() && !wc.responseCompleted) {
                 if (WebServer.LOG.isFINE()) {
                     WebServer.LOG.FINE("IDLE: " + wc.getRequestedURI());

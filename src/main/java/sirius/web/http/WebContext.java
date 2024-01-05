@@ -1109,7 +1109,7 @@ public class WebContext implements SubContext {
      * @return <tt>true</tt> if this is an HTTPS request, <tt>false</tt> otherwise
      */
     public static boolean isCurrentRequestSSL() {
-        return CallContext.getCurrent().get(WebContext.class).isSSL();
+        return CallContext.getCurrent().getOrCreateSubContext(WebContext.class).isSSL();
     }
 
     /**

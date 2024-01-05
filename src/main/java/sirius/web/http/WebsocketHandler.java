@@ -86,7 +86,7 @@ public class WebsocketHandler extends ChannelDuplexHandler {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if ((msg instanceof HttpRequest httpRequest) && isWebsocketRequest(httpRequest)) {
             currentCall = WebServerHandler.initializeContext(ctx, httpRequest, false);
-            websocketSession = websocketDispatcher.createSession(currentCall.get(WebContext.class));
+            websocketSession = websocketDispatcher.createSession(currentCall.getOrCreateSubContext(WebContext.class));
             WebServer.websockets.incrementAndGet();
             setupWebsocketPipeline(ctx, msg);
             return;

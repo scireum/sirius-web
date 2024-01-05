@@ -49,7 +49,7 @@ public class CSRFHelper {
      */
     @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getCSRFToken() {
-        return getCSRFToken(CallContext.getCurrent().get(WebContext.class));
+        return getCSRFToken(CallContext.getCurrent().getOrCreateSubContext(WebContext.class));
     }
 
     /**

@@ -9,7 +9,6 @@
 package sirius.web.http;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import sirius.kernel.async.CallContext;
 import sirius.kernel.async.TaskContext;
 import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Callback;
@@ -62,7 +61,7 @@ public class DispatcherPipeline {
         ctx.started = System.currentTimeMillis();
         tasks.executor(EXECUTOR_WEBSERVER)
              .dropOnOverload(() -> handleDrop(ctx))
-             .fork(() -> dispatch(ctx, CallContext.getCurrent().get(TaskContext.class)));
+             .fork(() -> dispatch(ctx, TaskContext.get()));
     }
 
     private void handleDrop(WebContext ctx) {
@@ -133,7 +132,7 @@ public class DispatcherPipeline {
 
     private void executePreDispatching(WebContext webContext, WebDispatcher dispatcher, Callback<WebContext> handler) {
         try {
-            CallContext.getCurrent().get(TaskContext.class).setSubSystem(dispatcher.getClass().getSimpleName());
+            TaskContext.get().setSubSystem(dispatcher.getClass().getSimpleName());
             handler.invoke(webContext);
         } catch (Exception e) {
             handleInternalServerError(webContext, e);
