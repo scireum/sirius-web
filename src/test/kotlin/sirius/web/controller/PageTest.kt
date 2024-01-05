@@ -9,8 +9,6 @@
 
 package sirius.web.controller
 
-import spock.lang.Specification
-import java.awt.Stroke
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -28,10 +26,10 @@ class PageTest {
     fun `linkToCurrentPage() works with an URI that already contains a query string`() {
         val page: Page<String> = Page()
         page.withQuery("QUERY").withFacets(
-            listOf(
-                Facet("", "field1", "value1", null),
-                Facet("", "field2", "value2", null)
-            )
+                listOf(
+                        Facet("", "field1").withValue("value1"),
+                        Facet("", "field2").withValue("value2")
+                )
         )
         val result = page.linkToCurrentPage("/test?hallo=welt")
         assertEquals("/test?hallo=welt&query=QUERY&field1=value1&field2=value2", result)
@@ -41,10 +39,10 @@ class PageTest {
     fun `linkToPageWithConfigurableStart() returns a valid query string ending with start=`() {
         val page: Page<String> = Page()
         page.withQuery("QUERY").withFacets(
-            listOf(
-                Facet("", "field1", "value1", null),
-                Facet("", "field2", "value2", null)
-            )
+                listOf(
+                        Facet("", "field1").withValue("value1"),
+                        Facet("", "field2").withValue("value2")
+                )
         )
         val result = page.linkToPageWithConfigurableStart("/test")
         result.contains("field1=value1&")

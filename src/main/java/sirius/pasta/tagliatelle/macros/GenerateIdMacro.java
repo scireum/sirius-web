@@ -46,7 +46,7 @@ public class GenerateIdMacro extends BasicMacro {
 
     @Override
     public Object invoke(Environment environment, Object[] args) {
-        long localId = CallContext.getCurrent().get(IdGeneratorContext.class).generateLocalId();
+        long localId = CallContext.getCurrent().getOrCreateSubContext(IdGeneratorContext.class).generateLocalId();
         if (args.length == 1) {
             return Strings.apply((String) args[0], localId);
         } else {

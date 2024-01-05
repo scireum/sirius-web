@@ -98,22 +98,22 @@ public class SAMLHelper {
 
     private byte[] createAuthenticationRequestXML(String issuer, String issuerIndex) {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        XMLStructuredOutput out = new XMLStructuredOutput(buffer);
-        out.beginOutput("samlp:AuthnRequest",
-                        Attribute.set("xmlns:samlp", SAMLP_NAMESPACE),
-                        Attribute.set("xmlns:saml", SAML_NAMESPACE),
-                        Attribute.set("ID", "identifier_" + System.currentTimeMillis()),
-                        Attribute.set("Version", "2.0"),
-                        Attribute.set("IssueInstant",
-                                      DateTimeFormatter.ISO_INSTANT.format(Instant.now()
-                                                                                  .truncatedTo(ChronoUnit.SECONDS))),
-                        Attribute.set("AssertionConsumerServiceIndex", issuerIndex));
-        out.property("saml:Issuer", issuer);
-        out.beginObject("samlp:NameIDPolicy",
-                        Attribute.set("AllowCreate", false),
-                        Attribute.set("Format", "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"));
-        out.endObject();
-        out.endOutput();
+        XMLStructuredOutput output = new XMLStructuredOutput(buffer);
+        output.beginOutput("samlp:AuthnRequest",
+                           Attribute.set("xmlns:samlp", SAMLP_NAMESPACE),
+                           Attribute.set("xmlns:saml", SAML_NAMESPACE),
+                           Attribute.set("ID", "identifier_" + System.currentTimeMillis()),
+                           Attribute.set("Version", "2.0"),
+                           Attribute.set("IssueInstant",
+                                         DateTimeFormatter.ISO_INSTANT.format(Instant.now()
+                                                                                     .truncatedTo(ChronoUnit.SECONDS))),
+                           Attribute.set("AssertionConsumerServiceIndex", issuerIndex));
+        output.property("saml:Issuer", issuer);
+        output.beginObject("samlp:NameIDPolicy",
+                           Attribute.set("AllowCreate", false),
+                           Attribute.set("Format", "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"));
+        output.endObject();
+        output.endOutput();
 
         if (LOG.isFINE()) {
             LOG.FINE("Generating SAML request: %s", buffer.toString(StandardCharsets.UTF_8));
@@ -128,15 +128,15 @@ public class SAMLHelper {
      * Note that the fingerprint <b>must</b> be verified in some way or another, as this method only checks if
      * the signature is valid, not <b>who</b> created it.
      *
-     * @param context the http request to read the response from
+     * @param webContext the http request to read the response from
      * @return the parsed response which has been verified
      */
-    public SAMLResponse parseSAMLResponse(WebContext context) {
-        if (!context.isUnsafePOST()) {
+    public SAMLResponse parseSAMLResponse(WebContext webContext) {
+        if (!webContext.isUnsafePOST()) {
             throw Exceptions.createHandled().withSystemErrorMessage("Invalid SAML Response: POST expected!").handle();
         }
 
-        byte[] response = Base64.getDecoder().decode(context.get("SAMLResponse").asString());
+        byte[] response = Base64.getDecoder().decode(webContext.get("SAMLResponse").asString());
 
         if (LOG.isFINE()) {
             LOG.FINE("Received SAML response: %s", new String(response, StandardCharsets.UTF_8));
@@ -144,12 +144,12 @@ public class SAMLHelper {
 
         try (InputStream input = new ByteArrayInputStream(response)) {
             return parseSAMLResponse(input, true);
-        } catch (HandledException e) {
-            throw e;
-        } catch (Exception e) {
+        } catch (HandledException exception) {
+            throw exception;
+        } catch (Exception exception) {
             throw Exceptions.handle()
                             .to(LOG)
-                            .error(e)
+                            .error(exception)
                             .withSystemErrorMessage("An error occurred while parsing a SAML Response: %s (%s)")
                             .handle();
         }
@@ -161,27 +161,27 @@ public class SAMLHelper {
      * Note that the fingerprint <b>must</b> be verified in some way or another, as this method only checks if
      * the signature is valid, not <b>who</b> created it.
      *
-     * @param input     a stream containing the SAML XML response to parse
-     * @param checkTime a flag indicating whether to check for expired timestamps
+     * @param inputStream a stream containing the SAML XML response to parse
+     * @param checkTime   a flag indicating whether to check for expired timestamps
      * @return the parsed response which has been verified
      */
-    public SAMLResponse parseSAMLResponse(InputStream input, boolean checkTime) {
+    public SAMLResponse parseSAMLResponse(InputStream inputStream, boolean checkTime) {
         try {
-            Document doc = getResponseDocument(input);
+            Document document = getResponseDocument(inputStream);
 
-            Element assertion = selectSingleElement(doc, SAML_NAMESPACE, "Assertion");
+            Element assertion = selectSingleElement(document, SAML_NAMESPACE, "Assertion");
             if (checkTime) {
                 verifyTimestamp(assertion);
             }
-            String fingerprint = validateXMLSignature(doc, assertion);
+            String fingerprint = validateXMLSignature(document, assertion);
 
             return parseAssertion(assertion, fingerprint);
-        } catch (HandledException e) {
-            throw e;
-        } catch (Exception e) {
+        } catch (HandledException exception) {
+            throw exception;
+        } catch (Exception exception) {
             throw Exceptions.handle()
                             .to(LOG)
-                            .error(e)
+                            .error(exception)
                             .withSystemErrorMessage("An error occurred while parsing a SAML Response: %s (%s)")
                             .handle();
         }
@@ -193,24 +193,24 @@ public class SAMLHelper {
      * This method ensures, that there is only one element, as we want to ensure that there is only on <tt>Assertion</tt> and
      * one <tt>Signature</tt> for it.
      *
-     * @param doc       the XML document
+     * @param document  the XML document
      * @param namespace the optional namespace URI
      * @param nodeName  the name of the node
      * @return the element with the given name
      * @throws HandledException if there are either no or multiple nodes of the given name
      */
-    private Element selectSingleElement(Document doc, @Nullable String namespace, String nodeName) {
-        NodeList nl = Strings.isFilled(namespace) ?
-                      doc.getElementsByTagNameNS(namespace, nodeName) :
-                      doc.getElementsByTagName(nodeName);
-        if (nl.getLength() != 1) {
-            LOG.FINE("SAML Response has %s elements of type: %s", nl.getLength(), nodeName);
+    private Element selectSingleElement(Document document, @Nullable String namespace, String nodeName) {
+        NodeList nodes = Strings.isFilled(namespace) ?
+                         document.getElementsByTagNameNS(namespace, nodeName) :
+                         document.getElementsByTagName(nodeName);
+        if (nodes.getLength() != 1) {
+            LOG.FINE("SAML Response has %s elements of type: %s", nodes.getLength(), nodeName);
             throw Exceptions.createHandled()
                             .withSystemErrorMessage("Invalid SAML Response: Expected exactly one %s!", nodeName)
                             .handle();
         }
 
-        return (Element) nl.item(0);
+        return (Element) nodes.item(0);
     }
 
     /**
@@ -253,11 +253,11 @@ public class SAMLHelper {
                                 attributes);
     }
 
-    private Document getResponseDocument(InputStream input)
+    private Document getResponseDocument(InputStream inputStream)
             throws SAXException, IOException, ParserConfigurationException {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        return dbf.newDocumentBuilder().parse(input);
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        return factory.newDocumentBuilder().parse(inputStream);
     }
 
     /**
@@ -266,20 +266,20 @@ public class SAMLHelper {
      * This also ensures, that there is only one signature and that the signature actually signs the given
      * <tt>Assertion</tt> and not anything else.
      *
-     * @param doc       the XML document
+     * @param document  the XML document
      * @param assertion the assertion which must be signed
      * @return the fingerprint of the X509 certificate which was used to generate the signature
      * @throws Exception in case an XML or signing error occurs
      */
-    private String validateXMLSignature(Document doc, Element assertion) throws Exception {
+    private String validateXMLSignature(Document document, Element assertion) throws Exception {
         assertion.setIdAttribute("ID", true);
         String idToVerify = assertion.getAttribute("ID");
 
-        Element signatureElement = selectSingleElement(doc, XMLSignature.XMLNS, "Signature");
+        Element signatureElement = selectSingleElement(document, XMLSignature.XMLNS, "Signature");
 
-        XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM");
+        XMLSignatureFactory factory = XMLSignatureFactory.getInstance("DOM");
         DOMValidateContext valContext = new DOMValidateContext(new KeyValueKeySelector(), signatureElement);
-        XMLSignature signature = fac.unmarshalXMLSignature(valContext);
+        XMLSignature signature = factory.unmarshalXMLSignature(valContext);
 
         if (!Strings.areEqual(getReferenceBeingSigned(signature), "#" + idToVerify)) {
             LOG.FINE("SAML Response doesn't sign the assertion. Reference: %s, Assertion-ID: %s",
@@ -298,7 +298,7 @@ public class SAMLHelper {
                             .handle();
         }
 
-        X509Certificate certificate = ((X509CertificateResult) signature.getKeySelectorResult()).getCert();
+        X509Certificate certificate = ((X509CertificateResult) signature.getKeySelectorResult()).getCertificate();
         return Hasher.sha1().hashBytes(certificate.getEncoded()).toHexString().toLowerCase();
     }
 
@@ -327,7 +327,7 @@ public class SAMLHelper {
         public KeySelectorResult select(KeyInfo keyInfo,
                                         KeySelector.Purpose purpose,
                                         AlgorithmMethod method,
-                                        XMLCryptoContext context) throws KeySelectorException {
+                                        XMLCryptoContext cryptoContext) throws KeySelectorException {
             if (keyInfo == null) {
                 throw Exceptions.createHandled()
                                 .withSystemErrorMessage("Invalid SAML Response: Signature doesn't contain a KeyInfo!")
@@ -353,19 +353,19 @@ public class SAMLHelper {
      */
     private static class X509CertificateResult implements KeySelectorResult {
 
-        private final X509Certificate cert;
+        private final X509Certificate certificate;
 
         X509CertificateResult(X509Certificate cert) {
-            this.cert = cert;
+            this.certificate = cert;
         }
 
         @Override
         public Key getKey() {
-            return cert.getPublicKey();
+            return certificate.getPublicKey();
         }
 
-        public X509Certificate getCert() {
-            return cert;
+        public X509Certificate getCertificate() {
+            return certificate;
         }
     }
 }

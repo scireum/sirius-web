@@ -160,7 +160,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
      */
     private WebContext setupContext(ChannelHandlerContext channelHandlerContext, HttpRequest request) {
         currentCall = initializeContext(channelHandlerContext, request, this.ssl);
-        return currentCall.get(WebContext.class);
+        return currentCall.getOrCreateSubContext(WebContext.class);
     }
 
     /**
@@ -176,7 +176,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                                                    boolean isSSL) {
         CallContext currentCall = CallContext.initialize();
         currentCall.addToMDC("uri", request.uri());
-        WebContext webContext = currentCall.get(WebContext.class);
+        WebContext webContext = currentCall.getOrCreateSubContext(WebContext.class);
         // If we know we're an SSL endpoint, tell the WebContext, otherwise let the null value remain
         // so that the automatic detection (headers set by an upstream proxy like X-Forwarded-Proto)
         // is performed when needed...
@@ -185,14 +185,14 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         }
         webContext.setChannelHandlerContext(channelHandlerContext);
         webContext.setRequest(request);
-        currentCall.get(TaskContext.class).setSystem("HTTP").setJob(webContext.getRequestedURI());
+        currentCall.getOrCreateSubContext(TaskContext.class).setSystem("HTTP").setJob(webContext.getRequestedURI());
 
         // Adds a deferred handler to determine the language to i18n stuff.
         // If a user is present, the system will sooner or later detect it and set the appropriate
         // language. If not, this handler will be evaluated, check for a user in the session or
         // if everything else fails, parse the lang header.
         currentCall.deferredSetLanguage(callContext -> {
-            if (callContext.get(UserContext.class).bindUserIfPresent(webContext).isEmpty()) {
+            if (callContext.getOrCreateSubContext(UserContext.class).bindUserIfPresent(webContext).isEmpty()) {
                 callContext.setLanguageIfEmpty(UserContext.getCurrentScope()
                                                           .makeLanguage(webContext.fetchLanguage().orElse(null)));
             }
@@ -213,10 +213,10 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
                 channelHandlerContext.channel().close();
                 return;
             }
-            WebContext wc = currentCall.get(WebContext.class);
-            if (!wc.isLongCall() && !wc.responseCompleted) {
+            WebContext webContext = currentCall.getOrCreateSubContext(WebContext.class);
+            if (!webContext.isLongCall() && !webContext.responseCompleted) {
                 if (WebServer.LOG.isFINE()) {
-                    WebServer.LOG.FINE("IDLE: " + wc.getRequestedURI());
+                    WebServer.LOG.FINE("IDLE: " + webContext.getRequestedURI());
                 }
                 if (WebServer.idleTimeouts.incrementAndGet() < 0) {
                     WebServer.idleTimeouts.set(0);
@@ -515,8 +515,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         return firewall != null && firewall.isIPBlacklisted(webContext);
     }
 
-    /*
-     * Sends an 100 CONTINUE response to conform to the keepalive protocol
+    /**
+     * Sends a 100 CONTINUE response to conform to the keepalive protocol.
      */
     private void send100Continue(ChannelHandlerContext channelHandlerContext) {
         if (WebServer.LOG.isFINE()) {
@@ -526,7 +526,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         channelHandlerContext.writeAndFlush(response);
     }
 
-    /*
+    /**
      * Releases the last context (request) which was processed by this handler.
      */
     private void cleanup() {
@@ -536,8 +536,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         }
     }
 
-    /*
-     * Reads another chunk of data for a previously started request
+    /**
+     * Reads another chunk of data for a previously started request.
      */
     private void processContent(HttpContent chunk) {
         try {
@@ -580,8 +580,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         }
     }
 
-    /*
-     * Checks if the can still upload more date
+    /**
+     * Checks if the server can still upload more data.
      */
     private void checkUploadFileLimits(File file) {
         if (file.getFreeSpace() < WebServer.getMinUploadFreespace() && WebServer.getMinUploadFreespace() > 0) {
@@ -613,7 +613,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         }
     }
 
-    /*
+    /**
      * Tries to dispatch a POST or PUT request before it is completely received so that the handler can install
      * a ContentHandler to process all incoming data.
      */
@@ -625,7 +625,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         return pipeline.preDispatch(currentContext);
     }
 
-    /*
+    /**
      * Dispatches the completely read request.
      */
     private void dispatch() {
@@ -660,16 +660,16 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         }
     }
 
-    /*
-     * Updates inbound traffic (called via LowLevelHandler)
+    /**
+     * Updates inbound traffic (called via LowLevelHandler).
      */
     protected void inbound(long bytes) {
         bytesIn.addAndGet(bytes);
         currentBytesIn.addAndGet(bytes);
     }
 
-    /*
-     * Updates outbound traffic (called via LowLevelHandler)
+    /**
+     * Updates outbound traffic (called via LowLevelHandler).
      */
     protected void outbound(long bytes) {
         bytesOut.addAndGet(bytes);

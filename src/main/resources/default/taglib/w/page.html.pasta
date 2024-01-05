@@ -32,7 +32,7 @@
     <script src="/assets/wondergem/wondergem.js" type="text/javascript"></script>
     <script src="/assets/tycho/libs/token-autocomplete/token-autocomplete.js" type="text/javascript"></script>
 
-    <i:if test="@CallContext.getCurrent().get(WebContext.class).getUserAgent().contains('Trident')">
+    <i:if test="@WebContext.getCurrent().getUserAgent().contains('Trident')">
         <script src="/assets/common/ie-polyfill.js" type="text/javascript"></script>
     </i:if>
 

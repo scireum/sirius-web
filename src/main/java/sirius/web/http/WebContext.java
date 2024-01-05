@@ -92,7 +92,7 @@ import java.util.stream.Collectors;
  * <p>
  * This can be used to obtain all infos received for an HTTP request and also to create an appropriate response.
  * <p>
- * This context can either be passed along as variable or be accessed using {@link CallContext#get(Class)}
+ * This context can either be passed along as variable or be accessed using {@link WebContext#getCurrent()}.
  */
 public class WebContext implements SubContext {
 
@@ -404,6 +404,17 @@ public class WebContext implements SubContext {
     private static CSRFHelper csrfHelper;
 
     /**
+     * Provides access to the <tt>WebContext</tt> for the current thread.
+     * <p>
+     * This is boilerplate for {@code CallContext.getCurrent().getOrCreateSubContext(WebContext.class)}.
+     *
+     * @return the web context for the current thread
+     */
+    public static WebContext getCurrent() {
+        return CallContext.getCurrent().getOrCreateSubContext(WebContext.class);
+    }
+
+    /**
      * Provides access to the underlying ChannelHandlerContext
      *
      * @return the underlying channel handler context
@@ -574,13 +585,13 @@ public class WebContext implements SubContext {
         }
 
         if (queryString.containsKey(key)) {
-            List<String> val = getParameters(key);
-            if (val.size() == 1) {
-                return Value.of(val.getFirst());
-            } else if (val.isEmpty()) {
+            List<String> values = getParameters(key);
+            if (values.size() == 1) {
+                return Value.of(values.getFirst());
+            } else if (values.isEmpty()) {
                 return Value.EMPTY;
             } else {
-                return Value.of(val);
+                return Value.of(values);
             }
         }
 
@@ -609,12 +620,12 @@ public class WebContext implements SubContext {
                     return Value.of(attributes);
                 }
             }
-        } catch (HttpPostRequestDecoder.NotEnoughDataDecoderException e) {
-            Exceptions.ignore(e);
-        } catch (Exception e) {
+        } catch (HttpPostRequestDecoder.NotEnoughDataDecoderException exception) {
+            Exceptions.ignore(exception);
+        } catch (Exception exception) {
             Exceptions.handle()
                       .to(WebServer.LOG)
-                      .error(e)
+                      .error(exception)
                       .withSystemErrorMessage("Failed to fetch parameter %s: %s (%s)", key)
                       .handle();
         }
@@ -623,18 +634,18 @@ public class WebContext implements SubContext {
 
     private String transformHttpData(InterfaceHttpData data) {
         try {
-            if (data instanceof Attribute attr) {
-                ByteBuf byteBuf = attr.getByteBuf();
+            if (data instanceof Attribute dataAttribute) {
+                ByteBuf buffer = dataAttribute.getByteBuf();
 
                 // If the request gets aborted prematurely, the underlying buffers might
                 // already be released. Therefore, we have to check this here manually as
                 // the server might still try to process the request...
-                if (byteBuf != null) {
-                    return byteBuf.toString(attr.getCharset());
+                if (buffer != null) {
+                    return buffer.toString(dataAttribute.getCharset());
                 }
             }
-        } catch (IOException | IllegalReferenceCountException e) {
-            Exceptions.ignore(e);
+        } catch (IOException | IllegalReferenceCountException exception) {
+            Exceptions.ignore(exception);
         }
         return null;
     }
@@ -655,12 +666,12 @@ public class WebContext implements SubContext {
         if (!fileUpload.isInMemory()) {
             return fileUpload.getFile();
         }
-        File temp = File.createTempFile("http", "");
-        addFileToCleanup(temp);
-        try (FileOutputStream outputStream = new FileOutputStream(temp)) {
+        File tempFile = File.createTempFile("http", "");
+        addFileToCleanup(tempFile);
+        try (FileOutputStream outputStream = new FileOutputStream(tempFile)) {
             outputStream.write(fileUpload.get());
         }
-        return temp;
+        return tempFile;
     }
 
     /**
@@ -700,8 +711,8 @@ public class WebContext implements SubContext {
                 if (data instanceof Attribute) {
                     return true;
                 }
-            } catch (Exception e) {
-                Exceptions.handle(WebServer.LOG, e);
+            } catch (Exception exception) {
+                Exceptions.handle(WebServer.LOG, exception);
             }
         }
         if (queryString == null) {
@@ -748,8 +759,8 @@ public class WebContext implements SubContext {
             if (data instanceof HttpData httpData) {
                 return httpData;
             }
-        } catch (Exception e) {
-            Exceptions.handle(WebServer.LOG, e);
+        } catch (Exception exception) {
+            Exceptions.handle(WebServer.LOG, exception);
         }
         return null;
     }
@@ -769,8 +780,8 @@ public class WebContext implements SubContext {
             if (data instanceof FileUpload fileUpload) {
                 return fileUpload;
             }
-        } catch (Exception e) {
-            Exceptions.handle(WebServer.LOG, e);
+        } catch (Exception exception) {
+            Exceptions.handle(WebServer.LOG, exception);
         }
         return null;
     }
@@ -1047,15 +1058,15 @@ public class WebContext implements SubContext {
     @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getBaseURL() {
         if (baseURL == null) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(isSSL() ? PROTOCOL_HTTPS : PROTOCOL_HTTP);
-            sb.append("://");
+            StringBuilder baseUrlBuilder = new StringBuilder();
+            baseUrlBuilder.append(isSSL() ? PROTOCOL_HTTPS : PROTOCOL_HTTP);
+            baseUrlBuilder.append("://");
             if (getRequest().headers().contains("X-Forwarded-Host")) {
-                sb.append(getHeader("X-Forwarded-Host"));
+                baseUrlBuilder.append(getHeader("X-Forwarded-Host"));
             } else {
-                sb.append(getHeader(HttpHeaderNames.HOST));
+                baseUrlBuilder.append(getHeader(HttpHeaderNames.HOST));
             }
-            baseURL = sb.toString();
+            baseURL = baseUrlBuilder.toString();
         }
 
         return baseURL;
@@ -1109,7 +1120,7 @@ public class WebContext implements SubContext {
      * @return <tt>true</tt> if this is an HTTPS request, <tt>false</tt> otherwise
      */
     public static boolean isCurrentRequestSSL() {
-        return CallContext.getCurrent().get(WebContext.class).isSSL();
+        return WebContext.getCurrent().isSSL();
     }
 
     /**
@@ -1155,8 +1166,8 @@ public class WebContext implements SubContext {
         }
         try {
             return readPostParameters(key);
-        } catch (Exception e) {
-            Exceptions.handle(WebServer.LOG, e);
+        } catch (Exception exception) {
+            Exceptions.handle(WebServer.LOG, exception);
             return Collections.emptyList();
         }
     }
@@ -1184,9 +1195,9 @@ public class WebContext implements SubContext {
      * Decodes the query string on demand
      */
     private void decodeQueryString() {
-        QueryStringDecoder qsd = new QueryStringDecoder(request.uri(), StandardCharsets.UTF_8);
-        requestedURI = qsd.path();
-        queryString = qsd.parameters();
+        QueryStringDecoder decoder = new QueryStringDecoder(request.uri(), StandardCharsets.UTF_8);
+        requestedURI = decoder.path();
+        queryString = decoder.parameters();
     }
 
     /**
@@ -1196,8 +1207,8 @@ public class WebContext implements SubContext {
      * @return the uri without the query string
      */
     private String stripQueryFromURI(String uri) {
-        int pathEndPos = uri.indexOf('?');
-        return pathEndPos < 0 ? uri : uri.substring(0, pathEndPos);
+        int pathEndPosition = uri.indexOf('?');
+        return pathEndPosition < 0 ? uri : uri.substring(0, pathEndPosition);
     }
 
     /**
@@ -1213,9 +1224,9 @@ public class WebContext implements SubContext {
      * @return the web context itself for fluent method calls
      */
     public WebContext withCustomURI(String uri) {
-        QueryStringDecoder qsd = new QueryStringDecoder(uri, StandardCharsets.UTF_8);
-        requestedURI = qsd.path();
-        queryString = qsd.parameters();
+        QueryStringDecoder decoder = new QueryStringDecoder(uri, StandardCharsets.UTF_8);
+        requestedURI = decoder.path();
+        queryString = decoder.parameters();
         rawRequestedURI = stripQueryFromURI(uri);
 
         return this;
@@ -1292,11 +1303,11 @@ public class WebContext implements SubContext {
      */
     @Nullable
     public String getCookieValue(String name) {
-        Cookie c = getCookie(name);
-        if (c == null) {
+        Cookie cookie = getCookie(name);
+        if (cookie == null) {
             return null;
         }
-        return c.value();
+        return cookie.value();
     }
 
     /**
@@ -1460,8 +1471,8 @@ public class WebContext implements SubContext {
         }
 
         QueryStringEncoder encoder = new QueryStringEncoder("");
-        for (Map.Entry<String, String> e : session.entrySet()) {
-            encoder.addParam(e.getKey(), e.getValue());
+        for (Map.Entry<String, String> sessionEntry : session.entrySet()) {
+            encoder.addParam(sessionEntry.getKey(), sessionEntry.getValue());
         }
         if (sessionCookieTTL != null) {
             encoder.addParam(TTL_SESSION_KEY, String.valueOf(sessionCookieTTL));
@@ -1623,8 +1634,8 @@ public class WebContext implements SubContext {
                 for (InterfaceHttpData data : postDecoder.getBodyHttpDatas()) {
                     names.add(data.getName());
                 }
-            } catch (Exception e) {
-                Exceptions.handle(WebServer.LOG, e);
+            } catch (Exception exception) {
+                Exceptions.handle(WebServer.LOG, exception);
             }
         }
 
@@ -1728,8 +1739,8 @@ public class WebContext implements SubContext {
         this.hidePost = true;
     }
 
-    /*
-     * Sets the post decoder used to decode the posted data
+    /**
+     * Sets the post-decoder used to decode the posted data.
      */
     void setPostDecoder(HttpPostRequestDecoder postDecoder) {
         this.postDecoder = postDecoder;
@@ -1792,8 +1803,8 @@ public class WebContext implements SubContext {
                 } else {
                     contentSize = (long) content.getByteBuf().readableBytes();
                 }
-            } catch (IOException e) {
-                Exceptions.handle(WebServer.LOG, e);
+            } catch (IOException exception) {
+                Exceptions.handle(WebServer.LOG, exception);
                 return 0;
             }
         }
@@ -1920,12 +1931,12 @@ public class WebContext implements SubContext {
                     return new XMLStructuredInput(inputStream, namespaceContext);
                 }
             }
-        } catch (HandledException e) {
-            throw e;
-        } catch (Exception e) {
+        } catch (HandledException exception) {
+            throw exception;
+        } catch (Exception exception) {
             throw Exceptions.handle()
                             .to(WebServer.LOG)
-                            .error(e)
+                            .error(exception)
                             .withSystemErrorMessage("Expected valid XML as body of this request: %s (%s).")
                             .handle();
         }
@@ -1958,12 +1969,12 @@ public class WebContext implements SubContext {
                                 .handle();
             }
             return Json.parseObject(content.getString(getRequestEncoding()));
-        } catch (HandledException e) {
-            throw e;
-        } catch (Exception e) {
+        } catch (HandledException exception) {
+            throw exception;
+        } catch (Exception exception) {
             throw Exceptions.handle()
                             .to(WebServer.LOG)
-                            .error(e)
+                            .error(exception)
                             .withSystemErrorMessage("Expected a valid JSON map as body of this request: %s (%s).")
                             .handle();
         }
@@ -1981,8 +1992,8 @@ public class WebContext implements SubContext {
         try {
             Value contentType = getHeaderValue(HttpHeaderNames.CONTENT_TYPE);
             return parseContentType(contentType);
-        } catch (UnsupportedCharsetException e) {
-            Exceptions.ignore(e);
+        } catch (UnsupportedCharsetException exception) {
+            Exceptions.ignore(exception);
             return StandardCharsets.UTF_8;
         }
     }
@@ -2019,25 +2030,25 @@ public class WebContext implements SubContext {
         if (!hasContent()) {
             return false;
         }
-        try (Reader r = new InputStreamReader(getContent())) {
-            return checkIfFirstCharIsXMLBrace(r);
-        } catch (HandledException e) {
-            throw e;
-        } catch (Exception e) {
+        try (Reader reader = new InputStreamReader(getContent())) {
+            return checkIfFirstCharIsXMLBrace(reader);
+        } catch (HandledException exception) {
+            throw exception;
+        } catch (Exception exception) {
             throw Exceptions.handle()
                             .to(WebServer.LOG)
-                            .error(e)
+                            .error(exception)
                             .withSystemErrorMessage("Error parsing request content: %s (%s).")
                             .handle();
         }
     }
 
-    private boolean checkIfFirstCharIsXMLBrace(Reader r) throws IOException {
+    private boolean checkIfFirstCharIsXMLBrace(Reader reader) throws IOException {
         // Trim whitespace and detect if the first readable character is a <
-        int c;
-        while ((c = r.read()) != -1) {
-            if (!Character.isWhitespace(c)) {
-                return c == '<';
+        int character;
+        while ((character = reader.read()) != -1) {
+            if (!Character.isWhitespace(character)) {
+                return character == '<';
             }
         }
         return false;
@@ -2076,8 +2087,8 @@ public class WebContext implements SubContext {
             ContentHandler copy = this.contentHandler;
             contentHandler = null;
             copy.cleanup();
-        } catch (Exception e) {
-            Exceptions.handle(WebServer.LOG, e);
+        } catch (Exception exception) {
+            Exceptions.handle(WebServer.LOG, exception);
         }
     }
 
@@ -2090,8 +2101,8 @@ public class WebContext implements SubContext {
             InterfaceHttpPostRequestDecoder copy = this.postDecoder;
             postDecoder = null;
             copy.destroy();
-        } catch (Exception e) {
-            Exceptions.handle(WebServer.LOG, e);
+        } catch (Exception exception) {
+            Exceptions.handle(WebServer.LOG, exception);
         }
     }
 
@@ -2106,16 +2117,16 @@ public class WebContext implements SubContext {
             content = null;
             contentAsFile = null;
             copy.delete();
-        } catch (Exception e) {
-            Exceptions.handle(WebServer.LOG, e);
+        } catch (Exception exception) {
+            Exceptions.handle(WebServer.LOG, exception);
         }
 
         // Also tell the factory to release all allocated data, as it keeps an internal reference to the request
         // (...along with all its data!).
         try {
             WebServer.getHttpDataFactory().cleanRequestHttpData(request);
-        } catch (Exception e) {
-            Exceptions.handle(WebServer.LOG, e);
+        } catch (Exception exception) {
+            Exceptions.handle(WebServer.LOG, exception);
         }
     }
 
@@ -2166,7 +2177,7 @@ public class WebContext implements SubContext {
     @Override
     public void detach() {
         // Detaching the context from the current thread has no consequences as
-        // a request cann be passed on to another thread...
+        // a request can be passed on to another thread...
     }
 
     /**

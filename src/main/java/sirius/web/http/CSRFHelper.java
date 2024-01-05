@@ -8,7 +8,6 @@
 
 package sirius.web.http;
 
-import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
@@ -49,23 +48,23 @@ public class CSRFHelper {
      */
     @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getCSRFToken() {
-        return getCSRFToken(CallContext.getCurrent().get(WebContext.class));
+        return getCSRFToken(WebContext.getCurrent());
     }
 
     /**
      * Returns the CSRF security-token of the current session. Internally recomputes the token if outdated.
      *
-     * @param ctx the request to read the token from
+     * @param webContext the request to read the token from
      * @return the CSRF security-token to protect sensitive links.
      */
-    public String getCSRFToken(WebContext ctx) {
-        Value lastCSRFRecompute = ctx.getSessionValue(LAST_CSRF_RECOMPUTE);
+    public String getCSRFToken(WebContext webContext) {
+        Value lastCSRFRecompute = webContext.getSessionValue(LAST_CSRF_RECOMPUTE);
 
         if (isCSRFTokenOutdated(lastCSRFRecompute.asLong(-1L))) {
-            recomputeCSRFToken(ctx);
+            recomputeCSRFToken(webContext);
         }
 
-        return ctx.getSessionValue(CSRF_TOKEN).asString();
+        return webContext.getSessionValue(CSRF_TOKEN).asString();
     }
 
     private boolean isCSRFTokenOutdated(long lastCSRFRecompute) {
@@ -74,13 +73,13 @@ public class CSRFHelper {
     }
 
     /**
-     * Forces an explicit recomputation of the CSRF token.
+     * Forces an explicit re-computation of the CSRF token.
      *
-     * @param ctx the web context to recompute the token for
+     * @param webContext the web context to recompute the token for
      */
-    public void recomputeCSRFToken(WebContext ctx) {
-        ctx.setSessionValue(PREVIOUS_CSRF_TOKEN, ctx.getSessionValue(CSRF_TOKEN).asString());
-        ctx.setSessionValue(CSRF_TOKEN, UUID.randomUUID().toString());
-        ctx.setSessionValue(LAST_CSRF_RECOMPUTE, Value.of(Instant.now().toEpochMilli()).asString());
+    public void recomputeCSRFToken(WebContext webContext) {
+        webContext.setSessionValue(PREVIOUS_CSRF_TOKEN, webContext.getSessionValue(CSRF_TOKEN).asString());
+        webContext.setSessionValue(CSRF_TOKEN, UUID.randomUUID().toString());
+        webContext.setSessionValue(LAST_CSRF_RECOMPUTE, Value.of(Instant.now().toEpochMilli()).asString());
     }
 }
