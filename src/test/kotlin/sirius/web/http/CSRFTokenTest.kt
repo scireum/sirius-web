@@ -41,7 +41,6 @@ class CSRFTokenTest {
 
         val result = TestRequest.GET("/test/fake-delete-data?CSRFToken=$token").execute()
 
-
         assertEquals(result.getStatus(), HttpResponseStatus.INTERNAL_SERVER_ERROR)
     }
 
@@ -49,8 +48,8 @@ class CSRFTokenTest {
     fun `safePOST() works correctly if token is missing via POST`() {
 
         val result = TestRequest.POST("/test/fake-delete-data").execute()
-        assertEquals(result.getStatus(), HttpResponseStatus.INTERNAL_SERVER_ERROR)
 
+        assertEquals(result.getStatus(), HttpResponseStatus.INTERNAL_SERVER_ERROR)
     }
 
     @Test
