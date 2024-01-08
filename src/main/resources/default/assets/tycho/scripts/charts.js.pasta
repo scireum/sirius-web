@@ -411,3 +411,42 @@ function dougnutChart(selector, labels, data) {
         }
     });
 }
+
+/**@
+ * Renders a polar area chart.
+ * @param selector the selector to determine the target canvas. Also, the canvas can be passed in as DOM element
+ * @param labels an array of labels to use for the chart
+ * @param data array of numeric values to use for the chart
+ * @param dataUnit the data unit to display
+ */
+function polarAreaChart(selector, labels, data, dataUnit) {
+    const _canvas = sirius.querySelector(selector);
+
+    const options = {
+        startAngle: -0.55 * Math.PI
+    };
+
+    if (dataUnit) {
+        options.scales = {
+            r: {
+                ticks: {
+                    callback: function (value) {
+                        return Math.round(value * 10) / 10 + ' ' + dataUnit;
+                    }
+                }
+            }
+        }
+    }
+
+    new Chart(_canvas, {
+        data: {
+            datasets: [{
+                data: data,
+                backgroundColor: multiPickFromColorWheel(data.length)
+            }],
+            labels: labels
+        },
+        type: 'polarArea',
+        options: options
+    });
+}

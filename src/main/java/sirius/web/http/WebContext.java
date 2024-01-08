@@ -1115,7 +1115,7 @@ public class WebContext implements SubContext {
     /**
      * Determines if the current request is secured by SSL.
      * <p>
-     * This is boilerplate for: {@code CallContext.getCurrent().get(WebContext.class).isSSL()}
+     * This is boilerplate for: {@code WebContext.getCurrent().isSSL()}
      *
      * @return <tt>true</tt> if this is an HTTPS request, <tt>false</tt> otherwise
      */
