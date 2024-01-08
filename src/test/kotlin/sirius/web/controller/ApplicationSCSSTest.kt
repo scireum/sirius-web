@@ -13,13 +13,13 @@ import org.junit.jupiter.api.extension.ExtendWith
 import sirius.kernel.SiriusExtension
 import sirius.web.sass.Output
 import java.io.StringWriter
-import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 /**
  * Tests rendering of application scss.
  */
 @ExtendWith(SiriusExtension::class)
-class ApplicationSCSSSpec {
+class ApplicationSCSSTest {
     @Test
     fun `application scss can be compiled`() {
         val gen = TestGenerator()
@@ -30,6 +30,6 @@ class ApplicationSCSSSpec {
         val out = Output(writer, false)
         gen.generate(out)
         writer.close()
-        assertEquals(0, writer.toString().length)
+        assertTrue { writer.toString().length > 0 }
     }
 }
