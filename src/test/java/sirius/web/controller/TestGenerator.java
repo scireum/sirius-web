@@ -11,11 +11,6 @@ import java.util.Optional;
 
 class TestGenerator extends Generator {
     @Override
-    public void debug(String message) {
-
-    }
-
-    @Override
     public void warn(String message) {
         throw new RuntimeException(message);
     }
