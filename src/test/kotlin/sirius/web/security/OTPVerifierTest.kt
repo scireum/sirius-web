@@ -8,29 +8,35 @@
 
 package sirius.web.security
 
-import sirius.kernel.BaseSpecification
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import sirius.kernel.SiriusExtension
 import sirius.kernel.di.Injector
+import kotlin.test.assertEquals
 
-class OTPVerifierSpec extends BaseSpecification {
+@ExtendWith(SiriusExtension::class)
+class OTPVerifierTest {
 
-    def "computeCode produces codes accepted by checkCode"() {
-        given:
-        def verifier = Injector.context().getPart(OTPVerifier.class)
-            when:
-            def secret = verifier.generateSharedSecret()
-                    and:
-                    def code = verifier.computeCode(secret)
-                    then:
-                    verifier.checkCode(secret, code)
+    @Test
+    fun `computeCode produces codes accepted by checkCode`() {
+
+        val verifier = Injector.context().getPart(OTPVerifier::class.java)
+
+        val secret = verifier!!.generateSharedSecret()
+
+        val code = verifier.computeCode(secret)
+
+        verifier.checkCode(secret, code)
     }
 
-    def "codes generated with other secret are not accepted"() {
-        given:
-        def verifier = Injector.context().getPart(OTPVerifier.class)
-            when:
-            def code = verifier.computeCode(verifier.generateSharedSecret())
-                    then:
-                    verifier.checkCode(verifier.generateSharedSecret(), code) == false
+    @Test
+    fun `codes generated with other secret are not accepted`() {
+
+        val verifier = Injector.context().getPart(OTPVerifier::class.java)
+
+        val code = verifier!!.computeCode(verifier.generateSharedSecret())
+
+        assertEquals(false, verifier.checkCode(verifier.generateSharedSecret(), code))
     }
 
 }
