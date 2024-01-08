@@ -8,50 +8,53 @@
 
 package sirius.web.security
 
-import sirius.kernel.BaseSpecification
-import sirius.kernel.async.Tasks
-import sirius.kernel.di.std.Part
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import sirius.kernel.SiriusExtension
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
-class ScopeInfoSpec extends BaseSpecification {
+@ExtendWith(SiriusExtension::class)
+class ScopeInfoTest {
 
-    @Part
-    private static Tasks tasks;
+    @Test
+    fun `default config is loaded`() {
 
-    def "default config is loaded"() {
-        when:
-        List<String> test = UserContext.getCurrentScope().getDefaultScopeConfigFiles()
-        then:
-        test.size() >= 1
-        and:
-        test.indexOf("test") >= 0
+        val test = ScopeInfo.getDefaultScopeConfigFiles()
+
+        assertTrue { test.size >= 1 }
+        assertTrue { test.indexOf("test") >= 0 }
     }
 
-    def "default config is read"() {
-        when:
-        String value = UserContext.getSettings().getString("settings.test")
-        then:
-        value == "Hello"
+    @Test
+    fun `default config is read`() {
+
+        val value = UserContext.getSettings().getString("settings.test")
+
+        assertEquals("Hello", value)
     }
 
-    def "default config original contents are available"() {
-        when:
-        String value = UserContext.getCurrentScope().getDefaultScopeConfigContents("test")
-        then:
-        value == "# Test\nsettings.test =\"Hello\""
+    @Test
+    fun `default config original contents are available`() {
+
+        val value = ScopeInfo.getDefaultScopeConfigContents("test")
+
+        assertEquals("# Test\nsettings.test =\"Hello\"", value)
     }
 
-    def "helpers are instantiated via factory/constructors"() {
-        when:
-        def helper1 = UserContext.getCurrentScope().getHelper(FactoryExampleHelper.class)
-                def helper2 = UserContext.getCurrentScope().getHelper(ExampleHelper.class)
-                def helper3 = UserContext.getCurrentScope().getHelper(AnotherExampleHelper.class)
-                then: "all can be instantiated"
-                helper1 != null
-                helper2 != null
-                helper3 != null
-                and: "friends are the exact same instances and not copies of the same helpers"
-                helper2.getAnotherExampleHelper() == helper3
-                helper3.getExampleHelper() == helper2
+    @Test
+    fun `helpers are instantiated via factory or constructors`() {
+
+        val helper1 = UserContext.getCurrentScope().getHelper(FactoryExampleHelper::class.java)
+        val helper2 = UserContext.getCurrentScope().getHelper(ExampleHelper::class.java)
+        val helper3 = UserContext.getCurrentScope().getHelper(AnotherExampleHelper::class.java)
+
+        helper1 != null
+        helper2 != null
+        helper3 != null
+
+        assertEquals(helper3, helper2.getAnotherExampleHelper())
+        assertEquals(helper2, helper3.getExampleHelper())
     }
 
 }
