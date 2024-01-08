@@ -24,7 +24,7 @@ import kotlin.test.assertEquals
 class CSRFTokenTest {
 
     @Test
-    fun `safePOST() works correctly if token is missing via GET`() {
+    fun `safePOST() passes test if token is missing via GET`() {
 
         val result = TestRequest.GET("/test/fake-delete-data").execute()
 
@@ -32,7 +32,7 @@ class CSRFTokenTest {
     }
 
     @Test
-    fun `safePOST() works correctly if token is present via GET`() {
+    fun `safePOST() if the token is present via GET the test will succeed`() {
 
         val connection = URL("http://localhost:9999/test/provide-security-token").openConnection() as HttpURLConnection
         connection.setRequestMethod("GET")
@@ -45,7 +45,7 @@ class CSRFTokenTest {
     }
 
     @Test
-    fun `safePOST() works correctly if token is missing via POST`() {
+    fun `safePOST() works as intended if token is missing via POST`() {
 
         val result = TestRequest.POST("/test/fake-delete-data").execute()
 
@@ -53,7 +53,7 @@ class CSRFTokenTest {
     }
 
     @Test
-    fun `safePOST() works correctly if correct token is present via SAFEPOST`() {
+    fun `safePOST() will pass if correct token is present via SAFEPOST`() {
 
         val result = TestRequest.SAFEPOST("/test/fake-delete-data").execute()
 
@@ -61,7 +61,7 @@ class CSRFTokenTest {
     }
 
     @Test
-    fun `safePOST() works correctly if correct token is present via POST`() {
+    fun `safePOST() works accordingly when correct token is present via POST`() {
 
         val connection = URL("http://localhost:9999/test/provide-security-token").openConnection() as HttpURLConnection
         connection.setRequestMethod("GET")
@@ -83,7 +83,7 @@ class CSRFTokenTest {
     }
 
     @Test
-    fun `safePOST() works correctly if expired token is present via POST`() {
+    fun `safePOST() passes test if expired token is provided via POST`() {
 
         val connection = URL("http://localhost:9999/test/provide-security-token").openConnection() as HttpURLConnection
         connection.setRequestMethod("GET")
@@ -105,7 +105,7 @@ class CSRFTokenTest {
     }
 
     @Test
-    fun `safePOST() works correctly if wrong token is present via POST`() {
+    fun `safePOST() if wrong token is given via POST the test will pass`() {
 
         val connection = URL("http://localhost:9999/test/provide-security-token").openConnection() as HttpURLConnection
         connection.setRequestMethod("GET")
@@ -124,7 +124,7 @@ class CSRFTokenTest {
     }
 
     @Test
-    fun `unsafePOST() works correctly if token is missing via POST`() {
+    fun `unsafePOST() passes if token is missing via POST`() {
 
         val result = TestRequest.POST("/test/fake-delete-data-unsafe").execute()
 
@@ -132,7 +132,7 @@ class CSRFTokenTest {
     }
 
     @Test
-    fun `unsafePOST() works correctly if token is missing via GET`() {
+    fun `unsafePOST() works as intended when token is not provided via GET`() {
 
         val result = TestRequest.GET("/test/fake-delete-data-unsafe").execute()
 
@@ -140,7 +140,7 @@ class CSRFTokenTest {
     }
 
     @Test
-    fun `ensureSafePOST() works correctly if token is missing via GET`() {
+    fun `ensureSafePOST() works accordingly if token is missing via GET`() {
 
         val result = TestRequest.GET("/test/fake-delete-data-ensure-safe").execute()
 
@@ -148,7 +148,7 @@ class CSRFTokenTest {
     }
 
     @Test
-    fun `ensureSafePOST() works correctly if wrong token is present via POST`() {
+    fun `ensureSafePOST() when wrong token is provided via POST the test will pass`() {
 
         val connection = URL(
             "http://localhost:9999/test/fake-delete-data-ensure-safe?CSRFToken=w-r-o-n-g-t-o-k-e-n"
@@ -160,7 +160,7 @@ class CSRFTokenTest {
     }
 
     @Test
-    fun `ensureSafePOST() works correctly if correct token is present via POST`() {
+    fun `ensureSafePOST() will pass test if correct token is given via POST`() {
 
         val connection = URL("http://localhost:9999/test/provide-security-token").openConnection() as HttpURLConnection
         connection.setRequestMethod("GET")
