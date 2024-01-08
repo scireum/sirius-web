@@ -53,8 +53,8 @@ class ScopeInfoTest {
         helper2 != null
         helper3 != null
 
-        assertEquals(helper3, helper2.getAnotherExampleHelper())
-        assertEquals(helper2, helper3.getExampleHelper())
+        assertEquals(helper3, helper2.anotherExampleHelper)
+        assertEquals(helper2, helper3.exampleHelper)
     }
 
 }
