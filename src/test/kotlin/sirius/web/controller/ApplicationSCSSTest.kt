@@ -22,13 +22,13 @@ import kotlin.test.assertTrue
 class ApplicationSCSSTest {
     @Test
     fun `application scss can be compiled`() {
-        val gen = TestGenerator()
-        gen.importStylesheet("/assets/wondergem/stylesheets/application.scss")
-        gen.compile()
+        val generator = TestGenerator()
+        generator.importStylesheet("/assets/wondergem/stylesheets/application.scss")
+        generator.compile()
         // Let the content compressor take care of minifying the CSS
         val writer = StringWriter()
-        val out = Output(writer, false)
-        gen.generate(out)
+        val output = Output(writer, false)
+        generator.generate(output)
         writer.close()
         assertTrue { writer.toString().length > 0 }
     }
