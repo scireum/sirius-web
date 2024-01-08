@@ -8,54 +8,28 @@
 
 package sirius.web.controller
 
-import sirius.web.sass.Generator
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import sirius.kernel.SiriusExtension
 import sirius.web.sass.Output
-import sirius.kernel.BaseSpecification
-import sirius.kernel.di.std.Part
-import sirius.web.resources.Resource
-import sirius.web.resources.Resources
+import java.io.StringWriter
+import kotlin.test.assertEquals
 
-class ApplicationSCSSSpec extends BaseSpecification {
-
-    class TestGenerator extends Generator {
-        @Override
-        void debug(String message) {
-
-        }
-
-        @Override
-        void warn(String message) {
-            throw new RuntimeException(message)
-        }
-
-        @Part
-        private static Resources resources
-
-                @Override
-                protected InputStream resolveIntoStream(String sheet) throws IOException {
-            Optional<Resource> res = resources.resolve(sheet)
-            if (res.isPresent()) {
-                return res.get().getUrl().openStream()
-            }
-            return null
-        }
-
-        TestGenerator() {
-        }
-    }
-
-    def "application.scss can be compiled"() {
-        when:
-        TestGenerator gen = new TestGenerator()
+/**
+ * Tests rendering of application scss.
+ */
+@ExtendWith(SiriusExtension::class)
+class ApplicationSCSSSpec {
+    @Test
+    fun `application scss can be compiled`() {
+        val gen = TestGenerator()
         gen.importStylesheet("/assets/wondergem/stylesheets/application.scss")
         gen.compile()
         // Let the content compressor take care of minifying the CSS
-        StringWriter writer = new StringWriter()
-        Output out = new Output(writer, false)
+        val writer = StringWriter()
+        val out = Output(writer, false)
         gen.generate(out)
         writer.close()
-        then:
-        writer.toString().length() > 0
+        assertEquals(0, writer.toString().length)
     }
-
 }
