@@ -10,144 +10,172 @@ package sirius.web.http
 
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpResponseStatus
-import sirius.kernel.BaseSpecification
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import sirius.kernel.SiriusExtension
 import sirius.kernel.commons.Streams
+import java.net.HttpURLConnection
+import java.net.URL
 
 import java.nio.charset.StandardCharsets
 
-class CSRFTokenSpec extends BaseSpecification {
+@ExtendWith(SiriusExtension::class)
+class CSRFTokenTest {
 
-    def "safePOST() works correctly if token is missing via GET"() {
-        when:
-        def result = TestRequest.GET("/test/fake-delete-data").execute()
-        then:
+    @Test
+    fun `safePOST() works correctly if token is missing via GET`() {
+
+        val result = TestRequest.GET("/test/fake-delete-data").execute()
+
         result.getStatus() == HttpResponseStatus.INTERNAL_SERVER_ERROR
     }
 
-    def "safePOST() works correctly if token is present via GET"() {
-        given:
-        HttpURLConnection c = new URL("http://localhost:9999/test/provide-security-token").openConnection()
-        c.setRequestMethod("GET")
-        c.connect()
-        def token = new String(Streams.toByteArray(c.getInputStream()), StandardCharsets.UTF_8)
+    @Test
+    fun `safePOST() works correctly if token is present via GET`() {
 
-        when:
-        def result = TestRequest.GET("/test/fake-delete-data?CSRFToken=" + token).execute()
-        then:
+        val connection = URL("http://localhost:9999/test/provide-security-token").openConnection() as HttpURLConnection
+        connection.setRequestMethod("GET")
+        connection.connect()
+        val token = String(Streams.toByteArray(connection.getInputStream()), StandardCharsets.UTF_8)
+
+        val result = TestRequest.GET("/test/fake-delete-data?CSRFToken=" + token).execute()
+
         result.getStatus() == HttpResponseStatus.INTERNAL_SERVER_ERROR
     }
 
-    def "safePOST() works correctly if token is missing via POST"() {
-        when:
-        def result = TestRequest.POST("/test/fake-delete-data").execute()
-        then:
+    @Test
+    fun `safePOST() works correctly if token is missing via POST`() {
+
+        val result = TestRequest.POST("/test/fake-delete-data").execute()
+
         result.getStatus() == HttpResponseStatus.INTERNAL_SERVER_ERROR
     }
 
-    def "safePOST() works correctly if correct token is present via SAFEPOST"() {
-        when:
-        def result = TestRequest.SAFEPOST("/test/fake-delete-data").execute()
-        then:
+    @Test
+    fun `safePOST() works correctly if correct token is present via SAFEPOST`() {
+
+        val result = TestRequest.SAFEPOST("/test/fake-delete-data").execute()
+
         result.getStatus() == HttpResponseStatus.OK
     }
 
-    def "safePOST() works correctly if correct token is present via POST"() {
-        given:
-        HttpURLConnection c = new URL("http://localhost:9999/test/provide-security-token").openConnection()
-        c.setRequestMethod("GET")
-        c.connect()
-        def token = new String(Streams.toByteArray(c.getInputStream()), StandardCharsets.UTF_8)
+    @Test
+    fun `safePOST() works correctly if correct token is present via POST`() {
 
-        when:
-        HttpURLConnection c2 = new URL(
-            "http://localhost:9999/test/fake-delete-data?CSRFToken=" + token).openConnection()
-        c2.setRequestMethod("POST")
-        c2.setRequestProperty(HttpHeaderNames.COOKIE.toString(), c.getHeaderFields().get("set-cookie").get(0))
-        c2.connect()
-        then:
-        c2.getResponseCode() == 200
+        val connection = URL("http://localhost:9999/test/provide-security-token").openConnection() as HttpURLConnection
+        connection.setRequestMethod("GET")
+        connection.connect()
+        val token = String(Streams.toByteArray(connection.getInputStream()), StandardCharsets.UTF_8)
+
+
+        val connection2 = URL(
+            "http://localhost:9999/test/fake-delete-data?CSRFToken=" + token
+        ).openConnection() as HttpURLConnection
+        connection2.setRequestMethod("POST")
+        connection2.setRequestProperty(
+            HttpHeaderNames.COOKIE.toString(),
+            connection.getHeaderFields().get("set-cookie")?.get(0)
+        )
+        connection2.connect()
+
+        connection2.getResponseCode() == 200
     }
 
-    def "safePOST() works correctly if expired token is present via POST"() {
-        given:
-        HttpURLConnection c = new URL("http://localhost:9999/test/provide-security-token").openConnection()
-        c.setRequestMethod("GET")
-        c.connect()
-        def token = new String(Streams.toByteArray(c.getInputStream()), StandardCharsets.UTF_8)
+    @Test
+    fun `safePOST() works correctly if expired token is present via POST`() {
+
+        val connection = URL("http://localhost:9999/test/provide-security-token").openConnection() as HttpURLConnection
+        connection.setRequestMethod("GET")
+        connection.connect()
+        val token = String(Streams.toByteArray(connection.getInputStream()), StandardCharsets.UTF_8)
         TestRequest.GET("/test/expire-security-token").execute()
 
-        when:
-        HttpURLConnection c2 = new URL(
-            "http://localhost:9999/test/fake-delete-data?CSRFToken=" + token).openConnection()
-        c2.setRequestMethod("POST")
-        c2.setRequestProperty(HttpHeaderNames.COOKIE.toString(), c.getHeaderFields().get("set-cookie").get(0))
-        c2.connect()
-        then:
-        c2.getResponseCode() == 200
+        val connection2 = URL(
+            "http://localhost:9999/test/fake-delete-data?CSRFToken=" + token
+        ).openConnection() as HttpURLConnection
+        connection2.setRequestMethod("POST")
+        connection2.setRequestProperty(
+            HttpHeaderNames.COOKIE.toString(),
+            connection.getHeaderFields().get("set-cookie")?.get(0)
+        )
+        connection2.connect()
+
+        connection2.getResponseCode() == 200
     }
 
-    def "safePOST() works correctly if wrong token is present via POST"() {
-        given:
-        HttpURLConnection c = new URL("http://localhost:9999/test/provide-security-token").openConnection()
-        c.setRequestMethod("GET")
-        c.connect()
-        def token = new String(Streams.toByteArray(c.getInputStream()), StandardCharsets.UTF_8)
+    @Test
+    fun `safePOST() works correctly if wrong token is present via POST`() {
 
-        when:
-        HttpURLConnection c2 = new URL("http://localhost:9999/test/fake-delete-data?CSRFToken=w-r-o-n-g-t-o-k-e-n").
-        openConnection()
-        c2.setRequestMethod("POST")
-        c2.setRequestProperty(HttpHeaderNames.COOKIE.toString(), c.getHeaderFields().get("set-cookie").get(0))
-        c2.connect()
-        then:
-        c2.getResponseCode() == 500
+        val connection = URL("http://localhost:9999/test/provide-security-token").openConnection() as HttpURLConnection
+        connection.setRequestMethod("GET")
+        connection.connect()
+        val token = String(Streams.toByteArray(connection.getInputStream()), StandardCharsets.UTF_8)
+
+        val connection2 =
+            URL("http://localhost:9999/test/fake-delete-data?CSRFToken=w-r-o-n-g-t-o-k-e-n").openConnection() as HttpURLConnection
+        connection2.setRequestMethod("POST")
+        connection2.setRequestProperty(
+            HttpHeaderNames.COOKIE.toString(),
+            connection.getHeaderFields().get("set-cookie")?.get(0)
+        )
+        connection2.connect()
+
+        connection2.getResponseCode() == 500
     }
 
-    def "unsafePOST() works correctly if token is missing via POST"() {
-        when:
-        def result = TestRequest.POST("/test/fake-delete-data-unsafe").execute()
-        then:
+    @Test
+    fun `unsafePOST() works correctly if token is missing via POST`() {
+
+        val result = TestRequest.POST("/test/fake-delete-data-unsafe").execute()
+
         result.getStatus() == HttpResponseStatus.OK
     }
 
-    def "unsafePOST() works correctly if token is missing via GET"() {
-        when:
-        def result = TestRequest.GET("/test/fake-delete-data-unsafe").execute()
-        then:
+    @Test
+    fun `unsafePOST() works correctly if token is missing via GET`() {
+
+        val result = TestRequest.GET("/test/fake-delete-data-unsafe").execute()
+
         result.getStatus() == HttpResponseStatus.INTERNAL_SERVER_ERROR
     }
 
-    def "ensureSafePOST() works correctly if token is missing via GET"() {
-        when:
-        def result = TestRequest.GET("/test/fake-delete-data-ensure-safe").execute()
-        then:
+    @Test
+    fun `ensureSafePOST() works correctly if token is missing via GET`() {
+
+        val result = TestRequest.GET("/test/fake-delete-data-ensure-safe").execute()
+
         result.getStatus() == HttpResponseStatus.INTERNAL_SERVER_ERROR
     }
 
-    def "ensureSafePOST() works correctly if wrong token is present via POST"() {
-        when:
-        HttpURLConnection c = new URL(
-            "http://localhost:9999/test/fake-delete-data-ensure-safe?CSRFToken=w-r-o-n-g-t-o-k-e-n").openConnection()
-        c.setRequestMethod("POST")
-        c.connect()
-        then:
-        c.getResponseCode() == 401
+    @Test
+    fun `ensureSafePOST() works correctly if wrong token is present via POST`() {
+
+        val connection = URL(
+            "http://localhost:9999/test/fake-delete-data-ensure-safe?CSRFToken=w-r-o-n-g-t-o-k-e-n"
+        ).openConnection() as HttpURLConnection
+        connection.setRequestMethod("POST")
+        connection.connect()
+
+        connection.getResponseCode() == 401
     }
 
-    def "ensureSafePOST() works correctly if correct token is present via POST"() {
-        given:
-        HttpURLConnection c = new URL("http://localhost:9999/test/provide-security-token").openConnection()
-        c.setRequestMethod("GET")
-        c.connect()
-        def token = new String(Streams.toByteArray(c.getInputStream()), StandardCharsets.UTF_8)
+    @Test
+    fun `ensureSafePOST() works correctly if correct token is present via POST`() {
 
-        when:
-        HttpURLConnection c2 = new URL("http://localhost:9999/test/fake-delete-data-ensure-safe?CSRFToken=" + token).
-        openConnection()
-        c2.setRequestMethod("POST")
-        c2.setRequestProperty(HttpHeaderNames.COOKIE.toString(), c.getHeaderFields().get("set-cookie").get(0))
-        c2.connect()
-        then:
-        c2.getResponseCode() == 200
+        val connection = URL("http://localhost:9999/test/provide-security-token").openConnection() as HttpURLConnection
+        connection.setRequestMethod("GET")
+        connection.connect()
+        val token = String(Streams.toByteArray(connection.getInputStream()), StandardCharsets.UTF_8)
+
+        val connection2 =
+            URL("http://localhost:9999/test/fake-delete-data-ensure-safe?CSRFToken=" + token).openConnection() as HttpURLConnection
+        connection2.setRequestMethod("POST")
+        connection2.setRequestProperty(
+            HttpHeaderNames.COOKIE.toString(),
+            connection.getHeaderFields().get("set-cookie")?.get(0)
+        )
+        connection2.connect()
+
+        connection2.getResponseCode() == 200
     }
 }
