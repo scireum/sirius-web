@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import sirius.kernel.SiriusExtension
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 @ExtendWith(SiriusExtension::class)
@@ -49,9 +50,9 @@ class ScopeInfoTest {
         val helper2 = UserContext.getCurrentScope().getHelper(ExampleHelper::class.java)
         val helper3 = UserContext.getCurrentScope().getHelper(AnotherExampleHelper::class.java)
 
-        helper1 != null
-        helper2 != null
-        helper3 != null
+        assertNotNull(helper1)
+        assertNotNull(helper2)
+        assertNotNull(helper3)
 
         assertEquals(helper3, helper2.anotherExampleHelper)
         assertEquals(helper2, helper3.exampleHelper)
