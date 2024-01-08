@@ -71,7 +71,7 @@ class CSRFTokenTest {
 
 
         val connection2 = URL(
-            "http://localhost:9999/test/fake-delete-data?CSRFToken=" + token
+            "http://localhost:9999/test/fake-delete-data?CSRFToken=$token"
         ).openConnection() as HttpURLConnection
         connection2.setRequestMethod("POST")
         connection2.setRequestProperty(
@@ -93,7 +93,7 @@ class CSRFTokenTest {
         TestRequest.GET("/test/expire-security-token").execute()
 
         val connection2 = URL(
-            "http://localhost:9999/test/fake-delete-data?CSRFToken=" + token
+            "http://localhost:9999/test/fake-delete-data?CSRFToken=$token"
         ).openConnection() as HttpURLConnection
         connection2.setRequestMethod("POST")
         connection2.setRequestProperty(
@@ -111,7 +111,6 @@ class CSRFTokenTest {
         val connection = URL("http://localhost:9999/test/provide-security-token").openConnection() as HttpURLConnection
         connection.setRequestMethod("GET")
         connection.connect()
-        val token = String(Streams.toByteArray(connection.getInputStream()), StandardCharsets.UTF_8)
 
         val connection2 =
             URL("http://localhost:9999/test/fake-delete-data?CSRFToken=w-r-o-n-g-t-o-k-e-n").openConnection() as HttpURLConnection
@@ -170,7 +169,7 @@ class CSRFTokenTest {
         val token = String(Streams.toByteArray(connection.getInputStream()), StandardCharsets.UTF_8)
 
         val connection2 =
-            URL("http://localhost:9999/test/fake-delete-data-ensure-safe?CSRFToken=" + token).openConnection() as HttpURLConnection
+            URL("http://localhost:9999/test/fake-delete-data-ensure-safe?CSRFToken=$token").openConnection() as HttpURLConnection
         connection2.setRequestMethod("POST")
         connection2.setRequestProperty(
             HttpHeaderNames.COOKIE.toString(),
