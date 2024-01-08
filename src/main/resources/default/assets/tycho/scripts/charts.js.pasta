@@ -427,10 +427,12 @@ function polarAreaChart(selector, labels, data, dataUnit) {
     };
 
     if (dataUnit) {
-        options.scale = {
-            ticks: {
-                userCallback: function (value) {
-                    return Math.round(value * 10) / 10 + ' ' + dataUnit;
+        options.scales = {
+            r: {
+                ticks: {
+                    callback: function (value) {
+                        return Math.round(value * 10) / 10 + ' ' + dataUnit;
+                    }
                 }
             }
         }
