@@ -12,7 +12,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import sirius.kernel.SiriusExtension
 import sirius.kernel.di.Injector
-import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @ExtendWith(SiriusExtension::class)
 class OTPVerifierTest {
@@ -26,7 +27,7 @@ class OTPVerifierTest {
 
         val code = verifier.computeCode(secret)
 
-        verifier.checkCode(secret, code)
+        assertTrue { verifier.checkCode(secret, code) }
     }
 
     @Test
@@ -36,7 +37,7 @@ class OTPVerifierTest {
 
         val code = verifier!!.computeCode(verifier.generateSharedSecret())
 
-        assertEquals(false, verifier.checkCode(verifier.generateSharedSecret(), code))
+        assertFalse { verifier.checkCode(verifier.generateSharedSecret(), code) }
     }
 
 }
