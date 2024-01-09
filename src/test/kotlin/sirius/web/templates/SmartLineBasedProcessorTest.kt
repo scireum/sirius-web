@@ -28,11 +28,11 @@ class SmartLineBasedProcessorTest {
         val processor1 = SmartLineBasedProcessor()
             .withColumn("item", "artikel")
             .withColumn("quantity")
-            .withProcessor { line: Int, row: SmartRow -> contents1.add(row) }
+            .withProcessor { _: Int, row: SmartRow -> contents1.add(row) }
         val processor2 = SmartLineBasedProcessor()
             .withColumn("item", "artikel")
             .withColumn("quantity")
-            .withProcessor { line: Int, row: SmartRow -> contents2.add(row) }
+            .withProcessor { _: Int, row: SmartRow -> contents2.add(row) }
 
         val lineProcessor1 =
             LineBasedProcessor.create("smart-test1.csv", KClass::class.java.getResourceAsStream("/smart-test1.csv"))
