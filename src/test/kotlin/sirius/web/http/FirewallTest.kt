@@ -8,39 +8,48 @@
 
 package sirius.web.http
 
-import sirius.kernel.BaseSpecification
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.extension.ExtendWith
+import sirius.kernel.SiriusExtension
+import java.net.HttpURLConnection
+import java.net.SocketException
+import java.net.URL
+import kotlin.test.assertEquals
 
-class FirewallSpec extends BaseSpecification {
+@ExtendWith(SiriusExtension::class)
+class FirewallTest {
 
-    def "unlimited realm isn't blocked"() {
-        when:
-        HttpURLConnection u = new URL("http://localhost:9999/test/firewall").openConnection()
-        and:
-        def responseCode = u.getResponseCode()
-        then:
-        responseCode == 200
+    @Test
+    fun `unlimited realm isn't blocked`() {
+
+        val url = URL("http://localhost:9999/test/firewall").openConnection() as HttpURLConnection
+
+        val responseCode = url.getResponseCode()
+
+        assertEquals(200, responseCode)
     }
 
-    def "blocking IPs works"() {
-        when:
+    @Test
+    fun `blocking IPs works`() {
+
         TestFirewall.blockAllIPs = true
-        and:
-        HttpURLConnection u = new URL("http://localhost:9999/test/firewall").openConnection()
-        and:
-        def responseCode = u.getResponseCode()
-        then:
-        thrown(SocketException)
-        cleanup:
+
+        val url = URL("http://localhost:9999/test/firewall").openConnection() as HttpURLConnection
+
+        assertThrows<SocketException> { val responseCode = url.getResponseCode() }
+
         TestFirewall.blockAllIPs = false
     }
 
-    def "blocked realm is blocked"() {
-        when:
-        HttpURLConnection u = new URL("http://localhost:9999/test/firewallBlocked").openConnection()
-        and:
-        def responseCode = u.getResponseCode()
-        then:
-        responseCode == 429
+    @Test
+    fun `blocked realm is blocked`() {
+
+        val url = URL("http://localhost:9999/test/firewallBlocked").openConnection() as HttpURLConnection
+
+        val responseCode = url.getResponseCode()
+
+        assertEquals(429, responseCode)
     }
 
 }
