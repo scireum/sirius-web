@@ -23,7 +23,6 @@ import sirius.kernel.commons.Wait
 import sirius.kernel.health.Log
 import sirius.kernel.health.LogHelper
 import java.io.IOException
-import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.charset.StandardCharsets
@@ -39,7 +38,11 @@ import kotlin.test.assertEquals
 @ExtendWith(SiriusExtension::class)
 class WebServerTest {
 
-    private fun callAndRead(uri: String, outHeaders: Map<String, String?>?, expectedHeaders: Map<String, String?>?): String {
+    private fun callAndRead(
+        uri: String,
+        outHeaders: Map<String, String?>?,
+        expectedHeaders: Map<String, String?>?
+    ): String {
         val connection = URL("http://localhost:9999$uri").openConnection() as HttpURLConnection
 
         outHeaders?.forEach { (k, v) -> connection.addRequestProperty(k, v) }
@@ -275,9 +278,9 @@ class WebServerTest {
             //TODO
         }
         // Both should be equivalent in size...
-        assertEquals(data.length,transformedData.size)
+        assertEquals(data.length, transformedData.size)
         // And the re-transformed contents should match...
-        assertEquals(data,String(reTransformedData, StandardCharsets.UTF_8))
+        assertEquals(data, String(reTransformedData, StandardCharsets.UTF_8))
     }
 
     /**
@@ -319,7 +322,7 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("Hello_World",Json.parseObject(data).get("test").asText())
+        assertEquals("Hello_World", Json.parseObject(data).get("test").asText())
     }
 
     @Test
@@ -330,7 +333,7 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("Hello",Json.parseObject(data).get("test").asText())
+        assertEquals("Hello", Json.parseObject(data).get("test").asText())
     }
 
     @Test
@@ -341,8 +344,8 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("1",Json.parseObject(data).get("param1").asText())
-        assertEquals("2",Json.parseObject(data).get("param2").asText())
+        assertEquals("1", Json.parseObject(data).get("param1").asText())
+        assertEquals("2", Json.parseObject(data).get("param2").asText())
     }
 
     @Test
@@ -353,8 +356,8 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("1",Json.parseObject(data).get("param1").asText())
-        assertEquals("2",Json.parseObject(data).get("param2").asText())
+        assertEquals("1", Json.parseObject(data).get("param1").asText())
+        assertEquals("2", Json.parseObject(data).get("param2").asText())
     }
 
     @Test
@@ -365,13 +368,13 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("1",Json.parseObject(data).get("param1").asText())
-        assertEquals("2",Json.parseObject(data).get("param2").asText())
+        assertEquals("1", Json.parseObject(data).get("param1").asText())
+        assertEquals("2", Json.parseObject(data).get("param2").asText())
 
         val varargs = Json.getArray(Json.parseObject(data), "params")
-        assertEquals(7,varargs.size())
-        assertEquals("3",varargs.get(0).asText())
-        assertEquals("9",varargs.get(6).asText())
+        assertEquals(7, varargs.size())
+        assertEquals("3", varargs.get(0).asText())
+        assertEquals("9", varargs.get(6).asText())
     }
 
     /**
@@ -382,7 +385,7 @@ class WebServerTest {
     @Test
     fun `Invoke test-predispatch with POST`() {
 
-        val url = URL ("http://localhost:9999/test/predispatch").openConnection() as HttpURLConnection
+        val url = URL("http://localhost:9999/test/predispatch").openConnection() as HttpURLConnection
 
         val testByteArray = "Hello Service".toByteArray()
 
@@ -396,8 +399,8 @@ class WebServerTest {
         out.close()
         val result = String(Streams.toByteArray(url.inputStream), StandardCharsets.UTF_8)
 
-        assertEquals(result,(testByteArray.size*1024).toString())
-        assertEquals(HttpHeaderNames.KEEP_ALIVE.toString(),url.getHeaderField(HttpHeaderNames.CONNECTION.toString()))
+        assertEquals(result, (testByteArray.size * 1024).toString())
+        assertEquals(HttpHeaderNames.KEEP_ALIVE.toString(), url.getHeaderField(HttpHeaderNames.CONNECTION.toString()))
     }
 
     /**
@@ -407,7 +410,7 @@ class WebServerTest {
     @Test
     fun `test-predispatch-abort discards an upload and then generates an error as response`() {
 
-        val url = URL ("http://localhost:9999/test/predispatch/abort").openConnection() as HttpURLConnection
+        val url = URL("http://localhost:9999/test/predispatch/abort").openConnection() as HttpURLConnection
 
         url.setChunkedStreamingMode(1024)
 
@@ -434,7 +437,7 @@ class WebServerTest {
         val result = String(Streams.toByteArray(url.inputStream), StandardCharsets.UTF_8)
 
         // We still expect a proper response
-        assertEquals("ABORT",result)
+        assertEquals("ABORT", result)
     }
 
     /**
@@ -443,7 +446,7 @@ class WebServerTest {
     @Test
     fun `Invoke test-post with POST`() {
 
-        val url = URL ("http://localhost:9999/test/post").openConnection() as HttpURLConnection
+        val url = URL("http://localhost:9999/test/post").openConnection() as HttpURLConnection
 
         val testString = "value=Hello"
 
@@ -461,20 +464,20 @@ class WebServerTest {
         out.close()
         val result = String(Streams.toByteArray(url.inputStream), StandardCharsets.UTF_8)
 
-        assertEquals("Hello",result)
+        assertEquals("Hello", result)
     }
 
     @Test
     fun `test that outputstreams work`() {
 
-        val url = URL ("http://localhost:9999/test/os").openConnection() as HttpURLConnection
+        val url = URL("http://localhost:9999/test/os").openConnection() as HttpURLConnection
 
         url.setRequestMethod("GET")
         url.setDoInput(true)
         url.setDoOutput(false)
         val arr = Streams.toByteArray(url.inputStream)
 
-        assertEquals(9*8192,arr.size)
+        assertEquals(9 * 8192, arr.size)
     }
 
     /**
@@ -483,7 +486,7 @@ class WebServerTest {
     @Test
     fun `Invoke test-post with empty POST`() {
 
-        val url = URL ("http://localhost:9999/test/post").openConnection() as HttpURLConnection
+        val url = URL("http://localhost:9999/test/post").openConnection() as HttpURLConnection
 
         val testString = ""
 
@@ -501,7 +504,7 @@ class WebServerTest {
         out.close()
         val result = String(Streams.toByteArray(url.inputStream), StandardCharsets.UTF_8)
 
-        assertEquals("",result)
+        assertEquals("", result)
     }
 
     /**
@@ -510,11 +513,11 @@ class WebServerTest {
     @Test
     fun `Invoke test-presidpatch with GET`() {
 
-        val url = URL ("http://localhost:9999/test/predispatch").openConnection() as HttpURLConnection
+        val url = URL("http://localhost:9999/test/predispatch").openConnection() as HttpURLConnection
 
         url.setRequestMethod("GET")
 
-        assertEquals(404,url.responseCode)
+        assertEquals(404, url.responseCode)
     }
 
     /**
@@ -528,7 +531,7 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("Hello/World",Json.parseObject(data).get("test").asText())
+        assertEquals("Hello/World", Json.parseObject(data).get("test").asText())
     }
 
     @Test
@@ -539,7 +542,7 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("Hello World",Json.parseObject(data).get("test").asText())
+        assertEquals("Hello World", Json.parseObject(data).get("test").asText())
     }
 
     @Test
@@ -550,7 +553,7 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("Hello/World",Json.parseObject(data).get("test").asText())
+        assertEquals("Hello/World", Json.parseObject(data).get("test").asText())
     }
 
     @Test
@@ -561,7 +564,7 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("Hello World",Json.parseObject(data).get("test").asText())
+        assertEquals("Hello World", Json.parseObject(data).get("test").asText())
     }
 
     @Test
@@ -572,8 +575,8 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("one",Json.parseObject(data).get("param1").asText())
-        assertEquals("t/wo",Json.parseObject(data).get("param2").asText())
+        assertEquals("one", Json.parseObject(data).get("param1").asText())
+        assertEquals("t/wo", Json.parseObject(data).get("param2").asText())
     }
 
     @Test
@@ -584,8 +587,8 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("one",Json.parseObject(data).get("param1").asText())
-        assertEquals("t wo",Json.parseObject(data).get("param2").asText())
+        assertEquals("one", Json.parseObject(data).get("param1").asText())
+        assertEquals("t wo", Json.parseObject(data).get("param2").asText())
     }
 
     @Test
@@ -596,17 +599,17 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("1/",Json.parseObject(data).get("param1").asText())
-        assertEquals("/2",Json.parseObject(data).get("param2").asText())
+        assertEquals("1/", Json.parseObject(data).get("param1").asText())
+        assertEquals("/2", Json.parseObject(data).get("param2").asText())
 
         val varargs = Json.getArray(Json.parseObject(data), "params")
 
-        assertEquals(5,varargs.size())
-        assertEquals("one",varargs.get(0).asText())
-        assertEquals("t/wo",varargs.get(1).asText())
-        assertEquals("t/hree",varargs.get(2).asText())
-        assertEquals("/four",varargs.get(3).asText())
-        assertEquals("five/",varargs.get(4).asText())
+        assertEquals(5, varargs.size())
+        assertEquals("one", varargs.get(0).asText())
+        assertEquals("t/wo", varargs.get(1).asText())
+        assertEquals("t/hree", varargs.get(2).asText())
+        assertEquals("/four", varargs.get(3).asText())
+        assertEquals("five/", varargs.get(4).asText())
     }
 
     @Test
@@ -617,17 +620,17 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("1 ",Json.parseObject(data).get("param1").asText())
-        assertEquals(" 2",Json.parseObject(data).get("param2").asText())
+        assertEquals("1 ", Json.parseObject(data).get("param1").asText())
+        assertEquals(" 2", Json.parseObject(data).get("param2").asText())
 
         val varargs = Json.getArray(Json.parseObject(data), "params")
 
-        assertEquals(5,varargs.size())
-        assertEquals("one",varargs.get(0).asText())
-        assertEquals("t wo",varargs.get(1).asText())
-        assertEquals("t hree",varargs.get(2).asText())
-        assertEquals(" four",varargs.get(3).asText())
-        assertEquals("five ",varargs.get(4).asText())
+        assertEquals(5, varargs.size())
+        assertEquals("one", varargs.get(0).asText())
+        assertEquals("t wo", varargs.get(1).asText())
+        assertEquals("t hree", varargs.get(2).asText())
+        assertEquals(" four", varargs.get(3).asText())
+        assertEquals("five ", varargs.get(4).asText())
     }
 
     @Test
@@ -638,7 +641,7 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("///",Json.parseObject(data).get("test").asText())
+        assertEquals("///", Json.parseObject(data).get("test").asText())
     }
 
     @Test
@@ -649,7 +652,7 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("   ",Json.parseObject(data).get("test").asText())
+        assertEquals("   ", Json.parseObject(data).get("test").asText())
     }
 
     @Test
@@ -658,10 +661,10 @@ class WebServerTest {
         val response1 = TestRequest.GET("/test/redirect-to-get").execute()
         val response2 = TestRequest.GET("/test/redirect-to-get").followRedirect().execute()
 
-        assertEquals(TestResponse.ResponseType.TEMPORARY_REDIRECT,response1.type)
-        assertEquals(HttpResponseStatus.FOUND,response1.status)
+        assertEquals(TestResponse.ResponseType.TEMPORARY_REDIRECT, response1.type)
+        assertEquals(HttpResponseStatus.FOUND, response1.status)
 
         assertEquals(TestResponse.ResponseType.DIRECT, response2.type)
-        assertEquals(HttpResponseStatus.OK,response2.status)
+        assertEquals(HttpResponseStatus.OK, response2.status)
     }
 }
