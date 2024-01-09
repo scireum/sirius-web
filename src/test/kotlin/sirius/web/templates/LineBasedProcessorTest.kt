@@ -22,10 +22,10 @@ class LineBasedProcessorTest {
     @Test
     fun `readingExcel works including formulas`() {
 
-        val proc = LineBasedProcessor.create("test.xls", KClass::class.java.getResourceAsStream("/test.xls"))
+        val processor = LineBasedProcessor.create("test.xls", KClass::class.java.getResourceAsStream("/test.xls"))
         val contents = ArrayList<Values>()
 
-        proc.run({ line: Int, values: Values -> contents.add(values) }) { e -> false }
+        processor.run({ _: Int, values: Values -> contents.add(values) }) { _ -> false }
 
         assertEquals(3, contents.size)
         assertEquals("A", contents[0].at("A").asString())
@@ -36,10 +36,10 @@ class LineBasedProcessorTest {
     @Test
     fun `readingXSLX works including formulas`() {
 
-        val proc = LineBasedProcessor.create("test.xlsx", KClass::class.java.getResourceAsStream("/test.xlsx"))
+        val processor = LineBasedProcessor.create("test.xlsx", KClass::class.java.getResourceAsStream("/test.xlsx"))
         val contents = ArrayList<Values>()
 
-        proc.run({ line: Int, values: Values -> contents.add(values) }) { e -> false }
+        processor.run({ _: Int, values: Values -> contents.add(values) }) { _ -> false }
 
         assertEquals(3, contents.size)
         assertEquals("A", contents[0].at("A").asString())
@@ -50,10 +50,10 @@ class LineBasedProcessorTest {
     @Test
     fun `reading CSV works with line breaks`() {
 
-        val proc = LineBasedProcessor.create("test.csv", KClass::class.java.getResourceAsStream("/test.csv"))
+        val processor = LineBasedProcessor.create("test.csv", KClass::class.java.getResourceAsStream("/test.csv"))
         val contents = ArrayList<Values>()
 
-        proc.run({ line: Int, values: Values -> contents.add(values) }, { e -> false })
+        processor.run({ _: Int, values: Values -> contents.add(values) }, { _ -> false })
 
         assertEquals(2, contents.size)
         assertEquals("A", contents[0].at("A").asString())
