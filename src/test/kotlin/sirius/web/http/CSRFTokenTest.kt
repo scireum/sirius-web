@@ -28,7 +28,7 @@ class CSRFTokenTest {
 
         val result = TestRequest.GET("/test/fake-delete-data").execute()
 
-        assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, result.getStatus())
+        assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, result.status)
     }
 
     @Test
@@ -37,11 +37,11 @@ class CSRFTokenTest {
         val connection = URL("http://localhost:9999/test/provide-security-token").openConnection() as HttpURLConnection
         connection.setRequestMethod("GET")
         connection.connect()
-        val token = String(Streams.toByteArray(connection.getInputStream()), StandardCharsets.UTF_8)
+        val token = String(Streams.toByteArray(connection.inputStream), StandardCharsets.UTF_8)
 
         val result = TestRequest.GET("/test/fake-delete-data?CSRFToken=$token").execute()
 
-        assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, result.getStatus())
+        assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, result.status)
     }
 
     @Test
@@ -49,7 +49,7 @@ class CSRFTokenTest {
 
         val result = TestRequest.POST("/test/fake-delete-data").execute()
 
-        assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, result.getStatus())
+        assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, result.status)
     }
 
     @Test
@@ -57,7 +57,7 @@ class CSRFTokenTest {
 
         val result = TestRequest.SAFEPOST("/test/fake-delete-data").execute()
 
-        assertEquals(HttpResponseStatus.OK, result.getStatus())
+        assertEquals(HttpResponseStatus.OK, result.status)
     }
 
     @Test
@@ -66,7 +66,7 @@ class CSRFTokenTest {
         val connection = URL("http://localhost:9999/test/provide-security-token").openConnection() as HttpURLConnection
         connection.setRequestMethod("GET")
         connection.connect()
-        val token = String(Streams.toByteArray(connection.getInputStream()), StandardCharsets.UTF_8)
+        val token = String(Streams.toByteArray(connection.inputStream), StandardCharsets.UTF_8)
 
 
         val connection2 = URL(
@@ -75,7 +75,7 @@ class CSRFTokenTest {
         connection2.setRequestMethod("POST")
         connection2.setRequestProperty(
             HttpHeaderNames.COOKIE.toString(),
-            connection.getHeaderFields().get("set-cookie")?.get(0)
+            connection.headerFields["set-cookie"]?.get(0)
         )
         connection2.connect()
 
@@ -88,7 +88,7 @@ class CSRFTokenTest {
         val connection = URL("http://localhost:9999/test/provide-security-token").openConnection() as HttpURLConnection
         connection.setRequestMethod("GET")
         connection.connect()
-        val token = String(Streams.toByteArray(connection.getInputStream()), StandardCharsets.UTF_8)
+        val token = String(Streams.toByteArray(connection.inputStream), StandardCharsets.UTF_8)
         TestRequest.GET("/test/expire-security-token").execute()
 
         val connection2 = URL(
@@ -97,7 +97,7 @@ class CSRFTokenTest {
         connection2.setRequestMethod("POST")
         connection2.setRequestProperty(
             HttpHeaderNames.COOKIE.toString(),
-            connection.getHeaderFields().get("set-cookie")?.get(0)
+            connection.headerFields["set-cookie"]?.get(0)
         )
         connection2.connect()
 
@@ -116,7 +116,7 @@ class CSRFTokenTest {
         connection2.setRequestMethod("POST")
         connection2.setRequestProperty(
             HttpHeaderNames.COOKIE.toString(),
-            connection.getHeaderFields().get("set-cookie")?.get(0)
+            connection.headerFields["set-cookie"]?.get(0)
         )
         connection2.connect()
 
@@ -128,7 +128,7 @@ class CSRFTokenTest {
 
         val result = TestRequest.POST("/test/fake-delete-data-unsafe").execute()
 
-        assertEquals(HttpResponseStatus.OK,result.getStatus())
+        assertEquals(HttpResponseStatus.OK,result.status)
     }
 
     @Test
@@ -136,7 +136,7 @@ class CSRFTokenTest {
 
         val result = TestRequest.GET("/test/fake-delete-data-unsafe").execute()
 
-        assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR,result.getStatus())
+        assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR,result.status)
     }
 
     @Test
@@ -144,7 +144,7 @@ class CSRFTokenTest {
 
         val result = TestRequest.GET("/test/fake-delete-data-ensure-safe").execute()
 
-        assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, result.getStatus())
+        assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, result.status)
     }
 
     @Test
@@ -172,7 +172,7 @@ class CSRFTokenTest {
         connection2.setRequestMethod("POST")
         connection2.setRequestProperty(
             HttpHeaderNames.COOKIE.toString(),
-            connection.getHeaderFields().get("set-cookie")?.get(0)
+            connection.headerFields["set-cookie"]?.get(0)
         )
         connection2.connect()
 
