@@ -9,127 +9,145 @@
 package sirius.web.data
 
 import org.junit.jupiter.api.Tag
-import sirius.kernel.BaseSpecification
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.extension.ExtendWith
+import sirius.kernel.SiriusExtension
 import sirius.kernel.Tags
 import sirius.kernel.commons.Files
+import sirius.kernel.di.std.Part
 import sirius.kernel.health.Counter
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 @Tag(Tags.NIGHTLY)
-class ExcelExportNightlySpec extends BaseSpecification {
+@ExtendWith(SiriusExtension::class)
+class ExcelExportNightlyTest {
+    companion object {
+        @Part
+        @JvmStatic
+        private val XLS_MAX_ROWS: Int = 0x10000
 
-    private static final int XLS_MAX_ROWS = 0x10000
-    private static final int XLSX_MAX_ROWS = 0x100000
+        @Part
+        @JvmStatic
+        private val XLSX_MAX_ROWS: Int = 0x100000
+    }
 
-    def "only allow 1 million rows in an xlsx excel sheet"() {
-        given:
-        File testFile = File.createTempFile("excel-output", ".xlsx")
-        when:
-        ExcelExport export = ExcelExport.asStreamingXLSX()
-        StringBuilder sheetWithError = new StringBuilder()
-        export.withMaxRowsReachedHandler({ sheetName -> sheetWithError.append(sheetName) })
+    @Test
+    fun `only allow 1 million rows in an xlsx excel sheet`() {
+
+        val testFile = File.createTempFile("excel-output", ".xlsx")
+
+        val export = ExcelExport.asStreamingXLSX()
+        val sheetWithError = StringBuilder()
+        export.withMaxRowsReachedHandler { sheetName -> sheetWithError.append(sheetName) }
+        export.withMaxRowsReachedMessage("Max rows reached.")
+        // overshoots the max num of rows a little for testing purposes
+        for (i in 1..XLSX_MAX_ROWS + 100) {
+            export.addArrayRow("A-$i")
+        }
+        export.writeToStream(FileOutputStream(testFile))
+
+        assertEquals("Sheet0", sheetWithError.toString())
+
+        val lineCounter = Counter()
+        LineBasedProcessor.create(testFile.getName(), FileInputStream(testFile))
+            .run({ lineNum, row ->
+                lineCounter.inc()
+                assertTrue { lineNum <= XLSX_MAX_ROWS }
+
+                if (lineNum < XLSX_MAX_ROWS) {
+                    assertEquals("A-$lineNum", row.at(0).asString())
+                } else {
+                    assertEquals("Max rows reached.", row.at(0).asString())
+                    assertEquals(XLSX_MAX_ROWS, lineNum)
+                }
+            },
+                { _ -> false })
+        assertEquals(XLSX_MAX_ROWS, lineCounter.count.toInt())
+
+        Files.delete(testFile)
+    }
+
+    @Test
+    fun `only allow 65k rows in an xls excel sheet`() {
+
+        val testFile = File.createTempFile("excel-output", ".xls")
+
+        val export = ExcelExport.asXLS()
+        val sheetWithError = StringBuilder()
+        export.withMaxRowsReachedHandler { sheetName -> sheetWithError.append(sheetName) }
         export.withMaxRowsReachedMessage("Max rows reached.")
         // overshoot the max num of rows a little for testing purposes
-        for (int i = 1; i <= XLSX_MAX_ROWS + 100; i++) {
-        export.addArrayRow("A-" + i)
-    }
-        export.writeToStream(new FileOutputStream(testFile))
-        then:
-        sheetWithError.toString() == "Sheet0"
-        and:
-        Counter lineCounter = new Counter()
-        LineBasedProcessor.create(testFile.getName(), new FileInputStream(testFile))
-            .run({
-                    lineNum, row ->
+        for (i in 1..XLS_MAX_ROWS + 100) {
+            export.addArrayRow("A-$i")
+        }
+        export.writeToStream(FileOutputStream(testFile))
+
+        assertEquals("Sheet0", sheetWithError.toString())
+
+        val lineCounter = Counter()
+        LineBasedProcessor.create(testFile.getName(), FileInputStream(testFile))
+            .run({ lineNum, row ->
                 lineCounter.inc()
-                assert lineNum <= XLSX_MAX_ROWS
-                        if (lineNum < XLSX_MAX_ROWS) {
-                            assert row.at(0).asString() == "A-" + lineNum
-                        } else {
-                            assert row.at(0) == "Max rows reached."
-                            assert lineNum == XLSX_MAX_ROWS
-                        }
+                assertTrue { lineNum <= XLS_MAX_ROWS }
+                if (lineNum < XLS_MAX_ROWS) {
+                    assertEquals("A-$lineNum", row.at(0).asString())
+                } else {
+                    assertEquals("Max rows reached.", row.at(0).asString())
+                    assertEquals(XLS_MAX_ROWS, lineNum)
+                }
             },
-                { e -> false })
-        lineCounter.getCount() == XLSX_MAX_ROWS
-        cleanup:
+                { _ -> false })
+        assertEquals(XLS_MAX_ROWS, lineCounter.count.toInt())
+
         Files.delete(testFile)
     }
 
-    def "only allow 65k rows in an xls excel sheet"() {
-        given:
-        File testFile = File.createTempFile("excel-output", ".xls")
-        when:
-        ExcelExport export = ExcelExport.asXLS()
-        StringBuilder sheetWithError = new StringBuilder()
-        export.withMaxRowsReachedHandler({ sheetName -> sheetWithError.append(sheetName) })
-        export.withMaxRowsReachedMessage("Max rows reached.")
+    @Test
+    fun `use last line before row limit for data if no 'maxRowsReachedMessage' is given`() {
+
+        val testFile = File.createTempFile("excel-output", ".xls")
+
+        val export = ExcelExport.asXLS()
         // overshoot the max num of rows a little for testing purposes
-        for (int i = 1; i <= XLS_MAX_ROWS + 100; i++) {
-        export.addArrayRow("A-" + i)
-    }
-        export.writeToStream(new FileOutputStream(testFile))
-        then:
-        sheetWithError.toString() == "Sheet0"
-        and:
-        Counter lineCounter = new Counter()
-        LineBasedProcessor.create(testFile.getName(), new FileInputStream(testFile))
-            .run({
-                    lineNum, row ->
+        for (i in 1..XLS_MAX_ROWS + 100) {
+            export.addArrayRow("A-$i")
+        }
+        export.writeToStream(FileOutputStream(testFile))
+
+        val lineCounter = Counter()
+        LineBasedProcessor.create(testFile.getName(), FileInputStream(testFile))
+            .run({ lineNum, row ->
                 lineCounter.inc()
-                assert lineNum <= XLS_MAX_ROWS
-                        if (lineNum < XLS_MAX_ROWS) {
-                            assert row.at(0).asString() == "A-" + lineNum
-                        } else {
-                            assert row.at(0) == "Max rows reached."
-                            assert lineNum == XLS_MAX_ROWS
-                        }
+                assertTrue { lineNum <= XLS_MAX_ROWS }
+                assertEquals("A-$lineNum", row.at(0).asString())
             },
-                { e -> false })
-        lineCounter.getCount() == XLS_MAX_ROWS
-        cleanup:
+                { _ -> false })
+        assertEquals(XLS_MAX_ROWS, lineCounter.count.toInt())
+
         Files.delete(testFile)
     }
 
-    def "use last line before row limit for data if no 'maxRowsReachedMessage' is given"() {
-        given:
-        File testFile = File.createTempFile("excel-output", ".xls")
-        when:
-        ExcelExport export = ExcelExport.asXLS()
-        // overshoot the max num of rows a little for testing purposes
-        for (int i = 1; i <= XLS_MAX_ROWS + 100; i++) {
-        export.addArrayRow("A-" + i)
-    }
-        export.writeToStream(new FileOutputStream(testFile))
-        then:
-        Counter lineCounter = new Counter()
-        LineBasedProcessor.create(testFile.getName(), new FileInputStream(testFile))
-            .run({
-                    lineNum, row ->
-                lineCounter.inc()
-                assert lineNum <= XLS_MAX_ROWS
-                        assert row.at(0).asString() == "A-" + lineNum
-            },
-                { e -> false })
-        lineCounter.getCount() == XLS_MAX_ROWS
-        cleanup:
-        Files.delete(testFile)
-    }
+    @Test
+    fun `creation of  work sheet works correctly when max number of rows is reached in the current sheet`() {
 
-    def "creation of new work sheet works correctly when max number of rows is reached in the current sheet"() {
-        given:
-        File testFile = File.createTempFile("excel-output", ".xls")
-        when:
-        ExcelExport export = ExcelExport.asStreamingXLSX()
+        val testFile = File.createTempFile("excel-output", ".xls")
+
+        val export = ExcelExport.asStreamingXLSX()
         // overshoot the max num of rows a little for testing purposes
-        for (int i = 1; i <= XLSX_MAX_ROWS + 100; i++) {
-        export.addArrayRow("A-" + i)
-    }
+        for (i in 1..XLSX_MAX_ROWS + 100) {
+            export.addArrayRow("A-$i")
+        }
         export.createSheet("Sheet1")
         export.addArrayRow("A row on Sheet1")
-        export.writeToStream(new FileOutputStream(testFile))
-        then:
-        noExceptionThrown()
-        cleanup:
+
+        assertDoesNotThrow {
+            export.writeToStream(FileOutputStream(testFile))
+        }
         Files.delete(testFile)
     }
 }
