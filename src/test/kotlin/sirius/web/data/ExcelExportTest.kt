@@ -8,103 +8,115 @@
 
 package sirius.web.data
 
-import sirius.kernel.BaseSpecification
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import sirius.kernel.SiriusExtension
 import sirius.kernel.commons.Files
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import kotlin.test.assertEquals
 
-class ExcelExportSpec extends BaseSpecification {
+@ExtendWith(SiriusExtension::class)
+class ExcelExportTest {
 
-    def "ignores null inputs and does not write row"() {
-        given:
-        File testFile = File.createTempFile("excel-output", ".xlsx")
-        when:
-        ExcelExport export = ExcelExport.asStandardXLSX()
-        export.addArrayRow(null)
+    @Test
+    fun `ignores null inputs and does not write row`() {
+
+        val testFile = File.createTempFile("excel-output", ".xlsx")
+
+        val export = ExcelExport.asStandardXLSX()
         export.addListRow(null)
         export.addArrayRow("A-1", "B-1", "C-1")
-        export.writeToStream(new FileOutputStream(testFile))
-        then:
-        def expectLineNum = 1
-        def expectedRow = [["A-1", "B-1", "C-1"]]
-        LineBasedProcessor.create(testFile.getName(), new FileInputStream(testFile))
-            .run({
-                    lineNum, row ->
-                assert lineNum == expectLineNum++
-                assert row.asList() == expectedRow[lineNum - 1]
+        export.writeToStream(FileOutputStream(testFile))
+
+        var expectLineNum = 1
+        val expectedRow = arrayOf(arrayOf("A-1", "B-1", "C-1").asList()).asList()
+        LineBasedProcessor.create(testFile.getName(), FileInputStream(testFile))
+            .run({ lineNum, row ->
+                assertEquals(expectLineNum++, lineNum)
+                assertEquals(expectedRow[lineNum - 1], row.asList())
             },
-                { e -> false })
-        cleanup:
+                { _ -> false })
+
         Files.delete(testFile)
     }
 
-    def "create simple excel sheet"() {
-        given:
-        File testFile = File.createTempFile("excel-output", ".xlsx")
-        when:
-        ExcelExport export = ExcelExport.asStandardXLSX()
+    @Test
+    fun `create simple excel sheet`() {
+
+        val testFile = File.createTempFile("excel-output", ".xlsx")
+
+        val export = ExcelExport.asStandardXLSX()
         export.addArrayRow("A-1", "B-1", "C-1")
-        export.addListRow(["A-2", "B-2", "C-2"] as ArrayList)
-        export.writeToStream(new FileOutputStream(testFile))
-        then:
-        def expectLineNum = 1
-        def expectedRow = [["A-1", "B-1", "C-1"], ["A-2", "B-2", "C-2"]]
-        LineBasedProcessor.create(testFile.getName(), new FileInputStream(testFile))
-            .run({
-                    lineNum, row ->
-                assert lineNum == expectLineNum++
-                assert row.asList() == expectedRow[lineNum - 1]
+        export.addListRow(arrayOf("A-2", "B-2", "C-2").asList())
+        export.writeToStream(FileOutputStream(testFile))
+
+        var expectLineNum = 1
+        val expectedRow = arrayOf(arrayOf("A-1", "B-1", "C-1").asList(), arrayOf("A-2", "B-2", "C-2").asList()).asList()
+        LineBasedProcessor.create(testFile.getName(), FileInputStream(testFile))
+            .run({ lineNum, row ->
+                assertEquals(expectLineNum++, lineNum)
+                assertEquals(expectedRow[lineNum - 1], row.asList())
             },
-                { e -> false })
-        cleanup:
+                { _ -> false })
+
         Files.delete(testFile)
     }
 
-    def "create simple streaming excel sheet"() {
-        given:
-        File testFile = File.createTempFile("excel-output", ".xlsx")
-        when:
-        ExcelExport export = ExcelExport.asStreamingXLSX()
+    @Test
+    fun `create simple streaming excel sheet`() {
+
+        val testFile = File.createTempFile("excel-output", ".xlsx")
+
+        val export = ExcelExport.asStreamingXLSX()
         export.addArrayRow("A-1", "B-1", "C-1")
-        export.addListRow(["A-2", "B-2", "C-2"] as ArrayList)
-        export.writeToStream(new FileOutputStream(testFile))
-        then:
-        def expectLineNum = 1
-        def expectedRow = [["A-1", "B-1", "C-1"], ["A-2", "B-2", "C-2"]]
-        LineBasedProcessor.create(testFile.getName(), new FileInputStream(testFile))
-            .run({
-                    lineNum, row ->
-                assert lineNum == expectLineNum++
-                assert row.asList() == expectedRow[lineNum - 1]
+        export.addListRow(arrayOf("A-2", "B-2", "C-2").asList())
+        export.writeToStream(FileOutputStream(testFile))
+
+        var expectLineNum = 1
+        val expectedRow = arrayOf(arrayOf("A-1", "B-1", "C-1").asList(), arrayOf("A-2", "B-2", "C-2").asList()).asList()
+        LineBasedProcessor.create(testFile.getName(), FileInputStream(testFile))
+            .run({ lineNum, row ->
+                assertEquals(expectLineNum++, lineNum)
+                assertEquals(expectedRow[lineNum - 1], row.asList())
             },
-                { e -> false })
-        cleanup:
+                { _ -> false })
+
         Files.delete(testFile)
     }
 
-    def "create excel sheet with multiple sheets"() {
-        given:
-        File testFile = File.createTempFile("excel-output", ".xlsx")
-        def data = [["S1-A-1", "S1-B-1", "S1-C-1"], ["S1-A-2", "S1-B-2", "S1-C-2"], ["S2-A-1", "S2-B-1", "S2-C-1"], ["S2-A-2", "S2-B-2", "S2-C-2"]]
-        when:
-        ExcelExport export = ExcelExport.asStreamingXLSX(false)
-        export.createSheet()
-        export.addListRow(data[0] as ArrayList)
-        export.createSheet()
-        export.addListRow(data[2] as ArrayList)
+    @Test
+    fun `create excel sheet with multiple sheets`() {
+
+        val testFile = File.createTempFile("excel-output", ".xlsx")
+        val data =
+            arrayOf(
+                arrayOf("S1-A-1", "S1-B-1", "S1-C-1").asList(),
+                arrayOf("S1-A-2", "S1-B-2", "S1-C-2").asList(),
+                arrayOf("S2-A-1", "S2-B-1", "S2-C-1").asList(),
+                arrayOf("S2-A-2", "S2-B-2", "S2-C-2").asList()
+            ).asList()
+
+        val export = ExcelExport.asStreamingXLSX(false)
+        export.createSheet(null)
+        export.addListRow(data[0])
+        export.createSheet(null)
+        export.addListRow(data[2])
         export.setCurrentSheet(0)
-        export.addListRow(data[1] as ArrayList)
+        export.addListRow(data[1])
         export.setCurrentSheet(1)
-        export.addListRow(data[3] as ArrayList)
-        export.writeToStream(new FileOutputStream(testFile))
-        then:
-        def currentData = 0
-        XLSXProcessor.create(testFile.getName(), new FileInputStream(testFile), true)
-            .run({
-                    lineNum, row ->
-                assert row.asList() == data[currentData]
+        export.addListRow(data[3])
+        export.writeToStream(FileOutputStream(testFile))
+
+        var currentData = 0
+        XLSXProcessor.create(testFile.getName(), FileInputStream(testFile), true)
+            .run({ _, row ->
+                assertEquals(data[currentData], row.asList())
                 currentData++
             },
-                { e -> false })
-        cleanup:
+                { _ -> false })
+
         Files.delete(testFile)
     }
 
