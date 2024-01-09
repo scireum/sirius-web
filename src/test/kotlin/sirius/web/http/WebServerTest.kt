@@ -50,7 +50,7 @@ class WebServerTest {
         outHeaders?.forEach { (k, v) -> connection.addRequestProperty(k, v) }
         connection.connect()
         val result = String(Streams.toByteArray(connection.inputStream), StandardCharsets.UTF_8)
-        expectedHeaders?.forEach { k, v ->
+        expectedHeaders?.forEach { (k, v) ->
             if ("*" == v) {
                 if (Strings.isEmpty(connection.getHeaderField(k))) {
                     throw IllegalStateException("Header: $k was expected, but not set")
@@ -90,7 +90,7 @@ class WebServerTest {
             "expires" to null,
             "cache-control" to "no-cache, max-age=0"
         )
-        assertDoesNotThrow {callAndRead(uri, headers, expectedHeaders) }
+        assertDoesNotThrow { callAndRead(uri, headers, expectedHeaders) }
     }
 
     @Test
@@ -270,7 +270,8 @@ class WebServerTest {
         // We load the raw data
         val data = callAndRead("/tunnel/test_large", null, null)
         // We load the transformed data which is byte shifted by +1
-        val connection = URI("http://localhost:9999/tunnel/test_transform").toURL().openConnection() as HttpURLConnection
+        val connection =
+            URI("http://localhost:9999/tunnel/test_transform").toURL().openConnection() as HttpURLConnection
         val transformedData = Streams.toByteArray(connection.inputStream)
         // We un-shift all bytes
         val reTransformedData = ByteArray(transformedData.size)
