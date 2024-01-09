@@ -8,7 +8,6 @@
 
 package sirius.web.templates
 
-import com.google.common.collect.Lists
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import sirius.kernel.SiriusExtension
@@ -24,24 +23,24 @@ class SmartLineBasedProcessorTest {
     @Test
     fun `reading CSVs works with different column orders and aliases`() {
 
-        val contents1 = Lists.newArrayList<SmartRow>()
-        val contents2 = Lists.newArrayList<SmartRow>()
-        val proc1 = SmartLineBasedProcessor()
+        val contents1 = mutableListOf<SmartRow>()
+        val contents2 = mutableListOf<SmartRow>()
+        val processor1 = SmartLineBasedProcessor()
             .withColumn("item", "artikel")
             .withColumn("quantity")
             .withProcessor { line: Int, row: SmartRow -> contents1.add(row) }
-        val proc2 = SmartLineBasedProcessor()
+        val processor2 = SmartLineBasedProcessor()
             .withColumn("item", "artikel")
             .withColumn("quantity")
             .withProcessor { line: Int, row: SmartRow -> contents2.add(row) }
 
-        val lineProc1 =
+        val lineProcessor1 =
             LineBasedProcessor.create("smart-test1.csv", KClass::class.java.getResourceAsStream("/smart-test1.csv"))
-        val lineProc2 =
+        val lineProcessor2 =
             LineBasedProcessor.create("smart-test2.csv", KClass::class.java.getResourceAsStream("/smart-test2.csv"))
 
-        lineProc1.run(proc1) { e: Exception? -> false }
-        lineProc2.run(proc2) { e: Exception? -> false }
+        lineProcessor1.run(processor1) { e: Exception? -> false }
+        lineProcessor2.run(processor2) { e: Exception? -> false }
 
         assertEquals(2, contents1.size)
         assertEquals(2, contents2.size)
