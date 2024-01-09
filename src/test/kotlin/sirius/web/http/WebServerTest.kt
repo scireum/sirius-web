@@ -85,7 +85,7 @@ class WebServerTest {
             "expires" to null,
             "cache-control" to "no-cache, max-age=0"
         )
-        val data = callAndRead(uri, headers, expectedHeaders)
+        assertDoesNotThrow { val data = callAndRead(uri, headers, expectedHeaders) }
     }
 
     @Test
@@ -270,8 +270,8 @@ class WebServerTest {
         // We un-shift all bytes
         val reTransformedData = ByteArray(transformedData.size)
 
-        for (i in 0..<transformedData.size) {
-            reTransformedData[i] = transformedData[i] == 0 ? 255 : transformedData[i] - 1
+        for (i in transformedData.indices) {
+            //reTransformedData[i] = transformedData[i] == 0 ? 255 : transformedData[i] - 1
             //TODO
         }
         // Both should be equivalent in size...
@@ -515,18 +515,6 @@ class WebServerTest {
         url.setRequestMethod("GET")
 
         assertEquals(404,url.responseCode)
-    }
-
-    fun countBytesInStream(input: InputStream):Int
-    {
-        var counter = 0
-        var count = 0
-        val buffer = ByteArray(8192)
-        while ((input.read(buffer).also { count = it }) > 0) {
-            counter += count
-        }
-
-        return counter
     }
 
     /**
