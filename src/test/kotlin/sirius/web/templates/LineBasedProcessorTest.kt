@@ -8,61 +8,57 @@
 
 package sirius.web.templates
 
-import sirius.kernel.BaseSpecification
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import sirius.kernel.SiriusExtension
 import sirius.kernel.commons.Values
 import sirius.web.data.LineBasedProcessor
-import sirius.web.data.RowProcessor
+import kotlin.reflect.KClass
+import kotlin.test.assertEquals
 
-import java.util.function.Predicate
+@ExtendWith(SiriusExtension::class)
+class LineBasedProcessorTest {
 
-class LineBasedProcessorSpec extends BaseSpecification {
+    @Test
+    fun `readingExcel works including formulas`() {
 
-    def "readingExcel works including formulas"() {
-        given:
-        LineBasedProcessor proc = LineBasedProcessor.create("test.xls", getClass().getResourceAsStream("/test.xls"))
-        List<Values> contents = new ArrayList<>()
-        when:
-        proc.run({ l, v -> contents.add(v) } as RowProcessor, {e -> false} as Predicate)
-        then:
-        contents.size() == 3
-        and:
-        contents.get(0).at("A").asString() == 'A'
-        and:
-        contents.get(1).at("B").asInt(-1) == 2
-        and:
-        contents.get(2).at("C").asInt(-1) == 6
+        val proc = LineBasedProcessor.create("test.xls", KClass::class.java.getResourceAsStream("/test.xls"))
+        val contents = ArrayList<Values>()
+
+        proc.run({ line: Int, values: Values -> contents.add(values) }) { e -> false }
+
+        assertEquals(3, contents.size)
+        assertEquals("A", contents[0].at("A").asString())
+        assertEquals(2, contents[1].at("B").asInt(-1))
+        assertEquals(6, contents[2].at("C").asInt(-1))
     }
 
-    def "readingXSLX works including formulas"() {
-        given:
-        LineBasedProcessor proc = LineBasedProcessor.create("test.xlsx", getClass().getResourceAsStream("/test.xlsx"))
-        List<Values> contents = new ArrayList<>()
-        when:
-        proc.run({ l, v -> contents.add(v) } as RowProcessor, {e -> false} as Predicate)
-        then:
-        contents.size() == 3
-        and:
-        contents.get(0).at("A").asString() == 'A'
-        and:
-        contents.get(1).at("B").asInt(-1) == 2
-        and:
-        contents.get(2).at("C").asInt(-1) == 6
+    @Test
+    fun `readingXSLX works including formulas`() {
+
+        val proc = LineBasedProcessor.create("test.xlsx", KClass::class.java.getResourceAsStream("/test.xlsx"))
+        val contents = ArrayList<Values>()
+
+        proc.run({ line: Int, values: Values -> contents.add(values) }) { e -> false }
+
+        assertEquals(3, contents.size)
+        assertEquals("A", contents[0].at("A").asString())
+        assertEquals(2, contents[1].at("B").asInt(-1))
+        assertEquals(6, contents[2].at("C").asInt(-1))
     }
 
-    def "reading CSV works with line breaks"() {
-        given:
-        LineBasedProcessor proc = LineBasedProcessor.create("test.csv", getClass().getResourceAsStream("/test.csv"))
-        List<Values> contents =  new ArrayList<>()
-        when:
-        proc.run({ l, v -> contents.add(v) } as RowProcessor, {e -> false} as Predicate)
-        then:
-        contents.size() == 2
-        and:
-        contents.get(0).at("A").asString() == 'A'
-        and:
-        contents.get(0).at("B").asString() == 'Hallo Welt'
-        and:
-        contents.get(1).at("B").asString() == 'Hallo\nWelt'
+    @Test
+    fun `reading CSV works with line breaks`() {
+
+        val proc = LineBasedProcessor.create("test.csv", KClass::class.java.getResourceAsStream("/test.csv"))
+        val contents = ArrayList<Values>()
+
+        proc.run({ line: Int, values: Values -> contents.add(values) }, { e -> false })
+
+        assertEquals(2, contents.size)
+        assertEquals("A", contents[0].at("A").asString())
+        assertEquals("Hallo Welt", contents[0].at("B").asString())
+        assertEquals("Hallo\nWelt", contents[1].at("B").asString())
     }
 
 }
