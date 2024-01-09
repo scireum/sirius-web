@@ -6,6 +6,8 @@
  * http://www.scireum.de - info@scireum.de
  */
 
+@file:Suppress("DANGEROUS_CHARACTERS")
+
 package sirius.web.http
 
 
@@ -24,7 +26,7 @@ import sirius.kernel.health.Log
 import sirius.kernel.health.LogHelper
 import java.io.IOException
 import java.net.HttpURLConnection
-import java.net.URL
+import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.util.logging.Level
 import kotlin.test.assertEquals
@@ -43,7 +45,7 @@ class WebServerTest {
         outHeaders: Map<String, String?>?,
         expectedHeaders: Map<String, String?>?
     ): String {
-        val connection = URL("http://localhost:9999$uri").openConnection() as HttpURLConnection
+        val connection = URI("http://localhost:9999$uri").toURL().openConnection() as HttpURLConnection
 
         outHeaders?.forEach { (k, v) -> connection.addRequestProperty(k, v) }
         connection.connect()
@@ -88,7 +90,7 @@ class WebServerTest {
             "expires" to null,
             "cache-control" to "no-cache, max-age=0"
         )
-        assertDoesNotThrow { val data = callAndRead(uri, headers, expectedHeaders) }
+        assertDoesNotThrow {callAndRead(uri, headers, expectedHeaders) }
     }
 
     @Test
@@ -211,7 +213,7 @@ class WebServerTest {
         // We expect a warning as the server was unable to send an error
         // As the connection is closed due to an inconsistent state, an IO exception will occur on the client side
         assertThrows<IOException> {
-            val data = callAndRead(uri, null, expectedHeaders)
+            callAndRead(uri, null, expectedHeaders)
             LogHelper.hasMessage(Level.WARNING, Log.get("web"), "Cannot send service error for.*")
         }
     }
@@ -268,7 +270,7 @@ class WebServerTest {
         // We load the raw data
         val data = callAndRead("/tunnel/test_large", null, null)
         // We load the transformed data which is byte shifted by +1
-        val connection = URL("http://localhost:9999/tunnel/test_transform").openConnection() as HttpURLConnection
+        val connection = URI("http://localhost:9999/tunnel/test_transform").toURL().openConnection() as HttpURLConnection
         val transformedData = Streams.toByteArray(connection.inputStream)
         // We un-shift all bytes
         val reTransformedData = ByteArray(transformedData.size)
@@ -385,7 +387,7 @@ class WebServerTest {
     @Test
     fun `Invoke test-predispatch with POST`() {
 
-        val url = URL("http://localhost:9999/test/predispatch").openConnection() as HttpURLConnection
+        val url = URI("http://localhost:9999/test/predispatch").toURL().openConnection() as HttpURLConnection
 
         val testByteArray = "Hello Service".toByteArray()
 
@@ -410,7 +412,7 @@ class WebServerTest {
     @Test
     fun `test-predispatch-abort discards an upload and then generates an error as response`() {
 
-        val url = URL("http://localhost:9999/test/predispatch/abort").openConnection() as HttpURLConnection
+        val url = URI("http://localhost:9999/test/predispatch/abort").toURL().openConnection() as HttpURLConnection
 
         url.setChunkedStreamingMode(1024)
 
@@ -446,7 +448,7 @@ class WebServerTest {
     @Test
     fun `Invoke test-post with POST`() {
 
-        val url = URL("http://localhost:9999/test/post").openConnection() as HttpURLConnection
+        val url = URI("http://localhost:9999/test/post").toURL().openConnection() as HttpURLConnection
 
         val testString = "value=Hello"
 
@@ -470,7 +472,7 @@ class WebServerTest {
     @Test
     fun `test that outputstreams work`() {
 
-        val url = URL("http://localhost:9999/test/os").openConnection() as HttpURLConnection
+        val url = URI("http://localhost:9999/test/os").toURL().openConnection() as HttpURLConnection
 
         url.setRequestMethod("GET")
         url.setDoInput(true)
@@ -486,7 +488,7 @@ class WebServerTest {
     @Test
     fun `Invoke test-post with empty POST`() {
 
-        val url = URL("http://localhost:9999/test/post").openConnection() as HttpURLConnection
+        val url = URI("http://localhost:9999/test/post").toURL().openConnection() as HttpURLConnection
 
         val testString = ""
 
@@ -513,7 +515,7 @@ class WebServerTest {
     @Test
     fun `Invoke test-presidpatch with GET`() {
 
-        val url = URL("http://localhost:9999/test/predispatch").openConnection() as HttpURLConnection
+        val url = URI("http://localhost:9999/test/predispatch").toURL().openConnection() as HttpURLConnection
 
         url.setRequestMethod("GET")
 
