@@ -274,8 +274,8 @@ class WebServerTest {
         val reTransformedData = ByteArray(transformedData.size)
 
         for (i in transformedData.indices) {
-            //reTransformedData[i] = transformedData[i] == 0 ? 255 : transformedData[i] - 1
-            //TODO
+            reTransformedData[i] =
+                if (transformedData[i] == 0.toByte()) 255.toByte() else (transformedData[i] - 1).toByte()
         }
         // Both should be equivalent in size...
         assertEquals(data.length, transformedData.size)
