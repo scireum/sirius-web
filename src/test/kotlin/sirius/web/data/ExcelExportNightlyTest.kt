@@ -133,7 +133,7 @@ class ExcelExportNightlyTest {
     }
 
     @Test
-    fun `creation of  work sheet works correctly when max number of rows is reached in the current sheet`() {
+    fun `creation of work sheet works correctly when max number of rows is reached in the current sheet`() {
 
         val testFile = File.createTempFile("excel-output", ".xls")
 
