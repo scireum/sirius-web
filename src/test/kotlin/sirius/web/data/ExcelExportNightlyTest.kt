@@ -15,7 +15,6 @@ import org.junit.jupiter.api.extension.ExtendWith
 import sirius.kernel.SiriusExtension
 import sirius.kernel.Tags
 import sirius.kernel.commons.Files
-import sirius.kernel.di.std.Part
 import sirius.kernel.health.Counter
 import java.io.File
 import java.io.FileInputStream
@@ -27,13 +26,9 @@ import kotlin.test.assertTrue
 @ExtendWith(SiriusExtension::class)
 class ExcelExportNightlyTest {
     companion object {
-        @Part
-        @JvmStatic
-        private val XLS_MAX_ROWS: Int = 0x10000
 
-        @Part
-        @JvmStatic
-        private val XLSX_MAX_ROWS: Int = 0x100000
+        private const val XLS_MAX_ROWS: Int = 0x10000
+        private const val XLSX_MAX_ROWS: Int = 0x100000
     }
 
     @Test
