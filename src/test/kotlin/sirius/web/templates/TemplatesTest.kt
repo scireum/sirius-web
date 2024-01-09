@@ -8,41 +8,51 @@
 
 package sirius.web.templates
 
-import sirius.kernel.BaseSpecification
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import sirius.kernel.SiriusExtension
 import sirius.kernel.commons.Context
 import sirius.kernel.di.std.Part
+import kotlin.test.assertEquals
 
-class TemplatesSpec extends BaseSpecification {
+@ExtendWith(SiriusExtension::class)
+class TemplatesTest {
 
-    @Part
-    private static Templates templates
-
-            def "direct generation works"() {
-        when:
-        def result = templates.generator()
-            .applyContext(Context.create().set("hello", "World"))
-            .direct('<i:arg type="String" name="hello" />@hello', TagliatelleContentHandler.PASTA)
-            .generate()
-        then:
-        result == "World"
+    companion object {
+        @Part
+        @JvmStatic
+        private lateinit var templates: Templates
     }
 
-    def "template lookup works"() {
-        when:
-        def result = templates.generator().useTemplate("/templates/helloWorld.pasta")
+    @Test
+    fun `direct generation works`() {
+
+        val result = templates.generator()
             .applyContext(Context.create().set("hello", "World"))
+            .direct("<i:arg type=\"String\" name=\"hello\" />@hello", TagliatelleContentHandler.PASTA)
             .generate()
-        then:
-        result == "Hello World"
+
+        assertEquals("World", result)
     }
 
-    def "compund template names work"() {
-        when:
-        def result = templates.generator().useTemplate("/templates/helloWorld.js.pasta")
+    @Test
+    fun `template lookup works`() {
+
+        val result = templates.generator().useTemplate("/templates/helloWorld.pasta")
             .applyContext(Context.create().set("hello", "World"))
             .generate()
-        then:
-        result == "var text = 'World';"
+
+        assertEquals("Hello World", result)
+    }
+
+    @Test
+    fun `compund template names work`() {
+
+        val result = templates.generator().useTemplate("/templates/helloWorld.js.pasta")
+            .applyContext(Context.create().set("hello", "World"))
+            .generate()
+
+        assertEquals("var text = 'World';", result)
     }
 
 }
