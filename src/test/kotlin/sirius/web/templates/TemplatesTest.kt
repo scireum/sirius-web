@@ -46,7 +46,7 @@ class TemplatesTest {
     }
 
     @Test
-    fun `compund template names work`() {
+    fun `compound template names work`() {
 
         val result = templates.generator().useTemplate("/templates/helloWorld.js.pasta")
             .applyContext(Context.create().set("hello", "World"))
