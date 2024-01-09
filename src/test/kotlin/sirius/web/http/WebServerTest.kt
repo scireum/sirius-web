@@ -11,15 +11,24 @@ package sirius.web.http
 
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpResponseStatus
-import sirius.kernel.BaseSpecification
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.extension.ExtendWith
+import sirius.kernel.SiriusExtension
 import sirius.kernel.commons.Json
 import sirius.kernel.commons.Streams
 import sirius.kernel.commons.Strings
 import sirius.kernel.commons.Wait
+import sirius.kernel.health.Log
 import sirius.kernel.health.LogHelper
-
+import java.io.IOException
+import java.io.InputStream
+import java.net.HttpURLConnection
+import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.util.logging.Level
+import kotlin.test.assertEquals
 
 /**
  * Simulates a bunch of "real" (outside) requests through netty and sirius.
@@ -27,20 +36,22 @@ import java.util.logging.Level
  * This ensures a basic performance profile and also makes sure no trivial race conditions or memory leaks
  * are added.
  */
-class WebServerSpec extends BaseSpecification {
+@ExtendWith(SiriusExtension::class)
+class WebServerTest {
 
-    static String callAndRead(String uri, Map outHeaders, Map expectedHeaders) {
-        URLConnection c = new URL("http://localhost:9999" + uri).openConnection()
-        outHeaders.each { k, v -> c.addRequestProperty(k, v) }
-        c.connect()
-        def result = new String(Streams.toByteArray(c.getInputStream()), StandardCharsets.UTF_8)
-        expectedHeaders.each { k, v ->
+    private fun callAndRead(uri: String, outHeaders: Map<String, String?>?, expectedHeaders: Map<String, String?>?): String {
+        val connection = URL("http://localhost:9999$uri").openConnection() as HttpURLConnection
+
+        outHeaders?.forEach { (k, v) -> connection.addRequestProperty(k, v) }
+        connection.connect()
+        val result = String(Streams.toByteArray(connection.inputStream), StandardCharsets.UTF_8)
+        expectedHeaders?.forEach { k, v ->
             if ("*" == v) {
-                if (Strings.isEmpty(c.getHeaderField(k))) {
-                    throw new IllegalStateException("Header: " + k + " was expected, but not set")
+                if (Strings.isEmpty(connection.getHeaderField(k))) {
+                    throw IllegalStateException("Header: $k was expected, but not set")
                 }
-            } else if (!Strings.areEqual(c.getHeaderField(k), v)) {
-                throw new IllegalStateException("Header: " + k + " was " + c.getHeaderField(k) + " instead of " + v)
+            } else if (!Strings.areEqual(connection.getHeaderField(k), v)) {
+                throw IllegalStateException("Header: " + k + " was " + connection.getHeaderField(k) + " instead of " + v)
             }
         }
 
@@ -50,125 +61,135 @@ class WebServerSpec extends BaseSpecification {
     /**
      * Ensures that re-writing or controller URIs works
      */
-    def "Invoke /rewritten to check if re-writing works"() {
-        given:
-        def uri = "/rewritten"
-        when:
-        def data = callAndRead(uri, null, null)
-        then:
-        data == "OK"
+    @Test
+    fun `Invoke rewritten to check if re-writing works`() {
+
+        val uri = "/rewritten"
+
+        val data = callAndRead(uri, null, null)
+
+        assertEquals("OK", data)
     }
 
     /**
      * Ensures that set-cookie and caching headers aren't mixed.
      */
-    def "Invoke /test/cookieCacheTest"() {
-        given:
-        def uri = "/test/cookieCacheTest"
-        def headers = ['accept-encoding': 'gzip']
+    @Test
+    fun `Invoke test-cookieCacheTest`() {
+
+        val uri = "/test/cookieCacheTest"
+        val headers = mapOf("accept-encoding" to "gzip")
         // File is too small to be compressed!
-        def expectedHeaders = ['set-cookie': '*', 'expires': null, 'cache-control': 'no-cache, max-age=0']
-        when:
-        def data = callAndRead(uri, headers, expectedHeaders)
-        then:
-        notThrown(IllegalStateException)
+        val expectedHeaders = mapOf(
+            "set-cookie" to "*",
+            "expires" to null,
+            "cache-control" to "no-cache, max-age=0"
+        )
+        val data = callAndRead(uri, headers, expectedHeaders)
     }
 
-    def "Invoke /assets/test.css to test"() {
-        given:
-        def uri = "/assets/test.css"
-        def headers = ['accept-encoding': 'gzip']
+    @Test
+    fun `Invoke assets-test_css to test`() {
+
+        val uri = "/assets/test.css"
+        val headers = mapOf("accept-encoding" to "gzip")
         // File is too small to be compressed!
-        def expectedHeaders = ['content-encoding': null]
-        when:
-        def data = callAndRead(uri, headers, expectedHeaders)
-        then:
-        "body { background-color: #000000; }" == data
+        val expectedHeaders = mapOf("content-encoding" to null)
+
+        val data = callAndRead(uri, headers, expectedHeaders)
+
+        assertEquals("body { background-color: #000000; }", data)
     }
 
-    def "Invoke /assets/test_large.css"() {
-        given:
-        def uri = "/assets/test_large.css"
-        def expectedHeaders = ['content-encoding': null]
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        60314 == data.length()
+    @Test
+    fun `Invoke assets-test_large_css`() {
+
+        val uri = "/assets/test_large.css"
+        val expectedHeaders = mapOf("accept-encoding" to null)
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
+        assertEquals(60314, data.length)
     }
 
-    def "Invoke /assets/test_large.css with GZIP"() {
-        given:
-        def uri = "/assets/test_large.css"
-        def headers = ['accept-encoding': 'gzip']
-        def expectedHeaders = ['content-encoding': 'gzip']
-        when:
-        def data = callAndRead(uri, headers, expectedHeaders)
-        then:
+    @Test
+    fun `Invoke assets-test_large_css with GZIP`() {
+
+        val uri = "/assets/test_large.css"
+        val headers = mapOf("accept-encoding" to "gzip")
+        val expectedHeaders = mapOf("content-encoding" to "gzip")
+
+        val data = callAndRead(uri, headers, expectedHeaders)
+
         // URLConnection does not understand GZIP and therefore does not unzip... :-(
-        1298 == data.length()
+        assertEquals(1298, data.length)
     }
 
-    def "Invoke /test/resource to access a resource"() {
-        given:
-        def uri = "/test/resource"
-        def headers = ['accept-encoding': 'gzip']
-        def expectedHeaders = ['content-encoding': 'gzip']
-        when:
-        def data = callAndRead(uri, headers, expectedHeaders)
-        then:
+    @Test
+    fun `Invoke test-resource to access a resource`() {
+
+        val uri = "/test/resource"
+        val headers = mapOf("accept-encoding" to "gzip")
+        val expectedHeaders = mapOf("content-encoding" to "gzip")
+
+        val data = callAndRead(uri, headers, expectedHeaders)
+
         // URLConnection does not understand GZIP and therefore does not unzip... :-(
-        1298 == data.length()
+        assertEquals(1298, data.length)
     }
 
-    def "Invoke /test/resource_uncompressable to access a non-compressable resource"() {
-        given:
-        def uri = "/test/resource_uncompressable"
-        def headers = ['accept-encoding': 'gzip']
-        def expectedHeaders = ['content-encoding': null]
-        when:
-        def data = callAndRead(uri, headers, expectedHeaders)
-        then:
-        60_314 == data.length()
+    @Test
+    fun `Invoke test-resource_uncompressable to access a non-compressable resource`() {
+
+        val uri = "/test/resource_uncompressable"
+        val headers = mapOf("accept-encoding" to "gzip")
+        val expectedHeaders = mapOf("content-encoding" to null)
+
+        val data = callAndRead(uri, headers, expectedHeaders)
+        assertEquals(60_314, data.length)
     }
 
     /**
      * Determines if redispatching in the TestDispatcher works.
      */
-    def "Redispatching works"() {
-        given:
-        def uri = "/redispatch"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        '{"success":true,"error":false,"test":true}' == data
+    @Test
+    fun `Redispatching works`() {
+
+        val uri = "/redispatch"
+        val expectedHeaders = mapOf("content-type" to "application/json;charset=UTF-8")
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
+        assertEquals("{\"success\":true,\"error\":false,\"test\":true}", data)
     }
 
     /**
      * Call a small service which result fits into a single response chunk...
      */
-    def "Invoke /api/test"() {
-        given:
-        def uri = "/api/test"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        '{"success":true,"error":false,"test":true}' == data
+    @Test
+    fun `Invoke api-test`() {
+
+        val uri = "/api/test"
+        val expectedHeaders = mapOf("content-type" to "application/json;charset=UTF-8")
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
+        assertEquals("{\"success\":true,\"error\":false,\"test\":true}", data)
     }
 
     /**
      * Call a large service to test buffer-based output streams
      */
-    def "Invoke /api/test/test_large"() {
-        given:
-        def uri = "/api/test/test_large"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
+    @Test
+    fun `Invoke api-test-test_large`() {
+
+        val uri = "/api/test/test_large"
+        val expectedHeaders = mapOf("content-type" to "application/json;charset=UTF-8")
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
         // Size should be contents of large test file plus json overhead and escaping....
-        60572 == data.length()
+        assertEquals(60572, data.length)
     }
 
     /**
@@ -176,57 +197,62 @@ class WebServerSpec extends BaseSpecification {
      * <p>
      * We expect an appropriate error in this case.
      */
-    def "Invoke /api/test/test_large_failure and expect a proper error"() {
-        given:
-        def uri = "/api/test/test_large_failure"
-        def expectedHeaders = ['content-type': 'text/xml;charset=UTF-8']
-        when:
-        LogHelper.INSTANCE.clearMessages()
-        and:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then: "We expect a warning as the server was unable to send an error"
-        LogHelper.INSTANCE.hasMessage(Level.WARNING, "web", "Cannot send service error for.*")
-        and: "As the connection is closed due to an inconsistent state, an IO exception will occur on the client side"
-        thrown(IOException)
+    @Test
+    fun `Invoke api-test-test_large_failure and expect a proper error`() {
+
+        val uri = "/api/test/test_large_failure"
+        val expectedHeaders = mapOf("content-type" to "text/xml;charset=UTF-8")
+
+        LogHelper.clearMessages()
+
+        // We expect a warning as the server was unable to send an error
+        // As the connection is closed due to an inconsistent state, an IO exception will occur on the client side
+        assertThrows<IOException> {
+            val data = callAndRead(uri, null, expectedHeaders)
+            LogHelper.hasMessage(Level.WARNING, Log.get("web"), "Cannot send service error for.*")
+        }
     }
 
     /**
      * Call a controller which tunnels a small file
      */
-    def "Invoke /tunnel/test"() {
-        given:
-        def uri = "/tunnel/test"
-        def expectedHeaders = ['content-type': 'text/test']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        '{"success":true,"error":false,"test":true}' == data
+    @Test
+    fun `Invoke tunnel-test`() {
+
+        val uri = "/tunnel/test"
+        val expectedHeaders = mapOf("content-type" to "text/test")
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
+        assertEquals("{\"success\":true,\"error\":false,\"test\":true}", data)
     }
 
     /**
      * Call a controller which tunnels a small file
      */
-    def "Invoke /tunnel/test/tune with a custom request"() {
-        given:
-        def uri = "/tunnel/test/tune"
-        when:
-        def data = callAndRead(uri, null, null)
-        then:
-        'POST' == data
+    @Test
+    fun `Invoke tunnel-test-tune with a custom request`() {
+
+        val uri = "/tunnel/test/tune"
+
+        val data = callAndRead(uri, null, null)
+
+        assertEquals("POST", data)
     }
 
     /**
      * Call a controller which tunnels a large file
      */
-    def "Invoke /tunnel/test_large"() {
-        given:
-        def uri = "/tunnel/test_large"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
+    @Test
+    fun `Invoke tunnel-test_large`() {
+
+        val uri = "/tunnel/test_large"
+        val expectedHeaders = mapOf("content-type" to "application/json;charset=UTF-8")
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
         // Size should be contents of large test file plus json overhead and escaping....
-        60572 == data.length()
+        assertEquals(60572, data.length)
     }
 
     /**
@@ -234,111 +260,118 @@ class WebServerSpec extends BaseSpecification {
      * <p>
      * This matches the logic in <tt>TestController.tunnelTestTransform</tt>.
      */
-    def "Invoke /tunnel/test_transform"() {
-        when: "we load the raw data"
-        def data = callAndRead("/tunnel/test_large", null, null)
-        and: "we load the transformed data which is byte shifted by +1"
-        HttpURLConnection c = new URL("http://localhost:9999/tunnel/test_transform").openConnection()
-        def transformedData = Streams.toByteArray(c.getInputStream())
-        and: "we un-shift all bytes"
-        def reTransformedData = new byte[transformedData.length]
-        for (int i = 0; i < transformedData.length; i++) {
-        reTransformedData[i] = transformedData[i] == 0 ? 255 : transformedData[i] - 1
-    }
-        then: "Both should be equivalent in size..."
-        transformedData.length == data.length()
-        and: "And the re-transformed contents should match..."
-        new String(reTransformedData, StandardCharsets.UTF_8) == data
+    @Test
+    fun `Invoke tunnel-test_transform`() {
+        // We load the raw data
+        val data = callAndRead("/tunnel/test_large", null, null)
+        // We load the transformed data which is byte shifted by +1
+        val connection = URL("http://localhost:9999/tunnel/test_transform").openConnection() as HttpURLConnection
+        val transformedData = Streams.toByteArray(connection.inputStream)
+        // We un-shift all bytes
+        val reTransformedData = ByteArray(transformedData.size)
+
+        for (i in 0..<transformedData.size) {
+            reTransformedData[i] = transformedData[i] == 0 ? 255 : transformedData[i] - 1
+            //TODO
+        }
+        // Both should be equivalent in size...
+        assertEquals(data.length,transformedData.size)
+        // And the re-transformed contents should match...
+        assertEquals(data,String(reTransformedData, StandardCharsets.UTF_8))
     }
 
     /**
      * Call a controller which uses a fallback for a failed tunnel (404)
      */
-    def "Invoke /tunnel/fallback_for_404 and expect the fallback to work"() {
-        given:
-        def uri = "/tunnel/fallback_for_404"
-        def expectedHeaders = ['content-type': 'text/test']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        '{"success":true,"error":false,"test":true}' == data
+    @Test
+    fun `Invoke tunnel-fallback_for_404 and expect the fallback to work`() {
+
+        val uri = "/tunnel/fallback_for_404"
+        val expectedHeaders = mapOf("content-type" to "text/test")
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
+        assertEquals("{\"success\":true,\"error\":false,\"test\":true}", data)
     }
 
     /**
      * Call a controller which uses a fallback for a failed tunnel (connection error)
      */
-    def "Invoke /tunnel/fallback_for_error and expect the fallback to work"() {
-        given:
-        def uri = "/tunnel/fallback_for_error"
-        def expectedHeaders = ['content-type': 'text/test']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        '{"success":true,"error":false,"test":true}' == data
+    @Test
+    fun `Invoke tunnel-fallback_for_error and expect the fallback to work`() {
+
+        val uri = "/tunnel/fallback_for_error"
+        val expectedHeaders = mapOf("content-type" to "text/test")
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
+        assertEquals("{\"success\":true,\"error\":false,\"test\":true}", data)
     }
 
     /**
      * Call a controller which uses JSON Calls
      */
-    def "Invoke /test/json testing built in JSON handling"() {
-        given:
-        def uri = "/test/json?test=Hello_World"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        Json.parseObject(data).get("test").asText() == 'Hello_World'
+    @Test
+    fun `Invoke test-json testing built in JSON handling`() {
+
+        val uri = "/test/json?test=Hello_World"
+        val expectedHeaders = mapOf("content-type" to "application/json;charset=UTF-8")
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
+        assertEquals("Hello_World",Json.parseObject(data).get("test").asText())
     }
 
-    def "Invoke /test/json-param testing built in JSON handling"() {
-        given:
-        def uri = "/test/json-param/Hello"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        Json.parseObject(data).get("test").asText() == 'Hello'
+    @Test
+    fun `Invoke test-json-param testing built in JSON handling`() {
+
+        val uri = "/test/json-param/Hello"
+        val expectedHeaders = mapOf("content-type" to "application/json;charset=UTF-8")
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
+        assertEquals("Hello",Json.parseObject(data).get("test").asText())
     }
 
-    def "Invoke /test/json-params/1/2 testing multiple parameter"() {
-        given:
-        def uri = "/test/json-params/1/2"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        Json.parseObject(data).get("param1").asText() == '1'
-        and:
-        Json.parseObject(data).get("param2").asText() == '2'
+    @Test
+    fun `Invoke test-json-params-1-2 testing multiple parameter`() {
+
+        val uri = "/test/json-params/1/2"
+        val expectedHeaders = mapOf("content-type" to "application/json;charset=UTF-8")
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
+        assertEquals("1",Json.parseObject(data).get("param1").asText())
+        assertEquals("2",Json.parseObject(data).get("param2").asText())
     }
 
-    def "Invoke /test/mixed-json-params/2/1 testing mixed parameter order"() {
-        given:
-        def uri = "/test/mixed-json-params/2/1"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        Json.parseObject(data).get("param1").asText() == '1'
-        and:
-        Json.parseObject(data).get("param2").asText() == '2'
+    @Test
+    fun `Invoke test-mixed-json-params-2-1 testing mixed parameter order`() {
+
+        val uri = "/test/mixed-json-params/2/1"
+        val expectedHeaders = mapOf("content-type" to "application/json;charset=UTF-8")
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
+        assertEquals("1",Json.parseObject(data).get("param1").asText())
+        assertEquals("2",Json.parseObject(data).get("param2").asText())
     }
 
-    def "Invoke /test/json-params-varargs/1/2/3/4/5/6/7/8/9 testing varargs"() {
-        given:
-        def uri = "/test/json-params-varargs/1/2/3/4/5/6/7/8/9"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        Json.parseObject(data).get("param1").asText() == '1'
-        and:
-        Json.parseObject(data).get("param2").asText() == '2'
-        and:
-        def varargs = Json.getArray(Json.parseObject(data), "params")
-        varargs.size() == 7
-        varargs.get(0).asText() == '3'
-        varargs.get(6).asText() == '9'
+    @Test
+    fun `Invoke test-json-params-varargs-1-2-3-4-5-6-7-8-9 testing varargs`() {
+
+        val uri = "/test/json-params-varargs/1/2/3/4/5/6/7/8/9"
+        val expectedHeaders = mapOf("content-type" to "application/json;charset=UTF-8")
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
+        assertEquals("1",Json.parseObject(data).get("param1").asText())
+        assertEquals("2",Json.parseObject(data).get("param2").asText())
+
+        val varargs = Json.getArray(Json.parseObject(data), "params")
+        assertEquals(7,varargs.size())
+        assertEquals("3",varargs.get(0).asText())
+        assertEquals("9",varargs.get(6).asText())
     }
 
     /**
@@ -346,141 +379,150 @@ class WebServerSpec extends BaseSpecification {
      * <p>
      * Also expects that the controller support keepalive after a successful request/response.
      */
-    def "Invoke /test/predispatch with POST"() {
-        given:
-        HttpURLConnection u = new URL("http://localhost:9999/test/predispatch").openConnection()
-        and:
-        def testByteArray = "Hello Service".getBytes()
-        when:
-        u.setRequestMethod("POST")
-        u.setDoInput(true)
-        u.setDoOutput(true)
-        def out = u.getOutputStream()
-        for (int i = 0; i < 1024; i++) {
-        out.write(testByteArray)
-    }
+    @Test
+    fun `Invoke test-predispatch with POST`() {
+
+        val url = URL ("http://localhost:9999/test/predispatch").openConnection() as HttpURLConnection
+
+        val testByteArray = "Hello Service".toByteArray()
+
+        url.setRequestMethod("POST")
+        url.setDoInput(true)
+        url.setDoOutput(true)
+        val out = url.outputStream
+        for (i in 1..1024) {
+            out.write(testByteArray)
+        }
         out.close()
-        def result = new String(Streams.toByteArray(u.getInputStream()), StandardCharsets.UTF_8)
-        then:
-        String.valueOf(testByteArray.length * 1024) == result
-        and:
-        u.getHeaderField(HttpHeaderNames.CONNECTION.toString()) == HttpHeaderNames.KEEP_ALIVE.toString()
+        val result = String(Streams.toByteArray(url.inputStream), StandardCharsets.UTF_8)
+
+        assertEquals(result,(testByteArray.size*1024).toString())
+        assertEquals(HttpHeaderNames.KEEP_ALIVE.toString(),url.getHeaderField(HttpHeaderNames.CONNECTION.toString()))
     }
 
     /**
      * Call a controller which uses predispatching but responds before the content has been read.
      *
      */
-    def "/test/predispatch/abort discards an upload and then generates an error as response"() {
-        given:
-        HttpURLConnection u = new URL("http://localhost:9999/test/predispatch/abort").openConnection()
-        and:
-        u.setChunkedStreamingMode(1024)
-        and:
-        def testByteArray = "X".getBytes()
-        when:
-        u.setRequestMethod("POST")
-        u.setDoInput(true)
-        u.setDoOutput(true)
+    @Test
+    fun `test-predispatch-abort discards an upload and then generates an error as response`() {
+
+        val url = URL ("http://localhost:9999/test/predispatch/abort").openConnection() as HttpURLConnection
+
+        url.setChunkedStreamingMode(1024)
+
+        val testByteArray = "X".toByteArray()
+
+        url.setRequestMethod("POST")
+        url.setDoInput(true)
+        url.setDoOutput(true)
 
         // Write some data and flush so that the server triggers a response
-        def out = u.getOutputStream()
-        for (int i = 0; i < 1024; i++) {
-        out.write(testByteArray)
-    }
+        val out = url.outputStream
+        for (i in 0..1024) {
+            out.write(testByteArray)
+        }
         out.flush()
 
         // Slow down to ensure that the response is created and sent
         // Still no IOException is expected, as the server will discard all data..
         Wait.millis(200)
-        for (int i = 0; i < 1024; i++) {
-        out.write(testByteArray)
-    }
+        for (i in 0..1024) {
+            out.write(testByteArray)
+        }
 
-        def result = new String(Streams.toByteArray(u.getInputStream()), StandardCharsets.UTF_8)
-        then:
+        val result = String(Streams.toByteArray(url.inputStream), StandardCharsets.UTF_8)
+
         // We still expect a proper response
-        "ABORT" == result
+        assertEquals("ABORT",result)
     }
 
     /**
      * Call a controller which uses POST
      */
-    def "Invoke /test/post with POST"() {
-        given:
-        HttpURLConnection u = new URL("http://localhost:9999/test/post").openConnection()
-        and:
-        def testString = "value=Hello"
-        when:
-        u.setRequestMethod("POST")
-        u.setRequestProperty("Content-Type",
-            "application/x-www-form-urlencoded")
+    @Test
+    fun `Invoke test-post with POST`() {
 
-        u.setRequestProperty("Content-Length", Integer.toString(testString.getBytes().length))
-        u.setDoInput(true)
-        u.setDoOutput(true)
-        def out = u.getOutputStream()
-        out.write(testString.getBytes(StandardCharsets.UTF_8))
+        val url = URL ("http://localhost:9999/test/post").openConnection() as HttpURLConnection
+
+        val testString = "value=Hello"
+
+        url.setRequestMethod("POST")
+        url.setRequestProperty(
+            "Content-Type",
+            "application/x-www-form-urlencoded"
+        )
+
+        url.setRequestProperty("Content-Length", testString.toByteArray().size.toString())
+        url.setDoInput(true)
+        url.setDoOutput(true)
+        val out = url.outputStream
+        out.write(testString.toByteArray(StandardCharsets.UTF_8))
         out.close()
-        def result = new String(Streams.toByteArray(u.getInputStream()), StandardCharsets.UTF_8)
-        then:
-        "Hello" == result
+        val result = String(Streams.toByteArray(url.inputStream), StandardCharsets.UTF_8)
+
+        assertEquals("Hello",result)
     }
 
-    def "test that outputstreams work"() {
-        given:
-        HttpURLConnection u = new URL("http://localhost:9999/test/os").openConnection()
-        when:
-        u.setRequestMethod("GET")
-        u.setDoInput(true)
-        u.setDoOutput(false)
-        def arr = Streams.toByteArray(u.getInputStream())
-        then:
-        9 * 8192 == arr.length
+    @Test
+    fun `test that outputstreams work`() {
 
+        val url = URL ("http://localhost:9999/test/os").openConnection() as HttpURLConnection
+
+        url.setRequestMethod("GET")
+        url.setDoInput(true)
+        url.setDoOutput(false)
+        val arr = Streams.toByteArray(url.inputStream)
+
+        assertEquals(9*8192,arr.size)
     }
 
     /**
      * Test an empty POST
      */
-    def "Invoke /test/post with empty POST"() {
-        given:
-        HttpURLConnection u = new URL("http://localhost:9999/test/post").openConnection()
-        and:
-        def testString = ""
-        when:
-        u.setRequestMethod("POST")
-        u.setRequestProperty("Content-Type",
-            "application/x-www-form-urlencoded")
+    @Test
+    fun `Invoke test-post with empty POST`() {
 
-        u.setRequestProperty("Content-Length", Integer.toString(testString.getBytes().length))
-        u.setDoInput(true)
-        u.setDoOutput(true)
-        def out = u.getOutputStream()
-        out.write(testString.getBytes(StandardCharsets.UTF_8))
+        val url = URL ("http://localhost:9999/test/post").openConnection() as HttpURLConnection
+
+        val testString = ""
+
+        url.setRequestMethod("POST")
+        url.setRequestProperty(
+            "Content-Type",
+            "application/x-www-form-urlencoded"
+        )
+
+        url.setRequestProperty("Content-Length", testString.toByteArray().size.toString())
+        url.setDoInput(true)
+        url.setDoOutput(true)
+        val out = url.outputStream
+        out.write(testString.toByteArray(StandardCharsets.UTF_8))
         out.close()
-        def result = new String(Streams.toByteArray(u.getInputStream()), StandardCharsets.UTF_8)
-        then:
-        "" == result
+        val result = String(Streams.toByteArray(url.inputStream), StandardCharsets.UTF_8)
+
+        assertEquals("",result)
     }
 
     /**
      * Ensure that predispatching does not trigger on GET requests
      */
-    def "Invoke /test/presidpatch with GET"() {
-        given:
-        HttpURLConnection u = new URL("http://localhost:9999/test/predispatch").openConnection()
-        when:
-        u.setRequestMethod("GET")
-        then:
-        u.getResponseCode() == 404
+    @Test
+    fun `Invoke test-presidpatch with GET`() {
+
+        val url = URL ("http://localhost:9999/test/predispatch").openConnection() as HttpURLConnection
+
+        url.setRequestMethod("GET")
+
+        assertEquals(404,url.responseCode)
     }
 
-    def countBytesInStream(InputStream input) {
-        def counter = 0
-        def count = 0
-        def buffer = new byte[8192]
-        while ((count = input.read(buffer)) > 0) {
+    fun countBytesInStream(input: InputStream):Int
+    {
+        var counter = 0
+        var count = 0
+        val buffer = ByteArray(8192)
+        while ((input.read(buffer).also { count = it }) > 0) {
             counter += count
         }
 
@@ -490,139 +532,148 @@ class WebServerSpec extends BaseSpecification {
     /**
      * Test correct decoding
      */
-    def "Invoke /test/json testing correct decoding delimiter"() {
-        given:
-        def uri = "/test/json?test=Hello%2FWorld"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        Json.parseObject(data).get("test").asText() == 'Hello/World'
+    @Test
+    fun `Invoke test-json testing correct decoding delimiter`() {
+
+        val uri = "/test/json?test=Hello%2FWorld"
+        val expectedHeaders = mapOf("content-type" to "application/json;charset=UTF-8")
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
+        assertEquals("Hello/World",Json.parseObject(data).get("test").asText())
     }
 
-    def "Invoke /test/json testing correct decoding space"() {
-        given:
-        def uri = "/test/json?test=Hello%20World"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        Json.parseObject(data).get("test").asText() == 'Hello World'
+    @Test
+    fun `Invoke test-json testing correct decoding space`() {
+
+        val uri = "/test/json?test=Hello%20World"
+        val expectedHeaders = mapOf("content-type" to "application/json;charset=UTF-8")
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
+        assertEquals("Hello World",Json.parseObject(data).get("test").asText())
     }
 
-    def "Invoke /test/json-param testing correct decoding delimiter"() {
-        given:
-        def uri = "/test/json-param/Hello%2FWorld"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        Json.parseObject(data).get("test").asText() == 'Hello/World'
+    @Test
+    fun `Invoke test-json-param testing correct decoding delimiter`() {
+
+        val uri = "/test/json-param/Hello%2FWorld"
+        val expectedHeaders = mapOf("content-type" to "application/json;charset=UTF-8")
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
+        assertEquals("Hello/World",Json.parseObject(data).get("test").asText())
     }
 
-    def "Invoke /test/json-param testing correct decoding space"() {
-        given:
-        def uri = "/test/json-param/Hello%20World"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        Json.parseObject(data).get("test").asText() == 'Hello World'
+    @Test
+    fun `Invoke test-json-param testing correct decoding space`() {
+
+        val uri = "/test/json-param/Hello%20World"
+        val expectedHeaders = mapOf("content-type" to "application/json;charset=UTF-8")
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
+        assertEquals("Hello World",Json.parseObject(data).get("test").asText())
     }
 
-    def "Invoke /test/json-params/one/t%2Fwotesting multiple parameter decoding delimiter"() {
-        given:
-        def uri = "/test/json-params/one/t%2Fwo"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        Json.parseObject(data).get("param1").asText() == 'one'
-        and:
-        Json.parseObject(data).get("param2").asText() == 't/wo'
+    @Test
+    fun `Invoke test-json-params-one-t%2Fwotesting multiple parameter decoding delimiter`() {
+
+        val uri = "/test/json-params/one/t%2Fwo"
+        val expectedHeaders = mapOf("content-type" to "application/json;charset=UTF-8")
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
+        assertEquals("one",Json.parseObject(data).get("param1").asText())
+        assertEquals("t/wo",Json.parseObject(data).get("param2").asText())
     }
 
-    def "Invoke /test/json-params/one/t%20wo testing multiple parameter decoding space"() {
-        given:
-        def uri = "/test/json-params/one/t%20wo"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        Json.parseObject(data).get("param1").asText() == 'one'
-        and:
-        Json.parseObject(data).get("param2").asText() == 't wo'
+    @Test
+    fun `Invoke test-json-params-one-t%20wo testing multiple parameter decoding space`() {
+
+        val uri = "/test/json-params/one/t%20wo"
+        val expectedHeaders = mapOf("content-type" to "application/json;charset=UTF-8")
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
+        assertEquals("one",Json.parseObject(data).get("param1").asText())
+        assertEquals("t wo",Json.parseObject(data).get("param2").asText())
     }
 
-    def "Invoke /test/json-params-varargs/1%2F/%2F2/one/t%2Fwo/t%2Fhree/%2Ffour/five%2F testing varargs decoding delimiter"() {
-        given:
-        def uri = "/test/json-params-varargs/1%2F/%2F2/one/t%2Fwo/t%2Fhree/%2Ffour/five%2F"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        Json.parseObject(data).get("param1").asText() == '1/'
-        and:
-        Json.parseObject(data).get("param2").asText() == '/2'
-        and:
-        def varargs = Json.getArray(Json.parseObject(data), "params")
-        varargs.size() == 5
-        varargs.get(0).asText() == 'one'
-        varargs.get(1).asText() == 't/wo'
-        varargs.get(2).asText() == 't/hree'
-        varargs.get(3).asText() == '/four'
-        varargs.get(4).asText() == 'five/'
+    @Test
+    fun `Invoke test-json-params-varargs-1%2F-%2F2-one-t%2Fwo-t%2Fhree-%2Ffour-five%2F testing varargs decoding delimiter`() {
+
+        val uri = "/test/json-params-varargs/1%2F/%2F2/one/t%2Fwo/t%2Fhree/%2Ffour/five%2F"
+        val expectedHeaders = mapOf("content-type" to "application/json;charset=UTF-8")
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
+        assertEquals("1/",Json.parseObject(data).get("param1").asText())
+        assertEquals("/2",Json.parseObject(data).get("param2").asText())
+
+        val varargs = Json.getArray(Json.parseObject(data), "params")
+
+        assertEquals(5,varargs.size())
+        assertEquals("one",varargs.get(0).asText())
+        assertEquals("t/wo",varargs.get(1).asText())
+        assertEquals("t/hree",varargs.get(2).asText())
+        assertEquals("/four",varargs.get(3).asText())
+        assertEquals("five/",varargs.get(4).asText())
     }
 
-    def "Invoke /test/json-params-varargs/1%20/%202/one/t%20wo/t%20hree/%20four/five%20 testing varargs decoding space"() {
-        given:
-        def uri = "/test/json-params-varargs/1%20/%202/one/t%20wo/t%20hree/%20four/five%20"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        Json.parseObject(data).get("param1").asText() == '1 '
-        and:
-        Json.parseObject(data).get("param2").asText() == ' 2'
-        and:
-        def varargs = Json.getArray(Json.parseObject(data), "params")
-        varargs.size() == 5
-        varargs.get(0).asText() == 'one'
-        varargs.get(1).asText() == 't wo'
-        varargs.get(2).asText() == 't hree'
-        varargs.get(3).asText() == ' four'
-        varargs.get(4).asText() == 'five '
+    @Test
+    fun `Invoke test-json-params-varargs-1%20-%202-one-t%20wo-t%20hree-%20four-five%20 testing varargs decoding space`() {
+
+        val uri = "/test/json-params-varargs/1%20/%202/one/t%20wo/t%20hree/%20four/five%20"
+        val expectedHeaders = mapOf("content-type" to "application/json;charset=UTF-8")
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
+        assertEquals("1 ",Json.parseObject(data).get("param1").asText())
+        assertEquals(" 2",Json.parseObject(data).get("param2").asText())
+
+        val varargs = Json.getArray(Json.parseObject(data), "params")
+
+        assertEquals(5,varargs.size())
+        assertEquals("one",varargs.get(0).asText())
+        assertEquals("t wo",varargs.get(1).asText())
+        assertEquals("t hree",varargs.get(2).asText())
+        assertEquals(" four",varargs.get(3).asText())
+        assertEquals("five ",varargs.get(4).asText())
     }
 
-    def "Invoke /test/json-param testing param with only delimiter"() {
-        given:
-        def uri = "/test/json-param/%2F%2F%2F"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        Json.parseObject(data).get("test").asText() == '///'
+    @Test
+    fun `Invoke test-json-param testing param with only delimiter`() {
+
+        val uri = "/test/json-param/%2F%2F%2F"
+        val expectedHeaders = mapOf("content-type" to "application/json;charset=UTF-8")
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
+        assertEquals("///",Json.parseObject(data).get("test").asText())
     }
 
-    def "Invoke /test/json-param testing param with only space"() {
-        given:
-        def uri = "/test/json-param/%20%20%20"
-        def expectedHeaders = ['content-type': 'application/json;charset=UTF-8']
-        when:
-        def data = callAndRead(uri, null, expectedHeaders)
-        then:
-        Json.parseObject(data).get("test").asText() == '   '
+    @Test
+    fun `Invoke test-json-param testing param with only space`() {
+
+        val uri = "/test/json-param/%20%20%20"
+        val expectedHeaders = mapOf("content-type" to "application/json;charset=UTF-8")
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
+        assertEquals("   ",Json.parseObject(data).get("test").asText())
     }
 
-    def "testRequest follows redirects if instructed"() {
-        when:
-        def response1 = TestRequest.GET("/test/redirect-to-get").execute()
-        def response2 = TestRequest.GET("/test/redirect-to-get").followRedirect().execute()
-        then:
-        response1.getType() == TestResponse.ResponseType.TEMPORARY_REDIRECT
-        response1.getStatus() == HttpResponseStatus.FOUND
-        and:
-        response2.getType() == TestResponse.ResponseType.DIRECT
-        response2.getStatus() == HttpResponseStatus.OK
+    @Test
+    fun `testRequest follows redirects if instructed`() {
+
+        val response1 = TestRequest.GET("/test/redirect-to-get").execute()
+        val response2 = TestRequest.GET("/test/redirect-to-get").followRedirect().execute()
+
+        assertEquals(TestResponse.ResponseType.TEMPORARY_REDIRECT,response1.type)
+        assertEquals(HttpResponseStatus.FOUND,response1.status)
+
+        assertEquals(TestResponse.ResponseType.DIRECT, response2.type)
+        assertEquals(HttpResponseStatus.OK,response2.status)
     }
 }
