@@ -39,28 +39,29 @@ import kotlin.test.assertEquals
  */
 @ExtendWith(SiriusExtension::class)
 class WebServerTest {
+    companion object{
+        fun callAndRead(
+            uri: String,
+            outHeaders: Map<String, String?>?,
+            expectedHeaders: Map<String, String?>?
+        ): String {
+            val connection = URI("http://localhost:9999$uri").toURL().openConnection() as HttpURLConnection
 
-    private fun callAndRead(
-        uri: String,
-        outHeaders: Map<String, String?>?,
-        expectedHeaders: Map<String, String?>?
-    ): String {
-        val connection = URI("http://localhost:9999$uri").toURL().openConnection() as HttpURLConnection
-
-        outHeaders?.forEach { (k, v) -> connection.addRequestProperty(k, v) }
-        connection.connect()
-        val result = String(Streams.toByteArray(connection.inputStream), StandardCharsets.UTF_8)
-        expectedHeaders?.forEach { (k, v) ->
-            if ("*" == v) {
-                if (Strings.isEmpty(connection.getHeaderField(k))) {
-                    throw IllegalStateException("Header: $k was expected, but not set")
+            outHeaders?.forEach { (k, v) -> connection.addRequestProperty(k, v) }
+            connection.connect()
+            val result = String(Streams.toByteArray(connection.inputStream), StandardCharsets.UTF_8)
+            expectedHeaders?.forEach { (k, v) ->
+                if ("*" == v) {
+                    if (Strings.isEmpty(connection.getHeaderField(k))) {
+                        throw IllegalStateException("Header: $k was expected, but not set")
+                    }
+                } else if (!Strings.areEqual(connection.getHeaderField(k), v)) {
+                    throw IllegalStateException("Header: " + k + " was " + connection.getHeaderField(k) + " instead of " + v)
                 }
-            } else if (!Strings.areEqual(connection.getHeaderField(k), v)) {
-                throw IllegalStateException("Header: " + k + " was " + connection.getHeaderField(k) + " instead of " + v)
             }
-        }
 
-        return result
+            return result
+        }
     }
 
     /**

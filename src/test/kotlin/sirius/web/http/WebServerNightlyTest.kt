@@ -126,7 +126,7 @@ class WebServerNightlyTest {
         val uri = "/test/json/async"
         val expectedHeaders = mapOf("content-type" to "application/json;charset=UTF-8")
 
-        val data = WebServerSpec.callAndRead(uri, null, expectedHeaders)
+        val data = WebServerTest.callAndRead(uri, null, expectedHeaders)
 
         assertEquals("1", Json.parseObject(data).get("test").asText())
     }
