@@ -1,6 +1,7 @@
-//
-// A list of all licenses can be obtained via /licenses
-//
+/*
+ * A list of all licenses can be obtained via /licenses
+ */
+
 ___include("/assets/tycho/libs/bootstrap/css/bootstrap.min.css")
 ___include("/assets/tycho/libs/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css")
 ___include("/assets/tycho/libs/token-autocomplete/token-autocomplete.css")
