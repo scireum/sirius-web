@@ -39,7 +39,7 @@ import kotlin.test.assertEquals
  */
 @ExtendWith(SiriusExtension::class)
 class WebServerTest {
-    companion object{
+    companion object {
         fun callAndRead(
             uri: String,
             outHeaders: Map<String, String?>?,
