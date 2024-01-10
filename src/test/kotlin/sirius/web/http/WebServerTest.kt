@@ -47,16 +47,16 @@ class WebServerTest {
         ): String {
             val connection = URI("http://localhost:9999$uri").toURL().openConnection() as HttpURLConnection
 
-            outHeaders?.forEach { (k, v) -> connection.addRequestProperty(k, v) }
+            outHeaders?.forEach { (key, value) -> connection.addRequestProperty(key, value) }
             connection.connect()
             val result = String(Streams.toByteArray(connection.inputStream), StandardCharsets.UTF_8)
-            expectedHeaders?.forEach { (k, v) ->
-                if ("*" == v) {
-                    if (Strings.isEmpty(connection.getHeaderField(k))) {
-                        throw IllegalStateException("Header: $k was expected, but not set")
+            expectedHeaders?.forEach { (key, value) ->
+                if ("*" == value) {
+                    if (Strings.isEmpty(connection.getHeaderField(key))) {
+                        throw IllegalStateException("Header: $key was expected, but not set")
                     }
-                } else if (!Strings.areEqual(connection.getHeaderField(k), v)) {
-                    throw IllegalStateException("Header: " + k + " was " + connection.getHeaderField(k) + " instead of " + v)
+                } else if (!Strings.areEqual(connection.getHeaderField(key), value)) {
+                    throw IllegalStateException("Header: " + key + " was " + connection.getHeaderField(key) + " instead of " + value)
                 }
             }
 
@@ -277,9 +277,9 @@ class WebServerTest {
         // We un-shift all bytes
         val reTransformedData = ByteArray(transformedData.size)
 
-        for (i in transformedData.indices) {
-            reTransformedData[i] =
-                if (transformedData[i] == 0.toByte()) 255.toByte() else (transformedData[i] - 1).toByte()
+        for (index in transformedData.indices) {
+            reTransformedData[index] =
+                if (transformedData[index] == 0.toByte()) 255.toByte() else (transformedData[index] - 1).toByte()
         }
         // Both should be equivalent in size...
         assertEquals(data.length, transformedData.size)
@@ -396,11 +396,11 @@ class WebServerTest {
         url.setRequestMethod("POST")
         url.setDoInput(true)
         url.setDoOutput(true)
-        val out = url.outputStream
-        for (i in 1..1024) {
-            out.write(testByteArray)
+        val output = url.outputStream
+        for (index in 1..1024) {
+            output.write(testByteArray)
         }
-        out.close()
+        output.close()
         val result = String(Streams.toByteArray(url.inputStream), StandardCharsets.UTF_8)
 
         assertEquals(result, (testByteArray.size * 1024).toString())
@@ -425,17 +425,17 @@ class WebServerTest {
         url.setDoOutput(true)
 
         // Write some data and flush so that the server triggers a response
-        val out = url.outputStream
-        for (i in 0..1024) {
-            out.write(testByteArray)
+        val output = url.outputStream
+        for (index in 0..1024) {
+            output.write(testByteArray)
         }
-        out.flush()
+        output.flush()
 
         // Slow down to ensure that the response is created and sent
         // Still no IOException is expected, as the server will discard all data..
         Wait.millis(200)
-        for (i in 0..1024) {
-            out.write(testByteArray)
+        for (index in 0..1024) {
+            output.write(testByteArray)
         }
 
         val result = String(Streams.toByteArray(url.inputStream), StandardCharsets.UTF_8)
@@ -463,9 +463,9 @@ class WebServerTest {
         url.setRequestProperty("Content-Length", testString.toByteArray().size.toString())
         url.setDoInput(true)
         url.setDoOutput(true)
-        val out = url.outputStream
-        out.write(testString.toByteArray(StandardCharsets.UTF_8))
-        out.close()
+        val output = url.outputStream
+        output.write(testString.toByteArray(StandardCharsets.UTF_8))
+        output.close()
         val result = String(Streams.toByteArray(url.inputStream), StandardCharsets.UTF_8)
 
         assertEquals("Hello", result)
@@ -503,9 +503,9 @@ class WebServerTest {
         url.setRequestProperty("Content-Length", testString.toByteArray().size.toString())
         url.setDoInput(true)
         url.setDoOutput(true)
-        val out = url.outputStream
-        out.write(testString.toByteArray(StandardCharsets.UTF_8))
-        out.close()
+        val output = url.outputStream
+        output.write(testString.toByteArray(StandardCharsets.UTF_8))
+        output.close()
         val result = String(Streams.toByteArray(url.inputStream), StandardCharsets.UTF_8)
 
         assertEquals("", result)

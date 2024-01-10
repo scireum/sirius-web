@@ -79,10 +79,10 @@ class WebServerNightlyTest {
         val workerGroup = NioEventLoopGroup()
 
         try {
-            val b = Bootstrap()
-            b.group(workerGroup)
-            b.channel(NioSocketChannel::class.java)
-            b.handler(object : ChannelInitializer<SocketChannel>() {
+            val bootstrap = Bootstrap()
+            bootstrap.group(workerGroup)
+            bootstrap.channel(NioSocketChannel::class.java)
+            bootstrap.handler(object : ChannelInitializer<SocketChannel>() {
                 override fun initChannel(ch: SocketChannel) {
                     ch.pipeline().addLast(HttpClientCodec())
                     ch.pipeline().addLast(object : ChannelInboundHandlerAdapter() {
@@ -99,16 +99,16 @@ class WebServerNightlyTest {
                 }
             })
 
-            val f = b.connect("localhost", 9999).sync()
-            f.channel().writeAndFlush(DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/pipelining/1000"))
-            f.channel().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
-            f.channel().writeAndFlush(DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/pipelining/500"))
-            f.channel().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
-            f.channel().writeAndFlush(DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/pipelining/10"))
-            f.channel().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+            val future = bootstrap.connect("localhost", 9999).sync()
+            future.channel().writeAndFlush(DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/pipelining/1000"))
+            future.channel().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+            future.channel().writeAndFlush(DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/pipelining/500"))
+            future.channel().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+            future.channel().writeAndFlush(DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/pipelining/10"))
+            future.channel().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
 
             // Wait until the connection is closed.
-            f.channel().closeFuture().sync()
+            future.channel().closeFuture().sync()
 
         } finally {
             workerGroup.shutdownGracefully()
