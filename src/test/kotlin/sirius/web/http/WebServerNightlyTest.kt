@@ -62,7 +62,7 @@ class WebServerNightlyTest {
 
     private fun countBytesInStream(input: InputStream): Int {
         var counter = 0
-        var count = 0
+        var count: Int
         val buffer = ByteArray(8192)
         while ((input.read(buffer).also { count = it }) > 0) {
             counter += count
