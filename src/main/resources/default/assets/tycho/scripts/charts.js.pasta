@@ -394,7 +394,26 @@ function barChart(selector, labels, datasets) {
  * @param data array of numeric values to use for the chart
  */
 function dougnutChart(selector, labels, data) {
+    console.warn('dougnutChart is deprecated, use doughnutChart instead');
+    doughnutChart(selector, labels, data, {
+        maintainAspectRatio: false
+    });
+}
+
+/**@
+ * Renders a doughnut chart.
+ * @param selector the selector to determine the target canvas, or a DOM element
+ * @param {string[]} labels the labels to use for the chart
+ * @param {number[]} data the numeric values to use for the chart
+ * @param {object?} options the options to use for the chart, can be null
+ */
+function doughnutChart(selector, labels, data, options) {
     const _canvas = sirius.querySelector(selector);
+
+    // these default options will later be extended with the options passed by the invoker
+    const defaultOptions = {
+        startAngle: -0.55 * Math.PI,
+    };
 
     new Chart(_canvas, {
         data: {
@@ -405,29 +424,28 @@ function dougnutChart(selector, labels, data) {
             labels: labels
         },
         type: 'doughnut',
-        options: {
-            startAngle: -0.55 * Math.PI,
-            maintainAspectRatio: false
-        }
+        options: Object.assign(defaultOptions, options)
     });
 }
 
 /**@
  * Renders a polar area chart.
  * @param selector the selector to determine the target canvas. Also, the canvas can be passed in as DOM element
- * @param labels an array of labels to use for the chart
- * @param data array of numeric values to use for the chart
- * @param dataUnit the data unit to display
+ * @param {string[]} labels the labels to use for the chart
+ * @param {number[]} data the numeric values to use for the chart
+ * @param {string?} dataUnit the data unit to display, can be null
+ * @param {object?} options the options to use for the chart, can be null
  */
-function polarAreaChart(selector, labels, data, dataUnit) {
+function polarAreaChart(selector, labels, data, dataUnit, options) {
     const _canvas = sirius.querySelector(selector);
 
-    const options = {
+    // these default options will later be extended with the options passed by the invoker
+    const defaultOptions = {
         startAngle: -0.55 * Math.PI
     };
 
     if (dataUnit) {
-        options.scales = {
+        defaultOptions.scales = {
             r: {
                 ticks: {
                     callback: function (value) {
@@ -447,6 +465,6 @@ function polarAreaChart(selector, labels, data, dataUnit) {
             labels: labels
         },
         type: 'polarArea',
-        options: options
+        options: Object.assign(defaultOptions, options)
     });
 }
