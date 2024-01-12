@@ -394,7 +394,26 @@ function barChart(selector, labels, datasets) {
  * @param data array of numeric values to use for the chart
  */
 function dougnutChart(selector, labels, data) {
+    console.warn('dougnutChart is deprecated, use doughnutChart instead');
+    doughnutChart(selector, labels, data, {
+        maintainAspectRatio: false
+    });
+}
+
+/**@
+ * Renders a doughnut chart.
+ * @param selector the selector to determine the target canvas, or a DOM element
+ * @param {string[]} labels the labels to use for the chart
+ * @param {number[]} data the numeric values to use for the chart
+ * @param {object?} options the options to use for the chart, can be null
+ */
+function doughnutChart(selector, labels, data, options) {
     const _canvas = sirius.querySelector(selector);
+
+    // these default options will later be extended with the options passed by the invoker
+    const defaultOptions = {
+        startAngle: -0.55 * Math.PI,
+    };
 
     new Chart(_canvas, {
         data: {
@@ -405,10 +424,7 @@ function dougnutChart(selector, labels, data) {
             labels: labels
         },
         type: 'doughnut',
-        options: {
-            startAngle: -0.55 * Math.PI,
-            maintainAspectRatio: false
-        }
+        options: Object.assign(defaultOptions, options)
     });
 }
 
