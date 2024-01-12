@@ -410,6 +410,7 @@ public class WebContext implements SubContext {
      *
      * @return the web context for the current thread
      */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public static WebContext getCurrent() {
         return CallContext.getCurrent().getOrCreateSubContext(WebContext.class);
     }
