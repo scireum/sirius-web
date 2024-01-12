@@ -439,6 +439,7 @@ function doughnutChart(selector, labels, data, options) {
 function polarAreaChart(selector, labels, data, dataUnit, options) {
     const _canvas = sirius.querySelector(selector);
 
+    // these default options will later be extended with the options passed by the invoker
     const defaultOptions = {
         startAngle: -0.55 * Math.PI
     };
