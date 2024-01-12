@@ -418,16 +418,17 @@ function dougnutChart(selector, labels, data) {
  * @param labels an array of labels to use for the chart
  * @param data array of numeric values to use for the chart
  * @param dataUnit the data unit to display
+ * @param {object?} options the options to use for the chart, can be null
  */
-function polarAreaChart(selector, labels, data, dataUnit) {
+function polarAreaChart(selector, labels, data, dataUnit, options) {
     const _canvas = sirius.querySelector(selector);
 
-    const options = {
+    const defaultOptions = {
         startAngle: -0.55 * Math.PI
     };
 
     if (dataUnit) {
-        options.scales = {
+        defaultOptions.scales = {
             r: {
                 ticks: {
                     callback: function (value) {
@@ -447,6 +448,6 @@ function polarAreaChart(selector, labels, data, dataUnit) {
             labels: labels
         },
         type: 'polarArea',
-        options: options
+        options: Object.assign(defaultOptions, options)
     });
 }
