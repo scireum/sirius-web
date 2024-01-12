@@ -415,9 +415,9 @@ function dougnutChart(selector, labels, data) {
 /**@
  * Renders a polar area chart.
  * @param selector the selector to determine the target canvas. Also, the canvas can be passed in as DOM element
- * @param labels an array of labels to use for the chart
- * @param data array of numeric values to use for the chart
- * @param dataUnit the data unit to display
+ * @param {string[]} labels the labels to use for the chart
+ * @param {number[]} data the numeric values to use for the chart
+ * @param {string?} dataUnit the data unit to display, can be null
  * @param {object?} options the options to use for the chart, can be null
  */
 function polarAreaChart(selector, labels, data, dataUnit, options) {
