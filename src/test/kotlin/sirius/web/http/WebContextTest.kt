@@ -12,12 +12,13 @@ import io.netty.handler.codec.http.HttpHeaderNames
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
-import org.junit.runner.RunWith
+import org.junit.jupiter.params.provider.CsvSource
 import sirius.kernel.SiriusExtension
 import java.net.HttpURLConnection
 import java.net.URI
-import kotlin.test.*
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @ExtendWith(SiriusExtension::class)
 class WebContextTest {
@@ -72,18 +73,20 @@ class WebContextTest {
         assertTrue { request.get("a").isFilled }
     }
 
-
-    @ParameterizedTest
+    @CsvSource(
+        delimiter = '|', useHeadersInDisplayName = true, textBlock = """
+        header                      | lang
+        de, en;q=0.8                | de
+        en, de;q=0.8                | en
+        xx, de;q=0.8, en-gb;q=0.7   | de
+        xx, de;q=0.5, en-gb;q=0.7   | en"""
+    )
+    @ParameterizedTest()
     fun `parseAcceptLanguage works as expected`(header: String, lang: String) {
         assertEquals(
             lang, TestRequest.GET("/test?a=a").addHeader(HttpHeaderNames.ACCEPT_LANGUAGE, header).fetchLanguage()
                 .orElse(null)
         )
-        assertContains(lang,header)
-        assertContains("de","de, en;q=0.8")
-        assertContains("en","en, de;q=0.8")
-        assertContains("de","xx, de;q=0.8, en-gb;q=0.7")
-        assertContains("en","xx, de;q=0.5, en-gb;q=0.7")
     }
 
     @Test
@@ -116,13 +119,13 @@ class WebContextTest {
     @Test
     fun `setSessionValue works as expected`() {
 
-        val c = URI("http://localhost:9999/test/session-test").toURL().openConnection() as HttpURLConnection
-        c.setRequestMethod("GET")
-        c.connect()
+        val connection = URI("http://localhost:9999/test/session-test").toURL().openConnection() as HttpURLConnection
+        connection.setRequestMethod("GET")
+        connection.connect()
 
-        assertEquals(200, c.responseCode)
-        assertTrue { c.headerFields[HttpHeaderNames.SET_COOKIE.toString()]!![0].contains("test1=test") }
-        assertFalse { c.headerFields[HttpHeaderNames.SET_COOKIE.toString()]!![0].contains("test2=") }
+        assertEquals(200, connection.responseCode)
+        assertTrue { connection.headerFields[HttpHeaderNames.SET_COOKIE.toString()]!![0].contains("test1=test") }
+        assertFalse { connection.headerFields[HttpHeaderNames.SET_COOKIE.toString()]!![0].contains("test2=") }
 
     }
 }
