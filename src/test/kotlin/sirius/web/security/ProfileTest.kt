@@ -8,45 +8,72 @@
 
 package sirius.web.security
 
-import sirius.kernel.BaseSpecification
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.extension.ExtendWith
 import sirius.kernel.Sirius
+import sirius.kernel.SiriusExtension
 import sirius.kernel.commons.Strings
+import kotlin.test.assertEquals
 
-class ProfileSpec extends BaseSpecification {
+@ExtendWith(SiriusExtension::class)
+class ProfileTest {
 
-    def "profile cascading is invalid when cascading to lower priority"() {
-        when:
-        Profile.compile(Sirius.getSettings().getExtension("security.profiles",
-            "test-cascade-to-target-with-lower-priority"))
-            .validate()
-        then:
-        def e = thrown(IllegalStateException)
-        e.getMessage() == createErrorMessage("test-cascade-to-target-with-lower-priority", "cascade-target")
+    @Test
+    fun `profile cascading is invalid when cascading to lower priority`() {
+
+        try {
+            Profile.compile(
+                Sirius.getSettings().getExtension(
+                    "security.profiles",
+                    "test-cascade-to-target-with-lower-priority"
+                )
+            )
+                .validate()
+        } catch (exception: IllegalStateException) {
+            assertEquals(
+                createErrorMessage("test-cascade-to-target-with-lower-priority", "cascade-target"),
+                exception.message
+            )
+        }
     }
 
-    def "profile cascading is invalid when cascading to equal priority"() {
-        when:
-        Profile.compile(Sirius.getSettings().getExtension("security.profiles",
-            "test-cascade-to-target-with-equal-priority"))
-            .validate()
-        then:
-        def e = thrown(IllegalStateException)
-        e.getMessage() == createErrorMessage("test-cascade-to-target-with-equal-priority", "cascade-target")
+    @Test
+    fun `profile cascading is invalid when cascading to equal priority`() {
+        try {
+            Profile.compile(
+                Sirius.getSettings().getExtension(
+                    "security.profiles",
+                    "test-cascade-to-target-with-equal-priority"
+                )
+            )
+                .validate()
+        } catch (exception: IllegalStateException) {
+            assertEquals(
+                createErrorMessage("test-cascade-to-target-with-equal-priority", "cascade-target"),
+                exception.message
+            )
+        }
     }
 
-    def "profile cascading is valid when cascading to higher priority"() {
-        when:
-        Profile.compile(Sirius.getSettings().getExtension("security.profiles",
-            "test-cascade-to-target-with-higher-priority"))
-            .validate()
-        then:
-        noExceptionThrown()
+    @Test
+    fun `profile cascading is valid when cascading to higher priority`() {
+        assertDoesNotThrow {
+            Profile.compile(
+                Sirius.getSettings().getExtension(
+                    "security.profiles",
+                    "test-cascade-to-target-with-higher-priority"
+                )
+            )
+                .validate()
+        }
     }
 
-    def createErrorMessage(profile1, profile2) {
+    private fun createErrorMessage(profile1: String, profile2: String): String {
         return Strings.apply(
             "Profile '%s' refers to a profile which is applied " +
                     "earlier than itself ('%s'). Therefore the profiles will not be resolved completely. Fix " +
-                    "this by adding or changing priorities.", profile1, profile2)
+                    "this by adding or changing priorities.", profile1, profile2
+        )
     }
 }
