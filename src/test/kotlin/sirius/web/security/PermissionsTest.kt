@@ -8,68 +8,88 @@
 
 package sirius.web.security
 
-import sirius.kernel.BaseSpecification
-
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
+import sirius.kernel.SiriusExtension
 import java.util.function.Predicate
+import java.util.stream.Stream
+import kotlin.test.assertContains
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 
-class PermissionsSpec extends BaseSpecification {
+@ExtendWith(SiriusExtension::class)
+class PermissionsTest {
+    @Test
+    fun `applyProfiles keeps original roles`() {
 
-    def "applyProfiles keeps original roles"() {
-        when:
-        def roles = new HashSet<String>(["A", "B", "C"])
-        and:
+        val roles = hashSetOf("A", "B", "C")
+
         Permissions.applyProfiles(roles)
-        then:
-        roles.contains("A")
-        and:
-        roles.contains("B")
-        and:
-        roles.contains("C")
+
+        assertContains(roles, "A")
+        assertContains(roles, "B")
+        assertContains(roles, "C")
     }
 
-    def "applyProfiles expands known profiles"() {
-        when:
-        def roles = new HashSet<String>(["test-profile"])
-        and:
+    @Test
+    fun `applyProfiles expands known profiles`() {
+
+        val roles = hashSetOf("test-profile")
+
         Permissions.applyProfiles(roles)
-        then:
-        roles.contains("test-A")
-        and:
-        !roles.contains("test-B")
+
+        assertContains(roles, "test-A")
+        assertFalse { roles.contains("test-b") }
     }
 
-    def "applyProfiles respects given exclusions profiles"() {
-        when:
-        def roles = new HashSet<String>(["test-profile", "test-excluded-profile"])
-        def excludedRoles = new HashSet<String>(["test-excluded-profile"])
-        and:
+    @Test
+    fun `applyProfiles respects given exclusions profiles`() {
+
+        val roles = hashSetOf("test-profile", "test-excluded-profile")
+        val excludedRoles = hashSetOf("test-excluded-profile")
+
         Permissions.applyProfiles(roles, excludedRoles)
         excludedRoles.forEach { role -> roles.remove(role) }
-        then:
-        !roles.contains("test-excluded")
-        !roles.contains("test-excluded-profile")
-        and:
-        roles.contains("test-A")
-        !roles.contains("test-B")
+
+        assertFalse { roles.contains("test-excluded") }
+
+        assertFalse { roles.contains("test-excluded-profile") }
+
+        assertContains(roles, "test-A")
+        assertFalse { roles.contains("test-B") }
     }
 
-    def "test hasPermission"() {
-        expect:
-        Permissions.hasPermission(permissionExpression, hasSinglePermissionPredicate) == expectedResult
-        where:
-        permissionExpression | hasSinglePermissionPredicate                                           | expectedResult
-        "a"                  | { permission -> ["a", "b", "c"].contains(permission) } as Predicate    | true
-        "!a"                 | { permission -> ["a", "b", "c"].contains(permission) } as Predicate    | false
-        "d"                  | { permission -> ["a", "b", "c"].contains(permission) } as Predicate    | false
-        "!d"                 | { permission -> ["a", "b", "c"].contains(permission) } as Predicate    | true
-        "a+c"                | { permission -> ["a", "b", "c"].contains(permission) } as Predicate | true
-        "a+d"                | { permission -> ["a", "b", "c"].contains(permission) } as Predicate | false
-        "a,d"                | { permission -> ["a", "b", "c"].contains(permission) } as Predicate | true
-        "d,e"                | { permission -> ["a", "b", "c"].contains(permission) } as Predicate | false
-        "a"                  | null                                                                   | false
-        "!a"                 | null                                                                   | true
-        "enabled"            | null                                                                   | true
-        "!enabled"           | null                                                                   | false
-        "enabled+a"          | { permission -> ("a" == permission) }                                  | true
+    @ParameterizedTest
+    @MethodSource("provideParameters")
+    fun `test hasPermission`(
+        permissionExpression: String,
+        hasSinglePermissionPredicate: ((String)->Boolean)?,
+        expectedResult: Boolean
+    ) {
+        assertEquals(expectedResult, Permissions.hasPermission(permissionExpression, hasSinglePermissionPredicate))
+    }
+
+    companion object{
+        @JvmStatic
+        fun provideParameters(): Stream<Arguments> {
+            return Stream.of(
+                Arguments.of("a",{ permission : String -> listOf("a", "b", "c").contains(permission) },true),
+                Arguments.of("!a",{ permission : String -> listOf("a", "b", "c").contains(permission) },false),
+                Arguments.of("d",{ permission : String -> listOf("a", "b", "c").contains(permission) } ,false),
+                Arguments.of("!d",{ permission : String -> listOf("a", "b", "c").contains(permission) },true),
+                Arguments.of("a+c",{ permission : String -> listOf("a", "b", "c").contains(permission) } ,true),
+                Arguments.of("a+d",{ permission : String -> listOf("a", "b", "c").contains(permission) } ,false),
+                Arguments.of("a,d",{ permission : String -> listOf("a", "b", "c").contains(permission) } ,true),
+                Arguments.of("d,e",{ permission : String -> listOf("a", "b", "c").contains(permission) } ,false),
+                Arguments.of("a",null,false),
+                Arguments.of("!a",null,true),
+                Arguments.of("enabled",null,true),
+                Arguments.of("!enabled",null,false),
+                Arguments.of("enabled+a",{ permission : String -> "a"==permission } ,true)
+            )
+        }
     }
 }
