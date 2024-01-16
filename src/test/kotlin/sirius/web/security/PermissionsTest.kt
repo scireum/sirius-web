@@ -14,7 +14,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import sirius.kernel.SiriusExtension
-import java.util.function.Predicate
 import java.util.stream.Stream
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -66,29 +65,29 @@ class PermissionsTest {
     @MethodSource("provideParameters")
     fun `test hasPermission`(
         permissionExpression: String,
-        hasSinglePermissionPredicate: ((String)->Boolean)?,
+        hasSinglePermissionPredicate: ((String) -> Boolean)?,
         expectedResult: Boolean
     ) {
         assertEquals(expectedResult, Permissions.hasPermission(permissionExpression, hasSinglePermissionPredicate))
     }
 
-    companion object{
+    companion object {
         @JvmStatic
         fun provideParameters(): Stream<Arguments> {
             return Stream.of(
-                Arguments.of("a",{ permission : String -> listOf("a", "b", "c").contains(permission) },true),
-                Arguments.of("!a",{ permission : String -> listOf("a", "b", "c").contains(permission) },false),
-                Arguments.of("d",{ permission : String -> listOf("a", "b", "c").contains(permission) } ,false),
-                Arguments.of("!d",{ permission : String -> listOf("a", "b", "c").contains(permission) },true),
-                Arguments.of("a+c",{ permission : String -> listOf("a", "b", "c").contains(permission) } ,true),
-                Arguments.of("a+d",{ permission : String -> listOf("a", "b", "c").contains(permission) } ,false),
-                Arguments.of("a,d",{ permission : String -> listOf("a", "b", "c").contains(permission) } ,true),
-                Arguments.of("d,e",{ permission : String -> listOf("a", "b", "c").contains(permission) } ,false),
-                Arguments.of("a",null,false),
-                Arguments.of("!a",null,true),
-                Arguments.of("enabled",null,true),
-                Arguments.of("!enabled",null,false),
-                Arguments.of("enabled+a",{ permission : String -> "a"==permission } ,true)
+                Arguments.of("a", { permission: String -> listOf("a", "b", "c").contains(permission) }, true),
+                Arguments.of("!a", { permission: String -> listOf("a", "b", "c").contains(permission) }, false),
+                Arguments.of("d", { permission: String -> listOf("a", "b", "c").contains(permission) }, false),
+                Arguments.of("!d", { permission: String -> listOf("a", "b", "c").contains(permission) }, true),
+                Arguments.of("a+c", { permission: String -> listOf("a", "b", "c").contains(permission) }, true),
+                Arguments.of("a+d", { permission: String -> listOf("a", "b", "c").contains(permission) }, false),
+                Arguments.of("a,d", { permission: String -> listOf("a", "b", "c").contains(permission) }, true),
+                Arguments.of("d,e", { permission: String -> listOf("a", "b", "c").contains(permission) }, false),
+                Arguments.of("a", null, false),
+                Arguments.of("!a", null, true),
+                Arguments.of("enabled", null, true),
+                Arguments.of("!enabled", null, false),
+                Arguments.of("enabled+a", { permission: String -> "a" == permission }, true)
             )
         }
     }
