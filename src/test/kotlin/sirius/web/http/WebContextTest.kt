@@ -9,110 +9,120 @@
 package sirius.web.http
 
 import io.netty.handler.codec.http.HttpHeaderNames
-import sirius.kernel.BaseSpecification
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
+import org.junit.runner.RunWith
+import sirius.kernel.SiriusExtension
+import java.net.HttpURLConnection
+import java.net.URI
+import kotlin.test.*
 
-class WebContextSpec extends BaseSpecification {
+@ExtendWith(SiriusExtension::class)
+class WebContextTest {
 
-    def "getQueryString returns the full query string"() {
-        when:
-        TestRequest r = TestRequest.GET("/test?a=a&b=b")
-        then:
-        r.getParameter("a") == "a"
-        and:
-        r.getParameter("b") == "b"
-        and:
-        r.getQueryString() == "a=a&b=b"
+    @Test
+    fun `getQueryString returns the full query string`() {
+
+        val request = TestRequest.GET("/test?a=a&b=b")
+
+        assertEquals("a", request.getParameter("a"))
+        assertEquals("b", request.getParameter("b"))
+        assertEquals("a=a&b=b", request.queryString)
     }
 
-    def "getQueryString returns an empty string when no query string is present"() {
-        when:
-        TestRequest r = TestRequest.GET("/test")
-        then:
-        r.getQueryString() == ""
+    @Test
+    fun `getQueryString returns an empty string when no query string is present`() {
+
+        val request = TestRequest.GET("/test")
+
+        assertEquals("", request.queryString)
     }
 
-    def "getQueryString returns an empty string when an empty query string is present"() {
-        when:
-        TestRequest r = TestRequest.GET("/test?")
-        then:
-        r.getQueryString() == ""
+    @Test
+    fun `getQueryString returns an empty string when an empty query string is present`() {
+
+        val request = TestRequest.GET("/test?")
+
+        assertEquals("", request.queryString)
     }
 
-    def "withCustomURI rewrites the uri correctly and removes the existing query string"() {
-        when:
-        TestRequest r = TestRequest.GET("/test?a=a")
-        and:
-        r.withCustomURI("/test%2Ftest?b=b")
-        then:
-        r.getRawRequestedURI() == "/test%2Ftest"
-        and:
-        r.getRequestedURI() == "/test/test"
-        and:
-        !r.get("a").isFilled()
-        and:
-        r.get("b").isFilled()
+    @Test
+    fun `withCustomURI rewrites the uri correctly and removes the existing query string`() {
+
+        val request = TestRequest.GET("/test?a=a")
+
+        request.withCustomURI("/test%2Ftest?b=b")
+
+        assertEquals("/test%2Ftest", request.rawRequestedURI)
+        assertEquals("/test/test", request.requestedURI)
+        assertFalse { request.get("a").isFilled }
+        assertTrue { request.get("b").isFilled }
     }
 
-    def "withCustomPath rewrites the path correctly without removing the existing query string"() {
-        when:
-        TestRequest r = TestRequest.GET("/test?a=a")
-        and:
-        r.withCustomPath("/test/test")
-        then:
-        r.getRawRequestedURI() == "/test/test"
-        and:
-        r.getRequestedURI() == "/test/test"
-        and:
-        r.get("a").isFilled()
+    @Test
+    fun `withCustomPath rewrites the path correctly without removing the existing query string`() {
+
+        val request = TestRequest.GET("/test?a=a")
+
+        request.withCustomPath("/test/test")
+        assertEquals("/test/test", request.rawRequestedURI)
+        assertEquals("/test/test", request.requestedURI)
+        assertTrue { request.get("a").isFilled }
     }
 
 
-    def "parseAcceptLanguage works as expected"(header, lang) {
-        expect:
-        TestRequest.GET("/test?a=a").addHeader(HttpHeaderNames.ACCEPT_LANGUAGE, header).fetchLanguage().orElse(null) == lang
-        where:
-        header | lang
-        "de, en;q=0.8" | "de"
-        "en, de;q=0.8" | "en"
-        "xx, de;q=0.8, en-gb;q=0.7" | "de"
-        "xx, de;q=0.5, en-gb;q=0.7" | "en"
+    @ParameterizedTest
+    fun `parseAcceptLanguage works as expected`(header: String, lang: String) {
+        assertEquals(
+            lang, TestRequest.GET("/test?a=a").addHeader(HttpHeaderNames.ACCEPT_LANGUAGE, header).fetchLanguage()
+                .orElse(null)
+        )
+        assertContains(lang,header)
+        assertContains("de","de, en;q=0.8")
+        assertContains("en","en, de;q=0.8")
+        assertContains("de","xx, de;q=0.8, en-gb;q=0.7")
+        assertContains("en","xx, de;q=0.5, en-gb;q=0.7")
     }
 
-    def "getCompletionPromise() works if a promise has been installed"() {
-        given:
+    @Test
+    fun `getCompletionPromise() works if a promise has been installed`() {
         CompletionPromiseTestController.lastPromisedReturnCode = 0
-        when:
-        HttpURLConnection c = new URL("http://localhost:9999/test/completion-promise").openConnection()
-        c.setRequestMethod("GET")
-        c.connect()
-        synchronized (CompletionPromiseTestController.SIGNAL) {
-            CompletionPromiseTestController.SIGNAL.wait(1000)
+
+        val connection =
+            URI("http://localhost:9999/test/completion-promise").toURL().openConnection() as HttpURLConnection
+        connection.setRequestMethod("GET")
+        connection.connect()
+        synchronized(CompletionPromiseTestController.SIGNAL) {
+            CompletionPromiseTestController.SIGNAL.let { Thread.sleep(1000) }
         }
-        then:
-        c.getResponseCode() == 200
-        and:
-        CompletionPromiseTestController.lastPromisedReturnCode == 200
+
+        assertEquals(200, connection.responseCode)
+        assertEquals(200, CompletionPromiseTestController.lastPromisedReturnCode)
     }
 
-    def "getCompletionPromise() works if invoked after completion"() {
-        when:
-        def request = TestRequest.GET("/test?a=a")
-        and:
-        def result = request.execute()
-        then:
-        request.getCompletionPromise().isSuccessful()
+    @Test
+    fun `getCompletionPromise() works if invoked after completion`() {
+
+        val request = TestRequest.GET("/test?a=a")
+
+        val result = request.execute()
+
+        assertTrue { request.getCompletionPromise().isSuccessful }
+
     }
 
-    def "setSessionValue works as expected"() {
-        when:
-        HttpURLConnection c = new URL("http://localhost:9999/test/session-test").openConnection()
+    @Test
+    fun `setSessionValue works as expected`() {
+
+        val c = URI("http://localhost:9999/test/session-test").toURL().openConnection() as HttpURLConnection
         c.setRequestMethod("GET")
         c.connect()
-        then:
-        c.getResponseCode() == 200
-        and:
-        c.getHeaderFields().get(HttpHeaderNames.SET_COOKIE.toString()).get(0).contains("test1=test")
-        and:
-        !c.getHeaderFields().get(HttpHeaderNames.SET_COOKIE.toString()).get(0).contains("test2=")
+
+        assertEquals(200, c.responseCode)
+        assertTrue { c.headerFields[HttpHeaderNames.SET_COOKIE.toString()]!![0].contains("test1=test") }
+        assertFalse { c.headerFields[HttpHeaderNames.SET_COOKIE.toString()]!![0].contains("test2=") }
+
     }
 }
