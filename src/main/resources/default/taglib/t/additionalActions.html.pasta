@@ -16,7 +16,7 @@
     <div class="dropdown @class">
         <button class="h-100 btn btn-link text-nowrap"
                 style="z-index: 3; position: relative"
-                data-toggle="dropdown"
+                data-bs-toggle="dropdown"
                 aria-haspopup="true"
                 aria-expanded="false">
             <i:if test="isFilled(label)">

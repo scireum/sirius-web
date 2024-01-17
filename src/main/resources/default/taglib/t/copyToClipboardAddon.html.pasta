@@ -4,6 +4,6 @@
 
 
 <span class="input-group-append">
-    <a class="btn btn-outline-secondary copy-input-value-js" data-field-name="@fieldName" data-toggle="tooltip"
+    <a class="btn btn-outline-secondary copy-input-value-js" data-field-name="@fieldName" data-bs-toggle="tooltip"
        title="@copyTitle" data-copied-title="@copiedTitle"><i class="fa-regular fa-clipboard"></i></a>
 </span>
