@@ -1,5 +1,6 @@
 // Initializes all Bootstrap tooltips...
-sirius.ready(function () {
-    // This needs to use jQuery for Bootstrap compatibility reasons...
-    $('[data-bs-toggle="tooltip"]').tooltip();
-})
+sirius.ready(() => {
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(_node => {
+        _node.tooltip = new bootstrap.Tooltip(_node);
+    });
+});
