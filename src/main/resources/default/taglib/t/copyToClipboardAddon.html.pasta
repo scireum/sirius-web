@@ -8,12 +8,10 @@
        default="@i18n('copyToClipboardAddon.html.copied')"/>
 
 
-<span class="input-group-append">
-    <a class="btn btn-outline-secondary copy-input-value-js"
-       data-field-name="@fieldName"
-       data-bs-toggle="tooltip"
-       title="@copyTitle"
-       data-copied-title="@copiedTitle">
-        <i class="fa-regular fa-clipboard"></i>
-    </a>
-</span>
+<a class="btn btn-outline-secondary copy-input-value-js"
+   title="@copyTitle"
+   data-bs-toggle="tooltip"
+   data-ty-field-name="@fieldName"
+   data-ty-copied-title="@copiedTitle">
+    <i class="fa-regular fa-clipboard"></i>
+</a>

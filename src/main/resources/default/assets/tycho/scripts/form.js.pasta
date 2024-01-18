@@ -51,20 +51,20 @@ sirius.ready(function () {
         });
     });
 
-    document.querySelectorAll('.copy-input-value-js').forEach(function (_node) {
-        _node.addEventListener('click', function () {
-            const fieldName = this.dataset.fieldName;
+    document.querySelectorAll('.copy-input-value-js').forEach(_node => {
+        _node.addEventListener('click', () => {
+            const fieldName = _node.dataset.tyFieldName;
             const _input = document.querySelector('input[name="' + fieldName + '"]');
             if (_input == null || _input.tagName !== 'INPUT') {
                 return;
             }
             sirius.copyToClipboard(_input.value);
 
-            const originalTooltipTitle = this.dataset.originalTitle;
-            this.dataset.originalTitle = this.dataset.copiedTitle;
-            $(this).tooltip('show');
+            const originalTooltipTitle = _node.dataset.bsOriginalTitle;
+            _node.dataset.bsOriginalTitle = _node.dataset.tyCopiedTitle;
+            _node.tooltip.show();
             // Reset the tooltip, so it shows the initial title the next time the button is hovered
-            this.dataset.originalTitle = originalTooltipTitle;
+            _node.dataset.bsOriginalTitle = originalTooltipTitle;
         });
 
     });
