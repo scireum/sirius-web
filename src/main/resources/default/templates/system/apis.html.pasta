@@ -18,7 +18,7 @@
                 </div>
                 <i:if test="isFilled(api.getDocumentationUri())">
                     <div class="mt-2">
-                        <a class="card-link" href="@api.getDocumentationUri()"><i class="fa fa-file-alt"></i> Documentation</a>
+                        <a class="card-link" href="@api.getDocumentationUri()"><i class="fa-solid fa-file-alt"></i> Documentation</a>
                     </div>
                 </i:if>
                 <i:block name="footer">

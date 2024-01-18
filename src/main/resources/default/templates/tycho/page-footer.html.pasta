@@ -3,9 +3,9 @@
         <div>
             <i:invoke template="/templates/tycho/page-footer-menu.html.pasta"  />
         </div>
-        <div class="text-right">
+        <div class="text-end">
             <i:extensions target="tycho-page-menu" point="footer-right-start"/>
-            <span class="d-none d-md-inline-block ml-2 pl-2 bl-gray">
+            <span class="d-none d-md-inline-block ms-2 ps-2 bl-gray">
                 <a class="text-muted small cycle-js cursor-pointer" data-cycle="@CallContext.getCurrent().getWatch().elapsedMillis() ms (@const(sirius.kernel.info.Product.getProduct().getDetails()))">
                     @CallContext.getNodeName()
                 </a>

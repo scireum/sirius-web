@@ -13,7 +13,7 @@
         <t:pageHeader title="Tagliatelle">
             <i:block name="actions">
                 <a href="/system/tags/state" class="btn btn-link">
-                    <i class="fa fa-chart-bar"></i> <span class="d-none d-lg-inline-block">Tags State</span>
+                    <i class="fa-solid fa-chart-bar"></i> <span class="d-none d-lg-inline-block">Tags State</span>
                 </a>
             </i:block>
         </t:pageHeader>

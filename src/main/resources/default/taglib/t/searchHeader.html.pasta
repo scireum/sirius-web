@@ -41,7 +41,7 @@
             </div>
             <div class="col flex-grow-0 d-flex flex-row justify-content-end text-nowrap">
                 <i:render name="body"/>
-                <a class="ml-2 btn btn-outline-secondary" href="@page.linkToCurrentPage(baseUrl)">
+                <a class="ms-2 btn btn-outline-secondary" href="@page.linkToCurrentPage(baseUrl)">
                     <i class="fa-solid fa-arrows-rotate"></i>
                 </a>
             </div>
