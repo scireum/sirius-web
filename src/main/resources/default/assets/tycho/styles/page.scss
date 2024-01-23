@@ -61,19 +61,20 @@ nav.navbar {
   margin: 0;
 
   li:first-of-type {
-    padding-left: 0px;
+    padding-left: 0;
 
     a {
-      padding-left: 0px;
+      padding-left: 0;
     }
   }
 
   li {
-    padding-left: 8px;
+    padding-left: 0.5rem;
+    display: flex;
   }
 
   a {
-    padding-left: 8px;
+    padding-left: 0.5rem;
     color: $grayLight;
   }
 
