@@ -9,50 +9,50 @@
 package sirius.pasta.noodle.compiler
 
 
-import sirius.kernel.BaseSpecification
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import sirius.kernel.Setup
+import sirius.kernel.SiriusExtension
 import sirius.pasta.noodle.compiler.ir.MethodCall
 import sirius.pasta.noodle.compiler.ir.Node
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
-class ParserTest extends BaseSpecification {
+/**
+ * Tests the Noodle [Parser].
+ */
+@ExtendWith(SiriusExtension::class)
+class ParserTest {
 
-    Node parse(String input) {
-        def compilationContext = new CompilationContext(SourceCodeInfo.forInlineCode(input))
-        return new Parser(compilationContext, compilationContext.getSourceCodeInfo().createReader()).parseExpression(
-        true).reduce(compilationContext)
+    private fun parse(input: String): Node {
+        val compilationContext = CompilationContext(SourceCodeInfo.forInlineCode(input))
+        return Parser(compilationContext, compilationContext.sourceCodeInfo.createReader()).parseExpression(
+                true
+        ).reduce(compilationContext)
     }
 
-    def "comments work"() {
-        expect:
-        parse("1 + 3 // - 5").getConstantValue() == 4
-        and:
-        parse("7 /*+ 3 */ - 3").getConstantValue() == 4
+    @Test
+    fun `Comments work`() {
+        assertEquals(4, parse("1 + 3 // - 5").constantValue)
+        assertEquals(4, parse("7 /*+ 3 */ - 3").constantValue)
     }
 
-    def "constant folding works"() {
-        expect:
-        parse("1 + 3").getConstantValue() == 4
-        and:
-        parse("1 + 3 * 4").getConstantValue() == 13
-        and:
-        parse("(1 + 3) % 2").getConstantValue() == 0
-        and:
-        parse("'1' + '3'").getConstantValue() == "13"
-        and:
-        parse("7 - 4").getConstantValue() == 3
+    @Test
+    fun `Constant folding works`() {
+        assertEquals(4, parse("1 + 3").constantValue)
+        assertEquals(13, parse("1 + 3 * 4").constantValue)
+        assertEquals(0, parse("(1 + 3) % 2").constantValue)
+        assertEquals("13", parse("'1' + '3'").constantValue)
+        assertEquals(3, parse("7 - 4").constantValue)
     }
 
-    def "parsing a class literal works"() {
-        expect:
-        parse("java.lang.System.class").getConstantValue() == System.class
-        and:
-                parse("Map.Entry.class").getConstantValue() == Map.Entry.class
-        and:
-                parse("sirius.kernel.Setup.Mode.DEVELOP").getConstantValue() == Setup.Mode.DEVELOP
-        and:
-        parse("java.lang.System.out").getConstantValue() == System.out
-        and:
-        parse("java.lang.System.out.println('Hello World')") instanceof MethodCall
+    @Test
+    fun `Parsing a class literal works`() {
+        assertEquals(System::class.java, parse("java.lang.System.class").constantValue)
+        assertEquals(Map.Entry::class.java, parse("Map.Entry.class").constantValue)
+        assertEquals(Setup.Mode.DEVELOP, parse("sirius.kernel.Setup.Mode.DEVELOP").constantValue)
+        assertEquals(System.out, parse("java.lang.System.out").constantValue)
+        assertTrue { parse("java.lang.System.out.println('Hello World')") is MethodCall }
     }
 
 }
