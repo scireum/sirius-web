@@ -9,7 +9,9 @@
 package sirius.pasta.noodle.sandbox
 
 
-import sirius.kernel.BaseSpecification
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import sirius.kernel.SiriusExtension
 import sirius.kernel.async.CallContext
 import sirius.kernel.commons.Tuple
 import sirius.kernel.di.std.Part
@@ -20,127 +22,173 @@ import sirius.pasta.tagliatelle.compiler.TemplateCompilationContext
 import sirius.pasta.tagliatelle.compiler.TemplateCompiler
 import sirius.web.http.WebContext
 import sirius.web.security.ScopeInfo
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
-class SandboxSpec extends BaseSpecification {
+/**
+ * Tests the Noodle [Sandbox].
+ */
+@ExtendWith(SiriusExtension::class)
+class SandboxTest {
 
-    @Part
-    private static Sandbox sandbox;
-
-    def "methods with GRANTED annotation are allowed"() {
-        expect:
-        sandbox.canInvoke(SandboxExample.class.getMethod("grantedMethod"))
+    @Test
+    fun `Methods with GRANTED annotation are allowed`() {
+        assertTrue {
+            sandbox.canInvoke(SandboxExample::class.java.getMethod("grantedMethod"))
+        }
     }
 
-    def "methods without annotation are forbidden"() {
-        expect:
-        !sandbox.canInvoke(SandboxExample.class.getMethod("noAnnotation"))
-        and:
-        !sandbox.canInvoke(SandboxExample.class.getMethod("noAnnotation2"))
+    @Test
+    fun `Methods without annotation are forbidden`() {
+        assertFalse {
+            sandbox.canInvoke(SandboxExample::class.java.getMethod("noAnnotation"))
+        }
+        assertFalse {
+            sandbox.canInvoke(SandboxExample::class.java.getMethod("noAnnotation2"))
+        }
     }
 
-    def "overridden methods with GRANTED annotation are allowed"() {
-        expect:
-        sandbox.canInvoke(SandboxExample2.class.getMethod("grantedMethod"))
+    @Test
+    fun `Overridden methods with GRANTED annotation are allowed`() {
+        assertTrue {
+            sandbox.canInvoke(SandboxExample2::class.java.getMethod("grantedMethod"))
+        }
     }
 
-    def "overridden methods without annotation are forbidden"() {
-        expect:
-        !sandbox.canInvoke(SandboxExample2.class.getMethod("noAnnotation"))
+    @Test
+    fun `Overridden methods without annotation are forbidden`() {
+        assertFalse {
+            sandbox.canInvoke(SandboxExample2::class.java.getMethod("noAnnotation"))
+        }
     }
 
-    def "methods without annotation overridden with GRANTED annotations are allowed"() {
-        expect:
-        sandbox.canInvoke(SandboxExample2.class.getMethod("noAnnotation2"))
+    @Test
+    fun `Methods without annotation overridden with GRANTED annotations are allowed`() {
+        assertTrue {
+            sandbox.canInvoke(SandboxExample2::class.java.getMethod("noAnnotation2"))
+        }
     }
 
-    def "methods of classes with GRANTED annotation are allowed"() {
-        expect:
-        sandbox.canInvoke(SandboxExample3.class.getMethod("noAnnotation"))
+    @Test
+    fun `Methods of classes with GRANTED annotation are allowed`() {
+        assertTrue {
+            sandbox.canInvoke(SandboxExample3::class.java.getMethod("noAnnotation"))
+        }
     }
 
-    def "methods with REJECTED annotation are forbidden"() {
-        expect:
-        !sandbox.canInvoke(SandboxExample3.class.getMethod("noAnnotation2"))
+    @Test
+    fun `Methods with REJECTED annotation are forbidden`() {
+        assertFalse {
+            sandbox.canInvoke(SandboxExample3::class.java.getMethod("noAnnotation2"))
+        }
     }
 
-    def "methods whitelisted via config are allowed"() {
-        expect:
-        sandbox.canInvoke(CallContext.class.getMethod("getLanguage"))
-        and:
-        sandbox.canInvoke(Tuple.class.getMethod("getSecond"))
+    @Test
+    fun `Methods whitelisted via config are allowed`() {
+        assertTrue {
+            sandbox.canInvoke(CallContext::class.java.getMethod("getLanguage"))
+        }
+        assertTrue {
+            sandbox.canInvoke(Tuple::class.java.getMethod("getSecond"))
+        }
     }
 
-    def "methods blocked via config are forbidden"() {
-        expect:
-        !sandbox.canInvoke(Tuple.class.getMethod("setSecond", Object))
+    @Test
+    fun `Methods blocked via config are forbidden`() {
+        assertFalse {
+            sandbox.canInvoke(Tuple::class.java.getMethod("setSecond", Object::class.java))
+        }
     }
 
-    def "overridden methods whitelisted via config are allowed"() {
-        expect:
-        sandbox.canInvoke(WebContext.class.getMethod("toString"))
-        and:
-        sandbox.canInvoke(ScopeInfo.class.getMethod("is", Class))
-        and:
-        sandbox.canInvoke(SandboxExample.class.getMethod("getName"))
-        and:
-        sandbox.canInvoke(SandboxExample2.class.getMethod("getName"))
-        and:
-        sandbox.canInvoke(SandboxExample3.class.getMethod("getName"))
+    @Test
+    fun `Overridden methods whitelisted via config are allowed`() {
+        assertTrue {
+            sandbox.canInvoke(WebContext::class.java.getMethod("toString"))
+        }
+        assertTrue {
+            sandbox.canInvoke(ScopeInfo::class.java.getMethod("is", Class::class.java))
+        }
+        assertTrue {
+            sandbox.canInvoke(SandboxExample::class.java.getMethod("getName"))
+        }
+        assertTrue {
+            sandbox.canInvoke(SandboxExample2::class.java.getMethod("getName"))
+        }
+        assertTrue {
+            sandbox.canInvoke(SandboxExample3::class.java.getMethod("getName"))
+        }
     }
 
-    def "macros with GRANTED annotation are allowed"() {
-        when:
-        def code = "@i18n('NLS.back')"
-        def compilationContext = new TemplateCompilationContext(new Template("test", null),
-        SourceCodeInfo
-                .forInlineCode(code, SandboxMode.WARN_ONLY),
-        null)
-        def errors = new TemplateCompiler(compilationContext).compile()
-        then:
-        errors.isEmpty()
+    @Test
+    fun `Macros with GRANTED annotation are allowed`() {
+        val code = "@i18n('NLS.back')"
+        val compilationContext = TemplateCompilationContext(
+                Template("test", null),
+                SourceCodeInfo.forInlineCode(code, SandboxMode.WARN_ONLY),
+                null
+        )
+        val errors = TemplateCompiler(compilationContext).compile()
+
+        assertTrue {
+            errors.isEmpty()
+        }
     }
 
-    def "macros without GRANTED annotation are forbidden"() {
-        when:
-        def code = "@base64Resource('/assets/test.png')"
-        def compilationContext = new TemplateCompilationContext(new Template("test", null),
-        SourceCodeInfo
-                .forInlineCode(code, SandboxMode.WARN_ONLY),
-        null)
-        def errors = new TemplateCompiler(compilationContext).compile()
-        then:
-        errors.size() == 1
-        and:
-        errors.get(0).getError().getSeverity() == ParseError.Severity.WARNING
-        and:
-        errors.get(0).getError().getMessage().contains("sandbox restrictions")
+    @Test
+    fun `Macros without GRANTED annotation are forbidden`() {
+        val code = "@base64Resource('/assets/test.png')"
+        val compilationContext = TemplateCompilationContext(
+                Template("test", null),
+                SourceCodeInfo.forInlineCode(code, SandboxMode.WARN_ONLY),
+                null
+        )
+        val errors = TemplateCompiler(compilationContext).compile()
+
+        assertEquals(1, errors.size)
+        errors[0].error.let {
+            assertEquals(ParseError.Severity.WARNING, it.severity)
+            assertTrue {
+                it.message.contains("sandbox restrictions")
+            }
+        }
     }
 
-    def "Static assets included via inlineResource are allowed"() {
-        when:
-        def code = "@escapeJS(inlineResource('/assets/test.css'))"
-        def compilationContext = new TemplateCompilationContext(new Template("test", null),
-        SourceCodeInfo
-                .forInlineCode(code, SandboxMode.WARN_ONLY),
-        null)
-        def errors = new TemplateCompiler(compilationContext).compile()
-        then:
-        errors.size() == 0
+    @Test
+    fun `Static assets included via inlineResource are allowed`() {
+        val code = "@escapeJS(inlineResource('/assets/test.css'))"
+        val compilationContext = TemplateCompilationContext(
+                Template("test", null),
+                SourceCodeInfo.forInlineCode(code, SandboxMode.WARN_ONLY),
+                null
+        )
+        val errors = TemplateCompiler(compilationContext).compile()
+        assertTrue {
+            errors.isEmpty()
+        }
     }
 
-    def "Tagliatelle files included via inlineResource are forbidden"() {
-        when:
-        def code = "@escapeJS(inlineResource('/assets/test/test.js.pasta'))"
-        def compilationContext = new TemplateCompilationContext(new Template("test", null),
-        SourceCodeInfo
-                .forInlineCode(code, SandboxMode.WARN_ONLY),
-        null)
-        def errors = new TemplateCompiler(compilationContext).compile()
-        then:
-        errors.size() == 1
-        and:
-        errors.get(0).getError().getSeverity() == ParseError.Severity.WARNING
-        and:
-        errors.get(0).getError().getMessage().contains("sandbox restrictions")
+    @Test
+    fun `Tagliatelle files included via inlineResource are forbidden`() {
+        val code = "@escapeJS(inlineResource('/assets/test/test.js.pasta'))"
+        val compilationContext = TemplateCompilationContext(
+                Template("test", null),
+                SourceCodeInfo.forInlineCode(code, SandboxMode.WARN_ONLY),
+                null
+        )
+        val errors = TemplateCompiler(compilationContext).compile()
+        assertEquals(1, errors.size)
+        errors[0].error.let {
+            assertEquals(ParseError.Severity.WARNING, it.severity)
+            assertTrue {
+                it.message.contains("sandbox restrictions")
+            }
+        }
+    }
+
+    companion object {
+        @JvmStatic
+        @Part
+        private lateinit var sandbox: Sandbox
     }
 }
