@@ -8,6 +8,18 @@
 
 package sirius.pasta.noodle.compiler
 
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
+import sirius.kernel.SiriusExtension
+import sirius.kernel.tokenizer.Position
+import sirius.pasta.noodle.Callable
+import sirius.pasta.noodle.ScriptingException
+import sirius.pasta.noodle.SimpleEnvironment
+import kotlin.test.assertEquals
+
 
 /**
  * Tests the Noodle parser and compiler.
@@ -15,143 +27,207 @@ package sirius.pasta.noodle.compiler
  * Note that Tagliatelle also provides a large test set which tests assumptions on the compiler in
  * {@link sirius.pasta.tagliatelle.CompilerSpec}.
  */
-class CompilerTest extends BaseSpecification {
+@ExtendWith(SiriusExtension::class)
+class CompilerTest {
 
-    Callable compile(String input) {
-        def compilationContext = new CompilationContext(SourceCodeInfo.forInlineCode(input))
-        Callable script = new NoodleCompiler(compilationContext.
-        addImport(Position.UNKNOWN, "NoodleExample", NoodleExample.class)).
-        compileScript()
-                compilationContext.processCollectedErrors()
+    private fun compile(input: String): Callable {
+        val compilationContext = CompilationContext(SourceCodeInfo.forInlineCode(input))
+        val script = NoodleCompiler(
+                compilationContext.addImport(Position.UNKNOWN, "NoodleExample", NoodleExample::class.java)
+        ).compileScript()
+        compilationContext.processCollectedErrors()
 
-                return script
+        return script
     }
 
-    def "parsing and coercing literals works"() {
-        expect:
-        compile("NoodleExample.intToString(NoodleExample.AN_INT)").call(new SimpleEnvironment()) == "3"
-        and:
-        compile("NoodleExample.intToString(NoodleExample.AN_INTEGER_OBJECT)").call(new SimpleEnvironment()) == "12"
-        and:
-        compile("NoodleExample.longToString(NoodleExample.A_LONG)").call(new SimpleEnvironment()) == "4"
-        and:
-        compile("NoodleExample.longToString(NoodleExample.A_LONG_OBJECT)").call(new SimpleEnvironment()) == "33"
-        and:
-        compile("NoodleExample.longToString(NoodleExample.AN_INT)").call(new SimpleEnvironment()) == "3"
-        and:
-        compile("NoodleExample.AN_INT + NoodleExample.A_LONG_OBJECT").call(new SimpleEnvironment()) == 36L
-        and:
-        compile("NoodleExample.A_DOUBLE + NoodleExample.AN_INT").call(new SimpleEnvironment()) == 4.2
-        and:
-        compile("NoodleExample.A_DOUBLE + NoodleExample.A_LONG").call(new SimpleEnvironment()) == 5.2
+    @Test
+    fun `Parsing and coercing literals works`() {
+        assertEquals("3", compile("NoodleExample.intToString(NoodleExample.AN_INT)").call(SimpleEnvironment()))
+        assertEquals(
+                "12", compile("NoodleExample.intToString(NoodleExample.AN_INTEGER_OBJECT)").call(SimpleEnvironment())
+        )
+        assertEquals(
+                "4", compile("NoodleExample.longToString(NoodleExample.A_LONG)").call(SimpleEnvironment())
+        )
+        assertEquals(
+                "33", compile("NoodleExample.longToString(NoodleExample.A_LONG_OBJECT)").call(SimpleEnvironment())
+        )
+        assertEquals(
+                "3", compile("NoodleExample.longToString(NoodleExample.AN_INT)").call(SimpleEnvironment())
+        )
+        assertEquals(
+                36L, compile("NoodleExample.AN_INT + NoodleExample.A_LONG_OBJECT").call(SimpleEnvironment())
+        )
+        assertEquals(
+                4.2, compile("NoodleExample.A_DOUBLE + NoodleExample.AN_INT").call(SimpleEnvironment())
+        )
+        assertEquals(
+                5.2, compile("NoodleExample.A_DOUBLE + NoodleExample.A_LONG").call(SimpleEnvironment())
+        )
     }
 
-
-    def "accessing fields works"() {
-        expect:
-        compile("NoodleExample.privateStaticField").call(new SimpleEnvironment()) == "Hello from the other side"
-        and:
-        compile("NoodleExample.privateStaticField = 'Hello'; return NoodleExample.privateStaticField;").
-        call(new SimpleEnvironment()) == "Hello"
-        and:
-        compile("NoodleExample.INSTANCE.privateField").call(new SimpleEnvironment()) == "Hello World"
-        and:
-        compile("NoodleExample.INSTANCE.privateField = 'Hello'; return NoodleExample.INSTANCE.privateField;").
-        call(new SimpleEnvironment()) == "Hello"
-        and:
-        compile("NoodleExample.filledOptional().orElse(null).privateField").
-        call(new SimpleEnvironment()) == "Hello World"
+    @Test
+    fun `Accessing fields works`() {
+        assertEquals(
+                "Hello from the other side", compile("NoodleExample.privateStaticField").call(SimpleEnvironment())
+        )
+        assertEquals(
+                "Hello",
+                compile("NoodleExample.privateStaticField = 'Hello'; return NoodleExample.privateStaticField;").call(
+                        SimpleEnvironment()
+                )
+        )
+        assertEquals(
+                "Hello World", compile("NoodleExample.INSTANCE.privateField").call(SimpleEnvironment())
+        )
+        assertEquals(
+                "Hello",
+                compile("NoodleExample.INSTANCE.privateField = 'Hello'; return NoodleExample.INSTANCE.privateField;").call(
+                        SimpleEnvironment()
+                )
+        )
+        assertEquals(
+                "Hello World",
+                compile("NoodleExample.filledOptional().orElse(null).privateField").call(SimpleEnvironment())
+        )
     }
 
-    def "parsing let/if/for works"() {
-        expect:
-        compile("let x = 5; if (3 < 4) { x = 3; } else { x = 4; }; return x;").call(new SimpleEnvironment()) == 3
-        and: "Semicolon after closing brace can be skipped"
-        compile("let x = 5; if (3 < 4) { x = 3; } else { x = 4; } return x;").call(new SimpleEnvironment()) == 3
-        and:
-        compile("let x = 3; x = 4; return x;").call(new SimpleEnvironment()) == 4
-        and:
-        compile("let sum = 0; for(int x : java.util.Arrays.asList(3, 4)) { sum = sum + x; }; return sum;").
-        call(new SimpleEnvironment()) == 7
+    @Test
+    fun `Parsing let,if,for works`() {
+        assertEquals(
+                3, compile("let x = 5; if (3 < 4) { x = 3; } else { x = 4; }; return x;").call(SimpleEnvironment())
+        )
+        // Semicolon after closing brace can be skipped
+        assertEquals(
+                3, compile("let x = 5; if (3 < 4) { x = 3; } else { x = 4; } return x;").call(SimpleEnvironment())
+        )
+        assertEquals(
+                4, compile("let x = 3; x = 4; return x;").call(SimpleEnvironment())
+        )
+        assertEquals(
+                7,
+                compile("let sum = 0; for(int x : java.util.Arrays.asList(3, 4)) { sum = sum + x; }; return sum;").call(
+                        SimpleEnvironment()
+                )
+        )
     }
 
-    def "parsing lambdas works"() {
-        expect: "Simple generic type propagation works"
-        compile("let sum = 0; NoodleExample.intStream().forEach(|x| sum = sum + x); return sum;").
-        call(new SimpleEnvironment()) == 6
-        and: "Class derived generic type propagation works"
-        compile("let sum = 0; NoodleExample.stream(java.lang.Integer.class).forEach(|x| sum = sum + x); return sum;").
-        call(new SimpleEnvironment()) == 0
-        and: "Object derived generic type propagation works"
-        compile("let sum = 0; NoodleExample.singletonStream(42).forEach(|x| sum = sum + x); return sum;").
-        call(new SimpleEnvironment()) == 42
-        and: "Var-args generic type propagation works"
-        compile("let sum = 0; java.util.Arrays.asList(3,4).forEach(|x| sum = sum + x); return sum;").
-        call(new SimpleEnvironment()) == 7
-        and: "zero-arg lambdas work"
-        compile("let x = 0; NoodleExample.invokeUnitOfWork(|| x = 42); return x;").call(new SimpleEnvironment()) == 42
+    @Test
+    fun `Parsing lambdas works`() {
+        // Simple generic type propagation works
+        assertEquals(
+                6, compile("let sum = 0; NoodleExample.intStream().forEach(|x| sum = sum + x); return sum;").call(
+                SimpleEnvironment()
+        )
+        )
+        // Class derived generic type propagation works
+        assertEquals(
+                0,
+                compile("let sum = 0; NoodleExample.stream(java.lang.Integer.class).forEach(|x| sum = sum + x); return sum;").call(
+                        SimpleEnvironment()
+                )
+        )
+        // Object derived generic type propagation works
+        assertEquals(
+                42,
+                compile("let sum = 0; NoodleExample.singletonStream(42).forEach(|x| sum = sum + x); return sum;").call(
+                        SimpleEnvironment()
+                )
+        )
+        // Var-args generic type propagation works
+        assertEquals(
+                7, compile("let sum = 0; java.util.Arrays.asList(3,4).forEach(|x| sum = sum + x); return sum;").call(
+                SimpleEnvironment()
+        )
+        )
+        // Zero-arg lambdas work
+        assertEquals(
+                42, compile("let x = 0; NoodleExample.invokeUnitOfWork(|| x = 42); return x;").call(SimpleEnvironment())
+        )
     }
 
-    def "exceptions in lambdas work"() {
-        when: "An undeclared exception is thrown within a lambda..."
-        compile("NoodleExample.invokeConsumer(|x| { NoodleExample.throwDeclaredException(); })").call(new SimpleEnvironment())
-        then: "The exception is turned into a ScriptingException if it is not throwable (undeclared) within a lambda..."
-        thrown(ScriptingException)
-
-        when: "A RuntimeException is thrown..."
-        compile("NoodleExample.invokeConsumer(|x| { x / 0; })").call(new SimpleEnvironment())
-        then: "The exception is re-thrown as it doesn't need to be declared..."
-        thrown(ScriptingException)
+    @Test
+    fun `Exceptions in lambdas work`() {
+        assertThrows<ScriptingException> {
+            // An undeclared exception is thrown within a lambda...
+            // The exception is turned into a ScriptingException if it is not throwable (undeclared) within a lambda...
+            compile("NoodleExample.invokeConsumer(|x| { NoodleExample.throwDeclaredException(); })").call(
+                    SimpleEnvironment()
+            )
+        }
+        assertThrows<ScriptingException> {
+            // A RuntimeException is thrown...
+            // The exception is re-thrown as it doesn't need to be declared...
+            compile("NoodleExample.invokeConsumer(|x| { x / 0; })").call(SimpleEnvironment())
+        }
     }
 
-    def "conditions work as expected"() {
-        expect:
-        compile(input).call(new SimpleEnvironment()) == output
-        where:
-        input                                       | output
-        "false"                                     | false
-        "true"                                      | true
-        "false && true"                             | false
-        "true && true"                              | true
-        "false || false"                            | false
-        "false || true"                             | true
-        "null.as(java.lang.Boolean.class) && true"  | false
-        "null.as(java.lang.Boolean.class) && false" | false
-        "null.as(java.lang.Boolean.class) || true"  | true
-        "null.as(java.lang.Boolean.class) || false" | false
+    @ParameterizedTest
+    @CsvSource(
+            delimiter = '|', useHeadersInDisplayName = true, textBlock = """
+         input                                      | output
+        'false'                                     | false
+        'true'                                      | true
+        'false && true'                             | false
+        'true && true'                              | true
+        'false || false'                            | false
+        'false || true'                             | true
+        'null.as(java.lang.Boolean.class) && true'  | false
+        'null.as(java.lang.Boolean.class) && false' | false
+        'null.as(java.lang.Boolean.class) || true'  | true
+        'null.as(java.lang.Boolean.class) || false' | false"""
+    )
+    fun `Conditions work as expected`(input: String, output: Boolean) {
+        assertEquals(output, compile(input).call(SimpleEnvironment()))
     }
 
-    def "types can be derived from generic super classes"() {
-        expect:
-        compile("NoodleExample.longToString(NoodleExample.INSTANCE.getRef().getId())").call(new SimpleEnvironment()) == "42"
-        and:
-        compile("Strings.join(' ', NoodleExample.INSTANCE.getRef().getTest(), 'World')").call(new SimpleEnvironment()) == "Hello World"
+    @Test
+    fun `Types can be derived from generic super classes`() {
+        assertEquals(
+                "42",
+                compile("NoodleExample.longToString(NoodleExample.INSTANCE.getRef().getId())").call(SimpleEnvironment())
+        )
+        assertEquals(
+                "Hello World",
+                compile("Strings.join(' ', NoodleExample.INSTANCE.getRef().getTest(), 'World')").call(SimpleEnvironment())
+        )
     }
 
-    def "incomplete class literals are detected and reported"() {
-        when:
-        def compilationContext = new CompilationContext(SourceCodeInfo.forInlineCode("part(sirius.pasta.tagliatelle.Tagliatelle).getExtensions(null)"))
-        new NoodleCompiler(compilationContext).compileScript()
-        then:
-        compilationContext.getErrors().size() == 1
-        and:
-        compilationContext.getErrors().get(0).getMessage() == "  1: 6: Found an incomplete class literal 'class sirius.pasta.tagliatelle.Tagliatelle'. Add '.class' if you want to refer to the class object."
+    @Test
+    fun `Incomplete class literals are detected and reported`() {
+        val compilationContext =
+                CompilationContext(SourceCodeInfo.forInlineCode("part(sirius.pasta.tagliatelle.Tagliatelle).getExtensions(null)"))
+        NoodleCompiler(compilationContext).compileScript()
+
+        assertEquals(1, compilationContext.errors.size)
+        assertEquals(
+                "  1: 6: Found an incomplete class literal 'class sirius.pasta.tagliatelle.Tagliatelle'. Add '.class' if you want to refer to the class object.",
+                compilationContext.errors[0].message
+        )
     }
 
-    def "calling constructors works"() {
-        expect: "calling a constructor works as expected..."
-        compile("Tuple.new('A','B').getFirst()").call(new SimpleEnvironment()) == "A"
-        and: "generic parameter propagation works as expected..."
-        compile("Tuple.new('A', 1).getFirst().getClass().getName()").call(new SimpleEnvironment()) == "java.lang.String"
-        compile("Tuple.new('A', 1).getSecond().getClass().getName()").call(new SimpleEnvironment()) == "java.lang.Integer"
+    @Test
+    fun `Calling constructors works`() {
+        // calling a constructor works as expected...
+        assertEquals("A", compile("Tuple.new('A','B').getFirst()").call(SimpleEnvironment()))
+        // generic parameter propagation works as expected...
+        assertEquals(
+                "java.lang.String",
+                compile("Tuple.new('A', 1).getFirst().getClass().getName()").call(SimpleEnvironment())
+        )
+        assertEquals(
+                "java.lang.Integer",
+                compile("Tuple.new('A', 1).getSecond().getClass().getName()").call(SimpleEnvironment())
+        )
     }
 
-    def "calling varags works"() {
-        expect: "Invoking a vararg with a pre-baked array works as expected (the array is used as varargs)"
-        compile("java.util.Arrays.asList(NoodleExample.AN_ARRAY).size()").call(new SimpleEnvironment()) == 3
-        and: "Collecting additional parameters into an array still works..."
-        compile("java.util.Arrays.asList('a', 'b', 'c').size()").call(new SimpleEnvironment()) == 3
-        and: "..even with only a single parameter..."
-        compile("java.util.Arrays.asList('a').size()").call(new SimpleEnvironment()) == 1
+    @Test
+    fun `Calling varags works`() {
+        // Invoking a vararg with a pre-baked array works as expected (the array is used as varargs)
+        assertEquals(3, compile("java.util.Arrays.asList(NoodleExample.AN_ARRAY).size()").call(SimpleEnvironment()))
+        // Collecting additional parameters into an array still works...
+        assertEquals(3, compile("java.util.Arrays.asList('a', 'b', 'c').size()").call(SimpleEnvironment()))
+        // ..even with only a single parameter...
+        assertEquals(1, compile("java.util.Arrays.asList('a').size()").call(SimpleEnvironment()))
     }
 }
