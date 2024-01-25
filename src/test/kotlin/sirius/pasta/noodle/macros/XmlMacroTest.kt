@@ -8,31 +8,45 @@
 
 package sirius.pasta.noodle.macros
 
-import sirius.kernel.BaseSpecification
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import sirius.kernel.SiriusExtension
 import sirius.kernel.di.std.Part
 import sirius.pasta.tagliatelle.Tagliatelle
 import sirius.pasta.tagliatelle.compiler.TemplateCompiler
 import sirius.web.resources.Resources
+import kotlin.test.assertEquals
 
-class XmlMacroTest extends BaseSpecification {
+/**
+ * Tests the [XmlMacro].
+ */
+@ExtendWith(SiriusExtension::class)
+class XmlMacroTest {
 
-    @Part
-    private static Tagliatelle tagliatelle
+    @Test
+    fun `XmlMacro correctly parses stringified XML`() {
+        val context = tagliatelle.createInlineCompilationContext(
+                "inline",
+                "@xml('<a attrib=\"wert\"><b name=\"wert\" attrib=\"payload\" /></a>')",
+                null
+        )
+        TemplateCompiler(context).compile()
+        assertEquals(
+                "<a attrib=\"wert\">\n" +
+                        "    <b attrib=\"payload\" name=\"wert\"/>\n" +
+                        "</a>\n", context
+                .template
+                .renderToString()
+        )
+    }
 
-            @Part
-            private static Resources resources
+    companion object {
+        @JvmStatic
+        @Part
+        private lateinit var tagliatelle: Tagliatelle
 
-            def "xml correctly parses stringified XML"() {
-        when:
-        def ctx = tagliatelle.createInlineCompilationContext("inline",
-        "@xml('<a attrib=\"wert\"><b name=\"wert\" attrib=\"payload\" /></a>')",
-        null)
-        new TemplateCompiler(ctx).compile()
-        then:
-        ctx
-                .getTemplate()
-                .renderToString() == "<a attrib=\"wert\">\n" +
-                "    <b attrib=\"payload\" name=\"wert\"/>\n" +
-                "</a>\n"
+        @JvmStatic
+        @Part
+        private lateinit var resources: Resources
     }
 }
