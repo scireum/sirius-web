@@ -9,537 +9,509 @@
 package sirius.pasta.tagliatelle
 
 
-import sirius.kernel.tokenizer.ParseError
-import sirius.kernel.BaseSpecification
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import sirius.kernel.SiriusExtension
 import sirius.kernel.commons.Amount
 import sirius.kernel.commons.Tuple
 import sirius.kernel.commons.Value
 import sirius.kernel.di.std.Part
+import sirius.kernel.tokenizer.ParseError
 import sirius.pasta.noodle.compiler.CompileError
 import sirius.pasta.noodle.compiler.CompileException
 import sirius.pasta.noodle.compiler.SourceCodeInfo
 import sirius.pasta.tagliatelle.compiler.TemplateCompilationContext
 import sirius.pasta.tagliatelle.compiler.TemplateCompiler
-import sirius.pasta.tagliatelle.rendering.GlobalRenderContext
-import sirius.web.resources.Resource
 import sirius.web.resources.Resources
-
 import java.time.LocalDate
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 
-class CompilerSpec extends BaseSpecification {
+/**
+ * Tests the [TemplateCompiler] and [Template] classes.
+ */
+@ExtendWith(SiriusExtension::class)
+class CompilerTest {
 
-    @Part
-    private static Tagliatelle tagliatelle
+    @Test
+    fun `Vararg detection doesn't crash when a non-vararg method is invoked with null`() {
+        val source = "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" /> @test.asLocalDate(null)"
+        val context = TemplateCompilationContext(Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        val errors = TemplateCompiler(context).compile()
 
-            @Part
-            private static Resources resources
-
-            @Part
-            private static TestHelper test
-
-            def "vararg detection doesn't crash when a non-vararg method is invoked with null"() {
-        when:
-        def source = "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" /> @test.asLocalDate(null)"
-        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
-        List<CompileError> errors = new TemplateCompiler(ctx).compile()
-        then:
-        errors.size() == 0
-        and:
-        ctx.getTemplate().renderToString(Value.of(LocalDate.now())) != ""
+        assertTrue { errors.isEmpty() }
+        assertNotEquals("", context.template.renderToString(Value.of(LocalDate.now())))
     }
 
-    def "vararg detection works without parameters"() {
-        when:
-        def source = "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore().asString()"
-        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
-        List<CompileError> errors = new TemplateCompiler(ctx).compile()
-        then:
-        errors.size() == 0
-        and:
-        ctx.getTemplate().renderToString(Value.of("test")) == "test"
+    @Test
+    fun `Vararg detection works without parameters`() {
+        val source = "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore().asString()"
+        val context = TemplateCompilationContext(Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        val errors = TemplateCompiler(context).compile()
+
+        assertTrue { errors.isEmpty() }
+        assertEquals("test", context.template.renderToString(Value.of("test")))
     }
 
-    def "vararg detection works with a single parameter"() {
-        when:
-        def source = "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore('test').asString()"
-        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
-        List<CompileError> errors = new TemplateCompiler(ctx).compile()
-        then:
-        errors.size() == 0
-        and:
-        ctx.getTemplate().renderToString(Value.of("test")) == ""
+    @Test
+    fun `Vararg detection works with a single parameter`() {
+        val source = "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore('test').asString()"
+        val context = TemplateCompilationContext(Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        val errors = TemplateCompiler(context).compile()
+
+        assertTrue { errors.isEmpty() }
+        assertEquals("", context.template.renderToString(Value.of("test")))
     }
 
-    def "vararg detection works with null as parameter"() {
-        when:
-        def source = "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore(null).asString()"
-        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
-        List<CompileError> errors = new TemplateCompiler(ctx).compile()
-        then:
-        errors.size() == 0
-        and:
-        ctx.getTemplate().renderToString(Value.of("test")) == "test"
+    @Test
+    fun `Vararg detection works with null as parameter`() {
+        val source = "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore(null).asString()"
+        val context = TemplateCompilationContext(Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        val errors = TemplateCompiler(context).compile()
+
+        assertTrue { errors.isEmpty() }
+        assertEquals("test", context.template.renderToString(Value.of("test")))
     }
 
-    def "method overloading works with generics"() {
-        when:
-        def source = "<i:arg type=\"sirius.pasta.tagliatelle.TestObject\" name=\"test\" />" +
-        "<i:arg type=\"sirius.kernel.commons.Amount\" name=\"test1\" />" +
-                "@test.genericTest(test1)"
-        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
-        List<CompileError> errors = new TemplateCompiler(ctx,
-        ).compile()
-        then:
-        errors.size() == 0
-        and:
-        ctx.getTemplate().renderToString(TestObject.INSTANCE, Amount.TEN) == "-10"
+    @Test
+    fun `Method overloading works with generics`() {
+        val source =
+                "<i:arg type=\"sirius.pasta.tagliatelle.TestObject\" name=\"test\" />" + "<i:arg type=\"sirius.kernel.commons.Amount\" name=\"test1\" />" + "@test.genericTest(test1)"
+        val context = TemplateCompilationContext(Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        val errors = TemplateCompiler(context).compile()
+
+        assertTrue { errors.isEmpty() }
+        assertEquals("-10", context.template.renderToString(TestObject.INSTANCE, Amount.TEN))
     }
 
-    def "generic type propagation works"() {
-        when:
-        def source = "<i:arg type=\"sirius.pasta.tagliatelle.TestObject\" name=\"test\" />" +
-        "@test.getGenericReturnType().getFirst().apply('Test').get().as(String.class).substring(1)"
-        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
-        List<CompileError> errors = new TemplateCompiler(ctx).compile()
-        then:
-        errors.size() == 1
-        and: "We expect a warning as our cast to String is now unnecessary due to proper generic propagation"
-        errors.get(0).getError().getSeverity() == ParseError.Severity.WARNING
-        and:
-        ctx.getTemplate().renderToString(TestObject.INSTANCE) == "est"
+    @Test
+    fun `Generic type propagation works`() {
+        val source =
+                "<i:arg type=\"sirius.pasta.tagliatelle.TestObject\" name=\"test\" />" + "@test.getGenericReturnType().getFirst().apply('Test').get().as(String.class).substring(1)"
+        val context = TemplateCompilationContext(Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        val errors = TemplateCompiler(context).compile()
+
+        // We expect a warning as our cast to String is now unnecessary due to proper generic propagation
+        assertEquals(1, errors.size)
+        assertEquals(ParseError.Severity.WARNING, errors[0].error.severity)
+        assertEquals("est", context.template.renderToString(TestObject.INSTANCE))
     }
 
-    def "generic type propagation works with null"() {
-        when:
-        def source = "<i:arg type=\"sirius.pasta.tagliatelle.TestObject\" name=\"test\"/>" +
-        "@test.emptyOptional().orElse(null).substring(1)"
-        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
-        List<CompileError> errors = new TemplateCompiler(ctx).compile()
-        then:
-        errors.size() == 0
-        and:
-        ctx.getTemplate().renderToString(TestObject.INSTANCE) == ""
+    @Test
+    fun `Generic type propagation works with null`() {
+        val source =
+                "<i:arg type=\"sirius.pasta.tagliatelle.TestObject\" name=\"test\"/>" + "@test.emptyOptional().orElse(null).substring(1)"
+        val context = TemplateCompilationContext(Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        val errors = TemplateCompiler(context).compile()
+
+        assertTrue { errors.isEmpty() }
+
+        assertEquals("", context.template.renderToString(TestObject.INSTANCE))
     }
 
-    def "generic type propagation works for class parameters"() {
-        when:
-        def source = "@helper(sirius.pasta.tagliatelle.ExampleHelper.class).getTestValue()"
-        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
-        List<CompileError> errors = new TemplateCompiler(ctx).compile()
-        then:
-        errors.size() == 0
-        and:
-        ctx.getTemplate().renderToString(TestObject.INSTANCE) == "test"
+    @Test
+    fun `Generic type propagation works for class parameters`() {
+        val source = "@helper(sirius.pasta.tagliatelle.ExampleHelper.class).getTestValue()"
+        val context = TemplateCompilationContext(Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        val errors = TemplateCompiler(context).compile()
+
+        assertTrue { errors.isEmpty() }
+        assertEquals("test", context.template.renderToString(TestObject.INSTANCE))
     }
 
-    def "vararg detection works with several parameters"() {
-        when:
-        def source = "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore('a', 'test').asString()"
-        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
-        List<CompileError> errors = new TemplateCompiler(ctx).compile()
-        then:
-        errors.size() == 0
-        and:
-        ctx.getTemplate().renderToString(Value.of("test")) == ""
+    @Test
+    fun `Vararg detection works with several parameters`() {
+        val source = "<i:arg type=\"sirius.kernel.commons.Value\" name=\"test\" />@test.ignore('a', 'test').asString()"
+        val context = TemplateCompilationContext(Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        val errors = TemplateCompiler(context).compile()
+
+        assertTrue { errors.isEmpty() }
+
+        assertEquals("", context.template.renderToString(Value.of("test")))
     }
 
-    def "vararg detection works without vararg parameters"() {
-        when:
-        def source = "<i:arg type=\"sirius.pasta.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('X')"
-        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
-        List<CompileError> errors = new TemplateCompiler(ctx).compile()
-        then:
-        errors.size() == 0
-        and:
-        ctx.getTemplate().renderToString(TestObject.INSTANCE) == "X"
+    @Test
+    fun `Vararg detection works without vararg parameters`() {
+        val source = "<i:arg type=\"sirius.pasta.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('X')"
+        val context = TemplateCompilationContext(Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        val errors = TemplateCompiler(context).compile()
+
+        assertTrue { errors.isEmpty() }
+        assertEquals("X", context.template.renderToString(TestObject.INSTANCE))
     }
 
-    def "vararg detection works with a single vararg parameter"() {
-        when:
-        def source = "<i:arg type=\"sirius.pasta.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('%s','X')"
-        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
-        List<CompileError> errors = new TemplateCompiler(ctx).compile()
-        then:
-        errors.size() == 0
-        and:
-        ctx.getTemplate().renderToString(TestObject.INSTANCE) == "X"
+    @Test
+    fun `Vararg detection works with a single vararg parameter`() {
+        val source = "<i:arg type=\"sirius.pasta.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('%s','X')"
+        val context = TemplateCompilationContext(Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        val errors = TemplateCompiler(context).compile()
+
+        assertTrue { errors.isEmpty() }
+        assertEquals("X", context.template.renderToString(TestObject.INSTANCE))
     }
 
-    def "vararg detection works with null as a vararg parameter"() {
-        when:
-        def source = "<i:arg type=\"sirius.pasta.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('%s', null)"
-        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
-        List<CompileError> errors = new TemplateCompiler(ctx).compile()
-        then:
-        errors.size() == 0
-        and:
-        ctx.getTemplate().renderToString(TestObject.INSTANCE) == "null"
+    @Test
+    fun `Vararg detection works with null as a vararg parameter`() {
+        val source = "<i:arg type=\"sirius.pasta.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('%s', null)"
+        val context = TemplateCompilationContext(Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        val errors = TemplateCompiler(context).compile()
+
+        assertTrue { errors.isEmpty() }
+        assertEquals("null", context.template.renderToString(TestObject.INSTANCE))
     }
 
-    def "vararg detection works with several vararg parameters"() {
-        when:
-        def source = "<i:arg type=\"sirius.pasta.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('%s %s', 'X', 'Y')"
-        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
-        List<CompileError> errors = new TemplateCompiler(ctx).compile()
-        then:
-        errors.size() == 0
-        and:
-        ctx.getTemplate().renderToString(TestObject.INSTANCE) == "X Y"
+    @Test
+    fun `Vararg detection works with several vararg parameters`() {
+        val source =
+                "<i:arg type=\"sirius.pasta.tagliatelle.TestObject\" name=\"test\" />@test.varArgTest('%s %s', 'X', 'Y')"
+        val context = TemplateCompilationContext(Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        val errors = TemplateCompiler(context).compile()
+
+        assertTrue { errors.isEmpty() }
+        assertEquals("X Y", context.template.renderToString(TestObject.INSTANCE))
     }
 
-    def "nesting of { brackets works as expected"() {
-        given:
-        String expectedResult = resources.resolve("templates/brackets.html").get().getContentAsString()
-        when:
-        String result = tagliatelle.resolve("/templates/brackets.html.pasta").get().renderToString()
-        then:
-        test.basicallyEqual(result, expectedResult)
+    @Test
+    fun `Nesting of { brackets works as expected`() {
+        val expectedResult = resources.resolve("templates/brackets.html").get().contentAsString
+        val result = tagliatelle.resolve("/templates/brackets.html.pasta").get().renderToString()
+
+        assertTrue { test.basicallyEqual(result, expectedResult) }
     }
 
-    def "loops and the loop state work as expected"() {
-        given:
-        String expectedResult = resources.resolve("templates/loop.html").get().getContentAsString()
-        when:
-        String result = tagliatelle.resolve("/templates/loop.html.pasta").
-        get().
-        renderToString(Arrays.asList(1, 2, 3, 4, 5))
-        then:
-        test.basicallyEqual(result, expectedResult)
+    @Test
+    fun `Loops and the loop state work as expected`() {
+        val expectedResult = resources.resolve("templates/loop.html").get().contentAsString
+        val result = tagliatelle.resolve("/templates/loop.html.pasta").get().renderToString(listOf(1, 2, 3, 4, 5))
+
+        assertTrue { test.basicallyEqual(result, expectedResult) }
     }
 
-    def "if works as expected"() {
-        when:
-        String a = tagliatelle.resolve("/templates/if.html.pasta").get().renderToString("a")
-        String b = tagliatelle.resolve("/templates/if.html.pasta").get().renderToString("b")
-        then:
-        test.basicallyEqual(a, "a")
-        test.basicallyEqual(b, "b")
+    @Test
+    fun `If works as expected`() {
+        val a = tagliatelle.resolve("/templates/if.html.pasta").get().renderToString("a")
+        val b = tagliatelle.resolve("/templates/if.html.pasta").get().renderToString("b")
+
+        assertTrue { test.basicallyEqual(a, "a") }
+        assertTrue { test.basicallyEqual(b, "b") }
     }
 
-    def "switch works as expected"() {
-        when:
-        String a = tagliatelle.resolve("/templates/switch.html.pasta").get().renderToString("a")
-        String b = tagliatelle.resolve("/templates/switch.html.pasta").get().renderToString("b")
-        String c = tagliatelle.resolve("/templates/switch.html.pasta").get().renderToString("c")
-        then:
-        test.basicallyEqual(a, "a")
-        test.basicallyEqual(b, "b")
-        test.basicallyEqual(c, "c")
+    @Test
+    fun `Switch works as expected`() {
+        val a = tagliatelle.resolve("/templates/switch.html.pasta").get().renderToString("a")
+        val b = tagliatelle.resolve("/templates/switch.html.pasta").get().renderToString("b")
+        val c = tagliatelle.resolve("/templates/switch.html.pasta").get().renderToString("c")
+
+        assertTrue { test.basicallyEqual(a, "a") }
+        assertTrue { test.basicallyEqual(b, "b") }
+        assertTrue { test.basicallyEqual(c, "c") }
     }
 
-    def "extensions work"() {
-        when:
-        String result = tagliatelle.resolve("/templates/extended.html.pasta").get().renderToString()
-        then:
-        result == "b"
+    @Test
+    fun `Extensions work`() {
+        val result = tagliatelle.resolve("/templates/extended.html.pasta").get().renderToString()
+
+        assertEquals("b", result)
     }
 
-    def "html style comments are ignored"() {
-        when:
-        def script = "<!--@ @unknownVariable -->Hello World"
-        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(script), null)
-        List<CompileError> errors = new TemplateCompiler(ctx).compile()
-        then:
-        errors.size() == 0
-        and:
-        ctx.getTemplate().renderToString() == "Hello World"
+    @Test
+    fun `HTML-style comments are ignored`() {
+        val script = "<!--@ @unknownVariable -->Hello World"
+        val context = TemplateCompilationContext(Template("test", null), SourceCodeInfo.forInlineCode(script), null)
+        val errors = TemplateCompiler(context).compile()
+
+        assertTrue { errors.isEmpty() }
+        assertEquals("Hello World", context.template.renderToString())
 
     }
 
-    def "JS style comments are ignored"() {
-        when:
-        def script = "/**@ @unknownVariable */Hello World"
-        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(script), null)
-        List<CompileError> errors = new TemplateCompiler(ctx).compile()
-        then:
-        errors.size() == 0
-        and:
-        ctx.getTemplate().renderToString() == "Hello World"
+    @Test
+    fun `JS-style comments are ignored`() {
+        val script = "/**@ @unknownVariable */Hello World"
+        val context = TemplateCompilationContext(Template("test", null), SourceCodeInfo.forInlineCode(script), null)
+        val errors = TemplateCompiler(context).compile()
+
+        assertTrue { errors.isEmpty() }
+        assertEquals("Hello World", context.template.renderToString())
 
     }
 
-    def "dynamicInvoke works"() {
-        given:
-        String expectedResult = resources.resolve("templates/dynamic-invoke.html").get().getContentAsString()
-        when:
-        String result = tagliatelle.resolve("/templates/dynamic-invoke-outer.html.pasta").get().renderToString()
-        then:
-        test.basicallyEqual(result, expectedResult)
+    @Test
+    fun `dynamicInvoke works`() {
+        val expectedResult = resources.resolve("templates/dynamic-invoke.html").get().contentAsString
+        val result = tagliatelle.resolve("/templates/dynamic-invoke-outer.html.pasta").get().renderToString()
+
+        assertTrue { test.basicallyEqual(result, expectedResult) }
     }
 
-    def "renderToString works"() {
-        given:
-        String expectedResult = resources.resolve("templates/render-to-string.html").get().getContentAsString()
-        when:
-        String result = tagliatelle.resolve("/templates/render-to-string.html.pasta").get().renderToString()
-        then:
-        test.basicallyEqual(result, expectedResult)
+    @Test
+    fun `renderToString works`() {
+        val expectedResult = resources.resolve("templates/render-to-string.html").get().contentAsString
+        val result = tagliatelle.resolve("/templates/render-to-string.html.pasta").get().renderToString()
+
+        assertTrue { test.basicallyEqual(result, expectedResult) }
     }
 
-    def "define and xml and json macros works"() {
-        given:
-        String expectedResult = resources.resolve("templates/define.html").get().getContentAsString()
-        when:
-        String result = tagliatelle.resolve("/templates/define.html.pasta").get().renderToString()
-        then:
-        test.basicallyEqual(result, expectedResult)
+    @Test
+    fun `define and xml and json macros works`() {
+        val expectedResult = resources.resolve("templates/define.html").get().contentAsString
+        val result = tagliatelle.resolve("/templates/define.html.pasta").get().renderToString()
+
+        assertTrue { test.basicallyEqual(result, expectedResult) }
     }
 
-    def "generateId macro works within tag libs"() {
-        given:
-        String expectedResult = resources.resolve("templates/generate-id.html").get().getContentAsString()
-        when:
-        String result = tagliatelle.resolve("/templates/generate-id.html.pasta").get().renderToString()
-        then:
-        test.basicallyEqual(result, expectedResult)
+    @Test
+    fun `generateId macro works within tag libs`() {
+        val expectedResult = resources.resolve("templates/generate-id.html").get().contentAsString
+        val result = tagliatelle.resolve("/templates/generate-id.html.pasta").get().renderToString()
+
+        assertTrue { test.basicallyEqual(result, expectedResult) }
     }
 
-    def "missing tag detection works"() {
-        when:
-        List<CompileError> errors = null
+    @Test
+    fun `Missing tag detection works`() {
+        val errors = mutableListOf<CompileError>()
         try {
             tagliatelle.resolve("/templates/missing-tag.html.pasta").get()
-        } catch (CompileException err) {
-            errors = err.getErrors()
+        } catch (exception: CompileException) {
+            errors.addAll(exception.errors)
         }
-        then:
-        errors.size() == 2
-        errors.get(0).toString().contains("Cannot find a template for the tag: w:unknown")
-        errors.get(1).toString().contains("Cannot find a handler for the internal tag: i:unknown")
+
+        assertEquals(2, errors.size)
+        assertTrue { errors[0].toString().contains("Cannot find a template for the tag: w:unknown") }
+        assertTrue { errors[1].toString().contains("Cannot find a handler for the internal tag: i:unknown") }
     }
 
-    private TemplateCompilationContext compile(String templateName) {
-        Resource resource = resources.resolve(templateName).orElse(null)
-        TemplateCompilationContext compilationContext = tagliatelle.
-        createResourceCompilationContext(templateName, resource, null)
-        TemplateCompiler compiler = new TemplateCompiler(compilationContext)
+    private fun compile(templateName: String): TemplateCompilationContext {
+        val resource = resources.resolve(templateName).orElse(null)
+        val compilationContext = tagliatelle.createResourceCompilationContext(templateName, resource, null)
+        val compiler = TemplateCompiler(compilationContext)
         compiler.compile()
         return compilationContext
     }
 
-    def "argument deprecation is detected"() {
-        when:
-        TemplateCompilationContext compilationContext = compile("/templates/deprecatedArgument.html.pasta")
-        List<ParseError> errors = compilationContext.getErrors()
-        then:
-        errors.size() == 1
-        errors.get(0).getSeverity() == ParseError.Severity.WARNING
-        errors.get(0).getMessage().contains("The attribute 'deprecatedArg' is deprecated: Do not use")
+    @Test
+    fun `Argument deprecation is detected`() {
+        val compilationContext = compile("/templates/deprecatedArgument.html.pasta")
+        val errors = compilationContext.errors
+
+        assertEquals(1, errors.size)
+        assertEquals(ParseError.Severity.WARNING, errors[0].severity)
+        assertTrue { errors[0].message.contains("The attribute 'deprecatedArg' is deprecated: Do not use") }
     }
 
-    def "duplicate arguments are detected"() {
-        when:
-        TemplateCompilationContext compilationContext = compile("/templates/duplicateArgument.html.pasta")
-        List<ParseError> errors = compilationContext.getErrors()
-        then:
-        errors.size() == 1
-        errors.get(0).getSeverity() == ParseError.Severity.WARNING
-        errors.get(0).getMessage().contains("An argument with the name 'test' is already defined")
+    @Test
+    fun `Duplicate arguments are detected`() {
+        val compilationContext = compile("/templates/duplicateArgument.html.pasta")
+        val errors = compilationContext.errors
+
+        assertEquals(1, errors.size)
+        assertEquals(ParseError.Severity.WARNING, errors[0].severity)
+        assertTrue { errors[0].message.contains("An argument with the name 'test' is already defined") }
     }
 
-    def "deprecation is detected"() {
-        when:
-        TemplateCompilationContext compilationContext = compile("/templates/deprecatedCaller.html.pasta")
-        List<ParseError> errors = compilationContext.getErrors()
-        then:
-        errors.size() == 2
-        errors.get(0).getSeverity() == ParseError.Severity.WARNING
-        errors.get(0).getMessage().contains("The template '<e:deprecated>' is deprecated: Test of deprecated")
+    @Test
+    fun `Deprecation is detected`() {
+        val compilationContext = compile("/templates/deprecatedCaller.html.pasta")
+        val errors = compilationContext.errors
+
+        assertEquals(2, errors.size)
+        assertEquals(ParseError.Severity.WARNING, errors[0].severity)
+        assertTrue { errors[0].message.contains("The template '<e:deprecated>' is deprecated: Test of deprecated") }
     }
 
-    def "deprecation warning is skipped for deprecated templates"() {
-        when:
-        TemplateCompilationContext compilationContext = compile("/templates/deprecatedDeprecatedCaller.html.pasta")
-        List<ParseError> errors = compilationContext.getErrors()
-        then:
-        errors.size() == 0
+    @Test
+    fun `Deprecation warning is skipped for deprecated templates`() {
+        val compilationContext = compile("/templates/deprecatedDeprecatedCaller.html.pasta")
+        val errors = compilationContext.errors
+
+        assertTrue { errors.isEmpty() }
     }
 
-    def "calling a deprecated method is detected"() {
-        when:
-        TemplateCompilationContext compilationContext = compile("/templates/deprecatedMethodCall.html.pasta")
-        List<ParseError> errors = compilationContext.getErrors()
-        then:
-        errors.size() == 1
-        errors.get(0).getSeverity() == ParseError.Severity.WARNING
-        errors.get(0)
-                .getMessage()
-                .contains("The method sirius.pasta.tagliatelle.TestObject.deprecatedMethod is marked as deprecated")
+    @Test
+    fun `Calling a deprecated method is detected`() {
+        val compilationContext = compile("/templates/deprecatedMethodCall.html.pasta")
+        val errors = compilationContext.errors
+
+        assertEquals(1, errors.size)
+        assertEquals(ParseError.Severity.WARNING, errors[0].severity)
+        assertTrue { errors[0].message.contains("The method sirius.pasta.tagliatelle.TestObject.deprecatedMethod is marked as deprecated") }
     }
 
-    def "calling a deprecated macro is detected"() {
-        when:
-        TemplateCompilationContext compilationContext = compile("/templates/deprecatedMacroCall.html.pasta")
-        List<ParseError> errors = compilationContext.getErrors()
-        then:
-        errors.size() == 1
-        errors.get(0).getSeverity() == ParseError.Severity.WARNING
-        errors.get(0)
-                .getMessage()
-                .contains("The macro deprecatedMacro (sirius.pasta.tagliatelle.DeprecatedMacro) is deprecated.")
+    @Test
+    fun `Calling a deprecated macro is detected`() {
+        val compilationContext = compile("/templates/deprecatedMacroCall.html.pasta")
+        val errors = compilationContext.errors
+
+        assertEquals(1, errors.size)
+        assertEquals(ParseError.Severity.WARNING, errors[0].severity)
+        assertTrue { errors[0].message.contains("The macro deprecatedMacro (sirius.pasta.tagliatelle.DeprecatedMacro) is deprecated.") }
     }
 
-    def "invalid varargs are detected"() {
-        when:
-        List<CompileError> errors = null
+    @Test
+    fun `Invalid varargs are detected`() {
+        val errors = mutableListOf<CompileError>()
         try {
             tagliatelle.resolve("/templates/invalid-argument-caller.html.pasta").get()
-        } catch (CompileException err) {
-            errors = err.getErrors()
+        } catch (exception: CompileException) {
+            errors.addAll(exception.errors)
         }
-        then:
-        errors.size() == 2
-        errors.get(0).getError().getSeverity() == ParseError.Severity.ERROR
-        errors.get(0)
-                .toString()
-                .contains(
-                        "Incompatible attribute types. e:invalidArgumentTaglib expects int for 'invalidArgument', but class java.lang.String was given.")
-        !errors.get(1).toString().contains("NullPointerException")
+
+        assertEquals(2, errors.size)
+        assertEquals(ParseError.Severity.ERROR, errors[0].error.severity)
+        assertTrue {
+            errors[0].toString()
+                    .contains("Incompatible attribute types. e:invalidArgumentTaglib expects int for 'invalidArgument', but class java.lang.String was given.")
+        }
+        assertFalse { errors[1].toString().contains("NullPointerException") }
     }
 
-    def "time macros state work as expected"() {
-        given:
-        String expectedResult = resources.resolve("templates/timeMacros.html").get().getContentAsString()
-        when:
-        String result = tagliatelle.resolve("/templates/timeMacros.html.pasta").get().renderToString()
-        then:
-        test.basicallyEqual(result, expectedResult)
+    @Test
+    fun `Time macros state work as expected`() {
+        val expectedResult = resources.resolve("templates/timeMacros.html").get().contentAsString
+        val result = tagliatelle.resolve("/templates/timeMacros.html.pasta").get().renderToString()
+
+        assertTrue { test.basicallyEqual(result, expectedResult) }
     }
 
-    def "different macro call syntax"() {
-        given:
-        String expectedResult = resources.resolve("templates/macroSyntax.html").get().getContentAsString()
-        when:
-        String result = tagliatelle.resolve("/templates/macroSyntax.html.pasta").get().renderToString()
-        then:
-        test.basicallyEqual(result, expectedResult)
+    @Test
+    fun `Different macro call syntax`() {
+        val expectedResult = resources.resolve("templates/macroSyntax.html").get().contentAsString
+        val result = tagliatelle.resolve("/templates/macroSyntax.html.pasta").get().renderToString()
+
+        assertTrue { test.basicallyEqual(result, expectedResult) }
     }
 
-    def "jsTemplate taglib works and prevents XSS"() {
-        given:
-        String expectedResult = resources.resolve("templates/js-template.html").get().getContentAsString()
-        when:
-        String result = tagliatelle.resolve("/templates/js-template.html.pasta").get().renderToString()
-        then:
-        test.basicallyEqual(result, expectedResult)
+    @Test
+    fun `jsTemplate taglib works and prevents XSS`() {
+        val expectedResult = resources.resolve("templates/js-template.html").get().contentAsString
+        val result = tagliatelle.resolve("/templates/js-template.html.pasta").get().renderToString()
+
+        assertTrue { test.basicallyEqual(result, expectedResult) }
     }
 
 
-    def "attribute expressions work"() {
-        given:
-        String expectedResult = resources.resolve("templates/attribute-expressions.html").get().getContentAsString()
-        when:
-        String result = tagliatelle.resolve("/templates/attribute-expressions.html.pasta").get().renderToString()
-        then:
-        test.basicallyEqual(result, expectedResult)
+    @Test
+    fun `Attribute expressions work`() {
+        val expectedResult = resources.resolve("templates/attribute-expressions.html").get().contentAsString
+        val result = tagliatelle.resolve("/templates/attribute-expressions.html.pasta").get().renderToString()
+
+        assertTrue { test.basicallyEqual(result, expectedResult) }
     }
 
-    def "validate recursion of a template"() {
-        given:
-        String expectedResult = resources.resolve("templates/recursion.html").get().getContentAsString()
-        when:
-        String result = tagliatelle.resolve("/templates/recursion.html.pasta").get().renderToString()
-        then:
-        test.basicallyEqual(result, expectedResult)
+    @Test
+    fun `Validate recursion of a template`() {
+        val expectedResult = resources.resolve("templates/recursion.html").get().contentAsString
+        val result = tagliatelle.resolve("/templates/recursion.html.pasta").get().renderToString()
+
+        assertTrue { test.basicallyEqual(result, expectedResult) }
     }
 
     /**
-     * Previously a non-breaking whitespace (U00A0) lead to an endless loop creating an infinita amount of errors.
+     * Previously, a non-breaking whitespace (U00A0) lead to an endless loop creating an infinite number of errors.
      */
-    def "horror whitespaces don't crash the compiler"() {
-        when:
-        def script = "<i:invoke\u00A0template=\"/templates/attribute-expressions.html.pasta\"/>"
-        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(script), null)
-        List<CompileError> errors = new TemplateCompiler(ctx).compile()
-        then:
-        errors.size() == 1
+    @Test
+    fun `Horror whitespaces don't crash the compiler`() {
+        val script = "<i:invoke\u00A0template=\"/templates/attribute-expressions.html.pasta\"/>"
+        val context = TemplateCompilationContext(Template("test", null), SourceCodeInfo.forInlineCode(script), null)
+        val errors = TemplateCompiler(context).compile()
+
+        assertEquals(1, errors.size)
     }
 
-    def "validate invoke: calling original template from customization"() {
-        given:
-        String expectedResult = resources.resolve("templates/invoke-customized.html").get().getContentAsString()
-        when:
-        String result = tagliatelle.resolve("/templates/invoke-customized.html.pasta").get().renderToString()
-        String resultCached = tagliatelle.resolve("/templates/invoke-customized.html.pasta").get().renderToString()
-        then:
-        test.basicallyEqual(result, expectedResult)
-        test.basicallyEqual(resultCached, expectedResult)
+    @Test
+    fun `Validate invoke calling original template from customization`() {
+        val expectedResult = resources.resolve("templates/invoke-customized.html").get().contentAsString
+        val result = tagliatelle.resolve("/templates/invoke-customized.html.pasta").get().renderToString()
+        val resultCached = tagliatelle.resolve("/templates/invoke-customized.html.pasta").get().renderToString()
+
+        assertTrue { test.basicallyEqual(result, expectedResult) }
+        assertTrue { test.basicallyEqual(resultCached, expectedResult) }
     }
 
-    def "casting to inner class works"() {
-        given:
-        InnerClassTestObject.InnerClass innerClass = new InnerClassTestObject.InnerClass()
-        innerClass.setTest("test")
-        String expectedResult = "test"
-        when:
-        String result = tagliatelle.resolve("/templates/inner-class.html.pasta")
-                .get().renderToString(Tuple.create(innerClass, innerClass))
-        then:
-        test.basicallyEqual(result, expectedResult)
+    @Test
+    fun `Casting to inner class works`() {
+        val innerClass = InnerClassTestObject.InnerClass()
+        innerClass.test = "test"
+        val result = tagliatelle.resolve("/templates/inner-class.html.pasta").get()
+                .renderToString(Tuple.create(innerClass, innerClass))
+
+        assertTrue { test.basicallyEqual(result, "test") }
     }
 
-    def "Toplevel i:block and i:extraBlock (even when nested) produce the appropriate extra outputs"() {
-        when:
-        def source = "<i:block name=\"test\">" +
-        "Test" +
-                "<i:extraBlock name=\"extra-test\">Extra Test</i:extraBlock>" +
-                "</i:block>"
-        def ctx = new TemplateCompilationContext(new Template("test", null), SourceCodeInfo.forInlineCode(source), null)
-        List<CompileError> errors = new TemplateCompiler(ctx).compile()
-        and:
-        GlobalRenderContext globalRenderContext = tagliatelle.createRenderContext()
-        and:
-        ctx.getTemplate().render(globalRenderContext)
-        then:
-        errors.size() == 0
-        and: "A top level i:block is expected to render its contents into an extra block"
-        globalRenderContext.getExtraBlock("test") == "Test"
-        and: "An i:extraBlock is expected to do the same - independently of its nesting and location"
-        globalRenderContext.getExtraBlock("extra-test") == "Extra Test"
+    @Test
+    fun `Toplevel block and extraBlock (even when nested) produce the appropriate extra outputs`() {
+        val source =
+                "<i:block name=\"test\">" + "Test" + "<i:extraBlock name=\"extra-test\">Extra Test</i:extraBlock>" + "</i:block>"
+        val context = TemplateCompilationContext(Template("test", null), SourceCodeInfo.forInlineCode(source), null)
+        val errors = TemplateCompiler(context).compile()
+        val globalRenderContext = tagliatelle.createRenderContext()
+        context.template.render(globalRenderContext)
+
+        assertTrue { errors.isEmpty() }
+        // A top level i:block is expected to render its contents into an extra block
+        assertEquals("Test", globalRenderContext.getExtraBlock("test"))
+        // An i:extraBlock is expected to do the same - independently of its nesting and location
+        assertEquals("Extra Test", globalRenderContext.getExtraBlock("extra-test"))
     }
 
-    def "Minimal leading and trailing whitespace is trimmed"() {
-        when:
-        def source = "<i:arg type=\"String\" name=\"test\" />\n" +
-        "\n" +
-                "<i>@test</i>\n"
-        def ctx = new TemplateCompilationContext(new Template("test.html.pasta", null), SourceCodeInfo.forInlineCode(source), null)
-        List<CompileError> errors = new TemplateCompiler(ctx).compile()
-        then:
-        errors.size() == 0
-        and:
-        ctx.getTemplate().renderToString("hello") == "<i>hello</i>"
+    @Test
+    fun `Minimal leading and trailing whitespace is trimmed`() {
+        val source = "<i:arg type=\"String\" name=\"test\" />\n" + "\n" + "<i>@test</i>\n"
+        val context = TemplateCompilationContext(
+                Template("test.html.pasta", null),
+                SourceCodeInfo.forInlineCode(source),
+                null
+        )
+        val errors = TemplateCompiler(context).compile()
+
+        assertTrue { errors.isEmpty() }
+        assertEquals("<i>hello</i>", context.template.renderToString("hello"))
     }
 
-    def "Whitespace trimming maintains non-minimal whitespace that has likely been placed intentionally"() {
-        when:
-        def source = "<i:arg type=\"String\" name=\"test\" />\n" +
-        "\n" +
-                "<i>@test</i>\n" +
-                "\n"
-        def ctx = new TemplateCompilationContext(new Template("test.html.pasta", null), SourceCodeInfo.forInlineCode(source), null)
-        List<CompileError> errors = new TemplateCompiler(ctx).compile()
-        then:
-        errors.size() == 0
-        and:
+    @Test
+    fun `Whitespace trimming maintains non-minimal whitespace that has likely been placed intentionally`() {
+        val source = "<i:arg type=\"String\" name=\"test\" />\n" + "\n" + "<i>@test</i>\n" + "\n"
+        val context = TemplateCompilationContext(
+                Template("test.html.pasta", null),
+                SourceCodeInfo.forInlineCode(source),
+                null
+        )
+        val errors = TemplateCompiler(context).compile()
+
+        assertTrue { errors.isEmpty() }
         // of the two trailing newlines, only one is considered to be there for a (git-related) reason
-        ctx.getTemplate().renderToString("hello") == "<i>hello</i>\n"
+        assertEquals("<i>hello</i>\n", context.template.renderToString("hello"))
     }
 
-    def "Different non-emitting tags do not disturb whitespace trimming"() {
-        when:
-        def source = "<i:arg type=\"String\" name=\"test\" />\n" +
-        "<i:local name=\"temp\" value=\"'This is a test.'\"/>\n" +
-                "<i:local name=\"ghost\" value=\"'I am a ghost!'\"/>\n" +
-                "\n" +
-                "<i:pragma name=\"description\" value=\"Provides a test case for whitespace trimming\"/>\n" +
-                "\n" +
-                "<i>@test – @temp</i>\n"
-        def ctx = new TemplateCompilationContext(new Template("test.html.pasta", null), SourceCodeInfo.forInlineCode(source), null)
-        List<CompileError> errors = new TemplateCompiler(ctx).compile()
-        then:
-        errors.size() == 0
-        and:
-        ctx.getTemplate().renderToString("hello") == "\n<i>hello – This is a test.</i>"
+    @Test
+    fun `Different non-emitting tags do not disturb whitespace trimming`() {
+        val source =
+                "<i:arg type=\"String\" name=\"test\" />\n" + "<i:local name=\"temp\" value=\"'This is a test.'\"/>\n" + "<i:local name=\"ghost\" value=\"'I am a ghost!'\"/>\n" + "\n" + "<i:pragma name=\"description\" value=\"Provides a test case for whitespace trimming\"/>\n" + "\n" + "<i>@test – @temp</i>\n"
+        val context = TemplateCompilationContext(
+                Template("test.html.pasta", null),
+                SourceCodeInfo.forInlineCode(source),
+                null
+        )
+        val errors = TemplateCompiler(context).compile()
+
+        assertTrue { errors.isEmpty() }
+        assertEquals("\n<i>hello – This is a test.</i>", context.template.renderToString("hello"))
+    }
+
+    companion object {
+        @JvmStatic
+        @Part
+        private lateinit var tagliatelle: Tagliatelle
+
+        @JvmStatic
+        @Part
+        private lateinit var resources: Resources
+
+        @JvmStatic
+        @Part
+        private lateinit var test: TestHelper
     }
 }
