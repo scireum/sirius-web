@@ -14,7 +14,6 @@ import sirius.kernel.SiriusExtension
 import sirius.kernel.di.std.Part
 import sirius.pasta.tagliatelle.Tagliatelle
 import sirius.pasta.tagliatelle.compiler.TemplateCompiler
-import sirius.web.resources.Resources
 import kotlin.test.assertEquals
 
 /**
@@ -44,9 +43,5 @@ class XmlMacroTest {
         @JvmStatic
         @Part
         private lateinit var tagliatelle: Tagliatelle
-
-        @JvmStatic
-        @Part
-        private lateinit var resources: Resources
     }
 }
