@@ -8,34 +8,45 @@
 
 package sirius.pasta.tagliatelle
 
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import sirius.kernel.SiriusExtension
 import sirius.kernel.di.std.Part
 import sirius.pasta.tagliatelle.rendering.GlobalRenderContext
-import sirius.pasta.tagliatelle.rendering.LocalRenderContext
 import sirius.web.resources.Resources
+import kotlin.test.assertTrue
 
-class DebugTest extends BaseSpecification {
-    @Part
-    private static Tagliatelle tagliatelle
+/**
+ * Tests the debug output of the [Tagliatelle] template engine.
+ */
+@ExtendWith(SiriusExtension::class)
+class DebugTest {
 
-            @Part
-            private static Resources resources
+    @Test
+    fun `Debug information is included in template when debug level is set to TRACE`() {
+        val expectedResult = resources.resolve("/templates/debug/debug-expected.html").get().contentAsString
 
-            @Part
-            private static TestHelper test
-
-            def "debug template inclusion"() {
-        given:
-        String expectedResult = resources.resolve("/templates/debug/debug-expected.html").get().getContentAsString()
-
-        when:
-        Template template = tagliatelle.resolve("/templates/debug/debug.html.pasta").get()
-        GlobalRenderContext renderContext = tagliatelle.createRenderContext()
-        LocalRenderContext localRenderContext = renderContext.createContext(template)
-        renderContext.setDebugLevel(GlobalRenderContext.DebugLevel.TRACE)
+        val template = tagliatelle.resolve("/templates/debug/debug.html.pasta").get()
+        val renderContext = tagliatelle.createRenderContext()
+        val localRenderContext = renderContext.createContext(template)
+        renderContext.debugLevel = GlobalRenderContext.DebugLevel.TRACE
         template.renderWithContext(localRenderContext)
-        String result = renderContext.toString()
+        val result = renderContext.toString()
 
-        then:
-        test.basicallyEqual(result, expectedResult)
+        assertTrue { test.basicallyEqual(result, expectedResult) }
+    }
+
+    companion object {
+        @JvmStatic
+        @Part
+        private lateinit var tagliatelle: Tagliatelle
+
+        @JvmStatic
+        @Part
+        private lateinit var resources: Resources
+
+        @JvmStatic
+        @Part
+        private lateinit var test: TestHelper
     }
 }
