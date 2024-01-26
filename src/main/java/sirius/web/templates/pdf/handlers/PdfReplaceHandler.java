@@ -123,14 +123,14 @@ public abstract class PdfReplaceHandler implements Priorized {
         if (fsImage.getWidth() > cssWidth) {
             return Tuple.create(cssWidth, (cssWidth * fsImage.getHeight()) / fsImage.getWidth());
         }
-        return Tuple.create(cssHeight, (cssHeight * fsImage.getWidth()) / fsImage.getHeight());
+        return Tuple.create((cssHeight * fsImage.getWidth()) / fsImage.getHeight(), cssHeight);
     }
 
     @Nonnull
     private static Tuple<Integer, Integer> upscaleResource(int cssWidth, int cssHeight, FSImage fsImage) {
-        if (cssWidth > cssHeight) {
+        if (fsImage.getWidth() > fsImage.getHeight()) {
             return Tuple.create(cssWidth, (cssWidth * fsImage.getHeight()) / fsImage.getWidth());
         }
-        return Tuple.create(cssHeight, (cssHeight * fsImage.getWidth()) / fsImage.getHeight());
+        return Tuple.create((cssHeight * fsImage.getWidth()) / fsImage.getHeight(), cssHeight);
     }
 }
