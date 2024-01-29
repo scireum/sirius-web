@@ -129,7 +129,8 @@ public abstract class PdfReplaceHandler implements Priorized {
             imageWidth = cssWidth;
         }
 
-        // Sometimes we also need to scale down the height - even if the width is already scaled down
+        // Depending on the image aspect ration, the height might still be higher than the defined limit, so
+        // we scale down further
         if (imageHeight > cssHeight) {
             imageWidth = cssHeight * imageWidth / imageHeight;
             imageHeight = cssHeight;
