@@ -1,9 +1,9 @@
-<i:arg type="java.time.LocalDateTime" name="date"/>
-<i:arg type="String" name="class" default=""/>
+<i:arg name="date" type="java.time.LocalDateTime"/>
+<i:arg name="class" type="String" default=""/>
 
 <i:if test="date != null">
-    <span class="cycle-js link @class"
-          data-cycle="@toUserString(date)">
+    <a class="text-black link cycle-js @class"
+       data-cycle="@toUserString(date)">
         @NLS.toSpokenDate(date)
-    </span>
+    </a>
 </i:if>
