@@ -12,8 +12,8 @@
 <i:pragma name="description" value="Renders a checkbox within a Tycho template"/>
 
 <div class="@class">
-    <div class="form-group checkbox @UserContext.get().signalFieldError(name)">
-        <label>
+    <div class="form-group mb-3 checkbox @UserContext.get().signalFieldError(name)">
+        <label class="form-label">
             <i:if test="!readonly">
                 <input type="hidden" name="@apply('%s_marker',name)"/>
             </i:if>

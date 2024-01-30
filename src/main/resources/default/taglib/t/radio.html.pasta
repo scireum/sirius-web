@@ -11,8 +11,8 @@
 
 <i:pragma name="description" value="Renders a radio button within a Tycho template"/>
 
-<div class="form-group radio @UserContext.get().signalFieldError(name) @class">
-    <label>
+<div class="form-group mb-3 radio @UserContext.get().signalFieldError(name) @class">
+    <label class="form-label">
         <input type="radio" name="@name" value="@key" @if (key== value) { checked="checked" } @if (readonly) {
                disabled="disabled" }/>
         <i:if test="isFilled(label)">
