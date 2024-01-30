@@ -120,10 +120,23 @@ public abstract class PdfReplaceHandler implements Priorized {
 
     @Nonnull
     private static Tuple<Integer, Integer> downscaleResource(int cssWidth, int cssHeight, FSImage fsImage) {
-        if (fsImage.getWidth() > cssWidth) {
-            return Tuple.create(cssWidth, (cssWidth * fsImage.getHeight()) / fsImage.getWidth());
+        int imageWidth = fsImage.getWidth();
+        int imageHeight = fsImage.getHeight();
+
+        // First, check if we need to scale down the width
+        if (imageWidth > cssWidth) {
+            imageHeight = cssWidth * imageHeight / imageWidth;
+            imageWidth = cssWidth;
         }
-        return Tuple.create((cssHeight * fsImage.getWidth()) / fsImage.getHeight(), cssHeight);
+
+        // Depending on the image aspect ratio, the height might still be larger than the defined limit, so
+        // we scale down further
+        if (imageHeight > cssHeight) {
+            imageWidth = cssHeight * imageWidth / imageHeight;
+            imageHeight = cssHeight;
+        }
+
+        return Tuple.create(imageWidth, imageHeight);
     }
 
     @Nonnull
