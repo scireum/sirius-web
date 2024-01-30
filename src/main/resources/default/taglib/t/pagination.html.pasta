@@ -27,8 +27,8 @@
         sirius.ready(() => {
             const _rangeInput = document.getElementById('@id');
             _rangeInput.addEventListener('keyup', event => {
-                if (event.key === sirius.key.ENTER && /^\d+$/.test(this.value)) {
-                    const location = '@raw {@page.linkToPageWithConfigurableStart(baseUrl)}' + this.value;
+                if (event.key === sirius.key.ENTER && /^\d+$/.test(event.target.value)) {
+                    const location = '@raw {@page.linkToPageWithConfigurableStart(baseUrl)}' + event.target.value;
                     window.location.replace(location);
                     event.preventDefault();
                 }
