@@ -108,20 +108,18 @@ public abstract class PdfReplaceHandler implements Priorized {
         }
 
         if (fsImage.getWidth() > cssWidth || fsImage.getHeight() > cssHeight) {
-            return downscaleResource(cssWidth, cssHeight, fsImage);
+            return downscaleResource(cssWidth, cssHeight, fsImage.getWidth(), fsImage.getHeight());
         }
 
         if (cssWidth > fsImage.getWidth() && cssHeight > fsImage.getHeight()) {
-            return upscaleResource(cssWidth, cssHeight, fsImage);
+            return upscaleResource(cssWidth, cssHeight, fsImage.getWidth(), fsImage.getHeight());
         }
 
         return null;
     }
 
     @Nonnull
-    private static Tuple<Integer, Integer> downscaleResource(int cssWidth, int cssHeight, FSImage fsImage) {
-        int imageWidth = fsImage.getWidth();
-        int imageHeight = fsImage.getHeight();
+    private static Tuple<Integer, Integer> downscaleResource(int cssWidth, int cssHeight, int imageWidth, int imageHeight) {
 
         // First, check if we need to scale down the width
         if (imageWidth > cssWidth) {
@@ -139,10 +137,13 @@ public abstract class PdfReplaceHandler implements Priorized {
     }
 
     @Nonnull
-    private static Tuple<Integer, Integer> upscaleResource(int cssWidth, int cssHeight, FSImage fsImage) {
-        if (fsImage.getWidth() > fsImage.getHeight()) {
-            return Tuple.create(cssWidth, (cssWidth * fsImage.getHeight()) / fsImage.getWidth());
-        }
-        return Tuple.create((cssHeight * fsImage.getWidth()) / fsImage.getHeight(), cssHeight);
+    private static Tuple<Integer, Integer> upscaleResource(int cssWidth, int cssHeight, int imageWidth, int imageHeight) {
+
+        // First, scale up only the width
+        imageHeight = cssWidth * imageHeight / imageWidth;
+        imageWidth = cssWidth;
+
+        // After upscaling the width, we might need to downscale the height
+        return downscaleResource(cssWidth, cssHeight, imageWidth, imageHeight);
     }
 }
