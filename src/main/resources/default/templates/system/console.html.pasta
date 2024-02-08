@@ -1,5 +1,6 @@
 <t:page title="Console">
     <i:block name="head">
+        <script type="text/javascript" src="/assets/tycho/libs/jquery/jquery-3.7.1.min.js"></script>
         <script type="text/javascript" src="/assets/terminal/jquery.terminal-2.31.1.min.js"></script>
         <link href="/assets/terminal/jquery.terminal-2.31.1.min.css" rel="stylesheet"/>
         <script>

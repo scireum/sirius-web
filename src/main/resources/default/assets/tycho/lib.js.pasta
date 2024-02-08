@@ -2,7 +2,6 @@
 // A list of all licenses can be obtained via /licenses
 //
 
-___include("/assets/tycho/libs/jquery/jquery-3.7.1.min.js")
 ___include("/assets/tycho/libs/popper/popper.min.js")
 ___include("/assets/tycho/libs/bootstrap/js/bootstrap.min.js")
 ___include("/assets/tycho/libs/mustache/mustache.min.js")
