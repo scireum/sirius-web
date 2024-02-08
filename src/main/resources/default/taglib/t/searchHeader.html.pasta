@@ -29,12 +29,10 @@
                         <div class="input-group">
                             <input type="text" name="query" class="form-control primary-autofocus-js submit-on-enter-js"
                                    value="@page.getQuery()" placeholder="@i18n('NLS.searchkey')"/>
-                            <div class="input-group-append">
-                                <button class="btn btn-outline-secondary"
-                                        onclick="sirius.requestSubmitForm(document.getElementById('search'))">
-                                    <i class="fa-solid fa-magnifying-glass"></i>
-                                </button>
-                            </div>
+                            <button class="btn btn-outline-secondary"
+                                    onclick="sirius.requestSubmitForm(document.getElementById('search'))">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </button>
                         </div>
                     </form>
                 </i:if>
