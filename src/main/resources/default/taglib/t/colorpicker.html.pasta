@@ -53,14 +53,48 @@
             const _textInput = document.querySelector('#@textId');
             const _colorInput = document.querySelector('#@colorId');
 
+            function formatChannel(value) {
+                return value.toString(16).padStart(2, '0')
+            }
+
+            function formatColor(red, green, blue) {
+                return '#' + formatChannel(red) + formatChannel(green) + formatChannel(blue);
+            }
+
+            function convertColorToHex(color) {
+                // create a dummy element with the given color
+                const dummy = document.createElement('span');
+                dummy.style.color = color;
+
+                // shortly mount the dummy element in the DOM tree, in order to convert the color
+                document.body.appendChild(dummy);
+                const convertedColor = window.getComputedStyle(dummy).color;
+                dummy.remove();
+
+                // at this point, we get either an RGB or an RGBA color that we can convert back
+                const rgbMatch = convertedColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*\d+)?\)/);
+                if (rgbMatch) {
+                    const red = parseInt(rgbMatch[1], 10);
+                    const green = parseInt(rgbMatch[2], 10);
+                    const blue = parseInt(rgbMatch[3], 10);
+                    return formatColor(red, green, blue);
+                }
+
+                // reaching this point, we return solid black
+                return '#000000';
+            }
+
             _textInput.addEventListener('input', () => {
                 const color = _textInput.value;
-                _colorInput.value = color.match(/^#([0-9a-f]{6})$/i) ? color : '#000000';
+                _colorInput.value = convertColorToHex(color);
             });
 
             _colorInput.addEventListener('input', () => {
                 _textInput.value = _colorInput.value;
             });
+
+            // re-init the color picker, in case the value was not #rrggbb
+            _colorInput.value = convertColorToHex("@UserContext.get().getFieldValue(name, value)");
         });
     </script>
 </div>
