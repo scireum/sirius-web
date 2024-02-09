@@ -56,28 +56,25 @@ public class ImageReplacedElementFactory extends ITextReplacedElementFactory {
             return null;
         }
 
-        ReplacedElement fallBackElement = super.createReplacedElement(c, box, uac, cssWidth, cssHeight);
         String nodeName = e.getNodeName();
         if (!TAG_TYPE_IMG.equals(nodeName)) {
-            return fallBackElement;
+            return super.createReplacedElement(c, box, uac, cssWidth, cssHeight);
         }
 
         String src = e.getAttribute(ATTR_SRC);
         if (Strings.isEmpty(src)) {
-            return fallBackElement;
+            return super.createReplacedElement(c, box, uac, cssWidth, cssHeight);
         }
 
         try {
             String protocol = Strings.split(src, "://").getFirst();
             PdfReplaceHandler handler = findHandler(protocol);
-            AsyncLoadedImageElement imageElement = new AsyncLoadedImageElement(handler, src, cssWidth, cssHeight);
-            imageElement.setFallbackElement(fallBackElement);
-            return imageElement;
+            return new AsyncLoadedImageElement(handler, src, cssWidth, cssHeight);
         } catch (Exception ex) {
             Exceptions.handle(ex);
         }
 
-        return fallBackElement;
+        return super.createReplacedElement(c, box, uac, cssWidth, cssHeight);
     }
 
     private PdfReplaceHandler findHandler(String protocol) {
