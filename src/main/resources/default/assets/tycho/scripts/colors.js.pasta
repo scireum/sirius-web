@@ -37,3 +37,34 @@ SIRIUS_COLORS['deep-blue-dark'] = '#352E87';
 
 SIRIUS_COLORS['gray'] = '#ACACAC';
 SIRIUS_COLORS['gray-dark'] = '#808080';
+
+window.sirius.convertColorToHex = function (color) {
+    function formatChannel(value) {
+        return value.toString(16).padStart(2, '0')
+    }
+
+    function formatColor(red, green, blue) {
+        return '#' + formatChannel(red) + formatChannel(green) + formatChannel(blue);
+    }
+
+    // create a dummy element with the given color
+    const dummy = document.createElement('span');
+    dummy.style.color = color;
+
+    // shortly mount the dummy element in the DOM tree, in order to convert the color
+    document.body.appendChild(dummy);
+    const convertedColor = window.getComputedStyle(dummy).color;
+    dummy.remove();
+
+    // at this point, we get either an RGB or an RGBA color that we can convert back
+    const rgbMatch = convertedColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*\d+)?\)/);
+    if (rgbMatch) {
+        const red = parseInt(rgbMatch[1], 10);
+        const green = parseInt(rgbMatch[2], 10);
+        const blue = parseInt(rgbMatch[3], 10);
+        return formatColor(red, green, blue);
+    }
+
+    // reaching this point, we return solid black
+    return '#000000';
+}
