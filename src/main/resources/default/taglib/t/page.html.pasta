@@ -46,9 +46,9 @@
         // This cannot be moved into tycho.js as it has to be re-evaluated for each call and must not be cached...
         const tycho_current_locale = '@NLS.getCurrentLanguage()';
 
-        sirius.ready(() => {
+        if (randomizeCharts) {
             randomizeCharts('@sirius.kernel.commons.Hasher.md5().hash(currentRenderContext().getRootContext().getTemplate().getName()).toString()')
-        });
+        }
     </script>
 </head>
 <body>
