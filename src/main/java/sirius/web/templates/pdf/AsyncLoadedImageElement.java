@@ -9,9 +9,7 @@
 package sirius.web.templates.pdf;
 
 import org.xhtmlrenderer.extend.FSImage;
-import org.xhtmlrenderer.extend.ReplacedElement;
 import org.xhtmlrenderer.layout.LayoutContext;
-import org.xhtmlrenderer.pdf.ITextImageElement;
 import org.xhtmlrenderer.pdf.ITextOutputDevice;
 import org.xhtmlrenderer.pdf.ITextReplacedElement;
 import org.xhtmlrenderer.render.BlockBox;
@@ -20,12 +18,9 @@ import sirius.kernel.commons.Tuple;
 import sirius.kernel.health.Exceptions;
 import sirius.web.templates.pdf.handlers.PdfReplaceHandler;
 
-import javax.annotation.Nonnull;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.Semaphore;
 
 /**
  * Represents an image that is loaded asynchronously.
@@ -41,12 +36,11 @@ import java.util.concurrent.ForkJoinTask;
  */
 public final class AsyncLoadedImageElement implements ITextReplacedElement {
 
+    private final Thread resolvingThread;
     private final int cssWidth;
     private final int cssHeight;
-    private final ForkJoinTask<FSImage> imageForkJoinTask;
     private FSImage image;
     private Point location;
-    private ReplacedElement fallbackElement;
 
     /**
      * Creates a new element which loads the image asynchronously.
@@ -61,33 +55,37 @@ public final class AsyncLoadedImageElement implements ITextReplacedElement {
         this.cssWidth = cssWidth;
         this.location = new Point(0, 0);
 
-        imageForkJoinTask = createImageResolveTask(handler, uri, cssWidth, cssHeight);
-        ForkJoinPool.commonPool().submit(imageForkJoinTask);
-    }
-
-    @Nonnull
-    private static ForkJoinTask<FSImage> createImageResolveTask(PdfReplaceHandler handler, String uri, int cssWidth, int cssHeight) {
-        return ForkJoinTask.adapt(() -> {
+        Semaphore semaphore = ResourceHandlingSemaphore.get();
+        resolvingThread = Thread.startVirtualThread(() -> {
             try {
-                return handler.resolveUri(uri, null, cssWidth, cssHeight);
+                semaphore.acquire();
+                image = handler.resolveUri(uri, null, cssWidth, cssHeight);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                Exceptions.handle(e);
             } catch (Exception e) {
                 Exceptions.handle(e);
+            } finally {
+                semaphore.release();
             }
-            return null;
         });
     }
 
+    /**
+     * Returns the resolved image.
+     * <p>
+     * When we call this method, we really need the resolved image. Therefore, we wait until the image is resolved.
+     * @return the resolved image or <tt>null</tt> if the image could not be resolved
+     */
     private FSImage waitAndGetImage() {
         if (image != null) {
             return image;
         }
 
         try {
-            image = imageForkJoinTask.get();
+            resolvingThread.join();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            Exceptions.handle(e);
-        } catch (ExecutionException e) {
             Exceptions.handle(e);
         }
         return image;
@@ -99,8 +97,6 @@ public final class AsyncLoadedImageElement implements ITextReplacedElement {
         if (waitAndGetImage() != null) {
             Tuple<Integer, Integer> centerPosition = computeCenterPosition(contentBounds);
             outputDevice.drawImage(image, centerPosition.getFirst(), centerPosition.getSecond());
-        } else if (fallbackElement != null) {
-            outputDevice.drawImage(((ITextImageElement) fallbackElement).getImage(), contentBounds.x, contentBounds.y);
         }
     }
 
@@ -148,13 +144,5 @@ public final class AsyncLoadedImageElement implements ITextReplacedElement {
     @Override
     public boolean hasBaseline() {
         return false;
-    }
-
-    public ReplacedElement getFallbackElement() {
-        return fallbackElement;
-    }
-
-    public void setFallbackElement(ReplacedElement fallbackElement) {
-        this.fallbackElement = fallbackElement;
     }
 }
