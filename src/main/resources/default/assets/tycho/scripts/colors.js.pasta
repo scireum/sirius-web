@@ -57,7 +57,7 @@ window.sirius.convertColorToHex = function (color) {
     dummy.remove();
 
     // at this point, we get either an RGB or an RGBA color that we can convert back
-    const rgbMatch = convertedColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*\d+)?\)/);
+    const rgbMatch = convertedColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*\d+(.\d+)?)?\)/);
     if (rgbMatch) {
         const red = parseInt(rgbMatch[1], 10);
         const green = parseInt(rgbMatch[2], 10);
