@@ -16,9 +16,9 @@
 <i:pragma name="description" value="Renders a color picker within a Tycho template"/>
 
 <i:local name="textId"
-         value="@isFilled(id) ? id : generateId('colorpicker-%s-text')"/>
+         value="@generateId('colorpicker-%s-text')"/>
 <i:local name="colorId"
-         value="@generateId('colorpicker-%s-color')"/>
+         value="@isFilled(id) ? id : generateId('colorpicker-%s-color')"/>
 
 <div class="form-group mb-3 @UserContext.get().signalFieldError(name) @class">
     <i:if test="isFilled(label) || forceLabel">
@@ -26,14 +26,14 @@
     </i:if>
 
     <div class="input-group">
-        <input @if(isFilled(fieldName)) { name="@fieldName" }
-               id="@textId"
+        <input id="@textId"
                type="text"
                value="@UserContext.get().getFieldValue(name, value)"
                class="form-control input-block-level @fieldClass"
                @if (isFilled(placeholder)) { placeholder="@placeholder" }
                @if (isFilled(tabIndex)) { tabindex="@tabIndex" }/>
-        <input id="@colorId"
+        <input @if(isFilled(fieldName)) { name="@fieldName" }
+               id="@colorId"
                type="color"
                value="@UserContext.get().getFieldValue(name, value)"
                class="form-control form-control-color"
