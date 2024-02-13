@@ -20,7 +20,7 @@
                 </div>
                 <div class="card-footer">
                     <i:render name="sidebar-footer">
-                        <t:backButton class="mt-4 d-block"/>
+                        <t:backButton class="mt-4 mb-1 d-block"/>
                     </i:render>
                 </div>
             </div>
