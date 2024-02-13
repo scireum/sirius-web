@@ -54,8 +54,7 @@
             const _colorInput = document.querySelector('#@colorId');
 
             _textInput.addEventListener('input', () => {
-                const color = _textInput.value;
-                _colorInput.value = sirius.convertColorToHex(color);
+                _colorInput.value = sirius.convertColorToHex(_textInput.value);
             });
 
             _textInput.addEventListener('change', () => {
