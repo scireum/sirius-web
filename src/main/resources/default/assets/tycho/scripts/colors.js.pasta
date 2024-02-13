@@ -49,11 +49,11 @@ window.sirius.convertColorToHex = function (color) {
 
     // create a dummy element with the given color
     const dummy = document.createElement('span');
-    dummy.style.color = color;
+    dummy.style.backgroundColor = color;
 
     // shortly mount the dummy element in the DOM tree, in order to convert the color
     document.body.appendChild(dummy);
-    const convertedColor = window.getComputedStyle(dummy).color;
+    const convertedColor = window.getComputedStyle(dummy).backgroundColor;
     dummy.remove();
 
     // at this point, we get either an RGB or an RGBA color that we can convert back
