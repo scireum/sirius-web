@@ -9,16 +9,30 @@
     <div class="d-flex justify-content-center">
         <div class="input-group mb-4" style="width: fit-content">
             <i:if test="page.hasLess()">
-                <a href="@page.linkToPreviousPage(baseUrl)" class="btn btn-outline-secondary">&#8592;</a>
+                <a href="@page.linkToPreviousPage(baseUrl)"
+                   class="btn btn-outline-secondary"
+                   aria-label="@i18n('Pagination.previous')">
+                    <span aria-hidden="true">&#8592;</span>
+                </a>
                 <i:else>
-                    <a class="btn btn-outline-secondary disabled">&#8592;</a>
+                    <a class="btn btn-outline-secondary disabled"
+                       aria-label="@i18n('Pagination.previous')">
+                        <span aria-hidden="true">&#8592;</span>
+                    </a>
                 </i:else>
             </i:if>
             <input type="text" id="@id" placeholder="@page.getRange()" class="text-center form-control">
             <i:if test="page.hasMore()">
-                <a href="@page.linkToNextPage(baseUrl)" class="btn btn-outline-secondary">&#8594;</a>
+                <a href="@page.linkToNextPage(baseUrl)"
+                   class="btn btn-outline-secondary"
+                   aria-label="@i18n('Pagination.next')">
+                    <span aria-hidden="true">&#8594;</span>
+                </a>
                 <i:else>
-                    <a class="btn btn-outline-secondary disabled">&#8594;</a>
+                    <a class="btn btn-outline-secondary disabled"
+                       aria-label="@i18n('Pagination.next')">
+                        <span aria-hidden="true">&#8594;</span>
+                    </a>
                 </i:else>
             </i:if>
         </div>
