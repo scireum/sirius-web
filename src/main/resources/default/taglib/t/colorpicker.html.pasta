@@ -58,6 +58,10 @@
                 _colorInput.value = sirius.convertColorToHex(color);
             });
 
+            _textInput.addEventListener('change', () => {
+                _textInput.value = sirius.convertColorToHex(_textInput.value);
+            });
+
             _colorInput.addEventListener('input', () => {
                 _textInput.value = _colorInput.value;
             });
