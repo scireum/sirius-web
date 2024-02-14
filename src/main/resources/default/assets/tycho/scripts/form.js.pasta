@@ -25,25 +25,35 @@ sirius.ready(function () {
         });
     });
 
-    const _modalElement = document.getElementById('link-confirm-modal');
+    const _modalElement = document.getElementById('link-confirm-modal-js');
     const _confirmForm = _modalElement.querySelector(".confirm-form-js");
     const _submitBtn = _modalElement.querySelector("button[type='submit']");
-    _submitBtn.addEventListener('click', function () {
+    _submitBtn.addEventListener('click', () => {
         sirius.requestSubmitForm(_confirmForm);
     });
 
-    document.querySelectorAll('.confirm-link-js').forEach(function (_node) {
-        _node.addEventListener('click', function (event) {
+    const modal = new bootstrap.Modal(_modalElement, {
+        keyboard: true,
+    });
+
+    document.querySelectorAll('.confirm-link-js').forEach(_node => {
+        _node.addEventListener('click', event => {
             try {
                 _confirmForm.setAttribute('action', _node.getAttribute('href'));
 
-                $('#link-confirm-modal').modal({
-                    keyboard: true
-                }).on('shown', function () {
-                    _modalElement.querySelector('.btn-close').focus();
-                }).attr('tabindex', -1);
-            } catch (e) {
-                console.log(e);
+                _modalElement.tabIndex = -1;
+                _modalElement.addEventListener('shown.bs.modal', () => {
+                    const _cancelButton = _modalElement.querySelector('.btn-cancel-js');
+                    if (_cancelButton != null) {
+                        _cancelButton.focus();
+                    }
+                }, {
+                    once: true,
+                });
+
+                modal.show(null);
+            } catch (exception) {
+                console.log(exception);
             }
 
             event.preventDefault();
@@ -51,20 +61,20 @@ sirius.ready(function () {
         });
     });
 
-    document.querySelectorAll('.copy-input-value-js').forEach(function (_node) {
-        _node.addEventListener('click', function () {
-            const fieldName = this.dataset.fieldName;
+    document.querySelectorAll('.copy-input-value-js').forEach(_node => {
+        _node.addEventListener('click', () => {
+            const fieldName = _node.dataset.tyFieldName;
             const _input = document.querySelector('input[name="' + fieldName + '"]');
             if (_input == null || _input.tagName !== 'INPUT') {
                 return;
             }
             sirius.copyToClipboard(_input.value);
 
-            const originalTooltipTitle = this.dataset.originalTitle;
-            this.dataset.originalTitle = this.dataset.copiedTitle;
-            $(this).tooltip('show');
+            const originalTooltipTitle = _node.dataset.bsOriginalTitle;
+            _node.dataset.bsOriginalTitle = _node.dataset.tyCopiedTitle;
+            _node.tooltip.show();
             // Reset the tooltip, so it shows the initial title the next time the button is hovered
-            this.dataset.originalTitle = originalTooltipTitle;
+            _node.dataset.bsOriginalTitle = originalTooltipTitle;
         });
 
     });

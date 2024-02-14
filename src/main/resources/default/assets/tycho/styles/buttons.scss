@@ -21,19 +21,20 @@
 
 .btn-link {
   color: $grayDark !important;
-  border: none;
-  background: none;
+  border: none !important;
+  background: none !important;
 }
 
 .btn-link.active,
+.btn-link:active,
 .btn-link:hover,
 .btn-outline-link.active,
+.btn-outline-link:active,
 .btn-outline-link:hover,
 .dropdown.show > .btn-link {
   color: #fff !important;
-  background-color: $primary-color;
-  border-color: $primary-color;
-  text-decoration: none;
+  background-color: $primary-color !important;
+  border-color: $primary-color !important;
 }
 
 .btn-primary {

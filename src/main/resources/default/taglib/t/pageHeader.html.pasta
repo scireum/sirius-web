@@ -14,17 +14,17 @@
 
 <i:local name="details" value="@renderToString('body')"/>
 <div class="card shadow-sm mb-4 page-header">
-    <div class="card-body pl-3 pr-3 pt-3 @if (isFilled(details)) { pb-1 } else { pb-3 }">
+    <div class="card-body ps-3 pe-3 pt-3 @if (isFilled(details)) { pb-1 } else { pb-3 }">
         <div class="d-flex flex-row">
-            <a class="btn btn-link btn-outline-link sidebar-button-js d-none d-lg-none mr-2">
+            <a class="btn btn-link btn-outline-link sidebar-button-js d-none d-lg-none me-2">
                 <i class="fa-solid fa-bars"></i>
             </a>
             <i:if test="isFilled(title)">
-                <h1 class="legend mr-auto text-ellipsis text-nowrap">@title</h1>
+                <h1 class="legend me-auto text-ellipsis text-nowrap">@title</h1>
                 <i:else>
                     <i:local name="markupTitle" value="@renderToString('title')"/>
                     <i:if test="isFilled(markupTitle)">
-                        <h1 class="legend mr-auto overflow-hidden text-nowrap text-truncate">
+                        <h1 class="legend me-auto overflow-hidden text-nowrap text-truncate">
                             <i:raw>@markupTitle</i:raw>
                         </h1>
                     </i:if>
@@ -34,7 +34,7 @@
             <i:render name="help">
                 <i:extensions target="tycho-page-header" point="help" />
             </i:render>
-            <t:additionalActions class="@('ml-2 ' + additionalActionsClass)"
+            <t:additionalActions class="@('ms-2 ' + additionalActionsClass)"
                                  labelKey="template.html.additionalActions"
                                  labelClass="d-none d-xl-inline text-nowrap">
                 <i:render name="additionalActions"/>

@@ -45,7 +45,10 @@
     <script type="text/javascript">
         // This cannot be moved into tycho.js as it has to be re-evaluated for each call and must not be cached...
         const tycho_current_locale = '@NLS.getCurrentLanguage()';
-        randomizeCharts('@sirius.kernel.commons.Hasher.md5().hash(currentRenderContext().getRootContext().getTemplate().getName()).toString()')
+
+        if (randomizeCharts) {
+            randomizeCharts('@sirius.kernel.commons.Hasher.md5().hash(currentRenderContext().getRootContext().getTemplate().getName()).toString()')
+        }
     </script>
 </head>
 <body>
@@ -68,7 +71,7 @@
                         <div id="page-nav">
                             <div class="d-flex flex-row">
                                 <i:render name="breadcrumbBar">
-                                    <div class="overflow-hidden mr-auto">
+                                    <div class="overflow-hidden me-auto">
                                         <i:invoke template="/templates/tycho/page-breadcrumbs.html.pasta">
                                             <i:render name="breadcrumbs"/>
                                         </i:invoke>

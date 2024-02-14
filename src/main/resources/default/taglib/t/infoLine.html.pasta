@@ -11,7 +11,7 @@
 <i:if test="isFilled(effectiveValue)">
     <div class="d-flex flex-row justify-content-between mb-2 @class">
         <div class="overflow-hidden">@label</div>
-        <div class="text-right overflow-hidden">
+        <div class="text-end overflow-hidden">
             <i:if test="isFilled(value)">
                 @value
                 <i:else>

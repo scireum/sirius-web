@@ -19,9 +19,9 @@
     classes (i.e. "required", "admin-only").
 </i:pragma>
 
-<div class="form-group @UserContext.get().signalFieldError(name) @class">
+<div class="form-group mb-3 @UserContext.get().signalFieldError(name) @class">
     <i:if test="isFilled(label)">
-        <label><span class="@labelClass">@label</span></label>
+        <label class="form-label"><span class="@labelClass">@label</span></label>
     </i:if>
 
     <i:local name="addon" value="@renderToString('addon')"/>
@@ -30,9 +30,7 @@
             <div @id="@id" name="@name" class="form-control input-block-level">
                 <i:render name="body"/>
             </div>
-            <div class="input-group-append">
-                <i:raw>@addon</i:raw>
-            </div>
+            <i:raw>@addon</i:raw>
         </div>
         <i:else>
             <div @id="@id" name="@name" class="form-control input-block-level">

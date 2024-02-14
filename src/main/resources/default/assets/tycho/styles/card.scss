@@ -54,6 +54,19 @@
   position: relative;
 }
 
+.card-columns {
+  column-count: 3;
+  column-gap: 1.25rem;
+  orphans: 1;
+  widows: 1;
+
+  .card {
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 0.75rem;
+  }
+}
+
 // Make cards-columns responsive by default...
 @media (max-width: 1024px) {
   .card-columns {

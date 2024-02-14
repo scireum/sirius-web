@@ -12,8 +12,8 @@
 <i:pragma name="description" value="Renders a checkbox within a Tycho template"/>
 
 <div class="@class">
-    <div class="form-group checkbox @UserContext.get().signalFieldError(name)">
-        <label>
+    <div class="form-group mb-3 checkbox @UserContext.get().signalFieldError(name)">
+        <label class="form-label mb-0">
             <i:if test="!readonly">
                 <input type="hidden" name="@apply('%s_marker',name)"/>
             </i:if>
@@ -22,12 +22,14 @@
             <i:if test="isFilled(label)">
                 <span>@label</span>
             </i:if>
-            <i:if test="isFilled(help)">
-                <small class="form-text text-muted"><i:raw>@expandMessage(help)</i:raw></small>
-            </i:if>
             <i:if test="UserContext.get().hasError(name)">
                 <small class="error-block form-text">@UserContext.get().getFieldErrorMessage(name)</small>
             </i:if>
         </label>
+        <i:if test="isFilled(help)">
+            <div class="form-text text-muted">
+                <i:raw>@expandMessage(help)</i:raw>
+            </div>
+        </i:if>
     </div>
 </div>

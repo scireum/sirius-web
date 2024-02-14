@@ -28,16 +28,16 @@
         <t:pageHeader title="Tagliatelle - State">
             <i:block name="actions">
                 <a href="/system/tags/state" class="btn btn-link">
-                    <i class="fa fa-sync"></i> <span class="d-none d-lg-inline-block">@i18n("NLS.refresh")</span>
+                    <i class="fa-solid fa-sync"></i> <span class="d-none d-lg-inline-block">@i18n("NLS.refresh")</span>
                 </a>
-                <t:dropdown label="Debug" icon="fa fa-bug" labelClass="debug-text d-none d-lg-inline-block">
+                <t:dropdown label="Debug" icon="fa-solid fa-bug" labelClass="debug-text d-none d-lg-inline-block">
                     <t:dropdownItem label="OFF" url="javascript:setDebugLevel('OFF')" />
                     <t:dropdownItem label="DEBUG" url="javascript:setDebugLevel('DEBUG')" />
                     <t:dropdownItem label="TRACE" url="javascript:setDebugLevel('TRACE')" />
                 </t:dropdown>
             </i:block>
             <i:block name="additionalActions">
-                <t:dropdownItem label="Reset Statistics" icon="fa fa-fw fa-trash" url="/system/tags/state?reset" />
+                <t:dropdownItem label="Reset Statistics" icon="fa-solid fa-fw fa-trash" url="/system/tags/state?reset" />
             </i:block>
         </t:pageHeader>
     </i:block>
@@ -48,12 +48,12 @@
                 <tr>
                     <th>Name</th>
                     <th class="align-right">
-                        <div class="text-right text-small">Compiled</div>
-                        <div class="text-right text-small">Last Changed</div>
+                        <div class="text-end text-small">Compiled</div>
+                        <div class="text-end text-small">Last Changed</div>
                     </th>
                     <th class="align-right">
-                        <div class="text-right text-small">Invocations</div>
-                        <div class="text-right text-small">Avg. render time</div>
+                        <div class="text-end text-small">Invocations</div>
+                        <div class="text-end text-small">Avg. render time</div>
                     </th>
                 </tr>
                 <i:for type="sirius.pasta.tagliatelle.Template" var="template" items="templates">
@@ -63,16 +63,16 @@
                             <div class="text-muted text-small">@template.getResource().getUrl()</div>
                         </td>
                         <td>
-                            <div class="text-right text-small">
+                            <div class="text-end text-small">
                                 <t:smartFormatTemporal date="template.getCompilationTime()"/>
                             </div>
-                            <div class="text-right text-small">
+                            <div class="text-end text-small">
                                 <t:smartFormatTemporal date="template.getResourceLastChanged()"/>
                             </div>
                         </td>
                         <td>
-                            <div class="text-right text-small">@template.getNumInvocations()</div>
-                            <div class="text-right text-small">@toUserString(template.getAverageRenderTime()) ms</div>
+                            <div class="text-end text-small">@template.getNumInvocations()</div>
+                            <div class="text-end text-small">@toUserString(template.getAverageRenderTime()) ms</div>
                         </td>
                     </tr>
                 </i:for>

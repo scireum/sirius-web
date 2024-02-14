@@ -16,7 +16,7 @@
 
             <i:block name="actions">
                 <a class="btn btn-link d-none d-md-inline-block" href="javascript:window.print();">
-                    <i class="fa fa-print"></i>
+                    <i class="fa-solid fa-print"></i>
                 </a>
             </i:block>
         </t:pageHeader>
@@ -28,7 +28,7 @@
                 <i:for type="String" var="name" items="webContext.getRequest().headers().names()">
                     <tr>
                         <td><b>@name</b></td>
-                        <td class="text-right">
+                        <td class="text-end">
                             <i:for type="String" var="value" items="webContext.getRequest().headers().getAll(name)">
                                 <div class="text-break">@value</div>
                             </i:for>
@@ -44,7 +44,7 @@
                 <table class="table">
                     <tr>
                         <th>Name</th>
-                        <th class="text-right">
+                        <th class="text-end">
                             Value
                         </th>
                         <th class="text-center">Secure</th>
@@ -54,7 +54,7 @@
                            items="webContext.getCookies()">
                         <tr>
                             <td>@cookie.name()</td>
-                            <td class="text-right">
+                            <td class="text-end">
                                 <div class="text-break">@cookie.value()</div>
                             </td>
                             <td class="text-center">@cookie.isSecure()</td>
@@ -73,7 +73,7 @@
                     <i:for type="String" var="name" items="webContext.getSessionKeys()">
                         <tr>
                             <td>@name</td>
-                            <td class="text-right">
+                            <td class="text-end">
                                 <div class="text-break">@webContext.getSessionValue(name)</div>
                             </td>
                         </tr>
