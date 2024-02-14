@@ -16,6 +16,7 @@
 .nav-pills {
   .nav-link {
     margin: 0 -0.75rem;
+    color: $primary-color !important;
   }
 
   .nav-link .nav-link-icon {
@@ -26,7 +27,7 @@
   }
 
   .nav-link.active, .nav-link:hover, .nav-link:hover .nav-link-icon, .nav-link.active .nav-link-icon {
-    color: #fff;
+    color: $white !important;
     background-color: $primary-color;
   }
 }
