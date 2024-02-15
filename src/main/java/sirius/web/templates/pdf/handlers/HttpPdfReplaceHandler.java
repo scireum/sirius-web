@@ -8,8 +8,10 @@
 
 package sirius.web.templates.pdf.handlers;
 
+import com.lowagie.text.Image;
 import org.xhtmlrenderer.extend.FSImage;
 import org.xhtmlrenderer.extend.UserAgentCallback;
+import org.xhtmlrenderer.pdf.ITextFSImage;
 import sirius.kernel.di.std.Register;
 
 import javax.annotation.Nullable;
@@ -29,6 +31,6 @@ public class HttpPdfReplaceHandler extends PdfReplaceHandler {
     @Nullable
     public FSImage resolveUri(String uri, UserAgentCallback userAgentCallback, int cssWidth, int cssHeight)
             throws Exception {
-        return resizeImage(userAgentCallback.getImageResource(uri).getImage(), cssWidth, cssHeight);
+        return resizeImage(new ITextFSImage(Image.getInstance(uri)), cssWidth, cssHeight);
     }
 }
