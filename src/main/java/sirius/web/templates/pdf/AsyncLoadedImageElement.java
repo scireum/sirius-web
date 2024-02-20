@@ -56,13 +56,15 @@ public final class AsyncLoadedImageElement implements ITextReplacedElement {
         this.location = new Point(0, 0);
 
         Semaphore semaphore = ResourceHandlingSemaphore.get();
+        try {
+            semaphore.acquire();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            Exceptions.handle(e);
+        }
         resolvingThread = Thread.startVirtualThread(() -> {
             try {
-                semaphore.acquire();
                 image = handler.resolveUri(uri, null, cssWidth, cssHeight);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                Exceptions.handle(e);
             } catch (Exception e) {
                 Exceptions.handle(e);
             } finally {
