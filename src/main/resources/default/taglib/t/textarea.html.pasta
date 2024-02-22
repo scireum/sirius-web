@@ -28,7 +28,7 @@
               rows="@rows"
               class="form-control input-block-level @fieldClass"
               @if (isFilled(placeholder)) { placeholder="@placeholder" }
-              @if (readonly) { readonly }>@UserContext.get().getFieldValue(name, value)</textarea>
+              @if (readonly) { disabled readonly }>@UserContext.get().getFieldValue(name, value)</textarea>
 
     <i:if test="isFilled(help)">
         <small class="form-text text-muted">
