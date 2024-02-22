@@ -14,6 +14,7 @@ import org.xhtmlrenderer.pdf.ITextOutputDevice;
 import org.xhtmlrenderer.pdf.ITextReplacedElement;
 import org.xhtmlrenderer.render.BlockBox;
 import org.xhtmlrenderer.render.RenderingContext;
+import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.health.Exceptions;
 import sirius.web.templates.pdf.handlers.PdfReplaceHandler;
@@ -55,16 +56,14 @@ public final class AsyncLoadedImageElement implements ITextReplacedElement {
         this.cssWidth = cssWidth;
         this.location = new Point(0, 0);
 
-        Semaphore semaphore = ResourceHandlingSemaphore.get();
-        try {
-            semaphore.acquire();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            Exceptions.handle(e);
-        }
+        Semaphore semaphore = CallContext.getCurrent().getOrCreateSubContext(SemaphoreContext.class).getSemaphore();
         resolvingThread = Thread.startVirtualThread(() -> {
             try {
+                semaphore.acquire();
                 image = handler.resolveUri(uri, null, cssWidth, cssHeight);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                Exceptions.handle(e);
             } catch (Exception e) {
                 Exceptions.handle(e);
             } finally {
@@ -77,6 +76,7 @@ public final class AsyncLoadedImageElement implements ITextReplacedElement {
      * Returns the resolved image.
      * <p>
      * When we call this method, we really need the resolved image. Therefore, we wait until the image is resolved.
+     *
      * @return the resolved image or <tt>null</tt> if the image could not be resolved
      */
     private FSImage waitAndGetImage() {
