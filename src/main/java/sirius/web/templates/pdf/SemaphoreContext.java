@@ -13,9 +13,10 @@ import sirius.kernel.async.SubContext;
 import java.util.concurrent.Semaphore;
 
 /**
- * This class is used to limit the number of concurrent resource handling operations.
+ * This class is used to limit the number of concurrent resource handling operations per belonging CallContext.
  * <p>
- * This is used to avoid overloading the system with too many concurrent resource handling operations.
+ *  The usecase is that we want to control the number of spawned threads to avoid overloading the 
+ *  system with too many concurrent operations.
  */
 public class SemaphoreContext implements SubContext {
 
