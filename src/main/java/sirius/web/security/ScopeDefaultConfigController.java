@@ -43,7 +43,7 @@ public class ScopeDefaultConfigController extends BasicController {
             ctx.respondWith().template("/templates/system/scope-config.html.pasta", "", files, "");
             return;
         }
-        config(ctx, files.get(0));
+        config(ctx, files.getFirst());
     }
 
     /**

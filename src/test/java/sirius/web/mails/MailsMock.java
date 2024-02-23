@@ -89,6 +89,6 @@ public class MailsMock extends Mails {
     }
 
     public MailSenderMock getLastMail() {
-        return sentMails.get(sentMails.size() - 1);
+        return sentMails.getLast();
     }
 }

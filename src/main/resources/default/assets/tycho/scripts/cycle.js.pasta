@@ -4,15 +4,15 @@
  * to display user-friendly timestamps.
  */
 sirius.ready(function () {
-   document.querySelectorAll('.cycle-js').forEach(function(_node) {
-       if (sirius.isFilled(_node.dataset.cycle)) {
-           _node.setAttribute('title', _node.dataset.cycle);
-           _node.addEventListener('click', function() {
-               let originalText = _node.textContent.trim();
-               _node.textContent = _node.dataset.cycle;
-               _node.setAttribute('title', originalText);
-               _node.dataset.cycle = originalText;
-           });
-       }
-   });
+    document.querySelectorAll('.cycle-js').forEach(function (_node) {
+        if (sirius.isFilled(_node.dataset.cycle)) {
+            _node.setAttribute('title', _node.dataset.cycle);
+            _node.addEventListener('click', function () {
+                let originalText = _node.textContent.trim();
+                _node.textContent = _node.dataset.cycle;
+                _node.setAttribute('title', originalText);
+                _node.dataset.cycle = originalText;
+            });
+        }
+    });
 });

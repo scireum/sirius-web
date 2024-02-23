@@ -104,7 +104,7 @@ public class CompilationContext {
     public void error(Position pos, String message, Object... params) {
         if (!Sirius.isStartedAsTest()
             && !errors.isEmpty()
-            && errors.get(errors.size() - 1).getPosition().getLine() == pos.getLine()) {
+            && errors.getLast().getPosition().getLine() == pos.getLine()) {
             return;
         }
         if (skipErrors) {

@@ -28,6 +28,7 @@ import sirius.kernel.async.Operation;
 import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Watch;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
@@ -93,6 +94,9 @@ class SendMailTask implements Runnable {
 
     @Part
     private static Tasks tasks;
+
+    @Part
+    private static Mails mails;
 
     @ConfigValue("mail.smtp.dkim.keyFile")
     private static String dkimKeyFile;
@@ -185,6 +189,7 @@ class SendMailTask implements Runnable {
     }
 
     private void sendMail() {
+        Watch mailSendTime = Watch.start();
         try {
             Mails.LOG.FINE("Sending eMail: " + mail.subject + " to: " + mail.receiverEmail);
             Session session = getMailSession(config);
@@ -201,7 +206,7 @@ class SendMailTask implements Runnable {
                         mail.remainingAttempts.get());
 
                 // Re-schedule mail in async task...
-               mail.sendMailAsync();
+                mail.sendMailAsync();
 
                 return;
             }
@@ -223,6 +228,7 @@ class SendMailTask implements Runnable {
         // We either successfully completed (or finally failed) sending the task - log mail and cleanup scheduler...
         tasks.forgetSynchronizer(mail.internalMessageId);
         logSentMail();
+        mails.collectMailSendMetric(mailSendTime.elapsedMillis());
     }
 
     private void sendMailViaTransport(Session session, Transport transport) {
@@ -362,7 +368,8 @@ class SendMailTask implements Runnable {
 
     private Session getMailSession(SMTPConfiguration config) {
         Properties props = new Properties();
-        props.setProperty(MAIL_SMTP_PORT, Strings.isEmpty(config.getMailPort()) ? DEFAULT_SMTP_PORT : config.getMailPort());
+        props.setProperty(MAIL_SMTP_PORT,
+                          Strings.isEmpty(config.getMailPort()) ? DEFAULT_SMTP_PORT : config.getMailPort());
         props.setProperty(MAIL_SMTP_HOST, config.getMailHost());
         if (Strings.isFilled(config.getMailSender())) {
             props.setProperty(MAIL_FROM, config.getMailSender());

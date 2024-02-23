@@ -6,20 +6,87 @@
      * Before calling this function, the slider already has to exist in the form of a html node containing all slides
      * as 'div' child nodes.
      *
-     * @param target  css selector selecting the outer html node containing all slides as child nodes
-     * @param options optional object specifying the behaviour of the slider (see constants for possible values):
-     *                 - animation:  Time in ms between sliding (can be undefined for no animation)
-     *                 - interrupt:  What actions interrupt the animation
-     *                 - transition: Behaviour of the animation
-     *                 - arrows:     Whether previous and next arrows should be shown and the location of them
-     *                 - dots:       Whether dots (showing currently selected slide) should be shown
+     * @param {string} target
+     *        CSS selector for the outer html node containing all slides as child nodes
+     * @param {Object} [options]
+     *        configuration specifying the behaviour of the slider
+     * @param {number} [options.animation]
+     *        time in milliseconds before switching to the next view automatically, no automatic sliding if `undefined`
+     * @param {('fade'|'slide')} [options.transition]
+     *        transition animation style when sliding, defaults to no animation when `undefined`; fading only works if
+     *        `columns` is set to 1
+     * @param {number} [options.columns=1]
+     *        number of columns to show at a time, by default 1
+     * @param {number} [options.columnsMd=columns]
+     *        number of columns to show at a time on medium-sized screens, by default equal to `columns`; must not be
+     *        larger than `columns`
+     * @param {number} [options.columnsSm=columnsMd]
+     *        number of columns to show at a time on small-sized screens, by default equal to `columnsMd`; must not be
+     *        larger than `columnsMd`
+     * @param {boolean} [options.interrupt=false]
+     *        if **true**, automatic sliding will be suspended while the mouse pointer hovers over the slider
+     * @param {boolean} [options.arrows=false]
+     *        if **true**, clickable arrows for the previous and next views are rendered on the left and on the right of
+     *        the content, respectively
+     * @param {boolean} [options.dots]
+     *        if **true**, clickable dots showing the currently selected view are rendered below the content
      */
     slider.initSlider = function (target, options) {
         const TRANSITION_BLEND = 'blend';
+        const TRANSITION_FADE = 'fade';
         const TRANSITION_SLIDE = 'slide';
+
+        const DEFAULT_ANIMATION = 5000;
 
         options = options || {};
         options.animation = options.animation || 0;
+        options.columns = options.columns || 1;
+        options.columnsMd = options.columnsMd || options.columns;
+        options.columnsSm = options.columnsSm || options.columnsMd;
+        options.arrows = !!options.arrows;
+        options.dots = !!options.dots;
+        options.interrupt = !!options.interrupt;
+
+        if (options.columns <= 0) {
+            console.warn('Invalid number of columns, defaulting to 1.');
+            options.columns = 1;
+        }
+        if (options.columnsMd <= 0) {
+            console.warn('Invalid number of columns on medium screens, defaulting to 1.');
+            options.columnsMd = 1;
+        }
+        if (options.columnsSm <= 0) {
+            console.warn('Invalid number of columns on small screens, defaulting to 1.');
+            options.columnsSm = 1;
+        }
+        if (options.animation < 0) {
+            console.warn('Invalid animation timing, defaulting to ' + (DEFAULT_ANIMATION / 1000) + ' seconds.');
+            options.animation = DEFAULT_ANIMATION;
+        }
+        if (options.transition === TRANSITION_FADE) {
+            options.transition = TRANSITION_BLEND;
+        }
+        if (options.transition && options.transition !== TRANSITION_BLEND && options.transition !== TRANSITION_SLIDE) {
+            console.warn('Invalid transition identifier, disabling transition.');
+            options.transition = undefined;
+        }
+
+        if (options.columnsMd > options.columns) {
+            console.warn('Number of columns on a medium screen must not be larger than the number of columns on a normal screens. Resetting to ' + options.columns + '.');
+            options.columnsMd = options.columns;
+        }
+        if (options.columnsSm > options.columnsMd) {
+            console.warn('Number of columns on a small screen must not be larger than the number of columns on a medium screens. Resetting to ' + options.columnsMd + '.');
+            options.columnsSm = options.columnsMd;
+        }
+        if (options.columns > 1 && options.transition === TRANSITION_BLEND) {
+            console.warn('Blending only works for one column, disabling transition.');
+            options.transition = undefined;
+        }
+
+        // we remember the number of columns in a local variable, as the value may change according to the screen size,
+        // assuming any of the values `options.columns`, `options.columnsMd`, or `options.columnsSm`
+        let columns = options.columns;
 
         const _slider = document.querySelector(target);
 
@@ -95,7 +162,7 @@
                 _dot.textContent = '●';
                 _dot.addEventListener('click', function (event) {
                     stopAnimationThread();
-                    activateView(index);
+                    activateView(index, 1, columns !== 1);
                     startAnimationThread();
                 });
                 _dot.classList.add('sci-slider-dot');
@@ -108,13 +175,13 @@
                 // set up the slide to fill the entire view within the slider, and not more
                 _slide.style.position = 'absolute';
                 _slide.style.left = '0';
-                _slide.style.width = _slider.offsetWidth + 'px';
-                _slide.style.maxWidth = _slider.offsetWidth + 'px';
+                _slide.style.width = (_slider.offsetWidth / columns) + 'px';
+                _slide.style.maxWidth = (_slider.offsetWidth / columns) + 'px';
                 _slide.style.overflow = 'hidden';
 
                 // the slide is limited to the width provided by the slider, but we want to center the content; we do
                 // this by virtually scrolling the over-sized content such that it is centered
-                _slide.scrollLeft = 0.5 * (_slide.scrollWidth - _slider.offsetWidth);
+                _slide.scrollLeft = 0.5 * (_slide.scrollWidth - _slider.offsetWidth / columns);
 
                 _slide.style.visibility = 'hidden';
 
@@ -124,26 +191,56 @@
             });
         };
 
-        let interrupted = false;
+        let interruptedDueToMouseInteraction = false;
         if (options.interrupt) {
             _wrapper.addEventListener('mouseenter', function (event) {
-                interrupted = true;
+                interruptedDueToMouseInteraction = true;
             });
             _wrapper.addEventListener('mouseleave', function (event) {
-                interrupted = false;
+                interruptedDueToMouseInteraction = false;
             });
         }
 
         let previousIndex = 0;
         let currentIndex = 0;
+
+        const activateAllSlides = function () {
+            resetAllSlides(function (style) {
+                style.transition = '';
+            });
+
+            const widthPerSlide = _slider.offsetWidth / columns;
+            const totalWidth = _slides.length * widthPerSlide;
+            const offset = 0.5 * (_slider.offsetWidth - totalWidth);
+
+            for (let i = 0; i < _slides.length; i++) {
+                _slides[i].style.left = (offset + i * widthPerSlide) + 'px';
+                _slides[i].style.visibility = 'visible';
+            }
+        };
+
         const activateViewWithoutAnimation = function () {
             // set all but the currently active view hidden
-            resetAllSlides();
-            _slides[currentIndex].style.visibility = 'visible';
+            resetAllSlides(function (style) {
+                style.transition = '';
+            });
+
+            // activate the next `columns` views following and including the current index
+            const widthPerSlide = _slider.offsetWidth / columns;
+            for (let i = 0; i < columns; i++) {
+                const index = (currentIndex + i) % _slides.length;
+                _slides[index].style.visibility = 'visible';
+                _slides[index].style.left = (i * widthPerSlide) + 'px';
+            }
         };
+
         const activateViewByBlending = function () {
             // set all but the previously and currently active view hidden
-            resetAllSlides();
+            resetAllSlides(function (style) {
+                style.opacity = '0';
+                style.zIndex = '0';
+                style.transition = 'opacity 1s ease';
+            });
             _slides[previousIndex].style.visibility = 'visible';
             _slides[currentIndex].style.visibility = 'visible';
 
@@ -153,16 +250,19 @@
             _slides[currentIndex].style.zIndex = '1';
             _slides[currentIndex].style.opacity = '1';
         };
+
         const activateViewBySliding = function (direction) {
+            const widthPerSlide = _slider.offsetWidth / columns;
+
             // compute the initial and final positions of the current and previous slides
             const previousFrom = 0, currentTo = 0;
             let previousTo = 0, currentFrom = 0;
             if (direction > 0) {
-                currentFrom = _slider.offsetWidth;
-                previousTo = -_slides[previousIndex].offsetWidth;
+                currentFrom = widthPerSlide;
+                previousTo = -widthPerSlide;
             } else {
-                currentFrom = -_slides[currentIndex].offsetWidth;
-                previousTo = _slider.offsetWidth;
+                currentFrom = -widthPerSlide;
+                previousTo = widthPerSlide;
             }
 
             // without any animation, set the initial state
@@ -174,17 +274,26 @@
             _slides[previousIndex].style.left = previousFrom + 'px';
             _slides[previousIndex].style.zIndex = '0';
 
-            _slides[currentIndex].style.visibility = 'visible';
-            _slides[currentIndex].style.left = currentFrom + 'px';
-            _slides[currentIndex].style.zIndex = '1';
+            const limit = (direction > 0) ? columns : (columns + 1);
+
+            // activate the next `columns` views following and including the current index
+            for (let i = 0; i < limit; i++) {
+                const index = (currentIndex + i) % _slides.length;
+                _slides[index].style.visibility = 'visible';
+                _slides[index].style.left = (currentFrom + i * widthPerSlide) + 'px';
+                _slides[index].style.zIndex = '1';
+            }
 
             // after some time, to allow layouting to settle, trigger the actual animation
             setTimeout(function () {
                 _slides[previousIndex].style.transition = 'left 1s ease';
                 _slides[previousIndex].style.left = previousTo + 'px';
 
-                _slides[currentIndex].style.transition = 'left 1s ease';
-                _slides[currentIndex].style.left = currentTo + 'px';
+                for (let i = 0; i < limit; i++) {
+                    const index = (currentIndex + i) % _slides.length;
+                    _slides[index].style.transition = 'left 1s ease';
+                    _slides[index].style.left = (currentTo + i * widthPerSlide) + 'px';
+                }
             }, 50);
         };
 
@@ -204,11 +313,22 @@
             _slides[currentIndex].classList.add("sci-slider-view-active");
 
             if (_dots) {
-                _dots.childNodes.item(previousIndex).classList.remove("sci-slider-dot-active");
-                _dots.childNodes.item(currentIndex).classList.add("sci-slider-dot-active");
+                const _dotList = _dots.childNodes;
+
+                // deactivate all dots
+                for (let i = 0; i < _dotList.length; i++) {
+                    _dotList.item(i).classList.remove("sci-slider-dot-active");
+                }
+
+                // activate the dots for the current view and the next `columns` views
+                for (let i = 0; i < columns; i++) {
+                    _dotList.item((currentIndex + i) % _slides.length).classList.add("sci-slider-dot-active");
+                }
             }
 
-            if (!statically && options.transition === TRANSITION_BLEND) {
+            if (_slides.length <= columns) {
+                activateAllSlides();
+            } else if (!statically && options.transition === TRANSITION_BLEND) {
                 activateViewByBlending();
             } else if (!statically && options.transition === TRANSITION_SLIDE) {
                 activateViewBySliding(direction);
@@ -234,17 +354,42 @@
         };
 
         const fixView = function () {
+            // detemine the number of columns to use according to the current screen size; we use the break points
+            // defined for the front-end design system, see `/assets/design-system/design-system.scss`
+            if (window.innerWidth) {
+                if (window.innerWidth < 992) {
+                    columns = options.columnsSm;
+                } else if (window.innerWidth < 1200) {
+                    columns = options.columnsMd;
+                } else {
+                    columns = options.columns;
+                }
+            }
+
             fixSliderHeight();
             activateView(currentIndex, 1, true);
         };
 
         // upon resize, trigger a debounced graphics refresh
+        let interruptedWhileChangingSize = false;
         let fixViewTimeout = null;
+        let restartAnimationTimeout = null;
         window.addEventListener('resize', function (event) {
+            // interrupt animation for at least a second, not to have it interfere with the resize
+            interruptedWhileChangingSize = true;
+            if (restartAnimationTimeout) {
+                clearTimeout(restartAnimationTimeout);
+            }
+            restartAnimationTimeout = setTimeout(function () {
+                interruptedWhileChangingSize = false;
+            }, 1000);
+
             if (fixViewTimeout) {
                 clearTimeout(fixViewTimeout);
             }
-            fixViewTimeout = setTimeout(fixView, 500);
+            fixViewTimeout = setTimeout(function () {
+                fixView();
+            }, 10);
         });
 
         const initAnimation = function () {
@@ -275,10 +420,10 @@
                     return;
                 }
                 fixView();
-                if (options.animation && !interrupted) {
+                if (options.animation && !interruptedDueToMouseInteraction && !interruptedWhileChangingSize) {
                     activateNextView();
                 }
-            }, options.animation || 5000);
+            }, options.animation || DEFAULT_ANIMATION);
         };
         const stopAnimationThread = function () {
             if (animationTimer) {

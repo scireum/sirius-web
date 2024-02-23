@@ -49,107 +49,107 @@ public class WebsocketHandler extends ChannelDuplexHandler {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable e) throws Exception {
-        if (e instanceof SSLHandshakeException || e.getCause() instanceof SSLHandshakeException) {
-            SSLWebServerInitializer.LOG.FINE(e);
-        } else if (e instanceof IOException || e instanceof DecoderException) {
-            WebServer.LOG.FINE("Received an error for a websocket: %s", NLS.toUserString(e));
+    public void exceptionCaught(ChannelHandlerContext channelHandlerContext, Throwable throwable) throws Exception {
+        if (throwable instanceof SSLHandshakeException || throwable.getCause() instanceof SSLHandshakeException) {
+            SSLWebServerInitializer.LOG.FINE(throwable);
+        } else if (throwable instanceof IOException || throwable instanceof DecoderException) {
+            WebServer.LOG.FINE("Received an error for a websocket: %s", NLS.toUserString(throwable));
         } else {
             Exceptions.handle()
                       .to(WebServer.LOG)
-                      .error(e)
+                      .error(throwable)
                       .withSystemErrorMessage("Received an error for a websocket - %s (%s)")
                       .handle();
         }
     }
 
     @Override
-    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
+    public void channelUnregistered(ChannelHandlerContext channelHandlerContext) throws Exception {
         if (websocketSession != null) {
             websocketSession.onWebsocketClosed();
             WebServer.websockets.decrementAndGet();
         }
 
-        super.channelUnregistered(ctx);
+        super.channelUnregistered(channelHandlerContext);
     }
 
     @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (websocketSession != null && evt instanceof WebSocketServerProtocolHandler.HandshakeComplete) {
+    public void userEventTriggered(ChannelHandlerContext channelHandlerContext, Object event) throws Exception {
+        if (websocketSession != null && event instanceof WebSocketServerProtocolHandler.HandshakeComplete) {
             websocketSession.onWebsocketOpened();
         }
 
-        super.userEventTriggered(ctx, evt);
+        super.userEventTriggered(channelHandlerContext, event);
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if ((msg instanceof HttpRequest httpRequest) && isWebsocketRequest(httpRequest)) {
-            currentCall = WebServerHandler.initializeContext(ctx, httpRequest, false);
-            websocketSession = websocketDispatcher.createSession(currentCall.get(WebContext.class));
+    public void channelRead(ChannelHandlerContext channelHandlerContext, Object message) throws Exception {
+        if ((message instanceof HttpRequest httpRequest) && isWebsocketRequest(httpRequest)) {
+            currentCall = WebServerHandler.initializeContext(channelHandlerContext, httpRequest, false);
+            websocketSession = websocketDispatcher.createSession(currentCall.getOrCreateSubContext(WebContext.class));
             WebServer.websockets.incrementAndGet();
-            setupWebsocketPipeline(ctx, msg);
+            setupWebsocketPipeline(channelHandlerContext, message);
             return;
         }
 
-        if (msg instanceof WebSocketFrame webSocketFrame) {
-            handleFrame(ctx, webSocketFrame);
+        if (message instanceof WebSocketFrame webSocketFrame) {
+            handleFrame(channelHandlerContext, webSocketFrame);
             return;
         }
 
-        super.channelRead(ctx, msg);
+        super.channelRead(channelHandlerContext, message);
     }
 
-    private void handleFrame(ChannelHandlerContext ctx, WebSocketFrame msg) {
+    private void handleFrame(ChannelHandlerContext channelHandlerContext, WebSocketFrame frame) {
         if (websocketSession != null) {
-            dispatchFrame(ctx, msg);
+            dispatchFrame(channelHandlerContext, frame);
         } else {
-            terminateOnError(ctx, msg);
+            terminateOnError(channelHandlerContext, frame);
         }
     }
 
-    private void terminateOnError(ChannelHandlerContext ctx, WebSocketFrame msg) {
+    private void terminateOnError(ChannelHandlerContext channelHandlerContext, WebSocketFrame frame) {
         try {
-            ctx.channel().close();
-        } catch (Exception e) {
-            Exceptions.handle(WebServer.LOG, e);
+            channelHandlerContext.channel().close();
+        } catch (Exception exception) {
+            Exceptions.handle(WebServer.LOG, exception);
         } finally {
-            msg.release();
+            frame.release();
         }
     }
 
-    private void dispatchFrame(ChannelHandlerContext ctx, WebSocketFrame msg) {
+    private void dispatchFrame(ChannelHandlerContext channelHandlerContext, WebSocketFrame frame) {
         tasks.executor(EXECUTOR_WEBSOCKETS)
-             .dropOnOverload(() -> terminateOnError(ctx, msg))
-             .start(() -> handleFrameInOwnThread(msg));
+             .dropOnOverload(() -> terminateOnError(channelHandlerContext, frame))
+             .start(() -> handleFrameInOwnThread(frame));
     }
 
-    private void handleFrameInOwnThread(WebSocketFrame msg) {
+    private void handleFrameInOwnThread(WebSocketFrame frame) {
         try {
             CallContext.setCurrent(currentCall);
-            websocketSession.onFrame(msg);
+            websocketSession.onFrame(frame);
         } finally {
-            msg.release();
+            frame.release();
         }
     }
 
-    private void setupWebsocketPipeline(ChannelHandlerContext ctx, Object msg) throws Exception {
+    private void setupWebsocketPipeline(ChannelHandlerContext channelHandlerContext, Object message) throws Exception {
         HttpObjectAggregator handler = new HttpObjectAggregator(8192);
-        ctx.pipeline().addBefore("websockethandler", "aggregator", handler);
-        ctx.pipeline()
-           .addAfter("aggregator",
-                     "websocketx",
-                     new WebSocketServerProtocolHandler(((HttpRequest) msg).uri(), "xmpp", true));
-        ctx.pipeline().remove("idler");
-        ctx.pipeline().remove("compressor");
-        handler.channelRead(ctx, msg);
+        channelHandlerContext.pipeline().addBefore("websockethandler", "aggregator", handler);
+        channelHandlerContext.pipeline()
+                             .addAfter("aggregator",
+                                       "websocketx",
+                                       new WebSocketServerProtocolHandler(((HttpRequest) message).uri(), "xmpp", true));
+        channelHandlerContext.pipeline().remove("idler");
+        channelHandlerContext.pipeline().remove("compressor");
+        handler.channelRead(channelHandlerContext, message);
     }
 
-    private boolean isWebsocketRequest(HttpRequest req) {
-        if (websocketDispatcher == null || req.uri() == null) {
+    private boolean isWebsocketRequest(HttpRequest request) {
+        if (websocketDispatcher == null || request.uri() == null) {
             return false;
         }
 
-        return req.uri().startsWith(websocketDispatcher.getWebsocketUri());
+        return request.uri().startsWith(websocketDispatcher.getWebsocketUri());
     }
 }

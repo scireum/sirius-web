@@ -45,9 +45,9 @@ public class FormatDateMacro extends BasicMacro {
             throw new IllegalArgumentException("One parameter is expected");
         }
 
-        if (!CompilationContext.isAssignableTo(args.get(0), Long.class)
-            && !CompilationContext.isAssignableTo(args.get(0), Date.class)
-            && !CompilationContext.isAssignableTo(args.get(0), TemporalAccessor.class)) {
+        if (!CompilationContext.isAssignableTo(args.getFirst(), Long.class)
+            && !CompilationContext.isAssignableTo(args.getFirst(), Date.class)
+            && !CompilationContext.isAssignableTo(args.getFirst(), TemporalAccessor.class)) {
             throw new IllegalArgumentException("Illegal parameter type");
         }
     }

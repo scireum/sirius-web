@@ -39,14 +39,14 @@ public class GenerateIdMacro extends BasicMacro {
         if (args.size() > 1) {
             throw new IllegalArgumentException("At most one argument is expected.");
         }
-        if (args.size() == 1 && !CompilationContext.isAssignableTo(args.get(0), String.class)) {
+        if (args.size() == 1 && !CompilationContext.isAssignableTo(args.getFirst(), String.class)) {
             throw new IllegalArgumentException("Expects a format string as parameter");
         }
     }
 
     @Override
     public Object invoke(Environment environment, Object[] args) {
-        long localId = CallContext.getCurrent().get(IdGeneratorContext.class).generateLocalId();
+        long localId = CallContext.getCurrent().getOrCreateSubContext(IdGeneratorContext.class).generateLocalId();
         if (args.length == 1) {
             return Strings.apply((String) args[0], localId);
         } else {

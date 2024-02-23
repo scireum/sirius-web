@@ -204,20 +204,24 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
 
     @Override
     public void writeProperty(String name, Object data) {
-        if (data instanceof ObjectNode jsonObject) {
-            beginObject(name);
-            jsonObject.properties().forEach(entry -> property(entry.getKey(), entry.getValue()));
-            endObject();
-        } else if (data instanceof ArrayNode jsonArray) {
-            beginArray(name);
-            jsonArray.forEach(element -> property("", element));
-            endArray();
-        } else if (data instanceof POJONode pojoNode) {
-            writeProperty(name, pojoNode.getPojo());
-        } else if (data instanceof JsonNode jsonNode) {
-            writePlainProperty(name, Json.convertToJavaObject(jsonNode));
+        if (data instanceof JsonNode jsonNode) {
+            writePreformattedProperty(name, Json.write(jsonNode));
         } else {
             writePlainProperty(name, data);
+        }
+    }
+
+    private void writePreformattedProperty(String name, String value) {
+        try {
+            addRequiredComma();
+            addObjectName(name);
+            if (value == null) {
+                writer.write("null");
+                return;
+            }
+            writer.write(value);
+        } catch (IOException exception) {
+            throw handleOutputException(exception);
         }
     }
 
@@ -227,14 +231,14 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
             addObjectName(name);
             if (data == null) {
                 writer.write("null");
-            } else if (data instanceof Boolean || data instanceof Number) {
-                writer.write(data.toString());
             } else if (data instanceof Amount amount) {
                 if (amount.isFilled()) {
                     writer.write(amount.toMachineString());
                 } else {
                     writer.write("null");
                 }
+            } else if (data instanceof Boolean || data instanceof Number) {
+                writer.write(data.toString());
             } else {
                 writeString(transformToStringRepresentation(data));
             }

@@ -257,12 +257,12 @@ public class Generator {
     private void transferImplicitAttributes(String mediaQueryPath, Section section, List<Section> stack) {
         Section copy = new Section();
         if (!stack.isEmpty()) {
-            Section parent = stack.get(stack.size() - 1);
+            Section parent = stack.getLast();
             if (copy.getSelectors().isEmpty()) {
                 copy.getSelectors().addAll(parent.getSelectors());
             } else if (!parent.getSelectors().isEmpty()) {
                 for (List<String> selector : copy.getSelectors()) {
-                    selector.addAll(0, parent.getSelectors().get(0));
+                    selector.addAll(0, parent.getSelectors().getFirst());
                 }
             }
         }
@@ -301,7 +301,7 @@ public class Generator {
                 newSelectors.add(expandSelector(section, selector, null));
             } else {
                 // create the cross product of the parent selector set and the current selector set
-                for (List<String> parentSelector : stack.get(stack.size() - 1).getSelectors()) {
+                for (List<String> parentSelector : stack.getLast().getSelectors()) {
                     // clone selector, so that each expansion starts with the initial child selector
                     newSelectors.add(expandSelector(section, new ArrayList<>(selector), parentSelector));
                 }
@@ -318,10 +318,10 @@ public class Generator {
 
     private List<String> expandSelector(Section section, List<String> selector, List<String> parentSelector) {
         if (parentSelector != null) {
-            if (selector.size() > 1 && !parentSelector.isEmpty() && "&".equals(selector.get(0))) {
+            if (selector.size() > 1 && !parentSelector.isEmpty() && "&".equals(selector.getFirst())) {
                 combineSelectors(selector, parentSelector);
-            } else if ("&".equals(selector.get(selector.size() - 1))) {
-                selector.remove(selector.size() - 1);
+            } else if ("&".equals(selector.getLast())) {
+                selector.removeLast();
                 selector.addAll(parentSelector);
             } else {
                 selector.addAll(0, parentSelector);
@@ -330,7 +330,7 @@ public class Generator {
 
         // Selectors with only one element can be referenced by @extend
         if (selector.size() == 1) {
-            extensibleSections.put(selector.get(0), section);
+            extensibleSections.put(selector.getFirst(), section);
         }
 
         return selector;
@@ -344,12 +344,12 @@ public class Generator {
      */
     private void combineSelectors(List<String> selector, List<String> parentSelectors) {
         String firstChild = selector.get(1);
-        selector.remove(0);
-        selector.remove(0);
+        selector.removeFirst();
+        selector.removeFirst();
         List<String> selectorsToAdd = new ArrayList<>(parentSelectors);
-        String lastParent = selectorsToAdd.get(selectorsToAdd.size() - 1);
-        selectorsToAdd.remove(selectorsToAdd.size() - 1);
-        selector.add(0, lastParent + firstChild);
+        String lastParent = selectorsToAdd.getLast();
+        selectorsToAdd.removeLast();
+        selector.addFirst(lastParent + firstChild);
         selector.addAll(0, selectorsToAdd);
     }
 
@@ -453,10 +453,10 @@ public class Generator {
         for (List<String> outer : child.getSelectors()) {
             for (List<String> inner : section.getSelectors()) {
                 List<String> fullSelector = new ArrayList<>(outer);
-                if ("&".equals(outer.get(outer.size() - 1))) {
-                    fullSelector.remove(fullSelector.size() - 1);
+                if ("&".equals(outer.getLast())) {
+                    fullSelector.removeLast();
                     fullSelector.addAll(inner);
-                } else if ("&".equals(outer.get(0))) {
+                } else if ("&".equals(outer.getFirst())) {
                     combineSelectors(fullSelector, inner);
                 } else {
                     fullSelector.addAll(0, inner);

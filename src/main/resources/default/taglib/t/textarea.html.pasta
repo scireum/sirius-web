@@ -1,15 +1,17 @@
-<i:arg name="id" type="String" default="" />
+<i:arg name="id" type="String" default=""/>
 <i:arg name="class" type="String" default="" description="Lists additional CSS classes to apply to the component."/>
 <i:arg name="fieldClass" type="String" default="" description="Lists additional CSS classes to apply to the field."/>
 <i:arg name="labelClass" type="String" default="" description="Lists additional CSS classes to apply to the label."/>
-<i:arg name="rows" type="int" default="3" />
-<i:arg name="name" type="String" />
-<i:arg name="value" type="String" />
-<i:arg name="labelKey" type="String" default="" />
-<i:arg name="label" type="String" default="@i18n(labelKey)" />
-<i:arg name="helpKey" type="String" default="" />
-<i:arg name="help" type="String" default="@i18n(helpKey)" />
-<i:arg name="readonly" type="boolean" default="false" />
+<i:arg name="rows" type="int" default="3"/>
+<i:arg name="name" type="String"/>
+<i:arg name="value" type="String"/>
+<i:arg name="labelKey" type="String" default=""/>
+<i:arg name="label" type="String" default="@i18n(labelKey)"/>
+<i:arg name="helpKey" type="String" default=""/>
+<i:arg name="help" type="String" default="@i18n(helpKey)"/>
+<i:arg name="readonly" type="boolean" default="false"/>
+<i:arg name="placeholder" type="String" default=""/>
+
 
 <i:pragma name="description">
     Renders a textarea using the given parameters. Note that additional flags can be set via CSS classes
@@ -21,10 +23,17 @@
         <label><span class="@labelClass">@label</span></label>
     </i:if>
 
-    <textarea @id="@id" name="@name" rows="@rows" class="form-control input-block-level @fieldClass" @readonly="readonly">@UserContext.get().getFieldValue(name, value)</textarea>
+    <textarea @if(isFilled(id)) { id="@id" }
+              name="@name"
+              rows="@rows"
+              class="form-control input-block-level @fieldClass"
+              @if (isFilled(placeholder)) { placeholder="@placeholder" }
+              @if (readonly) { readonly }>@UserContext.get().getFieldValue(name, value)</textarea>
 
     <i:if test="isFilled(help)">
-        <small class="form-text text-muted"><i:raw>@expandMessage(help)</i:raw></small>
+        <small class="form-text text-muted">
+            <i:raw>@expandMessage(help)</i:raw>
+        </small>
     </i:if>
     <i:if test="UserContext.get().hasError(name)">
         <small class="error-block form-text">@UserContext.get().getFieldErrorMessage(name)</small>

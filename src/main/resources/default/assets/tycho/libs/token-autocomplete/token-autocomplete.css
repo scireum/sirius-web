@@ -12,7 +12,6 @@
 
 .token-autocomplete-container, .token-autocomplete-container * {
     box-sizing: border-box;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 }
 
 .token-autocomplete-container .token-autocomplete-input {
@@ -126,6 +125,11 @@
     cursor: pointer;
     color: #000000;
     background-color: #fdfdfd;
+}
+
+.token-autocomplete-container .token-autocomplete-suggestions li.token-autocomplete-suggestion-disabled, .token-autocomplete-container .token-autocomplete-suggestions li.token-autocomplete-suggestion-disabled:hover {
+    background-color: #cccccc;
+    cursor: unset;
 }
 
 .token-autocomplete-container .token-autocomplete-suggestions li.token-autocomplete-suggestion-active {

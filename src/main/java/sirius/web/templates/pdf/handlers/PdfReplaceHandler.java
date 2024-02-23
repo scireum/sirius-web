@@ -17,6 +17,7 @@ import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.AutoRegister;
 import sirius.kernel.di.std.Priorized;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URL;
@@ -67,14 +68,7 @@ public abstract class PdfReplaceHandler implements Priorized {
      */
     protected FSImage resolveResource(UserAgentCallback userAgentCallback, URL url)
             throws BadElementException, IOException {
-        try {
-            // First try to load the URL via the user agent - this will somehow result
-            // in better images (correct DPI settings)
-            return userAgentCallback.getImageResource(url.toString()).getImage();
-        } catch (Exception t) {
-            // Fallback which works but seems to have strange DPI settings sometimes
-            return new ITextFSImage(Image.getInstance(url));
-        }
+        return new ITextFSImage(Image.getInstance(url));
     }
 
     /**
@@ -106,37 +100,51 @@ public abstract class PdfReplaceHandler implements Priorized {
      * @return a new width and height fitting into a rectangle defined by cssWidth/cssHeight
      */
     private Tuple<Integer, Integer> computeResizeBox(int cssWidth, int cssHeight, FSImage fsImage) {
-        if (cssWidth == -1 && cssHeight == -1) {
+        if (cssWidth == -1 || cssHeight == -1) {
             return null;
         }
         if (fsImage == null) {
             return null;
         }
 
-        int newWidth = -1;
-        int newHeight = fsImage.getHeight();
-
-        // Downsize and maintain aspect ratio...
-        if (fsImage.getWidth() > cssWidth && cssWidth > -1) {
-            newWidth = cssWidth;
-            newHeight = (newWidth * fsImage.getHeight()) / fsImage.getWidth();
+        if (fsImage.getWidth() > cssWidth || fsImage.getHeight() > cssHeight) {
+            return downscaleResource(cssWidth, cssHeight, fsImage.getWidth(), fsImage.getHeight());
         }
 
-        if (cssHeight > -1 && newHeight > cssHeight) {
-            newHeight = cssHeight;
-            newWidth = (newHeight * fsImage.getWidth()) / fsImage.getHeight();
+        if (cssWidth > fsImage.getWidth() && cssHeight > fsImage.getHeight()) {
+            return upscaleResource(cssWidth, cssHeight, fsImage.getWidth(), fsImage.getHeight());
         }
 
-        // No resize required
-        if (newWidth == -1) {
-            return null;
+        return null;
+    }
+
+    @Nonnull
+    private static Tuple<Integer, Integer> downscaleResource(int cssWidth, int cssHeight, int imageWidth, int imageHeight) {
+
+        // First, check if we need to scale down the width
+        if (imageWidth > cssWidth) {
+            imageHeight = cssWidth * imageHeight / imageWidth;
+            imageWidth = cssWidth;
         }
 
-        // No upscaling!
-        if (newWidth > fsImage.getWidth() || newHeight > fsImage.getHeight()) {
-            return null;
+        // Depending on the image aspect ratio, the height might still be larger than the defined limit, so
+        // we scale down further
+        if (imageHeight > cssHeight) {
+            imageWidth = cssHeight * imageWidth / imageHeight;
+            imageHeight = cssHeight;
         }
 
-        return Tuple.create(newWidth, newHeight);
+        return Tuple.create(imageWidth, imageHeight);
+    }
+
+    @Nonnull
+    private static Tuple<Integer, Integer> upscaleResource(int cssWidth, int cssHeight, int imageWidth, int imageHeight) {
+
+        // First, scale up only the width
+        imageHeight = cssWidth * imageHeight / imageWidth;
+        imageWidth = cssWidth;
+
+        // After upscaling the width, we might need to downscale the height
+        return downscaleResource(cssWidth, cssHeight, imageWidth, imageHeight);
     }
 }

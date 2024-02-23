@@ -1,6 +1,6 @@
-//
-// A list of all licenses can be obtained via /licenses
-//
+/*
+ * A list of all licenses can be obtained via /licenses
+ */
 
 <i:include name="/assets/wondergem/bootstrap/css/bootstrap.min.css"/>
 

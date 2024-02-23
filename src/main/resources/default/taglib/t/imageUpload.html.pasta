@@ -26,7 +26,8 @@
         </div>
         <div class="dropzone-items mt-2 mb-2">
         </div>
-        <a class="dropzone-select btn btn-primary @btnClass">@label</a>
+        <button type="button"
+                class="dropzone-select btn btn-primary @btnClass">@label</button>
         <i:render name="body"/>
     </div>
 </div>
@@ -34,7 +35,7 @@
 <script type="text/javascript">
     Dropzone.options[sirius.camelize('@id')] = {
         url: function (files) {
-            const uploadUrl = '@raw {@uploadUrl}';
+            const uploadUrl = '@raw {@escapeJS(uploadUrl)}';
             let parameterIndicator = '?';
             if (uploadUrl.indexOf('?') >= 0) {
                 parameterIndicator = '&';

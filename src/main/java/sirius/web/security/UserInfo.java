@@ -29,7 +29,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * Represents an user.
+ * Represents a user.
  * <p>
  * A user is authenticated using a {@link UserManager}. To obtain or modify the current user, use {@link
  * UserContext#getCurrentUser()} or {@link UserContext#setCurrentUser(UserInfo)}.
@@ -45,6 +45,16 @@ public class UserInfo extends Composable {
      * Fallback user if no user is currently available. This user has no permissions.
      */
     public static final UserInfo NOBODY = Builder.createUser("ANONYMOUS").withUsername("(no user)").build();
+
+    /**
+     * Defines the identifier used to represent the synthetic "Administrator" user.
+     */
+    public static final String SYNTHETIC_ADMIN_USER_ID = "ADMIN";
+
+    /**
+     * Defines the name used for the synthetic "Administrator" user.
+     */
+    public static final String SYNTHETIC_ADMIN_USER_NAME = "Administrator";
 
     protected String tenantId;
     protected String tenantName;
@@ -69,9 +79,9 @@ public class UserInfo extends Composable {
         }
 
         /**
-         * Creates a new builder and initializes it with an id for the user.
+         * Creates a new builder and initializes it with an identifier for the user.
          *
-         * @param id the id of the user to build.
+         * @param id the identifier of the user to build.
          * @return the builder itself for fluent method calls
          */
         @CheckReturnValue
@@ -80,6 +90,20 @@ public class UserInfo extends Composable {
             builder.user = new UserInfo();
             builder.user.userId = id;
             return builder;
+        }
+
+        /**
+         * Creates a new builder and configures it for a synthetic "Administrator" user with every possible permission.
+         *
+         * @param tenantId   the identifier of the tenant the user belongs to
+         * @param tenantName the name of the tenant the user belongs to
+         * @return the builder itself for fluent method calls
+         */
+        public static Builder createSyntheticAdminUser(String tenantId, String tenantName) {
+            return createUser(SYNTHETIC_ADMIN_USER_ID).withUsername(SYNTHETIC_ADMIN_USER_NAME)
+                                                      .withTenantId(tenantId)
+                                                      .withTenantName(tenantName)
+                                                      .withEveryPermission(true);
         }
 
         /**

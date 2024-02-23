@@ -108,22 +108,22 @@ public class Route {
     @Nonnull
     private static List<Class<?>> determineParameterTypes(Method method, Route result) {
         List<Class<?>> parameterTypes = new ArrayList<>(Arrays.asList(method.getParameterTypes()));
-        if (parameterTypes.isEmpty() || !WebContext.class.equals(parameterTypes.get(0))) {
+        if (parameterTypes.isEmpty() || !WebContext.class.equals(parameterTypes.getFirst())) {
             throw new IllegalArgumentException(Strings.apply("Method needs '%s' as first parameter",
                                                              WebContext.class.getName()));
         }
-        parameterTypes.remove(0);
+        parameterTypes.removeFirst();
         if (result.format == Format.JSON) {
             failForInvalidJSONMethod(parameterTypes);
-            parameterTypes.remove(0);
+            parameterTypes.removeFirst();
         }
         if (result.format == Format.XML) {
             failForInvalidXMLMethod(parameterTypes);
-            parameterTypes.remove(0);
+            parameterTypes.removeFirst();
         }
         if (result.preDispatchable) {
             failForInvalidPredispatchableMethod(parameterTypes);
-            parameterTypes.remove(parameterTypes.size() - 1);
+            parameterTypes.removeLast();
         }
         return parameterTypes;
     }
@@ -203,22 +203,21 @@ public class Route {
     }
 
     private static void failForInvalidJSONMethod(List<Class<?>> parameterTypes) {
-        if (parameterTypes.isEmpty() || !JSONStructuredOutput.class.equals(parameterTypes.get(0))) {
+        if (parameterTypes.isEmpty() || !JSONStructuredOutput.class.equals(parameterTypes.getFirst())) {
             throw new IllegalArgumentException(Strings.apply("JSON API method needs '%s' as second parameter",
                                                              JSONStructuredOutput.class.getName()));
         }
     }
 
     private static void failForInvalidXMLMethod(List<Class<?>> parameterTypes) {
-        if (parameterTypes.isEmpty() || !XMLStructuredOutput.class.equals(parameterTypes.get(0))) {
+        if (parameterTypes.isEmpty() || !XMLStructuredOutput.class.equals(parameterTypes.getFirst())) {
             throw new IllegalArgumentException(Strings.apply("XML API method needs '%s' as second parameter",
                                                              XMLStructuredOutput.class.getName()));
         }
     }
 
     private static void failForInvalidPredispatchableMethod(List<Class<?>> parameterTypes) {
-        if (parameterTypes.isEmpty() || !InputStreamHandler.class.equals(parameterTypes.get(parameterTypes.size()
-                                                                                            - 1))) {
+        if (parameterTypes.isEmpty() || !InputStreamHandler.class.equals(parameterTypes.getLast())) {
             throw new IllegalArgumentException(Strings.apply("Pre-Dispatchable method needs '%s' as last parameter",
                                                              InputStreamHandler.class.getName()));
         }
@@ -453,7 +452,7 @@ public class Route {
             if (params.isEmpty()) {
                 return methodHandle.invoke(controller);
             } else if (params.size() == 1) {
-                return methodHandle.invoke(controller, params.get(0));
+                return methodHandle.invoke(controller, params.getFirst());
             } else if (params.size() == 2) {
                 return methodHandle.invoke(controller, params.get(0), params.get(1));
             } else if (params.size() == 3) {

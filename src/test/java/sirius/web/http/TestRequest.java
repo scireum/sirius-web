@@ -421,7 +421,7 @@ public class TestRequest extends WebContext implements HttpRequest {
     public Promise<TestResponse> executeAsync() {
         build();
 
-        CallContext.getCurrent().set(WebContext.class, this);
+        CallContext.getCurrent().setSubContext(WebContext.class, this);
         try {
             if (preDispatch && pipeline.preDispatch(this)) {
                 contentHandler.handle(this.content.getByteBuf(), true);

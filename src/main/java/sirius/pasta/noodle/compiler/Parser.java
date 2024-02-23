@@ -1005,9 +1005,9 @@ public class Parser extends InputProcessor {
     private Node handleSpecialMethods(Char position, Node self, String methodName, List<Node> parameters) {
         if (KEYWORD_METHOD_AS.equals(methodName)
             && parameters.size() == 1
-            && parameters.get(0).isConstant()
-            && (Class.class.isAssignableFrom(parameters.get(0).getType()))) {
-            Class<?> type = (Class<?>) parameters.get(0).getConstantValue();
+            && parameters.getFirst().isConstant()
+            && (Class.class.isAssignableFrom(parameters.getFirst().getType()))) {
+            Class<?> type = (Class<?>) parameters.getFirst().getConstantValue();
             if (!Transformable.class.isAssignableFrom(self.getType())) {
                 return new NativeCast(position, self, type);
             }
@@ -1015,9 +1015,9 @@ public class Parser extends InputProcessor {
 
         if (KEYWORD_METHOD_IS.equals(methodName)
             && parameters.size() == 1
-            && parameters.get(0).isConstant()
-            && (Class.class.isAssignableFrom(parameters.get(0).getType()))) {
-            Class<?> type = (Class<?>) parameters.get(0).getConstantValue();
+            && parameters.getFirst().isConstant()
+            && (Class.class.isAssignableFrom(parameters.getFirst().getType()))) {
+            Class<?> type = (Class<?>) parameters.getFirst().getConstantValue();
             if (!Transformable.class.isAssignableFrom(self.getType())) {
                 return new InstanceOfCheck(position, self, type);
             }

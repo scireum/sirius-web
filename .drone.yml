@@ -17,7 +17,7 @@ clone:
 
 steps:
   - name: compile
-    image: scireum/sirius-build-jdk18
+    image: scireum/sirius-build-jdk21
     commands:
       - mvn clean compile
     volumes: *scireum_volumes
@@ -28,9 +28,9 @@ steps:
         - push
 
   - name: cron_unit_tests
-    image: scireum/sirius-build-jdk18
+    image: scireum/sirius-build-jdk21
     commands:
-      - mvn clean test
+      - mvn clean test -Dsun.net.http.allowRestrictedHeaders=true
     volumes: *scireum_volumes
     when:
       event:
@@ -48,16 +48,16 @@ steps:
         - cron
 
   - name: test
-    image: scireum/sirius-build-jdk18
+    image: scireum/sirius-build-jdk21
     commands:
-      - mvn clean test -Dtest.excluded.groups=nightly
+      - mvn clean test -Dtest.excluded.groups=nightly -Dsun.net.http.allowRestrictedHeaders=true
     volumes: *scireum_volumes
     when:
       event:
         - pull_request
 
   - name: deploy
-    image: scireum/sirius-build-jdk18
+    image: scireum/sirius-build-jdk21
     commands:
       - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' pom.xml
       - mvn clean deploy -DskipTests
@@ -77,10 +77,10 @@ steps:
         - tag
 
   - name: sonar
-    image: scireum/sirius-build-jdk18
+    image: scireum/sirius-build-jdk21
     commands:
       - sed -i 's/DEVELOPMENT-SNAPSHOT/${DRONE_TAG}/g' pom.xml
-      - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent test org.jacoco:jacoco-maven-plugin:report sonar:sonar -Dsonar.projectKey=${DRONE_REPO_NAME}
+      - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent test org.jacoco:jacoco-maven-plugin:report sonar:sonar -Dsonar.projectKey=${DRONE_REPO_NAME} -Dsun.net.http.allowRestrictedHeaders=true
     volumes: *scireum_volumes
     when:
       event:

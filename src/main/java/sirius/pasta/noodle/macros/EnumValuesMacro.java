@@ -34,10 +34,10 @@ public class EnumValuesMacro extends BasicMacro {
     @Override
     public void verify(CompilationContext context, Position position, List<Node> args) {
         if (args.size() != 1
-            || !CompilationContext.isAssignableTo(args.get(0).getType(), Class.class)
-            || !args.get(0)
+            || !CompilationContext.isAssignableTo(args.getFirst().getType(), Class.class)
+            || !args.getFirst()
                     .isConstant()
-            || !((Class<?>) args.get(0).getConstantValue()).isEnum()) {
+            || !((Class<?>) args.getFirst().getConstantValue()).isEnum()) {
             throw new IllegalArgumentException("Expected an enum class as parameter.");
         }
     }

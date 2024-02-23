@@ -1,4 +1,16 @@
 /**@
+ * Defines some keys for easier usage.
+ */
+sirius.key = {
+    ENTER: "Enter",
+    ESCAPE: "Escape",
+    LEFT: "ArrowLeft",
+    RIGHT: "ArrowRight",
+    UP: "ArrowUp",
+    DOWN: "ArrowDown"
+}
+
+/**@
  * Checks if the given value is defined and has a value other than null.
  *
  * @param value the value to check
@@ -9,7 +21,50 @@ sirius.isDefined = function (value) {
 }
 
 /**@
+ * Checks if a given DOM node is empty. An empty node has no child nodes
+ * and its text content is empty or contains only whitespace characters.
+ *
+ * @param {Node} node the DOM node to check for emptiness
+ * @returns {boolean} true if the node is empty, false otherwise
+ */
+sirius.isEmptyNode = function (node) {
+    if (node.nodeType === Node.ELEMENT_NODE) {
+        // Check if the element has no child nodes
+        if (node.childNodes.length === 0) {
+            return true;
+        }
+
+        // Check if the element's text content is empty or only contains whitespace
+        const textContent = node.textContent.trim();
+        return textContent === '';
+    }
+
+    return false;
+}
+
+/**@
+ * Checks if a given DOM node could be visible to the user (as in it is not actively hidden).
+ * <p>
+ * Note: This is not a perfect way to check for visibility, but it's a good approximation in controlled circumstances.
+ * Also, it does not check if the node is actually currently in the viewport.
+ *
+ * @param {Node} node the DOM node to check for visibility
+ * @returns {boolean} true if the node is most probably visible
+ */
+sirius.isVisibleNode = function (_node) {
+    if (!sirius.isDefined(_node) || !sirius.isElement(_node)) {
+        return false;
+    }
+    const style = window.getComputedStyle(_node);
+    return style && style.display !== 'none' && style.visibility !== 'hidden' && style.visibility !== 'collapse';
+}
+
+/**@
  * Checks if the given value is empty or null.
+ * <p>
+ * Note: Regarding DOM elements the method only checks if the given value is a DOM element and therefore is defined.
+ * It does not specify if the provided DOM element is empty in a literal sense (has no children) or not.
+ * Please use the method sirius.isEmptyNode for this purpose.
  *
  * @param value the value to check
  * @returns {boolean} true if the given value is null, undefined, an empty string or an empty array.
@@ -20,6 +75,11 @@ sirius.isEmpty = function (value) {
     }
 
     if (sirius.isDefined(value) && typeof value === 'object') {
+        // Check if it's a DOM object (has a nodeType property)
+        if (value.nodeType !== undefined) {
+            return false;
+        }
+
         return isEmptyObject(value);
     }
 
@@ -227,13 +287,19 @@ sirius.postJsonAndFile = function (url, params, file) {
     formData.append('filename', file.name);
     formData.append('file', file, file.name);
 
+    // special blob handling is necessary for IE11
+    const blob = formData._blob ? formData._blob() : null;
+    const headers = {
+        'X-File-Name': encodeURIComponent(file.name),
+        'X-Mime-Type': file.type
+    };
+    if (blob) {
+        headers['Content-Type'] = blob.type;
+    }
     return fetch(url, {
         method: "post",
-        headers: {
-            'X-File-Name': encodeURIComponent(file.name),
-            'X-Mime-Type': file.type,
-        },
-        body: formData
+        headers: headers,
+        body: blob ? blob : formData
     }).then(function (response) {
         return response.json();
     });
@@ -424,6 +490,64 @@ sirius.embedSvgImages = function (_container, selector) {
             });
         }
     }
+}
+
+/**@
+ * Handles the reload of an image. This could come in handy if the image source is not available immediately (since its processing takes some time).
+ * <ul>
+ *     <li>Tries to reload the image up to three times</li>
+ *     <li>There is a one-second delay between each try</li>
+ *     <li>Shows a placeholder with a three-dotted-animation while waiting</li>
+ * </ul>
+ *
+ * @param _image the DOM element of the image to reload
+ * @param imageSource the source of the image to load
+ * @param fallbackImageSource the fallback image source to use if the image cannot be loaded
+ * @param callback an optional callback to execute once the image is loaded
+ */
+sirius.autoReloadImage = function (_image, imageSource, fallbackImageSource, callback) {
+    let maxRetryCount = 3;
+    let retryCount = 1;
+    let waitTime = 1000;
+
+    if (sirius.isEmpty(_image) || sirius.isEmpty(imageSource)) {
+        return;
+    }
+
+    // hide our img for now
+    sirius.hide(_image);
+
+    // spawn placeholder div
+    const _placeholder = document.createElement("div");
+    _placeholder.classList.add('sci-placeholder', 'sci-m-auto', 'sci-max-width-100');
+    _image.parentNode.insertBefore(_placeholder, _image.nextSibling);
+
+    // error handler with retry logic
+    _image.onerror = function () {
+        if (retryCount <= maxRetryCount) {
+            retryCount++;
+            setTimeout(function () {
+                _image.src = imageSource;
+            }, waitTime);
+        } else if (sirius.isFilled(fallbackImageSource) && retryCount === maxRetryCount + 1) {
+            _image.src = fallbackImageSource;
+        }
+    };
+
+    // load handler which removes the placeholder div
+    _image.onload = function () {
+        _placeholder.remove();
+        // finally display our beautiful image
+        sirius.show(_image);
+
+        // execute the callback if available
+        if (sirius.isFilled(callback)) {
+            callback();
+        }
+    };
+
+    // trigger the first try
+    _image.src = imageSource;
 }
 
 /**@
@@ -730,10 +854,10 @@ sirius.copyToClipboard = function (textToCopy, _element) {
     selection.addRange(range);
     _fakeElement.setSelectionRange(0, textToCopy.length);
 
-    if (document.execCommand('copy') && typeof _element !== 'undefined' && typeof _element.addClass === 'function') {
-        _element.addClass('sci-copied');
+    if (document.execCommand('copy') && sirius.isDefined(_element) && _element instanceof HTMLElement) {
+        _element.classList.add('sci-copied');
         setTimeout(function () {
-            _element.removeClass('sci-copied');
+            _element.classList.remove('sci-copied');
         }, 1000);
     }
     document.body.removeChild(_fakeElement);

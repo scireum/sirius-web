@@ -29,7 +29,7 @@
         sirius.ready(function() {
             const _rangeInput = document.getElementById('@id');
             _rangeInput.addEventListener('keyup', function (event) {
-                if (event.keyCode === 13 && /^\d+$/.test(this.value)) {
+                if (event.key === sirius.key.ENTER && /^\d+$/.test(this.value)) {
                     const location = '@raw {@page.linkToPageWithConfigurableStart(baseUrl)}' + this.value;
                     window.location.replace(location);
                     event.preventDefault();
@@ -37,16 +37,16 @@
             });
 
             ___if (page.hasLess() || page.hasMore()) {
-                document.addEventListener('keyUp', function(event) {
+                document.addEventListener('keyup', function(event) {
                     ___if (page.hasLess()) {
-                        if (event.shiftKey && event.keyCode === 37) {
+                        if (event.shiftKey && event.key === sirius.key.LEFT) {
                             const location = '@raw {@page.linkToPreviousPage(baseUrl)}';
                             window.location.replace(location);
                             event.preventDefault();
                         }
                     }
                     ___if (page.hasMore()) {
-                        if (event.shiftKey && event.keyCode === 39) {
+                        if (event.shiftKey && event.key === sirius.key.RIGHT) {
                             const location = '@raw {@page.linkToNextPage(baseUrl)}';
                             window.location.replace(location);
                             event.preventDefault();
