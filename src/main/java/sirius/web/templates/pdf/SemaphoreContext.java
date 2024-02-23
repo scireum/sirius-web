@@ -15,8 +15,8 @@ import java.util.concurrent.Semaphore;
 /**
  * This class is used to limit the number of concurrent resource handling operations per belonging CallContext.
  * <p>
- *  The usecase is that we want to control the number of spawned threads to avoid overloading the 
- *  system with too many concurrent operations.
+ * The usecase is that we want to control the number of spawned threads to avoid overloading the
+ * system with too many concurrent operations.
  */
 public class SemaphoreContext implements SubContext {
 
