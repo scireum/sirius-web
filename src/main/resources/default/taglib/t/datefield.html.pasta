@@ -19,8 +19,8 @@
 
 <i:pragma name="description" value="Renders a date input field within a Tycho template"/>
 
-<i:local name="valueAsLocalDate"
-         value="@NLS.parseUserString(java.time.LocalDate.class, UserContext.get().getFieldValue(name, value))"/>
+<i:local name="effectiveValue" value="UserContext.get().getFieldValue(name, value)"/>
+<i:local name="min" value="noPastDates ? today() : java.time.LocalDate.of(1900,1,1)"/>
 
 <div class="form-group mb-3 @UserContext.get().signalFieldError(name) @class">
     <i:if test="isFilled(label) || forceLabel">
@@ -31,8 +31,10 @@
         <input @if(isFilled(fieldName)) { name="@fieldName" }
                @if(isFilled(id)) { id="@id" }
                type="date"
-               value="@valueAsLocalDate"
-               @if (noPastDates) { min="@today()" }
+               value="@effectiveValue"
+               min="@min"
+               max="2100-12-31"
+               oninvalid="document.querySelector('.single-click-pending-js').classList.remove('single-click-pending-js');"
                autocomplete="off"
                class="form-control input-block-level"
                @if (isFilled(placeholder)) { placeholder="@placeholder" }
