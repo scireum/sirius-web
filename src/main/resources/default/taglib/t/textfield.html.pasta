@@ -5,6 +5,7 @@
 <i:arg name="name" type="String" default=""/>
 <i:arg name="fieldName" type="String" default="@name"/>
 <i:arg name="value" type="String"/>
+<i:arg name="pattern" type="String" default=""/>
 <i:arg name="labelKey" type="String" default=""/>
 <i:arg name="label" type="String" default="@i18n(labelKey)"/>
 <i:arg name="forceLabel" type="boolean" default="false"/>
@@ -31,6 +32,7 @@
                value="@UserContext.get().getFieldValue(name, value)"
                class="form-control @fieldClass"
                @if (isFilled(placeholder)) { placeholder="@placeholder" }
+               @if (isFilled(pattern)){pattern="@pattern"}
                @if (readonly) { disabled readonly }
                @if (isFilled(tabIndex)) { tabindex="@tabIndex" }/>
 
