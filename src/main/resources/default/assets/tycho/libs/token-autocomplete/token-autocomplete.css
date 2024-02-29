@@ -7,7 +7,7 @@
 
 .token-autocomplete-container.token-autocomplete-readonly {
     border-color: #747474;
-    background-color: #E6E6E6;
+    background-color: #E9ECEF;
 }
 
 .token-autocomplete-container, .token-autocomplete-container * {
@@ -22,10 +22,6 @@
     margin: 4px 2px;
     padding: 0 8px;
     flex-grow: 1;
-}
-
-.token-autocomplete-container.token-autocomplete-readonly .token-autocomplete-input {
-    display: none;
 }
 
 .token-autocomplete-container .token-autocomplete-input:empty::before {
@@ -58,8 +54,10 @@
     overflow: hidden;
 }
 
-.token-autocomplete-container.token-autocomplete-singleselect.token-autocomplete-readonly .token-autocomplete-input {
+.token-autocomplete-container.token-autocomplete-readonly .token-autocomplete-input {
     display: inherit;
+    cursor: default;
+    height: 1.5rem;
 }
 
 .token-autocomplete-container.token-autocomplete-singleselect .token-autocomplete-input[contenteditable="true"] {
