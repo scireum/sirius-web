@@ -504,7 +504,7 @@ class SendMailTask implements Runnable {
     protected Transport getSMTPTransport(Session session, SMTPConfiguration config) {
         try {
             Transport transport = session.getTransport();
-            transport.connect(config.getMailHost(), config.getMailUser(), null);
+            transport.connect(config.getMailHost(), config.getMailUser(), config.getMailPassword());
             return transport;
         } catch (Exception e) {
             throw Exceptions.handle()
