@@ -77,7 +77,9 @@ public class MethodCall extends Call {
     @SuppressWarnings({"java:S3776", "java:S1541"})
     @Explain("We rather keep all optimizations in one place.")
     private Node optimizeIntrinsics() {
-        if (NLS.class.equals(method.getDeclaringClass()) && "get".equals(method.getName())) {
+        if (NLS.class.equals(method.getDeclaringClass())
+            && "get".equals(method.getName())
+            && parameterNodes.length == 1) {
             return new IntrinsicCall(getPosition(),
                                      method.getGenericReturnType(),
                                      OpCode.INTRINSIC_NLS_GET,
