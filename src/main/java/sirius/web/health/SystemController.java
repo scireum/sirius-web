@@ -93,9 +93,9 @@ public class SystemController extends BasicController {
     /**
      * Simply responds with OK for <tt>/system/ok</tt>
      * <p>
-     * This can be used to monitoring tools the check the system health.
+     * This can be used by monitoring tools to check the system's health.
      *
-     * @param ctx the request being handled
+     * @param webContext the request being handled
      */
     @Routed("/system/ok")
     @PublicService(apiName = "health", format = Format.RAW)
@@ -105,8 +105,8 @@ public class SystemController extends BasicController {
     @ApiResponse(responseCode = "200",
             description = "Successful response",
             content = @Content(mediaType = "text/plain", examples = @ExampleObject("OK")))
-    public void ok(WebContext ctx) {
-        ctx.respondWith().direct(HttpResponseStatus.OK, "OK");
+    public void ok(WebContext webContext) {
+        webContext.respondWith().direct(HttpResponseStatus.OK, "OK");
     }
 
     /**
@@ -114,7 +114,7 @@ public class SystemController extends BasicController {
      * <p>
      * Reports OK or ERROR, if a cluster alarm is present.
      *
-     * @param ctx the request being handled
+     * @param webContext the request being handled
      */
     @Routed("/system/monitor")
     @PublicService(apiName = "health", format = Format.RAW)
@@ -133,13 +133,13 @@ public class SystemController extends BasicController {
                     Failing Metrics on this node:
                     sirius_node_state 0.0
                     """)))
-    public void monitorNode(WebContext ctx) {
+    public void monitorNode(WebContext webContext) {
         if (!cluster.isAlarmPresent() || cluster.getNodeState() != MetricState.RED) {
-            ctx.respondWith().direct(HttpResponseStatus.OK, "OK");
+            webContext.respondWith().direct(HttpResponseStatus.OK, "OK");
             return;
         }
 
-        try (PrintWriter writer = createSimpleErrorResponse(ctx)) {
+        try (PrintWriter writer = createSimpleErrorResponse(webContext)) {
             writer.println("ERROR");
             writer.println();
             writer.println("Failing Metrics on this node:");
@@ -153,32 +153,32 @@ public class SystemController extends BasicController {
         }
     }
 
-    private PrintWriter createSimpleErrorResponse(WebContext ctx) {
-        OutputStream os = ctx.respondWith().outputStream(HttpResponseStatus.EXPECTATION_FAILED, null);
-        return new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
+    private PrintWriter createSimpleErrorResponse(WebContext webContext) {
+        OutputStream output = webContext.respondWith().outputStream(HttpResponseStatus.EXPECTATION_FAILED, null);
+        return new PrintWriter(new OutputStreamWriter(output, StandardCharsets.UTF_8));
     }
 
     /**
      * Sends the value for the requested metric for <tt>/system/metric/[name]</tt>
      *
-     * @param ctx the request being handled
-     * @param key the name of the metric to fetch
+     * @param webContext the request being handled
+     * @param key        the name of the metric to fetch
      */
     @Routed("/system/metric/:1")
-    public void metric(WebContext ctx, String key) {
-        for (Metric m : metrics.getMetrics()) {
-            if (Strings.areEqual(key, m.getCode())) {
-                ctx.respondWith().direct(HttpResponseStatus.OK, NLS.toMachineString(m.getValue()));
+    public void metric(WebContext webContext, String key) {
+        for (Metric metric : metrics.getMetrics()) {
+            if (Strings.areEqual(key, metric.getCode())) {
+                webContext.respondWith().direct(HttpResponseStatus.OK, NLS.toMachineString(metric.getValue()));
                 return;
             }
         }
-        ctx.respondWith().direct(HttpResponseStatus.OK, NLS.toMachineString(0d));
+        webContext.respondWith().direct(HttpResponseStatus.OK, NLS.toMachineString(0d));
     }
 
     /**
      * Sends all known metrics in a format understood by <b>prometheus.io</b>.
      *
-     * @param ctx the request being handled
+     * @param webContext the request being handled
      */
     @Routed("/system/metrics")
     @PublicService(apiName = "health", format = Format.RAW)
@@ -198,25 +198,25 @@ public class SystemController extends BasicController {
     @ApiResponse(responseCode = "403",
             description = "Invalid authentication",
             content = @Content(mediaType = "text/plain"))
-    public void metrics(WebContext ctx) {
-        if (blockPublicAccess && ctx.getHeaderValue(WebServer.HEADER_X_FORWARDED_FOR).isFilled()) {
-            ctx.respondWith().error(HttpResponseStatus.FORBIDDEN);
+    public void metrics(WebContext webContext) {
+        if (blockPublicAccess && webContext.getHeaderValue(WebServer.HEADER_X_FORWARDED_FOR).isFilled()) {
+            webContext.respondWith().error(HttpResponseStatus.FORBIDDEN);
             return;
         }
 
-        try (PrintWriter out = new PrintWriter(new OutputStreamWriter(ctx.respondWith()
-                                                                         .outputStream(HttpResponseStatus.OK,
-                                                                                       "text/plain; version=0.0.4"),
-                                                                      StandardCharsets.UTF_8))) {
-            outputNodeStateAsMetric(out);
+        try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(webContext.respondWith()
+                                                                                   .outputStream(HttpResponseStatus.OK,
+                                                                                                 "text/plain; version=0.0.4"),
+                                                                         StandardCharsets.UTF_8))) {
+            outputNodeStateAsMetric(writer);
 
-            for (Metric m : metrics.getMetrics()) {
-                outputMetric(out, m);
+            for (Metric metric : metrics.getMetrics()) {
+                outputMetric(writer, metric);
             }
 
             for (LoadInfoProvider provider : loadInfoProviders) {
                 for (LoadInfo info : provider.collectLoadInfos()) {
-                    outputMetric(out, transformLoadIntoToMetric(provider, info));
+                    outputMetric(writer, transformLoadIntoToMetric(provider, info));
                 }
             }
         }
@@ -233,12 +233,12 @@ public class SystemController extends BasicController {
     /**
      * Reports the node state as metric (0=OK, 1=WARN, 2=ERROR).
      *
-     * @param out the output stream to write the metric to
+     * @param writer the output stream to write the metric to
      */
     @SuppressWarnings("squid:S2184")
     @Explain("We're only doing calculations with simple operations and small numbers.")
-    private void outputNodeStateAsMetric(PrintWriter out) {
-        outputMetric(out,
+    private void outputNodeStateAsMetric(PrintWriter writer) {
+        outputMetric(writer,
                      new Metric("node_state",
                                 "Node State",
                                 cluster.getNodeState().ordinal() - 1,
@@ -246,35 +246,35 @@ public class SystemController extends BasicController {
                                 null));
     }
 
-    private void outputMetric(PrintWriter out, Metric m) {
-        String effectiveCode = metricLabelPrefix + m.getCode().toLowerCase().replaceAll("[^a-z0-9]", "_");
-        out.print("# HELP ");
-        out.print(effectiveCode);
-        out.print(" ");
-        if (Strings.isFilled(m.getUnit())) {
-            out.print(m.getLabel());
-            out.print(" (");
-            out.print(m.getUnit());
-            out.println(")");
+    private void outputMetric(PrintWriter writer, Metric metric) {
+        String effectiveCode = metricLabelPrefix + metric.getCode().toLowerCase().replaceAll("[^a-z0-9]", "_");
+        writer.print("# HELP ");
+        writer.print(effectiveCode);
+        writer.print(" ");
+        if (Strings.isFilled(metric.getUnit())) {
+            writer.print(metric.getLabel());
+            writer.print(" (");
+            writer.print(metric.getUnit());
+            writer.println(")");
         } else {
-            out.println(m.getLabel());
+            writer.println(metric.getLabel());
         }
 
-        out.print("# TYPE ");
-        out.print(effectiveCode);
-        out.println(" gauge");
-        out.print(effectiveCode);
-        out.print(" ");
-        out.println(NLS.toMachineString(m.getValue()));
+        writer.print("# TYPE ");
+        writer.print(effectiveCode);
+        writer.println(" gauge");
+        writer.print(effectiveCode);
+        writer.print(" ");
+        writer.println(NLS.toMachineString(metric.getValue()));
     }
 
     /**
      * Can be used to forcefully create an error. (A HandledException in this case.)
      *
-     * @param ctx the current request
+     * @param webContext the current request
      */
     @Routed("/system/fail")
-    public void fail(WebContext ctx) {
+    public void fail(WebContext webContext) {
         throw Exceptions.createHandled().withSystemErrorMessage("Forced Exception").handle();
     }
 
@@ -295,59 +295,59 @@ public class SystemController extends BasicController {
      * <p>
      * Clears all session data available for the current request.
      *
-     * @param ctx the current request
+     * @param webContext the current request
      */
     @Routed("/system/reset")
-    public void reset(WebContext ctx) {
-        ctx.clearSession();
-        ctx.respondWith().direct(HttpResponseStatus.OK, "Session has been cleared...");
+    public void reset(WebContext webContext) {
+        webContext.clearSession();
+        webContext.respondWith().direct(HttpResponseStatus.OK, "Session has been cleared...");
     }
 
     /**
      * Reports the system and cluster state.
      *
-     * @param ctx the current request
+     * @param webContext the current request
      */
     @Routed("/system/state")
     @Permission(PERMISSION_SYSTEM_STATE)
-    public void state(WebContext ctx) {
-        ctx.respondWith()
-           .template("/templates/system/state.html.pasta",
-                     cluster,
-                     metrics,
-                     ctx.get("all").asBoolean(false),
-                     NLS.convertDuration(Duration.ofMillis(Sirius.getUptimeInMilliseconds()), true, false));
+    public void state(WebContext webContext) {
+        webContext.respondWith()
+                  .template("/templates/system/state.html.pasta",
+                            cluster,
+                            metrics,
+                            webContext.get("all").asBoolean(false),
+                            NLS.convertDuration(Duration.ofMillis(Sirius.getUptimeInMilliseconds()), true, false));
     }
 
     /**
      * Reports the system load.
      *
-     * @param ctx the current request
+     * @param webContext the current request
      */
     @Routed("/system/load")
     @Permission(PERMISSION_SYSTEM_LOAD)
-    public void load(WebContext ctx) {
-        ctx.respondWith()
-           .template("/templates/system/load.html.pasta",
-                     loadInfoProviders.getParts()
-                                      .stream()
-                                      .sorted(Comparator.comparing(LoadInfoProvider::getLabel))
-                                      .toList(),
-                     ctx.get("all").asBoolean(false));
+    public void load(WebContext webContext) {
+        webContext.respondWith()
+                  .template("/templates/system/load.html.pasta",
+                            loadInfoProviders.getParts()
+                                             .stream()
+                                             .sorted(Comparator.comparing(LoadInfoProvider::getLabel))
+                                             .toList(),
+                            webContext.get("all").asBoolean(false));
     }
 
     /**
      * Provides a list of recorded micro timings.
      *
-     * @param ctx the current request
+     * @param webContext the current request
      */
     @Routed("/system/timing")
     @Permission(PERMISSION_SYSTEM_TIMING)
-    public void timing(WebContext ctx) {
-        if (ctx.hasParameter("enable")) {
+    public void timing(WebContext webContext) {
+        if (webContext.hasParameter("enable")) {
             Microtiming.setEnabled(true);
         }
-        if (ctx.hasParameter("disable")) {
+        if (webContext.hasParameter("disable")) {
             Microtiming.setEnabled(false);
         }
 
@@ -357,19 +357,23 @@ public class SystemController extends BasicController {
                                     false);
 
         Page<String> page = new Page<>();
-        page.bindToRequest(ctx);
+        page.bindToRequest(webContext);
 
         List<Tuple<String, Collection<Tuple<String, String>>>> timings = computeTimingInfos(page);
 
-        ctx.respondWith()
-           .template("/templates/system/timing.html.pasta", Microtiming.isEnabled(), timings, page, periodSinceReset);
+        webContext.respondWith()
+                  .template("/templates/system/timing.html.pasta",
+                            Microtiming.isEnabled(),
+                            timings,
+                            page,
+                            periodSinceReset);
     }
 
     private List<Tuple<String, Collection<Tuple<String, String>>>> computeTimingInfos(Page<String> page) {
         MultiMap<String, Tuple<String, String>> timingMap = MultiMap.createOrdered();
         String query = Strings.isFilled(page.getQuery()) ? page.getQuery().toLowerCase() : null;
         List<Microtiming.Timing> timings = new ArrayList<>(Microtiming.getTimings());
-        timings.sort(Comparator.comparingDouble(t -> t.getAvg().getCount() * t.getAvg().getAvg() * -1d));
+        timings.sort(Comparator.comparingDouble(timing -> timing.getAvg().getCount() * timing.getAvg().getAvg() * -1d));
         for (Microtiming.Timing timing : timings) {
             if (matchesQuery(query, timing)) {
                 timingMap.put(timing.getCategory(),
