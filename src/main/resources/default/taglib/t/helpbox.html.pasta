@@ -6,7 +6,7 @@
 <div class="card mb-4 sci-left-border-blue-dark @class">
     <div class="card-body">
         <div class="d-flex flex-row">
-            <div class="me-auto">
+            <div class="sci-min-width-0">
                 <i:local name="contents" value="@renderToString('body')"/>
                 <i:raw>@expandMessage(contents)</i:raw>
             </div>
