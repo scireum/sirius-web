@@ -1954,7 +1954,7 @@ public class WebContext implements SubContext {
     public ObjectNode getJSONContent() {
         try {
             if (content == null) {
-                throw Exceptions.handle()
+                throw Exceptions.createHandled()
                                 .to(WebServer.LOG)
                                 .withSystemErrorMessage("Expected a valid JSON map as body of this request.")
                                 .handle();
@@ -1962,10 +1962,10 @@ public class WebContext implements SubContext {
             if (!content.isInMemory()
                 && content.getFile().length() > maxStructuredInputSize
                 && maxStructuredInputSize > 0) {
-                throw Exceptions.handle()
+                throw Exceptions.createHandled()
                                 .to(WebServer.LOG)
                                 .withSystemErrorMessage(
-                                        "Request body is too large to parse as JSON. The limit is %d bytes",
+                                        "Request body is too large to parse as JSON. The limit is %d bytes.",
                                         maxStructuredInputSize)
                                 .handle();
             }
@@ -1973,7 +1973,7 @@ public class WebContext implements SubContext {
         } catch (HandledException exception) {
             throw exception;
         } catch (Exception exception) {
-            throw Exceptions.handle()
+            throw Exceptions.createHandled()
                             .to(WebServer.LOG)
                             .error(exception)
                             .withSystemErrorMessage("Expected a valid JSON map as body of this request: %s (%s).")
