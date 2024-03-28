@@ -296,14 +296,13 @@ public class Invocation {
         int initialIP = instructionPointer + 1;
         int contextOffset = pop(int.class);
         Class<?> samInterface = pop(Class.class);
-        Environment lambdaEnvironment = LambdaEnvironment.create(environment, contextOffset, numLocals);
         push(Proxy.newProxyInstance(getClass().getClassLoader(),
                                     new Class[]{samInterface},
                                     new LambdaHandler(initialIP,
                                                       contextOffset,
                                                       numLocals,
                                                       compiledMethod,
-                                                      lambdaEnvironment)));
+                                                      environment)));
     }
 
     private void handleJumpFalse(int index) {
