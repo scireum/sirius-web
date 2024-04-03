@@ -296,11 +296,11 @@ public class TypeTools {
     public static Class<?> simplifyToClass(Type type, Class<?> fallback) {
         // Try to resolve type parameters into their actual values if possible.
         // This will propagate type parameters down a call chain.
-        if (type instanceof Class<?>) {
-            return (Class<?>) type;
+        if (type instanceof Class<?> clazz) {
+            return clazz;
         }
-        if (type instanceof ParameterizedType) {
-            return (Class<?>) ((ParameterizedType) type).getRawType();
+        if (type instanceof ParameterizedType parameterizedType) {
+            return (Class<?>) parameterizedType.getRawType();
         }
 
         return fallback;
