@@ -182,6 +182,14 @@ class CompilerTest {
     }
 
     @Test
+    fun `Interfaces support Object methods`() {
+        assert(
+                compile("NoodleExample.intConsumer().getClass().getName()").call(SimpleEnvironment()).toString()
+                        .startsWith("sirius.pasta.noodle.compiler.NoodleExample")
+        )
+    }
+
+    @Test
     fun `Types can be derived from generic super classes`() {
         assertEquals(
                 "42",
