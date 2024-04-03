@@ -287,7 +287,7 @@ public class TypeTools {
     }
 
     /**
-     * Tries to reduces the given type to a <tt>Class</tt>.
+     * Tries to reduce the given type to a <tt>Class</tt>.
      *
      * @param type     the type to reduce
      * @param fallback used if the type cannot be reduced, e.g. for an unresolved type variable.
