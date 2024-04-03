@@ -147,6 +147,12 @@ class CompilerTest {
     }
 
     @Test
+    fun `type propagation with generic lambdas work`() {
+        // We expect the following to compile properly by forwarding the type from the first parameter to the second...
+        compile("NoodleExample.propagateTypes(String.class, |s| { s.startsWith('x'); })")
+    }
+
+    @Test
     fun `Exceptions in lambdas work`() {
         assertThrows<ScriptingException> {
             // An undeclared exception is thrown within a lambda...

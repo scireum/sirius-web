@@ -68,10 +68,10 @@ public class LambdaNode extends Node {
     }
 
     public Class<?> getSamInterface() {
-        return TypeTools.simplifyToClass(samInterface, Class.class);
+        return TypeTools.simplifyToClass(samInterface, Object.class);
     }
 
-    public void setSamInterface(Class<?> samInterface) {
+    public void setSamInterface(Type samInterface) {
         this.samInterface = samInterface;
     }
 
@@ -99,7 +99,7 @@ public class LambdaNode extends Node {
 
     @Override
     public void emit(Assembler assembler) {
-        assembler.emitPushConstant(samInterface, position);
+        assembler.emitPushConstant(getSamInterface(), position);
         assembler.emitPushConstant(localsOffset, position);
         assembler.emitByteCode(OpCode.LAMBDA, numberOfLocals, position);
         Assembler.Label endLabel = assembler.createLabel();
