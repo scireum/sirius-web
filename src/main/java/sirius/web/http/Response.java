@@ -105,7 +105,7 @@ public class Response {
      * Contains a set of parameter names which are censored in any output as we do not want to log user passwords etc.
      */
     private static final Set<String> CENSORED_LOWERCASE_PARAMETER_NAMES =
-            Set.of("password", "passphrase", "secret", "secretKey");
+            Set.of("password", "passphrase", "secret", "secretKey", "client_secret", "refresh_token", "access_token");
 
     /**
      * Contains the content type used for html.
