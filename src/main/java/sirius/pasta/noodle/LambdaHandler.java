@@ -23,18 +23,18 @@ class LambdaHandler implements InvocationHandler {
     private final int contextOffset;
     private final int numLocals;
     private final InterpreterCall compiledMethod;
-    private final Environment environment;
+    private final Environment closureEnvironment;
 
     LambdaHandler(int initialIP,
                   int contextOffset,
                   int numLocals,
                   InterpreterCall compiledMethod,
-                  Environment environment) {
+                  Environment closureEnvironment) {
         this.initialIP = initialIP;
         this.contextOffset = contextOffset;
         this.numLocals = numLocals;
         this.compiledMethod = compiledMethod;
-        this.environment = environment;
+        this.closureEnvironment = closureEnvironment;
     }
 
     @Override
@@ -45,23 +45,16 @@ class LambdaHandler implements InvocationHandler {
                 return method.invoke(proxy);
             }
 
+            Environment environment = LambdaEnvironment.create(closureEnvironment, contextOffset, numLocals);
+
             if (args != null) {
                 // Transfer arguments...
                 for (int i = 0; i < Math.min(args.length, numLocals); i++) {
                     environment.writeVariable(contextOffset + i, args[i]);
                 }
-                // Null all remaining locals...
-                for (int i = args.length; i < numLocals; i++) {
-                    environment.writeVariable(contextOffset + i, null);
-                }
-            } else {
-                // Null all locals...
-                for (int i = 0; i < numLocals; i++) {
-                    environment.writeVariable(contextOffset + i, null);
-                }
             }
 
-            // Creates another invocation, with appropriate instruction pointer offset, custom stack and shared
+            // Creates another invocation, with appropriate instruction pointer offset, custom stack and custom
             // environment...
             Invocation invocation = new Invocation(compiledMethod, environment, initialIP);
 

@@ -235,6 +235,12 @@ public class MethodCall extends Call {
             }
         }
 
+        if (type.isInterface()) {
+            // Interfaces don't report the Object methods (like getClass()) within type.getMethods() - therefore,
+            // we give this a final try here, before giving up...
+            return findMethod(Object.class, name, parameterTypes);
+        }
+
         throw new NoSuchMethodException(name);
     }
 
