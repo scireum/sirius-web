@@ -1969,7 +1969,7 @@ public class WebContext implements SubContext {
                                         maxStructuredInputSize)
                                 .handle();
             }
-            return Json.parseObject(content.getString(getRequestEncoding()));
+            return Json.tryParseObject(content.getString(getRequestEncoding()));
         } catch (HandledException exception) {
             throw exception;
         } catch (Exception exception) {
