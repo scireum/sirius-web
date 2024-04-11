@@ -58,21 +58,6 @@ public abstract class PdfReplaceHandler implements Priorized {
             throws Exception;
 
     /**
-     * Resolves the image with the given URI.
-     *
-     * @param scopeId           the current user scope
-     * @param uri               the URI to resolve
-     * @param userAgentCallback the user agent to use to resolve image resources
-     * @param cssWidth          the requested image width in pixels
-     * @param cssHeight         the requested image height in pixels
-     * @return the image if the URI could be resolved, <tt>null</tt> otherwise
-     * @throws Exception in case of an error while resolving the URI.
-     */
-    @Nullable
-    public abstract FSImage resolveUri(String scopeId, String uri, UserAgentCallback userAgentCallback, int cssWidth, int cssHeight)
-            throws Exception;
-
-    /**
      * Resolves the image with the given URL.
      *
      * @param userAgentCallback the user agent to use to resolve image resources

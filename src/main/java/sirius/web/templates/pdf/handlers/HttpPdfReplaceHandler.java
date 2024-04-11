@@ -33,14 +33,4 @@ public class HttpPdfReplaceHandler extends PdfReplaceHandler {
             throws Exception {
         return resizeImage(new ITextFSImage(Image.getInstance(uri)), cssWidth, cssHeight);
     }
-
-    @Nullable
-    @Override
-    public FSImage resolveUri(String scopeId,
-                              String uri,
-                              UserAgentCallback userAgentCallback,
-                              int cssWidth,
-                              int cssHeight) throws Exception {
-        throw new UnsupportedOperationException("Url resources cannot be resolved with a custom scopeId");
-    }
 }

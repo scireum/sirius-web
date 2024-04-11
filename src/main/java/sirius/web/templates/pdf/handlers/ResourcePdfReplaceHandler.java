@@ -15,7 +15,6 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
-import sirius.web.security.UserContext;
 
 import javax.annotation.Nullable;
 
@@ -38,15 +37,8 @@ public class ResourcePdfReplaceHandler extends PdfReplaceHandler {
     @Nullable
     public FSImage resolveUri(String uri, UserAgentCallback userAgentCallback, int cssWidth, int cssHeight)
             throws Exception {
-        return resolveUri(UserContext.getCurrentScope().getScopeId(), uri, userAgentCallback, cssWidth, cssHeight);
-    }
-
-    @Override
-    @Nullable
-    public FSImage resolveUri(String scopeId, String uri, UserAgentCallback userAgentCallback, int cssWidth, int cssHeight)
-            throws Exception {
         String path = Strings.split(uri, "://").getSecond();
-        Resource resource = resources.resolve(scopeId, path).orElse(null);
+        Resource resource = resources.resolve(path).orElse(null);
 
         if (resource != null) {
             return resizeImage(resolveResource(userAgentCallback, resource.getUrl()), cssWidth, cssHeight);

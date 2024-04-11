@@ -54,14 +54,4 @@ public class BarcodePdfReplaceHandler extends PdfReplaceHandler {
 
         return fsImage;
     }
-
-    @Nullable
-    @Override
-    public FSImage resolveUri(String scopeId,
-                              String uri,
-                              UserAgentCallback userAgentCallback,
-                              int cssWidth,
-                              int cssHeight) throws Exception {
-        throw new UnsupportedOperationException("Barcodes cannot be resolved with a custom scopeId");
-    }
 }

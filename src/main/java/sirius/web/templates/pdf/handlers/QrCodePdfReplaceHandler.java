@@ -56,14 +56,4 @@ public class QrCodePdfReplaceHandler extends PdfReplaceHandler {
 
         return fsImage;
     }
-
-    @Nullable
-    @Override
-    public FSImage resolveUri(String scopeId,
-                              String uri,
-                              UserAgentCallback userAgentCallback,
-                              int cssWidth,
-                              int cssHeight) throws Exception {
-        throw new UnsupportedOperationException("QR codes cannot be resolved with a custom scopeId");
-    }
 }

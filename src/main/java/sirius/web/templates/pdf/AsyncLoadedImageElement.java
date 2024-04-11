@@ -17,6 +17,7 @@ import org.xhtmlrenderer.render.RenderingContext;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.health.Exceptions;
+import sirius.web.security.ScopeInfo;
 import sirius.web.security.UserContext;
 import sirius.web.templates.pdf.handlers.PdfReplaceHandler;
 
@@ -58,11 +59,12 @@ public final class AsyncLoadedImageElement implements ITextReplacedElement {
         this.location = new Point(0, 0);
 
         Semaphore semaphore = CallContext.getCurrent().getOrCreateSubContext(SemaphoreContext.class).getSemaphore();
-        String scopeId = UserContext.getCurrentScope().getScopeId();
+        ScopeInfo scopeInfo = UserContext.getCurrentScope();
         resolvingThread = Thread.startVirtualThread(() -> {
+            UserContext.get().setCurrentScope(scopeInfo);
             try {
                 semaphore.acquire();
-                image = handler.resolveUri(scopeId, uri, null, cssWidth, cssHeight);
+                image = handler.resolveUri(uri, null, cssWidth, cssHeight);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 Exceptions.handle(e);
