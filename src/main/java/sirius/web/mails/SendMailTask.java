@@ -33,6 +33,7 @@ import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.health.Exceptions;
+import sirius.web.security.UserContext;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -504,7 +505,10 @@ class SendMailTask implements Runnable {
     protected Transport getSMTPTransport(Session session, SMTPConfiguration config) {
         try {
             Transport transport = session.getTransport();
-            transport.connect(config.getMailHost(), config.getMailUser(), config.getMailPassword());
+            String password = UserContext.getSettings().get("mail.useTransportAuthentication").asBoolean() ?
+                              config.getMailPassword() :
+                              null;
+            transport.connect(config.getMailHost(), config.getMailUser(), password);
             return transport;
         } catch (Exception e) {
             throw Exceptions.handle()
