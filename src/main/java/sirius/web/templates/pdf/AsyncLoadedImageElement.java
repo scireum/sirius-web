@@ -16,6 +16,7 @@ import org.xhtmlrenderer.render.BlockBox;
 import org.xhtmlrenderer.render.RenderingContext;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Tuple;
+import sirius.kernel.commons.Wait;
 import sirius.kernel.health.Exceptions;
 import sirius.web.security.ScopeInfo;
 import sirius.web.security.UserContext;
@@ -39,6 +40,7 @@ import java.util.concurrent.Semaphore;
  */
 public final class AsyncLoadedImageElement implements ITextReplacedElement {
 
+    private static final int MAX_ATTEMPTS = 3;
     private final Thread resolvingThread;
     private final int cssWidth;
     private final int cssHeight;
@@ -62,18 +64,42 @@ public final class AsyncLoadedImageElement implements ITextReplacedElement {
         ScopeInfo scopeInfo = UserContext.getCurrentScope();
         resolvingThread = Thread.startVirtualThread(() -> {
             UserContext.get().setCurrentScope(scopeInfo);
-            try {
-                semaphore.acquire();
-                image = handler.resolveUri(uri, null, cssWidth, cssHeight);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                Exceptions.handle(e);
-            } catch (Exception e) {
-                Exceptions.handle(e);
-            } finally {
-                semaphore.release();
-            }
+            startResolvingResource(uri, handler, semaphore, 1);
         });
+    }
+
+    private void startResolvingResource(String uri, PdfReplaceHandler handler, Semaphore semaphore, int attempt) {
+        Exception exception = null;
+        try {
+            semaphore.acquire();
+            image = handler.resolveUri(uri, null, cssWidth, cssHeight);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            exception = e;
+        } catch (Exception e) {
+            exception = e;
+        } finally {
+            semaphore.release();
+            if (image == null || exception != null) {
+                retryOrFail(uri, handler, semaphore, attempt, exception);
+            }
+        }
+    }
+
+    private void retryOrFail(String uri, PdfReplaceHandler handler, Semaphore semaphore, int attempt, Exception exception) {
+        if (exception instanceof InterruptedException) {
+            // we should accept that the thread is interrupted and don't try again
+            Exceptions.handle(exception);
+            return;
+        }
+        if (attempt <= MAX_ATTEMPTS) {
+            Wait.millis(500);
+            startResolvingResource(uri, handler, semaphore, attempt + 1);
+        } else if (exception != null) {
+            Exceptions.handle(exception);
+        } else {
+            Exceptions.handle().withSystemErrorMessage("Could not resolve image: %s", uri).handle();
+        }
     }
 
     /**
