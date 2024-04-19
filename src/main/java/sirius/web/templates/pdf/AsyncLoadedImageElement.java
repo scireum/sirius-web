@@ -92,7 +92,7 @@ public final class AsyncLoadedImageElement implements ITextReplacedElement {
             Exceptions.handle(exception);
             return;
         }
-        if (attempt <= MAX_ATTEMPTS) {
+        if (attempt < MAX_ATTEMPTS) {
             Wait.millis(500);
             startResolvingResource(uri, handler, semaphore, attempt + 1);
         } else if (exception != null) {
