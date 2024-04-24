@@ -14,7 +14,7 @@
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
     <properties>
-        <sirius.kernel>dev-42.1.0</sirius.kernel>
+        <sirius.kernel>dev-42.6.0</sirius.kernel>
     </properties>
 
     <repositories>
@@ -62,12 +62,12 @@
         <dependency>
             <groupId>com.google.zxing</groupId>
             <artifactId>core</artifactId>
-            <version>3.5.2</version>
+            <version>3.5.3</version>
         </dependency>
         <dependency>
             <groupId>com.google.zxing</groupId>
             <artifactId>javase</artifactId>
-            <version>3.5.2</version>
+            <version>3.5.3</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.github.jai-imageio</groupId>
@@ -78,14 +78,14 @@
 
         <!-- Used to send and receive mails -->
         <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>jakarta.mail</artifactId>
-            <version>2.0.1</version>
+            <groupId>jakarta.mail</groupId>
+            <artifactId>jakarta.mail-api</artifactId>
+            <version>2.1.3</version>
         </dependency>
         <dependency>
-            <groupId>com.sun.activation</groupId>
-            <artifactId>jakarta.activation</artifactId>
-            <version>2.0.1</version>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
+            <version>2.1.3</version>
         </dependency>
         <dependency>
             <groupId>net.markenwerk</groupId>
@@ -94,8 +94,8 @@
         </dependency>
         <dependency>
             <groupId>org.xhtmlrenderer</groupId>
-            <artifactId>flying-saucer-pdf-openpdf</artifactId>
-            <version>9.3.1</version>
+            <artifactId>flying-saucer-pdf</artifactId>
+            <version>9.7.2</version>
         </dependency>
 
         <!-- POI is used to generate excel exports -->
@@ -108,12 +108,24 @@
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
             <version>5.2.5</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-compress</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- Required, as the version provided by poi-ooxml has security issues -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.26.1</version>
         </dependency>
 
         <dependency>
             <groupId>com.github.pjfanning</groupId>
             <artifactId>excel-streaming-reader</artifactId>
-            <version>4.2.1</version>
+            <version>4.3.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.h2database</groupId>
@@ -126,7 +138,7 @@
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-annotations</artifactId>
-            <version>2.2.19</version>
+            <version>2.2.21</version>
         </dependency>
 
         <dependency>
@@ -142,7 +154,7 @@
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-bom</artifactId>
-                <version>4.1.101.Final</version>
+                <version>4.1.109.Final</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
