@@ -38,9 +38,9 @@ public record ReceivedTokens(String accessToken, String refreshToken, String typ
      * @return the tokens received from the authorization server
      */
     public static ReceivedTokens fromJson(ObjectNode response) {
-        String accessToken = response.required(OAuth.ACCESS_TOKEN).asText("");
-        String refreshToken = response.required(OAuth.REFRESH_TOKEN).asText("");
-        String type = response.required(OAuth.TOKEN_TYPE).asText("");
+        String accessToken = response.required(OAuth.ACCESS_TOKEN).asText();
+        String refreshToken = response.required(OAuth.REFRESH_TOKEN).asText();
+        String type = response.required(OAuth.TOKEN_TYPE).asText();
         if (OAuth.TOKEN_TYPE_BEARER.equalsIgnoreCase(type)) {
             try {
                 // Try to read the exact refresh token expiration date from the JWT token itself
