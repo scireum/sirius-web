@@ -13,13 +13,13 @@
          value="@isFilled(link) ? 'a' : 'span'"/>
 
 <i:if test="isFilled(effectiveValue)">
-    <span class="d-flex flew-row text-small mb-2 me-2 @class">
+    <span class="d-flex flex-row text-small mb-2 me-2 @class">
         <@wrapper @if (isFilled(link)) { href="@link" } @if (isFilled(title)) {
               title="@title"
               aria-label="@title"
               data-bs-toggle="tooltip"
               }
-              class="@if (isFilled(title) || isFilled(link)) { card-link } text-decoration-none"
+              class="@if (isFilled(title) || isFilled(link)) { card-link } text-decoration-none d-inline-flex flex-row"
               style="color: inherit">
             <span class="text-sirius-gray-dark text-black">
                 <i class="@icon"></i>

@@ -9,7 +9,7 @@
 </i:pragma>
 
 <i:if test="isFilled(effectiveValue)">
-    <span class="d-flex flew-row text-small text-sirius-gray-dark mb-2 me-3 overflow-hidden @class">
+    <span class="d-flex flex-row text-small text-sirius-gray-dark mb-2 me-3 overflow-hidden @class">
         <i:if test="isFilled(label)">
             <span class="fw-bold pe-1">
                 @(label):
