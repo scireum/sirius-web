@@ -2,23 +2,36 @@
 <i:arg type="String" name="value" default=""/>
 <i:arg type="Object" name="effectiveValue" default="isFilled(value) ? value : renderToString('body')"/>
 <i:arg type="String" name="class" default=""/>
+<i:arg name="title" type="String" default=""/>
+<i:arg name="link" type="String" default=""/>
 
 <i:pragma name="description">
     Renders an icon + value pair which is rendered as a single block.
 </i:pragma>
 
+<i:local name="wrapper"
+         value="@isFilled(link) ? 'a' : 'span'"/>
+
 <i:if test="isFilled(effectiveValue)">
     <span class="d-flex flew-row text-small mb-2 me-2 @class">
-        <span class="text-sirius-gray-dark ">
-            <i class="@icon"></i>
-        </span>
-        <span class="ps-1 overflow-hidden text-break">
-            <i:if test="isFilled(value)">
-                @value
-                <i:else>
-                    <i:raw>@effectiveValue</i:raw>
-                </i:else>
-            </i:if>
-        </span>
+        <@wrapper @if (isFilled(link)) { href="@link" } @if (isFilled(title)) {
+              title="@title"
+              aria-label="@title"
+              data-bs-toggle="tooltip"
+              }
+              class="@if (isFilled(title) || isFilled(link)) { card-link } text-decoration-none"
+              style="color: inherit">
+            <span class="text-sirius-gray-dark text-black">
+                <i class="@icon"></i>
+            </span>
+            <span class="ps-1 overflow-hidden text-break">
+                <i:if test="isFilled(value)">
+                    @value
+                    <i:else>
+                        <i:raw>@effectiveValue</i:raw>
+                    </i:else>
+                </i:if>
+            </span>
+        </@wrapper>
     </span>
 </i:if>
