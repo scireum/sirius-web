@@ -13,7 +13,7 @@
          value="@isFilled(link) ? 'a' : 'span'"/>
 
 <i:if test="isFilled(effectiveValue)">
-    <span class="d-flex flew-row text-small mb-2 me-2 @class">
+    <span class="d-flex flex-row text-small mb-2 me-2 @class">
         <@wrapper @if (isFilled(link)) { href="@link" } @if (isFilled(title)) {
               title="@title"
               aria-label="@title"
