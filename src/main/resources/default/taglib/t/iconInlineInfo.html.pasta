@@ -19,7 +19,7 @@
               aria-label="@title"
               data-bs-toggle="tooltip"
               }
-              class="@if (isFilled(title) || isFilled(link)) { card-link } text-decoration-none"
+              class="@if (isFilled(title) || isFilled(link)) { card-link } text-decoration-none d-inline-flex flex-row"
               style="color: inherit">
             <span class="text-sirius-gray-dark text-black">
                 <i class="@icon"></i>
