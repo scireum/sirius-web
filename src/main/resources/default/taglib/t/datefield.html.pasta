@@ -1,5 +1,8 @@
-<i:arg name="id" type="String" default="" />
-<i:arg name="class" type="String" default="" description="Lists additional CSS classes to apply to the field."/>
+<i:arg name="id" type="String" default=""/>
+<i:arg name="class"
+       type="String"
+       default=""
+       description="Lists additional CSS classes to apply to the field."/>
 <i:arg name="name" type="String" default=""/>
 <i:arg name="fieldName" type="String" default="@name"/>
 <i:arg name="value" type="String"/>
@@ -12,51 +15,42 @@
 <i:arg name="readonly" type="boolean" default="false"/>
 <i:arg name="placeholder" type="String" default=""/>
 <i:arg name="tabIndex" type="String" default=""/>
-<i:arg name="noPastDates" type="boolean" default="false" />
-<i:arg name="format" type="String" default="L" description="Defines the date format for the field. Valid formats can be found at http://momentjs.com/docs/#/displaying/format/" />
-
+<i:arg name="noPastDates" type="boolean" default="false"/>
 
 <i:pragma name="description" value="Renders a date input field within a Tycho template"/>
 
-<div class="datefield form-group @UserContext.get().signalFieldError(name) @class">
+<i:local name="effectiveValue" value="UserContext.get().getFieldValue(name, value)"/>
+<i:local name="min" value="noPastDates ? today() : java.time.LocalDate.of(1900,1,1)"/>
+
+<div class="form-group mb-3 @UserContext.get().signalFieldError(name) @class">
     <i:if test="isFilled(label) || forceLabel">
-        <label><span>@label</span></label>
+        <label class="form-label"><span>@label</span></label>
     </i:if>
-    <i:if test="isFilled(addonText)">
-        <div class="input-group">
-            <input @if(isFilled(fieldName)) { name="@fieldName" }
-                   @if(isFilled(id)) { id="@id" }
-                   type="text"
-                   value="@UserContext.get().getFieldValue(name, value)"
-                   @if (noPastDates) { data-date-mindate="@today()" }
-                   data-date-format="@format"
-                   autocomplete="off"
-                   class="form-control input-block-level date-picker-js"
-                   @if (isFilled(placeholder)) { placeholder="@placeholder" }
-                   @if (readonly) { readonly }
-                   @if (isFilled(tabIndex)) { tabindex="@tabIndex" } />
 
-            <span class="input-group-append">
+    <div class="input-group">
+        <input @if(isFilled(fieldName)) { name="@fieldName" }
+               @if(isFilled(id)) { id="@id" }
+               type="date"
+               value="@effectiveValue"
+               min="@min"
+               max="2100-12-31"
+               oninvalid="document.querySelector('.single-click-pending-js').classList.remove('single-click-pending-js');"
+               autocomplete="off"
+               class="form-control input-block-level"
+               @if (isFilled(placeholder)) { placeholder="@placeholder" }
+               @if (readonly) { disabled readonly }
+               @if (isFilled(tabIndex)) { tabindex="@tabIndex" }/>
+        <i:render name="addon">
+            <i:if test="isFilled(addonText)">
                 <span class="input-group-text"><i:raw>@addonText</i:raw></span>
-            </span>
-        </div>
-
-        <i:else>
-            <input @if(isFilled(fieldName)) { name="@fieldName" }
-                   @if(isFilled(id)) { id="@id" }
-                   value="@UserContext.get().getFieldValue(name, value)"
-                   @if (noPastDates) { data-date-mindate="@today()" }
-                   data-date-format="@format"
-                   autocomplete="off"
-                   class="form-control input-block-level date-picker-js"
-                   @if (isFilled(placeholder)) { placeholder="@placeholder" }
-                   @if (readonly) { readonly }
-                   @if (isFilled(tabIndex)) { tabindex="@tabIndex" } />
-        </i:else>
-    </i:if>
+            </i:if>
+        </i:render>
+    </div>
 
     <i:if test="isFilled(help)">
-        <small class="form-text text-muted"><i:raw>@expandMessage(help)</i:raw></small>
+        <small class="form-text text-muted">
+            <i:raw>@expandMessage(help)</i:raw>
+        </small>
     </i:if>
     <i:if test="UserContext.get().hasError(name)">
         <small class="error-block form-text">@UserContext.get().getFieldErrorMessage(name)</small>

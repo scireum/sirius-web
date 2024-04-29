@@ -15,7 +15,8 @@
 
 .nav-pills {
   .nav-link {
-    margin: 0 -1rem;
+    margin: 0 -0.75rem;
+    color: $primary-color !important;
   }
 
   .nav-link .nav-link-icon {
@@ -25,8 +26,15 @@
     text-align: center;
   }
 
-  .nav-link.active, .nav-link:hover, .nav-link:hover .nav-link-icon, .nav-link.active .nav-link-icon {
-    color: #fff;
+  .nav-link .badge, .nav-link .nav-link-icon {
+    transition: color .15s ease-in-out, background-color .15s ease-in-out;
+  }
+
+  .nav-link.active, .nav-link:hover {
+    .nav-link-icon {
+      color: $white !important;
+    }
+    color: $white !important;
     background-color: $primary-color;
   }
 }

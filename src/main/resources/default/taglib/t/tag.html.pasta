@@ -17,7 +17,7 @@
 
 <i:if test="isFilled(value)">
     <span id="@id"
-          class="border-sirius-@color tycho-tag mb-@marginBottom @if(marginRight){ mr-2 } d-inline-block @class">
+          class="border-sirius-@color tycho-tag mb-@marginBottom @if(marginRight){ me-2 } d-inline-block @class">
         <i:raw>@value</i:raw>
     </span>
 </i:if>

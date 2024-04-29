@@ -50,9 +50,9 @@ public class Message {
 
         static {
             TEXT_AND_LINK_FORMAT = Formatter.create("""
-                                                            <span class="pr-2">${text}</span>
+                                                            <span class="pe-2">${text}</span>
                                                             <a href="${link}"[ target="${target}"]>
-                                                                [<i class="fa ${icon}"></i> ]${label}
+                                                                [<i class="fa-solid ${icon}"></i> ]${label}
                                                             </a>
                                                             """);
         }

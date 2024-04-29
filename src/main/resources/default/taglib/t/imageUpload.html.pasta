@@ -65,7 +65,7 @@
             '                         aria-valuenow="0" data-dz-uploadprogress>' +
             '           </div>\n' +
             '       </div>\n' +
-            '       <span class="dropzone-delete ml-4" data-dz-remove><i class="fa-solid fa-xmark"></i></span>\n' +
+            '       <span class="dropzone-delete ms-4" data-dz-remove><i class="fa-solid fa-xmark"></i></span>\n' +
             '   </div>\n' +
             '</div>',
         createImageThumbnails: false,

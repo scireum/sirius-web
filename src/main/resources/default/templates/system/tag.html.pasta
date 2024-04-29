@@ -22,7 +22,7 @@
         <div class="card mb-4">
             <div class="card-body">
                 <h5 class="card-title">Description</h5>
-                <div class="text-monospace"><i:raw>@description</i:raw></div>
+                <div class="font-monospace"><i:raw>@description</i:raw></div>
             </div>
         </div>
     </i:if>

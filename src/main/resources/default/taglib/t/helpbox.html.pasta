@@ -6,13 +6,16 @@
 <div class="card mb-4 sci-left-border-blue-dark @class">
     <div class="card-body">
         <div class="d-flex flex-row">
-            <div class="mr-auto">
+            <div class="sci-min-width-0">
                 <i:local name="contents" value="@renderToString('body')"/>
                 <i:raw>@expandMessage(contents)</i:raw>
             </div>
-            <div class="ml-4">
-                <i:render name="actions"/>
-            </div>
+            <i:local name="renderedActions" value="@renderToString('actions')"/>
+            <i:if test="isFilled(renderedActions)">
+                <div class="ms-4">
+                    <i:raw>@renderedActions</i:raw>
+                </div>
+            </i:if>
         </div>
     </div>
 </div>

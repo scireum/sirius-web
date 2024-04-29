@@ -86,6 +86,10 @@ public class NoodleExample {
         };
     }
 
+    public static <E> void propagateTypes(Class<E> type, Consumer<E> consumer) {
+        // This isn't actually invoked, as we only check if Noodle can propagate the type from type to consumer..
+    }
+
     public NoodleTestRef getRef() {
         return ref;
     }

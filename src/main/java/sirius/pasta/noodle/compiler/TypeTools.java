@@ -287,7 +287,7 @@ public class TypeTools {
     }
 
     /**
-     * Tries to reduces the given type to a <tt>Class</tt>.
+     * Tries to reduce the given type to a <tt>Class</tt>.
      *
      * @param type     the type to reduce
      * @param fallback used if the type cannot be reduced, e.g. for an unresolved type variable.
@@ -296,11 +296,11 @@ public class TypeTools {
     public static Class<?> simplifyToClass(Type type, Class<?> fallback) {
         // Try to resolve type parameters into their actual values if possible.
         // This will propagate type parameters down a call chain.
-        if (type instanceof Class<?>) {
-            return (Class<?>) type;
+        if (type instanceof Class<?> clazz) {
+            return clazz;
         }
-        if (type instanceof ParameterizedType) {
-            return (Class<?>) ((ParameterizedType) type).getRawType();
+        if (type instanceof ParameterizedType parameterizedType) {
+            return (Class<?>) parameterizedType.getRawType();
         }
 
         return fallback;

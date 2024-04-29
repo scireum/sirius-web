@@ -41,7 +41,7 @@
                 </div>
                 <i:if test="isFilled(api.getDocumentationUri())">
                     <div class="mt-2">
-                        <a href="@api.getDocumentationUri()"><i class="fa fa-file-alt"></i> Documentation</a>
+                        <a href="@api.getDocumentationUri()"><i class="fa-solid fa-file-alt"></i> Documentation</a>
                     </div>
                 </i:if>
             </t:helpbox>
@@ -61,7 +61,7 @@
                     </p>
                     <i:if test="isFilled(service.getDocumentationUri())">
                         <p>
-                            <a href="@service.getDocumentationUri()"><i class="fa fa-file-alt"></i> Documentation</a>
+                            <a href="@service.getDocumentationUri()"><i class="fa-solid fa-file-alt"></i> Documentation</a>
                         </p>
                     </i:if>
 
@@ -69,7 +69,7 @@
                         <i:invoke template="/templates/system/service-format-tag.html.pasta"
                                   service="@service"/>
 
-                        <span class="text-monospace whitespace-pre-wrap">@service.getUri()</span>
+                        <span class="font-monospace whitespace-pre-wrap">@service.getUri()</span>
                     </div>
 
                     <i:if test="!service.getParameters().isEmpty()">
@@ -85,14 +85,14 @@
                                 <i:for type="io.swagger.v3.oas.annotations.Parameter" var="parameter"
                                        items="service.getParameters()">
                                     <tr>
-                                        <td class="@if (parameter.required()) { font-weight-bold }">
+                                        <td class="@if (parameter.required()) { fw-bold }">
                                             @parameter.name()
                                         </td>
                                         <td>
                                             <i:raw>@expandMessage(smartTranslate(parameter.description()))</i:raw>
                                         </td>
                                         <td>@parameter.required()</td>
-                                        <td class="text-monospace whitespace-pre-wrap">@parameter.example()</td>
+                                        <td class="font-monospace whitespace-pre-wrap">@parameter.example()</td>
                                     </tr>
                                 </i:for>
                             </table>
@@ -160,7 +160,7 @@
                                                 <i:if test="@isFilled(response.responseCode())">
                                                     <t:fullTag
                                                             color="@service.determineStatusCodeColor(response.responseCode())"
-                                                            class="align-text-top mr-1">
+                                                            class="align-text-top me-1">
                                                         @response.responseCode()
                                                     </t:fullTag>
                                                 </i:if>
@@ -184,7 +184,7 @@
                                                     <i:if test="@isFilled(response.responseCode())">
                                                         <t:fullTag
                                                                 color="@service.determineStatusCodeColor(response.responseCode())"
-                                                                class="align-text-top mr-1">
+                                                                class="align-text-top me-1">
                                                             @response.responseCode()
                                                         </t:fullTag>
                                                     </i:if>

@@ -77,7 +77,9 @@ public class MethodCall extends Call {
     @SuppressWarnings({"java:S3776", "java:S1541"})
     @Explain("We rather keep all optimizations in one place.")
     private Node optimizeIntrinsics() {
-        if (NLS.class.equals(method.getDeclaringClass()) && "get".equals(method.getName())) {
+        if (NLS.class.equals(method.getDeclaringClass())
+            && "get".equals(method.getName())
+            && parameterNodes.length == 1) {
             return new IntrinsicCall(getPosition(),
                                      method.getGenericReturnType(),
                                      OpCode.INTRINSIC_NLS_GET,
@@ -231,6 +233,12 @@ public class MethodCall extends Call {
             if (!candidateMethod.isBridge() && signatureMatch(candidateMethod, name, parameterTypes)) {
                 return candidateMethod;
             }
+        }
+
+        if (type.isInterface()) {
+            // Interfaces don't report the Object methods (like getClass()) within type.getMethods() - therefore,
+            // we give this a final try here, before giving up...
+            return findMethod(Object.class, name, parameterTypes);
         }
 
         throw new NoSuchMethodException(name);

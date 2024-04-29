@@ -5,6 +5,7 @@
 <i:arg name="name" type="String" default=""/>
 <i:arg name="fieldName" type="String" default="@name"/>
 <i:arg name="value" type="String"/>
+<i:arg name="pattern" type="String" default=""/>
 <i:arg name="labelKey" type="String" default=""/>
 <i:arg name="label" type="String" default="@i18n(labelKey)"/>
 <i:arg name="forceLabel" type="boolean" default="false"/>
@@ -19,9 +20,9 @@
 
 <i:pragma name="description" value="Renders a text input field within a Tycho template"/>
 
-<div class="form-group @UserContext.get().signalFieldError(name) @class">
+<div class="form-group mb-3 @UserContext.get().signalFieldError(name) @class">
     <i:if test="isFilled(label) || forceLabel">
-        <label><span class="@labelClass">@label</span></label>
+        <label class="form-label"><span class="@labelClass">@label</span></label>
     </i:if>
 
     <div class="input-group">
@@ -29,16 +30,15 @@
                @if(isFilled(id)) { id="@id" }
                type="@type"
                value="@UserContext.get().getFieldValue(name, value)"
-               class="form-control input-block-level @fieldClass"
+               class="form-control @fieldClass"
                @if (isFilled(placeholder)) { placeholder="@placeholder" }
-               @if (readonly) { readonly }
+               @if (isFilled(pattern)){pattern="@pattern"}
+               @if (readonly) { disabled readonly }
                @if (isFilled(tabIndex)) { tabindex="@tabIndex" }/>
 
         <i:render name="addon">
             <i:if test="isFilled(addonText)">
-                <span class="input-group-append">
-                    <span class="input-group-text"><i:raw>@addonText</i:raw></span>
-                </span>
+                <span class="input-group-text"><i:raw>@addonText</i:raw></span>
             </i:if>
         </i:render>
     </div>

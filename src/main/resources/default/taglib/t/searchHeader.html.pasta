@@ -29,19 +29,17 @@
                         <div class="input-group">
                             <input type="text" name="query" class="form-control primary-autofocus-js submit-on-enter-js"
                                    value="@page.getQuery()" placeholder="@i18n('NLS.searchkey')"/>
-                            <div class="input-group-append">
-                                <button class="btn btn-outline-secondary"
-                                        onclick="sirius.requestSubmitForm(document.getElementById('search'))">
-                                    <i class="fa-solid fa-magnifying-glass"></i>
-                                </button>
-                            </div>
+                            <button class="btn btn-outline-secondary"
+                                    onclick="sirius.requestSubmitForm(document.getElementById('search'))">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </button>
                         </div>
                     </form>
                 </i:if>
             </div>
             <div class="col flex-grow-0 d-flex flex-row justify-content-end text-nowrap">
                 <i:render name="body"/>
-                <a class="ml-2 btn btn-outline-secondary" href="@page.linkToCurrentPage(baseUrl)">
+                <a class="ms-2 btn btn-outline-secondary" href="@page.linkToCurrentPage(baseUrl)">
                     <i class="fa-solid fa-arrows-rotate"></i>
                 </a>
             </div>

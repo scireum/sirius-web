@@ -759,7 +759,7 @@ public class Parser extends InputProcessor {
 
         List<Node> parameters = new ArrayList<>();
         while (!reader.current().isEndOfInput()) {
-            parameters.add(parseParameter(possibleMethod, selfType, parameters.size()));
+            parameters.add(parseParameter(possibleMethod, selfType, parameters));
             if (!reader.current().is(',')) {
                 break;
             }
@@ -812,7 +812,9 @@ public class Parser extends InputProcessor {
      * @param parameterIndex the parameter being currently parsed
      * @return the parsed parameter expression
      */
-    private Node parseParameter(Method method, Type selfType, int parameterIndex) {
+    private Node parseParameter(Method method, Type selfType, List<Node> parameters) {
+        int parameterIndex = parameters.size();
+
         skipWhitespaces();
         if (reader.current().is('|')) {
             if (method == null || method.getParameterTypes().length <= parameterIndex) {
@@ -820,7 +822,9 @@ public class Parser extends InputProcessor {
                               "Cannot evaluate a lambda here, as the method is unknown, overloaded or the parameters don't match!");
                 return parseInvalidLambda();
             } else {
-                return parseLambdaParameter(new TypeTools(selfType).simplify(method.getGenericParameterTypes()[parameterIndex]));
+                TypeTools typeTools = new TypeTools(selfType);
+                typeTools.withMethod(method, parameters.toArray(new Node[0]));
+                return parseLambdaParameter(typeTools.simplify(method.getGenericParameterTypes()[parameterIndex]));
             }
         } else {
             return parseExpression(true);
@@ -842,7 +846,7 @@ public class Parser extends InputProcessor {
 
         int numVariablesBeforeLambda = context.getVariableScoper().getMaxVariables();
         LambdaNode lambdaNode = new LambdaNode(start, numVariablesBeforeLambda);
-        lambdaNode.setSamInterface(TypeTools.simplifyToClass(calleeType, Object.class));
+        lambdaNode.setSamInterface(calleeType);
         VariableScoper.Scope scope = context.getVariableScoper().pushScope();
         parseLambdaParameters(lambdaNode, calleeType, targetMethod);
         parseLambdaBody(lambdaNode, targetMethod);

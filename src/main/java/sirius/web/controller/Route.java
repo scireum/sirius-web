@@ -439,6 +439,10 @@ public class Route {
         return pattern.toString();
     }
 
+    public String getUri() {
+        return uri;
+    }
+
     /**
      * Invokes the route with the given parameters.
      *

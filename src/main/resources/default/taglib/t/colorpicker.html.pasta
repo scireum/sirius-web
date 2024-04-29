@@ -15,22 +15,29 @@
 
 <i:pragma name="description" value="Renders a color picker within a Tycho template"/>
 
-<div class="form-group @UserContext.get().signalFieldError(name) @class">
+<i:local name="textId"
+         value="@generateId('colorpicker-%s-text')"/>
+<i:local name="colorId"
+         value="@isFilled(id) ? id : generateId('colorpicker-%s-color')"/>
+
+<div class="form-group mb-3 @UserContext.get().signalFieldError(name) @class">
     <i:if test="isFilled(label) || forceLabel">
-        <label><span class="@labelClass">@label</span></label>
+        <label class="form-label"><span class="@labelClass">@label</span></label>
     </i:if>
 
     <div class="input-group">
         <input @if(isFilled(fieldName)) { name="@fieldName" }
-               @if(isFilled(id)) { id="@id" }
+               id="@textId"
                type="text"
                value="@UserContext.get().getFieldValue(name, value)"
                class="form-control input-block-level @fieldClass"
                @if (isFilled(placeholder)) { placeholder="@placeholder" }
                @if (isFilled(tabIndex)) { tabindex="@tabIndex" }/>
-        <span class="input-group-append">
-            <span class="input-group-text colorpicker-input-addon"><i></i></span>
-        </span>
+        <input id="@colorId"
+               type="color"
+               value="@UserContext.get().getFieldValue(name, value)"
+               class="form-control form-control-color"
+               style="max-width: 3rem;">
     </div>
 
     <i:if test="isFilled(help)">
@@ -42,10 +49,26 @@
         <small class="error-block form-text">@UserContext.get().getFieldErrorMessage(name)</small>
     </i:if>
     <script>
-        $(function () {
-            $('#@id').parent().colorpicker({
-                format: 'hex'
+        sirius.ready(() => {
+            const _textInput = document.querySelector('#@textId');
+            const _colorInput = document.querySelector('#@colorId');
+
+            _textInput.addEventListener('input', () => {
+                _colorInput.value = sirius.convertColorToHex(_textInput.value);
             });
+
+            _textInput.addEventListener('change', () => {
+                if (_textInput.value.length > 0) {
+                    _textInput.value = sirius.convertColorToHex(_textInput.value);
+                }
+            });
+
+            _colorInput.addEventListener('input', () => {
+                _textInput.value = _colorInput.value;
+            });
+
+            // re-init the color picker, in case the value was not #rrggbb
+            _colorInput.value = sirius.convertColorToHex("@UserContext.get().getFieldValue(name, value)");
         });
     </script>
 </div>

@@ -2,13 +2,10 @@
 // A list of all licenses can be obtained via /licenses
 //
 
-___include("/assets/tycho/libs/jquery/jquery-3.5.1.min.js")
-___include("/assets/tycho/libs/popper/popper-1.14.3.min.js")
+___include("/assets/tycho/libs/popper/popper.min.js")
 ___include("/assets/tycho/libs/bootstrap/js/bootstrap.min.js")
-___include("/assets/tycho/libs/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js")
 ___include("/assets/tycho/libs/mustache/mustache.min.js")
 ___include("/assets/tycho/libs/token-autocomplete/token-autocomplete.js")
 ___include("/assets/tycho/libs/chartjs/chart.umd.js")
 ___include("/assets/tycho/libs/moment/moment-with-locales.min.js")
-___include("/assets/tycho/libs/datetimepicker/js/bootstrap-datetimepicker.js")
 ___include("/assets/tycho/libs/dropzonejs/dropzone.js")

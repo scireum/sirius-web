@@ -230,7 +230,7 @@ public class ControllerDispatcher implements WebDispatcher {
     }
 
     private void executeRoute(WebContext webContext, Route route, List<Object> params) throws Exception {
-        webContext.setAttribute(ATTRIBUTE_MATCHED_ROUTE, route.getPattern());
+        webContext.setAttribute(ATTRIBUTE_MATCHED_ROUTE, route.getUri());
 
         if (route.getApiResponseFormat() != null) {
             executeApiCall(webContext, route, params);

@@ -16,7 +16,7 @@
 </div>
 
 <script type="text/javascript">
-    sirius.ready(function () {
+    sirius.ready(() => {
         let _editorNode = document.getElementById('@id');
         let editor = ace.edit(_editorNode);
         editor.setTheme('ace/theme/idle_fingers');

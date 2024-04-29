@@ -17,7 +17,7 @@
     <button type="button"
             class="dropzone-select btn @btnClass">
         <i class="fas fa-cloud-upload-alt"></i>
-        <span class="pl-2 d-none d-xl-inline">
+        <span class="ps-2 d-none d-xl-inline">
             @label
         </span>
     </button>
@@ -60,7 +60,7 @@
             '                         aria-valuenow="0" data-dz-uploadprogress>' +
             '           </div>\n' +
             '       </div>\n' +
-            '       <span class="dropzone-delete ml-4" data-dz-remove><i class="fa-solid fa-xmark"></i></span>\n' +
+            '       <span class="dropzone-delete ms-4" data-dz-remove><i class="fa-solid fa-xmark"></i></span>\n' +
             '   </div>\n' +
             '</div>',
         previewsContainer: '@previewsContainer' || '#' + '@id' + ' .dropzone-items',

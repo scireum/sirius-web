@@ -338,7 +338,7 @@ var TokenAutocomplete = /** @class */ (function () {
                     }
                 });
                 parent.textInput.addEventListener('keydown', function (event) {
-                    if (event.key == parent.KEY_ENTER || (event.key == parent.KEY_TAB && parent.options.enableTabulator)) {
+                    if (event.key == parent.KEY_ENTER || (event.key == parent.KEY_TAB && parent.options.enableTabulator && parent.autocomplete.areSuggestionsDisplayed() && parent.autocomplete.suggestions.childNodes.length == 1)) {
                         event.preventDefault();
                         var highlightedSuggestion = parent.autocomplete.suggestions.querySelector('.token-autocomplete-suggestion-highlighted');
                         if (parent.options.enableTabulator && highlightedSuggestion == null && event.key == parent.KEY_TAB && parent.autocomplete.areSuggestionsDisplayed()) {
@@ -652,7 +652,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 }
             });
             parent.textInput.addEventListener('keydown', function (event) {
-                if (event.key == parent.KEY_ENTER || (event.key == parent.KEY_TAB && parent.options.enableTabulator)) {
+                if (event.key == parent.KEY_ENTER || (event.key == parent.KEY_TAB && parent.options.enableTabulator && parent.autocomplete.areSuggestionsDisplayed() && parent.autocomplete.suggestions.childNodes.length == 1)) {
                     event.preventDefault();
                     var highlightedSuggestion = parent.autocomplete.suggestions.querySelector('.token-autocomplete-suggestion-highlighted');
                     if (parent.options.enableTabulator && highlightedSuggestion == null && event.key == parent.KEY_TAB && parent.autocomplete.areSuggestionsDisplayed()) {

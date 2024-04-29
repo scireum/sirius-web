@@ -25,12 +25,16 @@
 
     <t:searchHeader baseUrl="/system/timing" page="page">
         <i:if test="enabled">
-            <a href="/system/timing?disable=true" class="btn btn-outline-primary">
-                <i class="fa fa-minus"></i> <span class="d-none d-md-inline-block">Disable</span>
+            <a href="/system/timing?disable=true"
+               class="btn btn-outline-primary">
+                <i class="fa-solid fa-minus"></i>
+                <span class="d-none d-md-inline-block">Disable</span>
             </a>
             <i:else>
-                <a href="/system/timing?enable=true" class="btn btn-outline-primary">
-                    <i class="fa fa-plus"></i> <span class="d-none d-md-inline-block">Enable</span>
+                <a href="/system/timing?enable=true"
+                   class="btn btn-outline-primary">
+                    <i class="fa-solid fa-plus"></i>
+                    <span class="d-none d-md-inline-block">Enable</span>
                 </a>
             </i:else>
         </i:if>
@@ -45,7 +49,7 @@
                         <th>
                             Key
                         </th>
-                        <th class="text-right">
+                        <th class="text-end">
                             Calls (Duration)
                         </th>
                     </tr>
@@ -55,7 +59,7 @@
                             <td>
                                 @timing.getFirst()
                             </td>
-                            <td class="text-right">
+                            <td class="text-end">
                                 @timing.getSecond()
                             </td>
                         </tr>

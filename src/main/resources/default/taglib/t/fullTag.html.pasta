@@ -5,6 +5,6 @@
     Renders a highly-visible colored tag using the given text.
 </i:pragma>
 
-<span class="badge badge-primary bg-sirius-@color @class">
+<span class="badge bg-sirius-@color @class">
     <i:render name="body"/>
 </span>

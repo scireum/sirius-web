@@ -1,43 +1,55 @@
-<i:arg type="Page" name="page" />
-<i:arg type="String" name="baseUrl" />
+<i:arg name="page" type="Page"/>
+<i:arg name="baseUrl" type="String"/>
 
-<i:pragma name="description" value="Renders a pagination box below a table within a Tycho template" />
+<i:pragma name="description" value="Renders a pagination box below a table within a Tycho template"/>
 
 
 <i:if test="!page.getItems().isEmpty() || page.getStart() != 1">
-    <i:local name="id" value="generateId()" />
-    <div class="input-group justify-content-center mb-4">
-        <div class="input-group-prepend">
+    <i:local name="id" value="generateId()"/>
+    <div class="d-flex justify-content-center">
+        <div class="input-group mb-4" style="width: fit-content">
             <i:if test="page.hasLess()">
-                <a href="@page.linkToPreviousPage(baseUrl)" class="btn btn-outline-secondary">&#8592;</a>
+                <a href="@page.linkToPreviousPage(baseUrl)"
+                   class="btn btn-outline-secondary"
+                   aria-label="@i18n('Pagination.previous')">
+                    <span aria-hidden="true">&#8592;</span>
+                </a>
                 <i:else>
-                    <a class="btn btn-outline-secondary disabled">&#8592;</a>
+                    <a class="btn btn-outline-secondary disabled"
+                       aria-label="@i18n('Pagination.previous')">
+                        <span aria-hidden="true">&#8592;</span>
+                    </a>
                 </i:else>
             </i:if>
-        </div>
-        <input type="text" id="@id" placeholder="@page.getRange()" class="text-center">
-        <div class="input-group-append">
+            <input type="text" id="@id" placeholder="@page.getRange()" class="text-center form-control">
             <i:if test="page.hasMore()">
-                <a href="@page.linkToNextPage(baseUrl)" class="btn btn-outline-secondary">&#8594;</a>
+                <a href="@page.linkToNextPage(baseUrl)"
+                   class="btn btn-outline-secondary"
+                   aria-label="@i18n('Pagination.next')">
+                    <span aria-hidden="true">&#8594;</span>
+                </a>
                 <i:else>
-                    <a class="btn btn-outline-secondary disabled">&#8594;</a>
+                    <a class="btn btn-outline-secondary disabled"
+                       aria-label="@i18n('Pagination.next')">
+                        <span aria-hidden="true">&#8594;</span>
+                    </a>
                 </i:else>
             </i:if>
         </div>
     </div>
     <script type="text/javascript">
-        sirius.ready(function() {
+        sirius.ready(() => {
             const _rangeInput = document.getElementById('@id');
-            _rangeInput.addEventListener('keyup', function (event) {
-                if (event.key === sirius.key.ENTER && /^\d+$/.test(this.value)) {
-                    const location = '@raw {@page.linkToPageWithConfigurableStart(baseUrl)}' + this.value;
+            _rangeInput.addEventListener('keyup', event => {
+                if (event.key === sirius.key.ENTER && /^\d+$/.test(event.target.value)) {
+                    const location = '@raw {@page.linkToPageWithConfigurableStart(baseUrl)}' + event.target.value;
                     window.location.replace(location);
                     event.preventDefault();
                 }
             });
 
             ___if (page.hasLess() || page.hasMore()) {
-                document.addEventListener('keyup', function(event) {
+                document.addEventListener('keyup', event => {
                     ___if (page.hasLess()) {
                         if (event.shiftKey && event.key === sirius.key.LEFT) {
                             const location = '@raw {@page.linkToPreviousPage(baseUrl)}';

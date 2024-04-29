@@ -9,11 +9,9 @@
 package sirius.web.templates.pdf;
 
 import org.w3c.dom.Element;
-import org.xhtmlrenderer.extend.FSImage;
 import org.xhtmlrenderer.extend.ReplacedElement;
 import org.xhtmlrenderer.extend.UserAgentCallback;
 import org.xhtmlrenderer.layout.LayoutContext;
-import org.xhtmlrenderer.pdf.ITextImageElement;
 import org.xhtmlrenderer.pdf.ITextOutputDevice;
 import org.xhtmlrenderer.pdf.ITextReplacedElementFactory;
 import org.xhtmlrenderer.render.BlockBox;
@@ -23,7 +21,6 @@ import sirius.kernel.health.Exceptions;
 import sirius.web.templates.pdf.handlers.PdfReplaceHandler;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Used by the XHTMLRenderer (creating PDFs) to replace img elements by their referenced image.
@@ -70,33 +67,14 @@ public class ImageReplacedElementFactory extends ITextReplacedElementFactory {
         }
 
         try {
-            Optional<FSImage> image = resolveUri(src, uac, cssWidth, cssHeight);
-
-            if (image.isPresent()) {
-                return new ITextImageElement(image.get());
-            }
+            String protocol = Strings.split(src, "://").getFirst();
+            PdfReplaceHandler handler = findHandler(protocol);
+            return new AsyncLoadedImageElement(handler, src, cssWidth, cssHeight);
         } catch (Exception ex) {
             Exceptions.handle(ex);
         }
 
         return super.createReplacedElement(c, box, uac, cssWidth, cssHeight);
-    }
-
-    private Optional<FSImage> resolveUri(String uri, UserAgentCallback userAgentCallback, int cssWidth, int cssHeight) {
-        String protocol = Strings.split(uri, "://").getFirst();
-        PdfReplaceHandler handler = findHandler(protocol);
-
-        try {
-            FSImage image = handler.resolveUri(uri, userAgentCallback, cssWidth, cssHeight);
-
-            if (image != null) {
-                return Optional.of(image);
-            }
-        } catch (Exception e) {
-            Exceptions.handle(e);
-        }
-
-        return Optional.empty();
     }
 
     private PdfReplaceHandler findHandler(String protocol) {

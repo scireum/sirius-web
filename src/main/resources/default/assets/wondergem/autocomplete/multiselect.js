@@ -354,22 +354,24 @@ var multiSelect = function (args) {
                 var responseTokens = [];
                 var suggestionAdded = false;
                 response.completions.forEach(function (completion) {
-                    responseTokens.push({
-                        // label is the text displayed in the dropdown. should be what is given as "description"
-                        // by the service. but use other texts as fallback.
-                        label: completion.description || completion.text || completion.id,
-                        value: completion.id,
-                        type: 'basic'
-                    });
-
-                    if (!suggestions.getTokenForValue(completion.id)) {
-                        suggestionAdded = true;
-                        suggestions.addSuggestion({
-                            // label is the text displayed in the tokenfield. should be what is given as "text"
+                    if (!completion.disabled) {
+                        responseTokens.push({
+                            // label is the text displayed in the dropdown. should be what is given as "description"
                             // by the service. but use other texts as fallback.
-                            label: completion.text || completion.description || completion.id,
-                            value: completion.id
+                            label: completion.description || completion.text || completion.id,
+                            value: completion.id,
+                            type: 'basic'
                         });
+
+                        if (!suggestions.getTokenForValue(completion.id)) {
+                            suggestionAdded = true;
+                            suggestions.addSuggestion({
+                                // label is the text displayed in the tokenfield. should be what is given as "text"
+                                // by the service. but use other texts as fallback.
+                                label: completion.text || completion.description || completion.id,
+                                value: completion.id
+                            });
+                        }
                     }
                 });
                 if (suggestionAdded) {
