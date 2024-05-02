@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import sirius.kernel.SiriusExtension
 import java.net.HttpURLConnection
 import java.net.SocketException
+import java.net.URI
 import java.net.URL
 import kotlin.test.assertEquals
 
@@ -23,7 +24,7 @@ class FirewallTest {
     @Test
     fun `unlimited realm isn't blocked`() {
 
-        val url = URL("http://localhost:9999/test/firewall").openConnection() as HttpURLConnection
+        val url = URI("http://localhost:9999/test/firewall").toURL().openConnection() as HttpURLConnection
 
         val responseCode = url.getResponseCode()
 
@@ -35,7 +36,7 @@ class FirewallTest {
 
         TestFirewall.blockAllIPs = true
 
-        val url = URL("http://localhost:9999/test/firewall").openConnection() as HttpURLConnection
+        val url = URI("http://localhost:9999/test/firewall").toURL().openConnection() as HttpURLConnection
 
         assertThrows<SocketException> { val responseCode = url.getResponseCode() }
 
@@ -45,7 +46,7 @@ class FirewallTest {
     @Test
     fun `blocked realm is blocked`() {
 
-        val url = URL("http://localhost:9999/test/firewallBlocked").openConnection() as HttpURLConnection
+        val url = URI("http://localhost:9999/test/firewallBlocked").toURL().openConnection() as HttpURLConnection
 
         val responseCode = url.getResponseCode()
 
