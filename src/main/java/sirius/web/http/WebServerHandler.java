@@ -14,7 +14,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
@@ -84,12 +83,6 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
 
     @ConfigValue("http.maxKeepalive")
     private static int maxKeepalive;
-
-    @ConfigValue("http.maxFormFields")
-    private static int maxPostFields;
-
-    @ConfigValue("http.maxFormBufferedBytes")
-    private static int maxFormBufferedBytes;
 
     /**
      * Creates a new instance and initializes some statistics.
@@ -463,11 +456,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
             if (WebServer.LOG.isFINE()) {
                 WebServer.LOG.FINE("POST/PUT-FORM: " + request.uri());
             }
-            HttpPostRequestDecoder postDecoder = new HttpPostRequestDecoder(WebServer.getHttpDataFactory(),
-                                                                            request,
-                                                                            HttpConstants.DEFAULT_CHARSET,
-                                                                            maxPostFields,
-                                                                            maxFormBufferedBytes);
+            HttpPostRequestDecoder postDecoder = new HttpPostRequestDecoder(WebServer.getHttpDataFactory(), request);
             currentContext.setPostDecoder(postDecoder);
         } else {
             if (WebServer.LOG.isFINE()) {
