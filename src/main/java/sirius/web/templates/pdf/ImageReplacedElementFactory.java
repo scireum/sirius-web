@@ -69,7 +69,7 @@ public class ImageReplacedElementFactory extends ITextReplacedElementFactory {
         try {
             String protocol = Strings.split(src, "://").getFirst();
             PdfReplaceHandler handler = findHandler(protocol);
-            return new AsyncLoadedImageElement(handler, src, cssWidth, cssHeight);
+            return new AsyncLoadedImageElement(handler, uac, src, cssWidth, cssHeight);
         } catch (Exception ex) {
             Exceptions.handle(ex);
         }
