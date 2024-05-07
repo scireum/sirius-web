@@ -10,6 +10,7 @@ package sirius.web.util;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.Sirius;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Streams;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
@@ -41,6 +42,8 @@ public class LicenseController extends BasicController {
      * @throws IOException in case of an IO error
      */
     @Routed(priority = 999, value = "/licenses")
+    @SuppressWarnings("java:S5852")
+    @Explain("As these are our own URIs, we don't expect a backtracking attack on this regex here.")
     public void licenses(WebContext webContext) throws IOException {
         try (OutputStream outputStream = webContext.respondWith()
                                                    .outputStream(HttpResponseStatus.OK, MimeHelper.TEXT_PLAIN)) {
