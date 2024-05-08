@@ -23,7 +23,8 @@ public class SemaphoreContext implements SubContext {
     /**
      * We use only the half of the available processors to avoid overloading the system.
      */
-    private static final int HALF_THE_AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors() / 2;
+    private static final int HALF_THE_AVAILABLE_PROCESSORS =
+            Math.max(Runtime.getRuntime().availableProcessors() / 2, 1);
 
     private final Semaphore semaphore;
 
