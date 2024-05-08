@@ -10,10 +10,14 @@ package sirius.web.http;
 
 import io.netty.handler.codec.http.QueryStringDecoder;
 import sirius.kernel.commons.Value;
+import sirius.kernel.commons.Values;
 
 import javax.annotation.Nonnull;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
@@ -24,12 +28,21 @@ public class QueryString {
     private final QueryStringDecoder decoder;
 
     /**
-     * Parses the given URI using a {@link QueryStringDecoder}.
+     * Parses the given URI string (consisting of path and query parameters) using a {@link QueryStringDecoder}.
      *
-     * @param uri the uri to parse
+     * @param uri the URI string to parse
      */
     public QueryString(@Nonnull String uri) {
         decoder = new QueryStringDecoder(uri, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Parses the given URI using a {@link QueryStringDecoder}.
+     *
+     * @param uri the URI to parse
+     */
+    public QueryString(URI uri) {
+        decoder = new QueryStringDecoder(uri);
     }
 
     /**
@@ -52,6 +65,16 @@ public class QueryString {
     @Nonnull
     public Value get(@Nonnull String key) {
         return getParameters(key).stream().findFirst().map(Value::of).orElse(Value.EMPTY);
+    }
+
+    /**
+     * Returns the query string parameter with the given name.
+     *
+     * @param key the name of the parameter to fetch
+     * @return the first value or <tt>null</tt> if the parameter was not set or empty
+     */
+    public String getParameter(String key) {
+        return Values.of(getParameters(key)).at(0).getString();
     }
 
     /**
@@ -78,8 +101,16 @@ public class QueryString {
         if (values == null) {
             return Collections.emptyList();
         }
-
         return values;
+    }
+
+    /**
+     * Returns a collection of all parameter names.
+     *
+     * @return a collection of all parameters in the query string
+     */
+    public Collection<String> getParameterNames() {
+        return new LinkedHashSet<>(decoder.parameters().keySet());
     }
 
     /**
