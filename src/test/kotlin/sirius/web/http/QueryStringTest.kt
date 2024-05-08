@@ -13,6 +13,9 @@ import sirius.kernel.commons.Value
 import java.net.URI
 import kotlin.test.*
 
+/**
+ * Tests the [QueryString] helper.
+ */
 class QueryStringTest {
 
     companion object {
