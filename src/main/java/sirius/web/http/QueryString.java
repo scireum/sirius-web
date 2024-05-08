@@ -57,10 +57,17 @@ public class QueryString {
 
     /**
      * Returns the first value of the given parameter wrapped as value.
+     * <p>
+     * This has these possible outcomes:
+     * <ul>
+     *     <li>If the parameter is present and has a value, the value is returned wrapped in a Value.</li>
+     *     <li>If the parameter is present multiple times, the list of values is returned wrapped in a Value.</li>
+     *     <li>If the parameter is present but has no value (e.g. <tt>param=</tt>), an empty Value is returned.</li>
+     *     <li>If the parameter is not present, an empty Value is returned.</li>
+     *  </ul>
      *
      * @param key the name of the parameter to fetch
-     * @return the first value which was part of the query string in the given URI or an empty value if the parameter
-     * isn't present
+     * @return a Value representing the provided data.
      */
     @Nonnull
     public Value get(@Nonnull String key) {
@@ -79,9 +86,17 @@ public class QueryString {
 
     /**
      * Returns the query string parameter with the given name.
+     * <p>
+     * This has these possible outcomes:
+     * <ul>
+     *     <li>If the parameter is present and has a value, the value is returned.</li>
+     *     <li>If the parameter is present multiple times, the first value is returned.</li>
+     *     <li>If the parameter is present but has no value (e.g. <tt>param=</tt>), an empty string is returned.</li>
+     *     <li>If the parameter is not present, <tt>null</tt> is returned.</li>
+     * </ul>
      *
      * @param key the name of the parameter to fetch
-     * @return the first value or <tt>null</tt> if the parameter was not set or empty
+     * @return the first value or empty string if parameter is empty or <tt>null</tt> if the parameter was not set
      */
     public String getParameter(String key) {
         return Values.of(getParameters(key)).at(0).getString();
@@ -101,9 +116,17 @@ public class QueryString {
 
     /**
      * Returns all values present for the given parameter.
+     * <p>
+     * This has these possible outcomes:
+     * <ul>
+     *     <li>If the parameter is present and has a value, a list of all values is returned.</li>
+     *     <li>If the parameter is present multiple times, a list of all values is returned.</li>
+     *     <li>If the parameter is present but has no value (e.g. <tt>param=</tt>), a list with an empty string is returned.</li>
+     *     <li>If the parameter is not present, an empty list is returned.</li>
+     * </ul>
      *
      * @param key the name of the parameter to fetch
-     * @return a list of all values for the given parameter or an empty list if no value is present
+     * @return a list of all values for the given parameter or an empty list if the parameter is not present
      */
     @Nonnull
     public List<String> getParameters(@Nonnull String key) {

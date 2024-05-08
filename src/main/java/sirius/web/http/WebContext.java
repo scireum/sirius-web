@@ -572,6 +572,7 @@ public class WebContext implements SubContext {
      *
      * @param key the key used to look for the value
      * @return a Value representing the provided data.
+     * @see QueryString#get(String)
      */
     @Nonnull
     @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
@@ -1122,7 +1123,7 @@ public class WebContext implements SubContext {
      * If a POST request with query string is present, parameters in the query string have precedence.
      *
      * @param key the name of the parameter to fetch
-     * @return the first value or <tt>null</tt> if the parameter was not set or empty
+     * @return the first value or empty string if parameter is empty or <tt>null</tt> if the parameter was not set
      */
     @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getParameter(String key) {
@@ -1137,6 +1138,7 @@ public class WebContext implements SubContext {
      *
      * @param key the name of the parameter to fetch
      * @return all values in the query string
+     * @see QueryString#getParameters(String)
      */
     @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public List<String> getParameters(String key) {
