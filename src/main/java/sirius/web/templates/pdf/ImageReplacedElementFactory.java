@@ -46,9 +46,9 @@ public class ImageReplacedElementFactory extends ITextReplacedElementFactory {
     }
 
     @Override
-    public ReplacedElement createReplacedElement(LayoutContext c,
+    public ReplacedElement createReplacedElement(LayoutContext layoutContext,
                                                  BlockBox box,
-                                                 UserAgentCallback uac,
+                                                 UserAgentCallback userAgentCallback,
                                                  int cssWidth,
                                                  int cssHeight) {
         Element e = box.getElement();
@@ -58,23 +58,23 @@ public class ImageReplacedElementFactory extends ITextReplacedElementFactory {
 
         String nodeName = e.getNodeName();
         if (!TAG_TYPE_IMG.equals(nodeName)) {
-            return super.createReplacedElement(c, box, uac, cssWidth, cssHeight);
+            return super.createReplacedElement(layoutContext, box, userAgentCallback, cssWidth, cssHeight);
         }
 
         String src = e.getAttribute(ATTR_SRC);
         if (Strings.isEmpty(src)) {
-            return super.createReplacedElement(c, box, uac, cssWidth, cssHeight);
+            return super.createReplacedElement(layoutContext, box, userAgentCallback, cssWidth, cssHeight);
         }
 
         try {
             String protocol = Strings.split(src, "://").getFirst();
             PdfReplaceHandler handler = findHandler(protocol);
-            return new AsyncLoadedImageElement(handler, uac, src, cssWidth, cssHeight);
+            return new AsyncLoadedImageElement(handler, userAgentCallback, src, cssWidth, cssHeight);
         } catch (Exception ex) {
             Exceptions.handle(ex);
         }
 
-        return super.createReplacedElement(c, box, uac, cssWidth, cssHeight);
+        return super.createReplacedElement(layoutContext, box, userAgentCallback, cssWidth, cssHeight);
     }
 
     private PdfReplaceHandler findHandler(String protocol) {
