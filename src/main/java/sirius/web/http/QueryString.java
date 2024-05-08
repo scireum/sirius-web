@@ -88,7 +88,7 @@ public class QueryString {
     }
 
     /**
-     * Determines if a the given parameter is present in the query string.
+     * Determines if the given parameter is present in the query string.
      * <p>
      * This can be used to distinguish a missing parameter from <tt>param=</tt>.
      *
