@@ -76,7 +76,6 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -148,14 +147,14 @@ public class WebContext implements SubContext {
     private String rawRequestedURI;
 
     /**
-     * The base url (without the uri, like: http://myhost.com)
+     * The base url (without the uri, like: {@code http://myhost.com})
      */
     private String baseURL;
 
     /**
      * Contains the parameters submitted in the query string (?param=value...)
      */
-    private Map<String, List<String>> queryString;
+    private QueryString queryString;
 
     /**
      * Contains decoded cookies which where sent by the client
@@ -585,15 +584,8 @@ public class WebContext implements SubContext {
             decodeQueryString();
         }
 
-        if (queryString.containsKey(key)) {
-            List<String> values = getParameters(key);
-            if (values.size() == 1) {
-                return Value.of(values.getFirst());
-            } else if (values.isEmpty()) {
-                return Value.EMPTY;
-            } else {
-                return Value.of(values);
-            }
+        if (queryString.hasParameter(key)) {
+            return queryString.get(key);
         }
 
         if (postDecoder != null) {
@@ -719,7 +711,7 @@ public class WebContext implements SubContext {
         if (queryString == null) {
             decodeQueryString();
         }
-        return queryString.containsKey(key);
+        return queryString.hasParameter(key);
     }
 
     /**
@@ -1151,12 +1143,8 @@ public class WebContext implements SubContext {
         if (queryString == null) {
             decodeQueryString();
         }
-        if (queryString.containsKey(key)) {
-            List<String> result = queryString.get(key);
-            if (result == null) {
-                return Collections.emptyList();
-            }
-            return result;
+        if (queryString.hasParameter(key)) {
+            return queryString.getParameters(key);
         }
         return getPostParameters(key);
     }
@@ -1196,9 +1184,8 @@ public class WebContext implements SubContext {
      * Decodes the query string on demand
      */
     private void decodeQueryString() {
-        QueryStringDecoder decoder = new QueryStringDecoder(request.uri(), StandardCharsets.UTF_8);
-        requestedURI = decoder.path();
-        queryString = decoder.parameters();
+        queryString = new QueryString(request.uri());
+        requestedURI = queryString.path();
     }
 
     /**
@@ -1225,9 +1212,8 @@ public class WebContext implements SubContext {
      * @return the web context itself for fluent method calls
      */
     public WebContext withCustomURI(String uri) {
-        QueryStringDecoder decoder = new QueryStringDecoder(uri, StandardCharsets.UTF_8);
-        requestedURI = decoder.path();
-        queryString = decoder.parameters();
+        queryString = new QueryString(uri);
+        requestedURI = queryString.path();
         rawRequestedURI = stripQueryFromURI(uri);
 
         return this;
@@ -1629,7 +1615,7 @@ public class WebContext implements SubContext {
         if (queryString == null) {
             decodeQueryString();
         }
-        Set<String> names = new LinkedHashSet<>(queryString.keySet());
+        Set<String> names = queryString.getParameterNames();
         if (postDecoder != null) {
             try {
                 for (InterfaceHttpData data : postDecoder.getBodyHttpDatas()) {

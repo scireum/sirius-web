@@ -15,10 +15,10 @@ import sirius.kernel.commons.Values;
 import javax.annotation.Nonnull;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Wraps a {@link QueryStringDecoder} to provide some additional boilerplate methods.
@@ -119,7 +119,7 @@ public class QueryString {
      *
      * @return a collection of all parameters in the query string
      */
-    public Collection<String> getParameterNames() {
+    public Set<String> getParameterNames() {
         return new LinkedHashSet<>(decoder.parameters().keySet());
     }
 
