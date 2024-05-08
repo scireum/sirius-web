@@ -31,6 +31,9 @@ public class HttpPdfReplaceHandler extends PdfReplaceHandler {
     @Nullable
     public FSImage resolveUri(String uri, UserAgentCallback userAgentCallback, int cssWidth, int cssHeight)
             throws Exception {
-        return resizeImage(new ITextFSImage(Image.getInstance(uri)), cssWidth, cssHeight);
+        if (userAgentCallback == null) {
+            return resizeImage(new ITextFSImage(Image.getInstance(uri)), cssWidth, cssHeight);
+        }
+        return resizeImage(userAgentCallback.getImageResource(uri).getImage(), cssWidth, cssHeight);
     }
 }
