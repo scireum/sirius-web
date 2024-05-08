@@ -64,7 +64,17 @@ public class QueryString {
      */
     @Nonnull
     public Value get(@Nonnull String key) {
-        return getParameters(key).stream().findFirst().map(Value::of).orElse(Value.EMPTY);
+        List<String> values = getParameters(key);
+        if (values.isEmpty()) {
+            // No entries
+            return Value.EMPTY;
+        }
+        if (values.size() == 1) {
+            // Exactly one entry
+            return Value.of(values.getFirst());
+        }
+        // Many entries
+        return Value.of(values);
     }
 
     /**
