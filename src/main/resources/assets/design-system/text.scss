@@ -50,27 +50,27 @@
 }
 
 .sci-white-space-normal {
-  white-space: normal;
+  white-space: normal !important;
 }
 
 .sci-white-space-pre {
-  white-space: pre;
+  white-space: pre !important;
 }
 
 .sci-white-space-pre-wrap {
-  white-space: pre-wrap;
+  white-space: pre-wrap !important;
 }
 
 .sci-white-space-pre-line {
-  white-space: pre-line;
+  white-space: pre-line !important;
 }
 
 .sci-white-space-no-wrap {
-  white-space: nowrap;
+  white-space: nowrap !important;
 }
 
 .sci-line-height-125 {
-  line-height: 1.25;
+  line-height: 1.25 !important;
 }
 
 // Normally, sci-text, sci-text-smaller and sci-text-larger use REM based font sizes so that our layout
