@@ -73,6 +73,10 @@
   line-height: 1.25 !important;
 }
 
+.sci-line-height-150 {
+  line-height: 1.50 !important;
+}
+
 // Normally, sci-text, sci-text-smaller and sci-text-larger use REM based font sizes so that our layout
 // properly integrates into the page. However, some pages define ridiculous base font sizes. Therefore,
 // a marker-class "sci-enable-font-size" can be placed on a surrounding element. We then use a fixed set
