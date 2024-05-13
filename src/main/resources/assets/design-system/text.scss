@@ -50,27 +50,31 @@
 }
 
 .sci-white-space-normal {
-  white-space: normal;
+  white-space: normal !important;
 }
 
 .sci-white-space-pre {
-  white-space: pre;
+  white-space: pre !important;
 }
 
 .sci-white-space-pre-wrap {
-  white-space: pre-wrap;
+  white-space: pre-wrap !important;
 }
 
 .sci-white-space-pre-line {
-  white-space: pre-line;
+  white-space: pre-line !important;
 }
 
 .sci-white-space-no-wrap {
-  white-space: nowrap;
+  white-space: nowrap !important;
 }
 
 .sci-line-height-125 {
-  line-height: 1.25;
+  line-height: 1.25 !important;
+}
+
+.sci-line-height-150 {
+  line-height: 1.50 !important;
 }
 
 // Normally, sci-text, sci-text-smaller and sci-text-larger use REM based font sizes so that our layout
@@ -193,51 +197,50 @@
 
 }
 
-
 .sci-bold {
-  font-weight: bold;
+  font-weight: bold !important;
 }
 
 .sci-light {
-  font-weight: 300;
+  font-weight: 300 !important;
 }
 
 .sci-text-soft {
-  color: #212529;
+  color: #212529 !important;
 }
 
 .sci-text-muted {
-  color: #6c757d;
+  color: #6c757d !important;
 }
 
 .sci-text-align-left {
-  text-align: left;
+  text-align: left !important;
 }
 
 .sci-text-align-center {
-  text-align: center;
+  text-align: center !important;
 }
 
 .sci-text-align-right {
-  text-align: right;
+  text-align: right !important;
 }
 
 .sci-decoration-none {
-  text-decoration: none;
+  text-decoration: none !important;
 }
 
 .sci-decoration-underline {
-  text-decoration: underline;
+  text-decoration: underline !important;
 }
 
 .sci-text-transform-uppercase {
-  text-transform: uppercase;
+  text-transform: uppercase !important;
 }
 
 .sci-text-transform-lowercase {
-  text-transform: lowercase;
+  text-transform: lowercase !important;
 }
 
 .sci-text-transform-capitalize {
-  text-transform: capitalize;
+  text-transform: capitalize !important;
 }
