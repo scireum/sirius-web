@@ -329,7 +329,12 @@ var TokenAutocomplete = /** @class */ (function () {
                 if (parent.options.readonly) {
                     return;
                 }
+                var isComposing = false;
+                parent.textInput.addEventListener('compositionstart', function (event) {
+                    isComposing = true;
+                });
                 parent.textInput.addEventListener('compositionend', function (event) {
+                    isComposing = false;
                     // handles hitting ENTER on GBoard, which uses composition events instead of individual key triggers
                     var inputString = event.data;
                     if (inputString.charAt(inputString.length - 1) === "\n") {
@@ -338,6 +343,8 @@ var TokenAutocomplete = /** @class */ (function () {
                     }
                 });
                 parent.textInput.addEventListener('keydown', function (event) {
+                    if (isComposing)
+                        return;
                     if (event.key == parent.KEY_ENTER || (event.key == parent.KEY_TAB && parent.options.enableTabulator && parent.autocomplete.areSuggestionsDisplayed() && parent.autocomplete.suggestions.childNodes.length == 1)) {
                         event.preventDefault();
                         var highlightedSuggestion = parent.autocomplete.suggestions.querySelector('.token-autocomplete-suggestion-highlighted');
@@ -553,10 +560,13 @@ var TokenAutocomplete = /** @class */ (function () {
             if (me.options.optional) {
                 this.container.classList.remove('optional-singleselect-with-value');
             }
+            var previousValue = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.dataset.value;
+            var previousText = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.dataset.text;
+            var previousType = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.dataset.type;
             if (keepPreviousValue) {
-                me.previousValue = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.dataset.value;
-                me.previousText = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.dataset.text;
-                me.previousType = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.dataset.type;
+                me.previousValue = previousValue;
+                me.previousText = previousText;
+                me.previousType = previousType;
                 if (hiddenOption == null && me.options.allowCustomEntries) {
                     me.previousValue = tokenText;
                     me.previousText = tokenText;
@@ -583,6 +593,11 @@ var TokenAutocomplete = /** @class */ (function () {
                 this.container.dispatchEvent(new CustomEvent('tokens-changed', {
                     detail: {
                         tokens: this.parent.val(),
+                        removed: {
+                            value: previousValue,
+                            text: previousText,
+                            type: previousType
+                        }
                     }
                 }));
             }
