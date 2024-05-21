@@ -817,12 +817,11 @@ sirius.extractFileExtension = function (filename) {
 }
 
 /**@
- * Checks if the given file extension is a displayable image.
+ * Checks if the given file extension corresponds to an image format that can be displayed in the frontend.
  *
  * @param extension the extension to check
  * @returns {boolean} true if the extension is a displayable image, false otherwise
  */
-
 sirius.isDisplayableImage = function (extension) {
     return extension === '.jpg' || extension === '.jpeg' || extension === '.png' || extension === '.gif' || extension === '.webp';
 }
@@ -830,10 +829,9 @@ sirius.isDisplayableImage = function (extension) {
 /**@
  * Determines the icon class for the given file extension.
  *
- * @param extension the extension to determine the icon for
- * @returns {string} the icon class for the given extension
+ * @param extension the file extension to determine the icon for
+ * @returns {string} the icon class for the given file extension
  */
-
 sirius.determineFileIcon = function (extension) {
     if (extension === '.pdf') {
         return 'fa-file-pdf';
