@@ -829,7 +829,7 @@ sirius.isDisplayableImage = function (extension) {
 /**@
  * Determines the icon class for the given file extension.
  *
- * @param extension the file extension to determine the icon for
+ * @param {string} extension the file extension to determine the icon for
  * @returns {string} the icon class for the given file extension
  */
 sirius.determineFileIcon = function (extension) {
