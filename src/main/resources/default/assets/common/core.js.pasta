@@ -817,6 +817,50 @@ sirius.extractFileExtension = function (filename) {
 }
 
 /**@
+ * Checks if the given file extension corresponds to an image format that can be displayed in the frontend.
+ *
+ * @param {string} extension the extension to check
+ * @returns {boolean} true if the extension is a displayable image, false otherwise
+ */
+sirius.isDisplayableImage = function (extension) {
+    return extension === '.jpg' || extension === '.jpeg' || extension === '.png' || extension === '.gif' || extension === '.webp';
+}
+
+/**@
+ * Determines the icon class for the given file extension.
+ *
+ * @param {string} extension the file extension to determine the icon for
+ * @returns {string} the icon class for the given file extension
+ */
+sirius.determineFileIcon = function (extension) {
+    if (extension === '.pdf') {
+        return 'fa-file-pdf';
+    }
+
+    if (extension === '.tif' || extension === '.tiff' || extension === '.bmp' || extension === '.svg') {
+        return 'fa-image';
+    }
+
+    if (extension === '.doc' || extension === '.docx') {
+        return 'fa-file-word';
+    }
+
+    if (extension === '.xls' || extension === '.xlsx') {
+        return 'fa-file-excel';
+    }
+
+    if (extension === '.ppt' || extension === '.pps' || extension === '.pptx' || extension === '.ppsx') {
+        return 'fa-file-powerpoint';
+    }
+
+    if (extension === '.zip' || extension === '.rar') {
+        return 'fa-file-zipper';
+    }
+
+    return 'fa-file';
+};
+
+/**@
  * Copies the given text to the clipboard.
  *
  * If an element is given, it will be marked as "copied" for a short time.
