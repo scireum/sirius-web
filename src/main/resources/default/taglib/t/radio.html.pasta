@@ -16,12 +16,12 @@
         <input type="radio" name="@name" value="@key" @if (key== value) { checked="checked" } @if (readonly) {
                disabled="disabled" }/>
         <i:if test="isFilled(label)">
-            <span class="@if (required) { input-required }">
+            <span class="@if (required) { required }">
                 <i:raw>@label</i:raw>
             </span>
         </i:if>
         <i:if test="isFilled(help)">
-            <div class="from-text text-muted text-small">
+            <div class="form-text text-muted text-small">
                 <i:raw>@help</i:raw>
             </div>
         </i:if>

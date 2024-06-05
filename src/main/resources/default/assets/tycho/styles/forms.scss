@@ -17,7 +17,7 @@
   content: "\f023";
 }
 
-.form-group.required label span::after {
+.form-group.required > label span::after {
   font-family: "Font Awesome 6 Free";
   font-weight: 900;
   font-size: .6em;
