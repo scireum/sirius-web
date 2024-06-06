@@ -66,11 +66,13 @@
                 placeholderText: '@placeholder',
                 suggestionsUri: '@suggestionUri',
                 suggestionsUriBuilder: function (query) {
-                    let baseUri = this.suggestionsUri + '?query=' + encodeURIComponent(query);
+                    let suggestionsUrl = new URL(this.suggestionsUri, window.location.origin);
+                    suggestionsUrl.searchParams.set('query', query);
+
                     if (_dependencyField) {
-                        return baseUri + '&dependentValue=' + encodeURIComponent(_dependencyField.tokenAutocomplete.val().join());
+                        suggestionsUrl.searchParams.set('dependentValue', _dependencyField.tokenAutocomplete.val().join());
                     }
-                    return baseUri;
+                    return suggestionsUrl.toString();
                 }
             }, <i:render name="autocompleteOptions"/>));
 
