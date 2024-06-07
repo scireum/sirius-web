@@ -38,6 +38,8 @@
     border-radius: 32px;
     padding: 0 8px;
     pointer-events: none;
+    display: flex;
+    align-items: center;
 }
 
 .token-autocomplete-container.token-autocomplete-readonly .token-autocomplete-token {
@@ -101,8 +103,9 @@
     border-radius: 50%;
     height: 24px;
     width: 24px;
-    display: inline-block;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .token-autocomplete-container .token-autocomplete-token .token-autocomplete-token-delete:hover {
