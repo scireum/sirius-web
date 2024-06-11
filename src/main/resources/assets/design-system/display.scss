@@ -6,6 +6,10 @@
   display: flex !important;
 }
 
+.sci-d-inline-flex {
+  display: inline-flex !important;
+}
+
 .sci-d-inline-block {
   display: inline-block !important;
 }
@@ -28,6 +32,10 @@
     display: flex !important;
   }
 
+  .sci-d-sm-inline-flex {
+    display: inline-flex !important;
+  }
+
   .sci-d-sm-inline-block {
     display: inline-block !important;
   }
@@ -46,6 +54,10 @@
     display: flex !important;
   }
 
+  .sci-d-md-inline-flex {
+    display: inline-flex !important;
+  }
+
   .sci-d-md-inline-block {
     display: inline-block !important;
   }
@@ -62,6 +74,10 @@
 
   .sci-d-lg-flex {
     display: flex !important;
+  }
+
+  .sci-d-lg-inline-flex {
+    display: inline-flex !important;
   }
 
   .sci-d-lg-inline-block {
