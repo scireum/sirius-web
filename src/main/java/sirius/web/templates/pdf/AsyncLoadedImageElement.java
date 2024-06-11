@@ -71,6 +71,7 @@ public final class AsyncLoadedImageElement implements ITextReplacedElement {
         resolvingThread = Thread.startVirtualThread(() -> {
             UserContext.get().setCurrentScope(scopeInfo);
             startResolvingResource(uri, handler, callback, semaphore, 1);
+            CallContext.detach();
         });
     }
 
