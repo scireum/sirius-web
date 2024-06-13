@@ -91,14 +91,8 @@
   }
 
   .token-autocomplete-suggestions {
-    z-index: 1000;
     border: 1px solid #ced4da;
     border-radius: .25rem;
-    position: absolute;
-    top: 100%;
-    max-height: 220px;
-    overflow-y: scroll;
-    margin-left: -.75rem;
   }
 
   .token-autocomplete-input {
