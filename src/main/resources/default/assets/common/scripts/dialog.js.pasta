@@ -25,7 +25,7 @@
      */
     dialog.create = function (args) {
         if (_dialog) {
-            dialog.destroy();
+            dialog.destroy(true);
         }
 
         translationProvider = args ? args.translationProvider : function (key) {
@@ -128,8 +128,10 @@
 
     /**@
      * Closes the currently open dialog (if one is open) and cleans up listeners.
+     *
+     * @param {boolean} replaced whether the dialog was closed because another dialog was opened
      */
-    dialog.destroy = function () {
+    dialog.destroy = function (replaced) {
         if (_dialogBackground) {
             _dialogBackground.parentElement.removeChild(_dialogBackground);
             _dialogBackground = null;
@@ -139,7 +141,7 @@
         window.removeEventListener('keyup', destroyDialogEventHandler);
         document.documentElement.classList.remove('sci-dialog-static-body');
 
-        sirius.dispatchEvent('sci-dialog-destroyed');
+        sirius.dispatchEvent('sci-dialog-destroyed', document, {replaced: replaced});
     }
 
     /**@
