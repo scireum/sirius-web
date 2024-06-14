@@ -234,15 +234,8 @@ label .help-inline {
 }
 
 .form-control.token-autocomplete-container .token-autocomplete-suggestions {
-  position: absolute;
   border: 1px solid #ddd;
   border-radius: 2px;
-  z-index: 999;
-  margin-left: -12px;
-  margin-right: -12px;
-  top: 100%;
-  max-height: 220px;
-  overflow-y: scroll;
 }
 
 .form-control.token-autocomplete-container .token-autocomplete-suggestions li {
@@ -311,6 +304,3 @@ label .help-inline {
     }
   }
 }
-
-
-

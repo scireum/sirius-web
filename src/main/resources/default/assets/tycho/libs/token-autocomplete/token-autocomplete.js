@@ -512,7 +512,6 @@ var TokenAutocomplete = /** @class */ (function () {
             chip.textContent = token.text;
             var deleteToken = document.createElement('span');
             deleteToken.classList.add('token-autocomplete-token-delete');
-            deleteToken.textContent = '\u00D7';
             chip.appendChild(deleteToken);
             return chip;
         },
@@ -932,6 +931,16 @@ var TokenAutocomplete = /** @class */ (function () {
              */
             class_4.prototype.showSuggestions = function () {
                 this.suggestions.style.display = 'block';
+                var inputBottomPosition = this.parent.textInput.getBoundingClientRect().bottom;
+                var suggestionsHeight = this.suggestions.offsetHeight;
+                var viewportHeight = window.innerHeight;
+                var spaceBelow = viewportHeight - inputBottomPosition;
+                if (spaceBelow < suggestionsHeight) {
+                    this.suggestions.classList.add('token-autocomplete-suggestions-above');
+                }
+                else {
+                    this.suggestions.classList.remove('token-autocomplete-suggestions-above');
+                }
             };
             class_4.prototype.areSuggestionsDisplayed = function () {
                 return this.suggestions.style.display === 'block';
