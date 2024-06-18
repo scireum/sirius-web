@@ -17,7 +17,7 @@
 }
 
 .token-autocomplete-container .token-autocomplete-input {
-    color: black;
+    color: #212529;
     font-size: 16px;
     line-height: 32px;
     outline: none;
