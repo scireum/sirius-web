@@ -208,26 +208,31 @@ label .help-inline {
   background-color: #ededed;
 }
 
-.form-control.token-autocomplete-container .token-autocomplete-token .token-autocomplete-token-delete {
-  font-family: Arial;
-  font-size: 1.1em;
-  font-weight: 700;
-  line-height: 1.49em;
-  vertical-align: top;
-  color: #000;
-  text-shadow: 0 1px 0 #fff;
-  opacity: 0.2;
-  margin-left: 0;
+.form-control.token-autocomplete-container .token-autocomplete-token .token-autocomplete-delete-button {
+  opacity: 0.4;
+
+  &:hover {
+    background-color: transparent;
+    opacity: 0.8;
+  }
 }
 
-.form-control.token-autocomplete-container .token-autocomplete-token .token-autocomplete-token-delete:hover {
+.form-control.token-autocomplete-container > .token-autocomplete-delete-button {
+  margin-top: -2px;
+  margin-right: 8px;
   background-color: transparent;
-  opacity: .5;
+  opacity: 0.8;
+
+  &:hover {
+    background-color: transparent;
+    opacity: 1;
+  }
 }
 
 .form-control.token-autocomplete-container .token-autocomplete-input {
   font-size: 14px;
   line-height: 1.43;
+  height: 20px;
   margin: 0 2px 4px 2px;
   color: #757575;
   padding: 0;
@@ -282,25 +287,7 @@ label .help-inline {
     }
   }
 
-  &.optional-singleselect-with-value {
-    .token-autocomplete-input:after {
-      right: 0;
-    }
-
-    .token-singleselect-token-delete {
-      padding-bottom: 0px;
-      border: none;
-      background-color: transparent;
-      text-shadow: 0 1px 0 #fff;
-      color: #888;
-      top: 8px;
-      font-weight: 700;
-      right: 30px;
-
-      &:hover {
-        color: #555;
-        text-decoration: none;
-      }
-    }
+  &.select-arrow-active .token-autocomplete-input:after {
+    border-width: 0 4px 5px 4px;
   }
 }
