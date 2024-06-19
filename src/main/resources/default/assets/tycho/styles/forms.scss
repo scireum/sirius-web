@@ -70,7 +70,6 @@
 // --------------------------
 
 .form-control.token-autocomplete-container {
-  position: relative;
   border: 1px solid #ced4da;
   border-radius: .25rem;
   height: auto;
@@ -81,12 +80,9 @@
     line-height: 1;
     font-size: 1rem;
 
-    .token-autocomplete-token-delete {
-      line-height: 1;
-
-      &:hover {
-        background-color: inherit;
-      }
+    .token-autocomplete-delete-button {
+      margin-top: 0;
+      margin-right: 0;
     }
   }
 
@@ -100,31 +96,37 @@
     margin-bottom: 0.375rem;
     font-size: 1rem;
     line-height: 1.5;
+    height: 1.5rem;
 
     &:first-child {
       padding-left: 0;
+    }
+  }
+
+  .token-autocomplete-delete-button {
+    margin-top: 6px;
+    margin-right: 8px;
+    background-color: transparent;
+
+    &:hover {
+      background-color: transparent;
+    }
+  }
+
+  &.token-autocomplete-singleselect {
+    .token-autocomplete-input:after {
+      top: 10px;
+      right: 10px;
+    }
+
+    &.token-autocomplete-suggestions-displayed .token-autocomplete-input:after {
+      top: 3px;
     }
   }
 }
 
 .has-error .form-control.token-autocomplete-container {
   border-color: $sirius-red;
-}
-
-.form-control.token-autocomplete-container.token-autocomplete-singleselect {
-  .token-autocomplete-input:after {
-    top: 10px;
-    right: 10px;
-  }
-
-  &.optional-singleselect-with-value .token-singleselect-token-delete {
-    padding-bottom: 0px;
-    border: none;
-    background-color: transparent;
-    top: 6px;
-    font-weight: 700;
-    right: 32px;
-  }
 }
 
 .card .dropzone.sirius-imageupload {

@@ -4,7 +4,6 @@
     flex-wrap: wrap;
     border: 1px solid #E6E6E6;
     background-color: #FFFFFF;
-    min-width: 200px;
 }
 
 .token-autocomplete-container.token-autocomplete-readonly {
@@ -20,6 +19,7 @@
     color: #212529;
     font-size: 16px;
     line-height: 32px;
+    height: 32px;
     outline: none;
     margin: 4px 2px;
     padding: 0 8px;
@@ -61,7 +61,6 @@
 .token-autocomplete-container.token-autocomplete-readonly .token-autocomplete-input {
     display: inherit;
     cursor: default;
-    height: 1.5rem;
 }
 
 .token-autocomplete-container.token-autocomplete-singleselect .token-autocomplete-input[contenteditable="true"] {
@@ -83,22 +82,17 @@
     border-color: #cccccc transparent transparent transparent;
 }
 
-.token-autocomplete-container.token-autocomplete-singleselect.select-arrow-active:after {
+.token-autocomplete-container.token-autocomplete-singleselect.token-autocomplete-suggestions-displayed .token-autocomplete-input:after {
     border-color: transparent transparent #000 transparent;
     top: 7px;
-}
-
-.token-autocomplete-container.token-autocomplete-readonly.token-autocomplete-singleselect.select-arrow-active:after {
-    border-color: transparent transparent #cccccc transparent;
 }
 
 .token-autocomplete-container .token-autocomplete-token:hover {
     background-color: #EF9A9A;
 }
 
-.token-autocomplete-container .token-autocomplete-token .token-autocomplete-token-delete {
+.token-autocomplete-container .token-autocomplete-delete-button {
     cursor: pointer;
-    margin-left: 4px;
     pointer-events: auto;
     border-radius: 50%;
     height: 24px;
@@ -106,8 +100,23 @@
     background: url('data:image/svg+xml;utf-8,<?xml version="1.0" encoding="UTF-8"?><svg viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> <path d="M9.61289944,8.20970461 L9.70710678,8.29289322 L16.037,14.622 L22.3670434,8.29289322 L22.4612507,8.20970461 C22.8535419,7.90467972 23.420773,7.93240926 23.7812569,8.29289322 C24.1717812,8.68341751 24.1717812,9.31658249 23.7812569,9.70710678 L23.7812569,9.70710678 L17.451,16.037 L23.7812569,22.3670434 C24.1717812,22.7575677 24.1717812,23.3907326 23.7812569,23.7812569 C23.420773,24.1417409 22.8535419,24.1694704 22.4612507,23.8644455 L22.3670434,23.7812569 L16.037,17.451 L9.70710678,23.7812569 L9.61289944,23.8644455 C9.22060824,24.1694704 8.65337718,24.1417409 8.29289322,23.7812569 C7.90236893,23.3907326 7.90236893,22.7575677 8.29289322,22.3670434 L8.29289322,22.3670434 L14.622,16.037 L8.29289322,9.70710678 C7.90236893,9.31658249 7.90236893,8.68341751 8.29289322,8.29289322 C8.65337718,7.93240926 9.22060824,7.90467972 9.61289944,8.20970461 Z" fill="rgba(0, 0, 0, 0.6)"></path></svg>')
 }
 
-.token-autocomplete-container .token-autocomplete-token .token-autocomplete-token-delete:hover {
+.token-autocomplete-container .token-autocomplete-delete-button:hover {
     background-color: #e55858;
+}
+
+.token-autocomplete-container .token-autocomplete-token .token-autocomplete-delete-button {
+    margin-left: 4px;
+}
+
+.token-autocomplete-container > .token-autocomplete-delete-button {
+    margin-top: 8px;
+    margin-right: 6px;
+    display: none;
+    background-color: #E6E6E6;
+}
+
+.token-autocomplete-container.token-autocomplete-has-value > .token-autocomplete-delete-button {
+    display: block;
 }
 
 .token-autocomplete-container .token-autocomplete-suggestions {
@@ -158,32 +167,11 @@
     color: #808080;
 }
 
-.token-autocomplete-container.optional-singleselect-with-value {
-    position: relative;
-}
-
-.token-autocomplete-container.optional-singleselect-with-value .token-autocomplete-input {
+.token-autocomplete-container.token-autocomplete-singleselect.token-autocomplete-has-value .token-autocomplete-input {
     padding-right: 50px;
 }
 
-.token-autocomplete-container.token-autocomplete-singleselect.optional-singleselect-with-value .token-autocomplete-input:after {
-    right: -20px;
-}
-
-.token-autocomplete-container.token-autocomplete-singleselect.optional-singleselect-with-value .token-singleselect-token-delete {
-    color: #000;
+.token-autocomplete-container.token-autocomplete-singleselect.token-autocomplete-has-value .token-autocomplete-delete-button {
     position: absolute;
-    top: 10px;
-    right: 20px;
-    background-color: #cccccc;
-    border-radius: 20px;
-    padding-left: 4px;
-    padding-right: 4px;
-    padding-bottom: 2px;
-    cursor: pointer;
-    display: block;
-}
-
-.token-autocomplete-container.token-autocomplete-singleselect .token-singleselect-token-delete {
-    display: none;
+    right: 18px;
 }
