@@ -84,8 +84,12 @@ var TokenAutocomplete = /** @class */ (function () {
         this.hiddenSelect.setAttribute('multiple', 'true');
         this.hiddenSelect.setAttribute('autocomplete', 'off');
         this.hiddenSelect.style.display = 'none';
-        if (this.options.readonly && this.options.tokenRenderer === TokenAutocomplete.MultiSelect.defaultRenderer) {
-            this.options.tokenRenderer = TokenAutocomplete.MultiSelect.defaultReadonlyRenderer;
+        // If the field is readonly, we don't want to show the clear button.
+        if (this.options.readonly) {
+            this.options.showClearButton = false;
+            if (this.options.tokenRenderer === TokenAutocomplete.MultiSelect.defaultRenderer) {
+                this.options.tokenRenderer = TokenAutocomplete.MultiSelect.defaultReadonlyRenderer;
+            }
         }
         this.textInput = document.createElement('span');
         this.textInput.id = this.container.id + '-input';
@@ -234,6 +238,7 @@ var TokenAutocomplete = /** @class */ (function () {
     };
     TokenAutocomplete.prototype.setCurrentInput = function (input, silent) {
         this.textInput.textContent = input;
+        this.select.updateHasValue();
         if (silent) {
             return;
         }
@@ -650,6 +655,17 @@ var TokenAutocomplete = /** @class */ (function () {
         };
         class_2.prototype.clearCurrentInput = function () {
             this.clear(true);
+        };
+        /**
+         * Updates the 'token-autocomplete-has-value' class of this SingleSelect autocomplete.
+         */
+        class_2.prototype.updateHasValue = function () {
+            if (this.parent.getCurrentInput() === '' && this.parent.val().length === 0) {
+                this.container.classList.remove('token-autocomplete-has-value');
+            }
+            else {
+                this.container.classList.add('token-autocomplete-has-value');
+            }
         };
         class_2.prototype.addToken = function (tokenValue, tokenText, tokenType, silent) {
             if (tokenValue === null || tokenText === null || tokenValue === '_no_match_') {
