@@ -15,6 +15,7 @@
      */
     let _overlay = null;
     let shouldEscClose = null;
+    let LEFT_MOUSE_BUTTON_CODE = 0;
 
     /**@
      * Creates a new (hidden) overlay. This can be made visible to the user afterwards by calling `overlay.showOverlay`.
@@ -79,8 +80,8 @@
         }
 
         if (yieldable) {
-            _overlay.addEventListener('click', function (event) {
-                if (event.target === _overlay) {
+            _overlay.addEventListener('mousedown', function (event) {
+                if (event.button === LEFT_MOUSE_BUTTON_CODE && event.target === _overlay) {
                     sirius.dispatchEvent('sci-overlay-dismissed');
                     overlay.destroyOverlay();
                 }
