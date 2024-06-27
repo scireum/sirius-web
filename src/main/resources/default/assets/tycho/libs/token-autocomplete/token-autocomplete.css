@@ -106,6 +106,7 @@
 
 .token-autocomplete-container .token-autocomplete-token .token-autocomplete-delete-button {
     margin-left: 4px;
+    flex-shrink: 0;
 }
 
 .token-autocomplete-container > .token-autocomplete-delete-button {
