@@ -75,6 +75,7 @@ class SendMailTask implements Runnable {
     private static final String MAIL_FROM = "mail.from";
     private static final String MAIL_SMTP_HOST = "mail.smtp.host";
     private static final String MAIL_SMTP_STARTTLS_ENABLE = "mail.smtp.starttls.enable";
+    private static final String MAIL_SMTP_CHECKSERVERIDENTITY = "mail.smtp.ssl.checkserveridentity";
     private static final String MAIL_SMTP_SSL_TRUST = "mail.smtp.ssl.trust";
     private static final String MAIL_SMTP_PORT = "mail.smtp.port";
     private static final String MAIL_SMTP_CONNECTIONTIMEOUT = "mail.smtp.connectiontimeout";
@@ -382,6 +383,7 @@ class SendMailTask implements Runnable {
 
         props.setProperty(MAIL_TRANSPORT_PROTOCOL, config.getProtocol().getProtocol());
         props.setProperty(MAIL_SMTP_STARTTLS_ENABLE, Boolean.toString(config.getProtocol().isStarttls()));
+        props.setProperty(MAIL_SMTP_CHECKSERVERIDENTITY, Boolean.toString(config.isCheckServerIdentity()));
         if (Strings.isFilled(config.getTrustedServers())) {
             props.setProperty(MAIL_SMTP_SSL_TRUST, config.getTrustedServers());
         }
