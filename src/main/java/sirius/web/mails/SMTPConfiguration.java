@@ -29,6 +29,7 @@ public class SMTPConfiguration {
     private String mailSenderName;
     private boolean useSenderAndEnvelopeFrom;
     private String trustedServers;
+    private boolean checkServerIdentity;
 
     @ConfigValue("mail.smtp.host")
     private static String smtpHost;
@@ -53,6 +54,9 @@ public class SMTPConfiguration {
 
     @ConfigValue("mail.smtp.trustedServers")
     private static String smtpTrustedServers;
+
+    @ConfigValue("mail.smtp.checkServerIdentity")
+    private static boolean smtpCheckServerIdentity;
 
     private SMTPConfiguration() {
     }
@@ -113,6 +117,11 @@ public class SMTPConfiguration {
         return this;
     }
 
+    public SMTPConfiguration setCheckServerIdentity(boolean checkServerIdentity) {
+        this.checkServerIdentity = checkServerIdentity;
+        return this;
+    }
+
     /**
      * Creates a new configuration based on the config files.
      *
@@ -128,7 +137,8 @@ public class SMTPConfiguration {
                                 .setMailSender(smtpSender)
                                 .setMailSenderName(smtpSenderName)
                                 .setUseSenderAndEnvelopeFrom(smtpUseEnvelopeFrom)
-                                .setTrustedServers(smtpTrustedServers);
+                                .setTrustedServers(smtpTrustedServers)
+                                .setCheckServerIdentity(smtpCheckServerIdentity);
     }
 
     /**
@@ -156,7 +166,8 @@ public class SMTPConfiguration {
                                 .setMailSender(settings.get("mail.sender").getString())
                                 .setMailSenderName(settings.get("mail.senderName").getString())
                                 .setUseSenderAndEnvelopeFrom(settings.get("mail.useEnvelopeFrom").asBoolean())
-                                .setTrustedServers(settings.get("mail.trustedServers").getString());
+                                .setTrustedServers(settings.get("mail.trustedServers").getString())
+                                .setCheckServerIdentity(settings.get("mail.checkServerIdentity").asBoolean());
     }
 
     /**
@@ -193,6 +204,15 @@ public class SMTPConfiguration {
      */
     public String getTrustedServers() {
         return trustedServers;
+    }
+
+    /**
+     * Determines if the server identity should be checked.
+     *
+     * @return <tt>true</tt> if the server identity should be checked, <tt>false</tt> otherwise
+     */
+    public boolean isCheckServerIdentity() {
+        return checkServerIdentity;
     }
 
     /**
