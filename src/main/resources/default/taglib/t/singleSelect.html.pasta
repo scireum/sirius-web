@@ -20,8 +20,14 @@
 </i:pragma>
 
 <div class="form-group mb-3 @UserContext.get().signalFieldError(name) @class">
-    <i:if test="isFilled(label)">
-        <label class="form-label"><span class="@labelClass">@label</span></label>
+    <i:local name="labelBlock" value="@renderToString('label')"/>
+    <i:if test="isFilled(labelBlock)">
+        <i:render name="label"/>
+        <i:else>
+            <i:if test="isFilled(label)">
+                <label class="form-label"><span class="@labelClass">@label</span></label>
+            </i:if>
+        </i:else>
     </i:if>
 
     <i:local name="addon" value="@renderToString('addon')"/>
