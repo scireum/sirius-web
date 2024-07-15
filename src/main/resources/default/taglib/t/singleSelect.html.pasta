@@ -2,6 +2,7 @@
 <i:arg name="class" type="String" default="" description="Lists additional CSS classes to apply to the field."/>
 <i:arg name="labelClass" type="String" default="" description="Lists additional CSS classes to apply to the label."/>
 <i:arg name="name" type="String"/>
+<i:arg name="showName" type="boolean" default="false"/>
 <i:arg name="labelKey" type="String" default=""/>
 <i:arg name="label" type="String" default="@i18n(labelKey)"/>
 <i:arg name="helpKey" type="String" default=""/>
@@ -23,7 +24,9 @@
     <i:if test="isFilled(label)">
         <label class="form-label"><span class="@labelClass">@label</span></label>
     </i:if>
-
+    <i:if test="showName">
+        <small class="form-text text-muted"><em>(@name)</em></small>
+    </i:if>
     <i:local name="addon" value="@renderToString('addon')"/>
     <i:if test="isFilled(addon)">
         <div class="input-group">
