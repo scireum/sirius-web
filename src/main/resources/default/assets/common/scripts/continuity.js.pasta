@@ -357,8 +357,17 @@ window.sirius.Continuity = (function () {
      * @returns {Object} the history state as an object
      */
     Continuity.prototype.parseStateUrlParam = function (param) {
-        const paramStateText = this.options.encodeStateParameter ? convertFromBinary(param) : param;
-        return JSON.parse(paramStateText);
+        if (!this.options.encodeStateParameter) {
+            return JSON.parse(param);
+        }
+        try {
+            // Try to decode the new binary format first.
+            return JSON.parse(convertFromBinary(param));
+        } catch (exception) {
+            // If the new format fails, try to decode the old legacy format.
+            // When this also fails we throw the exception.
+            return JSON.parse(convertFromLegacyBinary(param));
+        }
     };
 
     /**@
@@ -374,6 +383,21 @@ window.sirius.Continuity = (function () {
             bytes[i] = binary.charCodeAt(i);
         }
         return String.fromCharCode.apply(this, new Uint8Array(bytes.buffer));
+    }
+
+    /**@
+     * Converts the given binary base64 encoded representation into its original UTF-8 text.
+     *
+     * @param string the binary base64 encoded representation of a text
+     * @returns {string} the original text
+     */
+    function convertFromLegacyBinary(encoded) {
+        const binary = atob(encoded);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < bytes.length; i++) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+        return String.fromCharCode.apply(this, new Uint16Array(bytes.buffer));
     }
 
     /**@
