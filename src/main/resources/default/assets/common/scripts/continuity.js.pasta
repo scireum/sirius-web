@@ -333,18 +333,8 @@ window.sirius.Continuity = (function () {
         }
 
         const paramStateText = JSON.stringify(paramState);
-        return this.options.encodeStateParameter ? convertToBinary(paramStateText) : paramStateText;
+        return this.options.encodeStateParameter ? btoa(paramStateText) : paramStateText;
     };
-
-    /**@
-     * Converts the given UTF-8 text to a binary base64 encoded representation.
-     *
-     * @param string the text to encode
-     * @returns {string} the binary base64 encoded representation of the text
-     */
-    function convertToBinary(string) {
-        return btoa(string);
-    }
 
     /**@
      * Parses the value of our history state deep-link parameter from the URL and transforms it into a JS Object.
@@ -358,23 +348,13 @@ window.sirius.Continuity = (function () {
         }
         try {
             // Try to decode the new binary format first.
-            return JSON.parse(convertFromBinary(param));
+            return JSON.parse(atob(param));
         } catch (exception) {
             // If the new format fails, try to decode the old legacy format.
             // When this also fails we throw the exception.
             return JSON.parse(convertFromLegacyBinary(param));
         }
     };
-
-    /**@
-     * Converts the given binary base64 encoded representation into its original UTF-8 text.
-     *
-     * @param string the binary base64 encoded representation of a text
-     * @returns {string} the original text
-     */
-    function convertFromBinary(encoded) {
-        return atob(encoded);
-    }
 
     /**@
      * Converts the given binary base64 encoded representation into its original UTF-8 text.
