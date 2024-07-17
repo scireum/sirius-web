@@ -343,11 +343,7 @@ window.sirius.Continuity = (function () {
      * @returns {string} the binary base64 encoded representation of the text
      */
     function convertToBinary(string) {
-        const codeUnits = new Uint8Array(string.length);
-        for (let i = 0; i < codeUnits.length; i++) {
-            codeUnits[i] = string.charCodeAt(i);
-        }
-        return btoa(String.fromCharCode.apply(this, new Uint8Array(codeUnits.buffer)));
+        return btoa(string);
     }
 
     /**@
@@ -377,12 +373,7 @@ window.sirius.Continuity = (function () {
      * @returns {string} the original text
      */
     function convertFromBinary(encoded) {
-        const binary = atob(encoded);
-        const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < bytes.length; i++) {
-            bytes[i] = binary.charCodeAt(i);
-        }
-        return String.fromCharCode.apply(this, new Uint8Array(bytes.buffer));
+        return atob(encoded);
     }
 
     /**@
