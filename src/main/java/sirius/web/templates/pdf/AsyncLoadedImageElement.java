@@ -8,6 +8,7 @@
 
 package sirius.web.templates.pdf;
 
+import org.w3c.dom.css.CSSPrimitiveValue;
 import org.xhtmlrenderer.extend.FSImage;
 import org.xhtmlrenderer.extend.UserAgentCallback;
 import org.xhtmlrenderer.layout.LayoutContext;
@@ -16,6 +17,7 @@ import org.xhtmlrenderer.pdf.ITextReplacedElement;
 import org.xhtmlrenderer.render.BlockBox;
 import org.xhtmlrenderer.render.RenderingContext;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Wait;
 import sirius.kernel.health.Exceptions;
@@ -25,6 +27,7 @@ import sirius.web.templates.pdf.handlers.PdfReplaceHandler;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -169,15 +172,36 @@ public final class AsyncLoadedImageElement implements ITextReplacedElement {
     public void paint(RenderingContext c, ITextOutputDevice outputDevice, BlockBox box) {
         Rectangle contentBounds = box.getContentAreaEdge(box.getAbsX(), box.getAbsY(), c);
         if (waitAndGetImage() != null) {
-            Tuple<Integer, Integer> centerPosition = computeCenterPosition(contentBounds);
+            Tuple<Integer, Integer> centerPosition;
+
+            Map<String, CSSPrimitiveValue> cssMap =
+                    c.getCss().getCascadedPropertiesMap(box.getContainingBlock().getElement());
+            centerPosition = computePosition(contentBounds,
+                                             cssMap.get("vertical-align"),
+                                             cssMap.get("text-align"));
             outputDevice.drawImage(image, centerPosition.getFirst(), centerPosition.getSecond());
         }
     }
 
-    private Tuple<Integer, Integer> computeCenterPosition(Rectangle contentBounds) {
-        int x = (cssWidth - image.getWidth()) / 2;
-        int y = (cssHeight - image.getHeight()) / 2;
-        return Tuple.create(contentBounds.x + x, contentBounds.y + y);
+    private Tuple<Integer, Integer> computePosition(Rectangle contentBounds,
+                                                    CSSPrimitiveValue verticalPosition,
+                                                    CSSPrimitiveValue horizontalPosition) {
+        int x = contentBounds.x;
+        int y = contentBounds.y;
+
+        if (Strings.isEmpty(verticalPosition) || "middle".equals(verticalPosition.getStringValue())) {
+            y += (cssHeight - image.getHeight()) / 2;
+        } else if ("bottom".equals(verticalPosition.getStringValue())) {
+            y += cssHeight - image.getHeight();
+        }
+
+        if (Strings.isEmpty(horizontalPosition) || "center".equals(horizontalPosition.getStringValue())) {
+            x += (cssWidth - image.getWidth()) / 2;
+        } else if ("right".equals(horizontalPosition.getStringValue())) {
+            x += cssWidth - image.getWidth();
+        }
+
+        return Tuple.create(x, y);
     }
 
     @Override
