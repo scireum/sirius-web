@@ -100,16 +100,8 @@ public abstract class PdfReplaceHandler implements Priorized {
      * @return a new width and height fitting into a rectangle defined by cssWidth/cssHeight
      */
     private Tuple<Integer, Integer> computeResizeBox(int cssWidth, int cssHeight, FSImage fsImage) {
-        if (cssWidth == -1 && cssHeight == -1) {
+        if (cssWidth == -1 || cssHeight == -1) {
             return null;
-        }
-
-        if (cssWidth == -1) {
-            cssWidth = fsImage.getWidth();
-        }
-
-        if (cssHeight == -1) {
-            cssHeight = fsImage.getHeight();
         }
 
         if (fsImage == null) {
