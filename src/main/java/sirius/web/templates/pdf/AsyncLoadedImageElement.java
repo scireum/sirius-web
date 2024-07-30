@@ -45,6 +45,13 @@ import java.util.concurrent.Semaphore;
 public final class AsyncLoadedImageElement implements ITextReplacedElement {
 
     private static final int MAX_ATTEMPTS = 3;
+    private static final String TEXT_ALIGN = "text-align";
+    private static final String VERTICAL_ALIGN = "vertical-align";
+    private static final String MIDDLE = "middle";
+    private static final String BOTTOM = "bottom";
+    private static final String CENTER = "center";
+    private static final String RIGHT = "right";
+
     private final Thread resolvingThread;
     private final int cssWidth;
     private final int cssHeight;
@@ -169,16 +176,16 @@ public final class AsyncLoadedImageElement implements ITextReplacedElement {
     }
 
     @Override
-    public void paint(RenderingContext c, ITextOutputDevice outputDevice, BlockBox box) {
-        Rectangle contentBounds = box.getContentAreaEdge(box.getAbsX(), box.getAbsY(), c);
+    public void paint(RenderingContext context, ITextOutputDevice outputDevice, BlockBox box) {
+        Rectangle contentBounds = box.getContentAreaEdge(box.getAbsX(), box.getAbsY(), context);
         if (waitAndGetImage() != null) {
             Tuple<Integer, Integer> centerPosition;
 
             Map<String, CSSPrimitiveValue> cssMap =
-                    c.getCss().getCascadedPropertiesMap(box.getContainingBlock().getElement());
+                    context.getCss().getCascadedPropertiesMap(box.getContainingBlock().getElement());
             centerPosition = computePosition(contentBounds,
-                                             cssMap.get("vertical-align"),
-                                             cssMap.get("text-align"));
+                                             cssMap.get(VERTICAL_ALIGN),
+                                             cssMap.get(TEXT_ALIGN));
             outputDevice.drawImage(image, centerPosition.getFirst(), centerPosition.getSecond());
         }
     }
@@ -189,15 +196,15 @@ public final class AsyncLoadedImageElement implements ITextReplacedElement {
         int x = contentBounds.x;
         int y = contentBounds.y;
 
-        if (Strings.isEmpty(verticalPosition) || "middle".equals(verticalPosition.getStringValue())) {
+        if (Strings.isEmpty(verticalPosition) || MIDDLE.equals(verticalPosition.getStringValue())) {
             y += (cssHeight - image.getHeight()) / 2;
-        } else if ("bottom".equals(verticalPosition.getStringValue())) {
+        } else if (BOTTOM.equals(verticalPosition.getStringValue())) {
             y += cssHeight - image.getHeight();
         }
 
-        if (Strings.isEmpty(horizontalPosition) || "center".equals(horizontalPosition.getStringValue())) {
+        if (Strings.isEmpty(horizontalPosition) || CENTER.equals(horizontalPosition.getStringValue())) {
             x += (cssWidth - image.getWidth()) / 2;
-        } else if ("right".equals(horizontalPosition.getStringValue())) {
+        } else if (RIGHT.equals(horizontalPosition.getStringValue())) {
             x += cssWidth - image.getWidth();
         }
 
