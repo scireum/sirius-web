@@ -103,7 +103,6 @@ public abstract class PdfReplaceHandler implements Priorized {
         if (cssWidth == -1 || cssHeight == -1) {
             return null;
         }
-
         if (fsImage == null) {
             return null;
         }
