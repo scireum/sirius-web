@@ -18,8 +18,8 @@ import sirius.web.sass.Scope;
  */
 public class NamedParameter implements Expression {
 
-    private String name;
-    private Expression value;
+    private final String name;
+    private final Expression value;
 
     /**
      * Creates a new parameter for the given name and value.

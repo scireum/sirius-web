@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
  * Represents a number, which might possibly also have a unit like "px" or "%".
  */
 public class Number implements Expression {
+
     private final String value;
     private final String unit;
 

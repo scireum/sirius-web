@@ -512,7 +512,6 @@ public class Generator {
      * @param out the target for the generated output
      * @throws IOException in case of an io error in the underlying writer
      */
-
     public void generate(Output out) throws IOException {
         for (Section section : sections) {
             section.generate(out);

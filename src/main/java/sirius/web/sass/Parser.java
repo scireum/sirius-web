@@ -8,6 +8,10 @@
 
 package sirius.web.sass;
 
+import sirius.kernel.tokenizer.Char;
+import sirius.kernel.tokenizer.ParseException;
+import sirius.kernel.tokenizer.Token;
+import sirius.kernel.tokenizer.Tokenizer;
 import sirius.web.sass.ast.Attribute;
 import sirius.web.sass.ast.Color;
 import sirius.web.sass.ast.Expression;
@@ -24,10 +28,6 @@ import sirius.web.sass.ast.Value;
 import sirius.web.sass.ast.ValueList;
 import sirius.web.sass.ast.Variable;
 import sirius.web.sass.ast.VariableReference;
-import sirius.kernel.tokenizer.Char;
-import sirius.kernel.tokenizer.ParseException;
-import sirius.kernel.tokenizer.Token;
-import sirius.kernel.tokenizer.Tokenizer;
 
 import java.io.Reader;
 import java.util.ArrayList;

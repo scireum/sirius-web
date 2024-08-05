@@ -15,7 +15,8 @@ import sirius.web.sass.Scope;
  * Represents an attribute filter used in a media query like "(min-width: 13px)".
  */
 public class MediaFilter implements Expression {
-    private String name;
+
+    private final String name;
     private Expression expression;
 
     /**
