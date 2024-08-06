@@ -15,7 +15,8 @@ import sirius.web.sass.Scope;
  * Represents a plain value.
  */
 public class Value implements Expression {
-    private String contents;
+
+    private final String contents;
 
     /**
      * Creates a new value representing the given contents a value.

@@ -17,6 +17,7 @@ import java.util.Locale;
  * Represents a binary operation.
  */
 public class Operation implements Expression {
+
     private final String op;
     private final Expression left;
     private Expression right;

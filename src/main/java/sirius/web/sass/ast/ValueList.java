@@ -19,6 +19,7 @@ import java.util.List;
  * Represents a list of values.
  */
 public class ValueList implements Expression {
+
     private final List<Expression> elements = new ArrayList<>();
     private boolean keepCommas = false;
 

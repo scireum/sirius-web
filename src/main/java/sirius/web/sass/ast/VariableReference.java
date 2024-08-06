@@ -15,7 +15,8 @@ import sirius.web.sass.Scope;
  * References a variable like "$test".
  */
 public class VariableReference implements Expression {
-    private String name;
+
+    private final String name;
 
     /**
      * Creates a new reference for the given variable.

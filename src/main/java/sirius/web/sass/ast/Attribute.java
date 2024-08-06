@@ -17,6 +17,7 @@ package sirius.web.sass.ast;
  * </pre>
  */
 public class Attribute {
+
     private final String name;
     private Expression expression;
 

@@ -22,6 +22,7 @@ import java.util.List;
  * SASS section (with nested sections) as well, as flattened CSS sections and media queries.
  */
 public class Section {
+
     private final List<List<String>> selectors = new ArrayList<>();
     private final List<Expression> mediaQueries = new ArrayList<>();
     private final List<String> extendedSections = new ArrayList<>();
