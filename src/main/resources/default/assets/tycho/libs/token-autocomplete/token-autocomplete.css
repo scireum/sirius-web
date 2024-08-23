@@ -1,7 +1,7 @@
 .token-autocomplete-container {
     position: relative;
-    display: inline-flex;
-    flex-wrap: wrap;
+    display: flex;
+    align-items: center;
     border: 1px solid #E6E6E6;
     background-color: #FFFFFF;
 }
@@ -13,6 +13,12 @@
 
 .token-autocomplete-container, .token-autocomplete-container * {
     box-sizing: border-box;
+}
+
+.token-autocomplete-container .token-autocomplete-tokens {
+    flex-grow: 1;
+    display: inline-flex;
+    flex-wrap: wrap;
 }
 
 .token-autocomplete-container .token-autocomplete-input {
@@ -110,7 +116,7 @@
 }
 
 .token-autocomplete-container > .token-autocomplete-delete-button {
-    margin-top: 8px;
+    flex-shrink: 0;
     margin-right: 6px;
     display: none;
     background-color: #E6E6E6;
