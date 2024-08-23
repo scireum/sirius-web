@@ -75,6 +75,9 @@ var TokenAutocomplete = /** @class */ (function () {
         }
         this.container = passedContainer;
         this.container.classList.add('token-autocomplete-container');
+        this.tokenContainer = document.createElement('div');
+        this.tokenContainer.classList.add('token-autocomplete-tokens');
+        this.container.appendChild(this.tokenContainer);
         if (!Array.isArray(this.options.initialTokens) && !Array.isArray(this.options.initialSuggestions)) {
             this.parseTokensAndSuggestions();
         }
@@ -118,7 +121,7 @@ var TokenAutocomplete = /** @class */ (function () {
         else {
             this.container.classList.add('token-autocomplete-readonly');
         }
-        this.container.appendChild(this.textInput);
+        this.tokenContainer.appendChild(this.textInput);
         this.container.appendChild(this.hiddenSelect);
         this.addHiddenEmptyOption();
         if (this.options.selectMode == SelectModes.MULTI) {
@@ -323,6 +326,7 @@ var TokenAutocomplete = /** @class */ (function () {
             function class_1(parent) {
                 this.parent = parent;
                 this.container = parent.container;
+                this.tokenContainer = parent.tokenContainer;
                 this.options = parent.options;
                 this.renderer = parent.options.tokenRenderer;
                 if (this.options.showClearButton) {
@@ -460,7 +464,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 (_c = element.querySelector('.token-autocomplete-delete-button')) === null || _c === void 0 ? void 0 : _c.addEventListener('click', function () {
                     me.removeToken(element);
                 });
-                this.container.insertBefore(element, this.parent.textInput);
+                this.tokenContainer.insertBefore(element, this.parent.textInput);
                 this.updateHasValue();
                 if (!silent) {
                     this.container.dispatchEvent(new CustomEvent('tokens-changed', {
@@ -477,7 +481,7 @@ var TokenAutocomplete = /** @class */ (function () {
              */
             class_1.prototype.clear = function (silent) {
                 if (silent === void 0) { silent = false; }
-                var tokens = this.container.querySelectorAll('.token-autocomplete-token');
+                var tokens = this.tokenContainer.querySelectorAll('.token-autocomplete-token');
                 var me = this;
                 tokens.forEach(function (token) {
                     me.removeToken(token, silent);
@@ -487,7 +491,7 @@ var TokenAutocomplete = /** @class */ (function () {
              * Removes the last token in the list of currently present token. This is the last added token next to the input field.
              */
             class_1.prototype.removeLastToken = function () {
-                var tokens = this.container.querySelectorAll('.token-autocomplete-token');
+                var tokens = this.tokenContainer.querySelectorAll('.token-autocomplete-token');
                 var token = tokens[tokens.length - 1];
                 if (token) {
                     this.removeToken(token);
@@ -502,7 +506,7 @@ var TokenAutocomplete = /** @class */ (function () {
             class_1.prototype.removeToken = function (token, silent) {
                 var _c;
                 if (silent === void 0) { silent = false; }
-                this.container.removeChild(token);
+                this.tokenContainer.removeChild(token);
                 var tokenText = token.dataset.text;
                 var hiddenOption = this.parent.hiddenSelect.querySelector('option[data-text="' + TokenAutocomplete.escapeQuotes(tokenText) + '"]');
                 (_c = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.parentElement) === null || _c === void 0 ? void 0 : _c.removeChild(hiddenOption);
@@ -529,7 +533,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 if (tokenText === null) {
                     return;
                 }
-                var token = this.container.querySelector('.token-autocomplete-token[data-text="' + TokenAutocomplete.escapeQuotes(tokenText) + '"]');
+                var token = this.tokenContainer.querySelector('.token-autocomplete-token[data-text="' + TokenAutocomplete.escapeQuotes(tokenText) + '"]');
                 if (token !== null) {
                     this.removeToken(token);
                 }
@@ -1166,7 +1170,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 if (suggestion.disabled) {
                     element.classList.add('token-autocomplete-suggestion-disabled');
                 }
-                if (this.container.querySelector('.token-autocomplete-token[data-value="' + value + '"]') !== null) {
+                if (this.parent.tokenContainer.querySelector('.token-autocomplete-token[data-value="' + value + '"]') !== null) {
                     element.classList.add('token-autocomplete-suggestion-active');
                 }
                 this.suggestions.appendChild(element);
