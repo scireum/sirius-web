@@ -13,8 +13,8 @@
 <i:arg name="placeholderKey" type="String" default=""/>
 <i:arg name="placeholder" type="String" default="@i18n(placeholderKey)"/>
 <i:arg name="readonly" type="boolean" default="false"/>
-<i:arg name="min" type="String" default="1900-01-01T00:00.000"/>
-<i:arg name="max" type="String" default="2100-12-31T00:00.000"/>
+<i:arg name="min" type="String" default="1900-01-01T00:00:00"/>
+<i:arg name="max" type="String" default="2100-12-31T00:00:00"/>
 
 <i:pragma name="description" value="Renders a date and time input field within a Tycho template"/>
 
