@@ -8,6 +8,8 @@
 
 package sirius.web.templates.pdf;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
@@ -53,12 +55,35 @@ public class TagliatellePDFContentHandler extends TagliatelleContentHandler {
         ITextRenderer renderer = new ITextRenderer();
         renderer.getSharedContext()
                 .setReplacedElementFactory(new ImageReplacedElementFactory(renderer.getOutputDevice()));
-        renderer.setDocumentFromString(content);
+        renderer.setDocumentFromString(cleanHtml(content));
         renderer.layout();
         renderer.createPDF(out);
         out.flush();
 
         return true;
+    }
+
+    /**
+     * Cleans the given HTML content for use as input to the PDF generator.
+     * <p>
+     * This is done by first generally removing all {@code <script>} elements from the entire document. Then, all
+     * {@code <style>} style elements are deleted that are outside the {@code <header>} element. Finally, the DOM tree
+     * is encoded as XHTML fit for the strict SAX parser employed by {@link ITextRenderer}.
+     * header element.
+     *
+     * @param html the HTML content to clean
+     * @return the given content with problematic elements removed and encoded as valid XHTML
+     */
+    private String cleanHtml(String html) {
+        Document document = Jsoup.parse(html);
+
+        // in theory, the following two lines should be possible with a single CSS selector; however, in practice, Jsoup
+        // does not select the style elements correctly when attempting that
+        document.select("script").remove();
+        document.select("body style").remove();
+
+        document.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+        return document.html();
     }
 
     @Override
