@@ -69,7 +69,6 @@ public class TagliatellePDFContentHandler extends TagliatelleContentHandler {
      * This is done by first generally removing all {@code <script>} elements from the entire document. Then, all
      * {@code <style>} style elements are deleted that are outside the {@code <header>} element. Finally, the DOM tree
      * is encoded as XHTML fit for the strict SAX parser employed by {@link ITextRenderer}.
-     * header element.
      *
      * @param html the HTML content to clean
      * @return the given content with problematic elements removed and encoded as valid XHTML
