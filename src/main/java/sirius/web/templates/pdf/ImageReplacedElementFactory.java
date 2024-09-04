@@ -21,6 +21,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.web.templates.pdf.handlers.PdfReplaceHandler;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Used by the XHTMLRenderer (creating PDFs) to replace img elements by their referenced image.
@@ -61,7 +62,7 @@ public class ImageReplacedElementFactory extends ITextReplacedElementFactory {
             return super.createReplacedElement(layoutContext, box, userAgentCallback, cssWidth, cssHeight);
         }
 
-        String source = element.getAttribute(ATTR_SRC);
+        String source = rewriteLegacyUrl(element.getAttribute(ATTR_SRC));
         if (Strings.isEmpty(source)) {
             return super.createReplacedElement(layoutContext, box, userAgentCallback, cssWidth, cssHeight);
         }
@@ -84,5 +85,16 @@ public class ImageReplacedElementFactory extends ITextReplacedElementFactory {
                        .orElseThrow(() -> new UnsupportedOperationException(Strings.apply(
                                "No handler for protocol '%s' could be found",
                                protocol)));
+    }
+
+    private String rewriteLegacyUrl(String url) {
+        for (PdfReplaceHandler handler : handlers) {
+            Optional<String> rewrittenUrl = handler.tryRewritePlainUrl(url);
+            if (rewrittenUrl.isPresent()) {
+                return rewrittenUrl.get();
+            }
+        }
+
+        return url;
     }
 }
