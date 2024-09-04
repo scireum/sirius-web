@@ -119,7 +119,10 @@ public abstract class PdfReplaceHandler implements Priorized {
     }
 
     @Nonnull
-    private static Tuple<Integer, Integer> downscaleResource(int cssWidth, int cssHeight, int imageWidth, int imageHeight) {
+    private static Tuple<Integer, Integer> downscaleResource(int cssWidth,
+                                                             int cssHeight,
+                                                             int imageWidth,
+                                                             int imageHeight) {
 
         // First, check if we need to scale down the width
         if (imageWidth > cssWidth) {
@@ -138,7 +141,10 @@ public abstract class PdfReplaceHandler implements Priorized {
     }
 
     @Nonnull
-    private static Tuple<Integer, Integer> upscaleResource(int cssWidth, int cssHeight, int imageWidth, int imageHeight) {
+    private static Tuple<Integer, Integer> upscaleResource(int cssWidth,
+                                                           int cssHeight,
+                                                           int imageWidth,
+                                                           int imageHeight) {
 
         // First, scale up only the width
         imageHeight = cssWidth * imageHeight / imageWidth;
