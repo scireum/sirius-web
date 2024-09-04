@@ -10,6 +10,7 @@ package sirius.web.templates.pdf;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Entities;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
@@ -82,6 +83,8 @@ public class TagliatellePDFContentHandler extends TagliatelleContentHandler {
         document.select("body style").remove();
 
         document.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+        document.outputSettings().escapeMode(Entities.EscapeMode.xhtml);
+        document.outputSettings().charset("UTF-8");
         return document.html();
     }
 
