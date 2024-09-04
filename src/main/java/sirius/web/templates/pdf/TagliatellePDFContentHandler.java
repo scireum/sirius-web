@@ -67,7 +67,7 @@ public class TagliatellePDFContentHandler extends TagliatelleContentHandler {
      * Cleans the given HTML content for use as input to the PDF generator.
      * <p>
      * This is done by first generally removing all {@code <script>} elements from the entire document. Then, all
-     * {@code <style>} style elements are deleted that are outside the {@code <header>} element. Finally, the DOM tree
+     * {@code <style>} elements are deleted that are outside the {@code <header>} element. Finally, the DOM tree
      * is encoded as XHTML fit for the strict SAX parser employed by {@link ITextRenderer}.
      *
      * @param html the HTML content to clean
