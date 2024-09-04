@@ -44,7 +44,8 @@ public record ReceivedTokens(String accessToken, String refreshToken, String typ
         String refreshToken = response.required(OAuth.REFRESH_TOKEN).asText("");
         String type = response.required(OAuth.TOKEN_TYPE).asText("");
         long accessTokenExpiresIn = response.path(OAuth.EXPIRES_IN).asLong(0L);
-        LocalDateTime accessTokenExpiresAt = LocalDateTime.now().plusSeconds(accessTokenExpiresIn);
+        LocalDateTime accessTokenExpiresAt =
+                accessTokenExpiresIn > 0 ? LocalDateTime.now().plusSeconds(accessTokenExpiresIn) : null;
         if (OAuth.TOKEN_TYPE_BEARER.equalsIgnoreCase(type)) {
             try {
                 // Try to read the exact refresh token expiration date from the JWT token itself
