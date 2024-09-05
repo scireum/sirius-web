@@ -21,6 +21,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.web.templates.pdf.handlers.PdfReplaceHandler;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Used by the XHTMLRenderer (creating PDFs) to replace img elements by their referenced image.
@@ -51,27 +52,27 @@ public class ImageReplacedElementFactory extends ITextReplacedElementFactory {
                                                  UserAgentCallback userAgentCallback,
                                                  int cssWidth,
                                                  int cssHeight) {
-        Element e = box.getElement();
-        if (e == null) {
+        Element element = box.getElement();
+        if (element == null) {
             return null;
         }
 
-        String nodeName = e.getNodeName();
+        String nodeName = element.getNodeName();
         if (!TAG_TYPE_IMG.equals(nodeName)) {
             return super.createReplacedElement(layoutContext, box, userAgentCallback, cssWidth, cssHeight);
         }
 
-        String src = e.getAttribute(ATTR_SRC);
-        if (Strings.isEmpty(src)) {
+        String source = rewriteLegacyUrl(element.getAttribute(ATTR_SRC));
+        if (Strings.isEmpty(source)) {
             return super.createReplacedElement(layoutContext, box, userAgentCallback, cssWidth, cssHeight);
         }
 
         try {
-            String protocol = Strings.split(src, "://").getFirst();
+            String protocol = Strings.split(source, "://").getFirst();
             PdfReplaceHandler handler = findHandler(protocol);
-            return new AsyncLoadedImageElement(handler, userAgentCallback, src, cssWidth, cssHeight);
-        } catch (Exception ex) {
-            Exceptions.handle(ex);
+            return new AsyncLoadedImageElement(handler, userAgentCallback, source, cssWidth, cssHeight);
+        } catch (Exception exception) {
+            Exceptions.handle(exception);
         }
 
         return super.createReplacedElement(layoutContext, box, userAgentCallback, cssWidth, cssHeight);
@@ -84,5 +85,16 @@ public class ImageReplacedElementFactory extends ITextReplacedElementFactory {
                        .orElseThrow(() -> new UnsupportedOperationException(Strings.apply(
                                "No handler for protocol '%s' could be found",
                                protocol)));
+    }
+
+    private String rewriteLegacyUrl(String url) {
+        for (PdfReplaceHandler handler : handlers) {
+            Optional<String> rewrittenUrl = handler.tryRewritePlainUrl(url);
+            if (rewrittenUrl.isPresent()) {
+                return rewrittenUrl.get();
+            }
+        }
+
+        return url;
     }
 }
