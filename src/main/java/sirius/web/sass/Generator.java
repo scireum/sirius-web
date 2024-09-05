@@ -8,7 +8,10 @@
 
 package sirius.web.sass;
 
+import sirius.kernel.di.std.Part;
 import sirius.kernel.tokenizer.ParseException;
+import sirius.web.resources.Resource;
+import sirius.web.resources.Resources;
 import sirius.web.sass.ast.Attribute;
 import sirius.web.sass.ast.Expression;
 import sirius.web.sass.ast.FunctionCall;
@@ -76,6 +79,9 @@ public class Generator {
     protected Scope scope = new Scope();
 
     protected File baseDir;
+
+    @Part
+    private static Resources resources;
 
     /**
      * Generates a new Generator without a directory used for lookups.
@@ -172,11 +178,10 @@ public class Generator {
                 return null;
             }
         } else {
-            InputStream stream = getClass().getResourceAsStream((sheet.startsWith("/") ? "" : "/") + sheet);
-            if (stream == null) {
-                stream = getClass().getResourceAsStream((sheet.startsWith("/") ? "" : "/") + "_" + sheet);
-            }
-            return stream;
+            return resources.resolve((sheet.startsWith("/") ? "" : "/") + sheet)
+                            .or(() -> resources.resolve((sheet.startsWith("/") ? "" : "/") + "_" + sheet))
+                            .map(Resource::openStream)
+                            .orElse(null);
         }
     }
 
