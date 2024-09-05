@@ -55,6 +55,14 @@ sirius.isVisibleNode = function (_node) {
     if (!sirius.isDefined(_node) || !sirius.isElement(_node)) {
         return false;
     }
+
+    if (_node.checkVisibility) {
+        return _node.checkVisibility({
+            visibilityProperty: true,
+            opacityProperty: true
+        });
+    }
+
     const style = window.getComputedStyle(_node);
     return style && style.display !== 'none' && style.visibility !== 'hidden' && style.visibility !== 'collapse';
 }
@@ -381,11 +389,6 @@ sirius.addElementVisibleListener = function (selector, listener, distanceFactor)
         const factor = distanceFactor || 1;
         const rect = element.getBoundingClientRect();
 
-        // Simple visibility check to ignore hidden elements
-        if (rect.height === 0 || rect.width === 0) {
-            return false;
-        }
-
         // Check the position relative to the view port
         const verticalMargin = rect.height * factor;
         const horizontalMargin = rect.width * factor;
@@ -395,7 +398,7 @@ sirius.addElementVisibleListener = function (selector, listener, distanceFactor)
         const visibleVertically = (rect.bottom + verticalMargin) >= 0 && (rect.top - verticalMargin) < clientHeight;
         const visibleHorizontally = (rect.left + horizontalMargin) >= 0 && (rect.right - horizontalMargin) < clientWidth;
 
-        return visibleVertically && visibleHorizontally;
+        return visibleVertically && visibleHorizontally && sirius.isVisibleNode(element);
     };
 
     const handleVisibleElements = function () {
