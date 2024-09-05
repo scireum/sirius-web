@@ -381,6 +381,12 @@ sirius.addElementVisibleListener = function (selector, listener, distanceFactor)
         const factor = distanceFactor || 1;
         const rect = element.getBoundingClientRect();
 
+        // Simple visibility check to ignore hidden elements
+        if (rect.height === 0 || rect.width === 0) {
+            return false;
+        }
+
+        // Check the position relative to the view port
         const verticalMargin = rect.height * factor;
         const horizontalMargin = rect.width * factor;
         const clientHeight = document.documentElement.clientHeight;
