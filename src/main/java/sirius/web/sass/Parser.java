@@ -48,7 +48,7 @@ public class Parser {
     /**
      * How to put that right: CSS is kind of "special gifted" - so tokenization is not always that straightforward.
      * <p>
-     * Therefore we subclass the tokenizer to handle css selectors etc. right here in the tokenizer.
+     * Therefore, we subclass the tokenizer to handle css selectors etc. right here in the tokenizer.
      */
     static class SassTokenizer extends Tokenizer {
 
