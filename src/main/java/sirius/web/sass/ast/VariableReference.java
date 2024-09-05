@@ -47,7 +47,7 @@ public class VariableReference implements Expression {
     }
 
     @Override
-    public Expression eval(Scope scope, Generator gen) {
-        return scope.get(name).eval(scope, gen);
+    public Expression eval(Scope scope, Generator generator) {
+        return scope.get(name).eval(scope, generator);
     }
 }

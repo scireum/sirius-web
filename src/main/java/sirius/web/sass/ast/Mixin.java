@@ -35,10 +35,10 @@ public class Mixin {
     /**
      * Adds an attribute
      *
-     * @param attr the attribute to add
+     * @param attribute the attribute to add
      */
-    public void addAttribute(Attribute attr) {
-        attributes.add(attr);
+    public void addAttribute(Attribute attribute) {
+        attributes.add(attribute);
     }
 
     /**

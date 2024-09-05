@@ -205,8 +205,8 @@ public class Parser {
             }
             // Parse "normal" attributes like "font-weight: bold;"
             if (isAtAttribute()) {
-                Attribute attr = parseAttribute();
-                section.addAttribute(attr);
+                Attribute attribute = parseAttribute();
+                section.addAttribute(attribute);
             } else if (tokenizer.current().isKeyword(KEYWORD_MEDIA)) {
                 // Take care of @media sub sections
                 section.addSubSection(parseSection(true));
@@ -263,9 +263,9 @@ public class Parser {
     private void parseInclude(Section result) {
         // Take care of included mixins like "@include border(15px);"
         tokenizer.consumeExpectedKeyword(KEYWORD_INCLUDE);
-        MixinReference ref = new MixinReference();
+        MixinReference reference = new MixinReference();
         if (tokenizer.current().isIdentifier()) {
-            ref.setName(tokenizer.consume().getContents());
+            reference.setName(tokenizer.consume().getContents());
         } else {
             tokenizer.addError(tokenizer.current(),
                                "Unexpected token: '" + tokenizer.current().getSource() + "'. Expected a mixin to use");
@@ -274,7 +274,7 @@ public class Parser {
             tokenizer.consumeExpectedSymbol("(");
             // Parse parameters - be as error tolerant as possible
             while (tokenizer.more() && !tokenizer.current().isSymbol(")", ";", "{", "}")) {
-                ref.addParameter(parseExpression(false));
+                reference.addParameter(parseExpression(false));
                 consumeExpectedComma();
             }
             tokenizer.consumeExpectedSymbol(")");
@@ -282,8 +282,8 @@ public class Parser {
         if (tokenizer.current().isSymbol(";") || !tokenizer.next().isSymbol("}")) {
             tokenizer.consumeExpectedSymbol(";");
         }
-        if (ref.getName() != null) {
-            result.addMixinReference(ref);
+        if (reference.getName() != null) {
+            result.addMixinReference(reference);
         }
     }
 
@@ -346,21 +346,21 @@ public class Parser {
     }
 
     private void parseMediaQueryFilter(Section result) {
-        MediaFilter attr = new MediaFilter(tokenizer.consume().getContents());
+        MediaFilter filter = new MediaFilter(tokenizer.consume().getContents());
         tokenizer.consumeExpectedSymbol(":");
-        attr.setExpression(parseExpression(true));
-        result.addMediaQuery(attr);
+        filter.setExpression(parseExpression(true));
+        result.addMediaQuery(filter);
     }
 
     private Attribute parseAttribute() {
-        Attribute attr = new Attribute(tokenizer.consume().getContents());
+        Attribute attribute = new Attribute(tokenizer.consume().getContents());
         tokenizer.consumeExpectedSymbol(":");
-        attr.setExpression(parseExpression(true));
+        attribute.setExpression(parseExpression(true));
 
         if (tokenizer.current().isSymbol(";") || !tokenizer.next().isSymbol("}")) {
             tokenizer.consumeExpectedSymbol(";");
         }
-        return attr;
+        return attribute;
     }
 
     /*
@@ -381,10 +381,10 @@ public class Parser {
             } else if (tokenizer.current().isIdentifier()
                        || tokenizer.current().isSpecialIdentifier("#", "@")
                        || tokenizer.current().isNumber()) {
-                StringBuilder sb = new StringBuilder(tokenizer.consume().getSource());
-                parseFilterInSelector(sb);
-                parseOperatorInSelector(sb);
-                selector.add(sb.toString());
+                StringBuilder builder = new StringBuilder(tokenizer.consume().getSource());
+                parseFilterInSelector(builder);
+                parseOperatorInSelector(builder);
+                selector.add(builder.toString());
             } else if (tokenizer.current().isSymbol("&") || tokenizer.current().isSymbol("*")) {
                 selector.add(tokenizer.consume().getTrigger());
             } else if (tokenizer.current().isSymbol(">", "+", "~")) {
@@ -398,10 +398,10 @@ public class Parser {
 
     private void parseSelectorPrefix(List<String> selector) {
         if (tokenizer.more() && tokenizer.current().isSymbol("[")) {
-            StringBuilder sb = new StringBuilder();
-            parseFilterInSelector(sb);
-            parseOperatorInSelector(sb);
-            selector.add(sb.toString());
+            StringBuilder builder = new StringBuilder();
+            parseFilterInSelector(builder);
+            parseOperatorInSelector(builder);
+            selector.add(builder.toString());
         }
         if (tokenizer.more() && tokenizer.current().isSymbol("&")) {
             selector.add(tokenizer.consume().getTrigger());
@@ -433,28 +433,28 @@ public class Parser {
         tokenizer.consume();
         if (tokenizer.current().is(Token.TokenType.ID)) {
             selector.add("&");
-            StringBuilder sb = new StringBuilder(pseudoOperator + tokenizer.consume().getContents());
+            StringBuilder builder = new StringBuilder(pseudoOperator + tokenizer.consume().getContents());
             // Consume arguments like :nth-child(2)
             if (tokenizer.current().isSymbol("(")) {
-                consumeArgument(sb);
+                consumeArgument(builder);
             }
-            selector.add(sb.toString());
+            selector.add(builder.toString());
         }
     }
 
-    private void parseOperatorInSelector(StringBuilder sb) {
+    private void parseOperatorInSelector(StringBuilder builder) {
         while (tokenizer.current().isSymbol(":") || tokenizer.current().isSymbol("::")) {
-            sb.append(tokenizer.consume().getSource());
-            sb.append(tokenizer.consume().getSource());
+            builder.append(tokenizer.consume().getSource());
+            builder.append(tokenizer.consume().getSource());
             // Consume arguments like :nth-child(2)
             if (tokenizer.current().isSymbol("(")) {
-                consumeArgument(sb);
+                consumeArgument(builder);
             }
         }
     }
 
-    private void consumeArgument(StringBuilder sb) {
-        sb.append(tokenizer.consume().getSource());
+    private void consumeArgument(StringBuilder builder) {
+        builder.append(tokenizer.consume().getSource());
         int braces = 1;
         while (!tokenizer.current().isEnd() && braces > 0) {
             if (tokenizer.current().isSymbol("(")) {
@@ -463,56 +463,56 @@ public class Parser {
             if (tokenizer.current().isSymbol(")")) {
                 braces--;
             }
-            sb.append(tokenizer.consume().getSource());
+            builder.append(tokenizer.consume().getSource());
         }
     }
 
-    private void parseFilterInSelector(StringBuilder sb) {
+    private void parseFilterInSelector(StringBuilder builder) {
         while (tokenizer.current().isSymbol("[")) {
             // Consume [
-            sb.append(tokenizer.consume().getContents());
-            readAttributeName(sb);
-            readOperator(sb);
-            readValue(sb);
-            readClosingBracket(sb);
+            builder.append(tokenizer.consume().getContents());
+            readAttributeName(builder);
+            readOperator(builder);
+            readValue(builder);
+            readClosingBracket(builder);
         }
     }
 
-    private void readClosingBracket(StringBuilder sb) {
+    private void readClosingBracket(StringBuilder builder) {
         if (!tokenizer.current().isSymbol("]")) {
             tokenizer.addError(tokenizer.current(),
                                "Unexpected token: '%s'. Expected: ']'",
                                tokenizer.current().getSource());
         } else {
-            sb.append(tokenizer.consume().getContents());
+            builder.append(tokenizer.consume().getContents());
         }
     }
 
-    private void readValue(StringBuilder sb) {
+    private void readValue(StringBuilder builder) {
         if (!tokenizer.current().isSymbol("]")) {
-            sb.append(tokenizer.consume().getSource());
+            builder.append(tokenizer.consume().getSource());
         }
     }
 
-    private void readOperator(StringBuilder sb) {
+    private void readOperator(StringBuilder builder) {
         if (!tokenizer.current().isSymbol("]")) {
             if (!tokenizer.current().isSymbol("=", "~=", "|=", "^=", "$=", "*=")) {
                 tokenizer.addError(tokenizer.current(),
                                    "Unexpected token: '%s'. Expected an operation.",
                                    tokenizer.current().getSource());
             }
-            sb.append(tokenizer.consume().getTrigger());
+            builder.append(tokenizer.consume().getTrigger());
         }
     }
 
-    private void readAttributeName(StringBuilder sb) {
+    private void readAttributeName(StringBuilder builder) {
         if (!tokenizer.current().isSymbol("]")) {
             if (!tokenizer.current().isIdentifier()) {
                 tokenizer.addError(tokenizer.current(),
                                    "Unexpected token: '%s'. Expected an attribute name.",
                                    tokenizer.current().getSource());
             }
-            sb.append(tokenizer.consume().getContents());
+            builder.append(tokenizer.consume().getContents());
         }
     }
 
@@ -582,13 +582,13 @@ public class Parser {
      * (#454545) or another expression in braces.
      */
     private Expression parseAtomList() {
-        Expression exp = parseAtom();
+        Expression expression = parseAtom();
         if (!tokenizer.current().isSymbol(",")) {
-            return exp;
+            return expression;
         }
 
         ValueList atomList = new ValueList(true);
-        atomList.add(exp);
+        atomList.add(expression);
         while (tokenizer.current().isSymbol(",")) {
             tokenizer.consume();
             atomList.add(parseAtom());
@@ -659,21 +659,21 @@ public class Parser {
 
         if (tokenizer.current().isSymbol("(")) {
             // An identifier followed by '(' is a function call...
-            FunctionCall fun = new FunctionCall();
-            fun.setName(id.toString());
+            FunctionCall function = new FunctionCall();
+            function.setName(id.toString());
             tokenizer.consumeExpectedSymbol("(");
             while (tokenizer.more() && !tokenizer.current().isSymbol(")", ";", "{", "}")) {
                 if (tokenizer.current().isIdentifier() && tokenizer.next().isSymbol("=")) {
                     String name = tokenizer.consume().getContents();
                     tokenizer.consume();
-                    fun.addParameter(new NamedParameter(name, parseExpression(false)));
+                    function.addParameter(new NamedParameter(name, parseExpression(false)));
                 } else {
-                    fun.addParameter(parseExpression(false));
+                    function.addParameter(parseExpression(false));
                 }
                 consumeExpectedComma();
             }
             tokenizer.consumeExpectedSymbol(")");
-            return fun;
+            return function;
         }
 
         // Neither function or value list -> simple value
@@ -723,8 +723,8 @@ public class Parser {
                 return;
             }
             if (isAtAttribute()) {
-                Attribute attr = parseAttribute();
-                mixin.addAttribute(attr);
+                Attribute attribute = parseAttribute();
+                mixin.addAttribute(attribute);
             } else {
                 // If it isn't an attribute it is (hopefully) a subsection
                 parseMixinSubSection(mixin);
@@ -739,8 +739,8 @@ public class Parser {
         tokenizer.consumeExpectedSymbol("{");
         while (tokenizer.more() && !tokenizer.current().isSymbol("}")) {
             if (tokenizer.current().isIdentifier() && tokenizer.next().isSymbol(":")) {
-                Attribute attr = parseAttribute();
-                subSection.addAttribute(attr);
+                Attribute attribute = parseAttribute();
+                subSection.addAttribute(attribute);
             } else {
                 tokenizer.addError(tokenizer.current(),
                                    "Unexpected token: '"

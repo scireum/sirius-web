@@ -114,15 +114,15 @@ public class Stylesheet {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (Variable var : variables) {
-            sb.append(var);
-            sb.append(";\n");
+        StringBuilder builder = new StringBuilder();
+        for (Variable variable : variables) {
+            builder.append(variable);
+            builder.append(";\n");
         }
-        for (Section s : sections) {
-            sb.append("\n");
-            sb.append(s);
+        for (Section section : sections) {
+            builder.append("\n");
+            builder.append(section);
         }
-        return sb.toString();
+        return builder.toString();
     }
 }

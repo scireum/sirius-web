@@ -26,9 +26,9 @@ public interface Expression {
     /**
      * If possible the expression is evaluated and a simplified expression is returned.
      *
-     * @param scope the scope used to resolve variables.
-     * @param gen   the generator used to evaluate functions
+     * @param scope     the scope used to resolve variables.
+     * @param generator the generator used to evaluate functions
      * @return a possibly simplified version of the expression
      */
-    Expression eval(Scope scope, Generator gen);
+    Expression eval(Scope scope, Generator generator);
 }
