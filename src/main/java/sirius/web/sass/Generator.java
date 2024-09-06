@@ -8,7 +8,10 @@
 
 package sirius.web.sass;
 
+import sirius.kernel.di.std.Part;
 import sirius.kernel.tokenizer.ParseException;
+import sirius.web.resources.Resource;
+import sirius.web.resources.Resources;
 import sirius.web.sass.ast.Attribute;
 import sirius.web.sass.ast.Expression;
 import sirius.web.sass.ast.FunctionCall;
@@ -73,9 +76,12 @@ public class Generator {
     /*
      * Contains the evaluation context (all variables)
      */
-    protected sirius.web.sass.Scope scope = new sirius.web.sass.Scope();
+    protected Scope scope = new Scope();
 
     protected File baseDir;
+
+    @Part
+    private static Resources resources;
 
     /**
      * Generates a new Generator without a directory used for lookups.
@@ -133,19 +139,22 @@ public class Generator {
                 sheet += ".scss";
             }
 
-            try (InputStream is = resolveIntoStream(sheet)) {
-                if (is == null) {
+            try (InputStream stream = resolveIntoStream(sheet)) {
+                if (stream == null) {
                     warn("Cannot resolve '" + sheet + "'. Skipping import.");
                     return null;
                 }
 
-                sirius.web.sass.Parser p = new Parser(sheet, new InputStreamReader(is));
-                return p.parse();
+                Parser parser = new Parser(sheet, new InputStreamReader(stream));
+                return parser.parse();
             }
-        } catch (ParseException e) {
-            warn(String.format("Error parsing: %s%n%s", sheet, e));
-        } catch (Exception e) {
-            warn(String.format("Error importing: %s: %s (%s)", sheet, e.getMessage(), e.getClass().getName()));
+        } catch (ParseException exception) {
+            warn(String.format("Error parsing: %s%n%s", sheet, exception));
+        } catch (Exception exception) {
+            warn(String.format("Error importing: %s: %s (%s)",
+                               sheet,
+                               exception.getMessage(),
+                               exception.getClass().getName()));
         }
         return null;
     }
@@ -169,11 +178,10 @@ public class Generator {
                 return null;
             }
         } else {
-            InputStream is = getClass().getResourceAsStream((sheet.startsWith("/") ? "" : "/") + sheet);
-            if (is == null) {
-                is = getClass().getResourceAsStream((sheet.startsWith("/") ? "" : "/") + "_" + sheet);
-            }
-            return is;
+            return resources.resolve(sheet)
+                            .or(() -> resources.resolve("_" + sheet))
+                            .map(Resource::openStream)
+                            .orElse(null);
         }
     }
 
@@ -198,22 +206,22 @@ public class Generator {
         if (sheet == null) {
             return;
         }
-        for (Variable var : sheet.getVariables()) {
-            if (!scope.has(var.getName()) || !var.isDefaultValue()) {
-                scope.set(var.getName(), var.getValue());
+        for (Variable variable : sheet.getVariables()) {
+            if (!scope.has(variable.getName()) || !variable.isDefaultValue()) {
+                scope.set(variable.getName(), variable.getValue());
             } else {
-                debug("Skipping redundant variable definition: '" + var + "'");
+                debug("Skipping redundant variable definition: '" + variable + "'");
             }
         }
         if (importedSheets.contains(sheet.getName())) {
             return;
         }
         importedSheets.add(sheet.getName());
-        for (String imp : sheet.getImports()) {
-            importStylesheet(imp);
+        for (String importPath : sheet.getImports()) {
+            importStylesheet(importPath);
         }
-        for (Mixin mix : sheet.getMixins()) {
-            mixins.put(mix.getName(), mix);
+        for (Mixin mixin : sheet.getMixins()) {
+            mixins.put(mixin.getName(), mixin);
         }
         for (Section section : sheet.getSections()) {
             List<Section> stack = new ArrayList<>();
@@ -357,13 +365,13 @@ public class Generator {
      * Adds a section to the given media query section - creates if necessary
      */
     private void addResultSection(String mediaQueryPath, Section section) {
-        Section qry = mediaQueries.computeIfAbsent(mediaQueryPath, ignored -> {
+        Section query = mediaQueries.computeIfAbsent(mediaQueryPath, ignored -> {
             Section newQuerySection = new Section();
             newQuerySection.getSelectors().add(Collections.singletonList(mediaQueryPath));
             return newQuerySection;
         });
 
-        qry.addSubSection(section);
+        query.addSubSection(section);
     }
 
     /**
@@ -400,8 +408,8 @@ public class Generator {
         compileMixins(section);
 
         // Evaluate expressions of the section
-        for (Attribute attr : section.getAttributes()) {
-            attr.setExpression(attr.getExpression().eval(scope, this));
+        for (Attribute attribute : section.getAttributes()) {
+            attribute.setExpression(attribute.getExpression().eval(scope, this));
         }
 
         for (Section subSection : section.getSubSections()) {
@@ -410,35 +418,35 @@ public class Generator {
     }
 
     protected void compileMixins(Section section) {
-        for (MixinReference ref : section.getReferences()) {
+        for (MixinReference reference : section.getReferences()) {
             // Create a sub scope which will have access to the parameter values
-            sirius.web.sass.Scope subScope = new sirius.web.sass.Scope(scope);
+            Scope subScope = new Scope(scope);
             // Find mixin..
-            Mixin mixin = mixins.get(ref.getName());
+            Mixin mixin = mixins.get(reference.getName());
             if (mixin == null) {
                 warn(String.format("Skipping unknown @mixin '%s' referenced by selector '%s'",
-                                   ref.getName(),
+                                   reference.getName(),
                                    section.getSelectorString()));
                 return;
             }
 
-            compileMixin(section, ref, subScope, mixin);
+            compileMixin(section, reference, subScope, mixin);
         }
     }
 
-    private void compileMixin(Section section, MixinReference ref, sirius.web.sass.Scope subScope, Mixin mixin) {
+    private void compileMixin(Section section, MixinReference reference, Scope subScope, Mixin mixin) {
         // Check if number of parameters match
-        if (mixin.getParameters().size() != ref.getParameters().size()) {
+        if (mixin.getParameters().size() != reference.getParameters().size()) {
             warn(String.format(
                     "@mixin call '%s' by selector '%s' does not match expected number of parameters. Found: %d, expected: %d",
-                    ref.getName(),
+                    reference.getName(),
                     section.getSelectorString(),
-                    ref.getParameters().size(),
+                    reference.getParameters().size(),
                     mixin.getParameters().size()));
         }
 
         // Evaluate all parameters and populate sub scope
-        evaluateParameters(ref, subScope, mixin);
+        evaluateParameters(reference, subScope, mixin);
 
         // Copy attributes and evaluate expression
         copyAndEvaluateAttributes(section, subScope, mixin);
@@ -448,7 +456,7 @@ public class Generator {
         }
     }
 
-    private void processSubSection(Section section, sirius.web.sass.Scope subScope, Section child) {
+    private void processSubSection(Section section, Scope subScope, Section child) {
         Section newCombination = new Section();
         for (List<String> outer : child.getSelectors()) {
             for (List<String> inner : section.getSelectors()) {
@@ -465,31 +473,31 @@ public class Generator {
             }
         }
 
-        for (Attribute attr : child.getAttributes()) {
-            Attribute copy = new Attribute(attr.getName());
-            copy.setExpression(attr.getExpression().eval(subScope, this));
+        for (Attribute attribute : child.getAttributes()) {
+            Attribute copy = new Attribute(attribute.getName());
+            copy.setExpression(attribute.getExpression().eval(subScope, this));
             newCombination.addAttribute(copy);
         }
         sections.add(newCombination);
     }
 
-    private void copyAndEvaluateAttributes(Section section, sirius.web.sass.Scope subScope, Mixin mixin) {
-        for (Attribute attr : mixin.getAttributes()) {
-            if (attr.getExpression().isConstant()) {
-                section.addAttribute(attr);
+    private void copyAndEvaluateAttributes(Section section, Scope subScope, Mixin mixin) {
+        for (Attribute attribute : mixin.getAttributes()) {
+            if (attribute.getExpression().isConstant()) {
+                section.addAttribute(attribute);
             } else {
-                Attribute copy = new Attribute(attr.getName());
-                copy.setExpression(attr.getExpression().eval(subScope, this));
+                Attribute copy = new Attribute(attribute.getName());
+                copy.setExpression(attribute.getExpression().eval(subScope, this));
                 section.addAttribute(copy);
             }
         }
     }
 
-    private void evaluateParameters(MixinReference ref, Scope subScope, Mixin mixin) {
+    private void evaluateParameters(MixinReference reference, Scope subScope, Mixin mixin) {
         int i = 0;
         for (String name : mixin.getParameters()) {
-            if (ref.getParameters().size() > i) {
-                subScope.set(name, ref.getParameters().get(i));
+            if (reference.getParameters().size() > i) {
+                subScope.set(name, reference.getParameters().get(i));
             }
             i++;
         }
@@ -497,13 +505,12 @@ public class Generator {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder builder = new StringBuilder();
         for (Section section : sections) {
-            sb.append(section);
-            sb.append("\n");
+            builder.append(section);
+            builder.append("\n");
         }
-
-        return sb.toString();
+        return builder.toString();
     }
 
     /**
@@ -538,13 +545,13 @@ public class Generator {
                                                                   FunctionCall.class).invoke(null, this, call);
         } catch (NoSuchMethodException ignored) {
             return new Value(call.toString());
-        } catch (InvocationTargetException e) {
-            if (e.getTargetException() instanceof IllegalArgumentException) {
+        } catch (InvocationTargetException exception) {
+            if (exception.getTargetException() instanceof IllegalArgumentException) {
                 return new Value(call.toString());
             }
-            warn("Cannot execute function: " + call + " - " + e.getCause().getMessage());
-        } catch (Exception e) {
-            warn("Cannot execute function: " + call + " - " + e.getMessage());
+            warn("Cannot execute function: " + call + " - " + exception.getCause().getMessage());
+        } catch (Exception exception) {
+            warn("Cannot execute function: " + call + " - " + exception.getMessage());
         }
         return new Value(call.toString());
     }

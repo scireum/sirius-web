@@ -48,7 +48,7 @@ public class Value implements Expression {
     }
 
     @Override
-    public Expression eval(Scope scope, Generator gen) {
+    public Expression eval(Scope scope, Generator generator) {
         return this;
     }
 }

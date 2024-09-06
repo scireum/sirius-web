@@ -52,11 +52,12 @@ public class TagliatellePDFContentHandler extends TagliatelleContentHandler {
         }
 
         String content = template.renderWithParams(generator.getContext());
+        String cleanedContent = cleanHtml(content);
 
         ITextRenderer renderer = new ITextRenderer();
         renderer.getSharedContext()
                 .setReplacedElementFactory(new ImageReplacedElementFactory(renderer.getOutputDevice()));
-        renderer.setDocumentFromString(cleanHtml(content));
+        renderer.setDocumentFromString(cleanedContent);
         renderer.layout();
         renderer.createPDF(out);
         out.flush();

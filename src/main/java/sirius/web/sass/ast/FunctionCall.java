@@ -33,30 +33,30 @@ public class FunctionCall implements Expression {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        appendNameAndParameters(sb, name, parameters);
-        return sb.toString();
+        StringBuilder builder = new StringBuilder();
+        appendNameAndParameters(builder, name, parameters);
+        return builder.toString();
     }
 
     /**
      * Appends the name and parameters to the given string builder.
      *
-     * @param sb         the target to write the output to
+     * @param builder    the target to write the output to
      * @param name       the name of the function
      * @param parameters the list of parameters
      */
-    protected static void appendNameAndParameters(StringBuilder sb, String name, List<Expression> parameters) {
-        sb.append(name);
-        sb.append("(");
+    protected static void appendNameAndParameters(StringBuilder builder, String name, List<Expression> parameters) {
+        builder.append(name);
+        builder.append("(");
         boolean first = true;
-        for (Expression expr : parameters) {
+        for (Expression expexpression : parameters) {
             if (!first) {
-                sb.append(", ");
+                builder.append(", ");
             }
             first = false;
-            sb.append(expr);
+            builder.append(expexpression);
         }
-        sb.append(")");
+        builder.append(")");
     }
 
     /**
@@ -109,12 +109,12 @@ public class FunctionCall implements Expression {
      * @throws IllegalArgumentException if the index is out of bounds or if the parameter isn't a color
      */
     public Color getExpectedColorParam(int index) {
-        Expression expr = getExpectedParam(index);
-        if (!(expr instanceof Color)) {
+        Expression expression = getExpectedParam(index);
+        if (!(expression instanceof Color)) {
             throw new IllegalArgumentException("Parameter " + index + " isn't a color. Function call: " + this);
         }
 
-        return (Color) expr;
+        return (Color) expression;
     }
 
     /**
@@ -145,7 +145,7 @@ public class FunctionCall implements Expression {
     }
 
     @Override
-    public Expression eval(Scope scope, Generator gen) {
+    public Expression eval(Scope scope, Generator generator) {
         // As calc is a CSS function, we do not evaluate inner arguments on the server side
         if ("calc".equals(name)) {
             return this;
@@ -153,9 +153,9 @@ public class FunctionCall implements Expression {
 
         FunctionCall call = new FunctionCall();
         call.setName(name);
-        for (Expression expr : parameters) {
-            call.addParameter(expr.eval(scope, gen));
+        for (Expression expression : parameters) {
+            call.addParameter(expression.eval(scope, generator));
         }
-        return gen.evaluateFunction(call);
+        return generator.evaluateFunction(call);
     }
 }

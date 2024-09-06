@@ -66,9 +66,9 @@ public class MediaFilter implements Expression {
     }
 
     @Override
-    public Expression eval(Scope scope, Generator gen) {
+    public Expression eval(Scope scope, Generator generator) {
         MediaFilter result = new MediaFilter(name);
-        result.setExpression(expression.eval(scope, gen));
+        result.setExpression(expression.eval(scope, generator));
         return result;
     }
 }

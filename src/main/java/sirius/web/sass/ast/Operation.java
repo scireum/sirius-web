@@ -18,7 +18,7 @@ import java.util.Locale;
  */
 public class Operation implements Expression {
 
-    private final String op;
+    private final String operation;
     private final Expression left;
     private Expression right;
     private boolean protect = false;
@@ -31,7 +31,7 @@ public class Operation implements Expression {
      * @param right     the expression on the right side
      */
     public Operation(String operation, Expression left, Expression right) {
-        this.op = operation;
+        this.operation = operation;
         this.left = left;
         this.right = right;
     }
@@ -49,7 +49,7 @@ public class Operation implements Expression {
      * @return the operator as string
      */
     public String getOperation() {
-        return op;
+        return operation;
     }
 
     /**
@@ -90,7 +90,7 @@ public class Operation implements Expression {
 
     @Override
     public String toString() {
-        return (protect ? "(" : "") + left + " " + op + " " + right + (protect ? ")" : "");
+        return (protect ? "(" : "") + left + " " + operation + " " + right + (protect ? ")" : "");
     }
 
     @Override
@@ -99,39 +99,39 @@ public class Operation implements Expression {
     }
 
     @Override
-    public Expression eval(Scope scope, Generator gen) {
-        Expression newLeft = left.eval(scope, gen);
-        Expression newRight = right.eval(scope, gen);
+    public Expression eval(Scope scope, Generator generator) {
+        Expression newLeft = left.eval(scope, generator);
+        Expression newRight = right.eval(scope, generator);
         if ((newLeft instanceof Number leftNumber) && (newRight instanceof Number rightNumber)) {
-            return evalNumbers(gen, leftNumber, rightNumber);
+            return evalNumbers(generator, leftNumber, rightNumber);
         } else {
             return new Value(newLeft.toString() + newRight.toString());
         }
     }
 
-    protected Expression evalNumbers(Generator gen, Number l, Number r) {
-        double lVal = l.getNumericValue();
-        String lUnit = l.getUnit();
+    protected Expression evalNumbers(Generator generator, Number leftNumber, Number rightNumber) {
+        double lValue = leftNumber.getNumericValue();
+        String lUnit = leftNumber.getUnit();
         if ("%".equals(lUnit)) {
-            lVal /= 100d;
+            lValue /= 100d;
             lUnit = "";
         }
-        double rVal = r.getNumericValue();
-        String rUnit = r.getUnit();
+        double rValue = rightNumber.getNumericValue();
+        String rUnit = rightNumber.getUnit();
         if ("%".equals(rUnit)) {
-            rVal /= 100d;
+            rValue /= 100d;
             rUnit = "";
         }
 
-        double value = evalOperation(gen, lVal, rVal);
+        double value = evalOperation(generator, lValue, rValue);
 
         String unit = "";
-        if (!"/".equals(op)) {
-            if (isPercentResult(l, r)) {
+        if (!"/".equals(operation)) {
+            if (isPercentResult(leftNumber, rightNumber)) {
                 value *= 100;
                 unit = "%";
             } else {
-                unit = determineResultUnit(gen, lUnit, rUnit);
+                unit = determineResultUnit(generator, lUnit, rUnit);
             }
         }
         double rounded = Math.round(value);
@@ -142,51 +142,52 @@ public class Operation implements Expression {
         return new Number(value, String.valueOf(Math.round(value)), unit);
     }
 
-    private boolean isPercentResult(Number l, Number r) {
-        if ("%".equals(l.getUnit()) && "%".equals(r.getUnit())) {
+    private boolean isPercentResult(Number leftNumber, Number rightNumber) {
+        if ("%".equals(leftNumber.getUnit()) && "%".equals(rightNumber.getUnit())) {
             return true;
         }
 
-        if ("%".equals(l.getUnit()) || "%".equals(r.getUnit())) {
-            if (l.getUnit() != null && l.getUnit().isEmpty()) {
+        if ("%".equals(leftNumber.getUnit()) || "%".equals(rightNumber.getUnit())) {
+            if (leftNumber.getUnit() != null && leftNumber.getUnit().isEmpty()) {
                 return true;
             }
 
-            return r.getUnit() != null && r.getUnit().isEmpty();
+            return rightNumber.getUnit() != null && rightNumber.getUnit().isEmpty();
         }
 
         return false;
     }
 
-    private String determineResultUnit(Generator gen, String lUnit, String rUnit) {
+    private String determineResultUnit(Generator generator, String lUnit, String rUnit) {
         if (lUnit != null && lUnit.isEmpty()) {
             return rUnit;
         }
 
         if (rUnit != null && !rUnit.isEmpty() && !rUnit.equals(lUnit)) {
-            gen.warn(String.format("Incompatible units mixed in expression '%s': Using left unit for result", this));
+            generator.warn(String.format("Incompatible units mixed in expression '%s': Using left unit for result",
+                                         this));
         }
 
         return lUnit;
     }
 
     @SuppressWarnings("squid:S1244")
-    protected double evalOperation(Generator gen, double lVal, double rVal) {
+    protected double evalOperation(Generator generator, double lValue, double rValue) {
         double value = 0d;
-        if ("/".equals(op)) {
-            if (rVal != 0) {
-                value = lVal / rVal;
+        if ("/".equals(operation)) {
+            if (rValue != 0) {
+                value = lValue / rValue;
             } else {
-                gen.warn(String.format("Cannot evaluate: '%s': division by 0. Defaulting to 0 as result", this));
+                generator.warn(String.format("Cannot evaluate: '%s': division by 0. Defaulting to 0 as result", this));
             }
-        } else if ("*".equals(op)) {
-            value = lVal * rVal;
-        } else if ("%".equals(op)) {
-            value = lVal % rVal;
-        } else if ("+".equals(op)) {
-            value = lVal + rVal;
-        } else if ("-".equals(op)) {
-            value = lVal - rVal;
+        } else if ("*".equals(operation)) {
+            value = lValue * rValue;
+        } else if ("%".equals(operation)) {
+            value = lValue % rValue;
+        } else if ("+".equals(operation)) {
+            value = lValue + rValue;
+        } else if ("-".equals(operation)) {
+            value = lValue - rValue;
         }
         return value;
     }

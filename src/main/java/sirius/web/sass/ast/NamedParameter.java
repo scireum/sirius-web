@@ -48,10 +48,10 @@ public class NamedParameter implements Expression {
     }
 
     @Override
-    public Expression eval(Scope scope, Generator gen) {
+    public Expression eval(Scope scope, Generator generator) {
         if (isConstant()) {
             return this;
         }
-        return new NamedParameter(name, value.eval(scope, gen));
+        return new NamedParameter(name, value.eval(scope, generator));
     }
 }
