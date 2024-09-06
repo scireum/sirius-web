@@ -178,8 +178,8 @@ public class Generator {
                 return null;
             }
         } else {
-            return resources.resolve((sheet.startsWith("/") ? "" : "/") + sheet)
-                            .or(() -> resources.resolve((sheet.startsWith("/") ? "" : "/") + "_" + sheet))
+            return resources.resolve(sheet)
+                            .or(() -> resources.resolve("_" + sheet))
                             .map(Resource::openStream)
                             .orElse(null);
         }
