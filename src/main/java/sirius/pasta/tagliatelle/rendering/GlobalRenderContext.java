@@ -15,8 +15,10 @@ import sirius.pasta.tagliatelle.Tagliatelle;
 import sirius.pasta.tagliatelle.Template;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
@@ -37,6 +39,9 @@ public class GlobalRenderContext {
     protected StringBuilder buffer;
     protected Map<String, String> extraBlocks;
     protected UnaryOperator<String> escaper = GlobalRenderContext::escapeRAW;
+
+    private List<String> guards = new ArrayList<>();
+
     private static final Pattern OPENING_SCRIPT_TAG = Pattern.compile("<script(\\s.*)?>", Pattern.CASE_INSENSITIVE);
     private static final Pattern CLOSING_SCRIPT_TAG = Pattern.compile("</script>", Pattern.CASE_INSENSITIVE);
     private static final Pattern OPENING_STYLE_TAG = Pattern.compile("<style(\\s.*)?>", Pattern.CASE_INSENSITIVE);
@@ -381,5 +386,9 @@ public class GlobalRenderContext {
                 buffer.append("<!-- " + string + " -->");
             }
         }
+    }
+
+    public List<String> getGuards() {
+        return guards;
     }
 }
