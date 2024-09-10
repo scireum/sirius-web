@@ -18,9 +18,11 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,7 +42,7 @@ public class GlobalRenderContext {
     protected Map<String, String> extraBlocks;
     protected UnaryOperator<String> escaper = GlobalRenderContext::escapeRAW;
 
-    private List<String> guards = new ArrayList<>();
+    private Set<String> guards = new HashSet<>();
 
     private static final Pattern OPENING_SCRIPT_TAG = Pattern.compile("<script(\\s.*)?>", Pattern.CASE_INSENSITIVE);
     private static final Pattern CLOSING_SCRIPT_TAG = Pattern.compile("</script>", Pattern.CASE_INSENSITIVE);
@@ -388,7 +390,21 @@ public class GlobalRenderContext {
         }
     }
 
-    public List<String> getGuards() {
-        return guards;
+    /**
+     * Checks if the given guard is defined or not.
+     *
+     * @param guard the guard String to check
+     * @return true if the guard is defined, false otherwise
+     */
+    public boolean hasGuard(String guard) {
+        return guards.contains(guard);
+    }
+
+    /**
+     * Adds the given guard to the list of defined guards.
+     * @param guard the guard String to add
+     */
+    public void addGuard(String guard) {
+        guards.add(guard);
     }
 }

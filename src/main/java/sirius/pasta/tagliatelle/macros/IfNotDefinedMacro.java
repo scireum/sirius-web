@@ -49,10 +49,10 @@ public class IfNotDefinedMacro extends BasicMacro {
         String guard = (String) args[0];
         if (Strings.isFilled(guard) && environment instanceof LocalRenderContext localRenderContext) {
                 GlobalRenderContext globalRenderContext = localRenderContext.getGlobalContext();
-                if (globalRenderContext.getGuards().contains(guard)) {
+                if (globalRenderContext.hasGuard(guard)) {
                     return false;
                 } else {
-                    globalRenderContext.getGuards().add(guard);
+                    globalRenderContext.addGuard(guard);
                     return true;
                 }
             }
