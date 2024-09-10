@@ -64,7 +64,12 @@ public class IfNotDefinedMacro extends BasicMacro {
 
     @Override
     public String getDescription() {
-        return "Checks whether the given guard is defined or not. If the guard is not defined, true is returned and the guard is added to a Set of guards to the global context of the template. This means that all subsequent calls to ifNotDefined with the same guard will return false. This allows to run a block/code exactly once per template. The behavior is somewhat similar to C/C++ #ifndef.";
+        return """
+                Checks whether the given guard is defined or not. If the guard is not defined, true is returned and
+                the guard is added to a Set of guards to the global context of the template. This means that all
+                subsequent calls to ifNotDefined with the same guard will return false. This allows to run a
+                block/code exactly once per template. The behavior is somewhat similar to C/C++ #ifndef.
+                """;
     }
 
     @Nonnull
