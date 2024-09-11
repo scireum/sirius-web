@@ -1,0 +1,10 @@
+<i:arg type="String" name="value" description="Contains a string which is used as a guard clause to determine whether the body should be rendered."/>
+
+<i:pragma name="description">
+    Checks whether the defined value is already specified. If the value is not defined, the body of the tag is rendered.
+    Similar to C/C++ #ifndef.
+</i:pragma>
+
+<i:if test="ifNotDefined(value)">
+    <i:render name="body"/>
+</i:if>
