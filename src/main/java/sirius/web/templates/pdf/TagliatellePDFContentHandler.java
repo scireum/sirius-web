@@ -78,6 +78,13 @@ public class TagliatellePDFContentHandler extends TagliatelleContentHandler {
     private String cleanHtml(String html) {
         Document document = Jsoup.parse(html);
 
+        // the parser is very strict in terms of what elements are accepted within the <head> element, and it does not
+        // know about additional valid elements like <bookmarks> that are valid for flying saucer; we need to move them
+        // back from the <body> to the <head> element
+        document.select("body > bookmarks").forEach(bookmarks -> {
+            document.head().appendChild(bookmarks);
+        });
+
         // in theory, the following two lines should be possible with a single CSS selector; however, in practice, Jsoup
         // does not select the style elements correctly when attempting that
         document.select("script").remove();
