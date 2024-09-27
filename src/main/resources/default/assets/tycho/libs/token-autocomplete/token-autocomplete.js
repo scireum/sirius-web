@@ -56,7 +56,9 @@ var TokenAutocomplete = /** @class */ (function () {
             suggestionsUri: '',
             selectMode: SelectModes.MULTI,
             suggestionsUriBuilder: function (query) {
-                return this.suggestionsUri + '?query=' + query;
+                // We have to do this manually instead of using URL, as we can't be sure that a polyfill for IE11 is present
+                var querySeparator = this.suggestionsUri.indexOf('?') >= 0 ? '&' : '?';
+                return this.suggestionsUri + querySeparator + 'query=' + query;
             },
             suggestionRenderer: TokenAutocomplete.Autocomplete.defaultRenderer,
             minCharactersForSuggestion: 1,
