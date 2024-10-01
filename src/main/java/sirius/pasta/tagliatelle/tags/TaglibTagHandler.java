@@ -13,6 +13,9 @@ import sirius.pasta.tagliatelle.Template;
 import sirius.pasta.tagliatelle.TemplateArgument;
 import sirius.pasta.tagliatelle.emitter.CompositeEmitter;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Handles the invocation of a user-defined tag.
  * <p>
@@ -49,5 +52,16 @@ public class TaglibTagHandler extends TagHandler {
         }
 
         return super.getExpectedAttributeType(name);
+    }
+
+    @Override
+    public Set<String> getRequiredAttributeNames() {
+        Set<String> result = new HashSet<>();
+        for (TemplateArgument arg : template.getArguments()) {
+            if (arg.getDefaultValue() == null) {
+                result.add(arg.getName());
+            }
+        }
+        return result;
     }
 }

@@ -18,8 +18,10 @@ import sirius.pasta.tagliatelle.emitter.ExtraBlockEmitter;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Handles <tt>i:block</tt> which specifies a template section passed into a tag invocation.
@@ -84,5 +86,10 @@ public class BlockTag extends TagHandler {
         }
 
         return super.getExpectedAttributeType(name);
+    }
+
+    @Override
+    public Set<String> getRequiredAttributeNames() {
+        return new HashSet<>(List.of(PARAM_NAME));
     }
 }

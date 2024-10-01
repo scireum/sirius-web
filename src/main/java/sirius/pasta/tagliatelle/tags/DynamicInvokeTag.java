@@ -16,7 +16,9 @@ import sirius.pasta.tagliatelle.emitter.DynamicInvokeTemplateEmitter;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Handles <tt>i:dynamicInvoke</tt> which invokes or inlines a given template.
@@ -68,5 +70,10 @@ public class DynamicInvokeTag extends TagHandler {
     public Class<?> getExpectedAttributeType(String name) {
         // Accept anything, we don't know yet what to expect at runtime....
         return Callable.class;
+    }
+
+    @Override
+    public Set<String> getRequiredAttributeNames() {
+        return new HashSet<>(List.of(ATTR_TEMPLATE));
     }
 }

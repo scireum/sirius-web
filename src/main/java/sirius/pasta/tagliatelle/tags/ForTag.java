@@ -18,7 +18,9 @@ import sirius.pasta.tagliatelle.emitter.LoopState;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Handles <tt>i:for</tt> which emits its body for each item in an {@link Iterable}.
@@ -115,5 +117,10 @@ public class ForTag extends TagHandler {
         }
 
         return super.getExpectedAttributeType(name);
+    }
+
+    @Override
+    public Set<String> getRequiredAttributeNames() {
+        return new HashSet<>(List.of(PARAM_ITEMS, PARAM_TYPE, PARAM_VAR));
     }
 }
