@@ -384,6 +384,8 @@ public class TemplateCompiler extends InputProcessor {
             if (attributeType == null) {
                 attributeType = String.class;
             } else {
+                // verifyAttributeNameAndType(...) already reports an error if the attributeType is unknown.
+                // We only save the found and defined attributes.
                 attributes.add(name);
             }
 
