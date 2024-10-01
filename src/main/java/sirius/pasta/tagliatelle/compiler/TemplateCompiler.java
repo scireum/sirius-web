@@ -8,14 +8,14 @@
 
 package sirius.pasta.tagliatelle.compiler;
 
-import sirius.kernel.tokenizer.Char;
-import sirius.kernel.tokenizer.ParseError;
-import sirius.kernel.tokenizer.Position;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
+import sirius.kernel.tokenizer.Char;
+import sirius.kernel.tokenizer.ParseError;
+import sirius.kernel.tokenizer.Position;
 import sirius.pasta.Pasta;
 import sirius.pasta.noodle.Callable;
 import sirius.pasta.noodle.ConstantCall;
@@ -33,7 +33,9 @@ import sirius.web.services.JSONStructuredOutput;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Compiles a sources file into a {@link sirius.pasta.tagliatelle.Template}.
@@ -369,6 +371,8 @@ public class TemplateCompiler extends InputProcessor {
      * @param handler the handler to add the attributes to
      */
     private void parseAttributes(TagHandler handler) {
+        // Collect all parsed attributes.
+        Set<String> attributes = new HashSet<>();
         while (true) {
             skipWhitespaces();
             if (reader.current().isEndOfInput() || reader.current().is('>', '/')) {
@@ -379,6 +383,8 @@ public class TemplateCompiler extends InputProcessor {
             verifyAttributeNameAndType(handler, name, attributeType);
             if (attributeType == null) {
                 attributeType = String.class;
+            } else {
+                attributes.add(name);
             }
 
             skipWhitespaces();
@@ -416,6 +422,27 @@ public class TemplateCompiler extends InputProcessor {
                 handler.setAttribute(name, expression);
             }
             consumeExpectedCharacter('"');
+        }
+
+        checkMissingAttributes(handler, attributes);
+    }
+
+    /**
+     * Checks if all required attributes are present.
+     *
+     * @param handler    the tag handler
+     * @param attributes the set of attributes which were parsed
+     */
+    private void checkMissingAttributes(TagHandler handler, Set<String> attributes) {
+        // Check if all required attributes are present.
+        Set<String> missingAttributes = handler.getAttributeNames(true);
+        missingAttributes.removeAll(attributes);
+        if (!missingAttributes.isEmpty()) {
+            // If we have required attributes left, we report them as missing
+            missingAttributes.forEach(attr -> context.error(reader.current(),
+                                                            "Missing required attribute. %s missing the required attribute '%s'.",
+                                                            handler.getTagName(),
+                                                            attr));
         }
     }
 
