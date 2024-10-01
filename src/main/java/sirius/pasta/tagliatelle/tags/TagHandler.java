@@ -24,9 +24,11 @@ import sirius.web.resources.Resources;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Handles a tag detected by the {@link sirius.pasta.tagliatelle.compiler.TemplateCompiler}.
@@ -91,6 +93,16 @@ public abstract class TagHandler {
         }
 
         return attributes.get(name);
+    }
+
+    /**
+     * Returns all attribute names.
+     *
+     * @param required if <tt>true</tt> only required attributes are returned, otherwise all attributes are returned.
+     * @return a set of all attribute names.
+     */
+    public Set<String> getAttributeNames(boolean required) {
+        return Collections.emptySet();
     }
 
     /**
