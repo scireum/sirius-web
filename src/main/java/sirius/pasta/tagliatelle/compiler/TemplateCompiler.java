@@ -434,11 +434,9 @@ public class TemplateCompiler extends InputProcessor {
      * @param attributes the set of attributes which were parsed
      */
     private void checkMissingAttributes(TagHandler handler, Set<String> attributes) {
-        // Check if all required attributes are present.
         Set<String> missingAttributes = handler.getRequiredAttributeNames();
         missingAttributes.removeAll(attributes);
         if (!missingAttributes.isEmpty()) {
-            // If we have required attributes left, we report them as missing
             missingAttributes.forEach(attr -> context.error(reader.current(),
                                                             "Missing required attribute. %s missing the required attribute '%s'.",
                                                             handler.getTagName(),
