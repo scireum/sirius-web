@@ -121,6 +121,6 @@ public class ForTag extends TagHandler {
 
     @Override
     public Set<String> getRequiredAttributeNames() {
-        return new HashSet<>(List.of(PARAM_ITEMS, PARAM_TYPE, PARAM_VAR));
+        return Set.of(PARAM_ITEMS, PARAM_TYPE, PARAM_VAR);
     }
 }

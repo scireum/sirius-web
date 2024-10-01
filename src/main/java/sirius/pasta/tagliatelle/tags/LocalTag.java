@@ -97,6 +97,6 @@ public class LocalTag extends TagHandler {
 
     @Override
     public Set<String> getRequiredAttributeNames() {
-        return new HashSet<>(List.of(PARAM_NAME, PARAM_VALUE));
+        return Set.of(PARAM_NAME, PARAM_VALUE);
     }
 }

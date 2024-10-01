@@ -76,6 +76,6 @@ public class IfTag extends TagHandler {
 
     @Override
     public Set<String> getRequiredAttributeNames() {
-        return new HashSet<>(List.of("test"));
+        return Set.of("test");
     }
 }

@@ -79,6 +79,6 @@ public class IncludeTag extends TagHandler {
 
     @Override
     public Set<String> getRequiredAttributeNames() {
-        return new HashSet<>(List.of(ATTR_NAME));
+        return Set.of(ATTR_NAME);
     }
 }

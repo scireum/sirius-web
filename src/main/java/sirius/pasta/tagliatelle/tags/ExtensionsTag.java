@@ -92,6 +92,6 @@ public class ExtensionsTag extends InvokeTag {
 
     @Override
     public Set<String> getRequiredAttributeNames() {
-        return new HashSet<>(List.of(ATTR_TARGET));
+        return Set.of(ATTR_TARGET);
     }
 }

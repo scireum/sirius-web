@@ -90,6 +90,6 @@ public class BlockTag extends TagHandler {
 
     @Override
     public Set<String> getRequiredAttributeNames() {
-        return new HashSet<>(List.of(PARAM_NAME));
+        return Set.of(PARAM_NAME);
     }
 }

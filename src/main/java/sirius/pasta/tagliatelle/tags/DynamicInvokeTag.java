@@ -74,6 +74,6 @@ public class DynamicInvokeTag extends TagHandler {
 
     @Override
     public Set<String> getRequiredAttributeNames() {
-        return new HashSet<>(List.of(ATTR_TEMPLATE));
+        return Set.of(ATTR_TEMPLATE);
     }
 }

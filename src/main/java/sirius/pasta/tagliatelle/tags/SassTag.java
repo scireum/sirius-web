@@ -98,6 +98,6 @@ public class SassTag extends TagHandler {
 
     @Override
     public Set<String> getRequiredAttributeNames() {
-        return new HashSet<>(List.of(SOURCE_ATTRIBUTE));
+        return Set.of(SOURCE_ATTRIBUTE);
     }
 }

@@ -162,6 +162,6 @@ public class ArgTag extends TagHandler {
 
     @Override
     public Set<String> getRequiredAttributeNames() {
-        return new HashSet<>(List.of(PARAM_NAME, PARAM_TYPE));
+        return Set.of(PARAM_NAME, PARAM_TYPE);
     }
 }
