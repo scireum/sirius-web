@@ -435,7 +435,7 @@ public class TemplateCompiler extends InputProcessor {
      */
     private void checkMissingAttributes(TagHandler handler, Set<String> attributes) {
         // Check if all required attributes are present.
-        Set<String> missingAttributes = handler.getAttributeNames(true);
+        Set<String> missingAttributes = handler.getRequiredAttributeNames();
         missingAttributes.removeAll(attributes);
         if (!missingAttributes.isEmpty()) {
             // If we have required attributes left, we report them as missing

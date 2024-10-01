@@ -96,12 +96,10 @@ public abstract class TagHandler {
     }
 
     /**
-     * Returns all attribute names.
-     *
-     * @param required if <tt>true</tt> only required attributes are returned, otherwise all attributes are returned.
+     * Returns all required attribute names.
      * @return a set of all attribute names.
      */
-    public Set<String> getAttributeNames(boolean required) {
+    public Set<String> getRequiredAttributeNames() {
         return Collections.emptySet();
     }
 
