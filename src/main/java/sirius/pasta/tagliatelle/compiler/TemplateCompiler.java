@@ -36,6 +36,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Compiles a sources file into a {@link sirius.pasta.tagliatelle.Template}.
@@ -436,14 +437,13 @@ public class TemplateCompiler extends InputProcessor {
      * @param attributes the set of attributes which were parsed
      */
     private void checkMissingAttributes(TagHandler handler, Set<String> attributes) {
-        Set<String> missingAttributes = new HashSet<>(handler.getRequiredAttributeNames());
-        missingAttributes.removeAll(attributes);
-        if (!missingAttributes.isEmpty()) {
-            missingAttributes.forEach(attr -> context.error(reader.current(),
-                                                            "Missing required attribute. %s missing the required attribute '%s'.",
-                                                            handler.getTagName(),
-                                                            attr));
-        }
+        handler.getRequiredAttributeNames()
+               .stream()
+               .filter(Predicate.not(attributes::contains))
+               .forEach(attr -> context.error(reader.current(),
+                                              "Missing required attribute. %s missing the required attribute '%s'.",
+                                              handler.getTagName(),
+                                              attr));
     }
 
     private void parseAttributeExpression(TagHandler handler,
