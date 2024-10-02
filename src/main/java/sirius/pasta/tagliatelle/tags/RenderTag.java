@@ -16,7 +16,6 @@ import sirius.pasta.tagliatelle.emitter.CompositeEmitter;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
