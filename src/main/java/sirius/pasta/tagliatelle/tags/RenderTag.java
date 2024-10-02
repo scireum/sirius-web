@@ -17,6 +17,7 @@ import sirius.pasta.tagliatelle.emitter.CompositeEmitter;
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Handles <tt>i:render</tt> which emits the block with the given name.
@@ -78,5 +79,10 @@ public class RenderTag extends TagHandler {
         }
 
         return super.getExpectedAttributeType(name);
+    }
+
+    @Override
+    public Set<String> getRequiredAttributeNames() {
+        return Set.of(PARAM_NAME);
     }
 }

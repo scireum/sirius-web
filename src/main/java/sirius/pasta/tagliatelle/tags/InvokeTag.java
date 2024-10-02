@@ -18,7 +18,9 @@ import sirius.pasta.tagliatelle.emitter.CompositeEmitter;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Handles <tt>i:invoke</tt> which invokes or inlines a given template.
@@ -114,6 +116,21 @@ public class InvokeTag extends TagHandler {
             // Accept anything, we don't want to report errors based on previous errors...
             return Callable.class;
         }
+    }
+
+    @Override
+    public Set<String> getRequiredAttributeNames() {
+        Set<String> result = new HashSet<>();
+        result.add(ATTR_TEMPLATE);
+
+        if (ensureThatTemplateIsPresent()) {
+            for (TemplateArgument arg : template.getArguments()) {
+                if (arg.getDefaultValue() == null) {
+                    result.add(arg.getName());
+                }
+            }
+        }
+        return result;
     }
 
     private boolean ensureThatTemplateIsPresent() {

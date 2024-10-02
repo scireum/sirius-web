@@ -18,6 +18,7 @@ import sirius.pasta.tagliatelle.emitter.ExtraBlockEmitter;
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Permits to add an extra block to the global render context.
@@ -85,5 +86,10 @@ public class ExtraBlockTag extends TagHandler {
         }
 
         return super.getExpectedAttributeType(name);
+    }
+
+    @Override
+    public Set<String> getRequiredAttributeNames() {
+        return Set.of(PARAM_NAME);
     }
 }

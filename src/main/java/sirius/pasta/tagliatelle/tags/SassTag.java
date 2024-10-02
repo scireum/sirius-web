@@ -24,6 +24,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Handles <tt>i:sass</tt> which renders a SASS file into the current template as compiled CSS.
@@ -92,5 +93,10 @@ public class SassTag extends TagHandler {
         }
 
         return super.getExpectedAttributeType(name);
+    }
+
+    @Override
+    public Set<String> getRequiredAttributeNames() {
+        return Set.of(SOURCE_ATTRIBUTE);
     }
 }

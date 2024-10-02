@@ -18,6 +18,7 @@ import sirius.web.resources.Resources;
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Handles <tt>i:include</tt> which includes the contents of the given resource without any processing.
@@ -73,5 +74,10 @@ public class IncludeTag extends TagHandler {
         }
 
         return super.getExpectedAttributeType(name);
+    }
+
+    @Override
+    public Set<String> getRequiredAttributeNames() {
+        return Set.of(ATTR_NAME);
     }
 }

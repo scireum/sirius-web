@@ -16,6 +16,7 @@ import sirius.pasta.tagliatelle.emitter.ConditionalEmitter;
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Handles <tt>i:if</tt> which emits its body if a condition is met.
@@ -70,5 +71,10 @@ public class IfTag extends TagHandler {
         }
 
         return super.getExpectedAttributeType(name);
+    }
+
+    @Override
+    public Set<String> getRequiredAttributeNames() {
+        return Set.of("test");
     }
 }
