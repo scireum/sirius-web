@@ -124,10 +124,11 @@ sirius.isFilled = function (value) {
  * @param callback the callback to execute once the DOM is completely ready
  */
 sirius.ready = function (callback) {
-    // Add as listener in case DOM is loading...
-    document.addEventListener("DOMContentLoaded", callback);
-    // Call manually is we're late...
-    if (document.readyState === "interactive" || document.readyState === "complete") {
+    if (document.readyState === "loading") {
+        // Add as listener in case DOM is loading...
+        document.addEventListener("DOMContentLoaded", callback);
+    } else {
+        // Call manually if we're late...
         callback();
     }
 }
