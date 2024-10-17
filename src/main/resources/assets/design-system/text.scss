@@ -1,3 +1,15 @@
+:root {
+  --sci-font-size-base: 1rem;
+  --sci-font-size-smallest: calc(var(--sci-font-size-base) * 0.7);
+  --sci-font-size-smaller: calc(var(--sci-font-size-base) * 0.9);
+  --sci-font-size-larger: calc(var(--sci-font-size-base) * 1.25);
+  --sci-font-size-h1: calc(var(--sci-font-size-base) * 2.25);
+  --sci-font-size-h2: calc(var(--sci-font-size-base) * 1.75);
+  --sci-font-size-h3: calc(var(--sci-font-size-base) * 1.5);
+  --sci-font-size-h4: calc(var(--sci-font-size-base) * 1.25);
+  --sci-font-size-h5: calc(var(--sci-font-size-base) * 1.1);
+}
+
 .sci-enable-font {
   .sci-font {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
@@ -6,40 +18,40 @@
 
 .sci-text {
   line-height: 1.5;
-  font-size: 1rem;
+  font-size: var(--sci-font-size-base);
   color: $sirius-black;
 }
 
 .sci-text-smallest {
-  font-size: 0.7rem;
+  font-size: var(--sci-font-size-smallest);
 }
 
 .sci-text-smaller {
-  font-size: 0.9rem;
+  font-size: var(--sci-font-size-smaller);
 }
 
 .sci-text-larger {
-  font-size: 1.25rem;
+  font-size: var(--sci-font-size-larger);
 }
 
 .sci-text-size-h1 {
-  font-size: 2.25rem;
+  font-size: var(--sci-font-size-h1);
 }
 
 .sci-text-size-h2 {
-  font-size: 1.75rem;
+  font-size: var(--sci-font-size-h2);
 }
 
 .sci-text-size-h3 {
-  font-size: 1.5rem;
+  font-size: var(--sci-font-size-h3);
 }
 
 .sci-text-size-h4 {
-  font-size: 1.25rem;
+  font-size: var(--sci-font-size-h4);
 }
 
 .sci-text-size-h5 {
-  font-size: 1.1rem;
+  font-size: var(--sci-font-size-h5);
 }
 
 .sci-text-ellipsis {
