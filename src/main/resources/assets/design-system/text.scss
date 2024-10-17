@@ -1,5 +1,5 @@
 :root {
-  --sci-font-size-base: 1rem;
+  --sci-font-size-base: 12px;
   --sci-font-size-smallest: calc(var(--sci-font-size-base) * 0.7);
   --sci-font-size-smaller: calc(var(--sci-font-size-base) * 0.9);
   --sci-font-size-larger: calc(var(--sci-font-size-base) * 1.25);
@@ -8,6 +8,18 @@
   --sci-font-size-h3: calc(var(--sci-font-size-base) * 1.5);
   --sci-font-size-h4: calc(var(--sci-font-size-base) * 1.25);
   --sci-font-size-h5: calc(var(--sci-font-size-base) * 1.1);
+}
+
+@media (min-width: $md-min-width) {
+    :root {
+        --sci-font-size-base: 14px;
+    }
+}
+
+@media (min-width: $lg-min-width) {
+    :root {
+        --sci-font-size-base: 16px;
+    }
 }
 
 .sci-enable-font {
@@ -95,126 +107,6 @@
 
 .sci-line-height-150 {
   line-height: 1.50 !important;
-}
-
-// Normally, sci-text, sci-text-smaller and sci-text-larger use REM based font sizes so that our layout
-// properly integrates into the page. However, some pages define ridiculous base font sizes. Therefore,
-// a marker-class "sci-enable-font-size" can be placed on a surrounding element. We then use a fixed set
-// of font-sizes based on 16px for desktops, 14px for tablets and 12px for mobile...
-.sci-enable-font-size {
-
-  .sci-text {
-    font-size: 12px;
-  }
-
-  .sci-text-smallest {
-    font-size: 8px;
-  }
-
-  .sci-text-smaller {
-    font-size: 11px;
-  }
-
-  .sci-text-larger {
-    font-size: 15px;
-  }
-
-  .sci-text-size-h1 {
-    font-size: 27px;
-  }
-
-  .sci-text-size-h2 {
-    font-size: 21px;
-  }
-
-  .sci-text-size-h3 {
-    font-size: 18px;
-  }
-
-  .sci-text-size-h4 {
-    font-size: 15px;
-  }
-
-  .sci-text-size-h5 {
-    font-size: 13px;
-  }
-
-  @media (min-width: $md-min-width) {
-    .sci-text {
-      font-size: 14px;
-    }
-
-    .sci-text-smallest {
-      font-size: 10px;
-    }
-
-    .sci-text-smaller {
-      font-size: 12px;
-    }
-
-    .sci-text-larger {
-      font-size: 17px;
-    }
-
-    .sci-text-size-h1 {
-      font-size: 31px;
-    }
-
-    .sci-text-size-h2 {
-      font-size: 24px;
-    }
-
-    .sci-text-size-h3 {
-      font-size: 21px;
-    }
-
-    .sci-text-size-h4 {
-      font-size: 18px;
-    }
-
-    .sci-text-size-h5 {
-      font-size: 15px;
-    }
-  }
-
-  @media (min-width: $lg-min-width) {
-    .sci-text {
-      font-size: 16px;
-    }
-
-    .sci-text-smallest {
-      font-size: 12px;
-    }
-
-    .sci-text-smaller {
-      font-size: 14px;
-    }
-
-    .sci-text-larger {
-      font-size: 20px;
-    }
-
-    .sci-text-size-h1 {
-      font-size: 36px;
-    }
-
-    .sci-text-size-h2 {
-      font-size: 28px;
-    }
-
-    .sci-text-size-h3 {
-      font-size: 24px;
-    }
-
-    .sci-text-size-h4 {
-      font-size: 20px;
-    }
-
-    .sci-text-size-h5 {
-      font-size: 17px;
-    }
-  }
-
 }
 
 .sci-bold {
