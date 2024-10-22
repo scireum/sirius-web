@@ -1,0 +1,19 @@
+<i:arg name="entityId" type="String" description="The id of the entity to which this table row is associated with"/>
+
+
+<i:pragma name="description">
+    Renders a table row which can be selected by the user. The row will have a checkbox in the first column.
+    The checkbox visualizes the selection state of the row and can be used to select or deselect the row.
+    The table row can also be selected by simply clicking on it.
+    Note: Links and buttons in the row will not trigger the selection of the row.
+</i:pragma>
+
+<tr class="cursor-pointer">
+    <td>
+        <input class="cursor-pointer select-table-row-checkbox-js"
+               type="checkbox"
+               title="@i18n('selectableTable.row.selection')"
+               data-entity-id="@entityId"/>
+    </td>
+    <i:render name="body"/>
+</tr>
