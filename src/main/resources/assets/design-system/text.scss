@@ -1,25 +1,25 @@
 :root {
   --sci-font-size-base: 12px;
-  --sci-font-size-smallest: calc(var(--sci-font-size-base) * 0.7);
-  --sci-font-size-smaller: calc(var(--sci-font-size-base) * 0.9);
-  --sci-font-size-larger: calc(var(--sci-font-size-base) * 1.25);
-  --sci-font-size-h1: calc(var(--sci-font-size-base) * 2.25);
-  --sci-font-size-h2: calc(var(--sci-font-size-base) * 1.75);
-  --sci-font-size-h3: calc(var(--sci-font-size-base) * 1.5);
-  --sci-font-size-h4: calc(var(--sci-font-size-base) * 1.25);
-  --sci-font-size-h5: calc(var(--sci-font-size-base) * 1.1);
+  --sci-font-size-smallest: calc(0.7 * var(--sci-font-size-base));
+  --sci-font-size-smaller: calc(0.9 * var(--sci-font-size-base));
+  --sci-font-size-larger: calc(1.25 * var(--sci-font-size-base));
+  --sci-font-size-h1: calc(2.25 * var(--sci-font-size-base));
+  --sci-font-size-h2: calc(1.75 * var(--sci-font-size-base));
+  --sci-font-size-h3: calc(1.5 * var(--sci-font-size-base));
+  --sci-font-size-h4: calc(1.25 * var(--sci-font-size-base));
+  --sci-font-size-h5: calc(1.1 * var(--sci-font-size-base));
 }
 
 @media (min-width: $md-min-width) {
-    :root {
-        --sci-font-size-base: 14px;
-    }
+  :root {
+    --sci-font-size-base: 14px;
+  }
 }
 
 @media (min-width: $lg-min-width) {
-    :root {
-        --sci-font-size-base: 16px;
-    }
+  :root {
+    --sci-font-size-base: 16px;
+  }
 }
 
 .sci-enable-font {

@@ -103,31 +103,31 @@
 }
 
 .sci-border-radius-25 {
-  border-radius: 0.25rem;
+  border-radius: var(--sci-border-radius);
 }
 
 .sci-border-radius-tl-25 {
-  border-top-left-radius: 0.25rem !important;
+  border-top-left-radius: var(--sci-border-radius) !important;
 }
 
 .sci-border-radius-tr-25 {
-  border-top-right-radius: 0.25rem !important;
+  border-top-right-radius: var(--sci-border-radius) !important;
 }
 
 .sci-border-radius-bl-25 {
-  border-bottom-left-radius: 0.25rem !important;
+  border-bottom-left-radius: var(--sci-border-radius) !important;
 }
 
 .sci-border-radius-br-25 {
-  border-bottom-right-radius: 0.25rem !important;
+  border-bottom-right-radius: var(--sci-border-radius) !important;
 }
 
 .sci-border-radius-50 {
-  border-radius: 0.50rem;
+  border-radius: calc(2 * var(--sci-border-radius));
 }
 
 .sci-border-radius-75 {
-  border-radius: 0.75rem;
+  border-radius: calc(3 * var(--sci-border-radius));
 }
 
 .sci-shadow {
@@ -148,32 +148,32 @@
 }
 
 .sci-border-solid-1 {
-  border-width: 0.125rem;
+  border-width: var(--sci-border-width);
   border-style: solid;
 }
 
 .sci-border-solid-2 {
-  border-width: 0.25rem;
+  border-width: calc(2 * var(--sci-border-width));
   border-style: solid;
 }
 
 .sci-border-top-solid-1 {
-  border-top-width: 0.125rem;
+  border-top-width: var(--sci-border-width);
   border-top-style: solid;
 }
 
 .sci-border-top-solid-2 {
-  border-top-width: 0.25rem;
+  border-top-width: calc(2 * var(--sci-border-width));
   border-top-style: solid;
 }
 
 .sci-border-bottom-solid-1 {
-  border-bottom-width: 0.125rem;
+  border-bottom-width: var(--sci-border-width);
   border-bottom-style: solid;
 }
 
 .sci-border-bottom-solid-2 {
-  border-bottom-width: 0.25rem;
+  border-bottom-width: calc(2 * var(--sci-border-width));
   border-bottom-style: solid;
 }
 
@@ -193,7 +193,7 @@
   padding: 4px 8px;
   border-radius: 4px;
 
-  font-size: 0.9rem;
+  font-size: var(--sci-font-size-smaller);
   line-height: 1;
   font-weight: 300;
 
@@ -213,7 +213,7 @@
   border-left-style: solid;
   border-left-width: 4px;
 
-  font-size: 0.9rem;
+  font-size: var(--sci-font-size-smaller);
   line-height: 1;
   font-weight: 300;
 
@@ -227,10 +227,10 @@
 }
 
 .sci-pill {
-  padding: 0.25rem 0.5rem;
-  border-radius: 1rem;
+  padding: calc(0.25 * var(--sci-base-unit)) calc(0.5 * var(--sci-base-unit));
+  border-radius: var(--sci-border-radius);
 
-  font-size: 0.9rem;
+  font-size: var(--sci-font-size-smaller);
   line-height: 1;
   font-weight: 300;
 
@@ -253,9 +253,9 @@
 }
 
 .sci-placeholder, .sci-placeholder::before, .sci-placeholder::after {
-  width: 0.3rem;
-  height: 0.3rem;
-  border-radius: 0.15rem;
+  width: 4.8px;
+  height: 4.8px;
+  border-radius: 2.4px;
   background-color: $sirius-gray;
   color: $sirius-gray;
 }
@@ -275,12 +275,12 @@
 }
 
 .sci-placeholder::before {
-  left: -0.6rem;
+  left: -9.6px;
   animation-delay: 0s;
 }
 
 .sci-placeholder::after {
-  left: 0.6rem;
+  left: 9.6px;
   animation-delay: 1s;
 }
 
@@ -296,8 +296,8 @@
 
 .sci-preloader {
   position: relative;
-  height: 3rem;
-  width: 3rem;
+  height: calc(3 * var(--sci-base-unit));
+  width: calc(3 * var(--sci-base-unit));
 }
 
 .sci-preloader::before {
@@ -306,13 +306,13 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 3rem;
-  height: 3rem;
-  margin-top: -1.5rem;
-  margin-left: -1.5rem;
+  width: calc(3 * var(--sci-base-unit));
+  height: calc(3 * var(--sci-base-unit));
+  margin-top: calc(-1.5 * var(--sci-base-unit));
+  margin-left: calc(-1.5 * var(--sci-base-unit));
   border-radius: 50%;
-  border-top: 0.2rem solid $sirius-gray;
-  border-right: 0.2rem solid transparent;
+  border-top: calc(0.2 * var(--sci-base-unit)) solid $sirius-gray;
+  border-right: calc(0.2 * var(--sci-base-unit)) solid transparent;
   animation: sciPreloader 1s linear infinite;
 }
 

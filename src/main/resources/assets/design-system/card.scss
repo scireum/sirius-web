@@ -1,6 +1,6 @@
 .sci-card {
   background: white;
-  border-radius: 0.25rem;
+  border-radius: var(--sci-border-radius);
   min-width: 0;
   word-wrap: break-word;
   background-clip: border-box;
@@ -10,13 +10,13 @@
 }
 
 .sci-card-header img:first-of-type {
-  border-top-left-radius: 0.25rem;
-  border-top-right-radius: 0.25rem;
+  border-top-left-radius: var(--sci-border-radius);
+  border-top-right-radius: var(--sci-border-radius);
 }
 
 .sci-card-header-only img:first-of-type {
-  border-bottom-left-radius: 0.25rem;
-  border-bottom-right-radius: 0.25rem;
+  border-bottom-left-radius: var(--sci-border-radius);
+  border-bottom-right-radius: var(--sci-border-radius);
 }
 
 .sci-flat-style .sci-card, .sci-card-flat {

@@ -1,10 +1,10 @@
 .sci-text-input {
-  border-width: 0.125rem;
+  border-width: 2px;
   border-style: solid;
-  border-radius: 0.25rem;
+  border-radius: var(--sci-border-radius);
   border-color: $sirius-gray;
-  padding: 0.75rem;
-  font-size: 1rem;
+  padding: 12px;
+  font-size: var(sci-font-size-base);
   line-height: 1.5;
 }
 
@@ -14,19 +14,19 @@
 }
 
 .sci-token-single-select {
-  border-width: 0.125rem;
+  border-width: 2px;
   border-style: solid;
-  border-radius: 0.25rem;
+  border-radius: var(--sci-border-radius);
   border-color: $sirius-gray;
-  padding: 0.25rem;
+  padding: calc(0.25 * var(--sci-base-unit));
 }
 
 .sci-token-single-select.token-autocomplete-container.token-autocomplete-singleselect.token-autocomplete-has-value .token-autocomplete-input {
-  padding-right: 3.5rem;
+  padding-right: 56px;
 }
 
 .sci-token-single-select.token-autocomplete-container.token-autocomplete-singleselect.token-autocomplete-has-value .token-autocomplete-delete-button {
-  right: 1.5rem;
+  right: 24px;
 }
 
 // DISABLED STATE
