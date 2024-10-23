@@ -1,4 +1,6 @@
 .sci-slider-wrapper {
+  --sci-slider-base-unit: var(--sci-base-unit, 16px);
+
   .sci-slider-top {
     position: relative;
     display: flex;
@@ -27,13 +29,13 @@
 
       flex: 0;
       overflow: hidden;
-      width: 2.5rem;
-      min-width: 2.5rem;
-      max-width: 2.5rem;
+      width: calc(2.5 * var(--sci-slider-base-unit));
+      min-width: calc(2.5 * var(--sci-slider-base-unit));
+      max-width: calc(2.5 * var(--sci-slider-base-unit));
 
       a {
-        width: 1.5rem;
-        height: 1.5rem;
+        width: calc(1.5 * var(--sci-slider-base-unit));
+        height: calc(1.5 * var(--sci-slider-base-unit));
         background-size: contain;
         background-repeat: no-repeat;
         background-position: center;
@@ -55,12 +57,12 @@
     flex-wrap: nowrap;
     justify-content: center;
 
-    font-size: 0.75rem;
+    font-size: calc(0.75 * var(--sci-slider-base-unit));
 
     a {
       color: #C7C7C7;
       text-decoration: none;
-      padding: 0.25rem 0.125rem;
+      padding: calc(0.25 * var(--sci-slider-base-unit)) calc(0.125 * var(--sci-slider-base-unit));
       cursor: pointer;
 
       &.sci-slider-dot-active {
