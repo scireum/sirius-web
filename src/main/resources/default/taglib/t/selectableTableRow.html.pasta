@@ -1,6 +1,5 @@
 <i:arg name="entityId" type="String" description="The id of the entity to which this table row is associated with"/>
 
-
 <i:pragma name="description">
     Renders a table row which can be selected by the user. The row will have a checkbox in the first column.
     The checkbox visualizes the selection state of the row and can be used to select or deselect the row.
