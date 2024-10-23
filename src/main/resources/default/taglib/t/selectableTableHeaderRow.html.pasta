@@ -1,0 +1,14 @@
+<i:pragma name="description">
+    Adds a table header row to a selectable table. The row will contain a checkbox in the first column which can be used to select or deselect all rows.
+</i:pragma>
+
+<thead>
+<tr>
+    <th class="align-top">
+        <input class="cursor-pointer select-all-visible-table-rows-checkbox-js"
+               type="checkbox"
+               title="@i18n('selectableTable.row.selection.all')"/>
+    </th>
+    <i:render name="body"/>
+</tr>
+</thead>

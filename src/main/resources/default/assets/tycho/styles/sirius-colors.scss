@@ -22,6 +22,7 @@ $sirius-green-light: #77D9A3;
 $sirius-blue: #406FC7;
 $sirius-blue-dark: #33589F;
 $sirius-blue-light: #668DC6;
+$sirius-blue-faint: #DEE6F5;
 
 $sirius-violet: #DB397A;
 $sirius-violet-dark: #BD2461;
@@ -146,6 +147,16 @@ $sirius-black: #000000;
 }
 .sci-border-blue-light, .border-sirius-blue-light {
   border-color: $sirius-blue-light !important;
+}
+
+.sci-text-blue-faint, .text-sirius-blue-faint {
+    color: $sirius-blue-faint !important;
+}
+.sci-bg-blue-faint, .bg-sirius-blue-faint {
+    background-color: $sirius-blue-faint !important;
+}
+.sci-border-blue-faint, .border-sirius-blue-faint {
+    border-color: $sirius-blue-faint !important;
 }
 
 .sci-text-violet, .text-sirius-violet {
