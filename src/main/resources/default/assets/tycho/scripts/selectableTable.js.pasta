@@ -34,9 +34,9 @@ sirius.ready(function () {
     function toggleRowSelection(_checkbox) {
         const _row = _checkbox.closest('tr');
         if (_checkbox.checked) {
-            _row.style.backgroundColor = 'lightgray';
+            _row.classList.add('bg-sirius-gray-lightert');
         } else {
-            _row.style.backgroundColor = '';
+            _row.classList.remove('bg-sirius-gray-lighter');
         }
     }
 
