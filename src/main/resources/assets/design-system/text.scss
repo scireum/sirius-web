@@ -1,5 +1,5 @@
 :root {
-  --sci-font-size-base: 12px;
+  --sci-font-size-base: var(--sci-base-unit);
   --sci-font-size-smallest: calc(0.7 * var(--sci-font-size-base));
   --sci-font-size-smaller: calc(0.9 * var(--sci-font-size-base));
   --sci-font-size-larger: calc(1.25 * var(--sci-font-size-base));
@@ -8,18 +8,6 @@
   --sci-font-size-h3: calc(1.5 * var(--sci-font-size-base));
   --sci-font-size-h4: calc(1.25 * var(--sci-font-size-base));
   --sci-font-size-h5: calc(1.1 * var(--sci-font-size-base));
-}
-
-@media (min-width: $md-min-width) {
-  :root {
-    --sci-font-size-base: 14px;
-  }
-}
-
-@media (min-width: $lg-min-width) {
-  :root {
-    --sci-font-size-base: 16px;
-  }
 }
 
 .sci-enable-font {
