@@ -2,7 +2,12 @@ $sm-min-width: 768px;
 $md-min-width: 992px;
 $lg-min-width: 1200px;
 
-$gap: 1rem;
+:root {
+  --sci-base-unit: 16px;
+  // Defines the border radius for design elements like buttons, inputs, cards, etc.
+  --sci-border-radius: calc(0.25 * var(--sci-base-unit));
+  --sci-border-width: calc(0.125 * var(--sci-base-unit));
+}
 
 @import "/assets/tycho/styles/sirius-colors";
 @import "/assets/design-system/grid";

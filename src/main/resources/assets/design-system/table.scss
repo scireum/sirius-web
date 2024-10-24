@@ -5,13 +5,13 @@
 
   th {
     text-align: left;
-    padding: 0.25rem;
+    padding: calc(0.25 * var(--sci-base-unit));
   }
 
   tbody {
     td {
       border-top: 1px solid rgba(0, 0, 0, .125);
-      padding: 0.25rem;
+      padding: calc(0.25 * var(--sci-base-unit));
     }
 
     tr.sci-cursor-pointer:hover {
