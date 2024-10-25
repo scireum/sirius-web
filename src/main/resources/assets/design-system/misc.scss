@@ -227,8 +227,9 @@
 }
 
 .sci-pill {
-  padding: calc(0.25 * var(--sci-base-unit)) calc(0.5 * var(--sci-base-unit));
-  border-radius: calc(4 * var(--sci-border-radius));
+  padding: var(--sci-margin-05) var(--sci-margin-1);
+  // Set radius to half of font size + padding, resulting in a pill shape that doesn't get distorted
+  border-radius: calc((var(--sci-font-size-smaller) + var(--sci-margin-1)) / 2);
 
   font-size: var(--sci-font-size-smaller);
   line-height: 1;

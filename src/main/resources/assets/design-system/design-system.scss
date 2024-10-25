@@ -5,8 +5,8 @@ $lg-min-width: 1200px;
 :root {
   --sci-base-unit: 16px;
   // Defines the border radius for design elements like buttons, inputs, cards, etc.
-  --sci-border-radius: calc(0.25 * var(--sci-base-unit));
-  --sci-border-width: calc(0.125 * var(--sci-base-unit));
+  --sci-border-radius: calc(0.25 * var(--sci-base-unit)); // Default: 4px / 0.25rem
+  --sci-border-width: calc(0.125 * var(--sci-base-unit)); // Default: 2px / 0.125rem
 }
 
 @import "/assets/tycho/styles/sirius-colors";
