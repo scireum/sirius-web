@@ -1,8 +1,9 @@
 :root {
-  --sci-margin-1: calc(0.5 * var(--sci-base-unit)); // 8px / 0.5rem
-  --sci-margin-2: calc(2 * var(--sci-margin-1)); // 16px / 1rem
-  --sci-margin-3: calc(3 * var(--sci-margin-1)); // 24px / 1.5rem
-  --sci-margin-4: calc(4 * var(--sci-margin-1)); // 32px / 2rem
+  --sci-margin-1: calc(0.5 * var(--sci-base-unit)); // Default: 8px / 0.5rem
+  --sci-margin-05: calc(0.5 * var(--sci-margin-1)); // Default: 4px / 0.25rem
+  --sci-margin-2: calc(2 * var(--sci-margin-1)); // Default: 16px / 1rem
+  --sci-margin-3: calc(3 * var(--sci-margin-1)); // Default: 24px / 1.5rem
+  --sci-margin-4: calc(4 * var(--sci-margin-1)); // Default: 32px / 2rem
 }
 
 .sci-m-1 {

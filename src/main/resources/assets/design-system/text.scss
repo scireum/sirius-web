@@ -1,13 +1,13 @@
 :root {
-  --sci-font-size-base: var(--sci-base-unit);
-  --sci-font-size-smallest: calc(0.7 * var(--sci-font-size-base));
-  --sci-font-size-smaller: calc(0.9 * var(--sci-font-size-base));
-  --sci-font-size-larger: calc(1.25 * var(--sci-font-size-base));
-  --sci-font-size-h1: calc(2.25 * var(--sci-font-size-base));
-  --sci-font-size-h2: calc(1.75 * var(--sci-font-size-base));
-  --sci-font-size-h3: calc(1.5 * var(--sci-font-size-base));
-  --sci-font-size-h4: calc(1.25 * var(--sci-font-size-base));
-  --sci-font-size-h5: calc(1.1 * var(--sci-font-size-base));
+  --sci-font-size-base: var(--sci-base-unit); // Default: 16px / 1rem
+  --sci-font-size-smallest: calc(0.7 * var(--sci-font-size-base));  // Default: 11.2px / 0.7rem
+  --sci-font-size-smaller: calc(0.9 * var(--sci-font-size-base)); // Default: 14.4px / 0.9rem
+  --sci-font-size-larger: calc(1.25 * var(--sci-font-size-base)); // Default: 20px / 1.25rem
+  --sci-font-size-h1: calc(2.25 * var(--sci-font-size-base)); // Default: 36px / 2.25rem
+  --sci-font-size-h2: calc(1.75 * var(--sci-font-size-base)); // Default: 28px / 1.75rem
+  --sci-font-size-h3: calc(1.5 * var(--sci-font-size-base)); // Default: 24px / 1.5rem
+  --sci-font-size-h4: calc(1.25 * var(--sci-font-size-base)); // Default: 20px / 1.25rem
+  --sci-font-size-h5: calc(1.1 * var(--sci-font-size-base)); // Default: 17.6px / 1.1rem
 }
 
 .sci-enable-font {
