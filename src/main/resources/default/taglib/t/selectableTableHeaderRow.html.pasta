@@ -7,7 +7,7 @@
     <th class="align-top">
         <input class="cursor-pointer select-all-visible-table-rows-checkbox-js"
                type="checkbox"
-               title="@i18n('selectableTable.row.selection.all')"/>
+               title="@i18n('selectableTable.all.selection')"/>
     </th>
     <i:render name="body"/>
 </tr>
