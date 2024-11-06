@@ -15,6 +15,7 @@
 <i:arg name="readonly" type="boolean" default="false"/>
 <i:arg name="min" type="String" default="1900-01-01T00:00:00"/>
 <i:arg name="max" type="String" default="2100-12-31T00:00:00"/>
+<i:arg name="step" type="int" default="60"/>
 
 <i:pragma name="description" value="Renders a date and time input field within a Tycho template"/>
 
@@ -31,6 +32,7 @@
                class="form-control input-block-level"
                min="@min"
                max="@max"
+               step="@step"
                @if (isFilled(placeholder)) { placeholder="@placeholder" }
                @if (readonly) { disabled readonly }/>
     </div>
