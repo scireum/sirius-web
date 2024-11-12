@@ -107,6 +107,13 @@
             <version>1.17.2</version>
         </dependency>
 
+        <!-- Used to render SVG into PDF -->
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik-all</artifactId>
+            <version>1.18</version>
+        </dependency>
+
         <!-- POI is used to generate excel exports -->
         <dependency>
             <groupId>org.apache.poi</groupId>
