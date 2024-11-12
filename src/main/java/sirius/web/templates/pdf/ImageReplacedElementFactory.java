@@ -20,6 +20,7 @@ import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.health.Exceptions;
 import sirius.web.templates.pdf.handlers.PdfReplaceHandler;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,25 +58,36 @@ public class ImageReplacedElementFactory extends ITextReplacedElementFactory {
             return null;
         }
 
+        return this.tryCreateReplacedImageElement(element, userAgentCallback, cssWidth, cssHeight)
+                   .orElseGet(() -> super.createReplacedElement(layoutContext,
+                                                                box,
+                                                                userAgentCallback,
+                                                                cssWidth,
+                                                                cssHeight));
+    }
+
+    private Optional<ReplacedElement> tryCreateReplacedImageElement(@Nonnull Element element,
+                                                                    UserAgentCallback userAgentCallback,
+                                                                    int cssWidth,
+                                                                    int cssHeight) {
         String nodeName = element.getNodeName();
         if (!TAG_TYPE_IMG.equals(nodeName)) {
-            return super.createReplacedElement(layoutContext, box, userAgentCallback, cssWidth, cssHeight);
+            return Optional.empty();
         }
 
         String source = rewriteLegacyUrl(element.getAttribute(ATTR_SRC));
         if (Strings.isEmpty(source)) {
-            return super.createReplacedElement(layoutContext, box, userAgentCallback, cssWidth, cssHeight);
+            return Optional.empty();
         }
 
         try {
             String protocol = Strings.split(source, "://").getFirst();
             PdfReplaceHandler handler = findHandler(protocol);
-            return new AsyncLoadedImageElement(handler, userAgentCallback, source, cssWidth, cssHeight);
+            return Optional.of(new AsyncLoadedImageElement(handler, userAgentCallback, source, cssWidth, cssHeight));
         } catch (Exception exception) {
             Exceptions.handle(exception);
+            return Optional.empty();
         }
-
-        return super.createReplacedElement(layoutContext, box, userAgentCallback, cssWidth, cssHeight);
     }
 
     private PdfReplaceHandler findHandler(String protocol) {
