@@ -8,6 +8,7 @@
 
 package sirius.web.templates.pdf;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xhtmlrenderer.extend.ReplacedElement;
 import org.xhtmlrenderer.extend.UserAgentCallback;
@@ -21,11 +22,15 @@ import sirius.kernel.health.Exceptions;
 import sirius.web.templates.pdf.handlers.PdfReplaceHandler;
 
 import javax.annotation.Nonnull;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Used by the XHTMLRenderer (creating PDFs) to replace img elements by their referenced image.
+ * Used by the XHTMLRenderer (creating PDFs) to replace {@code img} elements by their referenced image and to render
+ * inline {@code svg} elements.
  * <p>
  * Alongside http different URI protocols are supported. These are handled by classes extending
  * {@link PdfReplaceHandler}.
@@ -33,6 +38,8 @@ import java.util.Optional;
 public class ImageReplacedElementFactory extends ITextReplacedElementFactory {
 
     private static final String TAG_TYPE_IMG = "img";
+    private static final String TAG_TYPE_SVG = "svg";
+
     private static final String ATTR_SRC = "src";
 
     @PriorityParts(PdfReplaceHandler.class)
@@ -59,11 +66,35 @@ public class ImageReplacedElementFactory extends ITextReplacedElementFactory {
         }
 
         return this.tryCreateReplacedImageElement(element, userAgentCallback, cssWidth, cssHeight)
+                   .or(() -> this.tryCreateReplacedSvgElement(element, cssWidth, cssHeight))
                    .orElseGet(() -> super.createReplacedElement(layoutContext,
                                                                 box,
                                                                 userAgentCallback,
                                                                 cssWidth,
                                                                 cssHeight));
+    }
+
+    private Optional<ReplacedElement> tryCreateReplacedSvgElement(@Nonnull Element element,
+                                                                  int cssWidth,
+                                                                  int cssHeight) {
+        String nodeName = element.getNodeName();
+        if (!TAG_TYPE_SVG.equals(nodeName)) {
+            return Optional.empty();
+        }
+
+        try {
+            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+
+            Document svgDocument = documentBuilder.newDocument();
+            Element svgElement = (Element) svgDocument.importNode(element, true);
+            svgDocument.appendChild(svgElement);
+
+            return Optional.of(new InlinedSvgElement(svgDocument, cssWidth, cssHeight));
+        } catch (ParserConfigurationException exception) {
+            Exceptions.handle(exception);
+            return Optional.empty();
+        }
     }
 
     private Optional<ReplacedElement> tryCreateReplacedImageElement(@Nonnull Element element,
