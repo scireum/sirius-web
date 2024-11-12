@@ -9,7 +9,7 @@
     Renders a search bar to be used above a table or a list of data cards.
 </i:pragma>
 
-<div class="search-header-js card shadow-sm mb-4 @if(sticky) { sticky-md-top }" @if(sticky) { style="z-index: 999;" }>
+<div class="search-header-js card shadow-sm mb-4 @if(sticky) { sticky-top }" @if(sticky) { style="z-index: 999;" }>
     <div class="card-body">
         <div class="row">
             <div class="col flex-grow-1 @class">
