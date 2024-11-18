@@ -8,22 +8,22 @@
 
 package sirius.pasta.noodle.macros;
 
+import org.w3c.dom.Document;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.compiler.CompilationContext;
+import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 
 import javax.annotation.Nonnull;
 
 /**
- * Provides a macro which encodes the given resource as Base64 string.
- * <p>
- * This can be used in CSS like <tt>background: url(base64Resource('/assets/img.png'));</tt> or in IMG tags via
- * <tt>&lt;img src="@base64Resource('/assets/img.png')" /&gt;</tt>.
+ * Provides a macro for inlining an SVG resource into a DOM tree by dropping the XML declaration from the beginning and
+ * returning the rest.
  */
 @Register
-public class Base64ResourceMacro extends Base64Macro {
+public class InlineSvgResourceMacro extends InlineSvgMacro {
 
     @Part
     private Resources resources;
@@ -36,24 +36,26 @@ public class Base64ResourceMacro extends Base64Macro {
     }
 
     @Override
-    protected byte[] getContent(String path) {
-        if (!path.startsWith("/assets/")) {
+    protected Document getSvgDocument(String path) {
+        if (!path.startsWith("/assets")) {
             throw new IllegalArgumentException("Only assets can be inlined for security reasons.");
         }
 
-        return resources.resolve(path)
-                        .orElseThrow(() -> new IllegalArgumentException("Unknown resource: " + path))
-                        .getContent();
+        Resource resource =
+                resources.resolve(path).orElseThrow(() -> new IllegalArgumentException("Unknown resource: " + path));
+
+        return parseDocument(resource, "svg");
     }
 
     @Nonnull
     @Override
     public String getName() {
-        return "base64Resource";
+        return "inlineSVG";
     }
 
+    @Nonnull
     @Override
     public String getDescription() {
-        return "Creates a base64 representation of the given resource to be included in IMG tags or CSS files";
+        return "Returns the root <svg> tag of an SVG resource as string, to be included in other DOM trees.";
     }
 }

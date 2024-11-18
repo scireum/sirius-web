@@ -8,20 +8,22 @@
 
 package sirius.pasta.noodle.macros;
 
-import org.w3c.dom.Document;
 import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
+import sirius.web.dispatch.SassFunction;
+import sirius.web.http.MimeHelper;
+import sirius.web.sass.ast.FunctionCall;
 
 import javax.annotation.Nonnull;
+import java.util.Base64;
 import java.util.List;
 
 /**
- * Provides an abstract macro for inlining an SVG file into a DOM tree by dropping the XML declaration from the
- * beginning and returning the rest.
+ * Provides an abstract macro which encodes the given file as Base64 string.
  */
-public abstract class InlineSvgMacro extends XmlProcessingMacro {
+public abstract class Base64Macro extends BasicMacro implements SassFunction {
 
     @Override
     protected Class<?> getType() {
@@ -51,12 +53,23 @@ public abstract class InlineSvgMacro extends XmlProcessingMacro {
 
     @Override
     public Object invoke(Environment environment, Object[] args) {
-        return processResource((String) args[0]);
+        return encodeResource((String) args[0]);
     }
 
     @Nonnull
-    private String processResource(String path) {
-        return stringifyElement(getSvgDocument(path).getDocumentElement(), false);
+    private String encodeResource(String path) {
+        return "data:" + MimeHelper.guessMimeType(path) + ";base64," + Base64.getEncoder()
+                                                                             .encodeToString(getContent(path));
+    }
+
+    @Override
+    public String eval(FunctionCall call) {
+        String path = call.getExpectedParam(0).toString();
+        if (path.startsWith("'") && path.endsWith("'")) {
+            path = path.substring(1, path.length() - 1);
+        }
+
+        return encodeResource(path);
     }
 
     /**
@@ -69,10 +82,10 @@ public abstract class InlineSvgMacro extends XmlProcessingMacro {
     protected abstract void verifyPath(CompilationContext context, Position position, String path);
 
     /**
-     * Retrieves the SVG document from the given path.
+     * Retrieves the file content from the given path.
      *
-     * @param path the path of the SVG document
-     * @return the XML document for the path
+     * @param path the path of the file
+     * @return the content as a byte array
      */
-    protected abstract Document getSvgDocument(String path);
+    protected abstract byte[] getContent(String path);
 }
