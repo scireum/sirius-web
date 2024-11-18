@@ -38,7 +38,7 @@ import java.util.function.Consumer;
  * The macro can be used in CSS like <tt>background: url(svgResource('/assets/img.svg', '#ff0000'));</tt> or in IMG tags
  * via <tt>&lt;img src="@base64Resource('/assets/img.svg', '#ff0000')" /&gt;</tt>.
  *
- * @see InlineSvgMacro
+ * @see InlineSvgResourceMacro
  */
 @Register
 public class SvgResourceMacro extends XmlProcessingMacro implements SassFunction {

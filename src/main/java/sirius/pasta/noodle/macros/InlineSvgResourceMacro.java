@@ -26,7 +26,7 @@ import java.util.List;
  * returning the rest.
  */
 @Register
-public class InlineSvgMacro extends XmlProcessingMacro {
+public class InlineSvgResourceMacro extends XmlProcessingMacro {
 
     @Part
     private Resources resources;
