@@ -36,11 +36,6 @@ public class Base64ResourceMacro extends Base64Macro {
     }
 
     @Override
-    public String getDescription() {
-        return "Creates a base64 representation of the given resource to be included in IMG tags or CSS files";
-    }
-
-    @Override
     protected byte[] getContent(String path) {
         if (!path.startsWith("/assets/")) {
             throw new IllegalArgumentException("Only assets can be inlined for security reasons.");
@@ -55,5 +50,10 @@ public class Base64ResourceMacro extends Base64Macro {
     @Override
     public String getName() {
         return "base64Resource";
+    }
+
+    @Override
+    public String getDescription() {
+        return "Creates a base64 representation of the given resource to be included in IMG tags or CSS files";
     }
 }

@@ -42,11 +42,6 @@ public class SvgResourceMacro extends SvgMacro {
     }
 
     @Override
-    public String getDescription() {
-        return "Creates a UTF-8 representation of the given SVG resource, possibly changed to the given tint color, to be included in IMG tags or CSS files";
-    }
-
-    @Override
     protected Document getSvgDocument(String path) {
         if (!path.startsWith("/assets/")) {
             throw new IllegalArgumentException("Only assets can be inlined for security reasons.");
@@ -63,5 +58,10 @@ public class SvgResourceMacro extends SvgMacro {
     @Override
     public String getName() {
         return "svgResource";
+    }
+
+    @Override
+    public String getDescription() {
+        return "Creates a UTF-8 representation of the given SVG resource, possibly changed to the given tint color, to be included in IMG tags or CSS files";
     }
 }
