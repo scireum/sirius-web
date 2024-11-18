@@ -258,19 +258,29 @@ sirius.getJSON = function (url, params) {
 
 /**@
  * Calls the given URL, posts the given params and retrieves the resulting JSON.
+ * <p>
+ * The parameters can either be specified as an object with key-value pairs (where the value is either a string or an
+ * array of strings), or directly as a URLSearchParams.
  *
  * @param url the URL to invoke
  * @param params the parameters to send POST data (parameters with 'undefined' values are not sent to the server)
- * @param [useSearchParams] if true, the parameters are sent as URLSearchParams instead of FormData
+ * @param [useSearchParams] if true, the parameters are sent as URLSearchParams instead of FormData. If the parameters
+ *        are specified as URLSearchParams they are always sent as such.
  * @returns {Promise<any>} the received JSON data
  */
 sirius.postJson = function (url, params, useSearchParams) {
-    let body = sirius.convertObjectToFormData(params);
-    if (useSearchParams) {
+    let body;
+
+    if (typeof params === 'string' || params instanceof URLSearchParams) {
+        body = params;
+    } else if (useSearchParams) {
         // Convert the body to URLSearchParams, this may be necessary when using problematic characters in field names
         // that are converted/replaced by the multipart decoder of Netty.
-        body = new URLSearchParams(body);
+        body = new URLSearchParams(sirius.convertObjectToFormData(params));
+    } else {
+        body = sirius.convertObjectToFormData(params);
     }
+
     return fetch(url, {
         method: "post",
         body: body
