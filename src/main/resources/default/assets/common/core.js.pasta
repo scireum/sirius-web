@@ -265,7 +265,7 @@ sirius.getJSON = function (url, params) {
  * @param url the URL to invoke
  * @param params the parameters to send POST data (parameters with 'undefined' values are not sent to the server)
  * @param [useSearchParams] if true, the parameters are sent as URLSearchParams instead of FormData. If the parameters
- *        are specified as URLSearchParams they are always sent as such.
+ *        are specified as URLSearchParams or query string, this is ignored
  * @returns {Promise<any>} the received JSON data
  */
 sirius.postJson = function (url, params, useSearchParams) {
