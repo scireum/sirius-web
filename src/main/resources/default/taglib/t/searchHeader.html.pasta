@@ -2,7 +2,7 @@
 <i:arg name="baseUrl" type="String"/>
 <i:arg name="class" type="String" default=""/>
 <i:arg name="suppressSearch" type="boolean" default="false"/>
-<i:arg name="sticky" type="boolean" default="false" description="Specifies if the search header should be sticky." />
+<i:arg name="sticky" type="boolean" default="true" description="Specifies if the search header should be sticky." />
 
 
 <i:pragma name="description">
