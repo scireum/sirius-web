@@ -32,6 +32,7 @@ sirius.ready(function () {
             _row.addEventListener('click', function (event) {
                 if (event.target.tagName.toLowerCase() !== 'input' &&
                     event.target.tagName.toLowerCase() !== 'a' &&
+                    event.target.tagName.toLowerCase() !== 'i' &&
                     event.target.tagName.toLowerCase() !== 'button') {
                     _checkbox.checked = !_checkbox.checked;
                     _checkbox.dispatchEvent(new Event('change'));
