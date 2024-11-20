@@ -10,6 +10,7 @@ package sirius.web.templates.pdf;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Entities;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import sirius.kernel.di.std.Part;
@@ -21,6 +22,7 @@ import sirius.web.templates.Generator;
 import sirius.web.templates.TagliatelleContentHandler;
 
 import java.io.OutputStream;
+import java.util.function.Predicate;
 
 /**
  * Generates a PDF output by evaluating a given tagliatelle template which must result in a valid XHTML dom.
@@ -85,15 +87,23 @@ public class TagliatellePDFContentHandler extends TagliatelleContentHandler {
             document.head().appendChild(bookmarks);
         });
 
-        // in theory, the following two lines should be possible with a single CSS selector; however, in practice, Jsoup
-        // does not select the style elements correctly when attempting that
         document.select("script").remove();
-        document.select("body style").remove();
+        document.select("body style").removeIf(Predicate.not(this::isElementInsideSvg));
 
         document.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
         document.outputSettings().escapeMode(Entities.EscapeMode.xhtml);
         document.outputSettings().charset("UTF-8");
         return document.html();
+    }
+
+    /**
+     * Determine whether the given element is part of an SVG element by checking all ancestors.
+     *
+     * @param element the element to check
+     * @return <tt>true</tt> if the element is part of an SVG, <tt>false</tt> otherwise
+     */
+    private boolean isElementInsideSvg(Element element) {
+        return element.closest("svg") != null;
     }
 
     @Override
