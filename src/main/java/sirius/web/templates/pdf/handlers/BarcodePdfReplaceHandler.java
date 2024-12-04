@@ -49,7 +49,7 @@ public class BarcodePdfReplaceHandler extends PdfReplaceHandler {
         FSImage fsImage = new ITextFSImage(com.lowagie.text.Image.getInstance(awtImage, Color.WHITE, true));
 
         if (cssWidth != -1 || cssHeight != -1) {
-            fsImage.scale(cssWidth, cssHeight);
+            return fsImage.scale(cssWidth, cssHeight);
         }
 
         return fsImage;
