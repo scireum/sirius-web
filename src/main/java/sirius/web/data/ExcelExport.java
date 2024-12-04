@@ -563,7 +563,11 @@ public class ExcelExport {
             throw Exceptions.handle(e);
         } finally {
             if (workbook instanceof SXSSFWorkbook sxssfWorkbook) {
-                sxssfWorkbook.dispose();
+                try {
+                    sxssfWorkbook.close();
+                } catch (IOException e) {
+                    throw Exceptions.handle(e);
+                }
             }
         }
     }

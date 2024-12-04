@@ -68,10 +68,10 @@ public class InlinedSvgElement implements ITextReplacedElement {
         graphics.dispose();
 
         PageBox page = renderingContext.getPage();
-        float x = (float) blockBox.getAbsX() + page.getMarginBorderPadding(renderingContext, CalculatedStyle.LEFT);
+        float x = (float) blockBox.getAbsX() + page.getMarginBorderPadding(renderingContext, CalculatedStyle.Edge.LEFT);
         float y = (float) (page.getBottom() - (blockBox.getAbsY() + cssHeight)) + page.getMarginBorderPadding(
                 renderingContext,
-                CalculatedStyle.BOTTOM);
+                CalculatedStyle.Edge.BOTTOM);
         x /= outputDevice.getDotsPerPoint();
         y /= outputDevice.getDotsPerPoint();
 

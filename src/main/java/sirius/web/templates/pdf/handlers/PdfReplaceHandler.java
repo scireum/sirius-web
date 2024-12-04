@@ -95,7 +95,7 @@ public abstract class PdfReplaceHandler implements Priorized {
             Tuple<Integer, Integer> newSize = computeResizeBox(cssWidth, cssHeight, image);
 
             if (newSize != null) {
-                image.scale(newSize.getFirst(), newSize.getSecond());
+                return image.scale(newSize.getFirst(), newSize.getSecond());
             }
         }
 
