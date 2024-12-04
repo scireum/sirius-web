@@ -15,7 +15,6 @@ import org.xhtmlrenderer.pdf.ITextFSImage
 import sirius.kernel.SiriusExtension
 import kotlin.test.assertEquals
 
-@ExtendWith(SiriusExtension::class)
 class PdfReplaceHandlerTest {
 
     @Test
