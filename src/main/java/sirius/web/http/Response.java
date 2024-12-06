@@ -822,7 +822,8 @@ public class Response {
     private void performRedirect(String url, HttpResponseStatus status) {
         if (cacheSeconds == null || cacheSeconds == 0) {
             userMessagesCache.cacheUserMessages(webContext);
-        } else {
+        }
+        if (cacheSeconds != null) {
             setDateAndCacheHeaders(System.currentTimeMillis(), cacheSeconds, isPrivate);
         }
 
