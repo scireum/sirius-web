@@ -297,7 +297,7 @@
 
 .sci-preloader {
   --preloader-size: calc(3 * var(--sci-base-unit)); /* Default size */
-  --preloader-border-width: calc(0.2 * var(--sci-base-unit)); /* Default border width */
+  --preloader-border-width: calc(var(--preloader-size) * (0.2 / 3));
 
   position: relative;
   height: var(--preloader-size);
@@ -321,9 +321,10 @@
 }
 
 .sci-preloader-small {
-  --preloader-size: calc(2 * var(--sci-base-unit));
-  --preloader-border-width: calc(0.15 * var(--sci-base-unit));
+  --preloader-size: calc(2 * var(--sci-base-unit)); /* Smaller size */
+  /* No need to redefine --preloader-border-width; it adjusts automatically */
 }
+
 
 @keyframes sciPreloader {
   to {
