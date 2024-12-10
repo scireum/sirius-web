@@ -296,9 +296,12 @@
 }
 
 .sci-preloader {
+  --preloader-size: calc(3 * var(--sci-base-unit)); /* Default size */
+  --preloader-border-width: calc(var(--preloader-size) * (0.2 / 3));
+
   position: relative;
-  height: calc(3 * var(--sci-base-unit));
-  width: calc(3 * var(--sci-base-unit));
+  height: var(--preloader-size);
+  width: var(--preloader-size);
 }
 
 .sci-preloader::before {
@@ -307,15 +310,21 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: calc(3 * var(--sci-base-unit));
-  height: calc(3 * var(--sci-base-unit));
-  margin-top: calc(-1.5 * var(--sci-base-unit));
-  margin-left: calc(-1.5 * var(--sci-base-unit));
+  width: var(--preloader-size);
+  height: var(--preloader-size);
+  margin-top: calc(-1 * var(--preloader-size) / 2);
+  margin-left: calc(-1 * var(--preloader-size) / 2);
   border-radius: 50%;
-  border-top: calc(0.2 * var(--sci-base-unit)) solid $sirius-gray;
-  border-right: calc(0.2 * var(--sci-base-unit)) solid transparent;
+  border-top: var(--preloader-border-width) solid $sirius-gray;
+  border-right: var(--preloader-border-width) solid transparent;
   animation: sciPreloader 1s linear infinite;
 }
+
+.sci-preloader-small {
+  --preloader-size: calc(2 * var(--sci-base-unit)); /* Smaller size */
+  /* No need to redefine --preloader-border-width; it adjusts automatically */
+}
+
 
 @keyframes sciPreloader {
   to {
