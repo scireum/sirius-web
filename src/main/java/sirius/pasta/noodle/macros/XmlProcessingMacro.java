@@ -18,6 +18,7 @@ import sirius.kernel.health.HandledException;
 import sirius.web.resources.Resource;
 
 import javax.annotation.Nullable;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -104,6 +105,7 @@ public abstract class XmlProcessingMacro extends BasicMacro {
     protected Document parseDocument(InputSource source, @Nullable String expectedRootElement) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             Document document = factory.newDocumentBuilder().parse(source);
 
             if (Strings.isFilled(expectedRootElement) && !Strings.areEqual(expectedRootElement,
