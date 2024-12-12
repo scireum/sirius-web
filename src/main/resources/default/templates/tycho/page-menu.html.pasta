@@ -4,6 +4,12 @@
              height="33"
              alt="Start"/>
     </a>
+    <i:if test="isStaging()">
+        <div class="nav-item d-lg-none sci-bold">TEST-SYSTEM</div>
+    </i:if>
+    <i:if test="isDevelopment()">
+        <div class="nav-item d-lg-none sci-bold">DEV-SYSTEM</div>
+    </i:if>
     <button class="navbar-toggler"
             type="button"
             data-bs-toggle="collapse"
@@ -18,6 +24,12 @@
         <ul class="navbar-nav me-auto">
             <i:extensions target="tycho-page-menu" point="left" />
         </ul>
+        <i:if test="isStaging()">
+            <div class="nav-item d-none d-lg-inline me-5 sci-bold">TEST-SYSTEM</div>
+        </i:if>
+        <i:if test="isDevelopment()">
+            <div class="nav-item d-none d-lg-inline me-5 sci-bold">DEV-SYSTEM</div>
+        </i:if>
         <ul class="navbar-nav">
             <i:extensions target="tycho-page-menu" point="right"/>
         </ul>
