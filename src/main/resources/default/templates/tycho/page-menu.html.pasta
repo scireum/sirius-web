@@ -5,10 +5,10 @@
              alt="Start"/>
     </a>
     <i:if test="isStaging()">
-        <div class="nav-item d-lg-none sci-bold"><i class="fa-solid fa-screwdriver-wrench"></i> TEST-SYSTEM</div>
+        <div class="nav-item d-lg-none fw-bold"><i class="fa-solid fa-screwdriver-wrench"></i> TEST-SYSTEM</div>
     </i:if>
     <i:if test="isDevelopment()">
-        <div class="nav-item d-lg-none sci-bold"><i class="fa-brands fa-dev"></i> DEV-SYSTEM</div>
+        <div class="nav-item d-lg-none fw-bold"><i class="fa-brands fa-dev"></i> DEV-SYSTEM</div>
     </i:if>
     <button class="navbar-toggler"
             type="button"
@@ -25,13 +25,13 @@
             <i:extensions target="tycho-page-menu" point="left"/>
         </ul>
         <i:if test="isStaging()">
-            <div class="nav-item d-none d-lg-inline me-5 sci-bold sci-text-ellipsis"><i
+            <div class="nav-item d-none d-lg-inline me-5 fw-bold sci-text-ellipsis"><i
                     class="fa-solid fa-screwdriver-wrench"></i>
                 TEST-SYSTEM
             </div>
         </i:if>
         <i:if test="isDevelopment()">
-            <div class="nav-item d-none d-lg-inline me-5 sci-bold sci-text-ellipsis"><i class="fa-brands fa-dev"></i>
+            <div class="nav-item d-none d-lg-inline me-5 fw-bold sci-text-ellipsis"><i class="fa-brands fa-dev"></i>
                 DEV-SYSTEM
             </div>
         </i:if>
