@@ -341,3 +341,11 @@
   z-index: 1;
   content: "";
 }
+
+.sci-object-fit-cover {
+  object-fit: cover;
+}
+
+.sci-object-fit-contain {
+  object-fit: contain;
+}
