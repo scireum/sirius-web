@@ -1,0 +1,37 @@
+.sci-filter-overlay-static-body {
+  height: 100%;
+  overflow: hidden;
+}
+
+.sci-filter-overlay-background {
+  z-index: 11000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.sci-filter-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  grid-template-rows: min-content 1fr;
+  max-width: calc(28 * var(--sci-base-unit));
+
+  -webkit-box-shadow: 5px 0px 11px 4px rgba(0, 0, 0, 0.5);
+  box-shadow: 5px 0px 11px 4px rgba(0, 0, 0, 0.5);
+
+  .sci-filter-overlay-content {
+    // Limits the height of the content
+    overflow-y: hidden;
+  }
+
+  .sci-filter-overlay-header {
+    border-bottom: 1px solid $sirius-gray-lighter;
+  }
+}

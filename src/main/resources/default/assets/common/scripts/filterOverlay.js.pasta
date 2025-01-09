@@ -1,0 +1,146 @@
+(function (filterOverlay) {
+    const template =
+        '<div class="sci-filter-overlay-background sci-d-none">' +
+        '    <div class="sci-filter-overlay sci-d-grid sci-h-100">' +
+        '        <div class="sci-filter-overlay-header sci-d-flex sci-align-items-center sci-bg-white">' +
+        '            <div class="sci-m-2 sci-d-flex">' +
+        '                <span class="sci-icon-filter-text-soft sci-icon-small"></span>' +
+        '            </div>' +
+        '            <div class="sci-w-100 sci-text sci-bold">{{title}}</div>' +
+        '            <div class="sci-m-2 sci-d-flex">' +
+        '                <a class="sci-cursor-pointer sci-filter-overlay-close-js sci-icon-close-text-soft sci-icon-small"></a>' +
+        '            </div>' +
+        '        </div>' +
+        '        <div class="sci-filter-overlay-content sci-filter-overlay-content-js sci-bg-white-dark"></div>' +
+        '    </div>' +
+        '</div>';
+
+    const LEFT_MOUSE_BUTTON_CODE = 0;
+
+    let _overlay = null;
+    let _content = null;
+    let _originalParent = null;
+    let settings = null
+
+    /**@
+     * Creates a new filter overlay.
+     *
+     * This takes a DOM element and prepares it for a filter overlay. It is moved from its parent to the overlay once it
+     * is opened (via `filterOverlay.openFilterOverlay`). The caller must ensure that the parent - which is probably a
+     * sidebar - is not visible before opening. Once the overlay is closed, the element is moved back to its original
+     * place. When the parent becomes visible again after resizing the window (or changing the orientation), the overlay
+     * is closed automatically.
+     * <p>
+     * The caller also is responsible for making the filters scrollable. This enables the implementation of additional
+     * sticky elements.
+     *
+     * @param {Object} args map specifying the content and behaviour of the created overlay
+     * @param {string|HTMLElement} args.content HTML element that will be rendered inside the overlay
+     * @param {string} args.title the title to show in the overlay heading
+     * @param {boolean} [args.yieldable] allows to indicate whether a background-click closes the overlay; defaults to **true**
+     */
+    filterOverlay.createFilterOverlay = function (args) {
+        if (_content) {
+            filterOverlay.destroyFilterOverlay();
+        }
+
+        _content = sirius.querySelector(args.content);
+
+        if (!_content instanceof HTMLElement) {
+            throw new Error('Argument content must be an object of class HTMLElement or a valid selector.');
+        }
+
+        settings = sirius.deepExtend(args, {
+            yieldable: true
+        });
+
+        _originalParent = _content.parentElement;
+    }
+
+    // Detects when the original parent becomes visible -> close the overlay
+    const resizeListener = sirius.throttle(function () {
+        // Use a small delay to ensure the page has been re-rendered
+        setTimeout(function () {
+            if (sirius.isVisibleNode(_originalParent)) {
+                filterOverlay.closeFilterOverlay();
+            }
+        }, 20);
+    }, 100);
+
+    /**@
+     * Shows the previously created (via `filterOverlay.createFilterOverlay`) filter overlay.
+     */
+    filterOverlay.openFilterOverlay = function () {
+        // Reset viewport zoom if user zoomed in via pinch to zoom gesture. If not done it could possibly lead to the
+        // user not being able to close the overlay when the close button is rendered outside the visible area.
+        sirius.resetMobileZoom();
+
+        // Blur the current focus target, since it will be in the background now.
+        if (document.activeElement) {
+            document.activeElement.blur();
+        }
+
+        const _overlayContainer = document.createElement('div');
+        _overlayContainer.innerHTML = Mustache.render(template, {
+            title: settings.title
+        });
+
+        _overlay = _overlayContainer.firstChild;
+        const _overlayContent = _overlay.querySelector('.sci-filter-overlay-content-js');
+
+        // move the content element to the overlay
+        _originalParent.removeChild(_content);
+        _overlayContent.appendChild(_content);
+
+        document.body.appendChild(_overlay);
+
+        document.documentElement.classList.add('sci-filter-overlay-static-body');
+        _overlay.classList.remove('sci-d-none');
+
+        if (settings.yieldable) {
+            _overlay.addEventListener('mousedown', function (event) {
+                if (event.button === LEFT_MOUSE_BUTTON_CODE && event.target === _overlay) {
+                    filterOverlay.closeFilterOverlay();
+                }
+            });
+        }
+
+        window.addEventListener('resize', resizeListener);
+
+        const _close = _overlay.querySelector('.sci-filter-overlay-close-js');
+        _close.addEventListener('click', filterOverlay.closeFilterOverlay);
+    }
+
+    /**@
+     * Closes the previously created (via `filterOverlay.createFilterOverlay`) filter overlay.
+     */
+    filterOverlay.closeFilterOverlay = function () {
+        if (_overlay) {
+            window.removeEventListener('resize', resizeListener);
+
+            const _overlayContent = _overlay.querySelector('.sci-filter-overlay-content-js');
+
+            // Move the content element back to the original parent
+            _overlayContent.removeChild(_content);
+            _originalParent.appendChild(_content);
+
+            document.documentElement.classList.remove('sci-filter-overlay-static-body');
+
+            _overlay.parentElement.removeChild(_overlay);
+            _overlay = null;
+        }
+    }
+
+    /**@
+     * Destroys the previously created (via `filterOverlay.createFilterOverlay`) filter overlay.
+     */
+    filterOverlay.destroyFilterOverlay = function () {
+        if (_content) {
+            filterOverlay.closeFilterOverlay();
+
+            _content = null;
+            _originalParent = null;
+            settings = null;
+        }
+    }
+}(window.sirius.filterOverlay = window.sirius.filterOverlay || {}));
