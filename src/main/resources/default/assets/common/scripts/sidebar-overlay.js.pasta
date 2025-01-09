@@ -4,7 +4,7 @@
         '    <div class="sci-sidebar-overlay sci-d-grid sci-h-100">' +
         '        <div class="sci-sidebar-overlay-header sci-d-flex sci-align-items-center sci-bg-white">' +
         '            <div class="sci-m-2 sci-d-flex">' +
-        '                <span class="sci-icon-filter-text-soft sci-icon-small"></span>' +
+        '                <span class="{{icon}} sci-icon-small"></span>' +
         '            </div>' +
         '            <div class="sci-w-100 sci-text sci-bold">{{title}}</div>' +
         '            <div class="sci-m-2 sci-d-flex">' +
@@ -37,6 +37,7 @@
      * @param {Object} args map specifying the content and behaviour of the created overlay
      * @param {string|HTMLElement} args.content HTML element that will be rendered inside the overlay
      * @param {string} args.title the title to show in the overlay heading
+     * @param {string} args.icon the icon to show in the overlay heading; defaults to **sci-icon-filter-text-soft**
      * @param {boolean} [args.yieldable] allows to indicate whether a background-click closes the overlay; defaults to **true**
      */
     sidebarOverlay.createSidebarOverlay = function (args) {
@@ -51,6 +52,7 @@
         }
 
         settings = sirius.deepExtend(args, {
+            icon: 'sci-icon-filter-text-soft',
             yieldable: true
         });
 
@@ -82,7 +84,8 @@
 
         const _overlayContainer = document.createElement('div');
         _overlayContainer.innerHTML = Mustache.render(template, {
-            title: settings.title
+            title: settings.title,
+            icon: settings.icon
         });
 
         _overlay = _overlayContainer.firstChild;
