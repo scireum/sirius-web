@@ -1,19 +1,5 @@
 (function (sidebarOverlay) {
-    const template =
-        '<div class="sci-sidebar-overlay-background sci-d-none">' +
-        '    <div class="sci-sidebar-overlay sci-d-grid sci-h-100">' +
-        '        <div class="sci-sidebar-overlay-header sci-d-flex sci-align-items-center sci-bg-white">' +
-        '            <div class="sci-m-2 sci-d-flex">' +
-        '                <span class="{{icon}} sci-icon-small"></span>' +
-        '            </div>' +
-        '            <div class="sci-w-100 sci-text sci-bold">{{title}}</div>' +
-        '            <div class="sci-m-2 sci-d-flex">' +
-        '                <a class="sci-cursor-pointer sci-sidebar-overlay-close-js sci-icon-close-text-soft sci-icon-small"></a>' +
-        '            </div>' +
-        '        </div>' +
-        '        <div class="sci-sidebar-overlay-content sci-sidebar-overlay-content-js sci-bg-white-dark"></div>' +
-        '    </div>' +
-        '</div>';
+    const template ='@escapeJS(inlineResource("/assets/common/templates/sidebar-overlay.html.mustache"))';
 
     const LEFT_MOUSE_BUTTON_CODE = 0;
 
