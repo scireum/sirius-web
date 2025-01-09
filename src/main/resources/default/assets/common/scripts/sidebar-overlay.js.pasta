@@ -12,10 +12,10 @@
      * Creates a new sidebar overlay.
      *
      * This takes a DOM element and prepares it for a sidebar overlay. It is moved from its parent to the overlay once
-     * it is opened (via `sidebarOverlay.openSidebarOverlay`). The caller must ensure that the parent - which is
-     * probably a sidebar - is not visible before opening. Once the overlay is closed, the element is moved back to its
-     * original place. When the parent becomes visible again after resizing the window (or changing the orientation),
-     * the overlay is closed automatically.
+     * it is opened (via `sidebarOverlay.open`). The caller must ensure that the original parent - which is probably a
+     * sidebar - is not visible before opening. Once the overlay is closed, the element is moved back to its original
+     * place. When the parent becomes visible again after resizing the window (or changing the orientation), the overlay
+     * is closed automatically.
      * <p>
      * The caller also is responsible for making the content scrollable. This enables the implementation of additional
      * sticky elements.
@@ -26,9 +26,9 @@
      * @param {string} args.icon the icon to show in the overlay heading; defaults to **sci-icon-filter-text-soft**
      * @param {boolean} [args.yieldable] allows to indicate whether a background-click closes the overlay; defaults to **true**
      */
-    sidebarOverlay.createSidebarOverlay = function (args) {
+    sidebarOverlay.create = function (args) {
         if (_content) {
-            sidebarOverlay.destroySidebarOverlay();
+            sidebarOverlay.destroy();
         }
 
         _content = sirius.querySelector(args.content);
@@ -50,15 +50,15 @@
         // Use a small delay to ensure the page has been re-rendered
         setTimeout(function () {
             if (sirius.isVisibleNode(_originalParent)) {
-                sidebarOverlay.closeSidebarOverlay();
+                sidebarOverlay.close();
             }
         }, 20);
     }, 100);
 
     /**@
-     * Shows the previously created (via `sidebarOverlay.createSidebarOverlay`) sidebar overlay.
+     * Shows the previously created (via `sidebarOverlay.create`) sidebar overlay.
      */
-    sidebarOverlay.openSidebarOverlay = function () {
+    sidebarOverlay.open = function () {
         // Reset viewport zoom if user zoomed in via pinch to zoom gesture. If not done it could possibly lead to the
         // user not being able to close the overlay when the close button is rendered outside the visible area.
         sirius.resetMobileZoom();
@@ -89,7 +89,7 @@
         if (settings.yieldable) {
             _overlay.addEventListener('mousedown', function (event) {
                 if (event.button === LEFT_MOUSE_BUTTON_CODE && event.target === _overlay) {
-                    sidebarOverlay.closeSidebarOverlay();
+                    sidebarOverlay.close();
                 }
             });
         }
@@ -97,13 +97,13 @@
         window.addEventListener('resize', resizeListener);
 
         const _close = _overlay.querySelector('.sci-sidebar-overlay-close-js');
-        _close.addEventListener('click', sidebarOverlay.closeSidebarOverlay);
+        _close.addEventListener('click', sidebarOverlay.close);
     }
 
     /**@
-     * Closes the previously created (via `sidebarOverlay.createSidebarOverlay`) sidebar overlay.
+     * Closes the previously created (via `sidebarOverlay.create`) sidebar overlay.
      */
-    sidebarOverlay.closeSidebarOverlay = function () {
+    sidebarOverlay.close = function () {
         if (_overlay) {
             window.removeEventListener('resize', resizeListener);
 
@@ -121,11 +121,11 @@
     }
 
     /**@
-     * Destroys the previously created (via `sidebarOverlay.createSidebarOverlay`) sidebar overlay.
+     * Destroys the previously created (via `sidebarOverlay.create`) sidebar overlay.
      */
-    sidebarOverlay.destroySidebarOverlay = function () {
+    sidebarOverlay.destroy = function () {
         if (_content) {
-            sidebarOverlay.closeSidebarOverlay();
+            sidebarOverlay.close();
 
             _content = null;
             _originalParent = null;
