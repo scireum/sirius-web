@@ -1,5 +1,5 @@
 .sci-text-input {
-  border-width: 2px;
+  border-width: var(--sci-border-width-1);
   border-style: solid;
   border-radius: var(--sci-border-radius);
   border-color: $sirius-gray;
@@ -14,7 +14,7 @@
 }
 
 .sci-token-single-select {
-  border-width: 2px;
+  border-width: var(--sci-border-width-1);
   border-style: solid;
   border-radius: var(--sci-border-radius);
   border-color: $sirius-gray;

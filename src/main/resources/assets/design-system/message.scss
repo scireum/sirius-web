@@ -4,7 +4,7 @@
   background-color: $sirius-white;
   border-radius: calc(0.25 * var(--sci-base-unit));
   // This is no shadow, but an auxiliary border.
-  box-shadow: 0 0 1px $sirius-black;
+  box-shadow: 0 0 var(--sci-border-width-05) $sirius-black;
 }
 
 .sci-message-banner-success {

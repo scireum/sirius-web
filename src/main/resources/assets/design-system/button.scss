@@ -23,7 +23,7 @@
 .sci-btn-outline {
   @extend .sci-btn;
 
-  border-width: 2px;
+  border-width: var(--sci-border-width-1);
   border-style: solid;
 }
 
