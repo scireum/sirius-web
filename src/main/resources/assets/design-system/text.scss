@@ -125,12 +125,28 @@
   text-align: right !important;
 }
 
+.sci-text-vertical-align-top {
+  vertical-align: top;
+}
+
+.sci-text-vertical-align-center {
+  vertical-align: center;
+}
+
+.sci-text-vertical-align-bottom {
+  vertical-align: bottom;
+}
+
 .sci-decoration-none {
   text-decoration: none !important;
 }
 
 .sci-decoration-underline {
   text-decoration: underline !important;
+}
+
+.sci-decoration-line-through {
+  text-decoration: line-through !important;
 }
 
 .sci-text-transform-uppercase {
