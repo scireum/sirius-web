@@ -5,9 +5,6 @@
   --sci-margin-2: calc(2 * var(--sci-margin-1)); // Default: 16px / 1rem
   --sci-margin-3: calc(3 * var(--sci-margin-1)); // Default: 24px / 1.5rem
   --sci-margin-4: calc(4 * var(--sci-margin-1)); // Default: 32px / 2rem
-
-  // Alternative variable for backwards compatability
-  --sci-margin-05: --sci-margin-0_5; // Default: 4px / 0.25rem
 }
 
 .sci-m-0.5 {
