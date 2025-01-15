@@ -8,7 +8,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
-  padding: 12px 16px;
+  padding: var(--sci-margin-15) var(--sci-margin-2);
   display: inline-block;
 
   transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out;
@@ -17,7 +17,7 @@
 .sci-btn-small {
   @extend .sci-btn;
 
-  padding: 6px;
+  padding: var(--sci-margin-1);
 }
 
 .sci-btn-outline {
