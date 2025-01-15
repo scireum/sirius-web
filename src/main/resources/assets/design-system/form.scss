@@ -3,8 +3,8 @@
   border-style: solid;
   border-radius: var(--sci-border-radius);
   border-color: $sirius-gray;
-  padding: 12px;
-  font-size: var(sci-font-size-base);
+  padding: var(--sci-margin-1_5);
+  font-size: var(--sci-font-size-base);
   line-height: 1.5;
 }
 
