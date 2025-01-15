@@ -278,7 +278,7 @@
 }
 
 .sci-pill {
-  padding: var(--sci-margin-05) var(--sci-margin-1);
+  padding: var(--sci-margin-0_5) var(--sci-margin-1);
   // Set radius to half of font size + padding, resulting in a pill shape that doesn't get distorted
   border-radius: calc((var(--sci-font-size-smaller) + var(--sci-margin-1)) / 2);
 
