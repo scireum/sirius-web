@@ -393,6 +393,11 @@
   content: "";
 }
 
+.sci-stretched-link-superimposed {
+  position: relative;
+  z-index: 2;
+}
+
 .sci-object-fit-cover {
   object-fit: cover;
 }
