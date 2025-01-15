@@ -19,6 +19,10 @@
   display: grid !important;
 }
 
+.sci-d-table-cell {
+  display: table-cell !important;
+}
+
 .sci-d-none {
   display: none !important;
 }
@@ -38,6 +42,15 @@
 
   .sci-d-sm-block {
     display: block !important;
+  }
+
+  .sci-d-sm-grid {
+    display: -ms-grid !important;
+    display: grid !important;
+  }
+
+  .sci-d-sm-table-cell {
+    display: table-cell !important;
   }
 
   .sci-d-sm-none {
@@ -62,6 +75,15 @@
     display: block !important;
   }
 
+  .sci-d-md-grid {
+    display: -ms-grid !important;
+    display: grid !important;
+  }
+
+  .sci-d-md-table-cell {
+    display: table-cell !important;
+  }
+
   .sci-d-md-none {
     display: none !important;
   }
@@ -82,6 +104,15 @@
 
   .sci-d-lg-block {
     display: block !important;
+  }
+
+  .sci-d-lg-grid {
+    display: -ms-grid !important;
+    display: grid !important;
+  }
+
+  .sci-d-lg-table-cell {
+    display: table-cell !important;
   }
 
   .sci-d-lg-none {
