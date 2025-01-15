@@ -1,6 +1,6 @@
 :root {
   --sci-border-width-1: calc(0.125 * var(--sci-base-unit)); // Default: 2px / 0.125rem
-  --sci-border-width-05: calc(0.5 * var(--sci-border-width-1)); // Default: 1px / 0.0625rem
+  --sci-border-width-0_5: calc(0.5 * var(--sci-border-width-1)); // Default: 1px / 0.0625rem
   --sci-border-width-2: calc(2 * var(--sci-border-width-1)); // Default: 4px / 0.25rem
 }
 
@@ -153,8 +153,8 @@
   border-right: 0 !important;
 }
 
-.sci-border-solid-05 {
-  border-width: var(--sci-border-width-05);
+.sci-border-solid-0.5 {
+  border-width: var(--sci-border-width-0_5);
   border-style: solid;
 }
 
@@ -168,8 +168,8 @@
   border-style: solid;
 }
 
-.sci-border-top-solid-05 {
-  border-top-width: var(--sci-border-width-05);
+.sci-border-top-solid-0.5 {
+  border-top-width: var(--sci-border-width-0_5);
   border-top-style: solid;
 }
 
@@ -183,8 +183,8 @@
   border-top-style: solid;
 }
 
-.sci-border-bottom-solid-05 {
-  border-bottom-width: var(--sci-border-width-05);
+.sci-border-bottom-solid-0.5 {
+  border-bottom-width: var(--sci-border-width-0_5);
   border-bottom-style: solid;
 }
 
@@ -198,8 +198,8 @@
   border-bottom-style: solid;
 }
 
-.sci-border-left-solid-05 {
-  border-left-width: var(--sci-border-width-05);
+.sci-border-left-solid-0.5 {
+  border-left-width: var(--sci-border-width-0_5);
   border-left-style: solid;
 }
 
@@ -213,8 +213,8 @@
   border-left-style: solid;
 }
 
-.sci-border-right-solid-05 {
-  border-right-width: var(--sci-border-width-05);
+.sci-border-right-solid-0.5 {
+  border-right-width: var(--sci-border-width-0_5);
   border-right-style: solid;
 }
 
