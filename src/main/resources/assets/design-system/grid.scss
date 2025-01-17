@@ -6,9 +6,9 @@
   display: flex;
   -ms-flex-wrap: wrap;
   flex-wrap: wrap;
-  margin-right: -var(--sci-grid-gap);
-  margin-left: -var(--sci-grid-gap);
-  margin-bottom: -var(--sci-grid-gap);
+  margin-right: calc(-1 * var(--sci-grid-gap));
+  margin-left: calc(-1 * var(--sci-grid-gap));
+  margin-bottom: calc(-1 * var(--sci-grid-gap));
 }
 
 .sci-grid-auto, .sci-grid-5, .sci-grid-4, .sci-grid-3, .sci-grid-2, .sci-grid-1,
@@ -20,9 +20,9 @@
   -ms-flex-wrap: wrap;
   flex-wrap: wrap;
   align-items: stretch;
-  margin-left: -var(--sci-grid-gap);
-  margin-right: -var(--sci-grid-gap);
-  margin-bottom: -var(--sci-grid-gap);
+  margin-left: calc(-1 * var(--sci-grid-gap));
+  margin-right: calc(-1 * var(--sci-grid-gap));
+  margin-bottom: calc(-1 * var(--sci-grid-gap));
 
   .sci-grid-cell {
     position: relative;

@@ -117,8 +117,8 @@ public class Parser {
             if (super.isIdentifierChar(current)) {
                 return true;
             }
-            // CSS selectors can contain "-", "." or "#" as long as it is not the last character of the token
-            return (current.is('-') || current.is('.') || current.is('#')) && !input.next().isWhitespace();
+            // CSS selectors can contain "-", ".", "#", or "\" as long as it is not the last character of the token
+            return current.is('-', '.', '#', '\\') && !input.next().isWhitespace();
         }
 
         @Override
