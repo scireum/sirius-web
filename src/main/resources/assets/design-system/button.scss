@@ -33,7 +33,14 @@
   background-color: $sirius-primary !important;
   color: $sirius-white !important;
 
-  &:hover, &.active {
+  @media (hover: hover) {
+    &:hover {
+      background-color: lighten($sirius-primary, 25%) !important;
+      color: $sirius-white !important;
+    }
+  }
+
+  &.active {
     background-color: lighten($sirius-primary, 25%) !important;
     color: $sirius-white !important;
   }
@@ -54,7 +61,14 @@
   background-color: $sirius-gray-dark !important;
   color: $sirius-white !important;
 
-  &:hover, &.active {
+  @media (hover: hover) {
+    &:hover {
+      background-color: lighten($sirius-gray-dark, 25%) !important;
+      color: $sirius-white !important;
+    }
+  }
+
+  &.active {
     background-color: lighten($sirius-gray-dark, 25%) !important;
     color: $sirius-white !important;
   }
@@ -75,7 +89,14 @@
   background-color: $sirius-white;
   color: $sirius-gray-dark !important;
 
-  &:hover, &.active {
+  @media (hover: hover) {
+    &:hover{
+      background-color: $sirius-gray-light !important;
+      color: $sirius-gray-dark !important;
+    }
+  }
+
+  &.active {
     background-color: $sirius-gray-light !important;
     color: $sirius-gray-dark !important;
   }
@@ -88,7 +109,14 @@
   border-color: $sirius-primary !important;
   color: $sirius-primary !important;
 
-  &:hover, &.active {
+  @media (hover: hover) {
+    &:hover {
+      background-color: $sirius-primary !important;
+      color: $sirius-white !important;
+    }
+  }
+
+  &.active {
     background-color: $sirius-primary !important;
     color: $sirius-white !important;
   }
@@ -111,7 +139,14 @@
   border-color: $sirius-gray-dark !important;
   color: $sirius-gray-dark !important;
 
-  &:hover, &.active {
+  @media (hover: hover) {
+    &:hover {
+      background-color: $sirius-gray-dark !important;
+      color: $sirius-white !important;
+    }
+  }
+
+  &.active {
     background-color: $sirius-gray-dark !important;
     color: $sirius-white !important;
   }
@@ -134,7 +169,14 @@
   border-color: $sirius-white !important;
   color: $sirius-white !important;
 
-  &:hover, &.active {
+  @media (hover: hover) {
+    &:hover {
+      background-color: $sirius-white !important;
+      color: $sirius-gray-dark !important;
+    }
+  }
+
+  &.active {
     background-color: $sirius-white !important;
     color: $sirius-gray-dark !important;
   }
