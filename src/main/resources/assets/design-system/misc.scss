@@ -140,9 +140,11 @@
   box-shadow: 0 1px 1px 0 rgba(66, 66, 66, 0.08), 0 1px 3px 1px rgba(66, 66, 66, 0.16);
 }
 
-.sci-shadow.sci-cursor-pointer:hover {
-  box-shadow: 0 1px 3px 1px rgba(66, 66, 66, 0.2), 0 2px 8px 4px rgba(66, 66, 66, 0.1);
-  transition: box-shadow .25s linear;
+@media (hover: hover) {
+  .sci-shadow.sci-cursor-pointer:hover {
+    box-shadow: 0 1px 3px 1px rgba(66, 66, 66, 0.2), 0 2px 8px 4px rgba(66, 66, 66, 0.1);
+    transition: box-shadow .25s linear;
+  }
 }
 
 .sci-border-left-0 {
@@ -299,8 +301,10 @@
   text-decoration: none;
   cursor: pointer;
 
-  &:hover {
-    text-decoration: underline;
+  @media (hover: hover) {
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }
 
