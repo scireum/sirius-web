@@ -243,8 +243,8 @@
 }
 
 .sci-tag {
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: var(--sci-margin-0_5) var(--sci-margin-1);
+  border-radius: var(--sci-border-radius);
 
   font-size: var(--sci-font-size-smaller);
   line-height: 1;
@@ -260,11 +260,11 @@
 }
 
 .sci-border-tag {
-  padding: 4px 8px;
+  padding: var(--sci-margin-0_5) var(--sci-margin-1);
 
-  border-radius: 4px;
+  border-radius: var(--sci-border-radius);
   border-left-style: solid;
-  border-left-width: 4px;
+  border-left-width: var(--sci-border-width-2);
 
   font-size: var(--sci-font-size-smaller);
   line-height: 1;

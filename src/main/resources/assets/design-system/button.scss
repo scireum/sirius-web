@@ -46,7 +46,7 @@
   }
 
   &:disabled, &.sci-btn-disabled {
-    background-color: lighten($sirius-primary, 25%) !important;
+    background-color: mix($sirius-primary, $sirius-white, 0.6) !important;
     cursor: default;
   }
 
@@ -74,7 +74,7 @@
   }
 
   &:disabled, &.sci-btn-disabled {
-    background-color: lighten($sirius-gray-dark, 25%) !important;
+    background-color: mix($sirius-gray-dark, $sirius-white, 0.6) !important;
     cursor: default;
   }
 
@@ -122,8 +122,8 @@
   }
 
   &:disabled, &.sci-btn-disabled {
-    border-color: lighten($sirius-primary, 25%) !important;
-    color: lighten($sirius-primary, 25%) !important;
+    border-color: mix($sirius-primary, $sirius-white, 0.6) !important;
+    color: mix($sirius-primary, $sirius-white, 0.6) !important;
     cursor: default;
   }
 
@@ -152,8 +152,8 @@
   }
 
   &:disabled, &.sci-btn-disabled {
-    border-color: lighten($sirius-gray-dark, 25%) !important;
-    color: lighten($sirius-gray-dark, 25%) !important;
+    border-color: mix($sirius-gray-dark, $sirius-white, 0.6) !important;
+    color: mix($sirius-gray-dark, $sirius-white, 0.6) !important;
     cursor: default;
   }
 

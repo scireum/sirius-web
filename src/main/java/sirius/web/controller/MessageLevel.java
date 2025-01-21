@@ -11,28 +11,30 @@ public enum MessageLevel {
     /**
      * Declares a message as success.
      */
-    SUCCESS("alert-success", "green"),
+    SUCCESS("alert-success", "sci-message-banner-success", "green"),
 
     /**
      * Declares a message as information.
      */
-    INFO("alert-info", "blue"),
+    INFO("alert-info", "sci-message-banner-info", "blue"),
 
     /**
      * Declares a message as warning.
      */
-    WARNING("alert-warning", "yellow"),
+    WARNING("alert-warning", "sci-message-banner-warning", "yellow"),
 
     /**
      * Declares a message as error.
      */
-    PROBLEM("alert-danger", "red");
+    PROBLEM("alert-danger", "sci-message-banner-error", "red");
 
     private final String cssClass;
+    private final String designSystemClass;
     private final String color;
 
-    MessageLevel(String cssClass, String color) {
+    MessageLevel(String cssClass, String designSystemClass, String color) {
         this.cssClass = cssClass;
+        this.designSystemClass = designSystemClass;
         this.color = color;
     }
 
@@ -44,6 +46,16 @@ public enum MessageLevel {
     @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getCssClass() {
         return cssClass;
+    }
+
+    /**
+     * Returns the scireum Design System CSS class used to render the message.
+     *
+     * @return the name of the css class used to render the message
+     */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
+    public String getDesignSystemClass() {
+        return designSystemClass;
     }
 
     /**

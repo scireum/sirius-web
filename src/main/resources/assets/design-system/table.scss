@@ -1,5 +1,4 @@
 .sci-line-table {
-
   border-collapse: collapse;
   border-spacing: 0;
 
@@ -10,17 +9,19 @@
 
   tbody {
     td {
-      border-top: var(--sci-border-width-0_5) solid rgba(0, 0, 0, .125);
       padding: calc(0.25 * var(--sci-base-unit));
     }
 
-    @media (hover: hover) {
-      tr.sci-cursor-pointer:hover {
-        background-color: rgba(0, 0, 0, .05);
+    tr {
+      border-top: var(--sci-border-width-0_5) solid $sirius-gray-lighter;
+
+      @media (hover: hover) {
+        &.sci-cursor-pointer:hover {
+          background-color: $sirius-white-dark;
+        }
       }
     }
   }
-
 }
 
 /**
