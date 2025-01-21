@@ -9,7 +9,17 @@
 
 .sci-message-banner-success {
   @extend .sci-message-banner;
+  border-left: var(--sci-border-width-2) solid $sirius-green-dark;
+}
+
+.sci-message-banner-info {
+  @extend .sci-message-banner;
   border-left: var(--sci-border-width-2) solid $sirius-deep-blue-dark;
+}
+
+.sci-message-banner-warning {
+  @extend .sci-message-banner;
+  border-left: var(--sci-border-width-2) solid $sirius-yellow-dark;
 }
 
 .sci-message-banner-error {
