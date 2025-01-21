@@ -36,6 +36,5 @@ input.sci-text-input[disabled],
 textarea.sci-text-input[disabled],
 input.sci-text-input[readonly],
 textarea.sci-text-input[readonly] {
-  border-color: #747474;
-  background-color: #E9ECEF;
+  background-color: $sirius-gray-lighter;
 }
