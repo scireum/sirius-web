@@ -2,17 +2,17 @@
   padding: var(--sci-base-unit);
   color: $sirius-black;
   background-color: $sirius-white;
-  border-radius: calc(0.25 * var(--sci-base-unit));
+  border-radius: var(--sci-border-radius);
   // This is no shadow, but an auxiliary border.
   box-shadow: 0 0 var(--sci-border-width-0_5) $sirius-black;
 }
 
 .sci-message-banner-success {
   @extend .sci-message-banner;
-  border-left: calc(0.25 * var(--sci-base-unit)) solid $sirius-deep-blue-dark;
+  border-left: var(--sci-border-width-2) solid $sirius-deep-blue-dark;
 }
 
 .sci-message-banner-error {
   @extend .sci-message-banner;
-  border-left: calc(0.25 * var(--sci-base-unit)) solid $sirius-red;
+  border-left: var(--sci-border-width-2) solid $sirius-red;
 }
