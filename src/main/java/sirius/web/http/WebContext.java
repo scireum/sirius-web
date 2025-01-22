@@ -1312,20 +1312,6 @@ public class WebContext implements SubContext {
     }
 
     /**
-     * Sets a cookie value to be sent back to the client
-     * <p>
-     * The generated cookie will be a session cookie and vanish once the user agent is closed
-     *
-     * @param name  the cookie to create
-     * @param value the contents of the cookie
-     * @deprecated Use {@link #setHTTPSessionCookie(String, String)} instead.
-     */
-    @Deprecated(since = "2023/08/08", forRemoval = true)
-    public void setSessionCookie(String name, String value) {
-        setCookie(name, value, Long.MIN_VALUE, sessionCookieSameSite, sessionCookieSecurity);
-    }
-
-    /**
      * Sets a http only cookie value to be sent back to the client.
      * <p>
      * The generated cookie will be a session cookie and vanish once the user agent is closed. Also, this cookie
