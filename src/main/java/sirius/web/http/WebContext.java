@@ -330,6 +330,12 @@ public class WebContext implements SubContext {
     private static CookieHeaderNames.SameSite sessionCookieSameSite;
 
     /**
+     * The same site attribute of the Session Cookie for unsecure (i.e. http without SSL) connections
+     */
+    @ConfigValue("http.sessionCookie.sameSiteUnsecure")
+    private static CookieHeaderNames.SameSite sessionCookieSameSiteUnsecure;
+
+    /**
      * The same site attribute of the Session Cookie
      */
     @ConfigValue("http.sessionCookie.secure")
@@ -900,7 +906,7 @@ public class WebContext implements SubContext {
         setCookie(getSessionPinCookieName(),
                   givenSessionPin,
                   SESSION_PIN_COOKIE_TTL,
-                  sessionCookieSameSite,
+                  determineSessionCookieSameSite(),
                   sessionCookieSecurity);
     }
 
@@ -1335,7 +1341,7 @@ public class WebContext implements SubContext {
      * @param maxAgeSeconds contains the max age of this cookie in seconds
      */
     public void setHTTPCookie(String name, String value, long maxAgeSeconds) {
-        setCookie(name, value, maxAgeSeconds, sessionCookieSameSite, sessionCookieSecurity);
+        setCookie(name, value, maxAgeSeconds, determineSessionCookieSameSite(), sessionCookieSecurity);
     }
 
     /**
@@ -1460,7 +1466,11 @@ public class WebContext implements SubContext {
         if (ttl == 0) {
             setHTTPSessionCookie(sessionCookieName, protection + ":" + value);
         } else {
-            setCookie(sessionCookieName, protection + ":" + value, ttl, sessionCookieSameSite, sessionCookieSecurity);
+            setCookie(sessionCookieName,
+                      protection + ":" + value,
+                      ttl,
+                      determineSessionCookieSameSite(),
+                      sessionCookieSecurity);
         }
     }
 
@@ -1469,6 +1479,14 @@ public class WebContext implements SubContext {
             return sessionCookieTTL;
         }
         return defaultSessionCookieTTL.getSeconds();
+    }
+
+    private CookieHeaderNames.SameSite determineSessionCookieSameSite() {
+        if (isSSL()) {
+            return sessionCookieSameSite;
+        }
+
+        return sessionCookieSameSiteUnsecure;
     }
 
     /**
