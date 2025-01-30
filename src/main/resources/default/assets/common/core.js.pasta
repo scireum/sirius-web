@@ -917,7 +917,7 @@ sirius.copyToClipboard = function (textToCopy, _element) {
     _fakeElement.setAttribute('readonly', '');
     _fakeElement.value = textToCopy;
     document.body.appendChild(_fakeElement);
-    _fakeElement.focus();
+    _fakeElement.focus({preventScroll: true});
 
     var range = document.createRange();
     range.selectNodeContents(_fakeElement);
