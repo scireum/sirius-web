@@ -1,11 +1,13 @@
 sirius.ready(function () {
     // FireFox Fix: If a checkbox has been checked and someone refreshes the page, that checkbox is still checked
     // without triggering a change event. Therefore, we are manually clearing all checkboxes on page load.
-    document.querySelectorAll('.select-table-row-checkbox-js:checked').forEach(function (_checkbox) {
-        _checkbox.checked = false;
-    });
-    document.querySelectorAll('.select-all-visible-table-rows-checkbox-js:checked').forEach(function (_selectAllCheckbox) {
-        _selectAllCheckbox.checked = false;
+    window.addEventListener('pageshow',function (){
+        document.querySelectorAll('.select-table-row-checkbox-js:checked').forEach(function (_checkbox) {
+            _checkbox.checked = false;
+        });
+        document.querySelectorAll('.select-all-visible-table-rows-checkbox-js:checked').forEach(function (_selectAllCheckbox) {
+            _selectAllCheckbox.checked = false;
+        });
     });
 
     document.querySelectorAll('.select-all-visible-table-rows-checkbox-js').forEach(function (_selectAllCheckbox) {
