@@ -14,7 +14,7 @@
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
     <properties>
-        <sirius.kernel>dev-44.0.0</sirius.kernel>
+        <sirius.kernel>dev-44.4.0</sirius.kernel>
     </properties>
 
     <repositories>
@@ -46,6 +46,7 @@
         </dependency>
 
         <!-- Async http client used to tunnel http data from a backend server -->
+        <!-- Changelog: https://github.com/AsyncHttpClient/async-http-client/releases -->
         <dependency>
             <groupId>org.asynchttpclient</groupId>
             <artifactId>async-http-client</artifactId>
@@ -59,6 +60,7 @@
         </dependency>
 
         <!-- Used to generate QR codes -->
+        <!-- Changelog: https://github.com/zxing/zxing/releases -->
         <dependency>
             <groupId>com.google.zxing</groupId>
             <artifactId>core</artifactId>
@@ -77,11 +79,13 @@
         </dependency>
 
         <!-- Used to send and receive mails -->
+        <!-- Changelog: https://github.com/eclipse-ee4j/angus-mail/releases -->
         <dependency>
             <groupId>org.eclipse.angus</groupId>
             <artifactId>angus-mail</artifactId>
             <version>2.0.3</version>
         </dependency>
+        <!-- Changelog: https://github.com/eclipse-ee4j/angus-activation/releases -->
         <dependency>
             <groupId>org.eclipse.angus</groupId>
             <artifactId>angus-activation</artifactId>
@@ -94,13 +98,15 @@
         </dependency>
 
         <!-- Used to generate PDFs -->
+        <!-- Changelog: https://github.com/flyingsaucerproject/flyingsaucer/releases -->
         <dependency>
             <groupId>org.xhtmlrenderer</groupId>
             <artifactId>flying-saucer-pdf</artifactId>
-            <version>9.11.2</version>
+            <version>9.11.3</version>
         </dependency>
 
         <!-- Used to clean HTML before generating PDF -->
+        <!-- Changelog: https://github.com/jhy/jsoup/releases -->
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
@@ -108,6 +114,7 @@
         </dependency>
 
         <!-- Used to render SVG into PDF -->
+        <!-- Changelog: https://github.com/apache/xmlgraphics-batik/blob/main/CHANGES -->
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-all</artifactId>
@@ -115,21 +122,23 @@
         </dependency>
 
         <!-- POI is used to generate excel exports -->
+        <!-- Changelog: https://poi.apache.org/changes.html -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>5.3.0</version>
+            <version>5.4.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>5.3.0</version>
+            <version>5.4.0</version>
         </dependency>
 
+        <!-- Changelog: https://github.com/pjfanning/excel-streaming-reader/releases -->
         <dependency>
             <groupId>com.github.pjfanning</groupId>
             <artifactId>excel-streaming-reader</artifactId>
-            <version>5.0.2</version>
+            <version>5.0.3</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.h2database</groupId>
@@ -139,26 +148,29 @@
         </dependency>
 
         <!-- Swagger Annotations are used for API/Service documentation -->
+        <!-- https://github.com/swagger-api/swagger-core/releases -->
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-annotations</artifactId>
             <version>2.2.26</version>
         </dependency>
 
+        <!-- Changelog: https://github.com/auth0/java-jwt/releases -->
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
-            <version>4.4.0</version>
+            <version>4.5.0</version>
         </dependency>
 
     </dependencies>
 
     <dependencyManagement>
         <dependencies>
+            <!-- Changelog: https://netty.io/news/ -->
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-bom</artifactId>
-                <version>4.1.115.Final</version>
+                <version>4.1.118.Final</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
