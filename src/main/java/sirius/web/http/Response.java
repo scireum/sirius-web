@@ -444,6 +444,18 @@ public class Response {
                && ((WebServerHandler) channelHandlerContext.handler()).shouldKeepAlive();
     }
 
+    /**
+     * Prevents the response from being crawled by search engines.
+     * <p>
+     * There is no guarantee that search engines respect that, but big players like Google, Bing etc. do.
+     *
+     * @return the response itself for fluent method calls
+     */
+    public Response preventSearchEngineIndexing() {
+        addHeader("X-Robots-Tag", "noindex, nofollow");
+        return this;
+    }
+
     /*
      * Completes the response and closes the underlying channel if necessary
      */
