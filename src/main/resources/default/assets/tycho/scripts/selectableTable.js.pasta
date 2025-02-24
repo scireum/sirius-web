@@ -4,6 +4,7 @@ sirius.ready(function () {
     window.addEventListener('pageshow',function (){
         document.querySelectorAll('.select-table-row-checkbox-js:checked').forEach(function (_checkbox) {
             _checkbox.checked = false;
+            toggleRowSelection(_checkbox);
         });
         document.querySelectorAll('.select-all-visible-table-rows-checkbox-js:checked').forEach(function (_selectAllCheckbox) {
             _selectAllCheckbox.checked = false;
