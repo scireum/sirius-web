@@ -12,6 +12,7 @@
   height: var(--sci-icon-size-medium);
   background-size: contain;
   background-repeat: no-repeat;
+  background-position: center;
 }
 
 .sci-icon-smallest {
@@ -133,6 +134,10 @@
 
 .sci-icon-close-text-soft {
   background-image: url(svgResource('/assets/images/icons/navigation/close.svg', #212529));
+}
+
+.sci-icon-close-gray {
+  background-image: url(svgResource('/assets/images/icons/navigation/close.svg', #acacac));
 }
 
 .sci-icon-filter-text-soft {
