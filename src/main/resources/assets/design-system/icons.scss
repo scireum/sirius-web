@@ -105,7 +105,7 @@
 
 /* Automatically turns blue cart icon white on hover when used inside of blue outline button */
 .sci-icon-product-cart-white, .sci-btn-primary-outline:hover .sci-icon-product-cart-blue {
-  background-image: url(svgResource('/assets/images/icons/cart.svg', #ffffff));
+  background-image: url(svgResource('/assets/images/icons/cart.svg', $sirius-white));
 }
 
 .sci-icon-product-cart-blue {
@@ -152,8 +152,18 @@
   background-image: url(svgResource('/assets/images/icons/navigation/zoom-out.svg', #212529));
 }
 
+.sci-icon-zoom-in-white,
+.sci-btn-primary-outline:hover .sci-icon-zoom-in-blue {
+  background-image: url(svgResource('/assets/images/icons/navigation/zoom-in.svg', $sirius-white));
+}
+
 .sci-icon-zoom-in-blue {
   background-image: url(svgResource('/assets/images/icons/navigation/zoom-in.svg', #3465CC));
+}
+
+.sci-icon-zoom-out-white,
+.sci-btn-primary-outline:hover .sci-icon-zoom-out-blue {
+  background-image: url(svgResource('/assets/images/icons/navigation/zoom-out.svg', $sirius-white));
 }
 
 .sci-icon-zoom-out-blue {
@@ -164,12 +174,22 @@
   background-image: url(svgResource('/assets/images/icons/fontawesome/bars.svg', $sirius-gray-dark));
 }
 
+.sci-icon-bars-white,
+.sci-btn-primary-outline:hover .sci-icon-bars-blue {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/bars.svg', $sirius-white));
+}
+
 .sci-icon-bars-blue {
   background-image: url(svgResource('/assets/images/icons/fontawesome/bars.svg', #3465CC));
 }
 
 .sci-icon-bookmark-gray-dark {
   background-image: url(svgResource('/assets/images/icons/fontawesome/bookmark.svg', $sirius-gray-dark));
+}
+
+.sci-icon-bookmark-white,
+.sci-btn-primary-outline:hover .sci-icon-bookmark-blue {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/bookmark.svg', $sirius-white));
 }
 
 .sci-icon-bookmark-blue {
@@ -180,12 +200,22 @@
   background-image: url(svgResource('/assets/images/icons/fontawesome/bookmark-outlines.svg', $sirius-gray-dark));
 }
 
+.sci-icon-bookmark-outlines-white,
+.sci-btn-primary-outline:hover .sci-icon-bookmark-outlines-blue {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/bookmark-outlines.svg', $sirius-white));
+}
+
 .sci-icon-bookmark-outlines-blue {
   background-image: url(svgResource('/assets/images/icons/fontawesome/bookmark-outlines.svg', #3465CC));
 }
 
 .sci-icon-clipboard-gray-dark {
   background-image: url(svgResource('/assets/images/icons/fontawesome/clipboard.svg', $sirius-gray-dark));
+}
+
+.sci-icon-clipboard-white,
+.sci-btn-primary-outline:hover .sci-icon-clipboard-blue {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/clipboard.svg', $sirius-white));
 }
 
 .sci-icon-clipboard-blue {
@@ -196,12 +226,22 @@
   background-image: url(svgResource('/assets/images/icons/fontawesome/clipboard-list.svg', $sirius-gray-dark));
 }
 
+.sci-icon-clipboard-list-white,
+.sci-btn-primary-outline:hover .sci-icon-clipboard-list-blue {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/clipboard-list.svg', $sirius-white));
+}
+
 .sci-icon-clipboard-list-blue {
   background-image: url(svgResource('/assets/images/icons/fontawesome/clipboard-list.svg', #3465CC));
 }
 
 .sci-icon-clipboard-outlines-gray-dark {
   background-image: url(svgResource('/assets/images/icons/fontawesome/clipboard-outlines.svg', $sirius-gray-dark));
+}
+
+.sci-icon-clipboard-outlines-white,
+.sci-btn-primary-outline:hover .sci-icon-clipboard-outlines-blue {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/clipboard-outlines.svg', $sirius-white));
 }
 
 .sci-icon-clipboard-outlines-blue {
@@ -212,12 +252,22 @@
   background-image: url(svgResource('/assets/images/icons/fontawesome/heart.svg', $sirius-gray-dark));
 }
 
+.sci-icon-heart-white,
+.sci-btn-primary-outline:hover .sci-icon-heart-blue {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/heart.svg', $sirius-white));
+}
+
 .sci-icon-heart-blue {
   background-image: url(svgResource('/assets/images/icons/fontawesome/heart.svg', #3465CC));
 }
 
 .sci-icon-heart-outlines-gray-dark {
   background-image: url(svgResource('/assets/images/icons/fontawesome/heart-outlines.svg', $sirius-gray-dark));
+}
+
+.sci-icon-heart-outlines-white,
+.sci-btn-primary-outline:hover .sci-icon-heart-outlines-blue {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/heart-outlines.svg', $sirius-white));
 }
 
 .sci-icon-heart-outlines-blue {
@@ -228,12 +278,22 @@
   background-image: url(svgResource('/assets/images/icons/fontawesome/list.svg', $sirius-gray-dark));
 }
 
+.sci-icon-list-white,
+.sci-btn-primary-outline:hover .sci-icon-list-blue {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/list.svg', $sirius-white));
+}
+
 .sci-icon-list-blue {
   background-image: url(svgResource('/assets/images/icons/fontawesome/list.svg', #3465CC));
 }
 
 .sci-icon-list-thick-gray-dark {
   background-image: url(svgResource('/assets/images/icons/fontawesome/list-thick.svg', $sirius-gray-dark));
+}
+
+.sci-icon-list-thick-white,
+.sci-btn-primary-outline:hover .sci-icon-list-thick-blue {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/list-thick.svg', $sirius-white));
 }
 
 .sci-icon-list-thick-blue {
@@ -244,6 +304,11 @@
   background-image: url(svgResource('/assets/images/icons/fontawesome/star.svg', $sirius-gray-dark));
 }
 
+.sci-icon-star-white,
+.sci-btn-primary-outline:hover .sci-icon-star-blue {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/star.svg', $sirius-white));
+}
+
 .sci-icon-star-blue {
   background-image: url(svgResource('/assets/images/icons/fontawesome/star.svg', #3465CC));
 }
@@ -252,6 +317,59 @@
   background-image: url(svgResource('/assets/images/icons/fontawesome/star-outlines.svg', $sirius-gray-dark));
 }
 
+.sci-icon-star-outlines-white,
+.sci-btn-primary-outline:hover .sci-icon-star-outlines-blue {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/star-outlines.svg', $sirius-white));
+}
+
 .sci-icon-star-outlines-blue {
   background-image: url(svgResource('/assets/images/icons/fontawesome/star-outlines.svg', #3465CC));
+}
+
+.sci-icon-bars-text-soft {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/bars.svg', #212529));
+}
+
+.sci-icon-bookmark-text-soft {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/bookmark.svg', #212529));
+}
+
+.sci-icon-bookmark-outlines-text-soft {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/bookmark-outlines.svg', #212529));
+}
+
+.sci-icon-clipboard-text-soft {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/clipboard.svg', #212529));
+}
+
+.sci-icon-clipboard-list-text-soft {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/clipboard-list.svg', #212529));
+}
+
+.sci-icon-clipboard-outlines-text-soft {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/clipboard-outlines.svg', #212529));
+}
+
+.sci-icon-heart-text-soft {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/heart.svg', #212529));
+}
+
+.sci-icon-heart-outlines-text-soft {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/heart-outlines.svg', #212529));
+}
+
+.sci-icon-list-text-soft {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/list.svg', #212529));
+}
+
+.sci-icon-list-thick-text-soft {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/list-thick.svg', #212529));
+}
+
+.sci-icon-star-text-soft {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/star.svg', #212529));
+}
+
+.sci-icon-star-outlines-text-soft {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/star-outlines.svg', #212529));
 }
