@@ -30,4 +30,9 @@
     // Limits the height of the content
     overflow-y: hidden;
   }
+
+  &.sci-sidebar-overlay-right {
+    left: initial;
+    right: 0;
+  }
 }

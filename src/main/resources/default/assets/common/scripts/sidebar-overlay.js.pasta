@@ -1,5 +1,5 @@
 (function (sidebarOverlay) {
-    const template ='@escapeJS(inlineResource("/assets/common/templates/sidebar-overlay.html.mustache"))';
+    const template = '@escapeJS(inlineResource("/assets/common/templates/sidebar-overlay.html.mustache"))';
 
     const LEFT_MOUSE_BUTTON_CODE = 0;
 
@@ -23,8 +23,9 @@
      * @param {Object} args map specifying the content and behaviour of the created overlay
      * @param {string|HTMLElement} args.content HTML element that will be rendered inside the overlay
      * @param {string} args.title the title to show in the overlay heading
-     * @param {string} args.icon the icon to show in the overlay heading; defaults to **sci-icon-filter-text-soft**
-     * @param {boolean} [args.yieldable] allows to indicate whether a background-click closes the overlay; defaults to **true**
+     * @param {string} [args.icon=sci-icon-filter-text-soft] the icon to show in the overlay heading
+     * @param {left|right} [args.position=left] the position of the sidebar
+     * @param {boolean} [args.yieldable=true] allows to indicate whether a background-click closes the overlay
      */
     sidebarOverlay.create = function (args) {
         if (_content) {
@@ -37,10 +38,11 @@
             throw new Error('Argument content must be an object of class HTMLElement or a valid selector.');
         }
 
-        settings = sirius.deepExtend(args, {
+        settings = sirius.deepExtend({
             icon: 'sci-icon-filter-text-soft',
-            yieldable: true
-        });
+            yieldable: true,
+            position: 'left'
+        }, args);
 
         _originalParent = _content.parentElement;
     }
@@ -75,6 +77,10 @@
         });
 
         _overlay = _overlayContainer.firstChild;
+        const _overlaySidebar = _overlay.querySelector('.sci-sidebar-overlay-js');
+        if (settings.position === 'right') {
+            _overlaySidebar.classList.add('sci-sidebar-overlay-right');
+        }
         const _overlayContent = _overlay.querySelector('.sci-sidebar-overlay-content-js');
 
         // move the content element to the overlay
