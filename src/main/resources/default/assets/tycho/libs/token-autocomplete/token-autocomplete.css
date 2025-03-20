@@ -1,6 +1,7 @@
 .token-autocomplete-container {
-    display: inline-flex;
-    flex-wrap: wrap;
+    position: relative;
+    display: flex;
+    align-items: center;
     border: 1px solid #E6E6E6;
     background-color: #FFFFFF;
 }
@@ -14,10 +15,17 @@
     box-sizing: border-box;
 }
 
+.token-autocomplete-container .token-autocomplete-tokens {
+    flex-grow: 1;
+    display: inline-flex;
+    flex-wrap: wrap;
+}
+
 .token-autocomplete-container .token-autocomplete-input {
-    color: black;
+    color: #212529;
     font-size: 16px;
     line-height: 32px;
+    height: 32px;
     outline: none;
     margin: 4px 2px;
     padding: 0 8px;
@@ -36,8 +44,10 @@
     background-color: #E6E6E6;
     margin: 4px 2px;
     border-radius: 32px;
-    padding: 0 8px;
+    padding: 0 5px 0 8px;
     pointer-events: none;
+    display: flex;
+    align-items: center;
 }
 
 .token-autocomplete-container.token-autocomplete-readonly .token-autocomplete-token {
@@ -57,7 +67,6 @@
 .token-autocomplete-container.token-autocomplete-readonly .token-autocomplete-input {
     display: inherit;
     cursor: default;
-    height: 1.5rem;
 }
 
 .token-autocomplete-container.token-autocomplete-singleselect .token-autocomplete-input[contenteditable="true"] {
@@ -79,42 +88,62 @@
     border-color: #cccccc transparent transparent transparent;
 }
 
-.token-autocomplete-container.token-autocomplete-singleselect.select-arrow-active:after {
+.token-autocomplete-container.token-autocomplete-singleselect.token-autocomplete-suggestions-displayed .token-autocomplete-input:after {
     border-color: transparent transparent #000 transparent;
     top: 7px;
-}
-
-.token-autocomplete-container.token-autocomplete-readonly.token-autocomplete-singleselect.select-arrow-active:after {
-    border-color: transparent transparent #cccccc transparent;
 }
 
 .token-autocomplete-container .token-autocomplete-token:hover {
     background-color: #EF9A9A;
 }
 
-.token-autocomplete-container .token-autocomplete-token .token-autocomplete-token-delete {
+.token-autocomplete-container .token-autocomplete-delete-button {
     cursor: pointer;
-    font-size: 24px;
-    line-height: 16px;
-    margin-left: 4px;
     pointer-events: auto;
     border-radius: 50%;
     height: 24px;
     width: 24px;
-    display: inline-block;
-    text-align: center;
+    background: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIHZpZXdCb3g9IjAgMCAzMiAzMiIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4gPHBhdGggZD0iTTkuNjEyODk5NDQsOC4yMDk3MDQ2MSBMOS43MDcxMDY3OCw4LjI5Mjg5MzIyIEwxNi4wMzcsMTQuNjIyIEwyMi4zNjcwNDM0LDguMjkyODkzMjIgTDIyLjQ2MTI1MDcsOC4yMDk3MDQ2MSBDMjIuODUzNTQxOSw3LjkwNDY3OTcyIDIzLjQyMDc3Myw3LjkzMjQwOTI2IDIzLjc4MTI1NjksOC4yOTI4OTMyMiBDMjQuMTcxNzgxMiw4LjY4MzQxNzUxIDI0LjE3MTc4MTIsOS4zMTY1ODI0OSAyMy43ODEyNTY5LDkuNzA3MTA2NzggTDIzLjc4MTI1NjksOS43MDcxMDY3OCBMMTcuNDUxLDE2LjAzNyBMMjMuNzgxMjU2OSwyMi4zNjcwNDM0IEMyNC4xNzE3ODEyLDIyLjc1NzU2NzcgMjQuMTcxNzgxMiwyMy4zOTA3MzI2IDIzLjc4MTI1NjksMjMuNzgxMjU2OSBDMjMuNDIwNzczLDI0LjE0MTc0MDkgMjIuODUzNTQxOSwyNC4xNjk0NzA0IDIyLjQ2MTI1MDcsMjMuODY0NDQ1NSBMMjIuMzY3MDQzNCwyMy43ODEyNTY5IEwxNi4wMzcsMTcuNDUxIEw5LjcwNzEwNjc4LDIzLjc4MTI1NjkgTDkuNjEyODk5NDQsMjMuODY0NDQ1NSBDOS4yMjA2MDgyNCwyNC4xNjk0NzA0IDguNjUzMzc3MTgsMjQuMTQxNzQwOSA4LjI5Mjg5MzIyLDIzLjc4MTI1NjkgQzcuOTAyMzY4OTMsMjMuMzkwNzMyNiA3LjkwMjM2ODkzLDIyLjc1NzU2NzcgOC4yOTI4OTMyMiwyMi4zNjcwNDM0IEw4LjI5Mjg5MzIyLDIyLjM2NzA0MzQgTDE0LjYyMiwxNi4wMzcgTDguMjkyODkzMjIsOS43MDcxMDY3OCBDNy45MDIzNjg5Myw5LjMxNjU4MjQ5IDcuOTAyMzY4OTMsOC42ODM0MTc1MSA4LjI5Mjg5MzIyLDguMjkyODkzMjIgQzguNjUzMzc3MTgsNy45MzI0MDkyNiA5LjIyMDYwODI0LDcuOTA0Njc5NzIgOS42MTI4OTk0NCw4LjIwOTcwNDYxIFoiIGZpbGw9InJnYmEoMCwgMCwgMCwgMC42KSI+PC9wYXRoPjwvc3ZnPg==')
 }
 
-.token-autocomplete-container .token-autocomplete-token .token-autocomplete-token-delete:hover {
+.token-autocomplete-container .token-autocomplete-delete-button:hover {
     background-color: #e55858;
+}
+
+.token-autocomplete-container .token-autocomplete-token .token-autocomplete-delete-button {
+    margin-left: 4px;
+    flex-shrink: 0;
+}
+
+.token-autocomplete-container > .token-autocomplete-delete-button {
+    flex-shrink: 0;
+    margin-right: 6px;
+    display: none;
+    background-color: #E6E6E6;
+}
+
+.token-autocomplete-container.token-autocomplete-has-value > .token-autocomplete-delete-button {
+    display: block;
 }
 
 .token-autocomplete-container .token-autocomplete-suggestions {
     display: none;
-    width: 100%;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000;
     list-style-type: none;
     padding: 0;
     margin: 0;
+    border: 1px solid #E6E6E6;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.token-autocomplete-container .token-autocomplete-suggestions.token-autocomplete-suggestions-above {
+    top: auto;
+    bottom: 100%;
 }
 
 .token-autocomplete-container .token-autocomplete-suggestions li {
@@ -145,32 +174,11 @@
     color: #808080;
 }
 
-.token-autocomplete-container.optional-singleselect-with-value {
-    position: relative;
-}
-
-.token-autocomplete-container.optional-singleselect-with-value .token-autocomplete-input {
+.token-autocomplete-container.token-autocomplete-singleselect.token-autocomplete-has-value .token-autocomplete-input {
     padding-right: 50px;
 }
 
-.token-autocomplete-container.token-autocomplete-singleselect.optional-singleselect-with-value .token-autocomplete-input:after {
-    right: -20px;
-}
-
-.token-autocomplete-container.token-autocomplete-singleselect.optional-singleselect-with-value .token-singleselect-token-delete {
-    color: #000;
+.token-autocomplete-container.token-autocomplete-singleselect.token-autocomplete-has-value .token-autocomplete-delete-button {
     position: absolute;
-    top: 10px;
-    right: 20px;
-    background-color: #cccccc;
-    border-radius: 20px;
-    padding-left: 4px;
-    padding-right: 4px;
-    padding-bottom: 2px;
-    cursor: pointer;
-    display: block;
-}
-
-.token-autocomplete-container.token-autocomplete-singleselect .token-singleselect-token-delete {
-    display: none;
+    right: 18px;
 }

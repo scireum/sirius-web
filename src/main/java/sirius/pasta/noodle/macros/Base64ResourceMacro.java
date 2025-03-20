@@ -8,21 +8,13 @@
 
 package sirius.pasta.noodle.macros;
 
-import sirius.web.sass.ast.FunctionCall;
-import sirius.kernel.tokenizer.Position;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
-import sirius.pasta.noodle.Environment;
+import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.compiler.CompilationContext;
-import sirius.pasta.noodle.compiler.ir.Node;
-import sirius.web.dispatch.SassFunction;
-import sirius.web.http.MimeHelper;
-import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 
 import javax.annotation.Nonnull;
-import java.util.Base64;
-import java.util.List;
 
 /**
  * Provides a macro which encodes the given resource as Base64 string.
@@ -31,78 +23,37 @@ import java.util.List;
  * <tt>&lt;img src="@base64Resource('/assets/img.png')" /&gt;</tt>.
  */
 @Register
-public class Base64ResourceMacro extends BasicMacro implements SassFunction {
+public class Base64ResourceMacro extends Base64Macro {
 
     @Part
     private Resources resources;
 
     @Override
-    protected Class<?> getType() {
-        return String.class;
-    }
-
-    @Override
-    protected void verifyArguments(CompilationContext compilationContext, Position position, List<Class<?>> args) {
-        if (args.size() != 1 || !CompilationContext.isAssignableTo(args.getFirst(), String.class)) {
-            throw new IllegalArgumentException("Expected a single String as argument.");
+    protected void verifyPath(CompilationContext context, Position position, String path) {
+        if (resources.resolve(path).isEmpty()) {
+            context.warning(position, "Unknown resource: %s", path);
         }
     }
 
     @Override
-    public void verify(CompilationContext context, Position position, List<Node> args) {
-        super.verify(context, position, args);
-
-        if (args.getFirst().isConstant()) {
-            String resourceName = String.valueOf(args.getFirst().getConstantValue());
-            if (resources.resolve(resourceName).isEmpty()) {
-                context.warning(position, "Unknown resource: %s", resourceName);
-            }
-        }
-    }
-
-    @Override
-    public boolean isConstant(CompilationContext context, List<Node> args) {
-        return args.getFirst().isConstant();
-    }
-
-    @Override
-    public String getDescription() {
-        return "Creates a base64 representation of the given resource to be included in IMG tags or CSS files";
-    }
-
-    @Override
-    public Object invoke(Environment environment, Object[] args) {
-        String path = (String) args[0];
-        return encodeResource(path);
-    }
-
-    @Nonnull
-    private String encodeResource(String path) {
+    protected byte[] getContent(String path) {
         if (!path.startsWith("/assets/")) {
             throw new IllegalArgumentException("Only assets can be inlined for security reasons.");
         }
 
-        Resource resource =
-                resources.resolve(path).orElseThrow(() -> new IllegalArgumentException("Unknown resource: " + path));
-
-        String base64Data = Base64.getEncoder().encodeToString(resource.getContent());
-
-        return "data:" + MimeHelper.guessMimeType(path) + ";base64," + base64Data;
-    }
-
-    @Override
-    public String eval(FunctionCall call) {
-        String path = call.getExpectedParam(0).toString();
-        if (path.startsWith("'") && path.endsWith("'")) {
-            path = path.substring(1, path.length() - 1);
-        }
-
-        return encodeResource(path);
+        return resources.resolve(path)
+                        .orElseThrow(() -> new IllegalArgumentException("Unknown resource: " + path))
+                        .getContent();
     }
 
     @Nonnull
     @Override
     public String getName() {
         return "base64Resource";
+    }
+
+    @Override
+    public String getDescription() {
+        return "Creates a base64 representation of the given resource to be included in IMG tags or CSS files";
     }
 }

@@ -1,10 +1,14 @@
+:root {
+  --sci-grid-gap: var(--sci-base-unit);
+}
+
 .sci-row {
   display: flex;
   -ms-flex-wrap: wrap;
   flex-wrap: wrap;
-  margin-right: -$gap;
-  margin-left: -$gap;
-  margin-bottom: -$gap;
+  margin-right: calc(-1 * var(--sci-grid-gap));
+  margin-left: calc(-1 * var(--sci-grid-gap));
+  margin-bottom: calc(-1 * var(--sci-grid-gap));
 }
 
 .sci-grid-auto, .sci-grid-5, .sci-grid-4, .sci-grid-3, .sci-grid-2, .sci-grid-1,
@@ -16,15 +20,15 @@
   -ms-flex-wrap: wrap;
   flex-wrap: wrap;
   align-items: stretch;
-  margin-left: -$gap;
-  margin-right: -$gap;
-  margin-bottom: -$gap;
+  margin-left: calc(-1 * var(--sci-grid-gap));
+  margin-right: calc(-1 * var(--sci-grid-gap));
+  margin-bottom: calc(-1 * var(--sci-grid-gap));
 
   .sci-grid-cell {
     position: relative;
-    padding-right: $gap;
-    padding-left: $gap;
-    padding-bottom: $gap;
+    padding-right: var(--sci-grid-gap);
+    padding-left: var(--sci-grid-gap);
+    padding-bottom: var(--sci-grid-gap);
   }
 }
 
@@ -70,9 +74,9 @@
 .sci-col-lg-66, .sci-col-lg-50, .sci-col-lg-33, .sci-col-lg-25, .sci-col-lg-20 {
   position: relative;
   width: 100%;
-  padding-right: $gap;
-  padding-left: $gap;
-  padding-bottom: $gap;
+  padding-right: var(--sci-grid-gap);
+  padding-left: var(--sci-grid-gap);
+  padding-bottom: var(--sci-grid-gap);
 }
 
 .sci-col-66 {
@@ -290,5 +294,3 @@
     }
   }
 }
-
-

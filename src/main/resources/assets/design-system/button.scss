@@ -4,11 +4,11 @@
   text-align: center;
   border-width: 0;
   border-style: none;
-  border-radius: 0.25rem;
+  border-radius: var(--sci-border-radius);
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
-  padding: 0.75rem 1rem;
+  padding: var(--sci-margin-1_5) var(--sci-margin-2);
   display: inline-block;
 
   transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out;
@@ -17,13 +17,13 @@
 .sci-btn-small {
   @extend .sci-btn;
 
-  padding: 0.35rem 0.35rem;
+  padding: 6px;
 }
 
 .sci-btn-outline {
   @extend .sci-btn;
 
-  border-width: 0.125rem;
+  border-width: var(--sci-border-width-1);
   border-style: solid;
 }
 
@@ -33,14 +33,25 @@
   background-color: $sirius-primary !important;
   color: $sirius-white !important;
 
-  &:hover, &.active {
+  @media (hover: hover) {
+    &:hover {
+      background-color: lighten($sirius-primary, 25%) !important;
+      color: $sirius-white !important;
+    }
+  }
+
+  &.active {
     background-color: lighten($sirius-primary, 25%) !important;
     color: $sirius-white !important;
   }
 
   &:disabled, &.sci-btn-disabled {
-    background-color: lighten($sirius-primary, 25%) !important;
+    background-color: mix($sirius-primary, $sirius-white, 0.6) !important;
     cursor: default;
+  }
+
+  &.sci-btn-disabled {
+    pointer-events: none;
   }
 }
 
@@ -50,14 +61,25 @@
   background-color: $sirius-gray-dark !important;
   color: $sirius-white !important;
 
-  &:hover, &.active {
+  @media (hover: hover) {
+    &:hover {
+      background-color: lighten($sirius-gray-dark, 25%) !important;
+      color: $sirius-white !important;
+    }
+  }
+
+  &.active {
     background-color: lighten($sirius-gray-dark, 25%) !important;
     color: $sirius-white !important;
   }
 
   &:disabled, &.sci-btn-disabled {
-    background-color: lighten($sirius-gray-dark, 25%) !important;
+    background-color: mix($sirius-gray-dark, $sirius-white, 0.6) !important;
     cursor: default;
+  }
+
+  &.sci-btn-disabled {
+    pointer-events: none;
   }
 }
 
@@ -67,7 +89,14 @@
   background-color: $sirius-white;
   color: $sirius-gray-dark !important;
 
-  &:hover, &.active {
+  @media (hover: hover) {
+    &:hover{
+      background-color: $sirius-gray-light !important;
+      color: $sirius-gray-dark !important;
+    }
+  }
+
+  &.active {
     background-color: $sirius-gray-light !important;
     color: $sirius-gray-dark !important;
   }
@@ -80,15 +109,26 @@
   border-color: $sirius-primary !important;
   color: $sirius-primary !important;
 
-  &:hover, &.active {
+  @media (hover: hover) {
+    &:hover {
+      background-color: $sirius-primary !important;
+      color: $sirius-white !important;
+    }
+  }
+
+  &.active {
     background-color: $sirius-primary !important;
     color: $sirius-white !important;
   }
 
   &:disabled, &.sci-btn-disabled {
-    border-color: lighten($sirius-primary, 25%) !important;
-    color: lighten($sirius-primary, 25%) !important;
+    border-color: mix($sirius-primary, $sirius-white, 0.6) !important;
+    color: mix($sirius-primary, $sirius-white, 0.6) !important;
     cursor: default;
+  }
+
+  &.sci-btn-disabled {
+    pointer-events: none;
   }
 }
 
@@ -99,15 +139,26 @@
   border-color: $sirius-gray-dark !important;
   color: $sirius-gray-dark !important;
 
-  &:hover, &.active {
+  @media (hover: hover) {
+    &:hover {
+      background-color: $sirius-gray-dark !important;
+      color: $sirius-white !important;
+    }
+  }
+
+  &.active {
     background-color: $sirius-gray-dark !important;
     color: $sirius-white !important;
   }
 
   &:disabled, &.sci-btn-disabled {
-    border-color: lighten($sirius-gray-dark, 25%) !important;
-    color: lighten($sirius-gray-dark, 25%) !important;
+    border-color: mix($sirius-gray-dark, $sirius-white, 0.6) !important;
+    color: mix($sirius-gray-dark, $sirius-white, 0.6) !important;
     cursor: default;
+  }
+
+  &.sci-btn-disabled {
+    pointer-events: none;
   }
 }
 
@@ -118,7 +169,14 @@
   border-color: $sirius-white !important;
   color: $sirius-white !important;
 
-  &:hover, &.active {
+  @media (hover: hover) {
+    &:hover {
+      background-color: $sirius-white !important;
+      color: $sirius-gray-dark !important;
+    }
+  }
+
+  &.active {
     background-color: $sirius-white !important;
     color: $sirius-gray-dark !important;
   }

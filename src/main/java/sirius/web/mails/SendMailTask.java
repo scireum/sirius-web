@@ -61,6 +61,7 @@ class SendMailTask implements Runnable {
     private String technicalSenderName;
 
     private static final String DEFAULT_SMTP_PORT = "25";
+    private static final String DEFAULT_SMTPS_PORT = "587";
     private static final String X_MAILER = "X-Mailer";
     private static final String MIXED = "mixed";
     private static final String TEXT_HTML_CHARSET_UTF_8 = "text/html; charset=\"UTF-8\"";
@@ -70,16 +71,18 @@ class SendMailTask implements Runnable {
     private static final String MIME_VERSION = "MIME-Version";
     private static final String ALTERNATIVE = "alternative";
     private static final String MAIL_USER = "mail.user";
-    private static final String MAIL_SMTP_AUTH = "mail.smtp.auth";
     private static final String MAIL_TRANSPORT_PROTOCOL = "mail.transport.protocol";
     private static final String MAIL_FROM = "mail.from";
-    private static final String MAIL_SMTP_HOST = "mail.smtp.host";
-    private static final String MAIL_SMTP_STARTTLS_ENABLE = "mail.smtp.starttls.enable";
-    private static final String MAIL_SMTP_SSL_TRUST = "mail.smtp.ssl.trust";
-    private static final String MAIL_SMTP_PORT = "mail.smtp.port";
-    private static final String MAIL_SMTP_CONNECTIONTIMEOUT = "mail.smtp.connectiontimeout";
-    private static final String MAIL_SMTP_TIMEOUT = "mail.smtp.timeout";
-    private static final String MAIL_SMTP_WRITETIMEOUT = "mail.smtp.writetimeout";
+
+    private static final String AUTH = "auth";
+    private static final String HOST = "host";
+    private static final String STARTTLS_ENABLE = "starttls.enable";
+    private static final String CHECKSERVERIDENTITY = "ssl.checkserveridentity";
+    private static final String SSL_TRUST = "ssl.trust";
+    private static final String PORT = "port";
+    private static final String CONNECTIONTIMEOUT = "connectiontimeout";
+    private static final String TIMEOUT = "timeout";
+    private static final String WRITETIMEOUT = "writetimeout";
 
     /**
      * Defines a header which can be used to add a bounce token to an email.
@@ -369,31 +372,54 @@ class SendMailTask implements Runnable {
 
     private Session getMailSession(SMTPConfiguration config) {
         Properties props = new Properties();
-        props.setProperty(MAIL_SMTP_PORT,
-                          Strings.isEmpty(config.getMailPort()) ? DEFAULT_SMTP_PORT : config.getMailPort());
-        props.setProperty(MAIL_SMTP_HOST, config.getMailHost());
+        String protocolPropPrefix = createProtocolPropPrefix(config);
+        props.setProperty(protocolPropPrefix + PORT, determinePort(config));
+        props.setProperty(protocolPropPrefix + HOST, config.getMailHost());
         if (Strings.isFilled(config.getMailSender())) {
             props.setProperty(MAIL_FROM, config.getMailSender());
         }
         // Set a fixed timeout of 60s for all operations - the default timeout is "infinite"
-        props.setProperty(MAIL_SMTP_CONNECTIONTIMEOUT, MAIL_SOCKET_TIMEOUT);
-        props.setProperty(MAIL_SMTP_TIMEOUT, MAIL_SOCKET_TIMEOUT);
-        props.setProperty(MAIL_SMTP_WRITETIMEOUT, MAIL_SOCKET_TIMEOUT);
+        props.setProperty(protocolPropPrefix + CONNECTIONTIMEOUT, MAIL_SOCKET_TIMEOUT);
+        props.setProperty(protocolPropPrefix + TIMEOUT, MAIL_SOCKET_TIMEOUT);
+        props.setProperty(protocolPropPrefix + WRITETIMEOUT, MAIL_SOCKET_TIMEOUT);
 
         props.setProperty(MAIL_TRANSPORT_PROTOCOL, config.getProtocol().getProtocol());
-        props.setProperty(MAIL_SMTP_STARTTLS_ENABLE, Boolean.toString(config.getProtocol().isStarttls()));
+        props.setProperty(protocolPropPrefix + STARTTLS_ENABLE, Boolean.toString(config.getProtocol().isStarttls()));
+        props.setProperty(protocolPropPrefix + CHECKSERVERIDENTITY, Boolean.toString(config.isCheckServerIdentity()));
         if (Strings.isFilled(config.getTrustedServers())) {
-            props.setProperty(MAIL_SMTP_SSL_TRUST, config.getTrustedServers());
+            props.setProperty(protocolPropPrefix + SSL_TRUST, config.getTrustedServers());
         }
         Authenticator auth = new MailAuthenticator(config);
         if (Strings.isEmpty(config.getMailPassword())) {
-            props.setProperty(MAIL_SMTP_AUTH, Boolean.FALSE.toString());
+            props.setProperty(protocolPropPrefix + AUTH, Boolean.FALSE.toString());
             return Session.getInstance(props);
         } else {
             props.setProperty(MAIL_USER, config.getMailUser());
-            props.setProperty(MAIL_SMTP_AUTH, Boolean.TRUE.toString());
+            props.setProperty(protocolPropPrefix + AUTH, Boolean.TRUE.toString());
             return Session.getInstance(props, auth);
         }
+    }
+
+    private String determinePort(SMTPConfiguration config) {
+        if (Strings.isFilled(config.getMailPort())) {
+            return config.getMailPort();
+        }
+        if (SMTPConfiguration.SMTPProtocol.SMTPS.name().equalsIgnoreCase(config.getProtocol().getProtocol())) {
+            return DEFAULT_SMTPS_PORT;
+        }
+        return DEFAULT_SMTP_PORT;
+    }
+
+    /**
+     * Creates the protocol prefix for the given configuration.
+     * <p>
+     * Note that if you're using the "smtps" protocol to access SMTP over SSL, all the properties would be named "mail.smtps.*".
+     *
+     * @param config the configuration to determine the prefix for
+     * @return the prefix to use for the given configuration
+     */
+    private String createProtocolPropPrefix(SMTPConfiguration config) {
+        return "mail." + config.getProtocol().getProtocol() + ".";
     }
 
     private MimeMultipart createContent(String textPart, String htmlPart, List<DataSource> attachments)

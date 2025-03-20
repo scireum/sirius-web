@@ -30,9 +30,9 @@ public class MixinReference {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("@include ");
-        FunctionCall.appendNameAndParameters(sb, name, parameters);
-        return sb.toString();
+        StringBuilder builder = new StringBuilder("@include ");
+        FunctionCall.appendNameAndParameters(builder, name, parameters);
+        return builder.toString();
     }
 
     /**
@@ -49,7 +49,7 @@ public class MixinReference {
      *
      * @param expression the expression to add
      */
-    public void addParameter(sirius.web.sass.ast.Expression expression) {
+    public void addParameter(Expression expression) {
         parameters.add(expression);
     }
 

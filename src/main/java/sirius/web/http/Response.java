@@ -822,7 +822,8 @@ public class Response {
     private void performRedirect(String url, HttpResponseStatus status) {
         if (cacheSeconds == null || cacheSeconds == 0) {
             userMessagesCache.cacheUserMessages(webContext);
-        } else {
+        }
+        if (cacheSeconds != null) {
             setDateAndCacheHeaders(System.currentTimeMillis(), cacheSeconds, isPrivate);
         }
 
@@ -1293,7 +1294,8 @@ public class Response {
      */
     protected static AsyncHttpClient getAsyncClient() {
         if (asyncClient == null) {
-            asyncClient = Dsl.asyncHttpClient(Dsl.config().setCookieStore(null).setRequestTimeout(-1));
+            asyncClient =
+                    Dsl.asyncHttpClient(Dsl.config().setCookieStore(null).setRequestTimeout(Duration.ofSeconds(-1)));
         }
         return asyncClient;
     }

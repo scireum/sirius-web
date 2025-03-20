@@ -17,6 +17,7 @@ import sirius.pasta.tagliatelle.emitter.PushLocalEmitter;
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Handles <tt>i:define</tt> which defines a string as the evaluation result of its body.
@@ -80,5 +81,10 @@ public class DefineTag extends TagHandler {
         }
 
         return super.getExpectedAttributeType(name);
+    }
+
+    @Override
+    public Set<String> getRequiredAttributeNames() {
+        return Set.of(PARAM_NAME);
     }
 }

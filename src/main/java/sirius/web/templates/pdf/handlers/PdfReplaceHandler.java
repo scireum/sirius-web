@@ -21,6 +21,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Optional;
 
 /**
  * Represents a image replace handler that is used by {@link sirius.web.templates.pdf.ImageReplacedElementFactory} to
@@ -32,6 +33,16 @@ public abstract class PdfReplaceHandler implements Priorized {
     @Override
     public int getPriority() {
         return Priorized.DEFAULT_PRIORITY;
+    }
+
+    /**
+     * Attempts to rewrite a plain URL to a PDF-compatible one.
+     *
+     * @param url the plain URL to rewrite
+     * @return an optional containing the new URL if the plain URL could be rewritten, an empty optional otherwise
+     */
+    public Optional<String> tryRewritePlainUrl(String url) {
+        return Optional.empty();
     }
 
     /**
@@ -84,7 +95,7 @@ public abstract class PdfReplaceHandler implements Priorized {
             Tuple<Integer, Integer> newSize = computeResizeBox(cssWidth, cssHeight, image);
 
             if (newSize != null) {
-                image.scale(newSize.getFirst(), newSize.getSecond());
+                return image.scale(newSize.getFirst(), newSize.getSecond());
             }
         }
 
@@ -119,7 +130,10 @@ public abstract class PdfReplaceHandler implements Priorized {
     }
 
     @Nonnull
-    private static Tuple<Integer, Integer> downscaleResource(int cssWidth, int cssHeight, int imageWidth, int imageHeight) {
+    private static Tuple<Integer, Integer> downscaleResource(int cssWidth,
+                                                             int cssHeight,
+                                                             int imageWidth,
+                                                             int imageHeight) {
 
         // First, check if we need to scale down the width
         if (imageWidth > cssWidth) {
@@ -138,7 +152,10 @@ public abstract class PdfReplaceHandler implements Priorized {
     }
 
     @Nonnull
-    private static Tuple<Integer, Integer> upscaleResource(int cssWidth, int cssHeight, int imageWidth, int imageHeight) {
+    private static Tuple<Integer, Integer> upscaleResource(int cssWidth,
+                                                           int cssHeight,
+                                                           int imageWidth,
+                                                           int imageHeight) {
 
         // First, scale up only the width
         imageHeight = cssWidth * imageHeight / imageWidth;

@@ -16,11 +16,11 @@ import java.util.List;
  */
 public class Stylesheet {
 
-    private String name;
-    private List<Variable> variables = new ArrayList<>();
-    private List<Mixin> mixins = new ArrayList<>();
-    private List<Section> sections = new ArrayList<>();
-    private List<String> imports = new ArrayList<>();
+    private final String name;
+    private final List<Variable> variables = new ArrayList<>();
+    private final List<Mixin> mixins = new ArrayList<>();
+    private final List<Section> sections = new ArrayList<>();
+    private final List<String> imports = new ArrayList<>();
 
     /**
      * Creates a new stylesheet with the given name
@@ -114,15 +114,15 @@ public class Stylesheet {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (Variable var : variables) {
-            sb.append(var);
-            sb.append(";\n");
+        StringBuilder builder = new StringBuilder();
+        for (Variable variable : variables) {
+            builder.append(variable);
+            builder.append(";\n");
         }
-        for (Section s : sections) {
-            sb.append("\n");
-            sb.append(s);
+        for (Section section : sections) {
+            builder.append("\n");
+            builder.append(section);
         }
-        return sb.toString();
+        return builder.toString();
     }
 }

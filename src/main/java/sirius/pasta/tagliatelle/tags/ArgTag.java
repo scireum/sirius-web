@@ -19,6 +19,7 @@ import sirius.pasta.tagliatelle.emitter.CompositeEmitter;
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Handles <tt>i:arg</tt> which specifies a template argument.
@@ -156,5 +157,10 @@ public class ArgTag extends TagHandler {
         }
 
         return super.getExpectedAttributeType(name);
+    }
+
+    @Override
+    public Set<String> getRequiredAttributeNames() {
+        return Set.of(PARAM_NAME, PARAM_TYPE);
     }
 }

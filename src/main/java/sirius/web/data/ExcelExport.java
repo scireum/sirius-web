@@ -125,8 +125,8 @@ public class ExcelExport {
             this.colWidthInPixel = colWidthInPixel;
             try {
                 determineImageSize(fileData);
-            } catch (IOException e) {
-                throw Exceptions.handle(e);
+            } catch (IOException exception) {
+                throw Exceptions.handle(exception);
             }
         }
 
@@ -382,8 +382,8 @@ public class ExcelExport {
                                             .collect(Collectors.joining(", ")));
                     return;
                 }
-            } catch (SQLException e) {
-                Exceptions.ignore(e);
+            } catch (SQLException exception) {
+                Exceptions.ignore(exception);
             }
         }
         cell.setCellValue(createRichTextString(obj.toString()));
@@ -559,11 +559,15 @@ public class ExcelExport {
                 }
                 workbook.write(out);
             }
-        } catch (IOException e) {
-            throw Exceptions.handle(e);
+        } catch (IOException exception) {
+            throw Exceptions.handle(exception);
         } finally {
             if (workbook instanceof SXSSFWorkbook sxssfWorkbook) {
-                sxssfWorkbook.dispose();
+                try {
+                    sxssfWorkbook.close();
+                } catch (IOException exception) {
+                    throw Exceptions.handle(exception);
+                }
             }
         }
     }

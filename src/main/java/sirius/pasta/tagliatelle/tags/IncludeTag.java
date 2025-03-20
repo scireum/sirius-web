@@ -13,13 +13,12 @@ import sirius.kernel.di.std.Register;
 import sirius.pasta.tagliatelle.TemplateArgument;
 import sirius.pasta.tagliatelle.emitter.CompositeEmitter;
 import sirius.pasta.tagliatelle.emitter.ConstantEmitter;
-import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 
 /**
  * Handles <tt>i:include</tt> which includes the contents of the given resource without any processing.
@@ -63,19 +62,9 @@ public class IncludeTag extends TagHandler {
 
     @Override
     public void apply(CompositeEmitter targetBlock) {
-        String resourcePath = getConstantAttribute(ATTR_NAME).asString();
-        if (!resourcePath.startsWith("/assets") && !resourcePath.startsWith("assets/")) {
-            throw new IllegalArgumentException("For security reasons only assets can be included. Invalid path: "
-                                               + resourcePath);
-        }
-
-        Optional<Resource> resource = resources.resolve(resourcePath);
-        if (resource.isEmpty()) {
-            getCompilationContext().error(getStartOfTag(), "Cannot find the resource: %s", resourcePath);
-            return;
-        }
-
-        targetBlock.addChild(new ConstantEmitter(getStartOfTag()).append(resource.get().getContentAsString()));
+        tryResolveAssetResource(getConstantAttribute(ATTR_NAME).asString()).ifPresent(resource -> {
+            targetBlock.addChild(new ConstantEmitter(getStartOfTag()).append(resource.getContentAsString()));
+        });
     }
 
     @Override
@@ -85,5 +74,10 @@ public class IncludeTag extends TagHandler {
         }
 
         return super.getExpectedAttributeType(name);
+    }
+
+    @Override
+    public Set<String> getRequiredAttributeNames() {
+        return Set.of(ATTR_NAME);
     }
 }

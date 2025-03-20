@@ -8,8 +8,10 @@
 
 package sirius.pasta.tagliatelle.tags;
 
-import sirius.kernel.tokenizer.Position;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
+import sirius.kernel.di.std.Part;
+import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.Callable;
 import sirius.pasta.noodle.ConstantCall;
 import sirius.pasta.noodle.ScriptingException;
@@ -17,16 +19,24 @@ import sirius.pasta.noodle.compiler.VariableScoper;
 import sirius.pasta.tagliatelle.compiler.TemplateCompilationContext;
 import sirius.pasta.tagliatelle.emitter.CompositeEmitter;
 import sirius.pasta.tagliatelle.emitter.Emitter;
+import sirius.web.resources.Resource;
+import sirius.web.resources.Resources;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Handles a tag detected by the {@link sirius.pasta.tagliatelle.compiler.TemplateCompiler}.
  */
 public abstract class TagHandler {
+
+    @Part
+    private static Resources resources;
 
     protected Position startOfTag;
     protected TemplateCompilationContext compilationContext;
@@ -83,6 +93,14 @@ public abstract class TagHandler {
         }
 
         return attributes.get(name);
+    }
+
+    /**
+     * Returns all required attribute names.
+     * @return a set of all attribute names.
+     */
+    public Set<String> getRequiredAttributeNames() {
+        return Collections.emptySet();
     }
 
     /**
@@ -238,5 +256,29 @@ public abstract class TagHandler {
      */
     public void afterTag() {
         this.scope.pop();
+    }
+
+    /**
+     * Attempts to resolve the given path into a resource.
+     *
+     * @param path the path to resolve
+     * @return the resolved resource, or an empty optional if the resource cannot be found
+     */
+    protected Optional<Resource> tryResolveAssetResource(String path) {
+        if (Strings.isEmpty(path)) {
+            return Optional.empty();
+        }
+
+        if (!path.startsWith("/assets") && !path.startsWith("assets/")) {
+            getCompilationContext().error(getStartOfTag(), "Path must point to an asset. Given: %s", path);
+            return Optional.empty();
+        }
+
+        Optional<Resource> resource = resources.resolve(path);
+        if (resource.isEmpty()) {
+            getCompilationContext().error(getStartOfTag(), "Cannot find the resource: %s", path);
+        }
+
+        return resource;
     }
 }

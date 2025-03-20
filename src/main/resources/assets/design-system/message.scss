@@ -1,18 +1,28 @@
 .sci-message-banner {
-  padding: 1rem;
+  padding: var(--sci-base-unit);
   color: $sirius-black;
   background-color: $sirius-white;
-  border-radius: 0.25rem;
+  border-radius: var(--sci-border-radius);
   // This is no shadow, but an auxiliary border.
-  box-shadow: 0 0 1px $sirius-black;
+  box-shadow: 0 0 var(--sci-border-width-0_5) $sirius-black;
 }
 
 .sci-message-banner-success {
   @extend .sci-message-banner;
-  border-left: 0.25rem solid $sirius-deep-blue-dark;
+  border-left: var(--sci-border-width-2) solid $sirius-green-dark;
+}
+
+.sci-message-banner-info {
+  @extend .sci-message-banner;
+  border-left: var(--sci-border-width-2) solid $sirius-deep-blue-dark;
+}
+
+.sci-message-banner-warning {
+  @extend .sci-message-banner;
+  border-left: var(--sci-border-width-2) solid $sirius-yellow-dark;
 }
 
 .sci-message-banner-error {
   @extend .sci-message-banner;
-  border-left: 0.25rem solid $sirius-red;
+  border-left: var(--sci-border-width-2) solid $sirius-red;
 }

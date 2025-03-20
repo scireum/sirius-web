@@ -76,7 +76,6 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -148,14 +147,14 @@ public class WebContext implements SubContext {
     private String rawRequestedURI;
 
     /**
-     * The base url (without the uri, like: http://myhost.com)
+     * The base url (without the uri, like: {@code http://myhost.com})
      */
     private String baseURL;
 
     /**
      * Contains the parameters submitted in the query string (?param=value...)
      */
-    private Map<String, List<String>> queryString;
+    private QueryString queryString;
 
     /**
      * Contains decoded cookies which where sent by the client
@@ -329,6 +328,12 @@ public class WebContext implements SubContext {
      */
     @ConfigValue("http.sessionCookie.sameSite")
     private static CookieHeaderNames.SameSite sessionCookieSameSite;
+
+    /**
+     * The same site attribute of the Session Cookie for unsecure (i.e. http without SSL) connections
+     */
+    @ConfigValue("http.sessionCookie.sameSiteUnsecure")
+    private static CookieHeaderNames.SameSite sessionCookieSameSiteUnsecure;
 
     /**
      * The same site attribute of the Session Cookie
@@ -573,6 +578,7 @@ public class WebContext implements SubContext {
      *
      * @param key the key used to look for the value
      * @return a Value representing the provided data.
+     * @see QueryString#get(String)
      */
     @Nonnull
     @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
@@ -585,15 +591,8 @@ public class WebContext implements SubContext {
             decodeQueryString();
         }
 
-        if (queryString.containsKey(key)) {
-            List<String> values = getParameters(key);
-            if (values.size() == 1) {
-                return Value.of(values.getFirst());
-            } else if (values.isEmpty()) {
-                return Value.EMPTY;
-            } else {
-                return Value.of(values);
-            }
+        if (queryString.hasParameter(key)) {
+            return queryString.get(key);
         }
 
         if (postDecoder != null) {
@@ -719,7 +718,7 @@ public class WebContext implements SubContext {
         if (queryString == null) {
             decodeQueryString();
         }
-        return queryString.containsKey(key);
+        return queryString.hasParameter(key);
     }
 
     /**
@@ -907,7 +906,7 @@ public class WebContext implements SubContext {
         setCookie(getSessionPinCookieName(),
                   givenSessionPin,
                   SESSION_PIN_COOKIE_TTL,
-                  sessionCookieSameSite,
+                  determineSessionCookieSameSite(),
                   sessionCookieSecurity);
     }
 
@@ -1130,7 +1129,7 @@ public class WebContext implements SubContext {
      * If a POST request with query string is present, parameters in the query string have precedence.
      *
      * @param key the name of the parameter to fetch
-     * @return the first value or <tt>null</tt> if the parameter was not set or empty
+     * @return the first value or empty string if parameter is empty or <tt>null</tt> if the parameter was not set
      */
     @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getParameter(String key) {
@@ -1145,18 +1144,15 @@ public class WebContext implements SubContext {
      *
      * @param key the name of the parameter to fetch
      * @return all values in the query string
+     * @see QueryString#getParameters(String)
      */
     @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public List<String> getParameters(String key) {
         if (queryString == null) {
             decodeQueryString();
         }
-        if (queryString.containsKey(key)) {
-            List<String> result = queryString.get(key);
-            if (result == null) {
-                return Collections.emptyList();
-            }
-            return result;
+        if (queryString.hasParameter(key)) {
+            return queryString.getParameters(key);
         }
         return getPostParameters(key);
     }
@@ -1196,9 +1192,8 @@ public class WebContext implements SubContext {
      * Decodes the query string on demand
      */
     private void decodeQueryString() {
-        QueryStringDecoder decoder = new QueryStringDecoder(request.uri(), StandardCharsets.UTF_8);
-        requestedURI = decoder.path();
-        queryString = decoder.parameters();
+        queryString = new QueryString(request.uri());
+        requestedURI = queryString.path();
     }
 
     /**
@@ -1225,9 +1220,8 @@ public class WebContext implements SubContext {
      * @return the web context itself for fluent method calls
      */
     public WebContext withCustomURI(String uri) {
-        QueryStringDecoder decoder = new QueryStringDecoder(uri, StandardCharsets.UTF_8);
-        requestedURI = decoder.path();
-        queryString = decoder.parameters();
+        queryString = new QueryString(uri);
+        requestedURI = queryString.path();
         rawRequestedURI = stripQueryFromURI(uri);
 
         return this;
@@ -1324,20 +1318,6 @@ public class WebContext implements SubContext {
     }
 
     /**
-     * Sets a cookie value to be sent back to the client
-     * <p>
-     * The generated cookie will be a session cookie and vanish once the user agent is closed
-     *
-     * @param name  the cookie to create
-     * @param value the contents of the cookie
-     * @deprecated Use {@link #setHTTPSessionCookie(String, String)} instead.
-     */
-    @Deprecated(since = "2023/08/08", forRemoval = true)
-    public void setSessionCookie(String name, String value) {
-        setCookie(name, value, Long.MIN_VALUE, sessionCookieSameSite, sessionCookieSecurity);
-    }
-
-    /**
      * Sets a http only cookie value to be sent back to the client.
      * <p>
      * The generated cookie will be a session cookie and vanish once the user agent is closed. Also, this cookie
@@ -1361,7 +1341,7 @@ public class WebContext implements SubContext {
      * @param maxAgeSeconds contains the max age of this cookie in seconds
      */
     public void setHTTPCookie(String name, String value, long maxAgeSeconds) {
-        setCookie(name, value, maxAgeSeconds, sessionCookieSameSite, sessionCookieSecurity);
+        setCookie(name, value, maxAgeSeconds, determineSessionCookieSameSite(), sessionCookieSecurity);
     }
 
     /**
@@ -1486,7 +1466,11 @@ public class WebContext implements SubContext {
         if (ttl == 0) {
             setHTTPSessionCookie(sessionCookieName, protection + ":" + value);
         } else {
-            setCookie(sessionCookieName, protection + ":" + value, ttl, sessionCookieSameSite, sessionCookieSecurity);
+            setCookie(sessionCookieName,
+                      protection + ":" + value,
+                      ttl,
+                      determineSessionCookieSameSite(),
+                      sessionCookieSecurity);
         }
     }
 
@@ -1495,6 +1479,14 @@ public class WebContext implements SubContext {
             return sessionCookieTTL;
         }
         return defaultSessionCookieTTL.getSeconds();
+    }
+
+    private CookieHeaderNames.SameSite determineSessionCookieSameSite() {
+        if (isSSL()) {
+            return sessionCookieSameSite;
+        }
+
+        return sessionCookieSameSiteUnsecure;
     }
 
     /**
@@ -1629,7 +1621,7 @@ public class WebContext implements SubContext {
         if (queryString == null) {
             decodeQueryString();
         }
-        Set<String> names = new LinkedHashSet<>(queryString.keySet());
+        Set<String> names = queryString.getParameterNames();
         if (postDecoder != null) {
             try {
                 for (InterfaceHttpData data : postDecoder.getBodyHttpDatas()) {

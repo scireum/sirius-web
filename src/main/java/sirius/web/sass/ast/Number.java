@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
  * Represents a number, which might possibly also have a unit like "px" or "%".
  */
 public class Number implements Expression {
+
     private final String value;
     private final String unit;
 
@@ -45,15 +46,15 @@ public class Number implements Expression {
      */
     public Number(String value) {
         numericValue = null;
-        Matcher m = NORMAL_NUMBER.matcher(value);
-        if (m.matches()) {
-            this.value = m.group(1);
-            this.unit = m.group(2);
+        Matcher matcher = NORMAL_NUMBER.matcher(value);
+        if (matcher.matches()) {
+            this.value = matcher.group(1);
+            this.unit = matcher.group(2);
         } else {
-            m = DECIMAL_NUMBER.matcher(value);
-            if (m.matches()) {
-                this.value = m.group(1);
-                this.unit = m.group(2);
+            matcher = DECIMAL_NUMBER.matcher(value);
+            if (matcher.matches()) {
+                this.value = matcher.group(1);
+                this.unit = matcher.group(2);
             } else {
                 this.value = value;
                 this.unit = "";
@@ -102,7 +103,7 @@ public class Number implements Expression {
     }
 
     @Override
-    public Expression eval(Scope scope, Generator gen) {
+    public Expression eval(Scope scope, Generator generator) {
         return this;
     }
 }

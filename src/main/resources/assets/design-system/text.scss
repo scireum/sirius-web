@@ -1,3 +1,15 @@
+:root {
+  --sci-font-size-base: var(--sci-base-unit); // Default: 16px / 1rem
+  --sci-font-size-smallest: calc(0.7 * var(--sci-font-size-base));  // Default: 11.2px / 0.7rem
+  --sci-font-size-smaller: calc(0.9 * var(--sci-font-size-base)); // Default: 14.4px / 0.9rem
+  --sci-font-size-larger: calc(1.25 * var(--sci-font-size-base)); // Default: 20px / 1.25rem
+  --sci-font-size-h1: calc(2.25 * var(--sci-font-size-base)); // Default: 36px / 2.25rem
+  --sci-font-size-h2: calc(1.75 * var(--sci-font-size-base)); // Default: 28px / 1.75rem
+  --sci-font-size-h3: calc(1.5 * var(--sci-font-size-base)); // Default: 24px / 1.5rem
+  --sci-font-size-h4: calc(1.25 * var(--sci-font-size-base)); // Default: 20px / 1.25rem
+  --sci-font-size-h5: calc(1.1 * var(--sci-font-size-base)); // Default: 17.6px / 1.1rem
+}
+
 .sci-enable-font {
   .sci-font {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
@@ -6,40 +18,40 @@
 
 .sci-text {
   line-height: 1.5;
-  font-size: 1rem;
+  font-size: var(--sci-font-size-base);
   color: $sirius-black;
 }
 
 .sci-text-smallest {
-  font-size: 0.7rem;
+  font-size: var(--sci-font-size-smallest);
 }
 
 .sci-text-smaller {
-  font-size: 0.9rem;
+  font-size: var(--sci-font-size-smaller);
 }
 
 .sci-text-larger {
-  font-size: 1.25rem;
+  font-size: var(--sci-font-size-larger);
 }
 
 .sci-text-size-h1 {
-  font-size: 2.25rem;
+  font-size: var(--sci-font-size-h1);
 }
 
 .sci-text-size-h2 {
-  font-size: 1.75rem;
+  font-size: var(--sci-font-size-h2);
 }
 
 .sci-text-size-h3 {
-  font-size: 1.5rem;
+  font-size: var(--sci-font-size-h3);
 }
 
 .sci-text-size-h4 {
-  font-size: 1.25rem;
+  font-size: var(--sci-font-size-h4);
 }
 
 .sci-text-size-h5 {
-  font-size: 1.1rem;
+  font-size: var(--sci-font-size-h5);
 }
 
 .sci-text-ellipsis {
@@ -50,194 +62,101 @@
 }
 
 .sci-white-space-normal {
-  white-space: normal;
+  white-space: normal !important;
 }
 
 .sci-white-space-pre {
-  white-space: pre;
+  white-space: pre !important;
 }
 
 .sci-white-space-pre-wrap {
-  white-space: pre-wrap;
+  white-space: pre-wrap !important;
 }
 
 .sci-white-space-pre-line {
-  white-space: pre-line;
+  white-space: pre-line !important;
 }
 
 .sci-white-space-no-wrap {
-  white-space: nowrap;
+  white-space: nowrap !important;
+}
+
+.sci-line-height-100 {
+  line-height: 1 !important;
+}
+
+.sci-line-height-110 {
+  line-height: 1.1 !important;
 }
 
 .sci-line-height-125 {
-  line-height: 1.25;
+  line-height: 1.25 !important;
 }
 
-// Normally, sci-text, sci-text-smaller and sci-text-larger use REM based font sizes so that our layout
-// properly integrates into the page. However, some pages define ridiculous base font sizes. Therefore,
-// a marker-class "sci-enable-font-size" can be placed on a surrounding element. We then use a fixed set
-// of font-sizes based on 16px for desktops, 14px for tablets and 12px for mobile...
-.sci-enable-font-size {
-
-  .sci-text {
-    font-size: 12px;
-  }
-
-  .sci-text-smallest {
-    font-size: 8px;
-  }
-
-  .sci-text-smaller {
-    font-size: 11px;
-  }
-
-  .sci-text-larger {
-    font-size: 15px;
-  }
-
-  .sci-text-size-h1 {
-    font-size: 27px;
-  }
-
-  .sci-text-size-h2 {
-    font-size: 21px;
-  }
-
-  .sci-text-size-h3 {
-    font-size: 18px;
-  }
-
-  .sci-text-size-h4 {
-    font-size: 15px;
-  }
-
-  .sci-text-size-h5 {
-    font-size: 13px;
-  }
-
-  @media (min-width: $md-min-width) {
-    .sci-text {
-      font-size: 14px;
-    }
-
-    .sci-text-smallest {
-      font-size: 10px;
-    }
-
-    .sci-text-smaller {
-      font-size: 12px;
-    }
-
-    .sci-text-larger {
-      font-size: 17px;
-    }
-
-    .sci-text-size-h1 {
-      font-size: 31px;
-    }
-
-    .sci-text-size-h2 {
-      font-size: 24px;
-    }
-
-    .sci-text-size-h3 {
-      font-size: 21px;
-    }
-
-    .sci-text-size-h4 {
-      font-size: 18px;
-    }
-
-    .sci-text-size-h5 {
-      font-size: 15px;
-    }
-  }
-
-  @media (min-width: $lg-min-width) {
-    .sci-text {
-      font-size: 16px;
-    }
-
-    .sci-text-smallest {
-      font-size: 12px;
-    }
-
-    .sci-text-smaller {
-      font-size: 14px;
-    }
-
-    .sci-text-larger {
-      font-size: 20px;
-    }
-
-    .sci-text-size-h1 {
-      font-size: 36px;
-    }
-
-    .sci-text-size-h2 {
-      font-size: 28px;
-    }
-
-    .sci-text-size-h3 {
-      font-size: 24px;
-    }
-
-    .sci-text-size-h4 {
-      font-size: 20px;
-    }
-
-    .sci-text-size-h5 {
-      font-size: 17px;
-    }
-  }
-
+.sci-line-height-150 {
+  line-height: 1.50 !important;
 }
-
 
 .sci-bold {
-  font-weight: bold;
+  font-weight: bold !important;
 }
 
 .sci-light {
-  font-weight: 300;
+  font-weight: 300 !important;
 }
 
 .sci-text-soft {
-  color: #212529;
+  color: #212529 !important;
 }
 
 .sci-text-muted {
-  color: #6c757d;
+  color: #6c757d !important;
 }
 
 .sci-text-align-left {
-  text-align: left;
+  text-align: left !important;
 }
 
 .sci-text-align-center {
-  text-align: center;
+  text-align: center !important;
 }
 
 .sci-text-align-right {
-  text-align: right;
+  text-align: right !important;
+}
+
+.sci-text-vertical-align-top {
+  vertical-align: top;
+}
+
+.sci-text-vertical-align-center {
+  vertical-align: center;
+}
+
+.sci-text-vertical-align-bottom {
+  vertical-align: bottom;
 }
 
 .sci-decoration-none {
-  text-decoration: none;
+  text-decoration: none !important;
 }
 
 .sci-decoration-underline {
-  text-decoration: underline;
+  text-decoration: underline !important;
+}
+
+.sci-decoration-line-through {
+  text-decoration: line-through !important;
 }
 
 .sci-text-transform-uppercase {
-  text-transform: uppercase;
+  text-transform: uppercase !important;
 }
 
 .sci-text-transform-lowercase {
-  text-transform: lowercase;
+  text-transform: lowercase !important;
 }
 
 .sci-text-transform-capitalize {
-  text-transform: capitalize;
+  text-transform: capitalize !important;
 }

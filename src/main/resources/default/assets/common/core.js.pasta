@@ -55,6 +55,14 @@ sirius.isVisibleNode = function (_node) {
     if (!sirius.isDefined(_node) || !sirius.isElement(_node)) {
         return false;
     }
+
+    if (_node.checkVisibility) {
+        return _node.checkVisibility({
+            visibilityProperty: true,
+            opacityProperty: true
+        });
+    }
+
     const style = window.getComputedStyle(_node);
     return style && style.display !== 'none' && style.visibility !== 'hidden' && style.visibility !== 'collapse';
 }
@@ -116,10 +124,11 @@ sirius.isFilled = function (value) {
  * @param callback the callback to execute once the DOM is completely ready
  */
 sirius.ready = function (callback) {
-    // Add as listener in case DOM is loading...
-    document.addEventListener("DOMContentLoaded", callback);
-    // Call manually is we're late...
-    if (document.readyState === "interactive" || document.readyState === "complete") {
+    if (document.readyState === "loading") {
+        // Add as listener in case DOM is loading...
+        document.addEventListener("DOMContentLoaded", callback);
+    } else {
+        // Call manually if we're late...
         callback();
     }
 }
@@ -249,15 +258,33 @@ sirius.getJSON = function (url, params) {
 
 /**@
  * Calls the given URL, posts the given params and retrieves the resulting JSON.
+ * <p>
+ * The parameters can either be specified as an object with key-value pairs (where the value is either a string or an
+ * array of strings), directly as a URLSearchParams, or as a query string.
  *
- * @param url the URL to invoke
- * @param params the parameters to send POST data (parameters with 'undefined' values are not sent to the server)
+ * @param {RequestInfo|URL} url the URL to invoke
+ * @param {Object|string|URLSearchParams} params the parameters to send POST data (parameters with 'undefined' values
+ *        are not sent to the server)
+ * @param {boolean} [useSearchParams] if true, the parameters are sent as URLSearchParams instead of FormData. If the
+ *        parameters are specified as URLSearchParams or query string, this is ignored
  * @returns {Promise<any>} the received JSON data
  */
-sirius.postJson = function (url, params) {
+sirius.postJson = function (url, params, useSearchParams) {
+    let body;
+
+    if (typeof params === 'string' || params instanceof URLSearchParams) {
+        body = params;
+    } else if (useSearchParams) {
+        // Convert the body to URLSearchParams, this may be necessary when using problematic characters in field names
+        // that are converted/replaced by the multipart decoder of Netty.
+        body = new URLSearchParams(sirius.convertObjectToFormData(params));
+    } else {
+        body = sirius.convertObjectToFormData(params);
+    }
+
     return fetch(url, {
         method: "post",
-        body: sirius.convertObjectToFormData(params)
+        body: body
     }).then(function (response) {
         return response.json();
     });
@@ -374,6 +401,7 @@ sirius.addElementVisibleListener = function (selector, listener, distanceFactor)
         const factor = distanceFactor || 1;
         const rect = element.getBoundingClientRect();
 
+        // Check the position relative to the view port
         const verticalMargin = rect.height * factor;
         const horizontalMargin = rect.width * factor;
         const clientHeight = document.documentElement.clientHeight;
@@ -382,7 +410,7 @@ sirius.addElementVisibleListener = function (selector, listener, distanceFactor)
         const visibleVertically = (rect.bottom + verticalMargin) >= 0 && (rect.top - verticalMargin) < clientHeight;
         const visibleHorizontally = (rect.left + horizontalMargin) >= 0 && (rect.right - horizontalMargin) < clientWidth;
 
-        return visibleVertically && visibleHorizontally;
+        return visibleVertically && visibleHorizontally && sirius.isVisibleNode(element);
     };
 
     const handleVisibleElements = function () {
@@ -817,6 +845,50 @@ sirius.extractFileExtension = function (filename) {
 }
 
 /**@
+ * Checks if the given file extension corresponds to an image format that can be displayed in the frontend.
+ *
+ * @param {string} extension the extension to check
+ * @returns {boolean} true if the extension is a displayable image, false otherwise
+ */
+sirius.isDisplayableImage = function (extension) {
+    return extension === '.jpg' || extension === '.jpeg' || extension === '.png' || extension === '.gif' || extension === '.webp';
+}
+
+/**@
+ * Determines the icon class for the given file extension.
+ *
+ * @param {string} extension the file extension to determine the icon for
+ * @returns {string} the icon class for the given file extension
+ */
+sirius.determineFileIcon = function (extension) {
+    if (extension === '.pdf') {
+        return 'fa-file-pdf';
+    }
+
+    if (extension === '.tif' || extension === '.tiff' || extension === '.bmp' || extension === '.svg') {
+        return 'fa-image';
+    }
+
+    if (extension === '.doc' || extension === '.docx') {
+        return 'fa-file-word';
+    }
+
+    if (extension === '.xls' || extension === '.xlsx') {
+        return 'fa-file-excel';
+    }
+
+    if (extension === '.ppt' || extension === '.pps' || extension === '.pptx' || extension === '.ppsx') {
+        return 'fa-file-powerpoint';
+    }
+
+    if (extension === '.zip' || extension === '.rar') {
+        return 'fa-file-zipper';
+    }
+
+    return 'fa-file';
+};
+
+/**@
  * Copies the given text to the clipboard.
  *
  * If an element is given, it will be marked as "copied" for a short time.
@@ -845,7 +917,7 @@ sirius.copyToClipboard = function (textToCopy, _element) {
     _fakeElement.setAttribute('readonly', '');
     _fakeElement.value = textToCopy;
     document.body.appendChild(_fakeElement);
-    _fakeElement.focus();
+    _fakeElement.focus({preventScroll: true});
 
     var range = document.createRange();
     range.selectNodeContents(_fakeElement);

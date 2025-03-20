@@ -128,19 +128,19 @@ public class Color implements Expression {
      * @param hexString a hex representation like #ff00ff
      */
     public Color(String hexString) {
-        Matcher m = RGB_HEX_PATTERN.matcher(hexString);
-        if (m.matches()) {
-            r = Integer.parseInt(m.group(1).toLowerCase(), 16);
-            g = Integer.parseInt(m.group(2).toLowerCase(), 16);
-            b = Integer.parseInt(m.group(3).toLowerCase(), 16);
+        Matcher matcher = RGB_HEX_PATTERN.matcher(hexString);
+        if (matcher.matches()) {
+            r = Integer.parseInt(matcher.group(1).toLowerCase(), 16);
+            g = Integer.parseInt(matcher.group(2).toLowerCase(), 16);
+            b = Integer.parseInt(matcher.group(3).toLowerCase(), 16);
             return;
         }
 
-        m = SHORT_RGB_HEX_PATTERN.matcher(hexString);
-        if (m.matches()) {
-            r = Integer.parseInt(m.group(1).toLowerCase() + m.group(1).toLowerCase(), 16);
-            g = Integer.parseInt(m.group(2).toLowerCase() + m.group(2).toLowerCase(), 16);
-            b = Integer.parseInt(m.group(3).toLowerCase() + m.group(3).toLowerCase(), 16);
+        matcher = SHORT_RGB_HEX_PATTERN.matcher(hexString);
+        if (matcher.matches()) {
+            r = Integer.parseInt(matcher.group(1).toLowerCase() + matcher.group(1).toLowerCase(), 16);
+            g = Integer.parseInt(matcher.group(2).toLowerCase() + matcher.group(2).toLowerCase(), 16);
+            b = Integer.parseInt(matcher.group(3).toLowerCase() + matcher.group(3).toLowerCase(), 16);
             return;
         }
 
@@ -228,7 +228,7 @@ public class Color implements Expression {
     }
 
     @Override
-    public Expression eval(Scope scope, Generator gen) {
+    public Expression eval(Scope scope, Generator generator) {
         return this;
     }
 

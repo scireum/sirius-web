@@ -18,6 +18,7 @@ import sirius.pasta.tagliatelle.emitter.PushLocalEmitter;
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Handles <tt>i:local</tt> which defines a local variable.
@@ -91,5 +92,10 @@ public class LocalTag extends TagHandler {
         }
 
         return super.getExpectedAttributeType(name);
+    }
+
+    @Override
+    public Set<String> getRequiredAttributeNames() {
+        return Set.of(PARAM_NAME, PARAM_VALUE);
     }
 }

@@ -8,6 +8,7 @@
 
 package sirius.web.security;
 
+import sirius.kernel.di.std.AutoRegister;
 import sirius.kernel.di.std.Priorized;
 
 import javax.annotation.Nonnull;
@@ -16,7 +17,7 @@ import javax.annotation.Nonnull;
  * Helpers are used by the {@link ScopeInfo} to perform certain tasks.
  * <p>
  * Note that a helper is created <b>once</b> per scope and not per user or request. Everything that is specific
- * to the user or request has the be in the request itself or the session.
+ * to the user or request has to be in the request itself or the session.
  * <p>
  * Variables can be annotated using {@link HelperConfig} and will be automatically filled with the value set in the
  * scope config. HOWEVER: Note that user specific overwrites of this config value cannot be applied. These values
@@ -24,6 +25,7 @@ import javax.annotation.Nonnull;
  *
  * @param <H> the type of helpers created by this factory
  */
+@AutoRegister
 public interface HelperFactory<H> extends Priorized {
 
     @Override

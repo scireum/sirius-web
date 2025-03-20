@@ -19,6 +19,7 @@ import java.util.List;
  * Represents a list of values.
  */
 public class ValueList implements Expression {
+
     private final List<Expression> elements = new ArrayList<>();
     private boolean keepCommas = false;
 
@@ -33,14 +34,14 @@ public class ValueList implements Expression {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (sirius.web.sass.ast.Expression expr : elements) {
-            if (sb.length() > 0) {
-                sb.append(keepCommas ? "," : " ");
+        StringBuilder builder = new StringBuilder();
+        for (Expression expression : elements) {
+            if (builder.length() > 0) {
+                builder.append(keepCommas ? "," : " ");
             }
-            sb.append(expr);
+            builder.append(expression);
         }
-        return sb.toString();
+        return builder.toString();
     }
 
     /**
@@ -63,8 +64,8 @@ public class ValueList implements Expression {
 
     @Override
     public boolean isConstant() {
-        for (sirius.web.sass.ast.Expression expr : elements) {
-            if (!expr.isConstant()) {
+        for (Expression expression : elements) {
+            if (!expression.isConstant()) {
                 return false;
             }
         }
@@ -72,10 +73,10 @@ public class ValueList implements Expression {
     }
 
     @Override
-    public sirius.web.sass.ast.Expression eval(Scope scope, Generator gen) {
+    public Expression eval(Scope scope, Generator generator) {
         ValueList result = new ValueList(keepCommas);
-        for (Expression expr : elements) {
-            result.elements.add(expr.eval(scope, gen));
+        for (Expression expression : elements) {
+            result.elements.add(expression.eval(scope, generator));
         }
         return result;
     }

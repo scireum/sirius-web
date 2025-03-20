@@ -20,8 +20,14 @@
 </i:pragma>
 
 <div class="form-group mb-3 @UserContext.get().signalFieldError(name) @class">
-    <i:if test="isFilled(label)">
-        <label class="form-label"><span class="@labelClass">@label</span></label>
+    <i:local name="labelBlock" value="@renderToString('label')"/>
+    <i:if test="isFilled(labelBlock)">
+        <i:render name="label"/>
+        <i:else>
+            <i:if test="isFilled(label)">
+                <label class="form-label"><span class="@labelClass">@label</span></label>
+            </i:if>
+        </i:else>
     </i:if>
 
     <i:local name="addon" value="@renderToString('addon')"/>
@@ -50,7 +56,8 @@
 </div>
 <script>
     sirius.ready(function () {
-        const _dependencyField = document.getElementById('@dependencyFieldId');
+        const _dependencyFieldId = "@dependencyFieldId";
+        const _dependencyField = _dependencyFieldId ? document.getElementById(_dependencyFieldId) : null;
 
         const autocomplete = new TokenAutocomplete(
             Object.assign({
@@ -66,11 +73,13 @@
                 placeholderText: '@placeholder',
                 suggestionsUri: '@suggestionUri',
                 suggestionsUriBuilder: function (query) {
-                    let baseUri = this.suggestionsUri + '?query=' + encodeURIComponent(query);
+                    let suggestionsUrl = new URL(this.suggestionsUri, window.location.origin);
+                    suggestionsUrl.searchParams.set('query', query);
+
                     if (_dependencyField) {
-                        return baseUri + '&dependentValue=' + encodeURIComponent(_dependencyField.tokenAutocomplete.val().join());
+                        suggestionsUrl.searchParams.set('dependentValue', _dependencyField.tokenAutocomplete.val().join());
                     }
-                    return baseUri;
+                    return suggestionsUrl.toString();
                 }
             }, <i:render name="autocompleteOptions"/>));
 

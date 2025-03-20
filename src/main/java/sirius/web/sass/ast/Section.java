@@ -22,6 +22,7 @@ import java.util.List;
  * SASS section (with nested sections) as well, as flattened CSS sections and media queries.
  */
 public class Section {
+
     private final List<List<String>> selectors = new ArrayList<>();
     private final List<Expression> mediaQueries = new ArrayList<>();
     private final List<String> extendedSections = new ArrayList<>();
@@ -43,10 +44,10 @@ public class Section {
     /**
      * Adds an attribute to this section.
      *
-     * @param attr the attribute to add
+     * @param attribute the attribute to add
      */
-    public void addAttribute(sirius.web.sass.ast.Attribute attr) {
-        attributes.add(attr);
+    public void addAttribute(Attribute attribute) {
+        attributes.add(attribute);
     }
 
     /**
@@ -79,10 +80,10 @@ public class Section {
     /**
      * Adds a mixin instruction.
      *
-     * @param ref the mixin to reference
+     * @param reference the mixin to reference
      */
-    public void addMixinReference(MixinReference ref) {
-        references.add(ref);
+    public void addMixinReference(MixinReference reference) {
+        references.add(reference);
     }
 
     /**
@@ -103,7 +104,7 @@ public class Section {
      */
     @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
     @Explain("The returned list is mutable by design.")
-    public List<sirius.web.sass.ast.Attribute> getAttributes() {
+    public List<Attribute> getAttributes() {
         return attributes;
     }
 
@@ -132,19 +133,19 @@ public class Section {
     /**
      * Compiles the effective media query of this section into a string
      *
-     * @param scope the scope used to resolve variables
-     * @param gen   the generator used to evaluate functions
+     * @param scope     the scope used to resolve variables
+     * @param generator the generator used to evaluate functions
      * @return the effective media query as string or "" if there is no media query
      */
-    public String getMediaQuery(Scope scope, Generator gen) {
-        StringBuilder sb = new StringBuilder();
-        for (Expression expr : mediaQueries) {
-            if (sb.length() > 0) {
-                sb.append(" and ");
+    public String getMediaQuery(Scope scope, Generator generator) {
+        StringBuilder builder = new StringBuilder();
+        for (Expression expression : mediaQueries) {
+            if (builder.length() > 0) {
+                builder.append(" and ");
             }
-            sb.append(expr.eval(scope, gen));
+            builder.append(expression.eval(scope, generator));
         }
-        return sb.toString();
+        return builder.toString();
     }
 
     /**
@@ -153,37 +154,37 @@ public class Section {
      * @return a string containing all selector chains for this section
      */
     public String getSelectorString() {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder builder = new StringBuilder();
         for (List<String> selector : selectors) {
-            if (sb.length() > 0) {
-                sb.append(",");
+            if (builder.length() > 0) {
+                builder.append(",");
             }
-            for (String s : selector) {
-                if (sb.length() > 0) {
-                    sb.append(" ");
+            for (String selectorPart : selector) {
+                if (builder.length() > 0) {
+                    builder.append(" ");
                 }
-                sb.append(s);
+                builder.append(selectorPart);
             }
         }
-        return sb.toString();
+        return builder.toString();
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(getSelectorString());
-        sb.append(" {\n");
-        for (sirius.web.sass.ast.Attribute attr : attributes) {
-            sb.append(" ");
-            sb.append(attr);
-            sb.append("\n");
+        StringBuilder builder = new StringBuilder(getSelectorString());
+        builder.append(" {\n");
+        for (Attribute attribute : attributes) {
+            builder.append(" ");
+            builder.append(attribute);
+            builder.append("\n");
         }
         for (Section child : subSections) {
-            sb.append(child);
-            sb.append("\n");
+            builder.append(child);
+            builder.append("\n");
         }
-        sb.append("}");
+        builder.append("}");
 
-        return sb.toString();
+        return builder.toString();
     }
 
     /**
@@ -196,9 +197,9 @@ public class Section {
         out.output(getSelectorString());
         out.output(" {");
         out.incIndent();
-        for (Attribute attr : attributes) {
+        for (Attribute attribute : attributes) {
             out.optionalLineBreak();
-            out.output(attr);
+            out.output(attribute);
         }
         for (Section child : subSections) {
             out.lineBreak();

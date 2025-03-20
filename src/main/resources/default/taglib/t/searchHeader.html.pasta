@@ -2,13 +2,14 @@
 <i:arg name="baseUrl" type="String"/>
 <i:arg name="class" type="String" default=""/>
 <i:arg name="suppressSearch" type="boolean" default="false"/>
+<i:arg name="sticky" type="boolean" default="true" description="Specifies if the search header should be sticky." />
 
 
 <i:pragma name="description">
     Renders a search bar to be used above a table or a list of data cards.
 </i:pragma>
 
-<div class="card shadow-sm mb-4">
+<div class="search-header-js card shadow-sm mb-4 @if(sticky) { sticky-top }" @if(sticky) { style="z-index: 999;" }>
     <div class="card-body">
         <div class="row">
             <div class="col flex-grow-1 @class">
@@ -46,3 +47,12 @@
         </div>
     </div>
 </div>
+<i:if test="sticky">
+    <script type="text/javascript">
+        sirius.ready(function () {
+            document.querySelectorAll('.search-header-js').forEach(function (_header) {
+                _header.style.top = document.getElementById("wrapper-menu").offsetHeight + "px";
+            });
+        });
+    </script>
+</i:if>

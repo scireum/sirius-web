@@ -15,7 +15,8 @@ import sirius.web.sass.Scope;
  * References a variable like "$test".
  */
 public class VariableReference implements Expression {
-    private String name;
+
+    private final String name;
 
     /**
      * Creates a new reference for the given variable.
@@ -46,7 +47,7 @@ public class VariableReference implements Expression {
     }
 
     @Override
-    public Expression eval(Scope scope, Generator gen) {
-        return scope.get(name).eval(scope, gen);
+    public Expression eval(Scope scope, Generator generator) {
+        return scope.get(name).eval(scope, generator);
     }
 }

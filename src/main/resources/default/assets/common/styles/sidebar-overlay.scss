@@ -1,0 +1,33 @@
+.sci-sidebar-overlay-static-body {
+  height: 100%;
+  overflow: hidden;
+}
+
+.sci-sidebar-overlay-background {
+  z-index: 11000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.sci-sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  grid-template-rows: min-content 1fr;
+  max-width: calc(28 * var(--sci-base-unit));
+
+  -webkit-box-shadow: 5px 0px 11px 4px rgba(0, 0, 0, 0.5);
+  box-shadow: 5px 0px 11px 4px rgba(0, 0, 0, 0.5);
+
+  .sci-sidebar-overlay-content {
+    // Limits the height of the content
+    overflow-y: hidden;
+  }
+}

@@ -16,6 +16,7 @@ import sirius.pasta.tagliatelle.emitter.SwitchEmitter;
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Handles <tt>i:switch</tt> which can hold multiple blocks which are only rendered if their name matches an expression.
@@ -67,5 +68,10 @@ public class SwitchTag extends TagHandler {
         }
 
         return super.getExpectedAttributeType(name);
+    }
+
+    @Override
+    public Set<String> getRequiredAttributeNames() {
+        return Set.of("test");
     }
 }

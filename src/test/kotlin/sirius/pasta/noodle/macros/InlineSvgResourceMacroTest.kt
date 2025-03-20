@@ -17,10 +17,10 @@ import sirius.pasta.tagliatelle.compiler.TemplateCompiler
 import kotlin.test.assertEquals
 
 /**
- * Tests the [InlineSvgMacro].
+ * Tests the [InlineSvgResourceMacro].
  */
 @ExtendWith(SiriusExtension::class)
-class InlineSvgMacroTest {
+class InlineSvgResourceMacroTest {
 
     @Test
     fun `InlineSVG excludes the XML declaration`() {

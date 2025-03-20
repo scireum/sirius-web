@@ -51,7 +51,7 @@ public class QrCodePdfReplaceHandler extends PdfReplaceHandler {
         FSImage fsImage = new ITextFSImage(Image.getInstance(MatrixToImageWriter.toBufferedImage(matrix), Color.WHITE));
 
         if (cssWidth != -1 || cssHeight != -1) {
-            fsImage.scale(cssWidth, cssHeight);
+            return fsImage.scale(cssWidth, cssHeight);
         }
 
         return fsImage;

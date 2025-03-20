@@ -9,27 +9,19 @@
 package sirius.pasta.noodle.macros;
 
 import org.w3c.dom.Document;
-import sirius.kernel.di.std.Part;
-import sirius.kernel.di.std.Register;
 import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
-import sirius.web.resources.Resource;
-import sirius.web.resources.Resources;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
- * Provides a macro for inlining an SVG file into a DOM tree by dropping the XML declaration from the beginning and
- * returning the rest.
+ * Provides an abstract macro for inlining an SVG file into a DOM tree by dropping the XML declaration from the
+ * beginning and returning the rest.
  */
-@Register
-public class InlineSvgMacro extends XmlProcessingMacro {
-
-    @Part
-    private Resources resources;
+public abstract class InlineSvgMacro extends XmlProcessingMacro {
 
     @Override
     protected Class<?> getType() {
@@ -48,10 +40,7 @@ public class InlineSvgMacro extends XmlProcessingMacro {
         super.verify(context, position, args);
 
         if (args.getFirst().isConstant()) {
-            String resourceName = String.valueOf(args.getFirst().getConstantValue());
-            if (resources.resolve(resourceName).isEmpty()) {
-                context.warning(position, "Unknown resource: %s", resourceName);
-            }
+            verifyPath(context, position, String.valueOf(args.getFirst().getConstantValue()));
         }
     }
 
@@ -62,31 +51,28 @@ public class InlineSvgMacro extends XmlProcessingMacro {
 
     @Override
     public Object invoke(Environment environment, Object[] args) {
-        String path = (String) args[0];
-        return processResource(path);
+        return processResource((String) args[0]);
     }
 
     @Nonnull
     private String processResource(String path) {
-        if (!path.startsWith("/assets")) {
-            throw new IllegalArgumentException("Only assets can be inlined for security reasons.");
-        }
-
-        Resource resource =
-                resources.resolve(path).orElseThrow(() -> new IllegalArgumentException("Unknown resource: " + path));
-        Document document = parseDocument(resource, "svg");
-        return stringifyElement(document.getDocumentElement(), false);
+        return stringifyElement(getSvgDocument(path).getDocumentElement(), false);
     }
 
-    @Nonnull
-    @Override
-    public String getName() {
-        return "inlineSVG";
-    }
+    /**
+     * Verifies the path argument.
+     *
+     * @param context  the compilation context which can be used to emit an error or warning
+     * @param position the position to use for the generated errors or warnings
+     * @param path     the path argument value
+     */
+    protected abstract void verifyPath(CompilationContext context, Position position, String path);
 
-    @Nonnull
-    @Override
-    public String getDescription() {
-        return "Returns the root <svg> tag of an SVG file as string, to be included in other DOM trees.";
-    }
+    /**
+     * Retrieves the SVG document from the given path.
+     *
+     * @param path the path of the SVG document
+     * @return the XML document for the path
+     */
+    protected abstract Document getSvgDocument(String path);
 }

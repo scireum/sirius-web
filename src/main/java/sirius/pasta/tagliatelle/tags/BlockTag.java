@@ -20,6 +20,7 @@ import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Handles <tt>i:block</tt> which specifies a template section passed into a tag invocation.
@@ -84,5 +85,10 @@ public class BlockTag extends TagHandler {
         }
 
         return super.getExpectedAttributeType(name);
+    }
+
+    @Override
+    public Set<String> getRequiredAttributeNames() {
+        return Set.of(PARAM_NAME);
     }
 }

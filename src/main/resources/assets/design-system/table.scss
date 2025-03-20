@@ -1,22 +1,54 @@
 .sci-line-table {
-
   border-collapse: collapse;
   border-spacing: 0;
 
   th {
     text-align: left;
-    padding: 0.25rem;
+    padding: calc(0.25 * var(--sci-base-unit));
   }
 
   tbody {
     td {
-      border-top: 1px solid rgba(0, 0, 0, .125);
-      padding: 0.25rem;
+      padding: calc(0.25 * var(--sci-base-unit));
     }
 
-    tr.sci-cursor-pointer:hover {
-      background-color: rgba(0, 0, 0, .05);
+    tr {
+      border-top: var(--sci-border-width-0_5) solid $sirius-gray-lighter;
+
+      @media (hover: hover) {
+        &.sci-cursor-pointer:hover {
+          background-color: $sirius-white-dark;
+        }
+      }
     }
   }
+}
 
+/**
+ * Makes the last column of a table sticky with a shadow indicator.
+ */
+.sci-table-sticky-last-row {
+  th:last-child,
+  td:last-child {
+    position: sticky;
+    right: 0;
+  }
+
+  /**
+   * Shows a shadow indicator on the left side of the last column of a table.
+   * This is done to indicate that contents may be displayed behind the sticky column.
+   */
+  th:last-child::before,
+  td:last-child::before {
+    content: "\00a0";
+    display: block;
+    position: absolute;
+    background: $sirius-white;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -1;
+    box-shadow: -4px 0px 15px -10px $sirius-gray;
+  }
 }

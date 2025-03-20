@@ -2,18 +2,22 @@ $sm-min-width: 768px;
 $md-min-width: 992px;
 $lg-min-width: 1200px;
 
-$gap: 1rem;
+:root {
+  --sci-base-unit: 16px;
+  // Defines the border radius for design elements like buttons, inputs, cards, etc.
+  --sci-border-radius: calc(0.25 * var(--sci-base-unit)); // Default: 4px / 0.25rem
+}
 
 @import "/assets/tycho/styles/sirius-colors";
 @import "/assets/design-system/grid";
-@import "/assets/design-system/display";
-@import "/assets/design-system/text";
-@import "/assets/design-system/margin-padding";
 @import "/assets/design-system/flex";
 @import "/assets/design-system/card";
 @import "/assets/design-system/table";
 @import "/assets/design-system/icons";
-@import "/assets/design-system/misc";
 @import "/assets/design-system/button";
 @import "/assets/design-system/form";
 @import "/assets/design-system/message";
+@import "/assets/design-system/misc";
+@import "/assets/design-system/text";
+@import "/assets/design-system/display";
+@import "/assets/design-system/margin-padding";

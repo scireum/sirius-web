@@ -8,6 +8,10 @@
 
 package sirius.web.templates.pdf;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Entities;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
@@ -18,6 +22,7 @@ import sirius.web.templates.Generator;
 import sirius.web.templates.TagliatelleContentHandler;
 
 import java.io.OutputStream;
+import java.util.function.Predicate;
 
 /**
  * Generates a PDF output by evaluating a given tagliatelle template which must result in a valid XHTML dom.
@@ -49,16 +54,56 @@ public class TagliatellePDFContentHandler extends TagliatelleContentHandler {
         }
 
         String content = template.renderWithParams(generator.getContext());
+        String cleanedContent = cleanHtml(content);
 
         ITextRenderer renderer = new ITextRenderer();
         renderer.getSharedContext()
                 .setReplacedElementFactory(new ImageReplacedElementFactory(renderer.getOutputDevice()));
-        renderer.setDocumentFromString(content);
+        renderer.setDocumentFromString(cleanedContent);
         renderer.layout();
         renderer.createPDF(out);
         out.flush();
 
         return true;
+    }
+
+    /**
+     * Cleans the given HTML content for use as input to the PDF generator.
+     * <p>
+     * This is done by first generally removing all {@code <script>} elements from the entire document. Then, all
+     * {@code <style>} elements are deleted that are outside the {@code <header>} element. Finally, the DOM tree
+     * is encoded as XHTML fit for the strict SAX parser employed by {@link ITextRenderer}.
+     *
+     * @param html the HTML content to clean
+     * @return the given content with problematic elements removed and encoded as valid XHTML
+     */
+    private String cleanHtml(String html) {
+        Document document = Jsoup.parse(html);
+
+        // the parser is very strict in terms of what elements are accepted within the <head> element, and it does not
+        // know about additional valid elements like <bookmarks> that are valid for flying saucer; we need to move them
+        // back from the <body> to the <head> element
+        document.select("body > bookmarks").forEach(bookmarks -> {
+            document.head().appendChild(bookmarks);
+        });
+
+        document.select("script").remove();
+        document.select("body style").removeIf(Predicate.not(this::isElementInsideSvg));
+
+        document.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+        document.outputSettings().escapeMode(Entities.EscapeMode.xhtml);
+        document.outputSettings().charset("UTF-8");
+        return document.html();
+    }
+
+    /**
+     * Determine whether the given element is part of an SVG element by checking all ancestors.
+     *
+     * @param element the element to check
+     * @return <tt>true</tt> if the element is part of an SVG, <tt>false</tt> otherwise
+     */
+    private boolean isElementInsideSvg(Element element) {
+        return element.closest("svg") != null;
     }
 
     @Override

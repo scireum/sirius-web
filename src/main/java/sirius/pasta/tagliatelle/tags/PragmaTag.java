@@ -16,6 +16,7 @@ import sirius.pasta.tagliatelle.emitter.CompositeEmitter;
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Handles <tt>i:pragma</tt> which defines a pragma (key / value pair) for a template.
@@ -78,5 +79,10 @@ public class PragmaTag extends TagHandler {
         }
 
         return super.getExpectedAttributeType(name);
+    }
+
+    @Override
+    public Set<String> getRequiredAttributeNames() {
+        return Set.of(PARAM_NAME);
     }
 }

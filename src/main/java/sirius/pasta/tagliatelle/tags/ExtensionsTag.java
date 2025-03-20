@@ -20,6 +20,7 @@ import sirius.pasta.tagliatelle.emitter.CompositeEmitter;
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Handles <tt>i:extensions</tt> which invokes all extensions with the given name.
@@ -85,5 +86,10 @@ public class ExtensionsTag extends InvokeTag {
         }
 
         return Callable.class;
+    }
+
+    @Override
+    public Set<String> getRequiredAttributeNames() {
+        return Set.of(ATTR_TARGET);
     }
 }

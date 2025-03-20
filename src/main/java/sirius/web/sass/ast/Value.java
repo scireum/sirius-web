@@ -15,7 +15,8 @@ import sirius.web.sass.Scope;
  * Represents a plain value.
  */
 public class Value implements Expression {
-    private String contents;
+
+    private final String contents;
 
     /**
      * Creates a new value representing the given contents a value.
@@ -47,7 +48,7 @@ public class Value implements Expression {
     }
 
     @Override
-    public Expression eval(Scope scope, Generator gen) {
+    public Expression eval(Scope scope, Generator generator) {
         return this;
     }
 }

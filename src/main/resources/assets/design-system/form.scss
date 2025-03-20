@@ -1,10 +1,10 @@
 .sci-text-input {
-  border-width: 0.125rem;
+  border-width: var(--sci-border-width-1);
   border-style: solid;
-  border-radius: 0.25rem;
+  border-radius: var(--sci-border-radius);
   border-color: $sirius-gray;
-  padding: 0.75rem;
-  font-size: 1rem;
+  padding: var(--sci-margin-1_5);
+  font-size: var(--sci-font-size-base);
   line-height: 1.5;
 }
 
@@ -14,21 +14,19 @@
 }
 
 .sci-token-single-select {
-  border-width: 0.125rem;
+  border-width: var(--sci-border-width-1);
   border-style: solid;
-  border-radius: 0.25rem;
+  border-radius: var(--sci-border-radius);
   border-color: $sirius-gray;
-  padding: 0.75rem;
+  padding: calc(0.25 * var(--sci-base-unit));
 }
 
-.sci-token-single-select.token-autocomplete-container.token-autocomplete-singleselect .token-autocomplete-input {
-  font-size: 1rem;
-  line-height: 1.5;
-  margin: 0;
+.sci-token-single-select.token-autocomplete-container.token-autocomplete-singleselect.token-autocomplete-has-value .token-autocomplete-input {
+  padding-right: 56px;
 }
 
-.sci-token-single-select.token-autocomplete-container.token-autocomplete-singleselect .token-autocomplete-input:after {
-  top: 0.5rem;
+.sci-token-single-select.token-autocomplete-container.token-autocomplete-singleselect.token-autocomplete-has-value .token-autocomplete-delete-button {
+  right: 24px;
 }
 
 // DISABLED STATE
@@ -38,6 +36,5 @@ input.sci-text-input[disabled],
 textarea.sci-text-input[disabled],
 input.sci-text-input[readonly],
 textarea.sci-text-input[readonly] {
-  border-color: #747474;
-  background-color: #E9ECEF;
+  background-color: $sirius-gray-lighter;
 }

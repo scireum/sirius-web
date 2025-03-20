@@ -1,4 +1,5 @@
 #sci-dialog-background {
+  --sci-dialog-base-unit: var(--sci-base-unit, 16px);
   /* A bit higher than the z-index of the overlay component */
   z-index: 11000;
   top: 0;
@@ -17,6 +18,11 @@
 
   #sci-dialog-header {
     border-bottom: 1px solid;
+
+    .sci-dialog-button-close {
+      width: calc(1.5 * var(--sci-dialog-base-unit));
+      height: calc(1.5 * var(--sci-dialog-base-unit));
+    }
   }
 
   #sci-dialog-footer {
@@ -36,7 +42,7 @@
 
   #sci-dialog {
     flex-basis: 100%;
-    height: calc(100% - 2rem);
+    height: calc(100% - calc(2 * var(--sci-dialog-base-unit)));
     min-height: unset;
     max-width: unset;
   }
@@ -49,14 +55,14 @@
 
   #sci-dialog {
     flex-basis: 100%;
-    height: calc(100% - 2rem);
+    height: calc(100% - calc(2 * var(--sci-dialog-base-unit)));
     min-height: unset;
     max-width: unset;
   }
 }
 
 #sci-dialog-content #sci-dialog-wizard {
-  margin-bottom: 1.5rem;
+  margin-bottom: calc(1.5 * var(--sci-dialog-base-unit));
 
   #sci-dialog-wizard-line {
     height: 2px;
@@ -81,7 +87,7 @@
         height: 20px;
         border-radius: 50%;
         background: $sirius-white;
-        border: 0.25rem solid $sirius-grey-light;
+        border: calc(0.25 * var(--sci-dialog-base-unit)) solid $sirius-grey-light;
         z-index: 1;
       }
 

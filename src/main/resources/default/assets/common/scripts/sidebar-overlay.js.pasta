@@ -1,0 +1,135 @@
+(function (sidebarOverlay) {
+    const template ='@escapeJS(inlineResource("/assets/common/templates/sidebar-overlay.html.mustache"))';
+
+    const LEFT_MOUSE_BUTTON_CODE = 0;
+
+    let _overlay = null;
+    let _content = null;
+    let _originalParent = null;
+    let settings = null
+
+    /**@
+     * Creates a new sidebar overlay.
+     *
+     * This takes a DOM element and prepares it for a sidebar overlay. It is moved from its parent to the overlay once
+     * it is opened (via `sidebarOverlay.open`). The caller must ensure that the original parent - which is probably a
+     * sidebar - is not visible before opening. Once the overlay is closed, the element is moved back to its original
+     * place. When the parent becomes visible again after resizing the window (or changing the orientation), the overlay
+     * is closed automatically.
+     * <p>
+     * The caller also is responsible for making the content scrollable. This enables the implementation of additional
+     * sticky elements.
+     *
+     * @param {Object} args map specifying the content and behaviour of the created overlay
+     * @param {string|HTMLElement} args.content HTML element that will be rendered inside the overlay
+     * @param {string} args.title the title to show in the overlay heading
+     * @param {string} args.icon the icon to show in the overlay heading; defaults to **sci-icon-filter-text-soft**
+     * @param {boolean} [args.yieldable] allows to indicate whether a background-click closes the overlay; defaults to **true**
+     */
+    sidebarOverlay.create = function (args) {
+        if (_content) {
+            sidebarOverlay.destroy();
+        }
+
+        _content = sirius.querySelector(args.content);
+
+        if (!_content instanceof HTMLElement) {
+            throw new Error('Argument content must be an object of class HTMLElement or a valid selector.');
+        }
+
+        settings = sirius.deepExtend(args, {
+            icon: 'sci-icon-filter-text-soft',
+            yieldable: true
+        });
+
+        _originalParent = _content.parentElement;
+    }
+
+    // Detects when the original parent becomes visible -> close the overlay
+    const resizeListener = sirius.throttle(function () {
+        // Use a small delay to ensure the page has been re-rendered
+        setTimeout(function () {
+            if (sirius.isVisibleNode(_originalParent)) {
+                sidebarOverlay.close();
+            }
+        }, 20);
+    }, 100);
+
+    /**@
+     * Shows the previously created (via `sidebarOverlay.create`) sidebar overlay.
+     */
+    sidebarOverlay.open = function () {
+        // Reset viewport zoom if user zoomed in via pinch to zoom gesture. If not done it could possibly lead to the
+        // user not being able to close the overlay when the close button is rendered outside the visible area.
+        sirius.resetMobileZoom();
+
+        // Blur the current focus target, since it will be in the background now.
+        if (document.activeElement) {
+            document.activeElement.blur();
+        }
+
+        const _overlayContainer = document.createElement('div');
+        _overlayContainer.innerHTML = Mustache.render(template, {
+            title: settings.title,
+            icon: settings.icon
+        });
+
+        _overlay = _overlayContainer.firstChild;
+        const _overlayContent = _overlay.querySelector('.sci-sidebar-overlay-content-js');
+
+        // move the content element to the overlay
+        _originalParent.removeChild(_content);
+        _overlayContent.appendChild(_content);
+
+        document.body.appendChild(_overlay);
+
+        document.documentElement.classList.add('sci-sidebar-overlay-static-body');
+        _overlay.classList.remove('sci-d-none');
+
+        if (settings.yieldable) {
+            _overlay.addEventListener('mousedown', function (event) {
+                if (event.button === LEFT_MOUSE_BUTTON_CODE && event.target === _overlay) {
+                    sidebarOverlay.close();
+                }
+            });
+        }
+
+        window.addEventListener('resize', resizeListener);
+
+        const _close = _overlay.querySelector('.sci-sidebar-overlay-close-js');
+        _close.addEventListener('click', sidebarOverlay.close);
+    }
+
+    /**@
+     * Closes the previously created (via `sidebarOverlay.create`) sidebar overlay.
+     */
+    sidebarOverlay.close = function () {
+        if (_overlay) {
+            window.removeEventListener('resize', resizeListener);
+
+            const _overlayContent = _overlay.querySelector('.sci-sidebar-overlay-content-js');
+
+            // Move the content element back to the original parent
+            _overlayContent.removeChild(_content);
+            _originalParent.appendChild(_content);
+
+            document.documentElement.classList.remove('sci-sidebar-overlay-static-body');
+
+            _overlay.parentElement.removeChild(_overlay);
+            _overlay = null;
+        }
+    }
+
+    /**@
+     * Destroys the previously created (via `sidebarOverlay.create`) sidebar overlay.
+     */
+    sidebarOverlay.destroy = function () {
+        if (_content) {
+            sidebarOverlay.close();
+
+            _content = null;
+            _originalParent = null;
+            settings = null;
+        }
+    }
+}(window.sirius.sidebarOverlay = window.sirius.sidebarOverlay || {}));
