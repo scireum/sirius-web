@@ -109,7 +109,8 @@ nav.navbar {
     font-size: 2rem;
     font-weight: lighter;
     margin-bottom: 0px;
-    overflow-x: clip;
-    overflow-y: inherit;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 }
