@@ -41,8 +41,9 @@ sirius.ready(function () {
             try {
                 _confirmForm.setAttribute('action', _node.getAttribute('href'));
 
-                if (_node.hasAttribute('data-sci-submit-form')) {
-                    const _form = document.getElementById(_node.getAttribute("data-sci-submit-form"));
+                if (_node.dataset.sciSubmitFormId) {
+                    [..._confirmForm.children].forEach(child => child.name !== "CSRFToken" && _confirmForm.removeChild(child));
+                    const _form = document.getElementById(_node.dataset.sciSubmitFormId);
                     const userIdInputs = _form.querySelectorAll('input[name]:not([name="CSRFToken"])');
                     userIdInputs.forEach(input => _confirmForm.appendChild(input));
                 }
