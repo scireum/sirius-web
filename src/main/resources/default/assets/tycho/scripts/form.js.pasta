@@ -41,6 +41,12 @@ sirius.ready(function () {
             try {
                 _confirmForm.setAttribute('action', _node.getAttribute('href'));
 
+                if (_node.hasAttribute('data-sci-submit-form')) {
+                    const _form = document.getElementById(_node.getAttribute("data-sci-submit-form"));
+                    const userIdInputs = _form.querySelectorAll('input[name]:not([name="CSRFToken"])');
+                    userIdInputs.forEach(input => _confirmForm.appendChild(input));
+                }
+
                 _modalElement.tabIndex = -1;
                 _modalElement.addEventListener('shown.bs.modal', () => {
                     const _cancelButton = _modalElement.querySelector('.btn-cancel-js');
