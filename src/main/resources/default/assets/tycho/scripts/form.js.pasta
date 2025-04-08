@@ -42,10 +42,10 @@ sirius.ready(function () {
                 _confirmForm.setAttribute('action', _node.getAttribute('href'));
 
                 if (_node.dataset.sciSubmitFormId) {
-                    [..._confirmForm.children].forEach(child => child.name !== "CSRFToken" && _confirmForm.removeChild(child));
+                    [..._confirmForm.children].forEach(_child => _child.name !== "CSRFToken" && _confirmForm.removeChild(_child));
                     const _form = document.getElementById(_node.dataset.sciSubmitFormId);
-                    const userIdInputs = _form.querySelectorAll('input[name]:not([name="CSRFToken"])');
-                    userIdInputs.forEach(input => _confirmForm.appendChild(input));
+                    const _userIdInputs = _form.querySelectorAll('input[name]:not([name="CSRFToken"])');
+                    _userIdInputs.forEach(_input => _confirmForm.appendChild(_input));
                 }
 
                 _modalElement.tabIndex = -1;
