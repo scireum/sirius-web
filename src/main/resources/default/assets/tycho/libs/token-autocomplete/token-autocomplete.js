@@ -323,6 +323,12 @@ var TokenAutocomplete = /** @class */ (function () {
         var _c;
         return (_c = text === null || text === void 0 ? void 0 : text.replace(/\x22/g, '\\\x22')) !== null && _c !== void 0 ? _c : '';
     };
+    TokenAutocomplete.shouldIgnoreSuggestion = function (suggestion) {
+        if (suggestion instanceof HTMLElement) {
+            return suggestion.dataset.disabled === 'true';
+        }
+        return true;
+    };
     var _a, _b;
     TokenAutocomplete.MultiSelect = (_a = /** @class */ (function () {
             function class_1(parent) {
@@ -838,11 +844,20 @@ var TokenAutocomplete = /** @class */ (function () {
                         var highlightedSuggestion = me.suggestions.querySelector('.token-autocomplete-suggestion-highlighted');
                         if (highlightedSuggestion == null) {
                             // highlight last entry and scroll to bottom
-                            me.highlightSuggestionAtPosition(me.suggestions.childNodes.length - 1);
-                            me.suggestions.scrollTop = me.suggestions.scrollHeight;
+                            var bottomSuggestion = me.suggestions.lastChild;
+                            while (bottomSuggestion != null && TokenAutocomplete.shouldIgnoreSuggestion(bottomSuggestion)) {
+                                bottomSuggestion = bottomSuggestion.previousSibling;
+                            }
+                            if (bottomSuggestion != null) {
+                                me.highlightSuggestion(bottomSuggestion);
+                                me.suggestions.scrollTop = me.suggestions.scrollHeight;
+                            }
                             return;
                         }
                         var aboveSuggestion = highlightedSuggestion.previousSibling;
+                        while (aboveSuggestion != null && TokenAutocomplete.shouldIgnoreSuggestion(aboveSuggestion)) {
+                            aboveSuggestion = aboveSuggestion.previousSibling;
+                        }
                         if (aboveSuggestion != null) {
                             // if the suggestions is above the scroll position, scroll to the suggestion
                             var suggestionTop = aboveSuggestion.offsetTop;
@@ -861,11 +876,20 @@ var TokenAutocomplete = /** @class */ (function () {
                         var highlightedSuggestion = me.suggestions.querySelector('.token-autocomplete-suggestion-highlighted');
                         if (highlightedSuggestion == null) {
                             // highlight first entry and scroll to top
-                            me.highlightSuggestionAtPosition(0);
-                            me.suggestions.scrollTop = 0;
+                            var topSuggestion = me.suggestions.firstChild;
+                            while (topSuggestion != null && TokenAutocomplete.shouldIgnoreSuggestion(topSuggestion)) {
+                                topSuggestion = topSuggestion.nextSibling;
+                            }
+                            if (topSuggestion != null) {
+                                me.highlightSuggestion(topSuggestion);
+                                me.suggestions.scrollTop = 0;
+                            }
                             return;
                         }
                         var belowSuggestion = highlightedSuggestion === null || highlightedSuggestion === void 0 ? void 0 : highlightedSuggestion.nextSibling;
+                        while (belowSuggestion != null && TokenAutocomplete.shouldIgnoreSuggestion(belowSuggestion)) {
+                            belowSuggestion = belowSuggestion.nextSibling;
+                        }
                         if (belowSuggestion != null) {
                             // if the suggestions is not completely visible, scroll until the suggestion is at the bottom
                             var suggestionBottom = belowSuggestion.offsetTop + belowSuggestion.offsetHeight;
@@ -1136,6 +1160,9 @@ var TokenAutocomplete = /** @class */ (function () {
                 element.dataset.tokenText = suggestion.fieldLabel;
                 if (suggestion.type != null) {
                     element.dataset.type = suggestion.type;
+                }
+                if (suggestion.disabled) {
+                    element.dataset.disabled = 'true';
                 }
                 var me = this;
                 element.addEventListener('click', function (_event) {
