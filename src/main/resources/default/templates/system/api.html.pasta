@@ -131,7 +131,9 @@
                                             </td>
 
                                             <i:else>
-                                                <td><i:raw>@expandMessage(smartTranslate(request.description()))</i:raw></td>
+                                                <td>
+                                                    <i:raw>@expandMessage(smartTranslate(request.description()))</i:raw>
+                                                </td>
                                             </i:else>
                                         </i:if>
                                     </tr>
@@ -177,6 +179,17 @@
                                                        items="@toList(responseContent.examples())">
                                                     <pre class="prettyprint p-2">@example.value()</pre>
                                                 </i:for>
+                                                <i:local name="schemaUrl" value="@responseContent.schema().ref()"/>
+                                                <i:local name="schemaFileName"
+                                                         value="@Strings.firstFilled(responseContent.schema().name(), responseContent.schema().ref())"/>
+                                                <i:if test="@isFilled(schemaUrl)">
+                                                    <a href="@schemaUrl"
+                                                       download="@schemaFileName"
+                                                       class="btn btn-primary">
+                                                        <i class="fa-solid fa-file-download me-1"></i>
+                                                        Download Schema
+                                                    </a>
+                                                </i:if>
                                             </td>
 
                                             <i:else>
