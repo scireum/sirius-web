@@ -33,15 +33,15 @@ public class ClosedChannelHelper {
      * @param throwable the exception to check
      * @return <tt>true</tt> if the exception or any of its causes is a closed channel exception.
      */
-    public static boolean tryDetectClosedChannelException(Throwable throwable) {
+    public static boolean isCausedByClosedChannel(Throwable throwable) {
         if (throwable instanceof ClosedChannelException || throwable instanceof ChannelClosedException) {
             return true;
         }
         if (throwable instanceof ExceptionConverter exceptionConverter && exceptionConverter.getException() != null) {
-            return tryDetectClosedChannelException(exceptionConverter.getException());
+            return isCausedByClosedChannel(exceptionConverter.getException());
         }
         if (throwable.getCause() != null) {
-            return tryDetectClosedChannelException(throwable.getCause());
+            return isCausedByClosedChannel(throwable.getCause());
         }
         return false;
     }

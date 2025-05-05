@@ -140,7 +140,7 @@ public abstract class ServiceCall {
             StructuredOutput output = createOutput();
             serv.call(this, output);
         } catch (Exception exception) {
-            if (ClosedChannelHelper.tryDetectClosedChannelException(exception)) {
+            if (ClosedChannelHelper.isCausedByClosedChannel(exception)) {
                 // If the user unexpectedly closes the connection, we do not need to log an error...
                 Exceptions.ignore(exception);
                 return;

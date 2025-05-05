@@ -172,7 +172,7 @@ public class Generator {
             try {
                 invokeContentHandler(out);
             } catch (Exception exception) {
-                if (ClosedChannelHelper.tryDetectClosedChannelException(exception)) {
+                if (ClosedChannelHelper.isCausedByClosedChannel(exception)) {
                     // A ClosedChannelException, we know, that the underlying socket was closed "aka browser was closed"
                     // There is no need to jam the logs up with such messages, as there is no way of avoiding this...
                     Exceptions.ignore(exception);
