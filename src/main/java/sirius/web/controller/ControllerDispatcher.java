@@ -38,11 +38,11 @@ import sirius.web.security.MaintenanceInfo;
 import sirius.web.security.UserContext;
 import sirius.web.security.UserInfo;
 import sirius.web.services.Format;
+import sirius.web.templates.ClosedChannelHelper;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.channels.ClosedChannelException;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -291,8 +291,7 @@ public class ControllerDispatcher implements WebDispatcher {
         try {
             // We never want to log or handle exceptions which are caused by the user which
             // closed the browser / socket mid-processing...
-            if ((cause instanceof ClosedChannelException || cause.getCause() instanceof ClosedChannelException)
-                && webContext.isResponseCommitted()) {
+            if (ClosedChannelHelper.tryDetectClosedChannelException(cause) && webContext.isResponseCommitted()) {
                 Exceptions.ignore(cause);
                 return;
             }

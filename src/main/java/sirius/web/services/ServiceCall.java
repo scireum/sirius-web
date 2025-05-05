@@ -16,8 +16,8 @@ import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Log;
 import sirius.kernel.xml.StructuredOutput;
 import sirius.web.http.WebContext;
+import sirius.web.templates.ClosedChannelHelper;
 
-import java.nio.channels.ClosedChannelException;
 import java.util.Collections;
 import java.util.List;
 
@@ -140,7 +140,7 @@ public abstract class ServiceCall {
             StructuredOutput output = createOutput();
             serv.call(this, output);
         } catch (Exception exception) {
-            if (exception instanceof ClosedChannelException || exception.getCause() instanceof ClosedChannelException) {
+            if (ClosedChannelHelper.tryDetectClosedChannelException(exception)) {
                 // If the user unexpectedly closes the connection, we do not need to log an error...
                 Exceptions.ignore(exception);
                 return;
