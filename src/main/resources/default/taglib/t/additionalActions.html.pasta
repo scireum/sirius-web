@@ -18,7 +18,8 @@
                 style="z-index: 3; position: relative"
                 data-bs-toggle="dropdown"
                 aria-haspopup="true"
-                aria-expanded="false">
+                aria-expanded="false"
+                onclick="event.stopPropagation()">
             <i:if test="isFilled(label)">
                 <span class="@labelClass pe-2">@label</span>
             </i:if>
