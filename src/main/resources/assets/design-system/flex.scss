@@ -48,6 +48,22 @@
   justify-content: end;
 }
 
+.sci-justify-items-start {
+  justify-items: start;
+}
+
+.sci-justify-items-end {
+  justify-items: end;
+}
+
+.sci-justify-items-center {
+  justify-items: center;
+}
+
+.sci-justify-items-around {
+  justify-items: around;
+}
+
 .sci-align-items-start {
   align-items: flex-start;
   align-items: start;
