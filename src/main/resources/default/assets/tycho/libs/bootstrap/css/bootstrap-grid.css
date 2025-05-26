@@ -1298,6 +1298,22 @@
   justify-content: space-evenly !important;
 }
 
+.justify-items-start {
+  justify-items: start;
+}
+
+.justify-items-end {
+  justify-items: end;
+}
+
+.justify-items-center {
+  justify-items: center;
+}
+
+.justify-items-around {
+  justify-items: around;
+}
+
 .align-items-start {
   align-items: flex-start !important;
 }
