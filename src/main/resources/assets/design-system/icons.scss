@@ -136,6 +136,19 @@
   background-image: url(svgResource('/assets/images/icons/navigation/close.svg', #212529));
 }
 
+.sci-icon-close-gray {
+  background-image: url(svgResource('/assets/images/icons/navigation/close.svg', $sirius-gray));
+}
+
+.sci-icon-copy-secondary {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/copy.svg', $sirius-gray-dark));
+}
+
+.sci-icon-copy-white,
+.sci-btn-secondary-outline:hover .sci-icon-copy-secondary {
+  background-image: url(svgResource('/assets/images/icons/fontawesome/copy.svg', $sirius-white));
+}
+
 .sci-icon-filter-text-soft {
   background-image: url(svgResource('/assets/images/icons/filter.svg', #212529));
 }
