@@ -104,15 +104,18 @@
 }
 
 /* Automatically turns blue cart icon white on hover when used inside of blue outline button */
-.sci-icon-product-cart-white, .sci-btn-primary-outline:hover .sci-icon-product-cart-blue {
+.sci-icon-product-cart-white,
+.sci-btn-primary-outline:hover .sci-icon-product-cart-blue,
+.sci-icon-shopping-cart-white,
+.sci-btn-secondary-outline:hover .sci-icon-shopping-cart-blue {
   background-image: url(svgResource('/assets/images/icons/cart.svg', $sirius-white));
 }
 
-.sci-icon-product-cart-blue {
+.sci-icon-product-cart-blue, .sci-icon-shopping-cart-blue {
   background-image: url(svgResource('/assets/images/icons/cart.svg', #3465CC));
 }
 
-.sci-icon-product-cart-text-soft {
+.sci-icon-product-cart-text-soft, .sci-icon-shopping-cart-text-soft {
   background-image: url(svgResource('/assets/images/icons/cart.svg', #212529));
 }
 
@@ -157,29 +160,33 @@
   background-image: url(svgResource('/assets/images/icons/up-right-from-square.svg', #6c757d));
 }
 
-.sci-icon-zoom-in-text-soft {
+.sci-icon-zoom-in-text-soft, .sci-icon-plus-text-soft {
   background-image: url(svgResource('/assets/images/icons/navigation/zoom-in.svg', #212529));
 }
 
-.sci-icon-zoom-out-text-soft {
+.sci-icon-zoom-out-text-soft, .sci-icon-minus-text-soft {
   background-image: url(svgResource('/assets/images/icons/navigation/zoom-out.svg', #212529));
 }
 
 .sci-icon-zoom-in-white,
-.sci-btn-primary-outline:hover .sci-icon-zoom-in-blue {
+.sci-btn-primary-outline:hover .sci-icon-zoom-in-blue,
+.sci-icon-plus-white,
+.sci-btn-primary-outline:hover .sci-icon-plus-blue {
   background-image: url(svgResource('/assets/images/icons/navigation/zoom-in.svg', $sirius-white));
 }
 
-.sci-icon-zoom-in-blue {
+.sci-icon-zoom-in-blue, .sci-icon-plus-blue {
   background-image: url(svgResource('/assets/images/icons/navigation/zoom-in.svg', #3465CC));
 }
 
 .sci-icon-zoom-out-white,
-.sci-btn-primary-outline:hover .sci-icon-zoom-out-blue {
+.sci-btn-primary-outline:hover .sci-icon-zoom-out-blue,
+.sci-icon-minus-white,
+.sci-btn-primary-outline:hover .sci-icon-minus-blue {
   background-image: url(svgResource('/assets/images/icons/navigation/zoom-out.svg', $sirius-white));
 }
 
-.sci-icon-zoom-out-blue {
+.sci-icon-zoom-out-blue, .sci-icon-minus-blue {
   background-image: url(svgResource('/assets/images/icons/navigation/zoom-out.svg', #3465CC));
 }
 
