@@ -13,6 +13,9 @@
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
 }
 
 .sci-icon-smallest {
@@ -103,16 +106,148 @@
   background-image: url(svgResource('/assets/images/icons/availability/supplier-full.svg'));
 }
 
+/**
+ * Icons automatically following the defined text (foreground) color.
+ * This enables automatic hover color change when used in buttons, etc.
+ */
+
+.sci-icon-product-cart, .sci-icon-shopping-cart {
+  mask-image: url(svgResource('/assets/images/icons/cart.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-download {
+  mask-image: url(svgResource('/assets/images/icons/download.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-catalog {
+  mask-image: url(svgResource('/assets/images/icons/catalog.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-magnifier {
+  mask-image: url(svgResource('/assets/images/icons/magnifier.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-trash {
+  mask-image: url(svgResource('/assets/images/icons/trash.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-close {
+  mask-image: url(svgResource('/assets/images/icons/navigation/close.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-copy {
+  mask-image: url(svgResource('/assets/images/icons/fontawesome/copy.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-filter {
+  mask-image: url(svgResource('/assets/images/icons/filter.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-up-right-from-square {
+  mask-image: url(svgResource('/assets/images/icons/up-right-from-square.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-zoom-in, .sci-icon-plus {
+  mask-image: url(svgResource('/assets/images/icons/navigation/zoom-in.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-zoom-out, .sci-icon-minus {
+  mask-image: url(svgResource('/assets/images/icons/navigation/zoom-out.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-bars {
+  mask-image: url(svgResource('/assets/images/icons/fontawesome/bars.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-bookmark {
+  mask-image: url(svgResource('/assets/images/icons/fontawesome/bookmark.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-bookmark-outlines {
+  mask-image: url(svgResource('/assets/images/icons/fontawesome/bookmark-outlines.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-clipboard {
+  mask-image: url(svgResource('/assets/images/icons/fontawesome/clipboard.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-clipboard-list {
+  mask-image: url(svgResource('/assets/images/icons/fontawesome/clipboard-list.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-clipboard-outlines {
+  mask-image: url(svgResource('/assets/images/icons/fontawesome/clipboard-outlines.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-heart {
+  mask-image: url(svgResource('/assets/images/icons/fontawesome/heart.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-heart-outlines {
+  mask-image: url(svgResource('/assets/images/icons/fontawesome/heart-outlines.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-list {
+  mask-image: url(svgResource('/assets/images/icons/fontawesome/list.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-list-thick {
+  mask-image: url(svgResource('/assets/images/icons/fontawesome/list-thick.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-star {
+  mask-image: url(svgResource('/assets/images/icons/fontawesome/star.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-star-outlines {
+  mask-image: url(svgResource('/assets/images/icons/fontawesome/star-outlines.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-spotlight-left {
+  mask-image: url(svgResource('/assets/images/icons/spotlight-left.svg'));
+  background-color: currentColor;
+}
+
+/**
+ * LEGACY: Following are legacy icons with explicit color definitions. Please use the icons defined above.
+ */
+
 /* Automatically turns blue cart icon white on hover when used inside of blue outline button */
-.sci-icon-product-cart-white, .sci-btn-primary-outline:hover .sci-icon-product-cart-blue {
+.sci-icon-product-cart-white,
+.sci-btn-primary-outline:hover .sci-icon-product-cart-blue,
+.sci-icon-shopping-cart-white,
+.sci-btn-secondary-outline:hover .sci-icon-shopping-cart-blue {
   background-image: url(svgResource('/assets/images/icons/cart.svg', $sirius-white));
 }
 
-.sci-icon-product-cart-blue {
+.sci-icon-product-cart-blue, .sci-icon-shopping-cart-blue {
   background-image: url(svgResource('/assets/images/icons/cart.svg', #3465CC));
 }
 
-.sci-icon-product-cart-text-soft {
+.sci-icon-product-cart-text-soft, .sci-icon-shopping-cart-text-soft {
   background-image: url(svgResource('/assets/images/icons/cart.svg', #212529));
 }
 
@@ -157,29 +292,33 @@
   background-image: url(svgResource('/assets/images/icons/up-right-from-square.svg', #6c757d));
 }
 
-.sci-icon-zoom-in-text-soft {
+.sci-icon-zoom-in-text-soft, .sci-icon-plus-text-soft {
   background-image: url(svgResource('/assets/images/icons/navigation/zoom-in.svg', #212529));
 }
 
-.sci-icon-zoom-out-text-soft {
+.sci-icon-zoom-out-text-soft, .sci-icon-minus-text-soft {
   background-image: url(svgResource('/assets/images/icons/navigation/zoom-out.svg', #212529));
 }
 
 .sci-icon-zoom-in-white,
-.sci-btn-primary-outline:hover .sci-icon-zoom-in-blue {
+.sci-btn-primary-outline:hover .sci-icon-zoom-in-blue,
+.sci-icon-plus-white,
+.sci-btn-primary-outline:hover .sci-icon-plus-blue {
   background-image: url(svgResource('/assets/images/icons/navigation/zoom-in.svg', $sirius-white));
 }
 
-.sci-icon-zoom-in-blue {
+.sci-icon-zoom-in-blue, .sci-icon-plus-blue {
   background-image: url(svgResource('/assets/images/icons/navigation/zoom-in.svg', #3465CC));
 }
 
 .sci-icon-zoom-out-white,
-.sci-btn-primary-outline:hover .sci-icon-zoom-out-blue {
+.sci-btn-primary-outline:hover .sci-icon-zoom-out-blue,
+.sci-icon-minus-white,
+.sci-btn-primary-outline:hover .sci-icon-minus-blue {
   background-image: url(svgResource('/assets/images/icons/navigation/zoom-out.svg', $sirius-white));
 }
 
-.sci-icon-zoom-out-blue {
+.sci-icon-zoom-out-blue, .sci-icon-minus-blue {
   background-image: url(svgResource('/assets/images/icons/navigation/zoom-out.svg', #3465CC));
 }
 
