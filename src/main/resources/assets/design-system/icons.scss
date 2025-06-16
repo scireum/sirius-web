@@ -231,6 +231,11 @@
   background-color: currentColor;
 }
 
+.sci-icon-table-cells {
+  mask-image: url(svgResource('/assets/images/icons/fontawesome/table-cells.svg'));
+  background-color: currentColor;
+}
+
 /**
  * LEGACY: Following are legacy icons with explicit color definitions. Please use the icons defined above.
  */
