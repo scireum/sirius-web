@@ -16,6 +16,7 @@ import sirius.kernel.commons.Files;
 import sirius.kernel.commons.Hasher;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
+import sirius.kernel.commons.Urls;
 import sirius.kernel.commons.Value;
 import sirius.kernel.commons.Values;
 import sirius.kernel.commons.Wait;
@@ -73,6 +74,7 @@ public class SiriusClassAliasProvider implements ClassAliasProvider {
         consumer.accept("WebContext", WebContext.class);
         consumer.accept("Injector", Injector.class);
         consumer.accept("Strings", Strings.class);
+        consumer.accept("Urls", Urls.class);
         consumer.accept("Files", Files.class);
         consumer.accept("Hasher", Hasher.class);
         consumer.accept("Amount", Amount.class);
