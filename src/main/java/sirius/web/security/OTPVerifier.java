@@ -10,6 +10,7 @@ package sirius.web.security;
 
 import com.google.common.io.BaseEncoding;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Urls;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
@@ -81,7 +82,7 @@ public class OTPVerifier {
      */
     @Nonnull
     public String getAsAuthURL(String account, String secret) {
-        return "otpauth://totp/" + account.replace(" ", "_") + "?secret=" + Strings.urlEncode(secret);
+        return "otpauth://totp/" + account.replace(" ", "_") + "?secret=" + Urls.encode(secret);
     }
 
     /**

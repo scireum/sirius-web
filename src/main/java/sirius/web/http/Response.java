@@ -39,6 +39,7 @@ import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Processor;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Urls;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
@@ -950,7 +951,7 @@ public class Response {
      */
     protected void setContentDisposition(String name, boolean download) {
         String cleanName = name.replaceAll("[^A-Za-z0-9\\-_.]", "_");
-        String utf8Name = Strings.urlEncode(name.replace(" ", "_"));
+        String utf8Name = Urls.encode(name.replace(" ", "_"));
         addHeaderIfNotExists("Content-Disposition",
                              (download ? "attachment;" : "inline;")
                              + "filename=\""

@@ -28,6 +28,7 @@ import sirius.kernel.async.Promise;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Json;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Urls;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
@@ -508,7 +509,7 @@ public class TestRequest extends WebContext implements HttpRequest {
     }
 
     private String generateQueryStringParam(String key, Object value) {
-        return Strings.urlEncode(key) + "=" + Strings.urlEncode(NLS.toMachineString(value));
+        return Urls.encode(key) + "=" + Urls.encode(NLS.toMachineString(value));
     }
 
     protected InputStream getResourceAsStream(String resource) {

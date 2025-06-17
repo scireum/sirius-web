@@ -8,9 +8,9 @@
 
 package sirius.pasta.noodle.macros;
 
-import sirius.kernel.tokenizer.Position;
-import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Urls;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.Environment;
 import sirius.pasta.noodle.compiler.CompilationContext;
 import sirius.pasta.noodle.compiler.ir.Node;
@@ -20,7 +20,7 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
- * Represents <tt>urlEncode(String)</tt> which is a call to {@link Strings#urlEncode(String)}.
+ * Represents <tt>urlEncode(String)</tt> which is a call to {@link Urls#encode(String)}.
  */
 @Register
 @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
@@ -39,7 +39,7 @@ public class UrlEncodeMacro extends BasicMacro {
 
     @Override
     public Object invoke(Environment environment, Object[] args) {
-        return Strings.urlEncode((String) args[0]);
+        return Urls.encode((String) args[0]);
     }
 
     @Nonnull
