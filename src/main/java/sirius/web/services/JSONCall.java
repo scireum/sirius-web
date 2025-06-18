@@ -142,10 +142,10 @@ public class JSONCall {
     }
 
     /**
-     * Provides access to the JSON answer of the call.
+     * Executes the call and returns the input expecting a JSON object as result.
      *
-     * @return the JSON result of the call
-     * @throws IOException in case of an IO error while receiving the result
+     * @return the result of the call as a JSON object
+     * @throws IOException in case of an IO error during the call
      */
     public ObjectNode getInput() throws IOException {
         return Json.parseObject(executeCall());
@@ -154,7 +154,7 @@ public class JSONCall {
     /**
      * Executes the call and returns the input expecting a JSON array as result.
      *
-     * @return the result of the call as an array
+     * @return the result of the call as a JSON array
      * @throws IOException in case of an IO error during the call
      */
     public ArrayNode getInputArray() throws IOException {
@@ -164,15 +164,17 @@ public class JSONCall {
     private String executeCall() throws IOException {
         String body =
                 Streams.readToString(new InputStreamReader(outcall.getResponse().body(), outcall.getContentEncoding()));
+
         logRequest(body);
 
         String contentType = outcall.getHeaderField("content-type");
-        if (!outcall.isErroneous() || (contentType != null && contentType.toLowerCase()
+        if (outcall.isErroneous() && (contentType == null || !contentType.toLowerCase()
                                                                          .contains(MimeHelper.APPLICATION_JSON))) {
-            return body;
+            throw new IOException(Strings.apply("A non-OK response (%s) was received as a result of an HTTP call",
+                                                outcall.getResponse().statusCode()));
         }
-        throw new IOException(Strings.apply("A non-OK response (%s) was received as a result of an HTTP call",
-                                            outcall.getResponse().statusCode()));
+
+        return body;
     }
 
     /**
