@@ -161,6 +161,16 @@ public class JSONCall {
         return Json.parseArray(executeCall());
     }
 
+    /**
+     * Executes the call and returns the input as a plain text string.
+     * <p>
+     * An {@link IOException} is thrown in case of an issue with the connection or if the response isn't JSON. Note,
+     * that non-OK responses (e.g. HTTP status 404) are accepted as long as the content type is JSON to support APIs
+     * that return proper error messages in JSON format.
+     *
+     * @return the result of the call as a plain text string
+     * @throws IOException in case of an IO error during the call
+     */
     private String executeCall() throws IOException {
         String body =
                 Streams.readToString(new InputStreamReader(outcall.getResponse().body(), outcall.getContentEncoding()));
