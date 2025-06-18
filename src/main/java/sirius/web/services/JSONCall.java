@@ -8,6 +8,7 @@
 
 package sirius.web.services;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import sirius.kernel.commons.Json;
@@ -141,23 +142,49 @@ public class JSONCall {
     }
 
     /**
-     * Provides access to the JSON answer of the call.
+     * Executes the call and returns the input expecting a JSON object as result.
      *
-     * @return the JSON result of the call
-     * @throws IOException in case of an IO error while receiving the result
+     * @return the result of the call as a JSON object
+     * @throws IOException in case of an IO error during the call
      */
     public ObjectNode getInput() throws IOException {
+        return Json.parseObject(executeCall());
+    }
+
+    /**
+     * Executes the call and returns the input expecting a JSON array as result.
+     *
+     * @return the result of the call as a JSON array
+     * @throws IOException in case of an IO error during the call
+     */
+    public ArrayNode getInputArray() throws IOException {
+        return Json.parseArray(executeCall());
+    }
+
+    /**
+     * Executes the call and returns the input as a plain text string.
+     * <p>
+     * An {@link IOException} is thrown in case of an issue with the connection or if the response isn't JSON. Note,
+     * that non-OK responses (e.g. HTTP status 404) are accepted as long as the content type is JSON to support APIs
+     * that return proper error messages in JSON format.
+     *
+     * @return the result of the call as a plain text string
+     * @throws IOException in case of an IO error during the call
+     */
+    private String executeCall() throws IOException {
         String body =
                 Streams.readToString(new InputStreamReader(outcall.getResponse().body(), outcall.getContentEncoding()));
+
         logRequest(body);
 
         String contentType = outcall.getHeaderField("content-type");
-        if (!outcall.isErroneous() || (contentType != null && contentType.toLowerCase()
+        if (outcall.isErroneous() && (contentType == null || !contentType.toLowerCase()
                                                                          .contains(MimeHelper.APPLICATION_JSON))) {
-            return Json.parseObject(body);
+            throw new IOException(Strings.apply("A non-OK response (%s) was received as a result of an HTTP call",
+                                                outcall.getResponse().statusCode()));
         }
-        throw new IOException(Strings.apply("A non-OK response (%s) was received as a result of an HTTP call",
-                                            outcall.getResponse().statusCode()));
+
+        return body;
     }
 
     /**
