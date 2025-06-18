@@ -8,6 +8,7 @@
 
 package sirius.web.services;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import sirius.kernel.commons.Json;
@@ -147,6 +148,20 @@ public class JSONCall {
      * @throws IOException in case of an IO error while receiving the result
      */
     public ObjectNode getInput() throws IOException {
+        return Json.parseObject(executeCall());
+    }
+
+    /**
+     * Executes the call and returns the input expecting a JSON array as result.
+     *
+     * @return the result of the call as an array
+     * @throws IOException in case of an IO error during the call
+     */
+    public ArrayNode getInputArray() throws IOException {
+        return Json.parseArray(executeCall());
+    }
+
+    private String executeCall() throws IOException {
         String body =
                 Streams.readToString(new InputStreamReader(outcall.getResponse().body(), outcall.getContentEncoding()));
         logRequest(body);
@@ -154,7 +169,7 @@ public class JSONCall {
         String contentType = outcall.getHeaderField("content-type");
         if (!outcall.isErroneous() || (contentType != null && contentType.toLowerCase()
                                                                          .contains(MimeHelper.APPLICATION_JSON))) {
-            return Json.parseObject(body);
+            return body;
         }
         throw new IOException(Strings.apply("A non-OK response (%s) was received as a result of an HTTP call",
                                             outcall.getResponse().statusCode()));
