@@ -1,7 +1,7 @@
 sirius.ready(function () {
     // FireFox Fix: If a checkbox has been checked and someone refreshes the page, that checkbox is still checked
     // without triggering a change event. Therefore, we are manually clearing all checkboxes on page load.
-    window.addEventListener('pageshow',function (){
+    window.addEventListener('pageshow', function () {
         document.querySelectorAll('.select-table-row-checkbox-js:checked').forEach(function (_checkbox) {
             _checkbox.checked = false;
             toggleRowSelection(_checkbox);
@@ -30,13 +30,13 @@ sirius.ready(function () {
                 changeSelectAllCheckboxState(_table);
             });
 
+            const skippedTargetTypes = ['input', 'a', 'i', 'button'];
             const _row = _checkbox.closest('tr');
             // Handle clicks on the row for convenience
             _row.addEventListener('click', function (event) {
-                if (event.target.tagName.toLowerCase() !== 'input' &&
-                    event.target.tagName.toLowerCase() !== 'a' &&
-                    event.target.tagName.toLowerCase() !== 'i' &&
-                    event.target.tagName.toLowerCase() !== 'button') {
+                const targetType = event.target.tagName.toLowerCase();
+                const targetParentType = event.target.parentElement?.tagName?.toLowerCase();
+                if (!skippedTargetTypes.includes(targetType) && !skippedTargetTypes.includes(targetParentType)) {
                     _checkbox.checked = !_checkbox.checked;
                     _checkbox.dispatchEvent(new Event('change'));
                 }
