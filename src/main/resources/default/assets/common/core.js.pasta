@@ -241,7 +241,7 @@ sirius.addEnterListener = function (_node, listener, suppressOnShift) {
  * @param {HTMLElement} _node the DOM element to register the listener on
  * @param {function} listener the callback to be invoked when the element is clicked or the enter key is pressed
  */
-sirius.addClickOrEnterListener= function (_node, listener) {
+sirius.addClickOrEnterListener = function (_node, listener) {
     if (!sirius.isElement(_node)) {
         throw new Error('The given node is not a valid DOM element.');
     }
