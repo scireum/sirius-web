@@ -86,6 +86,7 @@ var TokenAutocomplete = /** @class */ (function () {
         this.hiddenSelect = document.createElement('select');
         this.hiddenSelect.id = this.container.id + '-select';
         this.hiddenSelect.name = this.options.name;
+        this.hiddenSelect.ariaHidden = 'true';
         this.hiddenSelect.setAttribute('multiple', 'true');
         this.hiddenSelect.setAttribute('autocomplete', 'off');
         this.hiddenSelect.style.display = 'none';

@@ -6,6 +6,10 @@
     background-color: #FFFFFF;
 }
 
+.token-autocomplete-container:focus-within {
+    border-color: #668DC6;
+}
+
 .token-autocomplete-container.token-autocomplete-readonly {
     border-color: #747474;
     background-color: #E9ECEF;
@@ -136,9 +140,12 @@
     list-style-type: none;
     padding: 0;
     margin: 0;
-    border: 1px solid #E6E6E6;
     max-height: 220px;
     overflow-y: auto;
+}
+
+.token-autocomplete-container .token-autocomplete-suggestions:has(li) {
+    border: 1px solid #E6E6E6;
 }
 
 .token-autocomplete-container .token-autocomplete-suggestions.token-autocomplete-suggestions-above {
