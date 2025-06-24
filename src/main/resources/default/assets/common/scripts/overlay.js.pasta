@@ -1,8 +1,8 @@
 (function (overlay) {
     const template = '<div class="sci-overlay-background sci-overlay-hidden">' +
-        '    <div class="sci-overlay">' +
+        '    <div class="sci-overlay" role="dialog">' +
         '        {{#closable}}<div class="sci-overlay-button-container">' +
-        '            <a role="button" class="sci-overlay-button sci-overlay-button-close sci-overlay-button-close-js"></a>' +
+        '            <a role="button" tabindex="0" class="sci-overlay-button sci-overlay-button-close sci-overlay-button-close-js"></a>' +
         '        </div>{{/closable}}' +
         '        <div class="sci-overlay-content sci-overlay-content-js">' +
         '            {{{content}}}' +
@@ -73,7 +73,8 @@
         _overlay = _overlayContainer.firstChild;
 
         if (closable) {
-            _overlay.querySelector('.sci-overlay-button-close-js').addEventListener('click', function () {
+            const _closeButton = _overlay.querySelector('.sci-overlay-button-close-js');
+            sirius.addClickOrEnterListener(_closeButton, function () {
                 sirius.dispatchEvent('sci-overlay-dismissed');
                 overlay.destroyOverlay();
             });
