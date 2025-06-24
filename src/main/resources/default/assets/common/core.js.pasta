@@ -232,6 +232,39 @@ sirius.addEnterListener = function (_node, listener, suppressOnShift) {
 }
 
 /**@
+ * Registers a callback that should be triggered when the given element is clicked or the enter key is pressed while focused.
+ *
+ * This is useful for links and buttons that should be accessible via keyboard navigation.
+ * The onclick and onkeydown attributes are used instead of addEventListener to ensure that the
+ * callback is not registered multiple times if this function is called multiple times for the same element.
+ *
+ * @param {HTMLElement} _node the DOM element to register the listener on
+ * @param {function} listener the callback to be invoked when the element is clicked or the enter key is pressed
+ */
+sirius.addClickOrEnterListener= function (_node, listener) {
+    if (!sirius.isElement(_node)) {
+        throw new Error('The given node is not a valid DOM element.');
+    }
+    if (typeof listener !== 'function') {
+        throw new Error('The given listener is not a valid function.');
+    }
+    // Trigger the action when the element is clicked
+    _node.onclick = function clickListener(event) {
+        if (event.button !== 0) return; // Ignore right clicks
+        event.preventDefault();
+        listener(event);
+    };
+    // Also trigger the action when the link is focused and the enter key is pressed
+    _node.onkeydown = function enterListener(event) {
+        if (event.repeat) return;
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            listener(event);
+        }
+    };
+}
+
+/**@
  * Calls the given URL, sends the given params and retrieves the resulting JSON.
  *
  * @param url the URL to invoke
