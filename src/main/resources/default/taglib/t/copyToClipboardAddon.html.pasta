@@ -1,14 +1,21 @@
 <i:arg name="fieldName"
        type="String"/>
+<i:arg name="id"
+       type="String"
+       default=""/>
 <i:arg name="copyTitle"
        type="String"
        default="@i18n('copyToClipboardAddon.html.copy')"/>
 <i:arg name="copiedTitle"
        type="String"
        default="@i18n('copyToClipboardAddon.html.copied')"/>
+<i:arg name="class"
+       type="String"
+       default=""/>
 
 
-<a class="btn btn-outline-secondary copy-input-value-js"
+<a class="btn btn-outline-secondary copy-input-value-js @class"
+   @if (isFilled(id)) { id="@id" }
    title="@copyTitle"
    data-bs-toggle="tooltip"
    data-bs-placement="left"
