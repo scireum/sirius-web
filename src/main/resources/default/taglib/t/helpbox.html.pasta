@@ -1,13 +1,13 @@
 <i:arg type="String"
        name="color"
-       default="sci-left-border-blue-dark"
-       description="Sets the color of the left border accent"/>
+       default="blue-dark"
+       description="Sets the color of the left border accent. Expects an equivalent sci-left-border-@color to be defined."/>
 <i:arg type="String" name="class" default="" description="Permits to supply additional CSS classes"/>
 <i:pragma name="description">
     Renders a card/box with hopefully helpful content.
 </i:pragma>
 
-<div class="card mb-4 @color @class">
+<div class="card mb-4 sci-left-border-@color @class">
     <div class="card-body">
         <div class="d-flex flex-row">
             <div class="sci-min-width-0">
