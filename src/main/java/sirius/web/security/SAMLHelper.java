@@ -55,6 +55,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Provides a helper to generate SAML 2 requests and to process responses.
@@ -338,8 +339,14 @@ public class SAMLHelper {
 
             for (XMLStructure xmlStructure : keyInfo.getContent()) {
                 if (xmlStructure instanceof X509Data x509Data && !x509Data.getContent().isEmpty()) {
-                    X509Certificate x509Certificate = (X509Certificate) x509Data.getContent().getFirst();
-                    return new X509CertificateResult(x509Certificate);
+                    Optional<X509Certificate> optionalCertificate = x509Data.getContent()
+                                                                            .stream()
+                                                                            .filter(X509Certificate.class::isInstance)
+                                                                            .map(X509Certificate.class::cast)
+                                                                            .findFirst();
+                    if (optionalCertificate.isPresent()) {
+                        return new X509CertificateResult(optionalCertificate.get());
+                    }
                 }
             }
 
