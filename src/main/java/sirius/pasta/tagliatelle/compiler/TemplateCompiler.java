@@ -414,7 +414,8 @@ public class TemplateCompiler extends InputProcessor {
 
                 // If we weren't able to parse an expression and the reader didn't move at all, we encountered
                 // an entirely misplaced token - consume it so that the compiler doesn't hang forever...
-                if (((String) safeCall(expression)).length() == 0) {
+                String hangingCheck = (String) safeCall(expression);
+                if (hangingCheck == null || hangingCheck.length() == 0) {
                     reader.consume();
                 }
                 failForInvalidExpressionType(positionOfAttribute,
