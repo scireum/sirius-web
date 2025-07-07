@@ -8,6 +8,7 @@
 
 package sirius.web.util;
 
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Urls;
 
@@ -70,6 +71,8 @@ public class LinkBuilder {
      * @param value the value to add (without any further processing)
      * @return the builder itself for fluent method calls
      */
+    @SuppressWarnings("squid:S2259")
+    @Explain("Accessing value is null-safe due to Strings.isEmpty check")
     public LinkBuilder append(@Nonnull String name, @Nullable Object value) {
         if (Strings.isEmpty(value)) {
             return appendRaw(name, "");
@@ -88,6 +91,8 @@ public class LinkBuilder {
      * @param value the value to add (without any further processing)
      * @return the builder itself for fluent method calls
      */
+    @SuppressWarnings("squid:S2259")
+    @Explain("Accessing value is null-safe due to Strings.isFilled check")
     public LinkBuilder appendIfFilled(@Nonnull String name, @Nullable Object value) {
         if (Strings.isFilled(value)) {
             appendRaw(name, Urls.encode(value.toString()));
