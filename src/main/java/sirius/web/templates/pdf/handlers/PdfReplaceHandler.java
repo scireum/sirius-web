@@ -74,7 +74,7 @@ public abstract class PdfReplaceHandler implements Priorized {
      * @param userAgentCallback the user agent to use to resolve image resources
      * @param url               the URL to resolve
      * @return the resolved image
-     * @throws BadElementException in case the  resource doesn't have a valid format
+     * @throws BadElementException in case the resource doesn't have a valid format
      * @throws IOException         in case of an IO error
      */
     protected FSImage resolveResource(UserAgentCallback userAgentCallback, URL url)

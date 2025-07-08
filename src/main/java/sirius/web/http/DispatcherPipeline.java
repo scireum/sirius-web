@@ -35,7 +35,7 @@ public class DispatcherPipeline {
      * We even call the dispatchers in a separate thread pool (out of the event loop) as otherwise
      * we might run into a deadlock due to internal buffer management within netty. Also this provides
      * quite a good circuit breaker, as the web server will start to drop load if there is a severe
-     * system slowdown (which is still betten than drownin in requests, without handling any...).
+     * system slowdown (which is still better than drowning in requests, without handling any...).
      */
     private static final String EXECUTOR_WEBSERVER = "webserver";
 
