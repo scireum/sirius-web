@@ -8,6 +8,7 @@
 <i:arg type="String" name="acceptedFiles" default=""
        description="This is a comma separated list of allowed mime types or file extensions. Eg.: image/*,application/pdf,.psd"/>
 <i:arg type="int" name="maxParallelConnections" default="3"/>
+<i:arg type="int" name="maxFiles" default="999" description="Maximum number of files that can be uploaded."/>
 <i:arg type="String" name="previewsContainer" default=""
        description="A dom selector to render the upload progress into. If not set, will render below the button."/>
 
@@ -41,6 +42,7 @@
         sendFileAsBody: true,
         parallelUploads: ___maxParallelConnections,
         maxFilesize: null,
+        maxFiles: ___maxFiles,
         acceptedFiles: '@raw {@acceptedFiles}' || null,
         previewTemplate: '' +
             '<div class="dropzone-item mb-3">\n' +
@@ -70,6 +72,12 @@
                 // no need to show error to the user
                 return;
             }
+
+            // Error handling for maxFilesExceeded
+            if (file.accepted === false && message === Dropzone.prototype.defaultOptions.dictMaxFilesExceeded) {
+                message = '___i18n("template.html.maxFilesExceeded")';
+            }
+
             if (file.previewElement) {
                 file.previewElement.classList.add('dz-error');
 
@@ -86,6 +94,17 @@
         init: function () {
             const dropzone = this;
             let previewsContainer = '@previewsContainer';
+
+            // Ensure that only up to maxFiles previews are visible at any time.
+            // If more files are added than allowed, remove the first files so that only the last files remain.
+            dropzone.on('addedfile', function (file) {
+                if (dropzone.files.length > ___maxFiles) {
+                    // Remove the first files until only maxFiles remain
+                    while (dropzone.files.length > ___maxFiles) {
+                        dropzone.removeFile(dropzone.files[0]);
+                    }
+                }
+            });
 
             if (previewsContainer) {
                 let _dropzoneIndicator = document.querySelector(previewsContainer + ' .sirius-upload-hover');
