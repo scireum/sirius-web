@@ -29,6 +29,7 @@ import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.timeout.IdleStateEvent;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.TaskContext;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.di.std.ConfigValue;
@@ -273,6 +274,8 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     /*
      * Notified if a new message is available
      */
+    @SuppressWarnings("squid:S2259")
+    @Explain("The null check and instantiation of latencyWatch is safe")
     @Override
     public void channelRead(ChannelHandlerContext channelHandlerContext, Object message) {
         try {
