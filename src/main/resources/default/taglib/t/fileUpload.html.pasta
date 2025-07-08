@@ -75,7 +75,7 @@
 
             // Error handling for maxFilesExceeded
             if (file.accepted === false && message === Dropzone.prototype.defaultOptions.dictMaxFilesExceeded) {
-                message = '___i18n("template.html.maxFilesExceeded")';
+                message = '@escapeJS(i18n("template.html.maxFilesExceeded"))';
             }
 
             if (file.previewElement) {
@@ -84,7 +84,7 @@
                 if (typeof message !== 'string' && message.message) {
                     message = message.message;
                 } else {
-                    message = '___i18n("template.html.uploadFailed")';
+                    message = '@escapeJS(i18n("template.html.uploadFailed"))';
                 }
 
                 file.previewElement.querySelector('[data-dz-errormessage]').innerHTML = message;
@@ -158,7 +158,7 @@
                 if (response.error) {
                     file.previewElement.classList.add('dz-error');
                     file.previewElement.classList.remove('dz-success');
-                    const message = response.message || '___i18n("template.html.uploadFailed")';
+                    const message = response.message || '@escapeJS(i18n("template.html.uploadFailed"))';
                     file.previewElement.querySelector('[data-dz-errormessage]').innerHTML = message;
                     addHtmlMessage('red', message);
                 } else if (response.refresh) {
