@@ -20,13 +20,13 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
-import net.markenwerk.utils.mail.dkim.Canonicalization;
-import net.markenwerk.utils.mail.dkim.DkimMessage;
-import net.markenwerk.utils.mail.dkim.DkimSigner;
-import net.markenwerk.utils.mail.dkim.SigningAlgorithm;
+import org.eclipse.angus.mail.smtp.SMTPMessage;
+import org.simplejavamail.utils.mail.dkim.Canonicalization;
+import org.simplejavamail.utils.mail.dkim.DkimMessage;
+import org.simplejavamail.utils.mail.dkim.DkimSigner;
+import org.simplejavamail.utils.mail.dkim.SigningAlgorithm;
 import sirius.kernel.async.Operation;
 import sirius.kernel.async.Tasks;
-import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.di.std.ConfigValue;
@@ -254,10 +254,8 @@ class SendMailTask implements Runnable {
         }
     }
 
-    @SuppressWarnings("squid:S1191")
-    @Explain("We need the SUN API for DKIM signing.")
-    private com.sun.mail.smtp.SMTPMessage createMessage(Session session) throws Exception {
-        com.sun.mail.smtp.SMTPMessage msg = new com.sun.mail.smtp.SMTPMessage(session);
+    private SMTPMessage createMessage(Session session) throws Exception {
+        SMTPMessage msg = new SMTPMessage(session);
         msg.setSubject(mail.subject);
         msg.setRecipients(Message.RecipientType.TO,
                           new InternetAddress[]{new InternetAddress(mail.receiverEmail, mail.receiverName)});
@@ -333,8 +331,7 @@ class SendMailTask implements Runnable {
         return message;
     }
 
-    private void setupReplyTo(com.sun.mail.smtp.SMTPMessage msg)
-            throws UnsupportedEncodingException, MessagingException {
+    private void setupReplyTo(SMTPMessage msg) throws UnsupportedEncodingException, MessagingException {
         if (Strings.isFilled(mail.replyToEmail)) {
             if (Strings.isFilled(mail.replyToName)) {
                 msg.setReplyTo(new InternetAddress[]{new InternetAddress(mail.replyToEmail, mail.replyToName)});
@@ -344,8 +341,7 @@ class SendMailTask implements Runnable {
         }
     }
 
-    private void setupSender(com.sun.mail.smtp.SMTPMessage msg)
-            throws MessagingException, UnsupportedEncodingException {
+    private void setupSender(SMTPMessage msg) throws MessagingException, UnsupportedEncodingException {
         if (Strings.isFilled(mail.senderEmail)) {
             if (config.isUseSenderAndEnvelopeFrom()) {
                 msg.setSender(new InternetAddress(technicalSender, technicalSenderName));
