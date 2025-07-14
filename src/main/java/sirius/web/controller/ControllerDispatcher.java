@@ -57,7 +57,11 @@ public class ControllerDispatcher implements WebDispatcher {
     @ConfigValue("http.maintenanceRetryAfter")
     private static Duration maintenanceRetryAfter;
 
-    protected static final Log LOG = Log.get("controller");
+    /**
+     * Used to log general controller related activities.
+     */
+    public static final Log LOG = Log.get("controller");
+
     private static final String SYSTEM_MVC = "MVC";
 
     /**
