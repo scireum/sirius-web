@@ -319,10 +319,10 @@ public class ControllerDispatcher implements WebDispatcher {
             } else {
                 route.getController().onError(webContext, handledException);
             }
-        } catch (Exception t) {
+        } catch (Exception exceptionDuringFailureHandling) {
             webContext.respondWith()
                       .error(HttpResponseStatus.INTERNAL_SERVER_ERROR,
-                             route.getController().handleError(webContext, t));
+                             route.getController().handleError(webContext, exceptionDuringFailureHandling));
         }
     }
 

@@ -225,7 +225,7 @@ public class BasicController implements Controller {
             WebServer.LOG.WARN("""
                                        Cannot send service error for: %s - %s
                                        A partially successful response has already been created and committed!
-                                                                              
+                                       
                                        %s
                                        """,
                                webContext.getRequest().uri(),
