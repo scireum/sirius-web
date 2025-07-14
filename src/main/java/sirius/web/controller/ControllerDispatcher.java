@@ -308,23 +308,21 @@ public class ControllerDispatcher implements WebDispatcher {
             CallContext.getCurrent()
                        .addToMDC("controller",
                                  route.getController().getClass().getName() + "." + route.getMethod().getName());
+
+            HandledException handledException = route.getController().handleError(webContext, cause);
+
             if (route.isServiceCall()) {
-                if (cause instanceof HandledException handledException) {
-                    route.getController().onApiError(webContext, handledException, route.getApiResponseFormat());
-                } else {
-                    route.getController()
-                         .onApiError(webContext,
-                                     Exceptions.handle(LOG, cause)
-                                               .withHint(Controller.HTTP_STATUS,
-                                                         HttpResponseStatus.INTERNAL_SERVER_ERROR.code()),
-                                     route.getApiResponseFormat());
+                if (!(cause instanceof HandledException)) {
+                    handledException.withHint(Controller.HTTP_STATUS, HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
                 }
+                route.getController().onApiError(webContext, handledException, route.getApiResponseFormat());
             } else {
-                route.getController().onError(webContext, Exceptions.handle(LOG, cause));
+                route.getController().onError(webContext, handledException);
             }
         } catch (Exception t) {
             webContext.respondWith()
-                      .error(HttpResponseStatus.INTERNAL_SERVER_ERROR, Exceptions.handle(ControllerDispatcher.LOG, t));
+                      .error(HttpResponseStatus.INTERNAL_SERVER_ERROR,
+                             route.getController().handleError(webContext, t));
         }
     }
 
