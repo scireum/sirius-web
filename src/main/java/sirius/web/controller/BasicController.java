@@ -203,6 +203,11 @@ public class BasicController implements Controller {
     }
 
     @Override
+    public HandledException handleError(WebContext webContext, Throwable cause) {
+        return Exceptions.handle(ControllerDispatcher.LOG, cause);
+    }
+
+    @Override
     public void onError(WebContext webContext, @Nonnull HandledException error) {
         if (webContext.isResponseCommitted() || defaultRoute == null || error.getHint(Controller.HTTP_STATUS)
                                                                              .isNumeric()) {
@@ -220,7 +225,7 @@ public class BasicController implements Controller {
             WebServer.LOG.WARN("""
                                        Cannot send service error for: %s - %s
                                        A partially successful response has already been created and committed!
-                                                                              
+                                       
                                        %s
                                        """,
                                webContext.getRequest().uri(),

@@ -70,6 +70,18 @@ public interface Controller {
     ExceptionHint MISSING_PERMISSION = new ExceptionHint("missingPermission");
 
     /**
+     * Handles the given error and returns a {@link HandledException} which can be output to the user.
+     * <p>
+     * Depending on the type of request, {@link #onError} or {@link #onApiError} will be invoked with the returned
+     * {@link HandledException}.
+     *
+     * @param webContext the context containing the request
+     * @param cause      the error which occurred
+     * @return a {@link HandledException} which can be output to the user
+     */
+    HandledException handleError(WebContext webContext, Throwable cause);
+
+    /**
      * In case processing a request via a method fails (throws an exception), this method will be called.
      * <p>
      * This provides a convenient way to render a "fallback" page like a list view, if a specialized details view
