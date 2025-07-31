@@ -76,7 +76,7 @@ window.sirius.toast = (function () {
                 return;
             }
 
-            this._toast.addEventListener('transitionend', () => this.#remove());
+            this._toast.addEventListener('transitionend', () => this.#remove(), { once: true });
             this._toast.style.maxHeight = 0;
             this._toast.style.opacity = 0;
         }
