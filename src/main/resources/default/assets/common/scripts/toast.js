@@ -12,7 +12,15 @@ window.sirius.toast = (function () {
             animation: true, // Whether to animate the toast appearance
         }
 
-        static template = '<div class="sci-card sci-shadow-elevated sci-position-relative sci-border-radius-75 sci-p-2 sci-pl-3 sci-toast sci-d-flex sci-align-items-center sci-justify-content-space-between" role="alert" data-toast-type="{{type}}">' + '    {{{message}}}' + '    {{#closable}}' + '        <div role="button" class="sci-icon-smaller sci-icon-close sci-cursor-pointer sci-toast-button-close sci-toast-button-close-js"></div>' + '    {{/closable}}' + '</div>';
+        static template = `
+            <div class="sci-card sci-shadow-elevated sci-position-relative sci-border-radius-75 sci-p-2 sci-pl-3 sci-toast sci-d-flex sci-align-items-center sci-justify-content-space-between"
+                 role="alert"
+                 data-toast-type="{{type}}">
+                {{{message}}}
+                {{#closable}}
+                    <div role="button" class="sci-icon-smaller sci-icon-close sci-cursor-pointer sci-toast-button-close sci-toast-button-close-js"></div>\
+                {{/closable}}
+            </div>`;
 
         constructor(manager, options = {}) {
             this.manager = manager;
