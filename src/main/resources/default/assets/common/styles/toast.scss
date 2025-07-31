@@ -1,0 +1,89 @@
+#sci-toasts-container {
+  /* A bit higher than the z-index of the dialog & overlay components */
+  z-index: 12000;
+  top: 0;
+  right: 0;
+  gap: var(--sci-margin-1);
+  padding: var(--sci-margin-1);
+
+  .sci-toast-wrapper {
+    max-height: 100px;
+    min-width: 300px;
+    max-width: 500px;
+  }
+
+  .sci-toast-wrapper.sci-toast-animated {
+    transition: opacity 300ms ease, max-height 300ms ease;
+  }
+
+  /*Show a colored bar at the left of the toast card*/
+  .sci-toast::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 8px;
+  }
+
+  .sci-toast[data-toast-type="info"]::before {
+    background-color: $sirius-blue;
+  }
+
+  .sci-toast[data-toast-type="success"]::before {
+    background-color: $sirius-green;
+  }
+
+  .sci-toast[data-toast-type="warning"]::before {
+    background-color: $sirius-yellow;
+  }
+
+  .sci-toast[data-toast-type="error"]::before {
+    background-color: $sirius-red;
+  }
+}
+
+#sci-toasts-container[data-toast-position="top-left"] {
+  top: 0;
+  right: unset;
+  bottom: unset;
+  left: 0;
+}
+
+#sci-toasts-container[data-toast-position="top-right"] {
+  top: 0;
+  right: 0;
+  bottom: unset;
+  left: unset;
+}
+
+#sci-toasts-container[data-toast-position="bottom-left"] {
+  top: unset;
+  right: unset;
+  bottom: 0;
+  left: 0;
+}
+
+#sci-toasts-container[data-toast-position="bottom-right"] {
+  top: unset;
+  right: 0;
+  bottom: 0;
+  left: unset;
+}
+
+#sci-toasts-container[data-toast-position="top-center"] {
+  top: 0;
+  right: unset;
+  bottom: unset;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+#sci-toasts-container[data-toast-position="bottom-center"] {
+  top: unset;
+  right: unset;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
