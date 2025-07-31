@@ -394,10 +394,10 @@ class SendMailTask implements Runnable {
             props.setProperty(MAIL_USER, config.getMailUser());
             props.setProperty(protocolPropPrefix + AUTH, Boolean.TRUE.toString());
             return Session.getInstance(props, new MailAuthenticator(config));
-        } else {
-            props.setProperty(protocolPropPrefix + AUTH, Boolean.FALSE.toString());
-            return Session.getInstance(props);
         }
+
+        props.setProperty(protocolPropPrefix + AUTH, Boolean.FALSE.toString());
+        return Session.getInstance(props);
     }
 
     private String determinePort(SMTPConfiguration config) {
