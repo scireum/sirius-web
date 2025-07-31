@@ -77,24 +77,25 @@
     cursor: text;
 }
 
-.token-autocomplete-container.token-autocomplete-singleselect .token-autocomplete-input:after {
+.token-autocomplete-container.token-autocomplete-singleselect .token-autocomplete-toggle-button {
+    cursor: pointer;
     position: absolute;
-    content: "";
-    top: 14px;
-    right: 6px;
-    width: 0;
-    height: 0;
+    top: 12px;
+    right: 2px;
     border: 6px solid;
     border-color: #000 transparent transparent transparent;
+    background: none;
+    margin: 6px;
+    padding: 0;
 }
 
-.token-autocomplete-container.token-autocomplete-readonly.token-autocomplete-singleselect .token-autocomplete-input:after {
+.token-autocomplete-container.token-autocomplete-readonly.token-autocomplete-singleselect .token-autocomplete-toggle-button {
     border-color: #cccccc transparent transparent transparent;
 }
 
-.token-autocomplete-container.token-autocomplete-singleselect.token-autocomplete-suggestions-displayed .token-autocomplete-input:after {
+.token-autocomplete-container.token-autocomplete-singleselect.token-autocomplete-suggestions-displayed .token-autocomplete-toggle-button {
     border-color: transparent transparent #000 transparent;
-    top: 7px;
+    top: 5px;
 }
 
 .token-autocomplete-container .token-autocomplete-token:hover {
