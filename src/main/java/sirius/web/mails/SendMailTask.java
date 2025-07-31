@@ -385,14 +385,18 @@ class SendMailTask implements Runnable {
         if (Strings.isFilled(config.getTrustedServers())) {
             props.setProperty(protocolPropPrefix + SSL_TRUST, config.getTrustedServers());
         }
-        Authenticator auth = new MailAuthenticator(config);
-        if (Strings.isEmpty(config.getMailPassword())) {
-            props.setProperty(protocolPropPrefix + AUTH, Boolean.FALSE.toString());
-            return Session.getInstance(props);
-        } else {
+
+        return setupAuthSession(config, props, protocolPropPrefix);
+    }
+
+    private Session setupAuthSession(SMTPConfiguration config, Properties props, String protocolPropPrefix) {
+        if (Strings.isFilled(config.getMailPassword())) {
             props.setProperty(MAIL_USER, config.getMailUser());
             props.setProperty(protocolPropPrefix + AUTH, Boolean.TRUE.toString());
-            return Session.getInstance(props, auth);
+            return Session.getInstance(props, new MailAuthenticator(config));
+        } else {
+            props.setProperty(protocolPropPrefix + AUTH, Boolean.FALSE.toString());
+            return Session.getInstance(props);
         }
     }
 
