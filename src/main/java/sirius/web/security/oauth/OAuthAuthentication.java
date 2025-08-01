@@ -90,11 +90,12 @@ public class OAuthAuthentication {
                                                  String clientId,
                                                  String sharedSecret,
                                                  String redirectUri) throws IOException {
-        Context postData = Context.create();
-        postData.set(OAuth.CLIENT_SECRET, sharedSecret);
-        postData.set(OAuth.CLIENT_ID, clientId);
-        postData.set(OAuth.CODE, authenticationCode);
-        postData.set(OAuth.GRANT_TYPE, OAuth.GRANT_TYPE_AUTH_CODE);
+        Context postData = Context.create()
+                                  .set(OAuth.CLIENT_SECRET, sharedSecret)
+                                  .set(OAuth.CLIENT_ID, clientId)
+                                  .set(OAuth.CODE, authenticationCode)
+                                  .set(OAuth.GRANT_TYPE, OAuth.GRANT_TYPE_AUTH_CODE);
+
         if (redirectUri != null) {
             postData.set(OAuth.REDIRECT_URI, redirectUri);
         }
@@ -123,11 +124,11 @@ public class OAuthAuthentication {
                                               String oauthLoginUrl,
                                               String clientId,
                                               String sharedSecret) throws IOException {
-        Context postData = Context.create();
-        postData.set(OAuth.CLIENT_SECRET, sharedSecret);
-        postData.set(OAuth.CLIENT_ID, clientId);
-        postData.set(OAuth.REFRESH_TOKEN, refreshToken);
-        postData.set(OAuth.GRANT_TYPE, OAuth.GRANT_TYPE_REFRESH_TOKEN);
+        Context postData = Context.create()
+                                  .set(OAuth.CLIENT_SECRET, sharedSecret)
+                                  .set(OAuth.CLIENT_ID, clientId)
+                                  .set(OAuth.REFRESH_TOKEN, refreshToken)
+                                  .set(OAuth.GRANT_TYPE, OAuth.GRANT_TYPE_REFRESH_TOKEN);
 
         JSONCall call = JSONCall.to(URI.create(oauthLoginUrl));
         call.getOutcall().postData(postData, StandardCharsets.UTF_8);
