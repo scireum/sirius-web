@@ -396,6 +396,11 @@
   /* No need to redefine --preloader-border-width; it adjusts automatically */
 }
 
+.sci-preloader-smaller {
+  --preloader-size: calc(1.5 * var(--sci-base-unit)); /* Smaller size */
+  /* No need to redefine --preloader-border-width; it adjusts automatically */
+}
+
 
 @keyframes sciPreloader {
   to {
