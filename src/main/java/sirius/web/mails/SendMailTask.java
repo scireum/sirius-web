@@ -395,6 +395,16 @@ class SendMailTask implements Runnable {
         return setupAuthSession(config, props, protocolPropPrefix);
     }
 
+    /**
+     * Sets the properties depending on the configuration and returns a corresponding session.
+     * <p>
+     * OAuth2 is prioritized over a simple username/password authentication which is prioritized over no authentication.
+     *
+     * @param config             the SMTP configuration to use
+     * @param props              the properties to set for the session
+     * @param protocolPropPrefix the prefix to use for the protocol properties (e.g. "mail.smtp.")
+     * @return the session to use for sending mails
+     */
     private Session setupAuthSession(SMTPConfiguration config, Properties props, String protocolPropPrefix) {
         if (Strings.isFilled(config.getOAuthTokenName())) {
             props.setProperty(MAIL_USER, config.getMailUser());
