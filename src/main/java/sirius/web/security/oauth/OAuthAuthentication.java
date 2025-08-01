@@ -9,12 +9,14 @@
 package sirius.web.security.oauth;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import sirius.kernel.commons.Context;
 import sirius.kernel.commons.URLBuilder;
 import sirius.kernel.di.std.Register;
 import sirius.web.services.JSONCall;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Provides utility methods to perform OAuth authentication flows.
@@ -66,13 +68,42 @@ public class OAuthAuthentication {
                                                  String oauthLoginUrl,
                                                  String clientId,
                                                  String sharedSecret) throws IOException {
-        String loginUrl = new URLBuilder(oauthLoginUrl).addParameter(OAuth.CLIENT_SECRET, sharedSecret)
-                                                       .addParameter(OAuth.CLIENT_ID, clientId)
-                                                       .addParameter(OAuth.CODE, authenticationCode)
-                                                       .addParameter(OAuth.GRANT_TYPE, OAuth.GRANT_TYPE_AUTH_CODE)
-                                                       .build();
+        return performLoginByAuthCode(authenticationCode, oauthLoginUrl, clientId, sharedSecret, null);
+    }
 
-        ObjectNode response = JSONCall.to(URI.create(loginUrl)).getInput();
+    /**
+     * After the authentication flow has been completed by returning an authentication code to the redirect URL, this
+     * method can be used to obtain an access token in exchange for the authentication code.
+     * <p>
+     * This is to be used in the backend, where the client secret can be kept secret.
+     *
+     * @param authenticationCode the authentication code returned by the authorization server
+     * @param oauthLoginUrl      the url of the login endpoint at the authorization server
+     * @param clientId           the client id, which is registered at the authorization server
+     * @param sharedSecret       the client secret, which is registered at the authorization server
+     * @param redirectUri        the redirect URI used to send the authentication code back to the client
+     * @return the tokens in case of success
+     * @throws IOException in case of a connection error
+     */
+    public ReceivedTokens performLoginByAuthCode(String authenticationCode,
+                                                 String oauthLoginUrl,
+                                                 String clientId,
+                                                 String sharedSecret,
+                                                 String redirectUri) throws IOException {
+        Context postData = Context.create()
+                                  .set(OAuth.CLIENT_SECRET, sharedSecret)
+                                  .set(OAuth.CLIENT_ID, clientId)
+                                  .set(OAuth.CODE, authenticationCode)
+                                  .set(OAuth.GRANT_TYPE, OAuth.GRANT_TYPE_AUTH_CODE);
+
+        if (redirectUri != null) {
+            postData.set(OAuth.REDIRECT_URI, redirectUri);
+        }
+
+        JSONCall call = JSONCall.to(URI.create(oauthLoginUrl));
+        call.getOutcall().postData(postData, StandardCharsets.UTF_8);
+        ObjectNode response = call.getInput();
+
         return ReceivedTokens.fromJson(response);
     }
 
@@ -93,13 +124,16 @@ public class OAuthAuthentication {
                                               String oauthLoginUrl,
                                               String clientId,
                                               String sharedSecret) throws IOException {
-        String loginUrl = new URLBuilder(oauthLoginUrl).addParameter(OAuth.CLIENT_SECRET, sharedSecret)
-                                                       .addParameter(OAuth.CLIENT_ID, clientId)
-                                                       .addParameter(OAuth.REFRESH_TOKEN, refreshToken)
-                                                       .addParameter(OAuth.GRANT_TYPE, OAuth.GRANT_TYPE_REFRESH_TOKEN)
-                                                       .build();
+        Context postData = Context.create()
+                                  .set(OAuth.CLIENT_SECRET, sharedSecret)
+                                  .set(OAuth.CLIENT_ID, clientId)
+                                  .set(OAuth.REFRESH_TOKEN, refreshToken)
+                                  .set(OAuth.GRANT_TYPE, OAuth.GRANT_TYPE_REFRESH_TOKEN);
 
-        ObjectNode response = JSONCall.to(URI.create(loginUrl)).getInput();
+        JSONCall call = JSONCall.to(URI.create(oauthLoginUrl));
+        call.getOutcall().postData(postData, StandardCharsets.UTF_8);
+        ObjectNode response = call.getInput();
+
         return ReceivedTokens.fromJson(response);
     }
 }

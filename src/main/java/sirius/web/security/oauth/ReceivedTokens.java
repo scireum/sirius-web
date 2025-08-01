@@ -11,6 +11,7 @@ package sirius.web.security.oauth;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import sirius.kernel.commons.Strings;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -20,12 +21,13 @@ import java.time.ZoneOffset;
  * way, and then handle and store them in a custom way
  *
  * @param accessToken           the access token received from the authorization server
- * @param refreshToken          the refresh token received from the authorization server
+ * @param refreshToken          the refresh token received from the authorization server, might be null if the server
+ *                              response contains no refresh token (e.g. when refreshing an access token)
  * @param type                  the type of the tokens received from the authorization server, e.g. "Bearer" or "MAC"
  * @param accessTokenExpiresAt  the date at which the access token expires, might be null if the server response
  *                              contains no information
- * @param refreshTokenExpiresAt the date at which the refresh token expires, might be estimated if no JWT bearer
- *                              token is given
+ * @param refreshTokenExpiresAt the date at which the refresh token expires, might be null if no refresh token was
+ *                              returned or estimated if no JWT bearer token is given
  */
 public record ReceivedTokens(String accessToken, String refreshToken, String type, LocalDateTime accessTokenExpiresAt,
                              LocalDateTime refreshTokenExpiresAt) {
@@ -41,11 +43,16 @@ public record ReceivedTokens(String accessToken, String refreshToken, String typ
      */
     public static ReceivedTokens fromJson(ObjectNode response) {
         String accessToken = response.required(OAuth.ACCESS_TOKEN).asText("");
-        String refreshToken = response.required(OAuth.REFRESH_TOKEN).asText("");
+        String refreshToken = response.path(OAuth.REFRESH_TOKEN).asText("");
         String type = response.required(OAuth.TOKEN_TYPE).asText("");
         long accessTokenExpiresIn = response.path(OAuth.EXPIRES_IN).asLong(0L);
         LocalDateTime accessTokenExpiresAt =
                 accessTokenExpiresIn > 0 ? LocalDateTime.now().plusSeconds(accessTokenExpiresIn) : null;
+
+        if (Strings.isEmpty(refreshToken)) {
+            return new ReceivedTokens(accessToken, null, type, accessTokenExpiresAt, null);
+        }
+
         if (OAuth.TOKEN_TYPE_BEARER.equalsIgnoreCase(type)) {
             try {
                 // Try to read the exact refresh token expiration date from the JWT token itself
