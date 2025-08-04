@@ -24,7 +24,8 @@ import java.nio.charset.StandardCharsets;
 public class OAuthAuthentication {
 
     /**
-     * Creates an authorization URL that requests user consent for the specified OAuth scopes.
+     * Creates a URL that requests authorization by user consent for the specified OAuth scopes using the authorization
+     * code flow.
      * <p>
      * The URL can be used to redirect the user to the OAuth provider's authorization endpoint, where they can grant
      * access to the requested scopes.
@@ -65,11 +66,11 @@ public class OAuthAuthentication {
      * @return the received tokens containing access and refresh tokens, as well as their types and expiration dates
      * @throws IOException if an error occurs while making the HTTP request to the OAuth server
      */
-    public ReceivedTokens requestAccess(String endpoint,
-                                        String clientId,
-                                        String clientSecret,
-                                        String authorizationCode,
-                                        String redirectUri) throws IOException {
+    public ReceivedTokens requestAccessTokenViaAuthorizationCode(String endpoint,
+                                                                 String clientId,
+                                                                 String clientSecret,
+                                                                 String authorizationCode,
+                                                                 String redirectUri) throws IOException {
         JSONCall call = JSONCall.to(URI.create(endpoint));
 
         call.getOutcall()
@@ -95,8 +96,10 @@ public class OAuthAuthentication {
      * @return the received tokens containing the new access token, its type, and expiration date
      * @throws IOException if an error occurs while making the HTTP request to the OAuth server
      */
-    public ReceivedTokens requestRefresh(String endpoint, String clientId, String clientSecret, String refreshToken)
-            throws IOException {
+    public ReceivedTokens requestAccessTokenViaRefreshToken(String endpoint,
+                                                            String clientId,
+                                                            String clientSecret,
+                                                            String refreshToken) throws IOException {
         JSONCall call = JSONCall.to(URI.create(endpoint));
 
         call.getOutcall()
