@@ -25,6 +25,7 @@ public class SMTPConfiguration {
     private SMTPProtocol protocol;
     private String user;
     private String password;
+    private String oauthTokenName;
     private String mailSender;
     private String mailSenderName;
     private boolean useSenderAndEnvelopeFrom;
@@ -42,6 +43,9 @@ public class SMTPConfiguration {
 
     @ConfigValue("mail.smtp.password")
     private static String smtpPassword;
+
+    @ConfigValue("mail.smtp.oauthTokenName")
+    private static String smtpOAuthTokenName;
 
     @ConfigValue("mail.smtp.sender")
     private static String smtpSender;
@@ -97,6 +101,11 @@ public class SMTPConfiguration {
         return this;
     }
 
+    public SMTPConfiguration setOAuthTokenName(String oauthTokenName) {
+        this.oauthTokenName = oauthTokenName;
+        return this;
+    }
+
     public SMTPConfiguration setMailSender(String mailSender) {
         this.mailSender = mailSender;
         return this;
@@ -134,6 +143,7 @@ public class SMTPConfiguration {
                                 .setProtocol(asSMTPProtocol(Sirius.getSettings().get("mail.smtp.protocol")))
                                 .setUser(smtpUser)
                                 .setPassword(smtpPassword)
+                                .setOAuthTokenName(smtpOAuthTokenName)
                                 .setMailSender(smtpSender)
                                 .setMailSenderName(smtpSenderName)
                                 .setUseSenderAndEnvelopeFrom(smtpUseEnvelopeFrom)
@@ -163,6 +173,7 @@ public class SMTPConfiguration {
                                 .setProtocol(asSMTPProtocol(settings.get("mail.protocol")))
                                 .setUser(settings.get("mail.user").getString())
                                 .setPassword(settings.get("mail.password").getString())
+                                .setOAuthTokenName(settings.get("mail.oauthTokenName").getString())
                                 .setMailSender(settings.get("mail.sender").getString())
                                 .setMailSenderName(settings.get("mail.senderName").getString())
                                 .setUseSenderAndEnvelopeFrom(settings.get("mail.useEnvelopeFrom").asBoolean())
@@ -258,6 +269,15 @@ public class SMTPConfiguration {
      */
     public String getMailPassword() {
         return password;
+    }
+
+    /**
+     * Returns the name of the OAuth token used to authenticate against the mail server.
+     *
+     * @return the name of the OAuth token used for authentication
+     */
+    public String getOAuthTokenName() {
+        return oauthTokenName;
     }
 
     /**

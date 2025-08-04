@@ -34,6 +34,7 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.health.Exceptions;
 import sirius.web.security.UserContext;
+import sirius.web.security.oauth.OAuthTokenProviderUtils;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -75,6 +76,8 @@ class SendMailTask implements Runnable {
     private static final String MAIL_FROM = "mail.from";
 
     private static final String AUTH = "auth";
+    private static final String AUTH_MECHANISMS = "auth.mechanisms";
+    private static final String AUTH_MECHANISM_XOAUTH2 = "XOAUTH2";
     private static final String HOST = "host";
     private static final String STARTTLS_ENABLE = "starttls.enable";
     private static final String CHECKSERVERIDENTITY = "ssl.checkserveridentity";
@@ -101,6 +104,9 @@ class SendMailTask implements Runnable {
 
     @Part
     private static Mails mails;
+
+    @Part
+    private static OAuthTokenProviderUtils oauthTokenProviderUtils;
 
     @ConfigValue("mail.smtp.dkim.keyFile")
     private static String dkimKeyFile;
@@ -389,7 +395,24 @@ class SendMailTask implements Runnable {
         return setupAuthSession(config, props, protocolPropPrefix);
     }
 
+    /**
+     * Sets the properties depending on the configuration and returns a corresponding session.
+     * <p>
+     * OAuth2 is prioritized over a simple username/password authentication which is prioritized over no authentication.
+     *
+     * @param config             the SMTP configuration to use
+     * @param props              the properties to set for the session
+     * @param protocolPropPrefix the prefix to use for the protocol properties (e.g. "mail.smtp.")
+     * @return the session to use for sending mails
+     */
     private Session setupAuthSession(SMTPConfiguration config, Properties props, String protocolPropPrefix) {
+        if (Strings.isFilled(config.getOAuthTokenName())) {
+            props.setProperty(MAIL_USER, config.getMailUser());
+            props.setProperty(protocolPropPrefix + AUTH, Boolean.TRUE.toString());
+            props.setProperty(protocolPropPrefix + AUTH_MECHANISMS, AUTH_MECHANISM_XOAUTH2);
+            return Session.getInstance(props, new OAuthMailAuthenticator(config));
+        }
+
         if (Strings.isFilled(config.getMailPassword())) {
             props.setProperty(MAIL_USER, config.getMailUser());
             props.setProperty(protocolPropPrefix + AUTH, Boolean.TRUE.toString());
@@ -525,6 +548,41 @@ class SendMailTask implements Runnable {
         @Override
         protected PasswordAuthentication getPasswordAuthentication() {
             return new PasswordAuthentication(config.getMailUser(), config.getMailPassword());
+        }
+    }
+
+    /**
+     * Authenticates the mail session using an OAuth2 access token.
+     */
+    private static class OAuthMailAuthenticator extends Authenticator {
+
+        private final SMTPConfiguration config;
+        private final String accessToken;
+
+        private OAuthMailAuthenticator(SMTPConfiguration config) {
+            this.config = config;
+            this.accessToken = fetchRequiredAccessToken(config);
+        }
+
+        @Override
+        protected PasswordAuthentication getPasswordAuthentication() {
+            return new PasswordAuthentication(config.getMailUser(), accessToken);
+        }
+
+        /**
+         * Fetches the access token for the configured OAuth token name.
+         *
+         * @param config the SMTP configuration to use
+         * @return the access token to use for authentication
+         */
+        private static String fetchRequiredAccessToken(SMTPConfiguration config) {
+            return oauthTokenProviderUtils.fetchValidTokenForCurrentScope(config.getOAuthTokenName())
+                                          .orElseThrow(() -> Exceptions.handle()
+                                                                       .to(Mails.LOG)
+                                                                       .withSystemErrorMessage(
+                                                                               "No valid OAuth token found for '%s'",
+                                                                               config.getOAuthTokenName())
+                                                                       .handle());
         }
     }
 
