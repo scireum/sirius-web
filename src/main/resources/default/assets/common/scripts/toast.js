@@ -18,7 +18,7 @@ window.sirius.toast = (function () {
                  data-toast-type="{{type}}">
                 {{{message}}}
                 {{#closable}}
-                    <div role="button" class="sci-icon-smaller sci-icon-close sci-cursor-pointer sci-toast-button-close sci-toast-button-close-js"></div>
+                    <div role="button" class="sci-icon-smaller sci-icon-close sci-ms-2 sci-cursor-pointer sci-toast-button-close sci-toast-button-close-js"></div>
                 {{/closable}}
             </div>`;
 
