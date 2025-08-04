@@ -236,6 +236,36 @@
   background-color: currentColor;
 }
 
+.sci-icon-file {
+  mask-image: url(svgResource('/assets/images/icons/fontawesome/file.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-file-code {
+  mask-image: url(svgResource('/assets/images/icons/fontawesome/file-code.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-file-excel {
+  mask-image: url(svgResource('/assets/images/icons/fontawesome/file-excel.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-file-lines {
+  mask-image: url(svgResource('/assets/images/icons/fontawesome/file-lines.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-file-pdf {
+  mask-image: url(svgResource('/assets/images/icons/fontawesome/file-pdf.svg'));
+  background-color: currentColor;
+}
+
+.sci-icon-file-word {
+  mask-image: url(svgResource('/assets/images/icons/fontawesome/file-word.svg'));
+  background-color: currentColor;
+}
+
 /**
  * LEGACY: Following are legacy icons with explicit color definitions. Please use the icons defined above.
  */

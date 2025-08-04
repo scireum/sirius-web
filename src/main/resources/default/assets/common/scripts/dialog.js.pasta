@@ -80,7 +80,12 @@
      */
     dialog.fill = function (title, content) {
         _dialog.querySelector('#sci-dialog-title').textContent = title;
-        _dialog.querySelector('#sci-dialog-content').innerHTML = content;
+        if (typeof content === 'string') {
+            _dialog.querySelector('#sci-dialog-content').innerHTML = content;
+        } else {
+            _dialog.querySelector('#sci-dialog-content').textContent = '';
+            _dialog.querySelector('#sci-dialog-content').appendChild(content);
+        }
         sirius.dialog.clearFooter();
     };
 
