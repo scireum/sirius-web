@@ -57,8 +57,8 @@ public class LocalPathResolver implements Resolver {
             if (file.exists() && file.getCanonicalPath().startsWith(baseDir.getCanonicalPath())) {
                 return Resource.dynamicResource(scopeId, resource, file.toURI().toURL());
             }
-        } catch (IOException e) {
-            Exceptions.handle(e);
+        } catch (IOException exception) {
+            Exceptions.handle(exception);
         }
         return null;
     }
