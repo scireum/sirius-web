@@ -15,7 +15,7 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 
 import java.io.File;
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -53,13 +53,12 @@ public class LocalPathResolver implements Resolver {
             return null;
         }
         File file = new File(baseDir, (scopeId + resource).replace("/", File.separator));
-        if (file.exists()) {
-            try {
+        try {
+            if (file.exists() && file.getCanonicalPath().startsWith(baseDir.getCanonicalPath())) {
                 return Resource.dynamicResource(scopeId, resource, file.toURI().toURL());
-            } catch (MalformedURLException e) {
-                Exceptions.handle(e);
-                return null;
             }
+        } catch (IOException e) {
+            Exceptions.handle(e);
         }
         return null;
     }
