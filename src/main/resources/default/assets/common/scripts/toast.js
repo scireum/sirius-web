@@ -151,7 +151,7 @@ window.sirius.toast = (function () {
             }
             this._toastContainer = document.createElement('div');
             this._toastContainer.id = 'sci-toasts-container';
-            this._toastContainer.classList.add('sci-d-flex', 'sci-flex-column', 'sci-position-absolute', 'sci-font', 'sci-text', 'sci-text-soft');
+            this._toastContainer.classList.add('sci-d-flex', 'sci-flex-column', 'sci-position-fixed', 'sci-font', 'sci-text', 'sci-text-soft');
             this._toastContainer.dataset.toastPosition = this.configuration.position;
             document.body.appendChild(this._toastContainer);
             this._toastContainer.toastManager = this;
