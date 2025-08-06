@@ -117,6 +117,7 @@ window.sirius.toast = (function () {
          *
          * @param {object} configuration the configuration options to override the defaults
          * @param {string} [configuration.position=top-right] the position of the toast container, a combination of 'top' or 'bottom' and 'left', 'right' or 'center' (e.g., 'top-right', 'bottom-left').
+         * @param {number} [configuration.duration=3000] the default duration in milliseconds for which toasts should be visible, 0 means they will not disappear automatically
          */
         configure(configuration = {}) {
             this.configuration = sirius.deepExtend(this.configuration, configuration);
