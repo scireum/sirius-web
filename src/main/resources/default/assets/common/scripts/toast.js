@@ -2,12 +2,11 @@ window.sirius.toast = (function () {
 
     /**
      * Represents a singular toast notification that will be displayed on the screen.
-      */
+     */
     class Toast {
         static defaults = {
             message: '', // Default message to be displayed in the toast
             type: 'info', // Default toast type
-            duration: 3000, // Default duration for toast visibility
             closable: true, // Whether the toast can be closed by the user
             animation: true, // Whether to animate the toast appearance
         }
@@ -84,7 +83,7 @@ window.sirius.toast = (function () {
                 return;
             }
 
-            this._toast.addEventListener('transitionend', () => this.#remove(), { once: true });
+            this._toast.addEventListener('transitionend', () => this.#remove(), {once: true});
             this._toast.style.maxHeight = 0;
             this._toast.style.opacity = 0;
         }
@@ -107,6 +106,7 @@ window.sirius.toast = (function () {
     class ToastManager {
         configuration = {
             position: 'top-right', // Default position of the toast container
+            duration: 3000, // Default duration for toast visibility (can be overridden in individual toasts)
         };
 
         constructor() {
@@ -139,7 +139,10 @@ window.sirius.toast = (function () {
                 this.#createContainer();
             }
 
-            return new Toast(this, options);
+            const effectiveOptions = sirius.deepExtend({
+                duration: this.configuration.duration,
+            }, options);
+            return new Toast(this, effectiveOptions);
         }
 
         #createContainer() {
