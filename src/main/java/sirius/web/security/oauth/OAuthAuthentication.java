@@ -8,9 +8,13 @@
 
 package sirius.web.security.oauth;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import sirius.kernel.commons.Context;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.URLBuilder;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.health.Exceptions;
+import sirius.web.http.WebContext;
 import sirius.web.services.JSONCall;
 
 import java.io.IOException;
@@ -81,7 +85,10 @@ public class OAuthAuthentication {
                              .set(OAuth.CLIENT_ID, clientId)
                              .set(OAuth.CLIENT_SECRET, clientSecret), StandardCharsets.UTF_8);
 
-        return ReceivedTokens.fromJson(call.getInput());
+        ObjectNode response = call.getInput();
+        assertNoErrorResponse(response);
+
+        return ReceivedTokens.fromJson(response);
     }
 
     /**
@@ -109,6 +116,41 @@ public class OAuthAuthentication {
                              .set(OAuth.CLIENT_ID, clientId)
                              .set(OAuth.CLIENT_SECRET, clientSecret), StandardCharsets.UTF_8);
 
-        return ReceivedTokens.fromJson(call.getInput());
+        ObjectNode response = call.getInput();
+        assertNoErrorResponse(response);
+
+        return ReceivedTokens.fromJson(response);
+    }
+
+    /**
+     * Asserts that the given response does not contain an error and throws an exception if it does.
+     *
+     * @param response the JSON response when requesting an OAuth token
+     */
+    public void assertNoErrorResponse(ObjectNode response) {
+        String error = response.path(OAuth.ERROR).asText(null);
+        String errorDescription = response.path(OAuth.ERROR_DESCRIPTION).asText("Unknown error");
+        assertNoError(error, errorDescription);
+    }
+
+    /**
+     * Asserts that the given response does not contain an error and throws an exception if it does.
+     *
+     * @param webContext the web context of the redirect response of the authorization request
+     */
+    public void assertNoErrorResponse(WebContext webContext) {
+        String error = webContext.get(OAuth.ERROR).asString();
+        String errorDescription = webContext.get(OAuth.ERROR_DESCRIPTION).asString("Unknown error");
+        assertNoError(error, errorDescription);
+    }
+
+    private static void assertNoError(String error, String errorDescription) {
+        if (Strings.isFilled(error)) {
+            throw Exceptions.createHandled()
+                            .withNLSKey("OAuthAuthentication.error.errorResponse")
+                            .set("error", error)
+                            .set("errorDescription", errorDescription)
+                            .handle();
+        }
     }
 }

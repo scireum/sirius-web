@@ -140,4 +140,14 @@ public class OAuth {
      * @see #GRANT_TYPE
      */
     public static final String GRANT_TYPE_REFRESH_TOKEN = "refresh_token";
+
+    /**
+     * Contains the error code returned by the OAuth server in case of an error.
+     */
+    public static final String ERROR = "error";
+
+    /**
+     * Contains the error description returned by the OAuth server in case of an error.
+     */
+    public static final String ERROR_DESCRIPTION = "error_description";
 }
