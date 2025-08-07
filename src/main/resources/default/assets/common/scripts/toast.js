@@ -2,12 +2,11 @@ window.sirius.toast = (function () {
 
     /**
      * Represents a singular toast notification that will be displayed on the screen.
-      */
+     */
     class Toast {
         static defaults = {
             message: '', // Default message to be displayed in the toast
             type: 'info', // Default toast type
-            duration: 3000, // Default duration for toast visibility
             closable: true, // Whether the toast can be closed by the user
             animation: true, // Whether to animate the toast appearance
         }
@@ -84,7 +83,7 @@ window.sirius.toast = (function () {
                 return;
             }
 
-            this._toast.addEventListener('transitionend', () => this.#remove(), { once: true });
+            this._toast.addEventListener('transitionend', () => this.#remove(), {once: true});
             this._toast.style.maxHeight = 0;
             this._toast.style.opacity = 0;
         }
@@ -107,6 +106,7 @@ window.sirius.toast = (function () {
     class ToastManager {
         configuration = {
             position: 'top-right', // Default position of the toast container
+            duration: 3000, // Default duration for toast visibility (can be overridden in individual toasts)
         };
 
         constructor() {
@@ -117,6 +117,7 @@ window.sirius.toast = (function () {
          *
          * @param {object} configuration the configuration options to override the defaults
          * @param {string} [configuration.position=top-right] the position of the toast container, a combination of 'top' or 'bottom' and 'left', 'right' or 'center' (e.g., 'top-right', 'bottom-left').
+         * @param {number} [configuration.duration=3000] the default duration in milliseconds for which toasts should be visible, 0 means they will not disappear automatically
          */
         configure(configuration = {}) {
             this.configuration = sirius.deepExtend(this.configuration, configuration);
@@ -139,7 +140,10 @@ window.sirius.toast = (function () {
                 this.#createContainer();
             }
 
-            return new Toast(this, options);
+            const effectiveOptions = sirius.deepExtend({
+                duration: this.configuration.duration,
+            }, options);
+            return new Toast(this, effectiveOptions);
         }
 
         #createContainer() {
@@ -148,7 +152,7 @@ window.sirius.toast = (function () {
             }
             this._toastContainer = document.createElement('div');
             this._toastContainer.id = 'sci-toasts-container';
-            this._toastContainer.classList.add('sci-d-flex', 'sci-flex-column', 'sci-position-absolute', 'sci-font', 'sci-text', 'sci-text-soft');
+            this._toastContainer.classList.add('sci-d-flex', 'sci-flex-column', 'sci-position-fixed', 'sci-font', 'sci-text', 'sci-text-soft');
             this._toastContainer.dataset.toastPosition = this.configuration.position;
             document.body.appendChild(this._toastContainer);
             this._toastContainer.toastManager = this;
