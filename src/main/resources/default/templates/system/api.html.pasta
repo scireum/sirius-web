@@ -75,7 +75,7 @@
                     <i:if test="!service.getParameters().isEmpty()">
                         <div class="mt-4">
                             <h5>Parameters</h5>
-                            <table class="table">
+                            <table class="table" style="table-layout: fixed">
                                 <tr>
                                     <th>Name</th>
                                     <th>Description</th>
@@ -101,7 +101,7 @@
                     <i:if test="!service.getRequestBodies().isEmpty()">
                         <div class="mt-4">
                             <h5>Requests</h5>
-                            <table class="table table-hover">
+                            <table class="table table-hover" style="table-layout: fixed">
                                 <thead>
                                 <th>Description</th>
                                 <th class="col-md-8">Example</th>
@@ -145,7 +145,7 @@
                     <i:if test="!service.getResponses().isEmpty()">
                         <div class="mt-4">
                             <h5>Responses</h5>
-                            <table class="table table-hover">
+                            <table class="table table-hover" style="table-layout: fixed">
                                 <thead>
                                 <th>Description</th>
                                 <th class="col-md-8">Example</th>
