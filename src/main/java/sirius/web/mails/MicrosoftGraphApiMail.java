@@ -10,7 +10,6 @@ package sirius.web.mails;
 
 import jakarta.activation.DataSource;
 import sirius.kernel.Sirius;
-import sirius.kernel.commons.Json;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Part;
@@ -191,12 +190,14 @@ public class MicrosoftGraphApiMail {
     public void send() throws IOException {
         assertValidConfiguration();
 
-        JSONCall call = JSONCall.to(endpoint).withAllowEmptyResponseBody(true);
+        JSONCall call = JSONCall.to(endpoint).withFineLogger(LOG).withAllowEmptyResponseBody(true);
         call.getOutcall().withOAuth(this::fetchValidAccessToken, this::refreshAccessToken);
         addPayload(call.getOutput());
 
+        // Note: Invoke method to tigger JSON logging as just getting the response code skips it.
+        call.getInput();
+
         int responseCode = call.getOutcall().getResponseCode();
-        logCall(call, responseCode);
         assertSuccessfulCall(responseCode);
     }
 
@@ -307,31 +308,6 @@ public class MicrosoftGraphApiMail {
             }
         }
         output.endArray();
-    }
-
-    /**
-     * Logs the details of the call to the Microsoft Graph API, including the endpoint, request body, and response code
-     * if fine logging is enabled.
-     *
-     * @param call         the {@link JSONCall} representing the call to the Microsoft Graph API
-     * @param responseCode the response code received from the Microsoft Graph API
-     * @throws IOException if an error occurs while logging the call details
-     */
-    private void logCall(JSONCall call, int responseCode) throws IOException {
-        if (LOG.isFINE()) {
-            LOG.FINE("""
-                             ---------- call ----------
-                             Endpoint: %s
-                             
-                             %s
-                             
-                             ---------- response ----------
-                             Response Code: %s
-                             """,
-                     call.getOutcall().getRequest().uri(),
-                     Json.writePretty(Json.parseObject(call.getOutput().toString())),
-                     responseCode);
-        }
     }
 
     /**
