@@ -8,20 +8,22 @@
 
 package sirius.web.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import sirius.kernel.commons.Json;
 import sirius.kernel.commons.Streams;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.Formatter;
 import sirius.kernel.xml.Outcall;
 import sirius.web.http.MimeHelper;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.function.BooleanSupplier;
@@ -123,26 +125,49 @@ public class JSONCall {
             debugLogger.FINE(Formatter.create("""
                                                       ---------- call ----------
                                                       ${httpMethod} ${url} [
-                                                                                   
+                                                      
                                                       ${callBody}]
                                                       ---------- response ----------
-                                                      HTTP-Response-Code: ${responseCode}
-                                                                                   
-                                                      ${response}
+                                                      HTTP-Response-Code: ${responseCode} [
+                                                      
+                                                      ${response}]
                                                       ---------- end ----------
                                                       """)
                                       .set("httpMethod", outcall.getRequest().method())
                                       .set("url", outcall.getRequest().uri())
-                                      .set("callBody",
-                                           outcall.getRequest().bodyPublisher().isPresent() ? getOutput() : null)
+                                      .set("callBody", resolveRequestBodyPretty())
                                       .set("responseCode", getOutcall().getResponseCode())
-                                      .set("response", response)
+                                      .set("response", resolveResponseBodyPretty(response))
                                       .smartFormat());
         }
     }
 
+    private String resolveRequestBodyPretty() throws IOException {
+        if (outcall.getRequest().bodyPublisher().isEmpty()) {
+            return null;
+        }
+
+        try (OutputStream outputStream = outcall.postFromOutput()) {
+            String request = outputStream.toString();
+            return Strings.isFilled(request) ? Json.writePretty(Json.parseObject(request)) : null;
+        }
+    }
+
+    private String resolveResponseBodyPretty(String response) {
+        if (Strings.isEmpty(response)) {
+            return null;
+        }
+
+        try {
+            return Json.writePretty(Json.MAPPER.readTree(response));
+        } catch (JsonProcessingException exception) {
+            Exceptions.ignore(exception);
+            return response;
+        }
+    }
+
     /**
-     * Executes the call and returns the input expecting a JSON object as result.
+     * Executes the call and returns the input expecting a JSON object as a result.
      *
      * @return the result of the call as a JSON object
      * @throws IOException in case of an IO error during the call
