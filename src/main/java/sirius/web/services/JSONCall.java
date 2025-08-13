@@ -138,11 +138,11 @@ public class JSONCall {
             debugLogger.FINE(Formatter.create("""
                                                       ---------- call ----------
                                                       ${httpMethod} ${url} [
-                                                                                   
+                                                      
                                                       ${callBody}]
                                                       ---------- response ----------
                                                       HTTP-Response-Code: ${responseCode}
-                                                                                   
+                                                      
                                                       ${response}
                                                       ---------- end ----------
                                                       """)
