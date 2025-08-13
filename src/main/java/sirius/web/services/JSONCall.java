@@ -48,9 +48,8 @@ public class JSONCall {
      *
      * @param url the target URL to call
      * @return an <tt>JSONCall</tt> which can be used to send and receive JSON
-     * @throws java.io.IOException in case of an IO error
      */
-    public static JSONCall to(URI url) throws IOException {
+    public static JSONCall to(URI url) {
         return to(url, MimeHelper.APPLICATION_JSON + "; charset=" + StandardCharsets.UTF_8.name());
     }
 
@@ -60,9 +59,8 @@ public class JSONCall {
      * @param url         the target URL to call
      * @param contentType the Content-Type to use
      * @return a new instance to perform the JSON call
-     * @throws IOException in case of an IO error
      */
-    public static JSONCall to(URI url, String contentType) throws IOException {
+    public static JSONCall to(URI url, String contentType) {
         JSONCall result = new JSONCall();
         result.outcall = new Outcall(url);
         result.outcall.setRequestProperty(HttpHeaderNames.CONTENT_TYPE.toString(), contentType);
@@ -87,10 +85,11 @@ public class JSONCall {
      * <p>
      * The outcall is only logged when the logger is set to FINE. The default logger is "json".
      *
-     * @param logger the logger to log to
+     * @param logger           the logger to log to
+     * @param isDebugLogActive a supplier which returns true if the log should be written
      * @return returns the JSON call itself for fluent method calls
      */
-    public JSONCall withFineLogger(Log logger, @Nonnull BooleanSupplier isDebugLogActive) {
+    public JSONCall withFineLogger(Log logger, BooleanSupplier isDebugLogActive) {
         this.debugLogger = logger;
         this.isDebugLogActive = isDebugLogActive;
         return this;
@@ -113,7 +112,7 @@ public class JSONCall {
      * <p>
      * This will mark the underlying {@link Outcall} as a POST request.
      *
-     * @return the input which can be used to generate a JSON document which is sent to the URL
+     * @return the input, which can be used to generate a JSON document which is sent to the URL
      * @throws IOException in case of an IO error while sending the JSON document
      */
     public JSONStructuredOutput getOutput() throws IOException {
@@ -177,7 +176,7 @@ public class JSONCall {
     }
 
     /**
-     * Executes the call and returns the input expecting a JSON array as result.
+     * Executes the call and returns the input expecting a JSON array as a result.
      *
      * @return the result of the call as a JSON array
      * @throws IOException in case of an IO error during the call
@@ -189,7 +188,7 @@ public class JSONCall {
     /**
      * Executes the call and returns the input as a plain text string.
      * <p>
-     * An {@link IOException} is thrown in case of an issue with the connection or if the response isn't JSON. Note,
+     * An {@link IOException} is thrown in case of an issue with the connection or if the response isn't JSON. Note
      * that non-OK responses (e.g. HTTP status 404) are accepted as long as the content type is JSON to support APIs
      * that return proper error messages in JSON format.
      *
