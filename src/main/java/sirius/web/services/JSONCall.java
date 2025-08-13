@@ -212,18 +212,6 @@ public class JSONCall {
     }
 
     /**
-     * Returns the response of the call as plain text.
-     *
-     * @return the response of the call as String
-     * @throws IOException in case of an IO error while receiving the result
-     * @deprecated use {@link #getInput()}}
-     */
-    @Deprecated
-    public String getPlainInput() throws IOException {
-        return outcall.getData();
-    }
-
-    /**
      * Provides access to the underlying <tt>outcall</tt>.
      *
      * @return the underlying outcall
