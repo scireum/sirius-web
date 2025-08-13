@@ -62,6 +62,32 @@ public class MicrosoftGraphApiMail {
     }
 
     /**
+     * Creates a new instance of {@link MicrosoftGraphApiMail} based on the provided {@link MailSender}.
+     * <p>
+     * Note, that the HTML body is preferred over the plain text body as only a single body type can be defined.
+     *
+     * @param mail the {@link MailSender} containing the data and configuration for the mail to be sent
+     * @return a new instance of {@link MicrosoftGraphApiMail} configured with the details from the {@link MailSender}
+     */
+    public static MicrosoftGraphApiMail createFromMail(MailSender mail) {
+        MicrosoftGraphApiMail microsoftGraphApiMail =
+                create().withOAuthTokenName(mail.getSmtpConfiguration().getOAuthTokenName())
+                        .withUser(mail.getSenderEmail())
+                        .withReceiverEmailAddress(mail.getReceiverName())
+                        .withSubject(mail.getSubject());
+
+        if (Strings.isFilled(mail.getHtml())) {
+            microsoftGraphApiMail.withHtmlBody(mail.getHtml());
+        } else {
+            microsoftGraphApiMail.withTextBody(mail.getText());
+        }
+
+        mail.getAttachments().forEach(microsoftGraphApiMail::addAttachment);
+
+        return microsoftGraphApiMail;
+    }
+
+    /**
      * Creates a new instance of {@link MicrosoftGraphApiMail}.
      *
      * @return a new instance of {@link MicrosoftGraphApiMail}

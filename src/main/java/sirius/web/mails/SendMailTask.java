@@ -202,9 +202,14 @@ class SendMailTask implements Runnable {
         Watch mailSendTime = Watch.start();
         try {
             Mails.LOG.FINE("Sending eMail: " + mail.subject + " to: " + mail.receiverEmail);
-            Session session = getMailSession(config);
-            try (Transport transport = getSMTPTransport(session, config)) {
-                sendMailViaTransport(session, transport);
+
+            if (MicrosoftGraphApiMail.isEnabled()) {
+                MicrosoftGraphApiMail.createFromMail(mail).send();
+            } else {
+                Session session = getMailSession(config);
+                try (Transport transport = getSMTPTransport(session, config)) {
+                    sendMailViaTransport(session, transport);
+                }
             }
         } catch (Exception e) {
             if (mail.remainingAttempts.decrementAndGet() > 0) {
