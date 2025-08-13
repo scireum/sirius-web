@@ -647,4 +647,48 @@ public class MailSender {
     public String getLanguage() {
         return language;
     }
+
+    public String getSenderEmail() {
+        return senderEmail;
+    }
+
+    public String getSenderName() {
+        return senderName;
+    }
+
+    public String getReceiverEmail() {
+        return receiverEmail;
+    }
+
+    public String getReceiverName() {
+        return receiverName;
+    }
+
+    public String getReplyToEmail() {
+        return replyToEmail;
+    }
+
+    public String getReplyToName() {
+        return replyToName;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public String getHtml() {
+        return html;
+    }
+
+    public List<DataSource> getAttachments() {
+        return Collections.unmodifiableList(attachments);
+    }
+
+    public SMTPConfiguration getSmtpConfiguration() {
+        return smtpConfiguration;
+    }
 }
