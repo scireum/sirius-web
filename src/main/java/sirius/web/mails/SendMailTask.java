@@ -557,16 +557,14 @@ class SendMailTask implements Runnable {
     private static class OAuthMailAuthenticator extends Authenticator {
 
         private final SMTPConfiguration config;
-        private final String accessToken;
 
         private OAuthMailAuthenticator(SMTPConfiguration config) {
             this.config = config;
-            this.accessToken = fetchRequiredAccessToken(config);
         }
 
         @Override
         protected PasswordAuthentication getPasswordAuthentication() {
-            return new PasswordAuthentication(config.getMailUser(), accessToken);
+            return new PasswordAuthentication(config.getMailUser(), fetchRequiredAccessToken(config));
         }
 
         /**
