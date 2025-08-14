@@ -194,7 +194,7 @@ public class MicrosoftGraphApiMail {
         call.getOutcall().withOAuth(this::fetchValidAccessToken, this::refreshAccessToken);
         addPayload(call.getOutput());
 
-        // Note: Invoke method to tigger JSON logging as just getting the response code skips it.
+        // Note: Invoke method to trigger JSON logging as just getting the response code skips it.
         call.getInput();
 
         int responseCode = call.getOutcall().getResponseCode();
@@ -217,7 +217,7 @@ public class MicrosoftGraphApiMail {
             throw new IllegalStateException("Subject for Microsoft Graph API mail is not set.");
         }
         if (Strings.isEmpty(receiverMailAddress)) {
-            throw new IllegalStateException("Receiver mail address for Microsoft API Graph mail is not set.");
+            throw new IllegalStateException("Receiver mail address for Microsoft Graph API mail is not set.");
         }
         if (Strings.isEmpty(oauthTokenName)) {
             throw new IllegalStateException("OAuth token name for Microsoft Graph API mail is not set.");
