@@ -5,7 +5,7 @@
 <i:arg type="String" name="framework" default=""/>
 <i:arg type="String" name="class" default=""/>
 <i:arg type="String" name="url"/>
-<i:arg type="boolean" name="isPostRequest" default="false"/>
+<i:arg type="boolean" name="sendPostRequest" default="false"/>
 <i:arg type="boolean" name="adminOnly" default="false"/>
 <i:arg type="String" name="linkTarget" default="_self"/>
 <i:arg type="java.util.Map" name="data" default="java.util.Collections.emptyMap()"/>
@@ -20,7 +20,7 @@
 
 <i:if test="isFrameworkEnabled(framework)">
     <t:permission permission="@permission">
-        <i:if test="isPostRequest">
+        <i:if test="sendPostRequest">
             <form method="POST" action="@url" target="@linkTarget" <i:raw>@dataSerialized</i:raw>>
                 <input name="CSRFToken"
                        value="@part(sirius.web.http.CSRFHelper.class).getCSRFToken(WebContext.getCurrent())"
