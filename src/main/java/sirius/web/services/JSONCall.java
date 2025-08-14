@@ -148,7 +148,7 @@ public class JSONCall {
 
         try (OutputStream outputStream = outcall.postFromOutput()) {
             String request = outputStream.toString();
-            return Strings.isFilled(request) ? Json.writePretty(Json.parseObject(request)) : null;
+            return Strings.isFilled(request) ? Json.writePretty(Json.MAPPER.readTree(request)) : null;
         }
     }
 
