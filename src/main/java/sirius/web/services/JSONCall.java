@@ -36,6 +36,7 @@ public class JSONCall {
     private Outcall outcall;
     private Log debugLogger = Log.get("json");
     private BooleanSupplier isDebugLogActive = () -> true;
+    private boolean allowEmptyResponseBody;
 
     /*
      * Use .to(URL) to generate an instance.
@@ -92,6 +93,20 @@ public class JSONCall {
     public JSONCall withFineLogger(Log logger, BooleanSupplier isDebugLogActive) {
         this.debugLogger = logger;
         this.isDebugLogActive = isDebugLogActive;
+        return this;
+    }
+
+    /**
+     * Sets whether an empty response body is allowed.
+     * <p>
+     * If set to <tt>true</tt>, invoking {@link #getInput()} or {@link #getInputArray()} will return an empty JSON
+     * object or array respectively if the response body is empty.
+     *
+     * @param allowEmptyResponseBody whether an empty response body is allowed
+     * @return the JSON call itself for fluent method calls
+     */
+    public JSONCall withAllowEmptyResponseBody(boolean allowEmptyResponseBody) {
+        this.allowEmptyResponseBody = allowEmptyResponseBody;
         return this;
     }
 
@@ -172,7 +187,8 @@ public class JSONCall {
      * @throws IOException in case of an IO error during the call
      */
     public ObjectNode getInput() throws IOException {
-        return Json.parseObject(executeCall());
+        String response = executeCall();
+        return allowEmptyResponseBody && Strings.isEmpty(response) ? Json.createObject() : Json.parseObject(response);
     }
 
     /**
@@ -182,7 +198,8 @@ public class JSONCall {
      * @throws IOException in case of an IO error during the call
      */
     public ArrayNode getInputArray() throws IOException {
-        return Json.parseArray(executeCall());
+        String response = executeCall();
+        return allowEmptyResponseBody && Strings.isEmpty(response) ? Json.createArray() : Json.parseArray(response);
     }
 
     /**
