@@ -211,6 +211,8 @@ class SendMailTask implements Runnable {
                     sendMailViaTransport(session, transport);
                 }
             }
+
+            success = true;
         } catch (Exception e) {
             if (mail.remainingAttempts.decrementAndGet() > 0) {
                 Mails.LOG.WARN(
@@ -252,7 +254,6 @@ class SendMailTask implements Runnable {
 
             transport.sendMessage(msg, msg.getAllRecipients());
             messageId = msg.getMessageID();
-            success = true;
         } catch (Exception e) {
             throw Exceptions.handle()
                             .withSystemErrorMessage("Cannot send mail to %s from %s with subject '%s': %s (%s)",
