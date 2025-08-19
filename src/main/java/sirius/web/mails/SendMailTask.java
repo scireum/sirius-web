@@ -178,8 +178,8 @@ class SendMailTask implements Runnable {
                                 mail.text,
                                 mail.html,
                                 mail.type);
-            } catch (Exception e) {
-                Exceptions.handle(Mails.LOG, e);
+            } catch (Exception exception) {
+                Exceptions.handle(Mails.LOG, exception);
             }
         }
     }
@@ -211,7 +211,9 @@ class SendMailTask implements Runnable {
                     sendMailViaTransport(session, transport);
                 }
             }
-        } catch (Exception e) {
+
+            success = true;
+        } catch (Exception exception) {
             if (mail.remainingAttempts.decrementAndGet() > 0) {
                 Mails.LOG.WARN(
                         "RESCHEDULING sending mail from: '%s' to '%s' with subject: '%s' (Remaining attempts: %s)",
@@ -230,13 +232,13 @@ class SendMailTask implements Runnable {
             Exceptions.handle()
                       .withSystemErrorMessage(
                               "Invalid mail configuration: %s (Host: %s, Port: %s, User: %s, Password used: %s)",
-                              e.getMessage(),
+                              exception.getMessage(),
                               config.getMailHost(),
                               config.getMailPort(),
                               config.getMailUser(),
                               Strings.isFilled(config.getMailPassword()))
                       .to(Mails.LOG)
-                      .error(e)
+                      .error(exception)
                       .handle();
         }
 
@@ -252,15 +254,14 @@ class SendMailTask implements Runnable {
 
             transport.sendMessage(msg, msg.getAllRecipients());
             messageId = msg.getMessageID();
-            success = true;
-        } catch (Exception e) {
+        } catch (Exception exception) {
             throw Exceptions.handle()
                             .withSystemErrorMessage("Cannot send mail to %s from %s with subject '%s': %s (%s)",
                                                     mail.receiverEmail,
                                                     mail.senderEmail,
                                                     mail.subject)
                             .to(Mails.LOG)
-                            .error(e)
+                            .error(exception)
                             .handle();
         }
     }
@@ -335,8 +336,12 @@ class SendMailTask implements Runnable {
             dkimSigner.setLengthParam(true);
             dkimSigner.setCopyHeaderFields(false);
             return new DkimMessage(message, dkimSigner);
-        } catch (Exception e) {
-            Exceptions.handle().to(Mails.LOG).error(e).withNLSKey("Skipping DKIM signing due to: %s (%s)").handle();
+        } catch (Exception exception) {
+            Exceptions.handle()
+                      .to(Mails.LOG)
+                      .error(exception)
+                      .withNLSKey("Skipping DKIM signing due to: %s (%s)")
+                      .handle();
         }
 
         return message;
@@ -597,17 +602,17 @@ class SendMailTask implements Runnable {
                               null;
             transport.connect(config.getMailHost(), config.getMailUser(), password);
             return transport;
-        } catch (Exception e) {
+        } catch (Exception exception) {
             throw Exceptions.handle()
                             .withSystemErrorMessage(
                                     "Invalid mail configuration: %s (Host: %s, Port: %s, User: %s, Password used: %s)",
-                                    e.getMessage(),
+                                    exception.getMessage(),
                                     config.getMailHost(),
                                     config.getMailPort(),
                                     config.getMailUser(),
                                     Strings.isFilled(config.getMailPassword()))
                             .to(Mails.LOG)
-                            .error(e)
+                            .error(exception)
                             .handle();
         }
     }
