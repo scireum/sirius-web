@@ -32,6 +32,10 @@ public class SMTPConfiguration {
     private String trustedServers;
     private boolean checkServerIdentity;
 
+    private String microsoftGraphApiEndpoint;
+    private boolean microsoftGraphApiEnabled;
+    private boolean microsoftGraphApiSaveToSentItems;
+
     @ConfigValue("mail.smtp.host")
     private static String smtpHost;
 
@@ -61,6 +65,15 @@ public class SMTPConfiguration {
 
     @ConfigValue("mail.smtp.checkServerIdentity")
     private static boolean smtpCheckServerIdentity;
+
+    @ConfigValue("mail.microsoftGraphApi.endpoint")
+    private static String systemMicrosoftGraphApiEndpoint;
+
+    @ConfigValue("mail.microsoftGraphApi.enabled")
+    private static boolean systemMicrosoftGraphApiEnabled;
+
+    @ConfigValue("mail.microsoftGraphApi.saveToSentItems")
+    private static boolean systemMicrosoftGraphApiSaveToSentItems;
 
     private SMTPConfiguration() {
     }
@@ -131,6 +144,21 @@ public class SMTPConfiguration {
         return this;
     }
 
+    public SMTPConfiguration setMicrosoftGraphApiEndpoint(String microsoftGraphApiEndpoint) {
+        this.microsoftGraphApiEndpoint = microsoftGraphApiEndpoint;
+        return this;
+    }
+
+    public SMTPConfiguration setMicrosoftGraphApiEnabled(boolean microsoftGraphApiEnabled) {
+        this.microsoftGraphApiEnabled = microsoftGraphApiEnabled;
+        return this;
+    }
+
+    public SMTPConfiguration setMicrosoftGraphApiSaveToSentItems(boolean microsoftGraphApiSaveToSentItems) {
+        this.microsoftGraphApiSaveToSentItems = microsoftGraphApiSaveToSentItems;
+        return this;
+    }
+
     /**
      * Creates a new configuration based on the config files.
      *
@@ -148,7 +176,10 @@ public class SMTPConfiguration {
                                 .setMailSenderName(smtpSenderName)
                                 .setUseSenderAndEnvelopeFrom(smtpUseEnvelopeFrom)
                                 .setTrustedServers(smtpTrustedServers)
-                                .setCheckServerIdentity(smtpCheckServerIdentity);
+                                .setCheckServerIdentity(smtpCheckServerIdentity)
+                                .setMicrosoftGraphApiEndpoint(systemMicrosoftGraphApiEndpoint)
+                                .setMicrosoftGraphApiEnabled(systemMicrosoftGraphApiEnabled)
+                                .setMicrosoftGraphApiSaveToSentItems(systemMicrosoftGraphApiSaveToSentItems);
     }
 
     /**
@@ -178,7 +209,12 @@ public class SMTPConfiguration {
                                 .setMailSenderName(settings.get("mail.senderName").getString())
                                 .setUseSenderAndEnvelopeFrom(settings.get("mail.useEnvelopeFrom").asBoolean())
                                 .setTrustedServers(settings.get("mail.trustedServers").getString())
-                                .setCheckServerIdentity(settings.get("mail.checkServerIdentity").asBoolean());
+                                .setCheckServerIdentity(settings.get("mail.checkServerIdentity").asBoolean())
+                                .setMicrosoftGraphApiEndpoint(settings.get("mail.microsoftGraphApi.endpoint")
+                                                                      .getString())
+                                .setMicrosoftGraphApiEnabled(settings.get("mail.microsoftGraphApi.enabled").asBoolean())
+                                .setMicrosoftGraphApiSaveToSentItems(settings.get(
+                                        "mail.microsoftGraphApi.saveToSentItems").asBoolean());
     }
 
     /**
@@ -309,6 +345,18 @@ public class SMTPConfiguration {
      */
     public boolean isUseSenderAndEnvelopeFrom() {
         return useSenderAndEnvelopeFrom;
+    }
+
+    public String getMicrosoftGraphApiEndpoint() {
+        return microsoftGraphApiEndpoint;
+    }
+
+    public boolean isMicrosoftGraphApiEnabled() {
+        return microsoftGraphApiEnabled;
+    }
+
+    public boolean isMicrosoftGraphApiSaveToSentItems() {
+        return microsoftGraphApiSaveToSentItems;
     }
 
     private static SMTPProtocol asSMTPProtocol(Value setting) {
