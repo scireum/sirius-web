@@ -205,10 +205,11 @@ class SendMailTask implements Runnable {
         try {
             Mails.LOG.FINE("Sending eMail: " + mail.subject + " to: " + mail.receiverEmail);
 
-            if (config.isMicrosoftGraphApiEnabled()) {
+            if (config.getMicrosoftGraphApiConfiguration().enabled()) {
                 MicrosoftGraphApiMail.createFromMail(mail,
                                                      createMicrosoftGraphApiEndpoint(),
-                                                     config.isMicrosoftGraphApiSaveToSentItems()).send();
+                                                     config.getMicrosoftGraphApiConfiguration().saveToSentItems())
+                                     .send();
             } else {
                 Session session = getMailSession(config);
                 try (Transport transport = getSMTPTransport(session, config)) {
@@ -263,7 +264,7 @@ class SendMailTask implements Runnable {
      */
     private URI createMicrosoftGraphApiEndpoint() {
         String effectiveSenderMail = Strings.firstFilled(mail.senderEmail, technicalSender);
-        return URI.create(Formatter.create(config.getMicrosoftGraphApiEndpoint())
+        return URI.create(Formatter.create(config.getMicrosoftGraphApiConfiguration().endpoint())
                                    .set("user", effectiveSenderMail)
                                    .format());
     }
