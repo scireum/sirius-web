@@ -33,11 +33,13 @@ import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.nls.Formatter;
 import sirius.web.security.UserContext;
 import sirius.web.security.oauth.OAuthTokenProviderUtils;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -203,8 +205,11 @@ class SendMailTask implements Runnable {
         try {
             Mails.LOG.FINE("Sending eMail: " + mail.subject + " to: " + mail.receiverEmail);
 
-            if (MicrosoftGraphApiMail.isEnabled()) {
-                MicrosoftGraphApiMail.createFromMail(mail).send();
+            if (config.getMicrosoftGraphApiConfiguration().enabled()) {
+                MicrosoftGraphApiMail.createFromMail(mail,
+                                                     createMicrosoftGraphApiEndpoint(),
+                                                     config.getMicrosoftGraphApiConfiguration().saveToSentItems())
+                                     .send();
             } else {
                 Session session = getMailSession(config);
                 try (Transport transport = getSMTPTransport(session, config)) {
@@ -246,6 +251,22 @@ class SendMailTask implements Runnable {
         tasks.forgetSynchronizer(mail.internalMessageId);
         logSentMail();
         mails.collectMailSendMetric(mailSendTime.elapsedMillis());
+    }
+
+    /**
+     * Creates the endpoint to use for sending mails via the Microsoft Graph API.
+     * <p>
+     * The sender email (that is used as part of the endpoint) is the first filled one,
+     * either {@link MailSender#getSenderEmail()}, {@link SMTPConfiguration#getMailSender()} or
+     * {@link SMTPConfiguration#getDefaultSender()}.
+     *
+     * @return the endpoint to use for sending mails via the Microsoft Graph API
+     */
+    private URI createMicrosoftGraphApiEndpoint() {
+        String effectiveSenderMail = Strings.firstFilled(mail.senderEmail, technicalSender);
+        return URI.create(Formatter.create(config.getMicrosoftGraphApiConfiguration().endpoint())
+                                   .set("user", effectiveSenderMail)
+                                   .format());
     }
 
     private void sendMailViaTransport(Session session, Transport transport) {

@@ -32,6 +32,8 @@ public class SMTPConfiguration {
     private String trustedServers;
     private boolean checkServerIdentity;
 
+    private MicrosoftGraphApiConfiguration microsoftGraphApiConfiguration;
+
     @ConfigValue("mail.smtp.host")
     private static String smtpHost;
 
@@ -61,6 +63,15 @@ public class SMTPConfiguration {
 
     @ConfigValue("mail.smtp.checkServerIdentity")
     private static boolean smtpCheckServerIdentity;
+
+    @ConfigValue("mail.microsoftGraphApi.endpoint")
+    private static String systemMicrosoftGraphApiEndpoint;
+
+    @ConfigValue("mail.microsoftGraphApi.enabled")
+    private static boolean systemMicrosoftGraphApiEnabled;
+
+    @ConfigValue("mail.microsoftGraphApi.saveToSentItems")
+    private static boolean systemMicrosoftGraphApiSaveToSentItems;
 
     private SMTPConfiguration() {
     }
@@ -131,12 +142,22 @@ public class SMTPConfiguration {
         return this;
     }
 
+    public SMTPConfiguration setMicrosoftGraphApiConfiguration(MicrosoftGraphApiConfiguration microsoftGraphApiConfiguration) {
+        this.microsoftGraphApiConfiguration = microsoftGraphApiConfiguration;
+        return this;
+    }
+
     /**
      * Creates a new configuration based on the config files.
      *
      * @return a new configuration based on the config files.
      */
     public static SMTPConfiguration fromConfig() {
+        MicrosoftGraphApiConfiguration microsoftGraphApiConfig = new MicrosoftGraphApiConfiguration(
+                systemMicrosoftGraphApiEnabled,
+                systemMicrosoftGraphApiEndpoint,
+                systemMicrosoftGraphApiSaveToSentItems);
+
         return SMTPConfiguration.create()
                                 .setHost(smtpHost)
                                 .setPort(smtpPort)
@@ -148,7 +169,8 @@ public class SMTPConfiguration {
                                 .setMailSenderName(smtpSenderName)
                                 .setUseSenderAndEnvelopeFrom(smtpUseEnvelopeFrom)
                                 .setTrustedServers(smtpTrustedServers)
-                                .setCheckServerIdentity(smtpCheckServerIdentity);
+                                .setCheckServerIdentity(smtpCheckServerIdentity)
+                                .setMicrosoftGraphApiConfiguration(microsoftGraphApiConfig);
     }
 
     /**
@@ -167,6 +189,11 @@ public class SMTPConfiguration {
      * @return a new configuration based on the given settings.
      */
     public static SMTPConfiguration fromSettings(Settings settings) {
+        MicrosoftGraphApiConfiguration microsoftGraphApiConfig =
+                new MicrosoftGraphApiConfiguration(settings.get("mail.microsoftGraphApi.enabled").asBoolean(),
+                                                   settings.get("mail.microsoftGraphApi.endpoint").getString(),
+                                                   settings.get("mail.microsoftGraphApi.saveToSentItems").asBoolean());
+
         return SMTPConfiguration.create()
                                 .setHost(settings.get("mail.host").getString())
                                 .setPort(settings.get("mail.port").getString())
@@ -178,7 +205,8 @@ public class SMTPConfiguration {
                                 .setMailSenderName(settings.get("mail.senderName").getString())
                                 .setUseSenderAndEnvelopeFrom(settings.get("mail.useEnvelopeFrom").asBoolean())
                                 .setTrustedServers(settings.get("mail.trustedServers").getString())
-                                .setCheckServerIdentity(settings.get("mail.checkServerIdentity").asBoolean());
+                                .setCheckServerIdentity(settings.get("mail.checkServerIdentity").asBoolean())
+                                .setMicrosoftGraphApiConfiguration(microsoftGraphApiConfig);
     }
 
     /**
@@ -309,6 +337,10 @@ public class SMTPConfiguration {
      */
     public boolean isUseSenderAndEnvelopeFrom() {
         return useSenderAndEnvelopeFrom;
+    }
+
+    public MicrosoftGraphApiConfiguration getMicrosoftGraphApiConfiguration() {
+        return microsoftGraphApiConfiguration;
     }
 
     private static SMTPProtocol asSMTPProtocol(Value setting) {

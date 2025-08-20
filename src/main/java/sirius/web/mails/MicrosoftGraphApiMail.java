@@ -9,14 +9,11 @@
 package sirius.web.mails;
 
 import jakarta.activation.DataSource;
-import sirius.kernel.Sirius;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.Formatter;
-import sirius.web.security.UserContext;
 import sirius.web.security.oauth.OAuth;
 import sirius.web.security.oauth.OAuthTokenProviderUtils;
 import sirius.web.services.JSONCall;
@@ -45,6 +42,7 @@ public class MicrosoftGraphApiMail {
     private String subject;
     private String receiverMailAddress;
     private String oauthTokenName;
+    private boolean saveToSentItems;
 
     private String bodyContent;
     private String bodyType;
@@ -52,28 +50,22 @@ public class MicrosoftGraphApiMail {
     private final List<Attachment> attachments = new ArrayList<>();
 
     /**
-     * Returns whether the Microsoft Graph API Mail service is enabled.
-     *
-     * @return <tt>true</tt> if the service is enabled, <tt>false</tt> otherwise
-     */
-    public static boolean isEnabled() {
-        return getSetting("enabled").asBoolean();
-    }
-
-    /**
      * Creates a new instance of {@link MicrosoftGraphApiMail} based on the provided {@link MailSender}.
      * <p>
      * Note, that the HTML body is preferred over the plain text body as only a single body type can be defined.
      *
-     * @param mail the {@link MailSender} containing the data and configuration for the mail to be sent
+     * @param mail            the {@link MailSender} containing the data and configuration for the mail to be sent
+     * @param endpoint        the endpoint URI for the Microsoft Graph API mail service
+     * @param saveToSentItems whether the mail should be saved to the "Sent Items" folder
      * @return a new instance of {@link MicrosoftGraphApiMail} configured with the details from the {@link MailSender}
      */
-    public static MicrosoftGraphApiMail createFromMail(MailSender mail) {
+    public static MicrosoftGraphApiMail createFromMail(MailSender mail, URI endpoint, boolean saveToSentItems) {
         MicrosoftGraphApiMail microsoftGraphApiMail =
                 create().withOAuthTokenName(mail.getSmtpConfiguration().getOAuthTokenName())
-                        .withUser(mail.getSenderEmail())
+                        .withEndpoint(endpoint)
                         .withReceiverEmailAddress(mail.getReceiverName())
-                        .withSubject(mail.getSubject());
+                        .withSubject(mail.getSubject())
+                        .withSaveToSentItems(saveToSentItems);
 
         if (Strings.isFilled(mail.getHtml())) {
             microsoftGraphApiMail.withHtmlBody(mail.getHtml());
@@ -109,13 +101,13 @@ public class MicrosoftGraphApiMail {
     }
 
     /**
-     * Sets the endpoint for the Microsoft Graph API Mail service based on the user.
+     * Sets the endpoint for the Microsoft Graph API mail service.
      *
-     * @param user the user for whom the mail is being sent
+     * @param endpoint the endpoint URI for the Microsoft Graph API mail service
      * @return the current instance of {@link MicrosoftGraphApiMail} for method chaining
      */
-    public MicrosoftGraphApiMail withUser(String user) {
-        this.endpoint = createEndpoint(user);
+    public MicrosoftGraphApiMail withEndpoint(URI endpoint) {
+        this.endpoint = endpoint;
         return this;
     }
 
@@ -138,6 +130,17 @@ public class MicrosoftGraphApiMail {
      */
     public MicrosoftGraphApiMail withReceiverEmailAddress(String receiverMailAddress) {
         this.receiverMailAddress = receiverMailAddress;
+        return this;
+    }
+
+    /**
+     * Sets whether the mail should be saved to the "Sent Items" folder.
+     *
+     * @param saveToSentItems <tt>true</tt> if the mail should be saved to "Sent Items", <tt>false</tt> otherwise
+     * @return the current instance of {@link MicrosoftGraphApiMail} for method chaining
+     */
+    public MicrosoftGraphApiMail withSaveToSentItems(boolean saveToSentItems) {
+        this.saveToSentItems = saveToSentItems;
         return this;
     }
 
@@ -201,14 +204,6 @@ public class MicrosoftGraphApiMail {
         assertSuccessfulCall(responseCode);
     }
 
-    private static Value getSetting(String key) {
-        Value value = UserContext.getSettings().getSettings("mail.microsoftGraphApi").get(key);
-        if (value.isFilled()) {
-            return value;
-        }
-        return Sirius.getSettings().getSettings("mail.microsoftGraphApi").get(key);
-    }
-
     private void assertValidConfiguration() {
         if (Strings.isEmpty(endpoint)) {
             throw new IllegalStateException("Endpoint for Microsoft Graph API mail is not set.");
@@ -255,7 +250,7 @@ public class MicrosoftGraphApiMail {
             }
             output.endObject();
 
-            output.property("saveToSentItems", getSetting("saveToSentItems").asBoolean());
+            output.property("saveToSentItems", saveToSentItems);
         }
         output.endResult();
     }
@@ -327,8 +322,8 @@ public class MicrosoftGraphApiMail {
         }
     }
 
-    private URI createEndpoint(String user) {
-        return URI.create(Formatter.create(getSetting("endpoint").asString()).set("user", user).format());
+    private URI createEndpoint(String user, String microsoftGraphApiEndpoint) {
+        return URI.create(Formatter.create(microsoftGraphApiEndpoint).set("user", user).format());
     }
 
     /**
