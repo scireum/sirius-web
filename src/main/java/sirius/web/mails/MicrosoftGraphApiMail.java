@@ -63,7 +63,7 @@ public class MicrosoftGraphApiMail {
         MicrosoftGraphApiMail microsoftGraphApiMail =
                 create().withOAuthTokenName(mail.getSmtpConfiguration().getOAuthTokenName())
                         .withEndpoint(endpoint)
-                        .withReceiverEmailAddress(mail.getReceiverName())
+                        .withReceiverEmailAddress(mail.getReceiverEmail())
                         .withSubject(mail.getSubject())
                         .withSaveToSentItems(saveToSentItems);
 
