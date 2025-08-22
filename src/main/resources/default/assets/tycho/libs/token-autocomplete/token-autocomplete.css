@@ -133,25 +133,18 @@
 
 .token-autocomplete-container .token-autocomplete-suggestions {
     display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
+    position: fixed;
     z-index: 1000;
     list-style-type: none;
     padding: 0;
     margin: 0;
     max-height: 220px;
     overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 .token-autocomplete-container .token-autocomplete-suggestions:has(li) {
     border: 1px solid #E6E6E6;
-}
-
-.token-autocomplete-container .token-autocomplete-suggestions.token-autocomplete-suggestions-above {
-    top: auto;
-    bottom: 100%;
 }
 
 .token-autocomplete-container .token-autocomplete-suggestions li {
