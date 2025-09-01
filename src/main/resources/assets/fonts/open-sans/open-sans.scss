@@ -1,0 +1,44 @@
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 300;
+  src: url('/assets/fonts/open-sans/OpenSans-Light-webfont.ttf');
+  -fs-pdf-font-embed: embed;
+  -fs-pdf-font-encoding: Identity-H;
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/assets/fonts/open-sans/OpenSans-Regular-webfont.ttf');
+  -fs-pdf-font-embed: embed;
+  -fs-pdf-font-encoding: Identity-H;
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 600;
+  src: url('/assets/fonts/open-sans/OpenSans-Semibold-webfont.ttf');
+  -fs-pdf-font-embed: embed;
+  -fs-pdf-font-encoding: Identity-H;
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 700;
+  src: url('/assets/fonts/open-sans/OpenSans-Bold-webfont.ttf');
+  -fs-pdf-font-embed: embed;
+  -fs-pdf-font-encoding: Identity-H;
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 400;
+  src: url('/assets/fonts/open-sans/OpenSans-Italic-webfont.ttf');
+  -fs-pdf-font-embed: embed;
+  -fs-pdf-font-encoding: Identity-H;
+}
