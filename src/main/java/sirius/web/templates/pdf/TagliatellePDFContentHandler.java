@@ -84,7 +84,7 @@ public class TagliatellePDFContentHandler extends TagliatelleContentHandler {
      *
      * @param resolver the font resolver to register the fonts with
      */
-    private void registerFonts(ITextFontResolver resolver) {
+    protected void registerFonts(ITextFontResolver resolver) {
         try {
             resolver.addFont("/assets/fonts/open-sans/OpenSans-Regular-webfont.ttf",
                              BaseFont.IDENTITY_H,
