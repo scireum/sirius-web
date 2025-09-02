@@ -8,19 +8,24 @@
 
 package sirius.web.templates.pdf;
 
+import com.lowagie.text.pdf.BaseFont;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Entities;
+import org.xhtmlrenderer.pdf.ITextFontResolver;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.health.Exceptions;
 import sirius.pasta.tagliatelle.Tagliatelle;
 import sirius.pasta.tagliatelle.Template;
+import sirius.web.resources.Resources;
 import sirius.web.templates.ContentHandler;
 import sirius.web.templates.Generator;
 import sirius.web.templates.TagliatelleContentHandler;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.function.Predicate;
 
@@ -42,6 +47,9 @@ public class TagliatellePDFContentHandler extends TagliatelleContentHandler {
     @Part
     private Tagliatelle tagliatelle;
 
+    @Part
+    private Resources resources;
+
     @Override
     public boolean generate(Generator generator, OutputStream out) throws Exception {
         if (!PDF_PASTA.equals(generator.getHandlerType()) && !generator.isTemplateFileExtension("pdf.pasta")) {
@@ -57,6 +65,7 @@ public class TagliatellePDFContentHandler extends TagliatelleContentHandler {
         String cleanedContent = cleanHtml(content);
 
         ITextRenderer renderer = new ITextRenderer();
+        registerFonts(renderer.getFontResolver());
         renderer.getSharedContext()
                 .setReplacedElementFactory(new ImageReplacedElementFactory(renderer.getOutputDevice()));
         renderer.setDocumentFromString(cleanedContent);
@@ -65,6 +74,33 @@ public class TagliatellePDFContentHandler extends TagliatelleContentHandler {
         out.flush();
 
         return true;
+    }
+
+    /**
+     * Registers the fonts used within our generated PDFs, so flying saucer uses the correct encoding for them.
+     * <p>
+     * If more fonts are needed, a replacement part for this class should be created and the additional fonts
+     * registered here.
+     *
+     * @param resolver the font resolver to register the fonts with
+     */
+    protected void registerFonts(ITextFontResolver resolver) {
+        try {
+            resolver.addFont("/assets/fonts/open-sans/OpenSans-Regular-webfont.ttf",
+                             BaseFont.IDENTITY_H,
+                             BaseFont.EMBEDDED);
+            resolver.addFont("/assets/fonts/open-sans/OpenSans-Italic-webfont.ttf",
+                             BaseFont.IDENTITY_H,
+                             BaseFont.EMBEDDED);
+            resolver.addFont("/assets/fonts/open-sans/OpenSans-Semibold-webfont.ttf",
+                             BaseFont.IDENTITY_H,
+                             BaseFont.EMBEDDED);
+            resolver.addFont("/assets/fonts/open-sans/OpenSans-Bold-webfont.ttf",
+                             BaseFont.IDENTITY_H,
+                             BaseFont.EMBEDDED);
+        } catch (IOException exception) {
+            Exceptions.ignore(exception);
+        }
     }
 
     /**
