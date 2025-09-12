@@ -972,7 +972,7 @@ class TokenAutocomplete {
             parent.textInput.addEventListener('click', () => focusInput());
 
             parent.textInput.addEventListener('focusout', (event: FocusEvent) => {
-                if (event.relatedTarget === this.toggleButton) {
+                if (event.relatedTarget === this.toggleButton && parent.autocomplete.areSuggestionsDisplayed()) {
                     // If the focus is moved to the toggle button, we mark it so the click handler does not set focus again.
                     this.toggleButton.dataset.inputWasFocused = 'true';
                 }
@@ -1205,8 +1205,9 @@ class TokenAutocomplete {
                         this.addSuggestion(suggestion);
                     }
                 });
-                if (this.suggestions.childNodes.length == 0 && value.length >= this.parent.options.minCharactersForSuggestion) {
-                    if (this.parent.options.allowCustomEntries && this.parent.options.noMatchesCustomEntriesDescription) {
+                if (value.length >= this.parent.options.minCharactersForSuggestion) {
+                    const hasExactMatch = this.suggestions.querySelector(`li[data-value='${value}']:not([data-type='_no_match_']),li[data-text='${value}']:not([data-type='_no_match_'])`);
+                    if (!hasExactMatch && this.parent.options.allowCustomEntries && this.parent.options.noMatchesCustomEntriesDescription) {
                         this.addSuggestion({
                             id: null,
                             value: value,
@@ -1214,10 +1215,10 @@ class TokenAutocomplete {
                             type: '_no_match_',
                             completionDescription: this.parent.options.noMatchesCustomEntriesDescription,
                             completionLabel: null,
-                            disabled: true
+                            disabled: false
                         });
 
-                    } else if (this.parent.options.noMatchesText) {
+                    } else if (this.suggestions.childNodes.length == 0 && this.parent.options.noMatchesText) {
                         this.addSuggestion({
                             id: null,
                             value: '_no_match_',
