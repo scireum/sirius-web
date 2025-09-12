@@ -910,7 +910,7 @@ var TokenAutocomplete = /** @class */ (function () {
             };
             parent.textInput.addEventListener('click', function () { return focusInput(); });
             parent.textInput.addEventListener('focusout', function (event) {
-                if (event.relatedTarget === _this.toggleButton) {
+                if (event.relatedTarget === _this.toggleButton && parent.autocomplete.areSuggestionsDisplayed()) {
                     // If the focus is moved to the toggle button, we mark it so the click handler does not set focus again.
                     _this.toggleButton.dataset.inputWasFocused = 'true';
                 }
@@ -1140,8 +1140,9 @@ var TokenAutocomplete = /** @class */ (function () {
                             _this.addSuggestion(suggestion);
                         }
                     });
-                    if (this.suggestions.childNodes.length == 0 && value.length >= this.parent.options.minCharactersForSuggestion) {
-                        if (this.parent.options.allowCustomEntries && this.parent.options.noMatchesCustomEntriesDescription) {
+                    if (value.length >= this.parent.options.minCharactersForSuggestion) {
+                        var hasExactMatch = this.suggestions.querySelector("li[data-value='".concat(value, "']:not([data-type='_no_match_']),li[data-text='").concat(value, "']:not([data-type='_no_match_'])"));
+                        if (!hasExactMatch && this.parent.options.allowCustomEntries && this.parent.options.noMatchesCustomEntriesDescription) {
                             this.addSuggestion({
                                 id: null,
                                 value: value,
@@ -1149,10 +1150,10 @@ var TokenAutocomplete = /** @class */ (function () {
                                 type: '_no_match_',
                                 completionDescription: this.parent.options.noMatchesCustomEntriesDescription,
                                 completionLabel: null,
-                                disabled: true
+                                disabled: false
                             });
                         }
-                        else if (this.parent.options.noMatchesText) {
+                        else if (this.suggestions.childNodes.length == 0 && this.parent.options.noMatchesText) {
                             this.addSuggestion({
                                 id: null,
                                 value: '_no_match_',
