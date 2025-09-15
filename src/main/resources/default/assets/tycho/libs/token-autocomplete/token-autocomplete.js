@@ -1314,13 +1314,15 @@ var TokenAutocomplete = /** @class */ (function () {
                         if (_this.parent.val().length == 0 && answer.completions.length > 0 && _this.options.selectMode == SelectModes.SINGLE && !_this.options.optional && !_this.areSuggestionsDisplayed()) {
                             answer.completions.forEach(function (suggestion) { return _this.addSuggestion(suggestion, false); });
                             var firstSuggestion = answer.completions[0];
-                            var value = firstSuggestion.id || firstSuggestion.value;
-                            _this.parent.select.addToken(value, firstSuggestion.fieldLabel, firstSuggestion.type, true);
+                            var value_1 = firstSuggestion.id || firstSuggestion.value;
+                            _this.parent.select.addToken(value_1, firstSuggestion.fieldLabel, firstSuggestion.type, true);
                             return;
                         }
                         answer.completions.forEach(function (suggestion) { return _this.addSuggestion(suggestion); });
-                        if (_this.suggestions.childNodes.length == 0) {
-                            if (_this.parent.options.allowCustomEntries && _this.parent.options.noMatchesCustomEntriesDescription) {
+                        var value = _this.parent.getCurrentInput();
+                        if (value.length >= _this.parent.options.minCharactersForSuggestion) {
+                            var hasExactMatch = _this.suggestions.querySelector("li[data-value='".concat(value, "']:not([data-type='_no_match_']),li[data-text='").concat(value, "']:not([data-type='_no_match_'])"));
+                            if (!hasExactMatch && _this.parent.options.allowCustomEntries && _this.parent.options.noMatchesCustomEntriesDescription) {
                                 _this.addSuggestion({
                                     id: null,
                                     value: query,
@@ -1328,10 +1330,10 @@ var TokenAutocomplete = /** @class */ (function () {
                                     type: '_no_match_',
                                     completionDescription: _this.parent.options.noMatchesCustomEntriesDescription,
                                     completionLabel: null,
-                                    disabled: true
+                                    disabled: false
                                 });
                             }
-                            else if (_this.parent.options.noMatchesText) {
+                            else if (_this.suggestions.childNodes.length == 0 && _this.parent.options.noMatchesText) {
                                 _this.addSuggestion({
                                     id: null,
                                     value: '_no_match_',
