@@ -130,7 +130,7 @@
             _previousIcon.classList.add('sci-slider-previous-icon');
             _previousArrow.appendChild(_previousIcon);
             _top.appendChild(_previousArrow);
-            sirius.addClickOrEnterListener(_previousArrow, (event) => {
+            sirius.addClickOrEnterListener(_previousArrow, function (event) {
                 stopAnimationThread();
                 activatePreviousView();
                 startAnimationThread();
@@ -148,7 +148,7 @@
             _nextIcon.classList.add('sci-slider-next-icon');
             _nextArrow.appendChild(_nextIcon);
             _top.appendChild(_nextArrow);
-            sirius.addClickOrEnterListener(_nextArrow, (event) => {
+            sirius.addClickOrEnterListener(_nextArrow, function (event) {
                 stopAnimationThread();
                 activateNextView();
                 startAnimationThread();
