@@ -4,5 +4,4 @@ ___invoke("/assets/common/scripts/sidebar-overlay.js.pasta");
 ___invoke("/assets/common/scripts/dialog.js.pasta");
 ___invoke("/assets/common/scripts/slider.js.pasta");
 ___invoke("/assets/common/scripts/accordion.js.pasta");
-___inlineResource("/assets/common/scripts/toast.js");
 ___invoke("/assets/common/scripts/continuity.js.pasta");
