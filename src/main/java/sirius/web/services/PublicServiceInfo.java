@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Provides a description of a service which is part of a {@link PublicApiInfo public API}.
@@ -32,11 +33,14 @@ public class PublicServiceInfo {
 
     private final PublicService info;
     private final String uri;
+    private final String formattedUri;
     private final boolean deprecated;
     private final Operation operation;
     private final List<Parameter> serviceParameters = new ArrayList<>();
     private final List<RequestBody> requestBodies = new ArrayList<>();
     private final List<ApiResponse> responses = new ArrayList<>();
+
+    private static final Pattern URI_PARAMETER_PATTERN = Pattern.compile("\\{([^}]*?)}");
 
     protected PublicServiceInfo(PublicService info,
                                 String uri,
@@ -47,6 +51,7 @@ public class PublicServiceInfo {
                                 List<ApiResponse> responses) {
         this.info = info;
         this.uri = Strings.isFilled(info.path()) ? info.path() : uri;
+        this.formattedUri = formatUri(this.uri);
         this.deprecated = deprecated;
         this.operation = operation;
         this.serviceParameters.addAll(serviceParameters);
@@ -151,5 +156,14 @@ public class PublicServiceInfo {
 
     public String getUri() {
         return uri;
+    }
+
+    public String getFormattedUri() {
+        return formattedUri;
+    }
+
+    private static String formatUri(String uri) {
+        return URI_PARAMETER_PATTERN.matcher(uri)
+                                    .replaceAll("<span style=\"color: var(--bs-code-color);\">{$1}</span>");
     }
 }

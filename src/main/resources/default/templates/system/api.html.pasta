@@ -69,7 +69,7 @@
                         <i:invoke template="/templates/system/service-format-tag.html.pasta"
                                   service="@service"/>
 
-                        <span class="font-monospace whitespace-pre-wrap">@service.getUri()</span>
+                        <span class="font-monospace whitespace-pre-wrap"><i:raw>@service.getFormattedUri()</i:raw></span>
                     </div>
 
                     <i:if test="!service.getParameters().isEmpty()">
