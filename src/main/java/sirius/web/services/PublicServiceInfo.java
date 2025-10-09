@@ -11,6 +11,7 @@ package sirius.web.services;
 import io.netty.handler.codec.http.HttpMethod;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import sirius.kernel.commons.Strings;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -36,6 +38,7 @@ public class PublicServiceInfo {
     private final String formattedUri;
     private final boolean deprecated;
     private final Operation operation;
+    private final List<Parameter> pathComponents = new ArrayList<>();
     private final List<Parameter> serviceParameters = new ArrayList<>();
     private final List<RequestBody> requestBodies = new ArrayList<>();
     private final List<ApiResponse> responses = new ArrayList<>();
@@ -54,10 +57,21 @@ public class PublicServiceInfo {
         this.formattedUri = formatUri(this.uri);
         this.deprecated = deprecated;
         this.operation = operation;
-        this.serviceParameters.addAll(serviceParameters);
+
+        List<String> pathComponentNames = extractPathParameters(this.uri);
+        this.pathComponents.addAll(serviceParameters.stream()
+                                                    .filter(parameter -> ParameterIn.PATH == parameter.in())
+                                                    .toList());
+        this.pathComponents.sort(Comparator.comparingInt(parameter -> {
+            int index = pathComponentNames.indexOf(parameter.name());
+            return index < 0 ? Integer.MAX_VALUE : index;
+        }));
+
+        this.serviceParameters.addAll(serviceParameters.stream().filter(p -> ParameterIn.PATH != p.in()).toList());
         this.serviceParameters.sort(Comparator.comparing(Parameter::required)
                                               .reversed()
                                               .thenComparing(Parameter::name));
+
         this.requestBodies.addAll(requestBodies);
         this.responses.addAll(responses);
     }
@@ -116,6 +130,10 @@ public class PublicServiceInfo {
         return info.priority();
     }
 
+    public List<Parameter> getPathComponents() {
+        return Collections.unmodifiableList(pathComponents);
+    }
+
     public List<Parameter> getParameters() {
         return Collections.unmodifiableList(serviceParameters);
     }
@@ -165,5 +183,20 @@ public class PublicServiceInfo {
     private static String formatUri(String uri) {
         return URI_PARAMETER_PATTERN.matcher(uri)
                                     .replaceAll("<span style=\"color: var(--bs-code-color);\">{$1}</span>");
+    }
+
+    /**
+     * Extracts the path parameters from the given URI, maintaining the order of appearance.
+     *
+     * @param uri the URI to extract path parameters from
+     * @return a list of path parameters in the order they appear in the URI
+     */
+    private static List<String> extractPathParameters(String uri) {
+        List<String> parameters = new ArrayList<>();
+        Matcher matcher = URI_PARAMETER_PATTERN.matcher(uri);
+        while (matcher.find()) {
+            parameters.add(matcher.group(1));
+        }
+        return parameters;
     }
 }
