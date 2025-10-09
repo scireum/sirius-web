@@ -78,8 +78,7 @@
                             <table class="table" style="table-layout: fixed">
                                 <tr>
                                     <th>Name</th>
-                                    <th>Description</th>
-                                    <th>Required</th>
+                                    <th colspan="2">Description</th>
                                     <th>Example</th>
                                 </tr>
                                 <i:for type="io.swagger.v3.oas.annotations.Parameter" var="parameter"
@@ -87,11 +86,15 @@
                                     <tr>
                                         <td class="@if (parameter.required()) { fw-bold }">
                                             @parameter.name()
+                                            <i:if test="@parameter.required()">
+                                                <div>
+                                                    <t:fullTag color="orange" class="align-text-top">Required</t:fullTag>
+                                                </div>
+                                            </i:if>
                                         </td>
-                                        <td>
+                                        <td colspan="2">
                                             <i:raw>@expandMessage(smartTranslate(parameter.description()))</i:raw>
                                         </td>
-                                        <td>@parameter.required()</td>
                                         <td class="font-monospace whitespace-pre-wrap">@parameter.example()</td>
                                     </tr>
                                 </i:for>
