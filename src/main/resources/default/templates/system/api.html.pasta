@@ -25,11 +25,11 @@
         <i:block name="sidebar">
             <t:navbox labelKey="template.html.tableOfContent.heading">
                 <i:for type="sirius.web.services.PublicServiceInfo" var="service" items="api.getServices()">
-                    <t:navboxLink url="@apply('#%s', service.getUri())">
+                    <t:navboxLink url="@apply('#%s', service.getUri())" muted="@service.isDeprecated()">
                         <div class="d-flex align-items-center gap-1">
                             <i:invoke template="/templates/system/service-format-tag.html.pasta"
                                       service="@service"/>
-                            @service.getLabel()
+                            <span class="@if (service.isDeprecated()) { text-decoration-line-through }">@service.getLabel()</span>
                         </div>
                     </t:navboxLink>
                 </i:for>
