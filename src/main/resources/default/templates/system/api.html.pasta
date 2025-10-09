@@ -50,10 +50,10 @@
         <i:for type="sirius.web.services.PublicServiceInfo" var="service" items="api.getServices()">
             <div class="card card-border mb-4" id="@service.getUri()">
                 <div class="card-body">
-                    <h4 class="card-title">
+                    <h4 class="card-title d-flex align-items-center">
                         <a href="@apply('#%s', service.getUri())" class="text-black">@service.getLabel()</a>
                         <i:if test="service.isDeprecated()">
-                            <t:tag color="red-light" class="align-middle">Deprecated</t:tag>
+                            <t:tag color="red-light" class="ms-2" marginBottom="0">Deprecated</t:tag>
                         </i:if>
                     </h4>
                     <p>
