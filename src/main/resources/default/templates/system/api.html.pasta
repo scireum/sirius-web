@@ -25,10 +25,12 @@
         <i:block name="sidebar">
             <t:navbox labelKey="template.html.tableOfContent.heading">
                 <i:for type="sirius.web.services.PublicServiceInfo" var="service" items="api.getServices()">
-                    <t:navboxLink url="@apply('#%s', service.getUri())">
-                        <i:invoke template="/templates/system/service-format-tag.html.pasta"
-                                  service="@service"/>
-                        @service.getLabel()
+                    <t:navboxLink url="@apply('#%s', service.getUri())" muted="@service.isDeprecated()">
+                        <div class="d-flex align-items-center gap-1">
+                            <i:invoke template="/templates/system/service-format-tag.html.pasta"
+                                      service="@service"/>
+                            <span class="@if (service.isDeprecated()) { text-decoration-line-through }">@service.getLabel()</span>
+                        </div>
                     </t:navboxLink>
                 </i:for>
             </t:navbox>
@@ -50,10 +52,13 @@
         <i:for type="sirius.web.services.PublicServiceInfo" var="service" items="api.getServices()">
             <div class="card card-border mb-4" id="@service.getUri()">
                 <div class="card-body">
-                    <h4 class="card-title">
-                        <a href="@apply('#%s', service.getUri())" class="text-black">@service.getLabel()</a>
+                    <h4 class="card-title d-flex align-items-center">
+                        <a href="@apply('#%s', service.getUri())"
+                           class="@if (service.isDeprecated()) { text-muted text-decoration-line-through } else { text-black text-decoration-none }">
+                            @service.getLabel()
+                        </a>
                         <i:if test="service.isDeprecated()">
-                            <t:tag color="red-light" class="align-middle">Deprecated</t:tag>
+                            <t:tag color="red-light" class="ms-2" marginBottom="0">Deprecated</t:tag>
                         </i:if>
                     </h4>
                     <p>
@@ -69,29 +74,58 @@
                         <i:invoke template="/templates/system/service-format-tag.html.pasta"
                                   service="@service"/>
 
-                        <span class="font-monospace whitespace-pre-wrap">@service.getUri()</span>
+                        <span class="font-monospace whitespace-pre-wrap"><i:raw>@service.getFormattedUri()</i:raw></span>
                     </div>
 
-                    <i:if test="!service.getParameters().isEmpty()">
+                    <i:local name="pathComponents" value="service.getPathComponents()"/>
+                    <i:if test="!pathComponents.isEmpty()">
                         <div class="mt-4">
-                            <h5>Parameters</h5>
+                            <h5>@(pathComponents.size() == 1 ? "Path Component" : "Path Components")</h5>
                             <table class="table" style="table-layout: fixed">
                                 <tr>
                                     <th>Name</th>
-                                    <th>Description</th>
-                                    <th>Required</th>
+                                    <th colspan="2">Description</th>
                                     <th>Example</th>
                                 </tr>
-                                <i:for type="io.swagger.v3.oas.annotations.Parameter" var="parameter"
-                                       items="service.getParameters()">
+                                <i:for type="io.swagger.v3.oas.annotations.Parameter"
+                                       var="pathComponent"
+                                       items="pathComponents">
+                                    <tr>
+                                        <td class="fw-bold">@pathComponent.name()</td>
+                                        <td colspan="2">
+                                            <i:raw>@expandMessage(smartTranslate(pathComponent.description()))</i:raw>
+                                        </td>
+                                        <td class="font-monospace whitespace-pre-wrap">@pathComponent.example()</td>
+                                    </tr>
+                                </i:for>
+                            </table>
+                        </div>
+                    </i:if>
+                    <i:local name="parameters" value="service.getParameters()"/>
+                    <i:if test="!parameters.isEmpty()">
+                        <div class="mt-4">
+                            <h5>@(parameters.size() == 1 ? "Parameter" : "Parameters")</h5>
+                            <table class="table" style="table-layout: fixed">
+                                <tr>
+                                    <th>Name</th>
+                                    <th colspan="2">Description</th>
+                                    <th>Example</th>
+                                </tr>
+                                <i:for type="io.swagger.v3.oas.annotations.Parameter"
+                                       var="parameter"
+                                       items="parameters">
                                     <tr>
                                         <td class="@if (parameter.required()) { fw-bold }">
                                             @parameter.name()
+                                            <i:if test="@parameter.required()">
+                                                <div>
+                                                    <t:fullTag color="orange" class="align-text-top">Required</t:fullTag>
+                                                </div>
+                                            </i:if>
                                         </td>
-                                        <td>
+                                        <td colspan="2">
                                             <i:raw>@expandMessage(smartTranslate(parameter.description()))</i:raw>
                                         </td>
-                                        <td>@parameter.required()</td>
                                         <td class="font-monospace whitespace-pre-wrap">@parameter.example()</td>
                                     </tr>
                                 </i:for>
@@ -107,7 +141,8 @@
                                 <th class="col-md-8">Example</th>
                                 </thead>
                                 <tbody>
-                                <i:for type="io.swagger.v3.oas.annotations.parameters.RequestBody" var="request"
+                                <i:for type="io.swagger.v3.oas.annotations.parameters.RequestBody"
+                                       var="request"
                                        items="service.getRequestBodies()">
                                     <tr>
                                         <i:local name="requestContents" value="@toList(request.content())"/>

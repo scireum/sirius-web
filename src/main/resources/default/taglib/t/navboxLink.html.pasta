@@ -3,6 +3,7 @@
 <i:arg name="label" type="String" default="@i18n(labelKey)"/>
 <i:arg name="labelClass" type="String" default=""/>
 <i:arg name="active" type="boolean" default="false"/>
+<i:arg name="muted" type="boolean" default="false"/>
 <i:arg name="permission" type="String" default=""/>
 <i:arg name="icon" type="String" default=""/>
 <i:arg name="target" type="String" default=""/>
@@ -12,7 +13,7 @@
 <i:if test="user().hasPermission(permission)">
     <li>
         <a href="@url"
-           class="card-link nav-link @if (active) { active } d-flex flex-row mb-1 align-items-center"
+           class="card-link nav-link @if (active) { active } d-flex flex-row mb-1 align-items-center @if (muted) { muted }"
            @if (isFilled(target)) { target="@target" }>
             <i:if test="isFilled(icon)">
                 <span class="nav-link-icon pe-2"><i class="@icon"></i></span>

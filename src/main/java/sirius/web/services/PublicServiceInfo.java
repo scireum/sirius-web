@@ -11,6 +11,7 @@ package sirius.web.services;
 import io.netty.handler.codec.http.HttpMethod;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import sirius.kernel.commons.Strings;
@@ -22,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Provides a description of a service which is part of a {@link PublicApiInfo public API}.
@@ -32,11 +35,15 @@ public class PublicServiceInfo {
 
     private final PublicService info;
     private final String uri;
+    private final String formattedUri;
     private final boolean deprecated;
     private final Operation operation;
+    private final List<Parameter> pathComponents = new ArrayList<>();
     private final List<Parameter> serviceParameters = new ArrayList<>();
     private final List<RequestBody> requestBodies = new ArrayList<>();
     private final List<ApiResponse> responses = new ArrayList<>();
+
+    private static final Pattern URI_PARAMETER_PATTERN = Pattern.compile("\\{([^}]*?)}");
 
     protected PublicServiceInfo(PublicService info,
                                 String uri,
@@ -47,12 +54,31 @@ public class PublicServiceInfo {
                                 List<ApiResponse> responses) {
         this.info = info;
         this.uri = Strings.isFilled(info.path()) ? info.path() : uri;
+        this.formattedUri = formatUri(this.uri);
         this.deprecated = deprecated;
         this.operation = operation;
-        this.serviceParameters.addAll(serviceParameters);
+
+        // split parameters into path components and other parameters
+        serviceParameters.forEach(parameter -> {
+            if (parameter.in() == ParameterIn.PATH) {
+                this.pathComponents.add(parameter);
+            } else {
+                this.serviceParameters.add(parameter);
+            }
+        });
+
+        // sort path parameters according to their order of appearance in the path
+        List<String> pathComponentNames = extractPathParameters(this.uri);
+        this.pathComponents.sort(Comparator.comparingInt(parameter -> {
+            int index = pathComponentNames.indexOf(parameter.name());
+            return index < 0 ? Integer.MAX_VALUE : index;
+        }));
+
+        // sort other parameters by required flag first, then by name
         this.serviceParameters.sort(Comparator.comparing(Parameter::required)
                                               .reversed()
                                               .thenComparing(Parameter::name));
+
         this.requestBodies.addAll(requestBodies);
         this.responses.addAll(responses);
     }
@@ -111,6 +137,10 @@ public class PublicServiceInfo {
         return info.priority();
     }
 
+    public List<Parameter> getPathComponents() {
+        return Collections.unmodifiableList(pathComponents);
+    }
+
     public List<Parameter> getParameters() {
         return Collections.unmodifiableList(serviceParameters);
     }
@@ -151,5 +181,29 @@ public class PublicServiceInfo {
 
     public String getUri() {
         return uri;
+    }
+
+    public String getFormattedUri() {
+        return formattedUri;
+    }
+
+    private static String formatUri(String uri) {
+        return URI_PARAMETER_PATTERN.matcher(uri)
+                                    .replaceAll("<span style=\"color: var(--bs-code-color);\">{$1}</span>");
+    }
+
+    /**
+     * Extracts the path parameters from the given URI, maintaining the order of appearance.
+     *
+     * @param uri the URI to extract path parameters from
+     * @return a list of path parameters in the order they appear in the URI
+     */
+    private static List<String> extractPathParameters(String uri) {
+        List<String> parameters = new ArrayList<>();
+        Matcher matcher = URI_PARAMETER_PATTERN.matcher(uri);
+        while (matcher.find()) {
+            parameters.add(matcher.group(1));
+        }
+        return parameters;
     }
 }
