@@ -58,16 +58,23 @@ public class PublicServiceInfo {
         this.deprecated = deprecated;
         this.operation = operation;
 
+        // split parameters into path components and other parameters
+        serviceParameters.forEach(parameter -> {
+            if (parameter.in() == ParameterIn.PATH) {
+                this.pathComponents.add(parameter);
+            } else {
+                this.serviceParameters.add(parameter);
+            }
+        });
+
+        // sort path parameters according to their order of appearance in the path
         List<String> pathComponentNames = extractPathParameters(this.uri);
-        this.pathComponents.addAll(serviceParameters.stream()
-                                                    .filter(parameter -> ParameterIn.PATH == parameter.in())
-                                                    .toList());
         this.pathComponents.sort(Comparator.comparingInt(parameter -> {
             int index = pathComponentNames.indexOf(parameter.name());
             return index < 0 ? Integer.MAX_VALUE : index;
         }));
 
-        this.serviceParameters.addAll(serviceParameters.stream().filter(p -> ParameterIn.PATH != p.in()).toList());
+        // sort other parameters by required flag first, then by name
         this.serviceParameters.sort(Comparator.comparing(Parameter::required)
                                               .reversed()
                                               .thenComparing(Parameter::name));
