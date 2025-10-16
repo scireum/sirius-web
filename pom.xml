@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.scireum</groupId>
         <artifactId>sirius-parent</artifactId>
-        <version>14.1.2</version>
+        <version>14.2.0</version>
     </parent>
     <artifactId>sirius-web</artifactId>
     <version>DEVELOPMENT-SNAPSHOT</version>
@@ -14,7 +14,7 @@
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
     <properties>
-        <sirius.kernel>dev-48.0.0</sirius.kernel>
+        <sirius.kernel>dev-48.2.0</sirius.kernel>
     </properties>
 
     <repositories>
@@ -50,7 +50,7 @@
         <dependency>
             <groupId>org.asynchttpclient</groupId>
             <artifactId>async-http-client</artifactId>
-            <version>3.0.2</version>
+            <version>3.0.3</version>
             <exclusions>
                 <exclusion>
                     <groupId>io.netty</groupId>
@@ -83,7 +83,7 @@
         <dependency>
             <groupId>org.eclipse.angus</groupId>
             <artifactId>angus-mail</artifactId>
-            <version>2.0.3</version>
+            <version>2.0.4</version>
         </dependency>
         <!-- Changelog: https://github.com/eclipse-ee4j/angus-activation/releases -->
         <dependency>
@@ -111,7 +111,7 @@
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.21.1</version>
+            <version>1.21.2</version>
         </dependency>
 
         <!-- Used to render SVG into PDF -->
@@ -139,7 +139,7 @@
         <dependency>
             <groupId>com.github.pjfanning</groupId>
             <artifactId>excel-streaming-reader</artifactId>
-            <version>5.1.0</version>
+            <version>5.1.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.h2database</groupId>
@@ -153,7 +153,7 @@
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-annotations</artifactId>
-            <version>2.2.34</version>
+            <version>2.2.39</version>
         </dependency>
 
         <!-- Changelog: https://github.com/auth0/java-jwt/releases -->
@@ -171,7 +171,7 @@
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-bom</artifactId>
-                <version>4.2.5.Final</version>
+                <version>4.2.7.Final</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
