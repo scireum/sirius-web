@@ -12,16 +12,14 @@ import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpMethod
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import sirius.kernel.BaseSpecification
 import sirius.kernel.SiriusExtension
 import java.net.HttpURLConnection
 import java.net.URI
-import java.net.URL
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 @ExtendWith(SiriusExtension::class)
-class CORSTest {
+class CorsTest {
     @Test
     fun `expect 'Access-Control-Allow-Origin' for requests with 'origin'`() {
         // Allow us to set the Origin: header...
@@ -45,8 +43,12 @@ class CORSTest {
 
         connection.getInputStream().close()
         assertEquals("TEST", connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN.toString()))
-        assertTrue { connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_METHODS.toString()).indexOf("GET") >= 0 }
-        assertTrue { connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_HEADERS.toString()).indexOf("X-Test") >= 0 }
+        assertTrue {
+            connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_METHODS.toString()).indexOf("GET") >= 0
+        }
+        assertTrue {
+            connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_HEADERS.toString()).indexOf("X-Test") >= 0
+        }
     }
 
 }
