@@ -200,8 +200,8 @@ public class Page<E> {
             withPageSize(Math.min(ctx.get(PARAM_PAGE_SIZE).asInt(DEFAULT_PAGE_SIZE), MAXIMUM_PAGE_SIZE));
         }
         withQuery(ctx.get(PARAM_QUERY).asString());
-        for (Facet f : getFacets()) {
-            f.withValue(ctx.get(f.getName()).asString());
+        for (Facet facet : getFacets()) {
+            facet.withValue(ctx.get(facet.getName()).asString());
         }
 
         return this;
@@ -376,10 +376,10 @@ public class Page<E> {
             linkBuilder.append(PARAM_QUERY, query);
         }
 
-        for (Facet f : getFacets()) {
-            if (!Strings.areEqual(fieldToIgnore, f.getName())) {
-                if (Strings.isFilled(f.getValue()) || emptyParameters.contains(f.getName())) {
-                    linkBuilder.append(f.getName(), f.getValue());
+        for (Facet facet : getFacets()) {
+            if (!Strings.areEqual(fieldToIgnore, facet.getName())) {
+                if (Strings.isFilled(facet.getValue()) || emptyParameters.contains(facet.getName())) {
+                    linkBuilder.append(facet.getName(), facet.getValue());
                 }
             }
         }
