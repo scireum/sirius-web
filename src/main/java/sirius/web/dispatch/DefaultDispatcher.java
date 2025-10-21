@@ -45,33 +45,33 @@ public class DefaultDispatcher implements WebDispatcher {
     }
 
     @Override
-    public DispatchDecision dispatch(WebContext ctx) throws Exception {
-        if (!ctx.canReadParameters(exception -> {
+    public DispatchDecision dispatch(WebContext webContext) throws Exception {
+        if (!webContext.canReadParameters(exception -> {
             UserContext.getCurrentUser();
-            ctx.respondWith().error(HttpResponseStatus.BAD_REQUEST, exception.getMessage());
+            webContext.respondWith().error(HttpResponseStatus.BAD_REQUEST, exception.getMessage());
         })) {
             return DispatchDecision.DONE;
         }
 
-        if ("/robots.txt".equals(ctx.getRequestedURI()) && serveRobots) {
+        if ("/robots.txt".equals(webContext.getRequestedURI()) && serveRobots) {
             if (robotsDisallowAll) {
-                ctx.respondWith()
-                   .infinitelyCached()
-                   .setHeader(HttpHeaderNames.CONTENT_TYPE, MimeHelper.TEXT_PLAIN)
-                   .direct(HttpResponseStatus.OK, """
-                           User-agent: *
-                           Disallow: /
-                           """);
+                webContext.respondWith()
+                          .infinitelyCached()
+                          .setHeader(HttpHeaderNames.CONTENT_TYPE, MimeHelper.TEXT_PLAIN)
+                          .direct(HttpResponseStatus.OK, """
+                                  User-agent: *
+                                  Disallow: /
+                                  """);
             } else {
-                ctx.respondWith()
-                   .infinitelyCached()
-                   .setHeader(HttpHeaderNames.CONTENT_TYPE, MimeHelper.TEXT_PLAIN)
-                   .direct(HttpResponseStatus.OK, """
-                           User-agent: *
-                           Disallow:
-                           """);
+                webContext.respondWith()
+                          .infinitelyCached()
+                          .setHeader(HttpHeaderNames.CONTENT_TYPE, MimeHelper.TEXT_PLAIN)
+                          .direct(HttpResponseStatus.OK, """
+                                  User-agent: *
+                                  Disallow:
+                                  """);
             }
-        } else if ("/".equals(ctx.getRequestedURI())) {
+        } else if ("/".equals(webContext.getRequestedURI())) {
             // If there is no controller and no other dispatcher which is willing to handle a "/" request, we
             // re-start the pipeline with "/admin". This will at least be picked up by the DashboardController
             // of sirius-biz, which is probably what we want. If this isn't available, we end up with a 404
@@ -81,22 +81,22 @@ public class DefaultDispatcher implements WebDispatcher {
             // (to put it at the end of the pipeline). However, this prohibits that another dispatcher which runs
             // after the ControllerDispatcher handles "/". Using this approach, either a controller or a dispatch
             // can handle "/" if the DashboardController wanted for this.
-            ctx.withCustomURI("/admin");
+            webContext.withCustomURI("/admin");
             return DispatchDecision.RESTART;
-        } else if ("/dashboard".equals(ctx.getRequestedURI())) {
+        } else if ("/dashboard".equals(webContext.getRequestedURI())) {
             // For the same reasons as noted above, we lazily redirect /dashboard to the actual controller URI
             // /system/dashboard if not handled otherwise...
-            ctx.withCustomURI("/system/dashboard");
+            webContext.withCustomURI("/system/dashboard");
             return DispatchDecision.RESTART;
-        } else if ("/reset".equals(ctx.getRequestedURI())) {
-            ctx.clearSession();
-            ctx.respondWith().redirectTemporarily(ctx.get("path").asString("/"));
+        } else if ("/reset".equals(webContext.getRequestedURI())) {
+            webContext.clearSession();
+            webContext.respondWith().redirectTemporarily(webContext.get("path").asString("/"));
         } else {
             // Bind user to request if present for translations etc. to work correctly...
             UserContext.getCurrentUser();
-            ctx.respondWith()
-               .error(HttpResponseStatus.NOT_FOUND,
-                      Strings.apply("No dispatcher found for: %s", ctx.getRequestedURI()));
+            webContext.respondWith()
+                      .error(HttpResponseStatus.NOT_FOUND,
+                             Strings.apply("No dispatcher found for: %s", webContext.getRequestedURI()));
         }
 
         return DispatchDecision.DONE;
