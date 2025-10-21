@@ -46,6 +46,13 @@ public class DefaultDispatcher implements WebDispatcher {
 
     @Override
     public DispatchDecision dispatch(WebContext ctx) throws Exception {
+        if (!ctx.canReadParameters(exception -> {
+            UserContext.getCurrentUser();
+            ctx.respondWith().error(HttpResponseStatus.BAD_REQUEST, exception.getMessage());
+        })) {
+            return DispatchDecision.DONE;
+        }
+
         if ("/robots.txt".equals(ctx.getRequestedURI()) && serveRobots) {
             if (robotsDisallowAll) {
                 ctx.respondWith()
