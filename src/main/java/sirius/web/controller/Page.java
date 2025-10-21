@@ -50,6 +50,7 @@ public class Page<E> {
     private List<Facet> facets = new ArrayList<>();
     private Boolean hasFacets = null;
     private int pageSize = DEFAULT_PAGE_SIZE;
+    private final List<String> emptyParameters = new ArrayList<>();
 
     /**
      * Specifies the query used to compute the result list.
@@ -157,6 +158,17 @@ public class Page<E> {
         facet.parent = this;
         hasFacets = null;
 
+        return this;
+    }
+
+    /**
+     * Specifies a parameter which shall be added empty to the generated links in the pagination.
+     *
+     * @param emptyParameter the parameter to add empty to the generated links
+     * @return the page itself for fluent method calls
+     */
+    public Page<E> withEmptyParameter(String emptyParameter) {
+        this.emptyParameters.add(emptyParameter);
         return this;
     }
 
@@ -360,11 +372,15 @@ public class Page<E> {
     protected LinkBuilder addFacetsAndQuery(String baseUrl, String fieldToIgnore) {
         LinkBuilder linkBuilder = new LinkBuilder(baseUrl);
 
-        linkBuilder.appendIfFilled(PARAM_QUERY, query);
+        if (Strings.isFilled(PARAM_QUERY) || emptyParameters.contains(PARAM_QUERY)) {
+            linkBuilder.append(PARAM_QUERY, query);
+        }
 
         for (Facet f : getFacets()) {
             if (!Strings.areEqual(fieldToIgnore, f.getName())) {
-                linkBuilder.appendIfFilled(f.getName(), f.getValue());
+                if (Strings.isFilled(f.getValue()) || emptyParameters.contains(f.getName())) {
+                    linkBuilder.append(f.getName(), f.getValue());
+                }
             }
         }
 
