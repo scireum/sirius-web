@@ -160,7 +160,7 @@ public class ControllerDispatcher implements WebDispatcher {
             }
 
             // If the route is locked during maintenance, abort in an SEO/user-friendly way of sending an
-            // 503 + Retry-After header. We use a generous default timeout here, as this is mostly sufficient..
+            // 503 + Retry-After header. We use a generous default timeout here, as this is mostly sufficient.
             if (route.isEnforceMaintenanceMode() && UserContext.getCurrentScope()
                                                                .tryAs(MaintenanceInfo.class)
                                                                .map(MaintenanceInfo::isLocked)

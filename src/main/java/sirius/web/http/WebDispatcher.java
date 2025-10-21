@@ -14,11 +14,11 @@ import sirius.kernel.di.std.Priorized;
 /**
  * Participates in the dispatching process for incoming HTTP requests.
  * <p>
- * Once a HTTP request is fully read by the server it is dispatched calling all available <tt>WebDispatcher</tt>
+ * Once an HTTP request is fully read by the server it is dispatched calling all available <tt>WebDispatcher</tt>
  * instances available. To provide a WebDispatcher, a subclass therefore needs to wear an
  * {@link sirius.kernel.di.std.Register} annotation.
  * <p>
- * As the first request arrives, all dispatchers are asked for their priority (via {@link #getPriority()} and
+ * As the first request arrives, all dispatchers are asked for their priority (via {@link #getPriority()}) and
  * then sorted according to that in an ascending manner. As default priority
  * {@link sirius.kernel.commons.PriorityCollector#DEFAULT_PRIORITY} can be used. Note that this will only be done
  * once, therefore <tt>getPriority()</tt> must only return a constant value as it is never re-evaluated. By default,
@@ -50,18 +50,18 @@ public interface WebDispatcher extends Priorized {
      */
     enum DispatchDecision {
         /**
-         * Signals the the request was handled and all further processing cann be aborted.
+         * Signals that the request was handled and all further processing can be aborted.
          */
         DONE,
 
         /**
-         * Signals that the dispatcher doesn't feel responsible for this requests and that the
+         * Signals that the dispatcher doesn't feel responsible for this request and that the
          * next in line dispatcher should give it a try.
          */
         CONTINUE,
 
         /**
-         * Signals that some request re-writing happened and that the the dispatching should be
+         * Signals that some request re-writing happened and that the dispatching should be
          * reset to start from the first dispatcher again.
          * <p>
          * Note that there is a circuit breaker installed, therefore this can only be performed up to
@@ -106,7 +106,7 @@ public interface WebDispatcher extends Priorized {
     /**
      * Invoked in order to handle the given request.
      * <p>
-     * If the dispatcher doesn't feel responsible for handling the request, it simply returns <tt>false</tt>. Otherwise
+     * If the dispatcher doesn't feel responsible for handling the request, it simply returns <tt>false</tt>. Otherwise,
      * if the request is being handled, <tt>true</tt> must be returned
      * <p>
      * Note that no blocking operation must be performed in this method. For any complex interaction, a new thread
