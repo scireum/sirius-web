@@ -602,6 +602,23 @@ public class WebContext implements SubContext {
         return Value.EMPTY;
     }
 
+    /**
+     * Returns a value or parameter supplied by the request in a safe manner.
+     * <p>
+     * Malformed URLs might cause an exception when calling {@link #get(String)}.
+     *
+     * @param key the key used to look for the value
+     * @return a Value representing the provided data.
+     * @see #get(String)
+     */
+    public Value safeGet(String key) {
+        try {
+            return get(key);
+        } catch (Exception _) {
+            return Value.EMPTY;
+        }
+    }
+
     @SuppressWarnings("java:S6204")
     @Explain("We return a mutable list here, as we cannot predict what the caller does with the result.")
     private Value fetchPostAttributes(String key) {
