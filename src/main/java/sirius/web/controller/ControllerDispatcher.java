@@ -142,6 +142,13 @@ public class ControllerDispatcher implements WebDispatcher {
                                      Route route,
                                      List<Object> params,
                                      InputStreamHandler inputStreamHandler) {
+
+        if (!webContext.canReadParameters(exception -> {
+            handleFailure(webContext, route, exception);
+        })) {
+            return;
+        }
+
         try {
             if (firewall != null
                 && !route.getMethod().isAnnotationPresent(Unlimited.class)

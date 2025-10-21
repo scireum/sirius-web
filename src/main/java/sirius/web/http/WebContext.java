@@ -51,6 +51,7 @@ import sirius.kernel.xml.BasicNamespaceContext;
 import sirius.kernel.xml.StructuredInput;
 import sirius.kernel.xml.XMLStructuredInput;
 import sirius.pasta.noodle.sandbox.NoodleSandbox;
+import sirius.web.controller.Controller;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -84,6 +85,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -616,6 +618,31 @@ public class WebContext implements SubContext {
             return get(key);
         } catch (Exception _) {
             return Value.EMPTY;
+        }
+    }
+
+    /**
+     * Asserts that the request is readable.
+     * <p>
+     * Mal-formed URLs or post payload might cause diverse exceptions when calling {@link #get(String)}, so
+     * we can validate if parameters can be read at all using this method.
+     *
+     * @param onErrorConsumer a consumer which is invoked in case of an error
+     * @return <tt>true</tt> if parameters can be read, <tt>false</tt> otherwise
+     */
+    public boolean canReadParameters(@Nullable Consumer<HandledException> onErrorConsumer) {
+        try {
+            // Try to read anything. Result is not important here, but if we can reat at all!
+            get("dummy");
+            return true;
+        } catch (Exception exception) {
+            if (onErrorConsumer != null) {
+                onErrorConsumer.accept(Exceptions.createHandled()
+                                                 .error(exception)
+                                                 .hint(Controller.HTTP_STATUS, HttpResponseStatus.BAD_REQUEST.code())
+                                                 .handle());
+            }
+            return false;
         }
     }
 
