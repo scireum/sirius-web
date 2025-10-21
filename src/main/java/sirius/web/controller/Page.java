@@ -372,7 +372,7 @@ public class Page<E> {
     protected LinkBuilder addFacetsAndQuery(String baseUrl, String fieldToIgnore) {
         LinkBuilder linkBuilder = new LinkBuilder(baseUrl);
 
-        if (Strings.isFilled(PARAM_QUERY) || emptyParameters.contains(PARAM_QUERY)) {
+        if (Strings.isFilled(query) || emptyParameters.contains(PARAM_QUERY)) {
             linkBuilder.append(PARAM_QUERY, query);
         }
 
