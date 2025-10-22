@@ -632,7 +632,7 @@ public class WebContext implements SubContext {
      */
     public boolean canReadParameters(@Nullable Consumer<HandledException> onErrorConsumer) {
         try {
-            // Try to read anything. Result is not important here, but if we can reat at all!
+            // Try to read anything. Result is not important here, but if we can read at all!
             get("dummy");
             return true;
         } catch (Exception exception) {
