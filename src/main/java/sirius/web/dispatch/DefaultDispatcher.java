@@ -13,10 +13,13 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.health.HandledException;
 import sirius.web.http.MimeHelper;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 import sirius.web.security.UserContext;
+
+import java.util.Optional;
 
 /**
  * Sends a 404 (not found) for all unhandled URIs.
@@ -46,10 +49,10 @@ public class DefaultDispatcher implements WebDispatcher {
 
     @Override
     public DispatchDecision dispatch(WebContext webContext) throws Exception {
-        if (!webContext.canReadParameters(exception -> {
+        Optional<HandledException> exception = webContext.checkParameterReadability();
+        if (exception.isPresent()) {
             UserContext.getCurrentUser();
-            webContext.respondWith().error(HttpResponseStatus.BAD_REQUEST, exception.getMessage());
-        })) {
+            webContext.respondWith().error(HttpResponseStatus.BAD_REQUEST, exception.get().getMessage());
             return DispatchDecision.DONE;
         }
 

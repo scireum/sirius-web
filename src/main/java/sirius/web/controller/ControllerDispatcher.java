@@ -143,9 +143,9 @@ public class ControllerDispatcher implements WebDispatcher {
                                      List<Object> params,
                                      InputStreamHandler inputStreamHandler) {
 
-        if (!webContext.canReadParameters(exception -> {
-            handleFailure(webContext, route, exception);
-        })) {
+        Optional<HandledException> exception = webContext.checkParameterReadability();
+        if (exception.isPresent()) {
+            handleFailure(webContext, route, exception.get());
             return;
         }
 

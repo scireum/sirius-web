@@ -85,7 +85,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -622,27 +621,23 @@ public class WebContext implements SubContext {
     }
 
     /**
-     * Asserts that the request is readable.
+     * Checks that the request parameters are readable.
      * <p>
      * Mal-formed URLs or post payload might cause diverse exceptions when calling {@link #get(String)}, so
      * we can validate if parameters can be read at all using this method.
      *
-     * @param onErrorConsumer a consumer which is invoked in case of an error
-     * @return <tt>true</tt> if parameters can be read, <tt>false</tt> otherwise
+     * @return <tt>true</tt> an optional HandledException if parameters cannot be read containing the actual cause
      */
-    public boolean canReadParameters(@Nullable Consumer<HandledException> onErrorConsumer) {
+    public Optional<HandledException> checkParameterReadability() {
         try {
             // Try to read anything. Result is not important here, but if we can read at all!
             get("dummy");
-            return true;
+            return Optional.empty();
         } catch (Exception exception) {
-            if (onErrorConsumer != null) {
-                onErrorConsumer.accept(Exceptions.createHandled()
-                                                 .error(exception)
-                                                 .hint(Controller.HTTP_STATUS, HttpResponseStatus.BAD_REQUEST.code())
-                                                 .handle());
-            }
-            return false;
+            return Optional.of(Exceptions.createHandled()
+                                         .error(exception)
+                                         .hint(Controller.HTTP_STATUS, HttpResponseStatus.BAD_REQUEST.code())
+                                         .handle());
         }
     }
 
