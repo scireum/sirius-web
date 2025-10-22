@@ -139,7 +139,7 @@ public class BasicController implements Controller {
     }
 
     /**
-     * Provides a simple {@link HandledException} to throw if a object was not found.
+     * Provides a simple {@link HandledException} to throw if an object was not found.
      * <p>
      * This exception is not logged.
      *
@@ -238,9 +238,16 @@ public class BasicController implements Controller {
         }
 
         HttpResponseStatus status = HttpResponseStatus.BAD_REQUEST;
+
         if (error.getHint(Controller.HTTP_STATUS).isNumeric()) {
             status = HttpResponseStatus.valueOf(error.getHint(Controller.HTTP_STATUS)
                                                      .asInt(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()));
+        }
+
+        if (format == Format.RAW) {
+            // Failure for services expecting raw responses just yield the proper status code...
+            webContext.respondWith().status(status);
+            return;
         }
 
         StructuredOutput out = createStructuredOutput(webContext, format, status);

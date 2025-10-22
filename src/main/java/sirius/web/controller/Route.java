@@ -162,12 +162,6 @@ public class Route {
         } else if (routed.jsonCall()) {
             result.format = Format.JSON;
         }
-
-        if (result.format == Format.RAW) {
-            // RAW services don't need any special parameters. Therefore, we treat them as if there wasn't any special
-            // setting at all.
-            result.format = null;
-        }
     }
 
     private static String applyRewrites(Controller controller, String uri) {

@@ -51,6 +51,7 @@ import sirius.kernel.xml.BasicNamespaceContext;
 import sirius.kernel.xml.StructuredInput;
 import sirius.kernel.xml.XMLStructuredInput;
 import sirius.pasta.noodle.sandbox.NoodleSandbox;
+import sirius.web.controller.Controller;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -600,6 +601,44 @@ public class WebContext implements SubContext {
         }
 
         return Value.EMPTY;
+    }
+
+    /**
+     * Returns a value or parameter supplied by the request in a safe manner.
+     * <p>
+     * Malformed URLs might cause an exception when calling {@link #get(String)}.
+     *
+     * @param key the key used to look for the value
+     * @return a Value representing the provided data.
+     * @see #get(String)
+     */
+    public Value safeGet(String key) {
+        try {
+            return get(key);
+        } catch (Exception _) {
+            return Value.EMPTY;
+        }
+    }
+
+    /**
+     * Checks that the request parameters are readable.
+     * <p>
+     * Mal-formed URLs or post payload might cause diverse exceptions when calling {@link #get(String)}, so
+     * we can validate if parameters can be read at all using this method.
+     *
+     * @return <tt>true</tt> an optional HandledException if parameters cannot be read containing the actual cause
+     */
+    public Optional<HandledException> checkParameterReadability() {
+        try {
+            // Try to read anything. Result is not important here, but if we can read at all!
+            get("dummy");
+            return Optional.empty();
+        } catch (Exception exception) {
+            return Optional.of(Exceptions.createHandled()
+                                         .error(exception)
+                                         .hint(Controller.HTTP_STATUS, HttpResponseStatus.BAD_REQUEST.code())
+                                         .handle());
+        }
     }
 
     @SuppressWarnings("java:S6204")

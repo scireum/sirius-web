@@ -142,6 +142,13 @@ public class ControllerDispatcher implements WebDispatcher {
                                      Route route,
                                      List<Object> params,
                                      InputStreamHandler inputStreamHandler) {
+
+        Optional<HandledException> exception = webContext.checkParameterReadability();
+        if (exception.isPresent()) {
+            handleFailure(webContext, route, exception.get());
+            return;
+        }
+
         try {
             if (firewall != null
                 && !route.getMethod().isAnnotationPresent(Unlimited.class)
@@ -153,7 +160,7 @@ public class ControllerDispatcher implements WebDispatcher {
             }
 
             // If the route is locked during maintenance, abort in an SEO/user-friendly way of sending an
-            // 503 + Retry-After header. We use a generous default timeout here, as this is mostly sufficient..
+            // 503 + Retry-After header. We use a generous default timeout here, as this is mostly sufficient.
             if (route.isEnforceMaintenanceMode() && UserContext.getCurrentScope()
                                                                .tryAs(MaintenanceInfo.class)
                                                                .map(MaintenanceInfo::isLocked)
@@ -236,7 +243,7 @@ public class ControllerDispatcher implements WebDispatcher {
     private void executeRoute(WebContext webContext, Route route, List<Object> params) throws Exception {
         webContext.setAttribute(ATTRIBUTE_MATCHED_ROUTE, route.getUri());
 
-        if (route.getApiResponseFormat() != null) {
+        if (route.getApiResponseFormat() != null && route.getApiResponseFormat() != Format.RAW) {
             executeApiCall(webContext, route, params);
         } else {
             route.invoke(params);
