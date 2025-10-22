@@ -50,6 +50,7 @@ public class Page<E> {
     private List<Facet> facets = new ArrayList<>();
     private Boolean hasFacets = null;
     private int pageSize = DEFAULT_PAGE_SIZE;
+    private final List<String> emptyParameters = new ArrayList<>();
 
     /**
      * Specifies the query used to compute the result list.
@@ -161,6 +162,17 @@ public class Page<E> {
     }
 
     /**
+     * Specifies a parameter which shall be added empty to the generated links in the pagination.
+     *
+     * @param emptyParameter the parameter to add empty to the generated links
+     * @return the page itself for fluent method calls
+     */
+    public Page<E> withEmptyParameter(String emptyParameter) {
+        this.emptyParameters.add(emptyParameter);
+        return this;
+    }
+
+    /**
      * Calculates the current page number
      * <p>
      * Note: This will be deprecated soon as we prefer pagination
@@ -188,8 +200,8 @@ public class Page<E> {
             withPageSize(Math.min(ctx.get(PARAM_PAGE_SIZE).asInt(DEFAULT_PAGE_SIZE), MAXIMUM_PAGE_SIZE));
         }
         withQuery(ctx.get(PARAM_QUERY).asString());
-        for (Facet f : getFacets()) {
-            f.withValue(ctx.get(f.getName()).asString());
+        for (Facet facet : getFacets()) {
+            facet.withValue(ctx.get(facet.getName()).asString());
         }
 
         return this;
@@ -360,11 +372,15 @@ public class Page<E> {
     protected LinkBuilder addFacetsAndQuery(String baseUrl, String fieldToIgnore) {
         LinkBuilder linkBuilder = new LinkBuilder(baseUrl);
 
-        linkBuilder.appendIfFilled(PARAM_QUERY, query);
+        if (Strings.isFilled(query) || emptyParameters.contains(PARAM_QUERY)) {
+            linkBuilder.append(PARAM_QUERY, query);
+        }
 
-        for (Facet f : getFacets()) {
-            if (!Strings.areEqual(fieldToIgnore, f.getName())) {
-                linkBuilder.appendIfFilled(f.getName(), f.getValue());
+        for (Facet facet : getFacets()) {
+            if (!Strings.areEqual(fieldToIgnore, facet.getName())) {
+                if (Strings.isFilled(facet.getValue()) || emptyParameters.contains(facet.getName())) {
+                    linkBuilder.append(facet.getName(), facet.getValue());
+                }
             }
         }
 
