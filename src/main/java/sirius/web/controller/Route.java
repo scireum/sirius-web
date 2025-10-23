@@ -130,7 +130,7 @@ public class Route {
     private static void createMethodHandle(Method method, Route result) {
         try {
             result.methodHandle = LOOKUP.unreflect(method);
-        } catch (IllegalAccessException e) {
+        } catch (IllegalAccessException _) {
             throw new IllegalArgumentException("Callback method is not accessible!");
         }
     }
