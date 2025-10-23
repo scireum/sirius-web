@@ -28,7 +28,6 @@ import sirius.web.services.JSONStructuredOutput;
 import sirius.web.services.PublicService;
 
 import javax.annotation.Nonnull;
-import java.io.UnsupportedEncodingException;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
@@ -304,11 +303,7 @@ public class Route {
     }
 
     private String decodeParameter(String parameter) {
-        try {
-            return URLDecoder.decode(parameter, StandardCharsets.UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            throw Exceptions.handle(WebServer.LOG, e);
-        }
+        return URLDecoder.decode(parameter, StandardCharsets.UTF_8);
     }
 
     /*
