@@ -10,8 +10,8 @@ package sirius.web.controller;
 
 import sirius.kernel.commons.PriorityCollector;
 import sirius.web.services.InternalService;
-import sirius.web.services.PublicService;
 import sirius.web.services.JSONStructuredOutput;
+import sirius.web.services.PublicService;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
