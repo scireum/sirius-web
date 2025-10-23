@@ -94,7 +94,7 @@ public class Route {
         String[] elements = result.uri.substring(1).split("/");
         StringBuilder finalPattern = new StringBuilder();
         int params = compileRouteURI(result, elements, finalPattern);
-        if (finalPattern.length() == 0) {
+        if (finalPattern.isEmpty()) {
             finalPattern = new StringBuilder("/");
         }
         failForInvalidParameterCount(routed, parameterTypes, params);
