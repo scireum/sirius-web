@@ -46,7 +46,7 @@ import java.util.regex.Pattern;
  */
 public class Route {
 
-    protected static final List<Object> NO_MATCH = Collections.unmodifiableList(new ArrayList<>());
+    protected static final List<Object> NO_MATCH = Collections.emptyList();
     private static final Class<?>[] CLASS_ARRAY = new Class[0];
     private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
