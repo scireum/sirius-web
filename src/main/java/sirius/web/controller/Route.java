@@ -203,11 +203,11 @@ public class Route {
         String rewrittenUri = Sirius.getSettings()
                                     .getExtensions("controller.rewrites")
                                     .stream()
-                                    .filter(ext -> controller.getClass()
-                                                             .getName()
-                                                             .contains(ext.get("controller").asString()))
-                                    .filter(ext -> ext.get("uri").asString().equals(uri))
-                                    .map(ext -> ext.get("rewrite").asString())
+                                    .filter(extension -> controller.getClass()
+                                                                   .getName()
+                                                                   .contains(extension.get("controller").asString()))
+                                    .filter(extension -> extension.get("uri").asString().equals(uri))
+                                    .map(extension -> extension.get("rewrite").asString())
                                     .findFirst()
                                     .orElse(null);
         if (rewrittenUri != null) {
@@ -259,53 +259,53 @@ public class Route {
      * See Route.value() for a description
      */
     private static int compileRouteURI(Route result, String[] elements, StringBuilder finalPattern) {
-        int params = 0;
+        int parameters = 0;
         for (String element : elements) {
             if (element.contains(" ") || element.contains("\n") || element.contains("\t")) {
                 throw new IllegalArgumentException("A route must not contain whitespace characters!");
             }
 
-            Matcher m = EXPR.matcher(element);
-            if (m.matches()) {
-                String key = m.group(1);
+            Matcher matcher = EXPR.matcher(element);
+            if (matcher.matches()) {
+                String key = matcher.group(1);
                 if (":".equals(key)) {
-                    result.expressions.add(Tuple.create(":", Integer.parseInt(m.group(2))));
-                    params++;
+                    result.expressions.add(Tuple.create(":", Integer.parseInt(matcher.group(2))));
+                    parameters++;
                 } else {
-                    result.expressions.add(Tuple.create(key, m.group(2)));
+                    result.expressions.add(Tuple.create(key, matcher.group(2)));
                 }
                 finalPattern.append("/([^/]+)");
             } else if ("*".equals(element)) {
                 finalPattern.append("/[^/]+");
             } else if ("**".equals(element)) {
                 finalPattern.append("/?(.*)");
-                result.expressions.add(Tuple.create("**", params++));
+                result.expressions.add(Tuple.create("**", parameters++));
             } else {
                 finalPattern.append("/");
                 finalPattern.append(Pattern.quote(element));
             }
         }
 
-        return params;
+        return parameters;
     }
 
     /**
      * Determines if this route matches the current request based on the request URI.
      *
-     * @param ctx          defines the current request
+     * @param webContext   defines the current request
      * @param requestedURI contains the request uri as string
      * @param preDispatch  determines if we're doing a pre-dispatch (looking for a controller which handles
      *                     incomplete requests like file uploads)
      * @return {@link #NO_MATCH} if the route does not match or a list of extracted object from the URI as defined by
      * the template
      */
-    protected List<Object> matches(WebContext ctx, String requestedURI, boolean preDispatch) {
+    protected List<Object> matches(WebContext webContext, String requestedURI, boolean preDispatch) {
         if (preDispatch != this.preDispatchable) {
             return NO_MATCH;
         }
-        Matcher m = pattern.matcher(requestedURI);
-        if (m.matches()) {
-            List<Object> result = extractRouteParameters(ctx, m);
+        Matcher matcher = pattern.matcher(requestedURI);
+        if (matcher.matches()) {
+            List<Object> result = extractRouteParameters(webContext, matcher);
             if (!result.equals(NO_MATCH)) {
                 CallContext.getCurrent().addToMDC("route", uri);
             }
@@ -328,24 +328,24 @@ public class Route {
         return httpMethods.contains(webContext.getRequest().method());
     }
 
-    private List<Object> extractRouteParameters(WebContext ctx, Matcher m) {
+    private List<Object> extractRouteParameters(WebContext webContext, Matcher matcher) {
         List<Object> result = new ArrayList<>(parameterTypes.length);
-        for (int i = 1; i <= m.groupCount(); i++) {
-            Tuple<String, Object> expr = expressions.get(i - 1);
-            String value = decodeParameter(m.group(i));
-            if ("$".equals(expr.getFirst())) {
-                if (!NLS.get((String) expr.getSecond()).equalsIgnoreCase(value)) {
+        for (int i = 1; i <= matcher.groupCount(); i++) {
+            Tuple<String, Object> expression = expressions.get(i - 1);
+            String value = decodeParameter(matcher.group(i));
+            if ("$".equals(expression.getFirst())) {
+                if (!NLS.get((String) expression.getSecond()).equalsIgnoreCase(value)) {
                     return NO_MATCH;
                 }
-            } else if ("#".equals(expr.getFirst())) {
-                ctx.setAttribute((String) expr.getSecond(), value);
-            } else if (":".equals(expr.getFirst())) {
-                int idx = (Integer) expr.getSecond();
-                Object effectiveValue = Value.of(value).coerce(parameterTypes[idx - 1], null);
-                setAtPosition(result, idx, effectiveValue);
-            } else if ("**".equals(expr.getFirst())) {
+            } else if ("#".equals(expression.getFirst())) {
+                webContext.setAttribute((String) expression.getSecond(), value);
+            } else if (":".equals(expression.getFirst())) {
+                int index = (Integer) expression.getSecond();
+                Object effectiveValue = Value.of(value).coerce(parameterTypes[index - 1], null);
+                setAtPosition(result, index, effectiveValue);
+            } else if ("**".equals(expression.getFirst())) {
                 //we need to split the encoded values, so we don't mistake data for the delimiter
-                result.add(Arrays.stream(m.group(i).split("/")).map(this::decodeParameter).toList());
+                result.add(Arrays.stream(matcher.group(i).split("/")).map(this::decodeParameter).toList());
             }
         }
         if (parameterTypes.length - 1 > result.size() && parameterTypes[parameterTypes.length - 1] == List.class) {
@@ -392,9 +392,9 @@ public class Route {
             return "Scope: " + subScope;
         }
 
-        for (String p : permissions) {
-            if (!user.get().hasPermission(p)) {
-                return p;
+        for (String permission : permissions) {
+            if (!user.get().hasPermission(permission)) {
+                return permission;
             }
         }
 
@@ -491,37 +491,41 @@ public class Route {
     /**
      * Invokes the route with the given parameters.
      *
-     * @param params the parameters to supply
+     * @param parameters the parameters to supply
      * @return the result of the route. This will most probably be null (as routes are mostly void), but might be
      * a {@link Promise} which is used for JSON calls to indicate that the response will be completed in another thread.
      * @throws Exception in case of an error during the invocation
      */
-    public Object invoke(List<Object> params) throws Exception {
+    public Object invoke(List<Object> parameters) throws Exception {
         try {
-            if (params.isEmpty()) {
+            if (parameters.isEmpty()) {
                 return methodHandle.invoke(controller);
-            } else if (params.size() == 1) {
-                return methodHandle.invoke(controller, params.getFirst());
-            } else if (params.size() == 2) {
-                return methodHandle.invoke(controller, params.get(0), params.get(1));
-            } else if (params.size() == 3) {
-                return methodHandle.invoke(controller, params.get(0), params.get(1), params.get(2));
-            } else if (params.size() == 4) {
-                return methodHandle.invoke(controller, params.get(0), params.get(1), params.get(2), params.get(3));
+            } else if (parameters.size() == 1) {
+                return methodHandle.invoke(controller, parameters.getFirst());
+            } else if (parameters.size() == 2) {
+                return methodHandle.invoke(controller, parameters.get(0), parameters.get(1));
+            } else if (parameters.size() == 3) {
+                return methodHandle.invoke(controller, parameters.get(0), parameters.get(1), parameters.get(2));
+            } else if (parameters.size() == 4) {
+                return methodHandle.invoke(controller,
+                                           parameters.get(0),
+                                           parameters.get(1),
+                                           parameters.get(2),
+                                           parameters.get(3));
             } else {
-                Object[] args = new Object[params.size() + 1];
-                args[0] = controller;
-                for (int i = 1; i < args.length; i++) {
-                    args[i] = params.get(i - 1);
+                Object[] arguments = new Object[parameters.size() + 1];
+                arguments[0] = controller;
+                for (int i = 1; i < arguments.length; i++) {
+                    arguments[i] = parameters.get(i - 1);
                 }
-                return methodHandle.invokeWithArguments(args);
+                return methodHandle.invokeWithArguments(arguments);
             }
-        } catch (Exception e) {
-            throw e;
-        } catch (Throwable e) {
+        } catch (Exception exception) {
+            throw exception;
+        } catch (Throwable throwable) {
             throw Exceptions.handle()
                             .to(ControllerDispatcher.LOG)
-                            .error(e)
+                            .error(throwable)
                             .withSystemErrorMessage("A serious system error occurred when executing %s: %s (%s)", this)
                             .handle();
         }

@@ -27,8 +27,8 @@ public interface WebsocketDispatcher {
     /**
      * Creates a new session for a given request.
      *
-     * @param ctx the request which was made before upgrading to websockets
+     * @param webContext the request which was made before upgrading to websockets
      * @return a new session handling incoming and outgoing frames
      */
-    WebsocketSession createSession(WebContext ctx);
+    WebsocketSession createSession(WebContext webContext);
 }

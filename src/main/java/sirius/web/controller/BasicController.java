@@ -50,16 +50,16 @@ public class BasicController implements Controller {
      */
     public BasicController() {
         Optional<Method> defaultMethod = Arrays.stream(getClass().getMethods())
-                                               .filter(m -> m.isAnnotationPresent(DefaultRoute.class))
+                                               .filter(method -> method.isAnnotationPresent(DefaultRoute.class))
                                                .findFirst();
         defaultMethod.ifPresent(this::generateDefaultRoute);
     }
 
     private void generateDefaultRoute(Method method) {
-        this.defaultRoute = ctx -> defaultRoute(ctx, method);
+        this.defaultRoute = webContext -> defaultRoute(webContext, method);
     }
 
-    private void defaultRoute(WebContext ctx, Method method) {
+    private void defaultRoute(WebContext webContext, Method method) {
         Set<String> requiredPermissions = Permissions.computePermissionsFromAnnotations(method);
         try {
             if (!requiredPermissions.isEmpty()) {
@@ -69,11 +69,11 @@ public class BasicController implements Controller {
                 }
             }
 
-            method.invoke(this, ctx);
-        } catch (InvocationTargetException e) {
-            fail(ctx, Exceptions.handle(WebServer.LOG, e.getTargetException()));
-        } catch (Exception e) {
-            fail(ctx, Exceptions.handle(WebServer.LOG, e));
+            method.invoke(this, webContext);
+        } catch (InvocationTargetException exception) {
+            fail(webContext, Exceptions.handle(WebServer.LOG, exception.getTargetException()));
+        } catch (Exception exception) {
+            fail(webContext, Exceptions.handle(WebServer.LOG, exception));
         }
     }
 
@@ -132,10 +132,10 @@ public class BasicController implements Controller {
      * <p>
      * Throws an appropriate error if the object is <tt>null</tt>.
      *
-     * @param obj the object to be checked
+     * @param object the object to be checked
      */
-    protected void assertNotNull(Object obj) {
-        if (obj == null) {
+    protected void assertNotNull(Object object) {
+        if (object == null) {
             throw unknownObjectException();
         }
     }
