@@ -47,8 +47,10 @@ import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -394,8 +396,13 @@ public class ControllerDispatcher implements WebDispatcher {
                 return;
             }
 
+            // intersect sets of supported HTTP methods to find out if there is any overlap
+            Set<HttpMethod> jointMethods = new HashSet<>(baseRoute.getHttpMethods());
+            jointMethods.retainAll(secondRoute.getHttpMethods());
+
             if (secondRoute.getPattern().equals(baseRoute.getPattern())
-                && secondRoute.isPreDispatchable() == baseRoute.isPreDispatchable()) {
+                && secondRoute.isPreDispatchable() == baseRoute.isPreDispatchable()
+                && !jointMethods.isEmpty()) {
                 if (secondRoute.getMethod().equals(baseRoute.getMethod())) {
                     routes.remove(index);
                     index--;
