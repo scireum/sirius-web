@@ -133,11 +133,10 @@ public class SAMLHelper {
                                          true /* raw deflate, zlib header and checksum are not supported by SAML */);
 
         byte[] compressedRequest;
-        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
-            try (DeflaterOutputStream deflaterOutputStream = new DeflaterOutputStream(byteArrayOutputStream,
-                                                                                      deflater)) {
-                deflaterOutputStream.write(request);
-            }
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+             DeflaterOutputStream deflaterOutputStream = new DeflaterOutputStream(byteArrayOutputStream, deflater)) {
+            deflaterOutputStream.write(request);
+            deflaterOutputStream.finish();
             compressedRequest = byteArrayOutputStream.toByteArray();
         } catch (IOException e) {
             throw Exceptions.handle(e);
