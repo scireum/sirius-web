@@ -8,6 +8,7 @@
 
 package sirius.web.controller;
 
+import io.netty.handler.codec.http.HttpMethod;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
@@ -35,6 +36,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -54,6 +56,7 @@ public class Route {
 
     private String label;
     private Pattern pattern;
+    private final Set<HttpMethod> httpMethods = new HashSet<>();
     private final List<Tuple<String, Object>> expressions = new ArrayList<>();
     private Method method;
     private MethodHandle methodHandle;
@@ -84,6 +87,12 @@ public class Route {
         result.preDispatchable = routed.preDispatchable();
         result.permissions = Permissions.computePermissionsFromAnnotations(method);
         result.deprecated = method.isAnnotationPresent(Deprecated.class);
+
+        result.httpMethods.addAll(Arrays.stream(routed.methods())
+                                        .map(sirius.web.controller.HttpMethod::toHttpMethod)
+                                        .toList());
+        failForInvalidMethods(result.httpMethods);
+
         determineAPIFormat(method, routed, result);
         determineSubScope(method, result);
         createMethodHandle(method, result);
@@ -183,6 +192,12 @@ public class Route {
         }
 
         return uri;
+    }
+
+    private static void failForInvalidMethods(Set<HttpMethod> httpMethods) {
+        if (httpMethods.isEmpty()) {
+            throw new IllegalArgumentException("At least one HTTP method must be specified!");
+        }
     }
 
     private static void failForInvalidParameterCount(Routed routed, List<Class<?>> parameterTypes, int params) {
@@ -425,6 +440,10 @@ public class Route {
      */
     protected String getPattern() {
         return pattern.toString();
+    }
+
+    public Set<HttpMethod> getHttpMethods() {
+        return Collections.unmodifiableSet(httpMethods);
     }
 
     public String getUri() {
