@@ -98,4 +98,19 @@ public @interface Routed {
      */
     @Deprecated(since = "2021/07/01")
     boolean jsonCall() default false;
+
+    /**
+     * Determines the HTTP methods supported by the route. By default, all methods are supported.
+     *
+     * @return the supported HTTP methods
+     */
+    HttpMethod[] methods() default {HttpMethod.CONNECT,
+                                    HttpMethod.DELETE,
+                                    HttpMethod.GET,
+                                    HttpMethod.HEAD,
+                                    HttpMethod.OPTIONS,
+                                    HttpMethod.PATCH,
+                                    HttpMethod.POST,
+                                    HttpMethod.PUT,
+                                    HttpMethod.TRACE};
 }
