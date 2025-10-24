@@ -9,6 +9,7 @@
 package sirius.web.controller;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
@@ -44,9 +45,11 @@ import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Dispatches incoming requests to the appropriate {@link Controller}.
@@ -196,12 +199,33 @@ public class ControllerDispatcher implements WebDispatcher {
     @Explain("We actually can use object identity here as this is a marker object.")
     public DispatchDecision dispatch(WebContext webContext) throws Exception {
         String uri = determineEffectiveURI(webContext);
+        List<Route> routesWithDifferentMethod = new ArrayList<>();
+
         for (final Route route : getRoutes()) {
             final List<Object> params = shouldExecute(webContext, uri, route, false);
             if (params != Route.NO_MATCH && route.matchesHttpMethod(webContext)) {
                 preparePerformRoute(webContext, route, params, null);
                 return DispatchDecision.DONE;
+            } else if (params != Route.NO_MATCH) {
+                routesWithDifferentMethod.add(route);
             }
+        }
+
+        if (!routesWithDifferentMethod.isEmpty()) {
+            String allowedMethods = routesWithDifferentMethod.stream()
+                                                             .flatMap(route -> route.getHttpMethods().stream())
+                                                             .map(HttpMethod::toString)
+                                                             .distinct()
+                                                             .sorted()
+                                                             .collect(Collectors.joining(", "));
+            handleFailure(webContext,
+                          routesWithDifferentMethod.getFirst(),
+                          Exceptions.createHandled()
+                                    .withDirectMessage("HTTP method not allowed, expecting " + allowedMethods)
+                                    .hint(Controller.HTTP_STATUS, HttpResponseStatus.METHOD_NOT_ALLOWED.code())
+                                    .hint(Controller.HTTP_HEADER_ALLOW, allowedMethods)
+                                    .handle());
+            return DispatchDecision.DONE;
         }
 
         return DispatchDecision.CONTINUE;
