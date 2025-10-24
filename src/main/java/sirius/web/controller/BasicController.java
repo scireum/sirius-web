@@ -8,6 +8,7 @@
 
 package sirius.web.controller;
 
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.Strings;
@@ -15,6 +16,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.StructuredOutput;
+import sirius.web.http.Response;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebServer;
 import sirius.web.security.Permissions;
@@ -194,11 +196,12 @@ public class BasicController implements Controller {
             // Force underlying request / response to be closed...
             webContext.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error);
         } else {
-            int status = error.getHint(Controller.HTTP_STATUS).asInt(HttpResponseStatus.OK.code());
-            webContext.respondWith()
-                      .template(HttpResponseStatus.valueOf(status),
-                                "/templates/tycho/error.html.pasta",
-                                error.getMessage());
+            HttpResponseStatus status = HttpResponseStatus.valueOf(error.getHint(Controller.HTTP_STATUS)
+                                                                        .asInt(HttpResponseStatus.OK.code()));
+            String allowedMethods = error.getHint(Controller.HTTP_HEADER_ALLOW).asString();
+
+            Response response = injectAllowHeader(webContext.respondWith(), status, allowedMethods);
+            response.template(status, "/templates/tycho/error.html.pasta", error.getMessage());
         }
     }
 
@@ -238,19 +241,20 @@ public class BasicController implements Controller {
         }
 
         HttpResponseStatus status = HttpResponseStatus.BAD_REQUEST;
-
         if (error.getHint(Controller.HTTP_STATUS).isNumeric()) {
             status = HttpResponseStatus.valueOf(error.getHint(Controller.HTTP_STATUS)
                                                      .asInt(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()));
         }
 
+        String allowedMethods = error.getHint(Controller.HTTP_HEADER_ALLOW).asString();
+
         if (format == Format.RAW) {
             // Failure for services expecting raw responses just yield the proper status code...
-            webContext.respondWith().status(status);
+            injectAllowHeader(webContext.respondWith(), status, allowedMethods).status(status);
             return;
         }
 
-        StructuredOutput out = createStructuredOutput(webContext, format, status);
+        StructuredOutput out = createStructuredOutput(webContext, format, status, allowedMethods);
         out.beginResult();
         out.property("success", false);
         out.property("error", true);
@@ -261,11 +265,22 @@ public class BasicController implements Controller {
         out.endResult();
     }
 
-    private StructuredOutput createStructuredOutput(WebContext webContext, Format format, HttpResponseStatus status) {
+    private StructuredOutput createStructuredOutput(WebContext webContext,
+                                                    Format format,
+                                                    HttpResponseStatus status,
+                                                    String allowedMethods) {
+        Response response = injectAllowHeader(webContext.respondWith(), status, allowedMethods);
         if (format == Format.JSON) {
-            return webContext.respondWith().json(status);
+            return response.json(status);
         } else {
-            return webContext.respondWith().xml(status);
+            return response.xml(status);
         }
+    }
+
+    private Response injectAllowHeader(Response response, HttpResponseStatus status, String allowedMethods) {
+        if (status.equals(HttpResponseStatus.METHOD_NOT_ALLOWED) && Strings.isFilled(allowedMethods)) {
+            response.addHeaderIfNotExists(HttpHeaderNames.ALLOW, allowedMethods);
+        }
+        return response;
     }
 }
