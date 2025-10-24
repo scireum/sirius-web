@@ -101,7 +101,7 @@ public class ControllerDispatcher implements WebDispatcher {
         String uri = determineEffectiveURI(webContext);
         for (final Route route : getRoutes()) {
             final List<Object> params = shouldExecute(webContext, uri, route, true);
-            if (params != Route.NO_MATCH) {
+            if (params != Route.NO_MATCH && route.matchesHttpMethod(webContext)) {
                 InputStreamHandler handler = new InputStreamHandler();
                 webContext.setContentHandler(handler);
 
@@ -198,7 +198,7 @@ public class ControllerDispatcher implements WebDispatcher {
         String uri = determineEffectiveURI(webContext);
         for (final Route route : getRoutes()) {
             final List<Object> params = shouldExecute(webContext, uri, route, false);
-            if (params != Route.NO_MATCH) {
+            if (params != Route.NO_MATCH && route.matchesHttpMethod(webContext)) {
                 preparePerformRoute(webContext, route, params, null);
                 return DispatchDecision.DONE;
             }

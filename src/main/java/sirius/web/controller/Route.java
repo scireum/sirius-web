@@ -290,7 +290,7 @@ public class Route {
     }
 
     /**
-     * Determines if this route matches the current request.
+     * Determines if this route matches the current request based on the request URI.
      *
      * @param ctx          defines the current request
      * @param requestedURI contains the request uri as string
@@ -312,6 +312,20 @@ public class Route {
             return result;
         }
         return NO_MATCH;
+    }
+
+    /**
+     * Determines if this route matches the HTTP method of the current request.
+     * <p>
+     * Note that this method is not included in {@link #matches(WebContext, String, boolean)} as we want to distinguish
+     * between "no match at all" and "matches the URI, but not the HTTP method". The latter needs to return HTTP 405
+     * (Method Not Allowed) instead of HTTP 404 (Not Found).
+     *
+     * @param webContext the current web context
+     * @return <tt>true</tt> if the HTTP method matches, <tt>false</tt> otherwise
+     */
+    protected boolean matchesHttpMethod(WebContext webContext) {
+        return httpMethods.contains(webContext.getRequest().method());
     }
 
     private List<Object> extractRouteParameters(WebContext ctx, Matcher m) {
