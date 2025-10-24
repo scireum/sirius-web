@@ -138,8 +138,8 @@ public class SAMLHelper {
             deflaterOutputStream.write(request);
             deflaterOutputStream.finish();
             compressedRequest = byteArrayOutputStream.toByteArray();
-        } catch (IOException e) {
-            throw Exceptions.handle(e);
+        } catch (IOException exception) {
+            throw Exceptions.handle(exception);
         } finally {
             deflater.end();
         }
