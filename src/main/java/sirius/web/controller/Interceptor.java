@@ -75,7 +75,7 @@ public interface Interceptor extends Priorized {
     /**
      * Determines if a matched routing should be executed.
      * <p>
-     * By default this should most probably return <tt>true</tt> to invoke the {@link Controller}. However,
+     * By default, this should most probably return <tt>true</tt> to invoke the {@link Controller}. However,
      * <tt>false</tt> can be returned to skip this routing.
      *
      * @param webContext the current request
