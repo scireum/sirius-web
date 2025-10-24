@@ -36,12 +36,15 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Represents a compiled routed as a result of parsing a {@link Controller} and its methods.
@@ -53,6 +56,14 @@ public class Route {
     private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
     private static final Pattern EXPR = Pattern.compile("([:#$])\\{?(.+?)}?");
+
+    /**
+     * Holds all possible HTTP methods.
+     */
+    private static final Set<HttpMethod> ALL_METHODS = EnumSet.allOf(sirius.web.controller.HttpMethod.class)
+                                                              .stream()
+                                                              .map(sirius.web.controller.HttpMethod::toHttpMethod)
+                                                              .collect(Collectors.toSet());
 
     private String label;
     private Pattern pattern;
@@ -83,7 +94,6 @@ public class Route {
         result.controller = controller;
         result.method = method;
         result.uri = applyRewrites(controller, routed.value());
-        result.label = result.uri + " -> " + method.getDeclaringClass().getName() + "#" + method.getName();
         result.preDispatchable = routed.preDispatchable();
         result.permissions = Permissions.computePermissionsFromAnnotations(method);
         result.deprecated = method.isAnnotationPresent(Deprecated.class);
@@ -92,6 +102,12 @@ public class Route {
                                         .map(sirius.web.controller.HttpMethod::toHttpMethod)
                                         .toList());
         failForInvalidMethods(result.httpMethods);
+
+        result.label = String.format("%s%s -> %s#%s",
+                                     result.uri,
+                                     stringifyMethods(result.httpMethods).map(string -> " [" + string + "]").orElse(""),
+                                     method.getDeclaringClass().getName(),
+                                     method.getName());
 
         determineAPIFormat(method, routed, result);
         determineSubScope(method, result);
@@ -110,6 +126,14 @@ public class Route {
         result.parameterTypes = parameterTypes.toArray(CLASS_ARRAY);
         result.pattern = Pattern.compile(finalPattern.toString());
         return result;
+    }
+
+    private static Optional<String> stringifyMethods(Set<HttpMethod> methods) {
+        // if a route supports all methods, we don't list them explicitly
+        if (methods.containsAll(ALL_METHODS)) {
+            return Optional.empty();
+        }
+        return Optional.of(methods.stream().map(HttpMethod::name).collect(Collectors.joining(", ")));
     }
 
     @Nonnull
