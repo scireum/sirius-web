@@ -129,7 +129,7 @@ public class SAMLHelper {
     public String generateAuthenticationRequestForRedirectBinding(String issuer, String issuerIndex) {
         byte[] request = createAuthenticationRequestXML(issuer, issuerIndex);
 
-        // Deflater is not AutoClosable in Java <= 24
+        // TODO MIO-6449: Deflater is AutoClosable in Java >= 25
         Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION,
                                          true /* raw deflate, zlib header and checksum are not supported by SAML */);
 
