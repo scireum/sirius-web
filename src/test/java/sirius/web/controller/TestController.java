@@ -51,6 +51,11 @@ public class TestController extends BasicController {
 
     @Override
     public void onError(WebContext webContext, HandledException error) {
+        if (error.getHint(Controller.HTTP_STATUS).isNumeric()) {
+            fail(webContext, error);
+            return;
+        }
+
         webContext.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error.getMessage());
     }
 
@@ -318,5 +323,60 @@ public class TestController extends BasicController {
     @Routed("/test/redirect-target")
     public void redirectTarget(WebContext webContext) {
         webContext.respondWith().direct(HttpResponseStatus.OK, "target");
+    }
+
+    @Routed(value = "/test/restricted-method", methods = HttpMethod.GET)
+    public void getOnlyTest(WebContext webContext) {
+        webContext.respondWith().direct(HttpResponseStatus.OK, "GET OK");
+    }
+
+    @Routed(value = "/test/restricted-method", methods = HttpMethod.POST)
+    public void postOnlyTest(WebContext webContext) {
+        webContext.respondWith().direct(HttpResponseStatus.OK, "POST OK");
+    }
+
+    @Routed(value = "/test/restricted-methods", methods = {HttpMethod.GET, HttpMethod.POST})
+    public void getAndPostOnlyTest(WebContext webContext) {
+        webContext.respondWith().direct(HttpResponseStatus.OK, "GET/POST OK");
+    }
+
+    @Routed(value = "/test/restricted-method-api", methods = HttpMethod.GET)
+    @InternalService
+    public void getOnlyTest(WebContext webContext, JSONStructuredOutput output) {
+        output.property("status", "GET OK");
+    }
+
+    @Routed(value = "/test/restricted-method-api", methods = HttpMethod.POST)
+    @InternalService
+    public void postOnlyTest(WebContext webContext, JSONStructuredOutput output) {
+        output.property("status", "POST OK");
+    }
+
+    @Routed(value = "/test/restricted-methods-api", methods = {HttpMethod.GET, HttpMethod.POST})
+    @InternalService
+    public void getAndPostOnlyTest(WebContext webContext, JSONStructuredOutput output) {
+        output.property("status", "GET/POST OK");
+    }
+
+    @Routed(value = "/test/another-restricted-method", methods = HttpMethod.GET)
+    public void anotherGetOnlyTest(WebContext webContext) {
+        webContext.respondWith().direct(HttpResponseStatus.OK, "GET OK");
+    }
+
+    @Routed(value = "/test/another-restricted-method-api", methods = HttpMethod.GET)
+    @InternalService
+    public void anotherGetOnlyTest(WebContext webContext, JSONStructuredOutput output) {
+        output.property("status", "GET OK");
+    }
+
+    @Routed(value = "/test/without-method", methods = {})
+    public void inaccessibleTest(WebContext webContext) {
+        webContext.respondWith().direct(HttpResponseStatus.OK, "NOPE");
+    }
+
+    @Routed(value = "/test/without-method-api", methods = {})
+    @InternalService
+    public void inaccessibleTest(WebContext webContext, JSONStructuredOutput output) {
+        output.property("status", "NOPE");
     }
 }
