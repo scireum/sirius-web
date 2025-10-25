@@ -48,6 +48,7 @@ public class PublicServiceInfo {
     private final List<Parameter> serviceParameters = new ArrayList<>();
     private final List<RequestBody> requestBodies = new ArrayList<>();
     private final List<ApiResponse> responses = new ArrayList<>();
+    private final String anchor;
 
     private static final Pattern URI_PARAMETER_PATTERN = Pattern.compile("\\{([^}]*?)}");
 
@@ -65,6 +66,7 @@ public class PublicServiceInfo {
         this.deprecated = deprecated;
         this.operation = operation;
         this.httpMethod = determineHttpMethod();
+        this.anchor = determineAnchor();
 
         // split parameters into path components and other parameters
         serviceParameters.forEach(parameter -> {
@@ -193,6 +195,10 @@ public class PublicServiceInfo {
         return formattedUri;
     }
 
+    public String getAnchor() {
+        return anchor;
+    }
+
     private static String formatUri(String uri) {
         return URI_PARAMETER_PATTERN.matcher(uri)
                                     .replaceAll("<span style=\"color: var(--bs-code-color);\">{$1}</span>");
@@ -236,5 +242,9 @@ public class PublicServiceInfo {
         // reaching this point means that no http method is supported by the route; we are screwed, so fallback to GET
         // to at least maintain legacy behavior
         return HttpMethod.GET;
+    }
+
+    private String determineAnchor() {
+        return this.uri;
     }
 }
