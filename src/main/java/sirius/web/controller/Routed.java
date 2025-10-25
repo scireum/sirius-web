@@ -104,13 +104,13 @@ public @interface Routed {
      *
      * @return the supported HTTP methods
      */
-    HttpMethod[] methods() default {HttpMethod.CONNECT,
-                                    HttpMethod.DELETE,
-                                    HttpMethod.GET,
+    HttpMethod[] methods() default {HttpMethod.GET,
                                     HttpMethod.HEAD,
+                                    HttpMethod.PUT,
+                                    HttpMethod.POST,
+                                    HttpMethod.CONNECT,
+                                    HttpMethod.DELETE,
                                     HttpMethod.OPTIONS,
                                     HttpMethod.PATCH,
-                                    HttpMethod.POST,
-                                    HttpMethod.PUT,
                                     HttpMethod.TRACE};
 }
