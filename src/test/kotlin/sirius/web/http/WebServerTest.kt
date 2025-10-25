@@ -42,10 +42,12 @@ class WebServerTest {
     companion object {
         fun callAndRead(
             uri: String,
-            outHeaders: Map<String, String?>?,
-            expectedHeaders: Map<String, String?>?
+            outHeaders: Map<String, String?>? = null,
+            expectedHeaders: Map<String, String?>? = null,
+            requestMethod: String = "GET"
         ): String {
             val connection = URI("http://localhost:9999$uri").toURL().openConnection() as HttpURLConnection
+            connection.setRequestMethod(requestMethod)
 
             outHeaders?.forEach { (key, value) -> connection.addRequestProperty(key, value) }
             connection.connect()
