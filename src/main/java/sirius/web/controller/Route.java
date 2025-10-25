@@ -36,7 +36,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -45,6 +44,7 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Represents a compiled routed as a result of parsing a {@link Controller} and its methods.
@@ -56,14 +56,6 @@ public class Route {
     private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
     private static final Pattern EXPR = Pattern.compile("([:#$])\\{?(.+?)}?");
-
-    /**
-     * Holds all possible HTTP methods.
-     */
-    private static final Set<HttpMethod> ALL_METHODS = EnumSet.allOf(sirius.web.controller.HttpMethod.class)
-                                                              .stream()
-                                                              .map(sirius.web.controller.HttpMethod::toHttpMethod)
-                                                              .collect(Collectors.toSet());
 
     private String label;
     private Pattern pattern;
@@ -105,7 +97,7 @@ public class Route {
 
         result.label = String.format("%s%s -> %s#%s",
                                      result.uri,
-                                     stringifyMethods(result.httpMethods).map(string -> " [" + string + "]").orElse(""),
+                                     stringifyMethods(routed.methods()).map(string -> " [" + string + "]").orElse(""),
                                      method.getDeclaringClass().getName(),
                                      method.getName());
 
@@ -128,12 +120,15 @@ public class Route {
         return result;
     }
 
-    private static Optional<String> stringifyMethods(Set<HttpMethod> methods) {
+    private static Optional<String> stringifyMethods(sirius.web.controller.HttpMethod[] methods) {
         // if a route supports all methods, we don't list them explicitly
-        if (methods.containsAll(ALL_METHODS)) {
+        if (sirius.web.controller.HttpMethod.isCompleteList(methods)) {
             return Optional.empty();
         }
-        return Optional.of(methods.stream().map(HttpMethod::name).collect(Collectors.joining(", ")));
+        return Optional.of(Stream.of(methods)
+                                 .distinct()
+                                 .map(sirius.web.controller.HttpMethod::name)
+                                 .collect(Collectors.joining(", ")));
     }
 
     @Nonnull
