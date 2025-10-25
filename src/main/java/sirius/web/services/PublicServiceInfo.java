@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.nls.NLS;
+import sirius.web.controller.Routed;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ import java.util.regex.Pattern;
 public class PublicServiceInfo {
 
     private final PublicService info;
+    private final Routed routed;
     private final String uri;
     private final String formattedUri;
     private final boolean deprecated;
@@ -46,14 +48,15 @@ public class PublicServiceInfo {
     private static final Pattern URI_PARAMETER_PATTERN = Pattern.compile("\\{([^}]*?)}");
 
     protected PublicServiceInfo(PublicService info,
-                                String uri,
+                                Routed routed,
                                 boolean deprecated,
                                 Operation operation,
                                 List<Parameter> serviceParameters,
                                 List<RequestBody> requestBodies,
                                 List<ApiResponse> responses) {
         this.info = info;
-        this.uri = Strings.isFilled(info.path()) ? info.path() : uri;
+        this.routed = routed;
+        this.uri = Strings.isFilled(info.path()) ? info.path() : routed.value();
         this.formattedUri = formatUri(this.uri);
         this.deprecated = deprecated;
         this.operation = operation;
