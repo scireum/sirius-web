@@ -245,6 +245,9 @@ public class PublicServiceInfo {
     }
 
     private String determineAnchor() {
-        return this.uri;
+        if (sirius.web.controller.HttpMethod.isCompleteList(routed.methods())) {
+            return this.uri;
+        }
+        return getHttpMethod().name() + "_" + this.uri;
     }
 }
