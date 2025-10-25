@@ -335,7 +335,7 @@ public class TestController extends BasicController {
         webContext.respondWith().direct(HttpResponseStatus.OK, "POST OK");
     }
 
-    @Routed(value = "/test/restricted-methods", methods = {HttpMethod.GET, HttpMethod.POST})
+    @Routed(value = "/test/restricted-methods", methods = {HttpMethod.GET, HttpMethod.POST, HttpMethod.POST})
     public void getAndPostOnlyTest(WebContext webContext) {
         webContext.respondWith().direct(HttpResponseStatus.OK, "GET/POST OK");
     }
@@ -352,7 +352,7 @@ public class TestController extends BasicController {
         output.property("status", "POST OK");
     }
 
-    @Routed(value = "/test/restricted-methods-api", methods = {HttpMethod.GET, HttpMethod.POST})
+    @Routed(value = "/test/restricted-methods-api", methods = {HttpMethod.GET, HttpMethod.POST, HttpMethod.POST})
     @InternalService
     public void getAndPostOnlyTest(WebContext webContext, JSONStructuredOutput output) {
         output.property("status", "GET/POST OK");
