@@ -21,9 +21,12 @@ import sirius.web.controller.Routed;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,6 +43,7 @@ public class PublicServiceInfo {
     private final String formattedUri;
     private final boolean deprecated;
     private final Operation operation;
+    private final HttpMethod httpMethod;
     private final List<Parameter> pathComponents = new ArrayList<>();
     private final List<Parameter> serviceParameters = new ArrayList<>();
     private final List<RequestBody> requestBodies = new ArrayList<>();
@@ -60,6 +64,7 @@ public class PublicServiceInfo {
         this.formattedUri = formatUri(this.uri);
         this.deprecated = deprecated;
         this.operation = operation;
+        this.httpMethod = determineHttpMethod();
 
         // split parameters into path components and other parameters
         serviceParameters.forEach(parameter -> {
@@ -177,9 +182,7 @@ public class PublicServiceInfo {
     }
 
     public HttpMethod getHttpMethod() {
-        return operation != null && Strings.isFilled(operation.method()) ?
-               HttpMethod.valueOf(operation.method()) :
-               HttpMethod.GET;
+        return httpMethod;
     }
 
     public String getUri() {
@@ -208,5 +211,30 @@ public class PublicServiceInfo {
             parameters.add(matcher.group(1));
         }
         return parameters;
+    }
+
+    private HttpMethod determineHttpMethod() {
+        var supportedHttpMethods = new LinkedHashSet<>(Arrays.stream(routed.methods())
+                                                             .map(sirius.web.controller.HttpMethod::toHttpMethod)
+                                                             .toList());
+
+        var documentedHttpMethod = Optional.ofNullable(operation)
+                                           .map(Operation::method)
+                                           .filter(Strings::isFilled)
+                                           .map(HttpMethod::valueOf);
+
+        // there is a documented http method and it is supported by the route
+        if (documentedHttpMethod.isPresent() && supportedHttpMethods.contains(documentedHttpMethod.get())) {
+            return documentedHttpMethod.get();
+        }
+
+        // pick the first supported http method if there is no documented, valid one
+        if (!supportedHttpMethods.isEmpty()) {
+            return supportedHttpMethods.getFirst();
+        }
+
+        // reaching this point means that no http method is supported by the route; we are screwed, so fallback to GET
+        // to at least maintain legacy behavior
+        return HttpMethod.GET;
     }
 }
