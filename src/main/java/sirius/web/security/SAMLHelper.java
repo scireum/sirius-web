@@ -56,6 +56,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
+import java.util.zip.Deflater;
+import java.util.zip.DeflaterOutputStream;
 
 /**
  * Provides a helper to generate SAML 2 requests and to process responses.
@@ -93,9 +95,57 @@ public class SAMLHelper {
      *                    single issuer configuration, different indices can be passed in. The default value would
      *                    be "0"
      * @return a base64 encoded SAML2 request which can be posted to an identity provider
+     * @deprecated use {@link #generateAuthenticationRequestForPostBinding(String, String)} instead
      */
+    @Deprecated
     public String generateAuthenticationRequest(String issuer, String issuerIndex) {
+        return generateAuthenticationRequestForPostBinding(issuer, issuerIndex);
+    }
+
+    /**
+     * Generates a base64 encoded XML request which can be sent via a POST request a SAML 2 identity provider / SAML responder.
+     * This is used for the HTTP POST Binding: <a href="https://docs.oasis-open.org/security/saml/v2.0/saml-bindings-2.0-os.pdf">SAML Bindings</a> (section 3.5).
+     *
+     * @param issuer      the name of the issuer. This tells the identity provider "who" is asking to perform an authentication.
+     * @param issuerIndex the index of the issuer. As the identity provider might manage several endpoints for a
+     *                    single issuer configuration, different indices can be passed in. The default value would
+     *                    be "0"
+     * @return a base64 encoded SAML2 request which can be sent via a POST request to a SAML 2 identity provider / SAML responder
+     */
+    public String generateAuthenticationRequestForPostBinding(String issuer, String issuerIndex) {
         return Base64.getEncoder().encodeToString(createAuthenticationRequestXML(issuer, issuerIndex));
+    }
+
+    /**
+     * Generates a deflated and base64 encoded XML request which can be sent via a GET request to a SAML 2 identity provider / SAML responder
+     * This is used for the HTTP Redirect Binding: <a href="https://docs.oasis-open.org/security/saml/v2.0/saml-bindings-2.0-os.pdf">SAML Bindings</a> (section 3.4).
+     *
+     * @param issuer      the name of the issuer. This tells the identity provider "who" is asking to perform an authentication.
+     * @param issuerIndex the index of the issuer. As the identity provider might manage several endpoints for a
+     *                    single issuer configuration, different indices can be passed in. The default value would
+     *                    be "0"
+     * @return a deflated and base64 encoded SAML2 request which can be sent via a GET request to a SAML 2 identity provider / SAML responder
+     */
+    public String generateAuthenticationRequestForRedirectBinding(String issuer, String issuerIndex) {
+        byte[] request = createAuthenticationRequestXML(issuer, issuerIndex);
+
+        // TODO MIO-6449: Deflater is AutoClosable in Java >= 25
+        Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION,
+                                         true /* raw deflate, zlib header and checksum are not supported by SAML */);
+
+        byte[] compressedRequest;
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+             DeflaterOutputStream deflaterOutputStream = new DeflaterOutputStream(byteArrayOutputStream, deflater)) {
+            deflaterOutputStream.write(request);
+            deflaterOutputStream.finish();
+            compressedRequest = byteArrayOutputStream.toByteArray();
+        } catch (IOException exception) {
+            throw Exceptions.handle(exception);
+        } finally {
+            deflater.end();
+        }
+
+        return Base64.getEncoder().encodeToString(compressedRequest);
     }
 
     private byte[] createAuthenticationRequestXML(String issuer, String issuerIndex) {
