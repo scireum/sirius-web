@@ -56,6 +56,11 @@ public interface Controller {
     ExceptionHint HTTP_STATUS = new ExceptionHint("httpStatus");
 
     /**
+     * Used to specify the desired value for the {@code Allow} HTTP header when handling the exception.
+     */
+    ExceptionHint HTTP_HEADER_ALLOW = new ExceptionHint("httpHeaderAllow");
+
+    /**
      * Specifies an explicit error code to output when handling the exception.
      */
     ExceptionHint ERROR_CODE = new ExceptionHint("errorCode");

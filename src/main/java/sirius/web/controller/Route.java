@@ -8,6 +8,7 @@
 
 package sirius.web.controller;
 
+import io.netty.handler.codec.http.HttpMethod;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
@@ -19,7 +20,6 @@ import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.XMLStructuredOutput;
 import sirius.web.http.InputStreamHandler;
 import sirius.web.http.WebContext;
-import sirius.web.http.WebServer;
 import sirius.web.security.Permissions;
 import sirius.web.security.UserInfo;
 import sirius.web.services.Format;
@@ -28,7 +28,6 @@ import sirius.web.services.JSONStructuredOutput;
 import sirius.web.services.PublicService;
 
 import javax.annotation.Nonnull;
-import java.io.UnsupportedEncodingException;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
@@ -37,18 +36,22 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Represents a compiled routed as a result of parsing a {@link Controller} and its methods.
  */
 public class Route {
 
-    protected static final List<Object> NO_MATCH = Collections.unmodifiableList(new ArrayList<>());
+    protected static final List<Object> NO_MATCH = Collections.emptyList();
     private static final Class<?>[] CLASS_ARRAY = new Class[0];
     private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
@@ -56,6 +59,7 @@ public class Route {
 
     private String label;
     private Pattern pattern;
+    private final Set<HttpMethod> httpMethods = new HashSet<>();
     private final List<Tuple<String, Object>> expressions = new ArrayList<>();
     private Method method;
     private MethodHandle methodHandle;
@@ -82,10 +86,21 @@ public class Route {
         result.controller = controller;
         result.method = method;
         result.uri = applyRewrites(controller, routed.value());
-        result.label = result.uri + " -> " + method.getDeclaringClass().getName() + "#" + method.getName();
         result.preDispatchable = routed.preDispatchable();
         result.permissions = Permissions.computePermissionsFromAnnotations(method);
         result.deprecated = method.isAnnotationPresent(Deprecated.class);
+
+        result.httpMethods.addAll(Arrays.stream(routed.methods())
+                                        .map(sirius.web.controller.HttpMethod::toHttpMethod)
+                                        .toList());
+        failForInvalidMethods(result.httpMethods);
+
+        result.label = String.format("%s%s -> %s#%s",
+                                     result.uri,
+                                     stringifyMethods(routed.methods()).map(string -> " [" + string + "]").orElse(""),
+                                     method.getDeclaringClass().getName(),
+                                     method.getName());
+
         determineAPIFormat(method, routed, result);
         determineSubScope(method, result);
         createMethodHandle(method, result);
@@ -95,7 +110,7 @@ public class Route {
         String[] elements = result.uri.substring(1).split("/");
         StringBuilder finalPattern = new StringBuilder();
         int params = compileRouteURI(result, elements, finalPattern);
-        if (finalPattern.length() == 0) {
+        if (finalPattern.isEmpty()) {
             finalPattern = new StringBuilder("/");
         }
         failForInvalidParameterCount(routed, parameterTypes, params);
@@ -103,6 +118,17 @@ public class Route {
         result.parameterTypes = parameterTypes.toArray(CLASS_ARRAY);
         result.pattern = Pattern.compile(finalPattern.toString());
         return result;
+    }
+
+    private static Optional<String> stringifyMethods(sirius.web.controller.HttpMethod[] methods) {
+        // if a route supports all methods, we don't list them explicitly
+        if (sirius.web.controller.HttpMethod.isCompleteList(methods)) {
+            return Optional.empty();
+        }
+        return Optional.of(Stream.of(methods)
+                                 .distinct()
+                                 .map(sirius.web.controller.HttpMethod::name)
+                                 .collect(Collectors.joining(", ")));
     }
 
     @Nonnull
@@ -131,7 +157,7 @@ public class Route {
     private static void createMethodHandle(Method method, Route result) {
         try {
             result.methodHandle = LOOKUP.unreflect(method);
-        } catch (IllegalAccessException e) {
+        } catch (IllegalAccessException _) {
             throw new IllegalArgumentException("Callback method is not accessible!");
         }
     }
@@ -172,11 +198,11 @@ public class Route {
         String rewrittenUri = Sirius.getSettings()
                                     .getExtensions("controller.rewrites")
                                     .stream()
-                                    .filter(ext -> controller.getClass()
-                                                             .getName()
-                                                             .contains(ext.get("controller").asString()))
-                                    .filter(ext -> ext.get("uri").asString().equals(uri))
-                                    .map(ext -> ext.get("rewrite").asString())
+                                    .filter(extension -> controller.getClass()
+                                                                   .getName()
+                                                                   .contains(extension.get("controller").asString()))
+                                    .filter(extension -> extension.get("uri").asString().equals(uri))
+                                    .map(extension -> extension.get("rewrite").asString())
                                     .findFirst()
                                     .orElse(null);
         if (rewrittenUri != null) {
@@ -185,6 +211,12 @@ public class Route {
         }
 
         return uri;
+    }
+
+    private static void failForInvalidMethods(Set<HttpMethod> httpMethods) {
+        if (httpMethods.isEmpty()) {
+            throw new IllegalArgumentException("At least one HTTP method must be specified!");
+        }
     }
 
     private static void failForInvalidParameterCount(Routed routed, List<Class<?>> parameterTypes, int params) {
@@ -222,53 +254,53 @@ public class Route {
      * See Route.value() for a description
      */
     private static int compileRouteURI(Route result, String[] elements, StringBuilder finalPattern) {
-        int params = 0;
+        int parameters = 0;
         for (String element : elements) {
             if (element.contains(" ") || element.contains("\n") || element.contains("\t")) {
                 throw new IllegalArgumentException("A route must not contain whitespace characters!");
             }
 
-            Matcher m = EXPR.matcher(element);
-            if (m.matches()) {
-                String key = m.group(1);
+            Matcher matcher = EXPR.matcher(element);
+            if (matcher.matches()) {
+                String key = matcher.group(1);
                 if (":".equals(key)) {
-                    result.expressions.add(Tuple.create(":", Integer.parseInt(m.group(2))));
-                    params++;
+                    result.expressions.add(Tuple.create(":", Integer.parseInt(matcher.group(2))));
+                    parameters++;
                 } else {
-                    result.expressions.add(Tuple.create(key, m.group(2)));
+                    result.expressions.add(Tuple.create(key, matcher.group(2)));
                 }
                 finalPattern.append("/([^/]+)");
             } else if ("*".equals(element)) {
                 finalPattern.append("/[^/]+");
             } else if ("**".equals(element)) {
                 finalPattern.append("/?(.*)");
-                result.expressions.add(Tuple.create("**", params++));
+                result.expressions.add(Tuple.create("**", parameters++));
             } else {
                 finalPattern.append("/");
                 finalPattern.append(Pattern.quote(element));
             }
         }
 
-        return params;
+        return parameters;
     }
 
     /**
-     * Determines if this route matches the current request.
+     * Determines if this route matches the current request based on the request URI.
      *
-     * @param ctx          defines the current request
+     * @param webContext   defines the current request
      * @param requestedURI contains the request uri as string
      * @param preDispatch  determines if we're doing a pre-dispatch (looking for a controller which handles
      *                     incomplete requests like file uploads)
      * @return {@link #NO_MATCH} if the route does not match or a list of extracted object from the URI as defined by
      * the template
      */
-    protected List<Object> matches(WebContext ctx, String requestedURI, boolean preDispatch) {
+    protected List<Object> matches(WebContext webContext, String requestedURI, boolean preDispatch) {
         if (preDispatch != this.preDispatchable) {
             return NO_MATCH;
         }
-        Matcher m = pattern.matcher(requestedURI);
-        if (m.matches()) {
-            List<Object> result = extractRouteParameters(ctx, m);
+        Matcher matcher = pattern.matcher(requestedURI);
+        if (matcher.matches()) {
+            List<Object> result = extractRouteParameters(webContext, matcher);
             if (!result.equals(NO_MATCH)) {
                 CallContext.getCurrent().addToMDC("route", uri);
             }
@@ -277,24 +309,38 @@ public class Route {
         return NO_MATCH;
     }
 
-    private List<Object> extractRouteParameters(WebContext ctx, Matcher m) {
+    /**
+     * Determines if this route matches the HTTP method of the current request.
+     * <p>
+     * Note that this method is not included in {@link #matches(WebContext, String, boolean)} as we want to distinguish
+     * between "no match at all" and "matches the URI, but not the HTTP method". The latter needs to return HTTP 405
+     * (Method Not Allowed) instead of HTTP 404 (Not Found).
+     *
+     * @param webContext the current web context
+     * @return <tt>true</tt> if the HTTP method matches, <tt>false</tt> otherwise
+     */
+    protected boolean matchesHttpMethod(WebContext webContext) {
+        return httpMethods.contains(webContext.getRequest().method());
+    }
+
+    private List<Object> extractRouteParameters(WebContext webContext, Matcher matcher) {
         List<Object> result = new ArrayList<>(parameterTypes.length);
-        for (int i = 1; i <= m.groupCount(); i++) {
-            Tuple<String, Object> expr = expressions.get(i - 1);
-            String value = decodeParameter(m.group(i));
-            if ("$".equals(expr.getFirst())) {
-                if (!NLS.get((String) expr.getSecond()).equalsIgnoreCase(value)) {
+        for (int i = 1; i <= matcher.groupCount(); i++) {
+            Tuple<String, Object> expression = expressions.get(i - 1);
+            String value = decodeParameter(matcher.group(i));
+            if ("$".equals(expression.getFirst())) {
+                if (!NLS.get((String) expression.getSecond()).equalsIgnoreCase(value)) {
                     return NO_MATCH;
                 }
-            } else if ("#".equals(expr.getFirst())) {
-                ctx.setAttribute((String) expr.getSecond(), value);
-            } else if (":".equals(expr.getFirst())) {
-                int idx = (Integer) expr.getSecond();
-                Object effectiveValue = Value.of(value).coerce(parameterTypes[idx - 1], null);
-                setAtPosition(result, idx, effectiveValue);
-            } else if ("**".equals(expr.getFirst())) {
+            } else if ("#".equals(expression.getFirst())) {
+                webContext.setAttribute((String) expression.getSecond(), value);
+            } else if (":".equals(expression.getFirst())) {
+                int index = (Integer) expression.getSecond();
+                Object effectiveValue = Value.of(value).coerce(parameterTypes[index - 1], null);
+                setAtPosition(result, index, effectiveValue);
+            } else if ("**".equals(expression.getFirst())) {
                 //we need to split the encoded values, so we don't mistake data for the delimiter
-                result.add(Arrays.stream(m.group(i).split("/")).map(this::decodeParameter).toList());
+                result.add(Arrays.stream(matcher.group(i).split("/")).map(this::decodeParameter).toList());
             }
         }
         if (parameterTypes.length - 1 > result.size() && parameterTypes[parameterTypes.length - 1] == List.class) {
@@ -304,11 +350,7 @@ public class Route {
     }
 
     private String decodeParameter(String parameter) {
-        try {
-            return URLDecoder.decode(parameter, StandardCharsets.UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            throw Exceptions.handle(WebServer.LOG, e);
-        }
+        return URLDecoder.decode(parameter, StandardCharsets.UTF_8);
     }
 
     /*
@@ -345,9 +387,9 @@ public class Route {
             return "Scope: " + subScope;
         }
 
-        for (String p : permissions) {
-            if (!user.get().hasPermission(p)) {
-                return p;
+        for (String permission : permissions) {
+            if (!user.get().hasPermission(permission)) {
+                return permission;
             }
         }
 
@@ -433,6 +475,10 @@ public class Route {
         return pattern.toString();
     }
 
+    public Set<HttpMethod> getHttpMethods() {
+        return Collections.unmodifiableSet(httpMethods);
+    }
+
     public String getUri() {
         return uri;
     }
@@ -440,37 +486,41 @@ public class Route {
     /**
      * Invokes the route with the given parameters.
      *
-     * @param params the parameters to supply
+     * @param parameters the parameters to supply
      * @return the result of the route. This will most probably be null (as routes are mostly void), but might be
      * a {@link Promise} which is used for JSON calls to indicate that the response will be completed in another thread.
      * @throws Exception in case of an error during the invocation
      */
-    public Object invoke(List<Object> params) throws Exception {
+    public Object invoke(List<Object> parameters) throws Exception {
         try {
-            if (params.isEmpty()) {
+            if (parameters.isEmpty()) {
                 return methodHandle.invoke(controller);
-            } else if (params.size() == 1) {
-                return methodHandle.invoke(controller, params.getFirst());
-            } else if (params.size() == 2) {
-                return methodHandle.invoke(controller, params.get(0), params.get(1));
-            } else if (params.size() == 3) {
-                return methodHandle.invoke(controller, params.get(0), params.get(1), params.get(2));
-            } else if (params.size() == 4) {
-                return methodHandle.invoke(controller, params.get(0), params.get(1), params.get(2), params.get(3));
+            } else if (parameters.size() == 1) {
+                return methodHandle.invoke(controller, parameters.getFirst());
+            } else if (parameters.size() == 2) {
+                return methodHandle.invoke(controller, parameters.get(0), parameters.get(1));
+            } else if (parameters.size() == 3) {
+                return methodHandle.invoke(controller, parameters.get(0), parameters.get(1), parameters.get(2));
+            } else if (parameters.size() == 4) {
+                return methodHandle.invoke(controller,
+                                           parameters.get(0),
+                                           parameters.get(1),
+                                           parameters.get(2),
+                                           parameters.get(3));
             } else {
-                Object[] args = new Object[params.size() + 1];
-                args[0] = controller;
-                for (int i = 1; i < args.length; i++) {
-                    args[i] = params.get(i - 1);
+                Object[] arguments = new Object[parameters.size() + 1];
+                arguments[0] = controller;
+                for (int i = 1; i < arguments.length; i++) {
+                    arguments[i] = parameters.get(i - 1);
                 }
-                return methodHandle.invokeWithArguments(args);
+                return methodHandle.invokeWithArguments(arguments);
             }
-        } catch (Exception e) {
-            throw e;
-        } catch (Throwable e) {
+        } catch (Exception exception) {
+            throw exception;
+        } catch (Throwable throwable) {
             throw Exceptions.handle()
                             .to(ControllerDispatcher.LOG)
-                            .error(e)
+                            .error(throwable)
                             .withSystemErrorMessage("A serious system error occurred when executing %s: %s (%s)", this)
                             .handle();
         }

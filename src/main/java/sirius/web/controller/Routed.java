@@ -10,8 +10,8 @@ package sirius.web.controller;
 
 import sirius.kernel.commons.PriorityCollector;
 import sirius.web.services.InternalService;
-import sirius.web.services.PublicService;
 import sirius.web.services.JSONStructuredOutput;
+import sirius.web.services.PublicService;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -98,4 +98,19 @@ public @interface Routed {
      */
     @Deprecated(since = "2021/07/01")
     boolean jsonCall() default false;
+
+    /**
+     * Determines the HTTP methods supported by the route. By default, all methods are supported.
+     *
+     * @return the supported HTTP methods
+     */
+    HttpMethod[] methods() default {HttpMethod.GET,
+                                    HttpMethod.HEAD,
+                                    HttpMethod.PUT,
+                                    HttpMethod.POST,
+                                    HttpMethod.CONNECT,
+                                    HttpMethod.DELETE,
+                                    HttpMethod.OPTIONS,
+                                    HttpMethod.PATCH,
+                                    HttpMethod.TRACE};
 }

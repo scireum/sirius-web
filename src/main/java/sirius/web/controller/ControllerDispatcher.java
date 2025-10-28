@@ -9,6 +9,7 @@
 package sirius.web.controller;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
@@ -44,9 +45,13 @@ import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Dispatches incoming requests to the appropriate {@link Controller}.
@@ -100,12 +105,12 @@ public class ControllerDispatcher implements WebDispatcher {
     public Callback<WebContext> preparePreDispatch(WebContext webContext) {
         String uri = determineEffectiveURI(webContext);
         for (final Route route : getRoutes()) {
-            final List<Object> params = shouldExecute(webContext, uri, route, true);
-            if (params != Route.NO_MATCH) {
+            final List<Object> parameters = shouldExecute(webContext, uri, route, true);
+            if (parameters != Route.NO_MATCH && route.matchesHttpMethod(webContext)) {
                 InputStreamHandler handler = new InputStreamHandler();
                 webContext.setContentHandler(handler);
 
-                return newCtx -> preparePerformRoute(newCtx, route, params, handler);
+                return newWebContext -> preparePerformRoute(newWebContext, route, parameters, handler);
             }
         }
 
@@ -123,10 +128,10 @@ public class ControllerDispatcher implements WebDispatcher {
     @SuppressWarnings("squid:S1698")
     @Explain("We actually can use object identity here as this is a marker object.")
     private List<Object> shouldExecute(WebContext webContext, String uri, Route route, boolean preDispatch) {
-        final List<Object> params = route.matches(webContext, uri, preDispatch);
-        if (params == Route.NO_MATCH) {
+        final List<Object> parameters = route.matches(webContext, uri, preDispatch);
+        if (parameters == Route.NO_MATCH) {
             // Route did not match...
-            return params;
+            return parameters;
         }
         // Check if interceptors permit execution of route...
         for (Interceptor interceptor : interceptors) {
@@ -135,7 +140,7 @@ public class ControllerDispatcher implements WebDispatcher {
             }
         }
 
-        return params;
+        return parameters;
     }
 
     private void preparePerformRoute(WebContext webContext,
@@ -143,9 +148,9 @@ public class ControllerDispatcher implements WebDispatcher {
                                      List<Object> params,
                                      InputStreamHandler inputStreamHandler) {
 
-        Optional<HandledException> exception = webContext.checkParameterReadability();
-        if (exception.isPresent()) {
-            handleFailure(webContext, route, exception.get());
+        Optional<HandledException> optionalException = webContext.checkParameterReadability();
+        if (optionalException.isPresent()) {
+            handleFailure(webContext, route, optionalException.get());
             return;
         }
 
@@ -186,8 +191,8 @@ public class ControllerDispatcher implements WebDispatcher {
                        .setJob(webContext.getRequestedURI());
 
             performRoute(webContext, route, params, 0);
-        } catch (final Exception e) {
-            handleFailure(webContext, route, e);
+        } catch (final Exception exception) {
+            handleFailure(webContext, route, exception);
         }
     }
 
@@ -196,12 +201,33 @@ public class ControllerDispatcher implements WebDispatcher {
     @Explain("We actually can use object identity here as this is a marker object.")
     public DispatchDecision dispatch(WebContext webContext) throws Exception {
         String uri = determineEffectiveURI(webContext);
+        List<Route> routesWithDifferentMethod = new ArrayList<>();
+
         for (final Route route : getRoutes()) {
-            final List<Object> params = shouldExecute(webContext, uri, route, false);
-            if (params != Route.NO_MATCH) {
-                preparePerformRoute(webContext, route, params, null);
+            final List<Object> parameters = shouldExecute(webContext, uri, route, false);
+            if (parameters != Route.NO_MATCH && route.matchesHttpMethod(webContext)) {
+                preparePerformRoute(webContext, route, parameters, null);
                 return DispatchDecision.DONE;
+            } else if (parameters != Route.NO_MATCH) {
+                routesWithDifferentMethod.add(route);
             }
+        }
+
+        if (!routesWithDifferentMethod.isEmpty()) {
+            String allowedMethods = routesWithDifferentMethod.stream()
+                                                             .flatMap(route -> route.getHttpMethods().stream())
+                                                             .map(HttpMethod::toString)
+                                                             .distinct()
+                                                             .sorted()
+                                                             .collect(Collectors.joining(", "));
+            handleFailure(webContext,
+                          routesWithDifferentMethod.getFirst(),
+                          Exceptions.createHandled()
+                                    .withDirectMessage("HTTP method not allowed, expecting " + allowedMethods)
+                                    .hint(Controller.HTTP_STATUS, HttpResponseStatus.METHOD_NOT_ALLOWED.code())
+                                    .hint(Controller.HTTP_HEADER_ALLOW, allowedMethods)
+                                    .handle());
+            return DispatchDecision.DONE;
         }
 
         return DispatchDecision.CONTINUE;
@@ -232,10 +258,10 @@ public class ControllerDispatcher implements WebDispatcher {
             } else {
                 executeRoute(webContext, route, params);
             }
-        } catch (InvocationTargetException ex) {
-            handleFailure(webContext, route, ex.getTargetException());
-        } catch (Exception ex) {
-            handleFailure(webContext, route, ex);
+        } catch (InvocationTargetException exception) {
+            handleFailure(webContext, route, exception.getTargetException());
+        } catch (Exception exception) {
+            handleFailure(webContext, route, exception);
         }
         webContext.enableTiming(route.toString());
     }
@@ -259,7 +285,7 @@ public class ControllerDispatcher implements WebDispatcher {
         Object result = route.invoke(params);
         if (result instanceof Promise) {
             ((Promise<?>) result).onSuccess(ignored -> out.endResult())
-                                 .onFailure(e -> handleFailure(webContext, route, e));
+                                 .onFailure(throwable -> handleFailure(webContext, route, throwable));
         } else {
             out.endResult();
         }
@@ -370,8 +396,13 @@ public class ControllerDispatcher implements WebDispatcher {
                 return;
             }
 
+            // intersect sets of supported HTTP methods to find out if there is any overlap
+            Set<HttpMethod> jointMethods = new HashSet<>(baseRoute.getHttpMethods());
+            jointMethods.retainAll(secondRoute.getHttpMethods());
+
             if (secondRoute.getPattern().equals(baseRoute.getPattern())
-                && secondRoute.isPreDispatchable() == baseRoute.isPreDispatchable()) {
+                && secondRoute.isPreDispatchable() == baseRoute.isPreDispatchable()
+                && !jointMethods.isEmpty()) {
                 if (secondRoute.getMethod().equals(baseRoute.getMethod())) {
                     routes.remove(index);
                     index--;
@@ -396,10 +427,10 @@ public class ControllerDispatcher implements WebDispatcher {
     }
 
     private void compileController(PriorityCollector<Route> collector, Controller controller) {
-        for (final Method m : controller.getClass().getMethods()) {
-            if (m.isAnnotationPresent(Routed.class)) {
-                Routed routed = m.getAnnotation(Routed.class);
-                Route route = compileMethod(routed, controller, m);
+        for (final Method method : controller.getClass().getMethods()) {
+            if (method.isAnnotationPresent(Routed.class)) {
+                Routed routed = method.getAnnotation(Routed.class);
+                Route route = compileMethod(routed, controller, method);
                 if (route != null) {
                     collector.add(routed.priority(), route);
                 }
@@ -428,13 +459,13 @@ public class ControllerDispatcher implements WebDispatcher {
     private Route compileMethod(Routed routed, final Controller controller, final Method method) {
         try {
             return Route.compile(controller, method, routed);
-        } catch (Exception e) {
+        } catch (Exception exception) {
             LOG.WARN("Skipping '%s' in controller '%s' - Cannot compile route '%s': %s (%s)",
                      method.getName(),
                      controller.getClass().getName(),
                      routed.value(),
-                     e.getMessage(),
-                     e.getClass().getName());
+                     exception.getMessage(),
+                     exception.getClass().getName());
             return null;
         }
     }

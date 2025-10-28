@@ -194,11 +194,11 @@ public class Message {
      * Note that this might utilize {@link ErrorMessageTransformer error message transformers} to yield an optimal
      * error message.
      *
-     * @param exception the error to handle
+     * @param throwable the error to handle
      * @return the appropriate error message
      */
-    public static Message error(Throwable exception) {
-        return error(Exceptions.handle(UserContext.LOG, exception));
+    public static Message error(Throwable throwable) {
+        return error(Exceptions.handle(UserContext.LOG, throwable));
     }
 
     /**

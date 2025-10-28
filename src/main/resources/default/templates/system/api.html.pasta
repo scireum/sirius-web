@@ -25,7 +25,7 @@
         <i:block name="sidebar">
             <t:navbox labelKey="template.html.tableOfContent.heading">
                 <i:for type="sirius.web.services.PublicServiceInfo" var="service" items="api.getServices()">
-                    <t:navboxLink url="@apply('#%s', service.getUri())" muted="@service.isDeprecated()">
+                    <t:navboxLink url="@apply('#%s', service.getAnchor())" muted="@service.isDeprecated()">
                         <div class="d-flex align-items-center gap-1">
                             <i:invoke template="/templates/system/service-format-tag.html.pasta"
                                       service="@service"/>
@@ -50,10 +50,10 @@
         </i:if>
 
         <i:for type="sirius.web.services.PublicServiceInfo" var="service" items="api.getServices()">
-            <div class="card card-border mb-4" id="@service.getUri()">
+            <div class="card card-border mb-4" id="@service.getAnchor()">
                 <div class="card-body">
                     <h4 class="card-title d-flex align-items-center">
-                        <a href="@apply('#%s', service.getUri())"
+                        <a href="@apply('#%s', service.getAnchor())"
                            class="@if (service.isDeprecated()) { text-muted text-decoration-line-through } else { text-black text-decoration-none }">
                             @service.getLabel()
                         </a>

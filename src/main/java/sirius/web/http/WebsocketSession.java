@@ -16,15 +16,15 @@ import io.netty.handler.codec.http.websocketx.WebSocketFrame;
  */
 public abstract class WebsocketSession {
 
-    private final WebContext ctx;
+    private final WebContext webContext;
 
     /**
      * Creates a new session for the given channel and request.
      *
-     * @param ctx the channel (context) which started the websocket
+     * @param webContext the channel (context) which started the websocket
      */
-    protected WebsocketSession(WebContext ctx) {
-        this.ctx = ctx;
+    protected WebsocketSession(WebContext webContext) {
+        this.webContext = webContext;
     }
 
     /**
@@ -52,7 +52,7 @@ public abstract class WebsocketSession {
      * @param text the string to send
      */
     public void sendMessage(String text) {
-        ctx.getChannelHandlerContext().writeAndFlush(new TextWebSocketFrame(text));
+        webContext.getChannelHandlerContext().writeAndFlush(new TextWebSocketFrame(text));
     }
 
     /**
@@ -61,6 +61,6 @@ public abstract class WebsocketSession {
      * @return the original request of this websocket connection
      */
     public WebContext getContext() {
-        return ctx;
+        return webContext;
     }
 }
