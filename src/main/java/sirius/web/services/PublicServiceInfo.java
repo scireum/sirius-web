@@ -220,14 +220,14 @@ public class PublicServiceInfo {
     }
 
     private HttpMethod determineHttpMethod() {
-        var supportedHttpMethods = new LinkedHashSet<>(Arrays.stream(routed.methods())
-                                                             .map(sirius.web.controller.HttpMethod::toHttpMethod)
-                                                             .toList());
+        LinkedHashSet<HttpMethod> supportedHttpMethods = new LinkedHashSet<>(Arrays.stream(routed.methods())
+                                                                                   .map(sirius.web.controller.HttpMethod::toHttpMethod)
+                                                                                   .toList());
 
-        var documentedHttpMethod = Optional.ofNullable(operation)
-                                           .map(Operation::method)
-                                           .filter(Strings::isFilled)
-                                           .map(HttpMethod::valueOf);
+        Optional<HttpMethod> documentedHttpMethod = Optional.ofNullable(operation)
+                                                            .map(Operation::method)
+                                                            .filter(Strings::isFilled)
+                                                            .map(HttpMethod::valueOf);
 
         // there is a documented http method and it is supported by the route
         if (documentedHttpMethod.isPresent() && supportedHttpMethods.contains(documentedHttpMethod.get())) {
