@@ -103,7 +103,7 @@ public class SAMLHelper {
     }
 
     /**
-     * Generates a base64 encoded XML request which can be sent via a POST request a SAML 2 identity provider / SAML responder.
+     * Generates a base64 encoded XML request which can be sent via a POST request to a SAML 2 identity provider / SAML responder.
      * This is used for the HTTP POST Binding: <a href="https://docs.oasis-open.org/security/saml/v2.0/saml-bindings-2.0-os.pdf">SAML Bindings</a> (section 3.5).
      *
      * @param issuer      the name of the issuer. This tells the identity provider "who" is asking to perform an authentication.
@@ -113,7 +113,25 @@ public class SAMLHelper {
      * @return a base64 encoded SAML2 request which can be sent via a POST request to a SAML 2 identity provider / SAML responder
      */
     public String generateAuthenticationRequestForPostBinding(String issuer, String issuerIndex) {
-        return Base64.getEncoder().encodeToString(createAuthenticationRequestXML(issuer, issuerIndex));
+        return generateAuthenticationRequestForPostBinding(issuer, issuerIndex, null);
+    }
+
+    /**
+     * Generates a base64 encoded XML request which can be sent via a POST request to a SAML 2 identity provider / SAML responder.
+     * This is used for the HTTP POST Binding: <a href="https://docs.oasis-open.org/security/saml/v2.0/saml-bindings-2.0-os.pdf">SAML Bindings</a> (section 3.5).
+     *
+     * @param issuer      the name of the issuer. This tells the identity provider "who" is asking to perform an authentication.
+     * @param issuerIndex the index of the issuer. As the identity provider might manage several endpoints for a
+     *                    single issuer configuration, different indices can be passed in. The default value would
+     *                    be "0"
+     * @param userEmail   an optional email address to pre-fill the NameID in the request. be aware that some identity providers might reject requests with pre-filled NameIDs.
+     * @return a base64 encoded SAML2 request which can be sent via a POST request to a SAML 2 identity provider / SAML responder
+     */
+    public String generateAuthenticationRequestForPostBinding(String issuer, String issuerIndex, String userEmail) {
+        return Base64.getEncoder()
+                     .encodeToString(createAuthenticationRequestXML(issuer,
+                                                                    issuerIndex,
+                                                                    Optional.ofNullable(userEmail)));
     }
 
     /**
@@ -127,7 +145,22 @@ public class SAMLHelper {
      * @return a deflated and base64 encoded SAML2 request which can be sent via a GET request to a SAML 2 identity provider / SAML responder
      */
     public String generateAuthenticationRequestForRedirectBinding(String issuer, String issuerIndex) {
-        byte[] request = createAuthenticationRequestXML(issuer, issuerIndex);
+        return generateAuthenticationRequestForRedirectBinding(issuer, issuerIndex, null);
+    }
+
+    /**
+     * Generates a deflated and base64 encoded XML request which can be sent via a GET request to a SAML 2 identity provider / SAML responder
+     * This is used for the HTTP Redirect Binding: <a href="https://docs.oasis-open.org/security/saml/v2.0/saml-bindings-2.0-os.pdf">SAML Bindings</a> (section 3.4).
+     *
+     * @param issuer      the name of the issuer. This tells the identity provider "who" is asking to perform an authentication.
+     * @param issuerIndex the index of the issuer. As the identity provider might manage several endpoints for a
+     *                    single issuer configuration, different indices can be passed in. The default value would
+     *                    be "0"
+     * @param userEmail   an optional email address to pre-fill the NameID in the request. be aware that some identity providers might reject requests with pre-filled NameIDs.
+     * @return a deflated and base64 encoded SAML2 request which can be sent via a GET request to a SAML 2 identity provider / SAML responder
+     */
+    public String generateAuthenticationRequestForRedirectBinding(String issuer, String issuerIndex, String userEmail) {
+        byte[] request = createAuthenticationRequestXML(issuer, issuerIndex, Optional.ofNullable(userEmail));
 
         // TODO MIO-6449: Deflater is AutoClosable in Java >= 25
         Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION,
@@ -148,7 +181,9 @@ public class SAMLHelper {
         return Base64.getEncoder().encodeToString(compressedRequest);
     }
 
-    private byte[] createAuthenticationRequestXML(String issuer, String issuerIndex) {
+    private byte[] createAuthenticationRequestXML(String issuer,
+                                                  String issuerIndex,
+                                                  Optional<String> optionalUserEmail) {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         XMLStructuredOutput output = new XMLStructuredOutput(buffer);
         output.beginOutput("samlp:AuthnRequest",
@@ -165,6 +200,15 @@ public class SAMLHelper {
                            Attribute.set("AllowCreate", false),
                            Attribute.set("Format", "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"));
         output.endObject();
+
+        optionalUserEmail.filter(Strings::isFilled).ifPresent(user -> {
+            output.beginObject("saml:Subject");
+            output.property("saml:NameID",
+                            user,
+                            Attribute.set("Format", "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"));
+            output.endObject();
+        });
+
         output.endOutput();
 
         if (LOG.isFINE()) {
