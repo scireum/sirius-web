@@ -69,6 +69,17 @@ public abstract class PdfReplaceHandler implements Priorized {
             throws Exception;
 
     /**
+     * Determines whether errors during URI resolution should be logged.
+     * <p>
+     * By default, we log all errors. Override this method to change this behavior.
+     *
+     * @return <tt>true</tt> if errors should be logged, <tt>false</tt> otherwise
+     */
+    public boolean logErrors() {
+        return true;
+    }
+
+    /**
      * Resolves the image with the given URL.
      *
      * @param userAgentCallback the user agent to use to resolve image resources
