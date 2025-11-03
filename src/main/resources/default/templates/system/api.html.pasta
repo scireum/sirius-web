@@ -91,7 +91,12 @@
                                        var="pathComponent"
                                        items="pathComponents">
                                     <tr>
-                                        <td class="fw-bold">@pathComponent.name()</td>
+                                        <td class="fw-bold">
+                                            @pathComponent.name()
+                                            <div>
+                                                <t:fullTag color="orange" class="align-text-top">Required</t:fullTag>
+                                            </div>
+                                        </td>
                                         <td colspan="2">
                                             <i:raw>@expandMessage(smartTranslate(pathComponent.description()))</i:raw>
                                         </td>
