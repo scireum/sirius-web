@@ -221,10 +221,9 @@
         const content =
             '<div id="sci-dialog-wizard" class="sci-position-relative sci-mt-2 sci-mb-4">' +
             '   <div id="sci-dialog-wizard-line"></div>' +
-            '   <div id="sci-dialog-wizard-steps" class="sci-position-relative sci-d-flex sci-flex-wrap sci-justify-content-space-between">' +
+            '   <div id="sci-dialog-wizard-steps" class="sci-position-relative sci-d-flex sci-flex-wrap sci-justify-content-space-between"></div>' +
             '</div>' +
-            '<div id="sci-dialog-wizard-tabs">' +
-            '</div>';
+            '<div id="sci-dialog-wizard-tabs"></div>';
 
         sirius.dialog.fill(title, content);
 
@@ -305,7 +304,7 @@
             });
 
             const _tab = document.createElement('div');
-            _tab.classList.add('sci-dialog-wizard-tab', 'sci-flex-wrap', 'sci-mt-4', 'sci-p-2');
+            _tab.classList.add('sci-dialog-wizard-tab', 'sci-flex-wrap', 'sci-p-2');
             _tab.id = 'sci-dialog-wizard-tab-' + stepId;
             _tab.dataset.step = stepId;
             _tab.dataset.validated = withForm;
@@ -431,7 +430,7 @@
             // Go through all tabs and check if they should be reachable by the user.
             const _tabs = wizard._tabs.querySelectorAll('.sci-dialog-wizard-tab');
             let lastReachableIndex = 0;
-            // Check the following steps whether they are valid or dont have a form.
+            // Check the following steps whether they are valid or don't have a form.
             for (let i = lastReachableIndex; i < _tabs.length; i++) {
                 const _tab = _tabs[i];
 
@@ -452,6 +451,8 @@
                 const _step = _steps[i];
                 _step.classList.toggle('sci-dialog-wizard-step-reachable', i <= lastReachableIndex);
             }
+            // Disable the step visualizer, when it does not show multiple steps.
+            wizard._wizard.classList.toggle('sci-d-none', _tabs.length < 2);
         }
 
         return Wizard;
