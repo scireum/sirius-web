@@ -13,12 +13,12 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import sirius.kernel.commons.Json;
+import sirius.kernel.commons.Outcall;
 import sirius.kernel.commons.Streams;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.Formatter;
-import sirius.kernel.xml.Outcall;
 import sirius.web.http.MimeHelper;
 
 import java.io.IOException;

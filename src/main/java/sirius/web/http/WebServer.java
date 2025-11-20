@@ -48,7 +48,7 @@ import sirius.kernel.health.metrics.MetricProvider;
 import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.health.metrics.MetricsCollector;
 import sirius.kernel.timer.EveryTenSeconds;
-import sirius.kernel.xml.Outcall;
+import sirius.kernel.commons.Outcall;
 
 import javax.annotation.Nullable;
 import java.net.InetAddress;
