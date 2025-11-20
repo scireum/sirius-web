@@ -47,7 +47,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Microtiming;
 import sirius.kernel.nls.NLS;
-import sirius.kernel.xml.Outcall;
+import sirius.kernel.commons.Outcall;
 import sirius.kernel.xml.XMLStructuredOutput;
 import sirius.pasta.Pasta;
 import sirius.pasta.noodle.compiler.CompileException;
