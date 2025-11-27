@@ -1383,6 +1383,9 @@ class TokenAutocomplete {
                 this.clearSuggestions();
 
                 let answer = request.response;
+                if (answer == null) {
+                    return;
+                }
                 // IE 11 doesn't properly respect content type header, need to parse json string by hand.
                 if (typeof answer === 'string') {
                     answer = JSON.parse(answer);
