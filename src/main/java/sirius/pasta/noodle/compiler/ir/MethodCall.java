@@ -162,21 +162,33 @@ public class MethodCall extends Call {
      * @return <tt>true</tt> if the method was bound successfully, <tt>false</tt> otherwise
      */
     public boolean tryBindToMethod(CompilationContext compilationContext) {
-        try {
-            Class<?>[] parameterTypes = new Class<?>[parameterNodes.length];
-            for (int i = 0; i < parameterNodes.length; i++) {
-                parameterTypes[i] = parameterNodes[i].getType();
-            }
+        Class<?>[] parameterTypes = new Class<?>[parameterNodes.length];
+        for (int i = 0; i < parameterNodes.length; i++) {
+            parameterTypes[i] = parameterNodes[i].getType();
+        }
 
+        try {
             this.method = findMethod(selfNode.getType(), methodName, parameterTypes);
             checkStaticCallSite(compilationContext);
             checkDeprecation(compilationContext);
             checkSandbox(compilationContext);
         } catch (NoSuchMethodException e) {
-            compilationContext.error(position, "%s doesn't have a method '%s'", selfNode.getType(), e.getMessage());
+            compilationContext.error(position,
+                                     "%s doesn't have a method '%s' for parameter types: %s",
+                                     selfNode.getType(),
+                                     methodName,
+                                     resolveParameterTypesString(parameterTypes));
         }
 
         return method != null;
+    }
+
+    private String resolveParameterTypesString(Class<?>[] parameterTypes) {
+        if (parameterTypes.length == 0) {
+            return "(no parameters)";
+        }
+
+        return Arrays.stream(parameterTypes).map(Class::getName).collect(Collectors.joining(", "));
     }
 
     private void checkStaticCallSite(CompilationContext compilationContext) {
