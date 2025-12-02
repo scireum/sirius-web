@@ -378,13 +378,34 @@ public class Page<E> {
 
         for (Facet facet : getFacets()) {
             if (!Strings.areEqual(fieldToIgnore, facet.getName())) {
-                if (Strings.isFilled(facet.getValue()) || emptyParameters.contains(facet.getName())) {
-                    linkBuilder.append(facet.getName(), facet.getValue());
-                }
+                addFacetToLink(facet, linkBuilder);
             }
         }
 
         return linkBuilder;
+    }
+
+    /**
+     * Adds the given facet to the link builder.
+     * <p>
+     * If the facet has no selected values but is marked as a potentially empty parameter, it will be added with an
+     * empty value. Otherwise, all values of the facet will be added to the link.
+     *
+     * @param facet       the facet to add
+     * @param linkBuilder the link builder to add the facet to
+     */
+    private void addFacetToLink(Facet facet, LinkBuilder linkBuilder) {
+        List<String> filledValues = facet.getValues().stream().filter(Strings::isFilled).toList();
+
+        if (filledValues.isEmpty()) {
+            if (emptyParameters.contains(facet.getName())) {
+                linkBuilder.append(facet.getName(), null);
+            }
+        } else {
+            for (String value : filledValues) {
+                linkBuilder.append(facet.getName(), value);
+            }
+        }
     }
 
     /**
