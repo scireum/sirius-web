@@ -172,7 +172,7 @@ public class MethodCall extends Call {
             checkStaticCallSite(compilationContext);
             checkDeprecation(compilationContext);
             checkSandbox(compilationContext);
-        } catch (NoSuchMethodException e) {
+        } catch (NoSuchMethodException _) {
             compilationContext.error(position,
                                      "%s doesn't have a method '%s' for parameter types: %s",
                                      selfNode.getType(),
