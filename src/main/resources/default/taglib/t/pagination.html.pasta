@@ -1,13 +1,14 @@
 <i:arg name="page" type="Page"/>
 <i:arg name="baseUrl" type="String"/>
+<i:arg name="style" type="String" default=""/>
+<i:arg name="margin" type="String" default="mb-4"/>
 
-<i:pragma name="description" value="Renders a pagination box below a table within a Tycho template"/>
-
+<i:pragma name="description" value="Renders a pagination box below a table or somewhere else within a Tycho template"/>
 
 <i:if test="!page.getItems().isEmpty() || page.getStart() != 1">
     <i:local name="id" value="generateId()"/>
-    <div class="d-flex justify-content-center">
-        <div class="input-group mb-4" style="width: fit-content">
+    <div class="d-flex justify-content-center" style="@style">
+        <div class="input-group @margin" style="width: fit-content">
             <i:if test="page.hasLess()">
                 <a href="@page.linkToPreviousPage(baseUrl)"
                    class="btn btn-outline-secondary"
