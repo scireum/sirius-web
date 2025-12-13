@@ -5,12 +5,13 @@
     @service.getHttpMethod().name()
 </t:fullTag>
 
-<i:if test="service.getFormat() == sirius.web.services.Format.JSON">
+<i:local name="format" value="service.determineEffectiveFormat()"/>
+<i:if test="format == sirius.web.services.Format.JSON">
     <t:fullTag color="blue-light" class="align-text-top">JSON</t:fullTag>
 </i:if>
-<i:if test="service.getFormat() == sirius.web.services.Format.XML">
+<i:if test="format == sirius.web.services.Format.XML">
     <t:fullTag color="green-light" class="align-text-top">XML</t:fullTag>
 </i:if>
-<i:if test="service.getFormat() == sirius.web.services.Format.RAW">
+<i:if test="format == sirius.web.services.Format.RAW">
     <t:fullTag color="violet-light" class="align-text-top">RAW</t:fullTag>
 </i:if>

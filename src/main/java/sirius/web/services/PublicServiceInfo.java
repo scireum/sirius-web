@@ -24,9 +24,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -141,6 +143,36 @@ public class PublicServiceInfo {
             return "violet";
         }
         return "grey";
+    }
+
+    /**
+     * Determines the effective format used by this service in case the {@linkplain PublicService#format() format} is
+     * set to {@link Format#RAW}. The method inspects the known {@linkplain ApiResponse responses} and the respective
+     * media types to determine a suitable format.
+     *
+     * @return the effective format used by this service
+     */
+    public Format determineEffectiveFormat() {
+        if (info.format() != Format.RAW) {
+            return info.format();
+        }
+
+        Set<Format> detectedFormats = EnumSet.noneOf(Format.class);
+        responses.forEach(response -> {
+            Arrays.asList(response.content()).forEach(content -> {
+                String mediaType = content.mediaType();
+                if (Strings.isFilled(mediaType)) {
+                    if (mediaType.contains("application/json")) {
+                        detectedFormats.add(Format.JSON);
+                    } else if (mediaType.contains("application/xml") || mediaType.contains("text/xml")) {
+                        detectedFormats.add(Format.XML);
+                    }
+                }
+            });
+        });
+
+        // if we detected exactly one format, return it, otherwise fallback to RAW
+        return detectedFormats.size() == 1 ? detectedFormats.iterator().next() : Format.RAW;
     }
 
     protected int getPriority() {
