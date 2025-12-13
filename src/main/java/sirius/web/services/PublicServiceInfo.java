@@ -161,9 +161,9 @@ public class PublicServiceInfo {
         responses.stream().flatMap(response -> Arrays.stream(response.content())).forEach(content -> {
             String mediaType = content.mediaType();
             if (Strings.isFilled(mediaType)) {
-                if (mediaType.contains("application/json")) {
+                if (mediaType.startsWith("application/json")) {
                     detectedFormats.add(Format.JSON);
-                } else if (mediaType.contains("application/xml") || mediaType.contains("text/xml")) {
+                } else if (mediaType.startsWith("application/xml") || mediaType.startsWith("text/xml")) {
                     detectedFormats.add(Format.XML);
                 }
             }
