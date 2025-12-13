@@ -158,17 +158,15 @@ public class PublicServiceInfo {
         }
 
         Set<Format> detectedFormats = EnumSet.noneOf(Format.class);
-        responses.forEach(response -> {
-            Arrays.asList(response.content()).forEach(content -> {
-                String mediaType = content.mediaType();
-                if (Strings.isFilled(mediaType)) {
-                    if (mediaType.contains("application/json")) {
-                        detectedFormats.add(Format.JSON);
-                    } else if (mediaType.contains("application/xml") || mediaType.contains("text/xml")) {
-                        detectedFormats.add(Format.XML);
-                    }
+        responses.stream().flatMap(response -> Arrays.stream(response.content())).forEach(content -> {
+            String mediaType = content.mediaType();
+            if (Strings.isFilled(mediaType)) {
+                if (mediaType.contains("application/json")) {
+                    detectedFormats.add(Format.JSON);
+                } else if (mediaType.contains("application/xml") || mediaType.contains("text/xml")) {
+                    detectedFormats.add(Format.XML);
                 }
-            });
+            }
         });
 
         // if we detected exactly one format, return it, otherwise fallback to RAW
