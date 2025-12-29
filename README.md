@@ -1,5 +1,6 @@
 # sirius-web
-[![Build Status](https://drone.scireum.com/api/badges/scireum/sirius-web/status.svg?ref=refs/heads/develop)](https://drone.scireum.com/scireum/sirius-web)
+![sirius](https://raw.githubusercontent.com/scireum/sirius-kernel/main/docs/sirius.jpg)
+[![Build Status](https://drone.scireum.com/api/badges/scireum/sirius-web/status.svg?ref=refs/heads/main)](https://drone.scireum.com/scireum/sirius-web)
 
 Provides a modern and scalable web server, a content generation framework and an email sender as a Sirius module.
 

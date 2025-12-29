@@ -2,7 +2,7 @@ name: Automatic Releases
 
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "main" ]
     tags:
       - "dev-*.*.*"
     
