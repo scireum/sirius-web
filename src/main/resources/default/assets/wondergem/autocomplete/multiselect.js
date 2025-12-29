@@ -75,7 +75,11 @@ var multiSelect = function (args) {
         });
 
         suggestions.getAllSuggestions().forEach(function (token) {
-            if ($select.children('option[value="' + token.value + '"]').length === 0) {
+            const missing = $select.children('option').filter(function () {
+                return $(this).val() === token.value;
+            }).length === 0;
+
+            if (missing) {
                 $('<option></option>').text(token.label).val(token.value).appendTo($select);
             }
         });
